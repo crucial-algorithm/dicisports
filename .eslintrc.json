@@ -1,0 +1,17 @@
+{
+  "extends": [
+    "@remix-run/eslint-config",
+    "@remix-run/eslint-config/jest",
+    "prettier"
+  ],
+  "plugins": [
+    "prettier",
+    "jest",
+    "react-hooks"
+  ],
+  "rules": {
+    "prettier/prettier": "error",
+    "no-unused-vars": "error",
+    "no-console": "error"
+  }
+}
