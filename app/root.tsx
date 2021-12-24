@@ -9,8 +9,11 @@ import {
   useCatch
 } from 'remix'
 import theme from './mui/theme'
-
 import Layout from './mui/Layout'
+import '@fontsource/roboto/300.css'
+import '@fontsource/roboto/400.css'
+import '@fontsource/roboto/500.css'
+import '@fontsource/roboto/700.css'
 
 function Document({
   children,
@@ -28,10 +31,6 @@ function Document({
         <title>{title}</title>
         <Meta />
         <Links />
-        <link
-          rel="stylesheet"
-          href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap"
-        />
         <meta
           name="emotion-insertion-point"
           content="emotion-insertion-point"
