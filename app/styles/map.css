@@ -1,0 +1,26 @@
+.map-container {
+    height: 400px;
+}
+
+.map-pin {
+    z-index: 100;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.map-location-label {
+    z-index: 100;
+    position: absolute;
+    left: 50%;
+    top: calc(50% - 32px);
+    transform: translate(-50%, -50%);
+    background-color: #000;
+    padding: 4px 10px;
+    border-radius: 50px;
+    color: #fff;
+    text-transform: capitalize;
+    font-size: 12px;
+    font-weight: 600;
+}
