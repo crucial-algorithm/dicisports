@@ -1,6 +1,11 @@
 import * as React from 'react'
 import mapboxgl from 'mapbox-gl'
 import LocationOnIcon from '@mui/icons-material/LocationOn'
+import Button from '@mui/material/Button'
+import Dialog from '@mui/material/Dialog'
+import DialogTitle from '@mui/material/DialogTitle'
+import DialogContent from '@mui/material/DialogContent'
+import DialogActions from '@mui/material/DialogActions'
 
 type MapInfo = {
   lat: number
@@ -9,9 +14,23 @@ type MapInfo = {
   address: string | null
 }
 
+type MapBoxFeature = {
+  text: string
+  place_name: string
+  context: Array<{ id: string; wikidata?: string; text: string }>
+}
+
+type PickedLocation = {
+  shortAddress: string
+  address: string
+  postcode: string | null
+  place: string | null
+  region: string | null
+  country: string | null
+}
+
 const MAP_BOX_URL = 'api.mapbox.com/geocoding/v5/mapbox.places'
 const MAP_STYLE = 'mapbox://styles/mapbox/streets-v11'
-
 const types = [
   'address',
   'country',
@@ -22,7 +41,13 @@ const types = [
   'locality'
 ]
 
-function Map({ token, xtrCss }: { token: string; xtrCss: string }) {
+type MapProps = {
+  token: string
+  callback: (location: PickedLocation | null) => void
+  xtrClass?: string
+}
+
+function Map({ token, callback, xtrClass = 'map-container' }: MapProps) {
   const [, setMap] = React.useState<mapboxgl.Map>()
   const [info, setInfo] = React.useState<MapInfo>({
     lat: 41.55118759332092,
@@ -64,13 +89,14 @@ function Map({ token, xtrCss }: { token: string; xtrCss: string }) {
 
     map.on('moveend', () => {
       const center = map.getCenter()
-      getAddress(center.lat, center.lng).then((address) => {
+      getAddress(center.lat, center.lng).then((location) => {
         setInfo({
           lat: center.lat,
           lng: center.lng,
           zoom: map.getZoom(),
-          address: address
+          address: location?.shortAddress || ''
         })
+        callback(location)
       })
     })
 
@@ -79,7 +105,7 @@ function Map({ token, xtrCss }: { token: string; xtrCss: string }) {
     const getAddress = async (
       lat: number,
       lng: number
-    ): Promise<string | null> => {
+    ): Promise<PickedLocation | null> => {
       const location = [lng, lat].join(',')
       const url = `https://${MAP_BOX_URL}/${location}.json?limit=1&types=${types.join(
         '%2C'
@@ -88,7 +114,7 @@ function Map({ token, xtrCss }: { token: string; xtrCss: string }) {
       const json = await res.json()
       const feature = json.features[0] || null
       if (!feature) return null
-      return feature.text
+      return processMapBoxFeature(feature)
     }
 
     return () => {
@@ -100,7 +126,7 @@ function Map({ token, xtrCss }: { token: string; xtrCss: string }) {
     <div style={{ position: 'relative' }}>
       <Label label={info.address} />
       <Pin />
-      <div ref={mapNode} className={xtrCss} />
+      <div ref={mapNode} className={xtrClass} />
     </div>
   )
 }
@@ -117,4 +143,79 @@ function Label({ label }: { label: string | null }) {
   return label ? <div className="map-location-label">{label}</div> : null
 }
 
-export default Map
+function processMapBoxFeature(feature: MapBoxFeature): PickedLocation | null {
+  const { text, place_name, context } = feature
+  const output: PickedLocation = {
+    shortAddress: text,
+    address: place_name,
+    postcode: null,
+    place: null,
+    region: null,
+    country: null
+  }
+
+  for (const ctx of context) {
+    const { id, text } = ctx
+    const key = id.split('.')[0]
+    switch (key) {
+      case 'postcode':
+        output.postcode = text
+        break
+      case 'place':
+        output.place = text
+        break
+      case 'region':
+        output.region = text
+        break
+      case 'country':
+        output.country = text
+        break
+    }
+  }
+  return output
+}
+
+export type MapDialogProps = {
+  token: string
+  xtrClass?: string
+  open: boolean
+  setClosed: () => void
+  onPickedLocation: (location: PickedLocation | null) => void
+}
+
+function MapDialog({
+  token,
+  xtrClass,
+  open,
+  setClosed,
+  onPickedLocation
+}: MapDialogProps) {
+  const handleClose = () => {
+    setClosed()
+  }
+
+  return (
+    <Dialog
+      fullScreen
+      open={open}
+      onClose={handleClose}
+      aria-labelledby="alert-dialog-title"
+      aria-describedby="alert-dialog-description"
+    >
+      <DialogTitle id="alert-dialog-title">
+        Selecione a localização no mapa
+      </DialogTitle>
+      <DialogContent>
+        <Map token={token} xtrClass={xtrClass} callback={onPickedLocation} />
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={setClosed}>Cancelar</Button>
+        <Button onClick={setClosed} variant="contained" autoFocus>
+          Aplicar
+        </Button>
+      </DialogActions>
+    </Dialog>
+  )
+}
+
+export { Map, MapDialog }

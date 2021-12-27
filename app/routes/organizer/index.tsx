@@ -4,15 +4,20 @@ import { Form, useLoaderData } from '@remix-run/react'
 import {
   Button,
   Grid,
+  IconButton,
   InputAdornment,
   MenuItem,
   TextField
 } from '@mui/material'
-import { ActionFunction, json, LoaderFunction } from 'remix'
+import { ActionFunction, json, LinksFunction, LoaderFunction } from 'remix'
 import { db } from '~/utils/db.server'
 import BasicDatePicker from '~/ui/DatePicker'
 import { LocationOn } from '@mui/icons-material'
 import PickBookingSystem from '~/components/PickBookingSystem'
+import { useState } from 'react'
+import { MapDialog } from '~/components/Map'
+import mapBoxGlCss from 'mapbox-gl/dist/mapbox-gl.css'
+import routeCss from '~/styles/map.css'
 
 type ActionData = {
   formError?: string
@@ -26,14 +31,22 @@ type ActionData = {
   }
 }
 
+type LoaderData = {
+  sports: Array<{ id: number; name: string }>
+  MAPBOX_TOKEN: string
+}
+
 const badRequest = (data: ActionData) => json(data, { status: 400 })
 
 export const loader: LoaderFunction = async ({ request }) => {
   const sports = await db.sport.findMany()
 
-  return sports.map((sport) => {
-    return { id: sport.id, name: sport.name }
-  })
+  return {
+    MAPBOX_TOKEN: process.env.MAPBOX_TOKEN,
+    sports: sports.map((sport) => {
+      return { id: sport.id, name: sport.name }
+    })
+  }
 }
 
 export const action: ActionFunction = async ({ request }) => {
@@ -47,8 +60,23 @@ export const action: ActionFunction = async ({ request }) => {
   }
 }
 
+export const links: LinksFunction = () => {
+  return [
+    {
+      rel: 'stylesheet',
+      href: mapBoxGlCss
+    },
+    {
+      rel: 'stylesheet',
+      href: routeCss
+    }
+  ]
+}
+
 export default function OrganizerIndexRoute() {
-  const sports = useLoaderData<Array<{ id: number; name: string }>>()
+  const { sports, MAPBOX_TOKEN } = useLoaderData<LoaderData>()
+  const [showLocationPicker, setShowLocationPicker] = useState<boolean>(false)
+  const [location, setLocation] = useState<string>('')
 
   return (
     <Box>
@@ -86,10 +114,19 @@ export default function OrganizerIndexRoute() {
                 label="Localização"
                 variant="standard"
                 name="location"
+                value={location}
+                onClick={() => setShowLocationPicker(true)}
                 InputProps={{
+                  readOnly: true,
                   endAdornment: (
                     <InputAdornment position="end">
-                      <LocationOn />
+                      <IconButton
+                        aria-label="Pick location"
+                        onClick={() => setShowLocationPicker(true)}
+                        edge="end"
+                      >
+                        <LocationOn />
+                      </IconButton>
                     </InputAdornment>
                   )
                 }}
@@ -101,6 +138,14 @@ export default function OrganizerIndexRoute() {
         <Box sx={{ flexGrow: 1, mb: 2 }}>
           <PickBookingSystem name="booking" />
         </Box>
+        <MapDialog
+          token={MAPBOX_TOKEN}
+          open={showLocationPicker}
+          setClosed={() => setShowLocationPicker(false)}
+          onPickedLocation={(location) =>
+            setLocation(location?.shortAddress || '')
+          }
+        />
         <Button type="submit" variant="contained">
           Criar
         </Button>
