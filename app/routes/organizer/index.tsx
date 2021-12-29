@@ -14,10 +14,15 @@ import { db } from '~/utils/db.server'
 import BasicDatePicker from '~/ui/DatePicker'
 import { LocationOn } from '@mui/icons-material'
 import PickBookingSystem from '~/components/PickBookingSystem'
-import { useState } from 'react'
+import { FormEvent, useState } from 'react'
 import { MapDialog } from '~/components/Map'
 import mapBoxGlCss from 'mapbox-gl/dist/mapbox-gl.css'
-import routeCss from '~/styles/map.css'
+import mapCss from '~/styles/map.css'
+import organizerCss from '~/styles/organizer.css'
+import UploadImage from '~/components/UploadImage'
+import { UploadHandler } from '@remix-run/node/formData'
+import { parseMultipartFormData } from '@remix-run/node/parseMultipartFormData'
+import Random from '~/utils/random.server'
 
 type ActionData = {
   formError?: string
@@ -34,15 +39,22 @@ type ActionData = {
 type LoaderData = {
   sports: Array<{ id: number; name: string }>
   MAPBOX_TOKEN: string
+  IMAGE_ENDPOINT: string
+  UPLOAD_PRESET: string
+  files: Array<string>
 }
 
 const badRequest = (data: ActionData) => json(data, { status: 400 })
 
 export const loader: LoaderFunction = async ({ request }) => {
   const sports = await db.sport.findMany()
+  const files = [Random.id(), Random.id(), Random.id(), Random.id()]
 
   return {
     MAPBOX_TOKEN: process.env.MAPBOX_TOKEN,
+    IMAGE_ENDPOINT: process.env.IMAGE_ENDPOINT,
+    UPLOAD_PRESET: process.env.CLOUDINARY_UPLOAD_PRESET,
+    files,
     sports: sports.map((sport) => {
       return { id: sport.id, name: sport.name }
     })
@@ -50,9 +62,14 @@ export const loader: LoaderFunction = async ({ request }) => {
 }
 
 export const action: ActionFunction = async ({ request }) => {
-  const form = await request.formData()
-  console.log(form)
+  const uploadHandler: UploadHandler = async () => {
+    // cleanup images from form - upload is done directly to cloudinary
+    return undefined
+  }
+  let form = await parseMultipartFormData(request, uploadHandler)
   const x = 1
+
+  console.log('form = ', form)
   if (x === 1) {
     return badRequest({
       formError: `Form not submitted correctly.`
@@ -68,20 +85,75 @@ export const links: LinksFunction = () => {
     },
     {
       rel: 'stylesheet',
-      href: routeCss
+      href: mapCss
+    },
+    {
+      rel: 'stylesheet',
+      href: organizerCss
     }
   ]
 }
 
+type Image = {
+  name: string
+  file: File
+  value: string
+}
+
+const uploadImages = (
+  e: FormEvent<HTMLFormElement>,
+  url: string,
+  uploadPreset: string,
+  images: Array<Image>
+) => {
+  const formData = new FormData()
+  images.map((image) => {
+    if (!image) return null
+    formData.append('file', image.file)
+    formData.append('upload_preset', uploadPreset)
+    formData.append('public_id', image.value)
+
+    fetch(url, {
+      method: 'POST',
+      body: formData
+    })
+      .then((response) => {
+        return response.text()
+      })
+      .then((data) => {
+        // intentionally left blank... we could/should log upload failures here
+      })
+
+    // file input has name like "image/1/file" and hidden shadow has "image/1"
+    const hiddenFieldName = image.name.replace('/file', '')
+    const field: HTMLInputElement | null =
+      document.querySelector<HTMLInputElement>(`[name="${hiddenFieldName}"]`)
+    if (field) field.value = image.value
+
+    return null
+  })
+}
+const encTypeUpload = 'multipart/form-data'
+
 export default function OrganizerIndexRoute() {
-  const { sports, MAPBOX_TOKEN } = useLoaderData<LoaderData>()
+  const { sports, MAPBOX_TOKEN, IMAGE_ENDPOINT, UPLOAD_PRESET, files } =
+    useLoaderData<LoaderData>()
   const [showLocationPicker, setShowLocationPicker] = useState<boolean>(false)
   const [location, setLocation] = useState<string>('')
+  const images: Array<Image> = []
+  const setImages = (name: string, file: File) => {
+    images.push({ name, file, value: files.pop() || '' })
+  }
 
   return (
     <Box>
       <Typography variant="h4">Create Event</Typography>
-      <Form method="post" autoComplete="off">
+      <Form
+        method="post"
+        autoComplete="off"
+        encType={encTypeUpload}
+        onSubmit={(e) => uploadImages(e, IMAGE_ENDPOINT, UPLOAD_PRESET, images)}
+      >
         <TextField
           label="Nome"
           variant="standard"
@@ -138,6 +210,43 @@ export default function OrganizerIndexRoute() {
         <Box sx={{ flexGrow: 1, mb: 2 }}>
           <PickBookingSystem name="booking" />
         </Box>
+        <Box sx={{ flexGrow: 1, mb: 2 }}>
+          <Grid container spacing={2}>
+            <Grid item xs={3}>
+              <UploadImage
+                name="image/1/file"
+                label="Arraste uma imagem do seu poster da prova"
+                onDrop={setImages}
+              />
+              <input type="hidden" name="image/1" />
+            </Grid>
+            <Grid item xs={3}>
+              <UploadImage
+                name="image/2/file"
+                label="Participante sorridente"
+                onDrop={setImages}
+              />
+              <input type="hidden" name="image/2" />
+            </Grid>
+            <Grid item xs={3}>
+              <UploadImage
+                name="image/3/file"
+                label="Uma bela paisagem"
+                onDrop={setImages}
+              />
+              <input type="hidden" name="image/3" />
+            </Grid>
+            <Grid item xs={3}>
+              <UploadImage
+                name="image/4/file"
+                label="Linha de partida ou 'comes e bebes'"
+                onDrop={setImages}
+              />
+              <input type="hidden" name="image/4" />
+            </Grid>
+          </Grid>
+        </Box>
+
         <MapDialog
           token={MAPBOX_TOKEN}
           open={showLocationPicker}
