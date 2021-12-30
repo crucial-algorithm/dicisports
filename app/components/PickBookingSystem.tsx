@@ -7,24 +7,25 @@ import {
   TextField
 } from '@mui/material'
 import { useState } from 'react'
-
-const useYourOwnTrackingSystem = 'Guardar no DiciSports'
-const useExternalTrackingSystem =
-  'Estou a usar um sistema externo (ex. O da empresa de cronometragem)'
+import { TFunction } from 'i18next'
 
 export type PickBookingSystemOptions = {
   name: string
+  t: TFunction // ns: create-event-form
 }
 
-export default function PickBookingSystem({ name }: PickBookingSystemOptions) {
+export default function PickBookingSystem({
+  name,
+  t
+}: PickBookingSystemOptions) {
   const [disabled, setDisabled] = useState<boolean>(true)
   return (
     <FormControl component="fieldset">
       <FormLabel component="legend">
-        Como pretende tratar das inscrições?
+        {t('How Is Booking Going To Be Managed')}
       </FormLabel>
       <RadioGroup
-        aria-label="gender"
+        aria-label={t('How Is Booking Going To Be Managed')}
         defaultValue="internal"
         name={name}
         onChange={(e) => {
@@ -35,16 +36,16 @@ export default function PickBookingSystem({ name }: PickBookingSystemOptions) {
         <FormControlLabel
           value="internal"
           control={<Radio />}
-          label={useYourOwnTrackingSystem}
+          label={t('Manage Booking in Platform') as string}
         />
         <FormControlLabel
           value="external"
           control={<Radio />}
-          label={useExternalTrackingSystem}
+          label={t('Manage Booking Externally') as string}
         />
       </RadioGroup>
       <TextField
-        label="Link para endereço do booking"
+        label={t('Link to External Booking URL')}
         name={`${name}-url`}
         variant="standard"
         disabled={disabled}

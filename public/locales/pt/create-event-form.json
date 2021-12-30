@@ -1,0 +1,17 @@
+{
+  "Create Event": "Criar evento",
+  "Name": "Nome",
+  "Sport": "Desporto",
+  "Date": "Data",
+  "Location": "Localização",
+  "Location Aria Tip": "Escolha uma localização",
+  "How Is Booking Going To Be Managed": "Como pretende tratar das inscrições?",
+  "Manage Booking in Platform": "Guardar no DiciSports",
+  "Manage Booking Externally": "Estou a usar um sistema externo (ex. O da empresa de cronometragem)",
+  "Link to External Booking URL": "Link para endereço do booking",
+  "Hint For Picture 1": "Arraste a imagem do seu poster da prova",
+  "Hint For Picture 2": "Participante sorridente",
+  "Hint For Picture 3": "Uma bela paisagem ilustrativa",
+  "Hint For Picture 4": "Linha de partida ou 'comes e bebes'",
+  "Create Button": "Criar"
+}

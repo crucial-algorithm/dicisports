@@ -6,6 +6,7 @@ import Dialog from '@mui/material/Dialog'
 import DialogTitle from '@mui/material/DialogTitle'
 import DialogContent from '@mui/material/DialogContent'
 import DialogActions from '@mui/material/DialogActions'
+import { TFunction } from 'i18next'
 
 type MapInfo = {
   lat: number
@@ -45,15 +46,21 @@ type MapProps = {
   token: string
   callback: (location: PickedLocation | null) => void
   xtrClass?: string
+  placeholder: string
 }
 
-function Map({ token, callback, xtrClass = 'map-container' }: MapProps) {
+function Map({
+  token,
+  callback,
+  xtrClass = 'map-container',
+  placeholder
+}: MapProps) {
   const [, setMap] = React.useState<mapboxgl.Map>()
   const [info, setInfo] = React.useState<MapInfo>({
     lat: 41.55118759332092,
     lng: -8.394039337203793,
     zoom: 15,
-    address: null
+    address: placeholder
   })
 
   const mapNode = React.useRef(null)
@@ -94,7 +101,7 @@ function Map({ token, callback, xtrClass = 'map-container' }: MapProps) {
           lat: center.lat,
           lng: center.lng,
           zoom: map.getZoom(),
-          address: location?.shortAddress || ''
+          address: capitalize(location?.shortAddress || '')
         })
         callback(location)
       })
@@ -143,6 +150,19 @@ function Label({ label }: { label: string | null }) {
   return label ? <div className="map-location-label">{label}</div> : null
 }
 
+/**
+ * Use use a capitalize implementation so that default label (hint) is not
+ * capitalized through the CSS
+ * @param str
+ */
+function capitalize(str: string) {
+  if (!str) return str
+  return str
+    .split(/\s/)
+    .map((s) => (s.length > 0 ? (s[0] + '').toUpperCase() + s.slice(1) : ''))
+    .join(' ')
+}
+
 function processMapBoxFeature(feature: MapBoxFeature): PickedLocation | null {
   const { text, place_name, context } = feature
   const output: PickedLocation = {
@@ -181,6 +201,7 @@ export type MapDialogProps = {
   open: boolean
   setClosed: () => void
   onPickedLocation: (location: PickedLocation | null) => void
+  t: TFunction // ns: common
 }
 
 function MapDialog({
@@ -188,7 +209,8 @@ function MapDialog({
   xtrClass,
   open,
   setClosed,
-  onPickedLocation
+  onPickedLocation,
+  t
 }: MapDialogProps) {
   const handleClose = () => {
     setClosed()
@@ -203,15 +225,20 @@ function MapDialog({
       aria-describedby="alert-dialog-description"
     >
       <DialogTitle id="alert-dialog-title">
-        Selecione a localização no mapa
+        {t('Pick Location In Map Title')}
       </DialogTitle>
       <DialogContent>
-        <Map token={token} xtrClass={xtrClass} callback={onPickedLocation} />
+        <Map
+          token={token}
+          xtrClass={xtrClass}
+          callback={onPickedLocation}
+          placeholder={t('Drag Map to Choose a Location Hint')}
+        />
       </DialogContent>
       <DialogActions>
-        <Button onClick={setClosed}>Cancelar</Button>
+        <Button onClick={setClosed}>{t('Cancel')}</Button>
         <Button onClick={setClosed} variant="contained" autoFocus>
-          Aplicar
+          {t('Pick Location Button')}
         </Button>
       </DialogActions>
     </Dialog>

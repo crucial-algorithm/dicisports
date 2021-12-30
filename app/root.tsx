@@ -14,6 +14,7 @@ import '@fontsource/roboto/300.css'
 import '@fontsource/roboto/400.css'
 import '@fontsource/roboto/500.css'
 import '@fontsource/roboto/700.css'
+import { useRemixI18Next } from 'remix-i18next'
 
 function Document({
   children,
@@ -23,7 +24,7 @@ function Document({
   title?: string
 }) {
   return (
-    <html lang="en">
+    <html lang="pt">
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width,initial-scale=1" />
@@ -47,6 +48,10 @@ function Document({
 }
 
 export default function App() {
+  // set locale statically
+  // https://www.npmjs.com/package/remix-i18next
+  useRemixI18Next('pt')
+
   return (
     <Document>
       <Layout>

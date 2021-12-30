@@ -3,6 +3,7 @@ import TextField from '@mui/material/TextField'
 import AdapterDateFns from '@mui/lab/AdapterDateFns'
 import LocalizationProvider from '@mui/lab/LocalizationProvider'
 import DatePicker from '@mui/lab/DatePicker'
+import pt from 'date-fns/locale/pt'
 
 type DatePickerOptions = {
   name: string
@@ -13,7 +14,7 @@ export default function BasicDatePicker({ name, label }: DatePickerOptions) {
   const [value, setValue] = React.useState<Date | null>(null)
 
   return (
-    <LocalizationProvider dateAdapter={AdapterDateFns}>
+    <LocalizationProvider dateAdapter={AdapterDateFns} locale={pt}>
       <DatePicker
         label={label}
         value={value}

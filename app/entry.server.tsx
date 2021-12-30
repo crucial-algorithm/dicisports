@@ -10,8 +10,11 @@ import CssBaseline from '@mui/material/CssBaseline'
 import { ThemeProvider } from '@mui/material/styles'
 import { CacheProvider } from '@emotion/react'
 import createEmotionServer from '@emotion/server/create-instance'
+import i18next from 'i18next'
+import { initReactI18next } from 'react-i18next'
+import { RemixI18NextProvider } from 'remix-i18next'
 
-export default function handleRequest(
+export default async function handleRequest(
   request: Request,
   responseStatusCode: number,
   responseHeaders: Headers,
@@ -20,12 +23,21 @@ export default function handleRequest(
   const cache = createEmotionCache()
   const { extractCriticalToChunks } = createEmotionServer(cache)
 
+  await i18next.use(initReactI18next).init({
+    supportedLngs: ['pt'],
+    defaultNS: 'common',
+    fallbackLng: 'pt',
+    react: { useSuspense: false }
+  })
+
   const MuiRemixServer = () => (
     <CacheProvider value={cache}>
       <ThemeProvider theme={theme}>
         {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
         <CssBaseline />
-        <RemixServer context={remixContext} url={request.url} />
+        <RemixI18NextProvider i18n={i18next}>
+          <RemixServer context={remixContext} url={request.url} />
+        </RemixI18NextProvider>
       </ThemeProvider>
     </CacheProvider>
   )

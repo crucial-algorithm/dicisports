@@ -23,6 +23,8 @@ import UploadImage from '~/components/UploadImage'
 import { UploadHandler } from '@remix-run/node/formData'
 import { parseMultipartFormData } from '@remix-run/node/parseMultipartFormData'
 import Random from '~/utils/random.server'
+import i18n from '~/utils/i18n.server'
+import { useTranslation } from 'react-i18next'
 
 type ActionData = {
   formError?: string
@@ -50,15 +52,16 @@ export const loader: LoaderFunction = async ({ request }) => {
   const sports = await db.sport.findMany()
   const files = [Random.id(), Random.id(), Random.id(), Random.id()]
 
-  return {
+  return json({
     MAPBOX_TOKEN: process.env.MAPBOX_TOKEN,
     IMAGE_ENDPOINT: process.env.IMAGE_ENDPOINT,
     UPLOAD_PRESET: process.env.CLOUDINARY_UPLOAD_PRESET,
     files,
     sports: sports.map((sport) => {
       return { id: sport.id, name: sport.name }
-    })
-  }
+    }),
+    i18n: await i18n.getTranslations(request, ['common', 'create-event-form'])
+  })
 }
 
 export const action: ActionFunction = async ({ request }) => {
@@ -136,6 +139,8 @@ const uploadImages = (
 const encTypeUpload = 'multipart/form-data'
 
 export default function OrganizerIndexRoute() {
+  const { t } = useTranslation('create-event-form')
+  const tc = useTranslation('common').t
   const { sports, MAPBOX_TOKEN, IMAGE_ENDPOINT, UPLOAD_PRESET, files } =
     useLoaderData<LoaderData>()
   const [showLocationPicker, setShowLocationPicker] = useState<boolean>(false)
@@ -147,7 +152,7 @@ export default function OrganizerIndexRoute() {
 
   return (
     <Box>
-      <Typography variant="h4">Create Event</Typography>
+      <Typography variant="h4">{t('Create Event')}</Typography>
       <Form
         method="post"
         autoComplete="off"
@@ -155,7 +160,7 @@ export default function OrganizerIndexRoute() {
         onSubmit={(e) => uploadImages(e, IMAGE_ENDPOINT, UPLOAD_PRESET, images)}
       >
         <TextField
-          label="Nome"
+          label={t('Name')}
           variant="standard"
           name="name"
           fullWidth={true}
@@ -165,7 +170,7 @@ export default function OrganizerIndexRoute() {
           <Grid container spacing={2}>
             <Grid item xs={4}>
               <TextField
-                label="Desporto"
+                label={t('Sport')}
                 select
                 variant="standard"
                 name="sport"
@@ -179,11 +184,11 @@ export default function OrganizerIndexRoute() {
               </TextField>
             </Grid>
             <Grid item xs={4}>
-              <BasicDatePicker label="Data" name="date" />
+              <BasicDatePicker label={t('Date')} name="date" />
             </Grid>
             <Grid item xs={4}>
               <TextField
-                label="Localização"
+                label={t('Location')}
                 variant="standard"
                 name="location"
                 value={location}
@@ -193,7 +198,7 @@ export default function OrganizerIndexRoute() {
                   endAdornment: (
                     <InputAdornment position="end">
                       <IconButton
-                        aria-label="Pick location"
+                        aria-label={t('Location Aria Tip')}
                         onClick={() => setShowLocationPicker(true)}
                         edge="end"
                       >
@@ -208,14 +213,14 @@ export default function OrganizerIndexRoute() {
           </Grid>
         </Box>
         <Box sx={{ flexGrow: 1, mb: 2 }}>
-          <PickBookingSystem name="booking" />
+          <PickBookingSystem name="booking" t={t} />
         </Box>
         <Box sx={{ flexGrow: 1, mb: 2 }}>
           <Grid container spacing={2}>
             <Grid item xs={3}>
               <UploadImage
                 name="image/1/file"
-                label="Arraste uma imagem do seu poster da prova"
+                label={t('Hint For Picture 1')}
                 onDrop={setImages}
               />
               <input type="hidden" name="image/1" />
@@ -223,7 +228,7 @@ export default function OrganizerIndexRoute() {
             <Grid item xs={3}>
               <UploadImage
                 name="image/2/file"
-                label="Participante sorridente"
+                label={t('Hint For Picture 2')}
                 onDrop={setImages}
               />
               <input type="hidden" name="image/2" />
@@ -231,7 +236,7 @@ export default function OrganizerIndexRoute() {
             <Grid item xs={3}>
               <UploadImage
                 name="image/3/file"
-                label="Uma bela paisagem"
+                label={t('Hint For Picture 3')}
                 onDrop={setImages}
               />
               <input type="hidden" name="image/3" />
@@ -239,7 +244,7 @@ export default function OrganizerIndexRoute() {
             <Grid item xs={3}>
               <UploadImage
                 name="image/4/file"
-                label="Linha de partida ou 'comes e bebes'"
+                label={t('Hint For Picture 4')}
                 onDrop={setImages}
               />
               <input type="hidden" name="image/4" />
@@ -254,9 +259,10 @@ export default function OrganizerIndexRoute() {
           onPickedLocation={(location) =>
             setLocation(location?.shortAddress || '')
           }
+          t={tc}
         />
         <Button type="submit" variant="contained">
-          Criar
+          {t('Create Button')}
         </Button>
       </Form>
     </Box>
