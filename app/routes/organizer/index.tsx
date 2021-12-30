@@ -22,9 +22,12 @@ import organizerCss from '~/styles/organizer.css'
 import UploadImage from '~/components/UploadImage'
 import { UploadHandler } from '@remix-run/node/formData'
 import { parseMultipartFormData } from '@remix-run/node/parseMultipartFormData'
-import Random from '~/utils/random.server'
 import i18n from '~/utils/i18n.server'
 import { useTranslation } from 'react-i18next'
+import {
+  CloudinaryFileMeta,
+  generateCloudinarySignatures
+} from '~/utils/cloudinary.server'
 
 type ActionData = {
   formError?: string
@@ -43,14 +46,14 @@ type LoaderData = {
   MAPBOX_TOKEN: string
   IMAGE_ENDPOINT: string
   UPLOAD_PRESET: string
-  files: Array<string>
+  files: Array<CloudinaryFileMeta>
 }
 
 const badRequest = (data: ActionData) => json(data, { status: 400 })
 
 export const loader: LoaderFunction = async ({ request }) => {
   const sports = await db.sport.findMany()
-  const files = [Random.id(), Random.id(), Random.id(), Random.id()]
+  const files = generateCloudinarySignatures(4)
 
   return json({
     MAPBOX_TOKEN: process.env.MAPBOX_TOKEN,
@@ -101,6 +104,9 @@ type Image = {
   name: string
   file: File
   value: string
+  timestamp: number
+  signature: string
+  apiKey: string
 }
 
 const uploadImages = (
@@ -115,6 +121,9 @@ const uploadImages = (
     formData.append('file', image.file)
     formData.append('upload_preset', uploadPreset)
     formData.append('public_id', image.value)
+    formData.append('timestamp', image.timestamp + '')
+    formData.append('signature', image.signature)
+    formData.append('api_key', image.apiKey)
 
     fetch(url, {
       method: 'POST',
@@ -147,7 +156,19 @@ export default function OrganizerIndexRoute() {
   const [location, setLocation] = useState<string>('')
   const images: Array<Image> = []
   const setImages = (name: string, file: File) => {
-    images.push({ name, file, value: files.pop() || '' })
+    const meta: CloudinaryFileMeta | undefined = files.pop()
+    if (!meta)
+      throw new Error(
+        'No upload metadata for this file - did you increased the number of pictures in the form (limited to 4)?'
+      )
+    images.push({
+      name,
+      file,
+      value: meta.publicId,
+      timestamp: meta.timestamp,
+      signature: meta.signature,
+      apiKey: meta.apiKey
+    })
   }
 
   return (
