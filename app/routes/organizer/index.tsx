@@ -113,7 +113,7 @@ const uploadImages = (
   e: FormEvent<HTMLFormElement>,
   url: string,
   uploadPreset: string,
-  images: Array<Image>
+  images: Array<Image | undefined>
 ) => {
   const formData = new FormData()
   images.map((image) => {
@@ -154,9 +154,10 @@ export default function OrganizerIndexRoute() {
     useLoaderData<LoaderData>()
   const [showLocationPicker, setShowLocationPicker] = useState<boolean>(false)
   const [location, setLocation] = useState<string>('')
-  const images: Array<Image> = []
-  const setImages = (name: string, file: File) => {
-    const meta: CloudinaryFileMeta | undefined = files.pop()
+  const images: Array<Image | undefined> = new Array(4)
+
+  const setImages = (position: number) => (name: string, file: File) => {
+    const meta: CloudinaryFileMeta | undefined = files[position]
     if (!meta)
       throw new Error(
         'No upload metadata for this file - did you increased the number of pictures in the form (limited to 4)?'
@@ -242,7 +243,7 @@ export default function OrganizerIndexRoute() {
               <UploadImage
                 name="image/1/file"
                 label={t('Hint For Picture 1')}
-                onDrop={setImages}
+                onDrop={setImages(0)}
               />
               <input type="hidden" name="image/1" />
             </Grid>
@@ -250,7 +251,7 @@ export default function OrganizerIndexRoute() {
               <UploadImage
                 name="image/2/file"
                 label={t('Hint For Picture 2')}
-                onDrop={setImages}
+                onDrop={setImages(1)}
               />
               <input type="hidden" name="image/2" />
             </Grid>
@@ -258,7 +259,7 @@ export default function OrganizerIndexRoute() {
               <UploadImage
                 name="image/3/file"
                 label={t('Hint For Picture 3')}
-                onDrop={setImages}
+                onDrop={setImages(2)}
               />
               <input type="hidden" name="image/3" />
             </Grid>
@@ -266,7 +267,7 @@ export default function OrganizerIndexRoute() {
               <UploadImage
                 name="image/4/file"
                 label={t('Hint For Picture 4')}
-                onDrop={setImages}
+                onDrop={setImages(3)}
               />
               <input type="hidden" name="image/4" />
             </Grid>
