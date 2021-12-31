@@ -21,15 +21,28 @@ model Sport {
 
 model Event {
   @@map("events")
+  id                    String     @id @default(uuid())
+  name                  String?
+  sport                 Sport?     @relation(fields: [sportId], references: [id])
+  sportId               Int?       @map("sport_id")
+  startAt               DateTime?  @map("start_at")
+  endAt                 DateTime?  @map("end_at")
+  location              String?
+  useExternalBooking    Boolean    @default(false)   @map("use_external_booking")
+  externalBookingUrl    String?    @map("external_booking_url")
+  createdAt             DateTime   @default(now())  @map("created_at")
+  updatedAt             DateTime   @updatedAt       @map("updated_at")
+  documents             Document[]
+}
+
+model Document {
+  @@map("documents")
   id                    String    @id @default(uuid())
-  name                  String
-  sport                 Sport     @relation(fields: [sportId], references: [id])
-  sportId               Int       @map("sport_id")
-  startAt               DateTime  @map("start_at")
-  endAt                 DateTime  @map("end_at")
-  location              String
-  useExternalBooking    Boolean   @default(false)   @map("use_external_booking")
-  externalBookingUrl    String?   @map("external_booking_url")
+  key                   String
+  position              Int
+  label                 String?
+  event                 Event     @relation(fields: [eventId], references: [id])
+  eventId               String    @map("event_id")
   createdAt             DateTime  @default(now())  @map("created_at")
   updatedAt             DateTime  @updatedAt       @map("updated_at")
 }
