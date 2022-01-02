@@ -1,5 +1,5 @@
 import { v2 as cloudinary } from 'cloudinary'
-import Random from '~/utils/random.server'
+import id from '~/utils/random.server'
 
 const config = {
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -37,7 +37,7 @@ const generateCloudinarySignatures = (
 ): Array<CloudinaryFileMeta> => {
   const result = []
   for (let i = 0; i < nbr; i++) {
-    const publicId = Random.id()
+    const publicId = id()
     result.push({
       publicId,
       apiKey: config.api_key || '',

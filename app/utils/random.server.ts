@@ -46,7 +46,7 @@ abstract class RandomGenerator {
    * likely to be unique in the whole world.
    * @param charsCount
    */
-  id(charsCount = 20) {
+  id(charsCount = 20): string {
     return this.randomString(charsCount, UNMISTAKABLE_CHARS)
   }
 
@@ -122,6 +122,7 @@ class Random extends RandomGenerator {
 }
 
 const instance = new Random()
-instance.id()
 
-export default instance as Random
+export default function id(): string {
+  return instance.id()
+}

@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client'
+import { PrismaClient, Status } from '@prisma/client'
 
 const db = new PrismaClient()
 
@@ -13,7 +13,6 @@ async function seed() {
       return db.event.create({ data })
     })
   )
-
   await Promise.all(
     documents().map((data) => {
       return db.document.create({ data })
@@ -55,6 +54,7 @@ function events() {
       location: '39.6929301,-8.302317',
       useExternalBooking: false,
       externalBookingUrl: null,
+      status: Status.auto,
       createdAt: new Date('2021-12-31T08:00:00Z'),
       updatedAt: new Date('2021-12-31T08:00:00Z')
     },
@@ -68,6 +68,7 @@ function events() {
       useExternalBooking: true,
       externalBookingUrl:
         'https://stopandgo.com.pt/events/viii-trilho-dos-reis',
+      status: Status.auto,
       createdAt: new Date('2021-12-31T08:00:00Z'),
       updatedAt: new Date('2021-12-31T08:00:00Z')
     }

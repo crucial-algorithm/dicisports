@@ -19,6 +19,14 @@ model Sport {
   events     Event[]
 }
 
+enum Status {
+    auto
+    draft
+    published
+    unpublished
+    deleted
+}
+
 model Event {
   @@map("events")
   id                    String     @id @default(uuid())
@@ -30,6 +38,7 @@ model Event {
   location              String?
   useExternalBooking    Boolean    @default(false)   @map("use_external_booking")
   externalBookingUrl    String?    @map("external_booking_url")
+  status                Status     @default(auto)
   createdAt             DateTime   @default(now())  @map("created_at")
   updatedAt             DateTime   @updatedAt       @map("updated_at")
   documents             Document[]
