@@ -16,6 +16,8 @@ import {
   TableRow
 } from '@mui/material'
 import { Status, Event } from '@prisma/client'
+import { RemixLinkProps } from '@remix-run/react/components'
+import React from 'react'
 
 type ActionData = {
   formError?: string
@@ -34,6 +36,11 @@ type LoaderData = {
 }
 
 const badRequest = (data: ActionData) => json(data, { status: 400 })
+
+const CreateBehavior = React.forwardRef<any, Omit<RemixLinkProps, 'to'>>(
+  // eslint-disable-next-line jsx-a11y/anchor-has-content
+  (props, ref) => <Link ref={ref} to="event/create" {...props} />
+)
 
 export const loader: LoaderFunction = async ({ request }) => {
   const events = await db.event.findMany({
@@ -89,7 +96,7 @@ export default function OrganizerIndexRoute() {
           </TableBody>
         </Table>
       </TableContainer>
-      <Button type="submit" variant="contained" href="organizer/event/create">
+      <Button component={CreateBehavior} type="submit" variant="contained">
         {t('Create')}
       </Button>
     </Box>
