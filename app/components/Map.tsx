@@ -47,18 +47,23 @@ type MapProps = {
   callback: (location: PickedLocation | null) => void
   xtrClass?: string
   placeholder: string
+  defaultValue: string | null
 }
 
 function Map({
   token,
   callback,
   xtrClass = 'map-container',
-  placeholder
+  placeholder,
+  defaultValue
 }: MapProps) {
+  const coords = !defaultValue
+    ? [41.55118759332092, -8.394039337203793]
+    : defaultValue.split(',').map((p) => parseFloat(p))
   const [, setMap] = React.useState<mapboxgl.Map>()
   const [info, setInfo] = React.useState<MapInfo>({
-    lat: 41.55118759332092,
-    lng: -8.394039337203793,
+    lat: coords[0],
+    lng: coords[1],
     zoom: 15,
     address: placeholder
   })
@@ -201,6 +206,7 @@ export type MapDialogProps = {
   open: boolean
   setClosed: () => void
   onPickedLocation: (location: PickedLocation | null) => void
+  defaultValue: string | null | undefined
   t: TFunction // ns: common
 }
 
@@ -210,6 +216,7 @@ function MapDialog({
   open,
   setClosed,
   onPickedLocation,
+  defaultValue = null,
   t
 }: MapDialogProps) {
   const handleClose = () => {
@@ -229,6 +236,7 @@ function MapDialog({
       </DialogTitle>
       <DialogContent>
         <Map
+          defaultValue={defaultValue}
           token={token}
           xtrClass={xtrClass}
           callback={onPickedLocation}

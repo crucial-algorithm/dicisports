@@ -8,10 +8,15 @@ import pt from 'date-fns/locale/pt'
 type DatePickerOptions = {
   name: string
   label: string
+  date: Date | null | undefined
 }
 
-export default function BasicDatePicker({ name, label }: DatePickerOptions) {
-  const [value, setValue] = React.useState<Date | null>(null)
+export default function BasicDatePicker({
+  name,
+  label,
+  date = null
+}: DatePickerOptions) {
+  const [value, setValue] = React.useState<Date | null>(date)
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns} locale={pt}>

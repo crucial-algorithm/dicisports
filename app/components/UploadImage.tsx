@@ -6,15 +6,17 @@ export type UploadImageProps = {
   label: string
   containerClass?: string
   onDrop?: (name: string, file: File) => void
+  defaultValue?: string | undefined | null
 }
 
 export default function UploadImage({
   name,
   label,
   containerClass = 'images-container',
-  onDrop = () => true
+  onDrop = () => true,
+  defaultValue = null
 }: UploadImageProps) {
-  const [thumb, setThumb] = useState<string | null>(null)
+  const [thumb, setThumb] = useState<string | null>(defaultValue)
   const { getRootProps, getInputProps } = useDropzone({
     multiple: false,
     accept: 'image/*',

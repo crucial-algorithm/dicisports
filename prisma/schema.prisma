@@ -36,6 +36,7 @@ model Event {
   startAt               DateTime?  @map("start_at")
   endAt                 DateTime?  @map("end_at")
   location              String?
+  address               String?
   useExternalBooking    Boolean    @default(false)   @map("use_external_booking")
   externalBookingUrl    String?    @map("external_booking_url")
   status                Status     @default(auto)

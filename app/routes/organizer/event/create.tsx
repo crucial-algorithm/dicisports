@@ -15,6 +15,7 @@ export const loader: LoaderFunction = async ({ request }) => {
         startAt: null,
         endAt: null,
         location: null,
+        address: null,
         useExternalBooking: false,
         externalBookingUrl: null,
         createdAt: eventAt,

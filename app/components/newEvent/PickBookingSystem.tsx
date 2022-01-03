@@ -11,14 +11,30 @@ import { TFunction } from 'i18next'
 
 export type PickBookingSystemOptions = {
   name: string
+  useExternal: boolean | undefined
+  url: string | null | undefined
   t: TFunction // ns: create-event-form
+}
+
+const Values = {
+  External: 'external',
+  Internal: 'internal'
 }
 
 export default function PickBookingSystem({
   name,
+  useExternal = false,
+  url = '',
   t
 }: PickBookingSystemOptions) {
-  const [disabled, setDisabled] = useState<boolean>(true)
+  const [state, setState] = useState<{
+    value: string
+    disabled: boolean
+  }>({
+    value: useExternal ? Values.External : Values.Internal,
+    disabled: !useExternal
+  })
+
   return (
     <FormControl component="fieldset">
       <FormLabel component="legend">
@@ -26,10 +42,13 @@ export default function PickBookingSystem({
       </FormLabel>
       <RadioGroup
         aria-label={t('How Is Booking Going To Be Managed')}
-        defaultValue="internal"
+        value={state.value}
         name={name}
         onChange={(e) => {
-          setDisabled(e.target.value === 'internal')
+          setState({
+            disabled: e.target.value === Values.Internal,
+            value: e.target.value
+          })
         }}
         sx={{ mb: 1 }}
       >
@@ -48,8 +67,9 @@ export default function PickBookingSystem({
         label={t('Link to External Booking URL')}
         name={`${name}-url`}
         variant="standard"
-        disabled={disabled}
+        disabled={state.disabled}
         fullWidth={true}
+        defaultValue={url}
       />
     </FormControl>
   )

@@ -28,7 +28,7 @@ import {
   CloudinaryFileMeta,
   generateCloudinarySignatures
 } from '~/utils/cloudinary.server'
-import { Sport } from '@prisma/client'
+import { Sport, Document, Event } from '@prisma/client'
 
 type ActionData = {
   formError?: string
@@ -44,23 +44,35 @@ type ActionData = {
 
 type LoaderData = {
   sports: Array<Sport>
-  MAPBOX_TOKEN: string
-  IMAGE_ENDPOINT: string
-  UPLOAD_PRESET: string
+  mapToken: string
+  imageUploadEndpoint: string
+  imageDisplayEndpoint: string
+  imageUploadPreset: string
   files: Array<CloudinaryFileMeta>
+  event: SportEvent | null
+}
+
+type SportEvent = Event & {
+  documents?: Array<Document>
 }
 
 const badRequest = (data: ActionData) => json(data, { status: 400 })
 
-export const loader: LoaderFunction = async ({ request }) => {
+export const loader: LoaderFunction = async ({ request, params }) => {
   const sports = await db.sport.findMany()
   const files = generateCloudinarySignatures(4)
+  const event = await db.event.findUnique({
+    where: { id: params.eventId },
+    include: { documents: true }
+  })
 
   return json({
-    MAPBOX_TOKEN: process.env.MAPBOX_TOKEN,
-    IMAGE_ENDPOINT: process.env.IMAGE_ENDPOINT,
-    UPLOAD_PRESET: process.env.CLOUDINARY_UPLOAD_PRESET,
+    mapToken: process.env.MAPBOX_TOKEN,
+    imageUploadEndpoint: process.env.IMAGE_UPLOAD_ENDPOINT,
+    imageDisplayEndpoint: process.env.IMAGE_DISPLAY_ENDPOINT,
+    imageUploadPreset: process.env.CLOUDINARY_UPLOAD_PRESET,
     files,
+    event,
     sports: sports.map((sport) => {
       return { id: sport.id, name: sport.name }
     }),
@@ -147,15 +159,34 @@ const uploadImages = (
   })
 }
 const encTypeUpload = 'multipart/form-data'
+const mapDbImages = (
+  images: Array<Document> | undefined,
+  url: string | undefined
+): Array<string> => {
+  if (!images || images.length === 0) return []
+  return images
+    .sort((a, b) => a.position - b.position)
+    .map((img) => `${url}/${img.key}`)
+}
 
 export default function OrganizerEventRoute() {
   const { t } = useTranslation('create-event-form')
   const tc = useTranslation('common').t
-  const { sports, MAPBOX_TOKEN, IMAGE_ENDPOINT, UPLOAD_PRESET, files } =
-    useLoaderData<LoaderData>()
+  const {
+    sports,
+    mapToken,
+    imageUploadEndpoint,
+    imageUploadPreset,
+    imageDisplayEndpoint,
+    files,
+    event
+  } = useLoaderData<LoaderData>()
   const [showLocationPicker, setShowLocationPicker] = useState<boolean>(false)
-  const [location, setLocation] = useState<string>('')
+  const [location, setLocation] = useState<string | undefined | null>(
+    event?.location
+  )
   const images: Array<Image | undefined> = new Array(4)
+  const loadedImages = mapDbImages(event?.documents, imageDisplayEndpoint)
 
   const setImages = (position: number) => (name: string, file: File) => {
     const meta: CloudinaryFileMeta | undefined = files[position]
@@ -163,14 +194,14 @@ export default function OrganizerEventRoute() {
       throw new Error(
         'No upload metadata for this file - did you increased the number of pictures in the form (limited to 4)?'
       )
-    images.push({
+    images[position] = {
       name,
       file,
       value: meta.publicId,
       timestamp: meta.timestamp,
       signature: meta.signature,
       apiKey: meta.apiKey
-    })
+    }
   }
 
   return (
@@ -180,12 +211,15 @@ export default function OrganizerEventRoute() {
         method="post"
         autoComplete="off"
         encType={encTypeUpload}
-        onSubmit={(e) => uploadImages(e, IMAGE_ENDPOINT, UPLOAD_PRESET, images)}
+        onSubmit={(e) =>
+          uploadImages(e, imageUploadEndpoint, imageUploadPreset, images)
+        }
       >
         <TextField
           label={t('Name')}
           variant="standard"
           name="name"
+          defaultValue={event?.name}
           fullWidth={true}
           sx={{ mb: 2 }}
         />
@@ -198,6 +232,7 @@ export default function OrganizerEventRoute() {
                 variant="standard"
                 name="sport"
                 fullWidth={true}
+                defaultValue={event?.sportId}
               >
                 {sports.map((sport) => (
                   <MenuItem key={sport.id} value={sport.id}>
@@ -207,14 +242,18 @@ export default function OrganizerEventRoute() {
               </TextField>
             </Grid>
             <Grid item xs={4}>
-              <BasicDatePicker label={t('Date')} name="date" />
+              <BasicDatePicker
+                label={t('Date')}
+                name="date"
+                date={event?.startAt}
+              />
             </Grid>
             <Grid item xs={4}>
               <TextField
                 label={t('Location')}
                 variant="standard"
                 name="location"
-                value={location}
+                defaultValue={event?.address}
                 onClick={() => setShowLocationPicker(true)}
                 InputProps={{
                   readOnly: true,
@@ -236,7 +275,12 @@ export default function OrganizerEventRoute() {
           </Grid>
         </Box>
         <Box sx={{ flexGrow: 1, mb: 2 }}>
-          <PickBookingSystem name="booking" t={t} />
+          <PickBookingSystem
+            name="booking"
+            t={t}
+            useExternal={event?.useExternalBooking}
+            url={event?.externalBookingUrl}
+          />
         </Box>
         <Box sx={{ flexGrow: 1, mb: 2 }}>
           <Grid container spacing={2}>
@@ -245,6 +289,7 @@ export default function OrganizerEventRoute() {
                 name="image/1/file"
                 label={t('Hint For Picture 1')}
                 onDrop={setImages(0)}
+                defaultValue={loadedImages[0]}
               />
               <input type="hidden" name="image/1" />
             </Grid>
@@ -253,6 +298,7 @@ export default function OrganizerEventRoute() {
                 name="image/2/file"
                 label={t('Hint For Picture 2')}
                 onDrop={setImages(1)}
+                defaultValue={loadedImages[1]}
               />
               <input type="hidden" name="image/2" />
             </Grid>
@@ -261,6 +307,7 @@ export default function OrganizerEventRoute() {
                 name="image/3/file"
                 label={t('Hint For Picture 3')}
                 onDrop={setImages(2)}
+                defaultValue={loadedImages[2]}
               />
               <input type="hidden" name="image/3" />
             </Grid>
@@ -269,6 +316,7 @@ export default function OrganizerEventRoute() {
                 name="image/4/file"
                 label={t('Hint For Picture 4')}
                 onDrop={setImages(3)}
+                defaultValue={loadedImages[3]}
               />
               <input type="hidden" name="image/4" />
             </Grid>
@@ -276,7 +324,8 @@ export default function OrganizerEventRoute() {
         </Box>
 
         <MapDialog
-          token={MAPBOX_TOKEN}
+          token={mapToken}
+          defaultValue={location}
           open={showLocationPicker}
           setClosed={() => setShowLocationPicker(false)}
           onPickedLocation={(location) =>
