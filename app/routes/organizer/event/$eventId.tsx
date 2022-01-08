@@ -1,18 +1,7 @@
-import Typography from '@mui/material/Typography'
-import Box from '@mui/material/Box'
 import { Form, useLoaderData } from '@remix-run/react'
-import {
-  Button,
-  Grid,
-  IconButton,
-  InputAdornment,
-  MenuItem,
-  TextField
-} from '@mui/material'
 import { ActionFunction, json, LinksFunction, LoaderFunction } from 'remix'
 import { db } from '~/utils/db.server'
 import BasicDatePicker from '~/components/DatePicker'
-import { LocationOn } from '@mui/icons-material'
 import PickBookingSystem from '~/components/newEvent/PickBookingSystem'
 import { FormEvent, useState } from 'react'
 import { MapDialog } from '~/components/Map'
@@ -29,6 +18,11 @@ import {
   generateCloudinarySignatures
 } from '~/utils/cloudinary.server'
 import { Sport, Document, Event } from '@prisma/client'
+import Header from '~/components/Header'
+import TextField from '~/components/TextField'
+import Button from '~/components/Button'
+import { LocationMarkerIcon } from '@heroicons/react/outline'
+import { InputClasses } from '~/components/underground/InputBase'
 
 type ActionData = {
   formError?: string
@@ -88,6 +82,7 @@ export const action: ActionFunction = async ({ request }) => {
   let form = await parseMultipartFormData(request, uploadHandler)
   const x = 1
 
+  // eslint-disable-next-line no-console
   console.log('form = ', form)
   if (x === 1) {
     return badRequest({
@@ -169,6 +164,14 @@ const mapDbImages = (
     .map((img) => `${url}/${img.key}`)
 }
 
+function hackyEventRevival(event: Event | null): void {
+  if (!event) return
+  // @ts-ignore
+  event.startAt = new Date(event.startAt)
+  // @ts-ignore
+  event.endAt = new Date(event.endAt)
+}
+
 export default function OrganizerEventRoute() {
   const { t } = useTranslation('create-event-form')
   const tc = useTranslation('common').t
@@ -204,9 +207,12 @@ export default function OrganizerEventRoute() {
     }
   }
 
+  // Hack: while remix doesn't handle dates properly
+  hackyEventRevival(event)
+
   return (
-    <Box>
-      <Typography variant="h4">{t('Create Event')}</Typography>
+    <>
+      <Header>{t('Create Event')}</Header>
       <Form
         method="post"
         autoComplete="off"
@@ -215,128 +221,134 @@ export default function OrganizerEventRoute() {
           uploadImages(e, imageUploadEndpoint, imageUploadPreset, images)
         }
       >
-        <TextField
-          label={t('Name')}
-          variant="standard"
-          name="name"
-          defaultValue={event?.name}
-          fullWidth={true}
-          sx={{ mb: 2 }}
-        />
-        <Box sx={{ flexGrow: 1, mb: 2 }}>
-          <Grid container spacing={2}>
-            <Grid item xs={4}>
-              <TextField
-                label={t('Sport')}
-                select
-                variant="standard"
-                name="sport"
-                fullWidth={true}
-                defaultValue={event?.sportId}
-              >
-                {sports.map((sport) => (
-                  <MenuItem key={sport.id} value={sport.id}>
-                    {sport.name}
-                  </MenuItem>
-                ))}
-              </TextField>
-            </Grid>
-            <Grid item xs={4}>
-              <BasicDatePicker
-                label={t('Date')}
-                name="date"
-                date={event?.startAt}
-              />
-            </Grid>
-            <Grid item xs={4}>
-              <TextField
-                label={t('Location')}
-                variant="standard"
-                name="location"
-                defaultValue={event?.address}
-                onClick={() => setShowLocationPicker(true)}
-                InputProps={{
-                  readOnly: true,
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <IconButton
-                        aria-label={t('Location Aria Tip')}
-                        onClick={() => setShowLocationPicker(true)}
-                        edge="end"
-                      >
-                        <LocationOn />
-                      </IconButton>
-                    </InputAdornment>
-                  )
-                }}
-                fullWidth={true}
-              />
-            </Grid>
-          </Grid>
-        </Box>
-        <Box sx={{ flexGrow: 1, mb: 2 }}>
-          <PickBookingSystem
-            name="booking"
-            t={t}
-            useExternal={event?.useExternalBooking}
-            url={event?.externalBookingUrl}
-          />
-        </Box>
-        <Box sx={{ flexGrow: 1, mb: 2 }}>
-          <Grid container spacing={2}>
-            <Grid item xs={3}>
-              <UploadImage
-                name="image/1/file"
-                label={t('Hint For Picture 1')}
-                onDrop={setImages(0)}
-                defaultValue={loadedImages[0]}
-              />
-              <input type="hidden" name="image/1" />
-            </Grid>
-            <Grid item xs={3}>
-              <UploadImage
-                name="image/2/file"
-                label={t('Hint For Picture 2')}
-                onDrop={setImages(1)}
-                defaultValue={loadedImages[1]}
-              />
-              <input type="hidden" name="image/2" />
-            </Grid>
-            <Grid item xs={3}>
-              <UploadImage
-                name="image/3/file"
-                label={t('Hint For Picture 3')}
-                onDrop={setImages(2)}
-                defaultValue={loadedImages[2]}
-              />
-              <input type="hidden" name="image/3" />
-            </Grid>
-            <Grid item xs={3}>
-              <UploadImage
-                name="image/4/file"
-                label={t('Hint For Picture 4')}
-                onDrop={setImages(3)}
-                defaultValue={loadedImages[3]}
-              />
-              <input type="hidden" name="image/4" />
-            </Grid>
-          </Grid>
-        </Box>
+        <div className="shadow overflow-hidden sm:rounded-md">
+          <div className="px-4 py-5 bg-white sm:p-6">
+            <div className="grid grid-cols-6 gap-6">
+              <div className="col-span-6">
+                <TextField
+                  label={t('Name')}
+                  name="name"
+                  defaultValue={event?.name}
+                />
+              </div>
+              <div className="col-span-6 sm:col-span-6 lg:col-span-2">
+                <label
+                  htmlFor="sport"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  {t('Sport')}
+                </label>
+                <select
+                  className={InputClasses}
+                  name="sport"
+                  id="sport"
+                  defaultValue={event?.sportId || ''}
+                >
+                  {sports.map((sport) => (
+                    <option key={sport.id} value={sport.id}>
+                      {sport.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-        <MapDialog
-          token={mapToken}
-          defaultValue={location}
-          open={showLocationPicker}
-          setClosed={() => setShowLocationPicker(false)}
-          onPickedLocation={(location) =>
-            setLocation(location?.shortAddress || '')
-          }
-          t={tc}
-        />
-        <Button type="submit" variant="contained">
-          {t('Create Button')}
-        </Button>
+              <div className="col-span-6 sm:col-span-6 lg:col-span-2">
+                <BasicDatePicker
+                  label={t('Date')}
+                  name="date"
+                  date={event?.startAt}
+                />
+              </div>
+              <div className="col-span-6 sm:col-span-6 lg:col-span-2">
+                <TextField
+                  label={t('Location')}
+                  name="location"
+                  defaultValue={event?.address}
+                  adornment={
+                    <Button
+                      type="button"
+                      aria-label={t('Location Aria Tip')}
+                      onClick={() => setShowLocationPicker(true)}
+                      rounded={true}
+                      className="inline-block align-middle"
+                    >
+                      <LocationMarkerIcon className="h-6 w-6 m-0 inline-block" />
+                    </Button>
+                  }
+                />
+              </div>
+              <div className="col-span-6 sm:col-span-6">
+                <PickBookingSystem
+                  name="booking"
+                  t={t}
+                  useExternal={event?.useExternalBooking}
+                  url={event?.externalBookingUrl}
+                />
+              </div>
+              <div className="col-span-1">
+                <div>
+                  <UploadImage
+                    name="image/1/file"
+                    label={t('Hint For Picture 1')}
+                    onDrop={setImages(0)}
+                    defaultValue={loadedImages[0]}
+                  />
+                  <input type="hidden" name="image/1" />
+                </div>
+              </div>
+
+              <div className="col-span-1">
+                <div>
+                  <UploadImage
+                    name="image/2/file"
+                    label={t('Hint For Picture 2')}
+                    onDrop={setImages(0)}
+                    defaultValue={loadedImages[0]}
+                  />
+                  <input type="hidden" name="image/2" />
+                </div>
+              </div>
+
+              <div className="col-span-1">
+                <div>
+                  <UploadImage
+                    name="image/3/file"
+                    label={t('Hint For Picture 3')}
+                    onDrop={setImages(0)}
+                    defaultValue={loadedImages[0]}
+                  />
+                  <input type="hidden" name="image/3" />
+                </div>
+              </div>
+
+              <div className="col-span-1">
+                <div>
+                  <UploadImage
+                    name="image/4/file"
+                    label={t('Hint For Picture 4')}
+                    onDrop={setImages(0)}
+                    defaultValue={loadedImages[0]}
+                  />
+                  <input type="hidden" name="image/4" />
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="px-4 py-3 bg-gray-50 text-right sm:px-6">
+            <Button>{t('Create Button')}</Button>
+          </div>
+        </div>
       </Form>
-    </Box>
+      <MapDialog
+        token={mapToken}
+        defaultValue={location}
+        open={showLocationPicker}
+        setClosed={() => setShowLocationPicker(false)}
+        onPickedLocation={(location) =>
+          setLocation(location?.shortAddress || '')
+        }
+        t={tc}
+      />
+    </>
   )
 }

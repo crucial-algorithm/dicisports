@@ -1,12 +1,10 @@
 import * as React from 'react'
+import { useRef } from 'react'
 import mapboxgl from 'mapbox-gl'
-import LocationOnIcon from '@mui/icons-material/LocationOn'
-import Button from '@mui/material/Button'
-import Dialog from '@mui/material/Dialog'
-import DialogTitle from '@mui/material/DialogTitle'
-import DialogContent from '@mui/material/DialogContent'
-import DialogActions from '@mui/material/DialogActions'
 import { TFunction } from 'i18next'
+import { Dialog } from '@headlessui/react'
+import { LocationMarkerIcon } from '@heroicons/react/solid'
+import Button from '~/components/Button'
 
 type MapInfo = {
   lat: number
@@ -146,7 +144,7 @@ function Map({
 function Pin() {
   return (
     <div className="map-pin">
-      <LocationOnIcon fontSize="large" />
+      <LocationMarkerIcon className="text-black w-8 h-8" />
     </div>
   )
 }
@@ -222,33 +220,42 @@ function MapDialog({
   const handleClose = () => {
     setClosed()
   }
+  const cancelButtonRef = useRef(null)
 
   return (
     <Dialog
-      fullScreen
+      as="div"
+      className="fixed inset-0 z-10 overflow-y-auto"
       open={open}
       onClose={handleClose}
-      aria-labelledby="alert-dialog-title"
-      aria-describedby="alert-dialog-description"
+      initialFocus={cancelButtonRef}
     >
-      <DialogTitle id="alert-dialog-title">
-        {t('Pick Location In Map Title')}
-      </DialogTitle>
-      <DialogContent>
-        <Map
-          defaultValue={defaultValue}
-          token={token}
-          xtrClass={xtrClass}
-          callback={onPickedLocation}
-          placeholder={t('Drag Map to Choose a Location Hint')}
-        />
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={setClosed}>{t('Cancel')}</Button>
-        <Button onClick={setClosed} variant="contained" autoFocus>
-          {t('Pick Location Button')}
-        </Button>
-      </DialogActions>
+      <div className="w-full h-screen bg-white p-6">
+        <Dialog.Overlay className="fixed inset-0 bg-black opacity-30" />
+
+        <div className="relative bg-white rounded mx-auto">
+          <Dialog.Title
+            as="h1"
+            className="text-lg antialiased font-semibold p-6"
+          >
+            {t('Pick Location In Map Title')}
+          </Dialog.Title>
+
+          <Map
+            defaultValue={defaultValue}
+            token={token}
+            xtrClass={xtrClass}
+            callback={onPickedLocation}
+            placeholder={t('Drag Map to Choose a Location Hint')}
+          />
+          <div className="px-4 py-3 bg-gray-100 text-right sm:px-6 rounded">
+            <Button onClick={handleClose} ref={cancelButtonRef}>
+              {t('Cancel')}
+            </Button>
+            <Button onClick={handleClose}>{t('Pick Location Button')}</Button>
+          </div>
+        </div>
+      </div>
     </Dialog>
   )
 }

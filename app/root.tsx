@@ -1,6 +1,7 @@
 import * as React from 'react'
 import {
   Links,
+  LinksFunction,
   LiveReload,
   Meta,
   Outlet,
@@ -8,13 +9,18 @@ import {
   ScrollRestoration,
   useCatch
 } from 'remix'
-import theme from './mui/theme'
-import Layout from './mui/Layout'
-import '@fontsource/roboto/300.css'
-import '@fontsource/roboto/400.css'
-import '@fontsource/roboto/500.css'
-import '@fontsource/roboto/700.css'
 import { useRemixI18Next } from 'remix-i18next'
+import Layout from '~/layout'
+import tailwind from './styles/tailwind.css'
+
+export const links: LinksFunction = () => {
+  return [
+    {
+      rel: 'stylesheet',
+      href: tailwind
+    }
+  ]
+}
 
 function Document({
   children,
@@ -28,16 +34,11 @@ function Document({
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width,initial-scale=1" />
-        <meta name="theme-color" content={theme.palette.primary.main} />
         <title>{title}</title>
         <Meta />
         <Links />
-        <meta
-          name="emotion-insertion-point"
-          content="emotion-insertion-point"
-        />
       </head>
-      <body>
+      <body className="bg-slate-100 antialiased font-sans overflow-hidden">
         {children}
         <ScrollRestoration />
         <Scripts />

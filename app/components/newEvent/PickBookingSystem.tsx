@@ -1,13 +1,6 @@
-import {
-  FormControl,
-  FormControlLabel,
-  FormLabel,
-  Radio,
-  RadioGroup,
-  TextField
-} from '@mui/material'
-import { useState } from 'react'
+import { ChangeEvent, useState } from 'react'
 import { TFunction } from 'i18next'
+import InputBase from '~/components/underground/InputBase'
 
 export type PickBookingSystemOptions = {
   name: string
@@ -35,42 +28,75 @@ export default function PickBookingSystem({
     disabled: !useExternal
   })
 
+  const onChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setState({
+      value: e.target.value,
+      disabled: e.target.value === 'internal'
+    })
+  }
+
   return (
-    <FormControl component="fieldset">
-      <FormLabel component="legend">
-        {t('How Is Booking Going To Be Managed')}
-      </FormLabel>
-      <RadioGroup
-        aria-label={t('How Is Booking Going To Be Managed')}
-        value={state.value}
-        name={name}
-        onChange={(e) => {
-          setState({
-            disabled: e.target.value === Values.Internal,
-            value: e.target.value
-          })
-        }}
-        sx={{ mb: 1 }}
-      >
-        <FormControlLabel
-          value="internal"
-          control={<Radio />}
-          label={t('Manage Booking in Platform') as string}
-        />
-        <FormControlLabel
-          value="external"
-          control={<Radio />}
-          label={t('Manage Booking Externally') as string}
-        />
-      </RadioGroup>
-      <TextField
-        label={t('Link to External Booking URL')}
-        name={`${name}-url`}
-        variant="standard"
-        disabled={state.disabled}
-        fullWidth={true}
-        defaultValue={url}
-      />
-    </FormControl>
+    <fieldset>
+      <div>
+        <legend className="text-base font-medium text-gray-900">
+          {t('How Is Booking Going To Be Managed')}
+        </legend>
+        <p className="text-sm text-gray-500">
+          These are delivered via SMS to your mobile phone.
+        </p>
+      </div>
+      <div className="mt-4 space-y-4">
+        <div className="flex items-center">
+          <input
+            id={`${name}-internal`}
+            name={name}
+            type="radio"
+            className="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300"
+            defaultChecked={!useExternal}
+            onChange={onChange}
+            value="internal"
+          />
+          <label
+            htmlFor={`${name}-internal`}
+            className="ml-3 block text-sm font-medium text-gray-700"
+          >
+            {t('Manage Booking in Platform')}
+          </label>
+        </div>
+        <div className="flex items-center">
+          <input
+            id={`${name}-external`}
+            name={name}
+            type="radio"
+            className="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300"
+            defaultChecked={useExternal}
+            onChange={onChange}
+            value="external"
+          />
+          <label
+            htmlFor={`${name}-external`}
+            className="ml-3 block text-sm font-medium text-gray-700"
+          >
+            {t('Manage Booking Externally')}
+          </label>
+        </div>
+        <div className="col-span-6 sm:col-span-4">
+          <label
+            htmlFor="external-url"
+            className="block text-sm font-medium text-gray-700"
+          >
+            {t('Link to External Booking URL')}
+          </label>
+          <InputBase
+            type="text"
+            name={`${name}-url`}
+            id="external-url"
+            autoComplete="email"
+            disabled={state.disabled}
+            defaultValue={url}
+          />
+        </div>
+      </div>
+    </fieldset>
   )
 }
