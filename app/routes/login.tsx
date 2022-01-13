@@ -1,6 +1,6 @@
-import Button from '~/components/Button'
+import Button from '~/components/shared/Button'
 import { Form } from '@remix-run/react'
-import TextField from '~/components/TextField'
+import TextField from '~/components/shared/form/TextField'
 import FormField from '~/components/shared/form/FormField'
 import { ActionFunction, redirect } from 'remix'
 import { getLoginInfoSession } from '~/utils/login.server'

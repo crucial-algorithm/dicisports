@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next'
 
 import { Status, Event } from '@prisma/client'
 import React from 'react'
-import DataTable from '~/components/DataTable'
+import DataTable from '~/components/shared/DataTable'
 
 type ActionData = {
   formError?: string

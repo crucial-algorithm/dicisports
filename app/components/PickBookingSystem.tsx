@@ -1,6 +1,6 @@
 import { ChangeEvent, useState } from 'react'
 import { TFunction } from 'i18next'
-import InputBase from '~/components/underground/InputBase'
+import InputBase from '~/components/shared/form/InputBase'
 
 export type PickBookingSystemOptions = {
   name: string
@@ -93,7 +93,7 @@ export default function PickBookingSystem({
             id="external-url"
             autoComplete="email"
             disabled={state.disabled}
-            defaultValue={url}
+            defaultValue={url || ''}
           />
         </div>
       </div>

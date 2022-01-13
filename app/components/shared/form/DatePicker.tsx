@@ -1,7 +1,7 @@
 import * as React from 'react'
 import pt from 'date-fns/locale/pt'
-import Label from '~/components/underground/Label'
-import InputBase from '~/components/underground/InputBase'
+import Label from '~/components/shared/form/Label'
+import InputBase from '~/components/shared/form/InputBase'
 import HTMLId from '~/utils/HTMLId'
 
 type DatePickerOptions = {
@@ -15,8 +15,8 @@ export default function BasicDatePicker({
   label,
   date = null
 }: DatePickerOptions) {
-  const [value, setValue] = React.useState<Date | string | null>(
-    date ? date.toISOString().split('T')[0] : null
+  const [value, setValue] = React.useState<string>(
+    date ? date.toISOString().split('T')[0] : ''
   )
   const id = HTMLId()
   return (
@@ -28,7 +28,7 @@ export default function BasicDatePicker({
         type="date"
         placeholder={label}
         defaultValue={value}
-        onChange={(e) => setValue(new Date(e.target.value))}
+        onChange={(e) => setValue(new Date(e.target.value).toISOString)}
       />
     </>
   )

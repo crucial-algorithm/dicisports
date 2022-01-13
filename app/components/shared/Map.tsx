@@ -4,7 +4,7 @@ import mapboxgl from 'mapbox-gl'
 import { TFunction } from 'i18next'
 import { Dialog } from '@headlessui/react'
 import { LocationMarkerIcon } from '@heroicons/react/solid'
-import Button from '~/components/Button'
+import Button from '~/components/shared/Button'
 
 type MapInfo = {
   lat: number

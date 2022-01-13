@@ -1,10 +1,8 @@
 import React, { useState } from 'react'
-import clsx from 'clsx'
-import { InputClasses } from '~/components/underground/InputBase'
 import { Form } from '@remix-run/react'
 import FormField from '~/components/shared/form/FormField'
-import TextField from '~/components/TextField'
-import Button from '~/components/Button'
+import TextField from '~/components/shared/form/TextField'
+import Button from '~/components/shared/Button'
 import { MemberProfile } from '~/types'
 import { useTranslation } from 'react-i18next'
 
