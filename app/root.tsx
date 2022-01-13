@@ -1,25 +1,209 @@
 import * as React from 'react'
 import {
+  json,
   Links,
   LinksFunction,
   LiveReload,
+  LoaderFunction,
   Meta,
   Outlet,
   Scripts,
   ScrollRestoration,
-  useCatch
+  useCatch,
+  useTransition
 } from 'remix'
 import { useRemixI18Next } from 'remix-i18next'
 import Layout from '~/layout'
 import tailwind from './styles/tailwind.css'
+import mainCss from './styles/main.css'
+import { User } from '@prisma/client'
+import { KCDHandle } from '~/types'
+import { getServerTimeHeader, time, Timings } from '~/utils/metrics.server'
+import { getSession } from '~/utils/session.server'
+import { getLoginInfoSession } from '~/utils/login.server'
+import { getDomainUrl } from '~/utils/misc'
+import { getClientSession } from '~/utils/client.server'
+import { pathedRoutes } from '~/other-routes.server'
+import { useSpinDelay } from 'spin-delay'
+import { NotificationMessage } from '~/components/shared/NotificationMessage'
+import { AnimatePresence, motion } from 'framer-motion'
+import { TeamCircle } from '~/components/shared/icons/TeamCircle'
+
+// eslint-disable-next-line no-console
+console.log(tailwind) // doing this prevents warning in console somehow 🤷‍
 
 export const links: LinksFunction = () => {
   return [
     {
+      rel: 'preload',
+      as: 'font',
+      href: '/fonts/Poppins-Medium.woff2',
+      type: 'font/woff2',
+      crossOrigin: 'anonymous'
+    },
+    {
+      rel: 'preload',
+      as: 'font',
+      href: '/fonts/Poppins-Regular.woff2',
+      type: 'font/woff2',
+      crossOrigin: 'anonymous'
+    },
+    {
       rel: 'stylesheet',
       href: tailwind
+    },
+    {
+      rel: 'stylesheet',
+      href: mainCss
     }
   ]
+}
+
+export const handle: KCDHandle & { id: string } = {
+  id: 'root'
+}
+
+export type LoaderData = {
+  user: User | null
+  requestInfo: {
+    origin: string
+    path: string
+    session: {
+      email: string | undefined
+      magicLinkVerified: boolean | undefined
+    }
+  }
+}
+
+export const loader: LoaderFunction = async ({ request }) => {
+  // because this is called for every route, we'll do an early return for anything
+  // that has a other route setup. The response will be handled there.
+  if (pathedRoutes[new URL(request.url).pathname]) {
+    return new Response()
+  }
+
+  const timings: Timings = {}
+  const session = await getSession(request)
+  const clientSession = await getClientSession(request)
+  const loginInfoSession = await getLoginInfoSession(request)
+
+  const user = await time({
+    name: 'getUser in root loader',
+    type: 'postgres read',
+    timings,
+    fn: () => session.getUser()
+  })
+
+  const data: LoaderData = {
+    user,
+    requestInfo: {
+      origin: getDomainUrl(request),
+      path: new URL(request.url).pathname,
+      session: {
+        email: loginInfoSession.getEmail(),
+        magicLinkVerified: loginInfoSession.getMagicLinkVerified()
+      }
+    }
+  }
+
+  const headers: HeadersInit = new Headers()
+  headers.append('Server-Timing', getServerTimeHeader(timings))
+  // this can lead to race conditions if a child route is also trying to commit
+  // the cookie as well. This is a bug in remix that will hopefully be fixed.
+  // we reduce the likelihood of a problem by only committing if the value is
+  // different.
+  await session.getHeaders(headers)
+  await clientSession.getHeaders(headers)
+  await loginInfoSession.getHeaders(headers)
+
+  return json(data, { headers })
+}
+
+/* temporary = from kentcdodds.com implementation */
+const LOADER_WORDS = [
+  'loading',
+  'checking cdn',
+  'checking cache',
+  'fetching from db',
+  'compiling mdx',
+  'updating cache',
+  'transfer'
+]
+const ACTION_WORDS = [
+  'packaging',
+  'zapping',
+  'validating',
+  'processing',
+  'calculating',
+  'computing',
+  'computering'
+]
+
+let firstRender = true
+
+function PageLoadingMessage() {
+  const transition = useTransition()
+  const [words, setWords] = React.useState<Array<string>>([])
+  const [pendingPath, setPendingPath] = React.useState('')
+  const showLoader = useSpinDelay(Boolean(transition.state !== 'idle'), {
+    delay: 400,
+    minDuration: 1000
+  })
+
+  React.useEffect(() => {
+    if (firstRender) return
+    if (transition.state === 'idle') return
+    if (transition.state === 'loading') setWords(LOADER_WORDS)
+    if (transition.state === 'submitting') setWords(ACTION_WORDS)
+
+    const interval = setInterval(() => {
+      setWords(([first, ...rest]) => [...rest, first] as Array<string>)
+    }, 2000)
+
+    return () => clearInterval(interval)
+  }, [pendingPath, transition.state])
+
+  React.useEffect(() => {
+    if (firstRender) return
+    if (transition.state === 'idle') return
+    setPendingPath(transition.location.pathname)
+  }, [transition])
+
+  React.useEffect(() => {
+    firstRender = false
+  }, [])
+
+  const action = words[0]
+
+  return (
+    <NotificationMessage position="bottom-right" visible={showLoader}>
+      <div className="flex items-center w-64">
+        <motion.div
+          transition={{ repeat: Infinity, duration: 2, ease: 'linear' }}
+          animate={{ rotate: 360 }}
+        >
+          <TeamCircle size={48} />
+        </motion.div>
+        <div className="inline-grid ml-4">
+          <AnimatePresence>
+            <div className="flex col-start-1 row-start-1 overflow-hidden">
+              <motion.span
+                key={action}
+                initial={{ y: 15, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={{ y: -15, opacity: 0 }}
+                transition={{ duration: 0.25 }}
+                className="flex-none"
+              >
+                {action}
+              </motion.span>
+            </div>
+          </AnimatePresence>
+          <span className="text-secondary truncate">path: {pendingPath}</span>
+        </div>
+      </div>
+    </NotificationMessage>
+  )
 }
 
 function Document({
@@ -38,7 +222,8 @@ function Document({
         <Meta />
         <Links />
       </head>
-      <body className="bg-slate-100 antialiased font-sans overflow-hidden">
+      <body>
+        <PageLoadingMessage />
         {children}
         <ScrollRestoration />
         <Scripts />

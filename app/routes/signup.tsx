@@ -1,0 +1,140 @@
+import { useLoaderData } from '@remix-run/react'
+import { ActionFunction, json, LoaderFunction, redirect } from 'remix'
+import { getSession, getUser, validateMagicLink } from '~/utils/session.server'
+import { getLoginInfoSession } from '~/utils/login.server'
+import { db } from '~/utils/db.server'
+import { getErrorStack } from '~/utils/misc'
+import { handleFormSubmission } from '~/utils/actions.server'
+import id from '~/utils/random.server'
+import { MemberProfile } from '~/types'
+import Profile from '~/components/Profile'
+import { SSError, SSTranslate } from '~/utils/i18n.server'
+
+type ActionData = {
+  status: 'success' | 'error'
+  fields: {
+    name: string | null
+  }
+  errors: {
+    generalError?: string
+    name: string | null
+  }
+}
+
+function getErrorForName(name: string | null) {
+  if (!name) return `Name is required`
+  if (name.length > 60) return `Name is too long`
+  return null
+}
+
+export const action: ActionFunction = async ({ request }) => {
+  const loginInfoSession = await getLoginInfoSession(request)
+
+  const requestText = await request.text()
+  const form = new URLSearchParams(requestText)
+  if (form.get('actionId') === actionIds.cancel) {
+    loginInfoSession.clean()
+    return redirect('/', {
+      headers: await loginInfoSession.getHeaders()
+    })
+  }
+
+  const session = await getSession(request)
+  const magicLink = loginInfoSession.getMagicLink()
+  let email: string
+  try {
+    email = await validateMagicLink(magicLink, loginInfoSession.getMagicLink())
+  } catch (error: unknown) {
+    console.error(getErrorStack(error))
+
+    loginInfoSession.clean()
+    loginInfoSession.flashError(
+      await SSError('>>Error<<: Sign in link invalid. Please request a new one')
+    )
+    return redirect('/login', {
+      headers: await loginInfoSession.getHeaders()
+    })
+  }
+
+  return handleFormSubmission<ActionData>({
+    form,
+    validators: {
+      name: getErrorForName
+    },
+    handleFormValues: async (formData) => {
+      const { name } = formData
+
+      try {
+        const user = await db.user.create({
+          data: { id: id(), email, name }
+        })
+
+        const headers = new Headers()
+        await session.signIn(user)
+        await session.getHeaders(headers)
+        // IDEA: try using destroy... Didn't seem to work last time I tried though.
+        loginInfoSession.clean()
+        await loginInfoSession.getHeaders(headers)
+        return redirect('/me', { headers })
+      } catch (error: unknown) {
+        console.error(getErrorStack(error))
+
+        loginInfoSession.flashError(
+          await SSTranslate('profile', 'Problem Creating Account')
+        )
+        return redirect('/login', {
+          headers: await loginInfoSession.getHeaders()
+        })
+      }
+    }
+  })
+}
+
+export const loader: LoaderFunction = async ({ request }) => {
+  const user = await getUser(request)
+  if (user) return redirect('/me')
+
+  const loginInfoSession = await getLoginInfoSession(request)
+  const magicLink = loginInfoSession.getMagicLink()
+  const email = loginInfoSession.getEmail()
+  if (!magicLink || !email) {
+    loginInfoSession.clean()
+    loginInfoSession.flashError(await SSError('>>Error<<: Invalid magic link'))
+    return redirect('/login', {
+      headers: await loginInfoSession.getHeaders()
+    })
+  }
+
+  const userForMagicLink = await db.user.findFirst({
+    where: { email },
+    select: { id: true }
+  })
+
+  if (userForMagicLink) {
+    // user exists, but they haven't clicked their magic link yet
+    // we don't want to tell them that a user exists with that email though
+    // so we'll invalidate the magic link and force them to try again.
+    loginInfoSession.clean()
+    loginInfoSession.flashError(await SSError('>>Error<<: Invalid magic link'))
+    return redirect('/login', {
+      headers: await loginInfoSession.getHeaders()
+    })
+  }
+
+  return json(
+    { email },
+    {
+      headers: await loginInfoSession.getHeaders()
+    }
+  )
+}
+
+const actionIds = {
+  cancel: 'cancel',
+  signUp: 'sign up'
+}
+
+export default function SignUp() {
+  const data = useLoaderData<MemberProfile>()
+  return <Profile profile={data} postUrl="/signup" />
+}

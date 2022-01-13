@@ -1,0 +1,12 @@
+{
+  ">>Error<<: Unknown Error": "Hmmm, não sabemos o que aconteceu",
+  ">>Error<<: Could not determine domain URL": "Não foi possível determinar o domínio do serviço",
+  ">>Error<<: Session expired": "A sua sessão expirou. Faça login novamente",
+  ">>Error<<: Invalid decrypt text": "Não foi possível decifrar esta cifra",
+  ">>Error<<: Magic link is undefined": "Hmmm... Não encontramos o link de autenticação. Tente fazer login novamente.",
+  ">>Error<<: Sign in link invalid. Please request a new one": "O link de autenticação é inválido. Tente fazer login novamente.",
+  ">>Error<<: You must open the magic link on the same device it was created": "Tem de aceder ao link de autenticação no mesmo dispositivo onde foi criado. Tente fazer login novamente.",
+  ">>Error<<: Magic link expired": "O link expirou. Faça login novamente.",
+  ">>Error<<: No user found": "Utilizador não existe",
+  ">>Error<<: Invalid magic link": "O link é inválido. Tente novamente"
+}

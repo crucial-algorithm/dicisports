@@ -2,7 +2,7 @@ import * as React from 'react'
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <div role="main" className="sm:mx-6 lg:mx-8">
+    <div role="main" className="container mx-auto max-w-6xl pt-8">
       {children}
     </div>
   )

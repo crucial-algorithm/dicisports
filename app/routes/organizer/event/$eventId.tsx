@@ -23,6 +23,7 @@ import TextField from '~/components/TextField'
 import Button from '~/components/Button'
 import { LocationMarkerIcon } from '@heroicons/react/outline'
 import { InputClasses } from '~/components/underground/InputBase'
+import Config from '~/utils/config.server'
 
 type ActionData = {
   formError?: string
@@ -60,11 +61,18 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     include: { documents: true }
   })
 
+  const {
+    MAPBOX_TOKEN,
+    IMAGE_UPLOAD_ENDPOINT,
+    IMAGE_DISPLAY_ENDPOINT,
+    CLOUDINARY_UPLOAD_PRESET
+  } = Config()
+
   return json({
-    mapToken: process.env.MAPBOX_TOKEN,
-    imageUploadEndpoint: process.env.IMAGE_UPLOAD_ENDPOINT,
-    imageDisplayEndpoint: process.env.IMAGE_DISPLAY_ENDPOINT,
-    imageUploadPreset: process.env.CLOUDINARY_UPLOAD_PRESET,
+    mapToken: MAPBOX_TOKEN,
+    imageUploadEndpoint: IMAGE_UPLOAD_ENDPOINT,
+    imageDisplayEndpoint: IMAGE_DISPLAY_ENDPOINT,
+    imageUploadPreset: CLOUDINARY_UPLOAD_PRESET,
     files,
     event,
     sports: sports.map((sport) => {
@@ -228,7 +236,7 @@ export default function OrganizerEventRoute() {
                 <TextField
                   label={t('Name')}
                   name="name"
-                  defaultValue={event?.name}
+                  defaultValue={event?.name || ''}
                 />
               </div>
               <div className="col-span-6 sm:col-span-6 lg:col-span-2">
@@ -263,7 +271,7 @@ export default function OrganizerEventRoute() {
                 <TextField
                   label={t('Location')}
                   name="location"
-                  defaultValue={event?.address}
+                  defaultValue={event?.address || ''}
                   adornment={
                     <Button
                       type="button"

@@ -1,0 +1,7 @@
+{
+  "Cancel": "Cancelar",
+  "Create Profile": "Guardar",
+  "Email Error": "Tentamos validar o email mas obtivemos um erro: \"{{error}}\". Se esse é mesmo o seu e-mail, envie-nos um e-mail",
+  "Invalid Email": "Email inválido",
+  "Problem Creating Account": "Não foi possível criar a sua conta. Tente novamente"
+}

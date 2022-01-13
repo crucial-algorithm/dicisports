@@ -1,4 +1,5 @@
 import React from 'react'
+import clsx from 'clsx'
 
 type Props = {
   onClick?: () => void
@@ -9,23 +10,17 @@ type Props = {
 } & React.ComponentProps<'button'>
 
 const BASE_BUTTON = [
+  'rounded-full',
+  'bg-sp-light-blue-500',
+  'hover:bg-sp-light-blue-800',
+  'text-white',
   'py-2',
   'px-4',
-  'inline-flex',
-  'justify-center',
-  'border',
-  'border-transparent',
-  'shadow-sm',
   'text-sm',
-  'font-medium',
-  'rounded-md',
-  'text-white',
-  'bg-indigo-600',
-  'hover:bg-indigo-700',
-  'focus:outline-none',
-  'focus:ring-2',
-  'focus:ring-offset-2',
-  'focus:ring-indigo-500'
+  'font-bold',
+  'h-12',
+  'focus:shadow-focus',
+  'focus:shadow-sp-light-blue-200'
 ]
 
 const ROUNDED_BUTTON = [
@@ -44,6 +39,29 @@ const ROUNDED_BUTTON = [
   'focus:outline-none'
 ]
 
+const SECONDARY_BUTTON = [
+  'rounded-full',
+  'bg-with-100',
+  'border',
+  'border-sp-light-blue',
+  'text-sp-light-blue',
+  'hover:bg-sp-light-blue-500',
+  'hover:text-white',
+  'py-2',
+  'px-4',
+  'text-sm',
+  'font-bold',
+  'h-12',
+  'focus:shadow-focus',
+  'focus:shadow-sp-light-blue-200'
+]
+
+function classes(rounded: boolean, secondary: boolean) {
+  if (rounded) return ROUNDED_BUTTON.join(' ')
+  if (secondary) return SECONDARY_BUTTON.join(' ')
+  return BASE_BUTTON.join(' ')
+}
+
 const Button: React.FC<Props> = ({
   onClick,
   rounded = false,
@@ -51,15 +69,23 @@ const Button: React.FC<Props> = ({
   children,
   type = 'submit',
   secondary = false,
-  className
+  className,
+  disabled
 }) => (
   <button
     type={type}
-    className={
-      (rounded ? ROUNDED_BUTTON : BASE_BUTTON).join(' ') + ' ' + className
-    }
+    className={clsx(
+      classes(rounded, secondary),
+      disabled ? 'bg-slate-500 hover:bg-slate-600' : null,
+      className
+    )}
+    style={{
+      transition:
+        'background-color .2s,color .2s,border-color .2s,box-shadow .2s'
+    }}
     onClick={onClick}
     ref={ref}
+    disabled={disabled}
   >
     {children}
   </button>

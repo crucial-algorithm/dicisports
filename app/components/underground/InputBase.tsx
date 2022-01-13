@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import clsx from 'clsx'
 
 export const InputClasses = [
   'block',
@@ -24,7 +25,7 @@ type Props = {
   autoComplete?: string
   disabled?: boolean
   onChange?: (value: any) => void
-}
+} & React.ComponentProps<'input'>
 const InputBase: React.FC<Props> = ({
   id,
   name,
@@ -33,7 +34,9 @@ const InputBase: React.FC<Props> = ({
   autoComplete,
   disabled = false,
   type = 'text',
-  onChange
+  onChange,
+  className,
+  readOnly = false
 }) => {
   const [value, setValue] = useState<string>(defaultValue || '')
   return (
@@ -49,7 +52,8 @@ const InputBase: React.FC<Props> = ({
         onChange && onChange(e.target.value)
       }}
       autoComplete={name}
-      className={InputClasses}
+      className={clsx(InputClasses, className)}
+      readOnly={readOnly}
     />
   )
 }
