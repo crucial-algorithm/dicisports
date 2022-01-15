@@ -1,14 +1,14 @@
 import { createCookieSessionStorage, redirect } from 'remix'
 import type { User, Session } from '@prisma/client'
-import { sendMagicLinkEmail } from './send-email.server'
+import { sendMagicLinkEmail } from '../send-email.server'
 import { getLoginInfoSession } from './login.server'
-import Config from '~/utils/config.server'
-import { decrypt, encrypt } from '~/utils/encryption.server'
+import Config from '~/server/config.server'
+import { decrypt, encrypt } from '~/server/utils/encryption.server'
 import {
   getUserByEmail,
   getUserFromSessionId
 } from '~/server/db/db.users.server'
-import { db } from '~/utils/db.server'
+import { db } from '~/server/db.server'
 
 const sessionIdKey = '__session_id__'
 const magicLinkSearchParam = 'kodyKey'

@@ -3,12 +3,12 @@ import { Form } from '@remix-run/react'
 import TextField from '~/components/shared/form/TextField'
 import FormField from '~/components/shared/form/FormField'
 import { ActionFunction, redirect } from 'remix'
-import { getLoginInfoSession } from '~/utils/login.server'
-import { sendToken } from '~/utils/session.server'
-import { verifyEmailAddress } from '~/utils/verifier.server'
+import { getLoginInfoSession } from '~/server/auth/login.server'
+import { sendToken } from '~/server/auth/session.server'
+import { verifyEmailAddress } from '~/server/auth/verifier.server'
 import { getDomainUrl, getErrorMessage } from '~/utils/misc'
 import { useState } from 'react'
-import { SSTranslations } from '~/utils/i18n.server'
+import { SSTranslations } from '~/server/i18n.server'
 
 function validateEmail(email: string | null): boolean {
   if (!email) return false

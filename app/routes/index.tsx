@@ -1,7 +1,7 @@
 import * as React from 'react'
 import type { LoaderFunction, MetaFunction } from 'remix'
 import { json, Link } from 'remix'
-import i18n from '~/utils/i18n.server' // this is the first file you created
+import i18n from '~/server/i18n.server' // this is the first file you created
 import { useTranslation } from 'react-i18next'
 
 export const meta: MetaFunction = () => {

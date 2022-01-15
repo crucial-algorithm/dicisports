@@ -1,5 +1,5 @@
 import crypto from 'crypto'
-import Config from '~/utils/config.server'
+import Config from '~/server/config.server'
 
 const algorithm = 'aes-256-ctr'
 const secret = Config().MAGIC_LINK_SECRET

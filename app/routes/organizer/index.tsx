@@ -1,7 +1,7 @@
 import { useLoaderData } from '@remix-run/react'
 import { json, Link, LinksFunction, LoaderFunction } from 'remix'
-import { db } from '~/utils/db.server'
-import i18n from '~/utils/i18n.server'
+import { db } from '~/server/db.server'
+import i18n from '~/server/i18n.server'
 import { useTranslation } from 'react-i18next'
 
 import { Status, Event } from '@prisma/client'

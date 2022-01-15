@@ -1,5 +1,5 @@
 import type { EntryContext } from 'remix'
-import { getSitemapXml } from './utils/sitemap.server'
+import { getSitemapXml } from './server/sitemap.server'
 
 type Handler = (
   request: Request,

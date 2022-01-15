@@ -1,10 +1,10 @@
 import type { LoaderFunction } from 'remix'
 import { redirect } from 'remix'
-import { db } from '~/utils/db.server'
-import id from '~/utils/random.server'
+import { db } from '~/server/db.server'
+import Id from '~/server/utils/Id.server'
 
 export const loader: LoaderFunction = async ({ request }) => {
-  const eventId = id()
+  const eventId = Id()
   const eventAt = new Date()
   try {
     await db.event.create({

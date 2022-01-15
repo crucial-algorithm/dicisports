@@ -18,19 +18,16 @@ import tailwind from './styles/tailwind.css'
 import mainCss from './styles/main.css'
 import { User } from '@prisma/client'
 import { KCDHandle } from '~/types'
-import { getServerTimeHeader, time, Timings } from '~/utils/metrics.server'
-import { getSession } from '~/utils/session.server'
-import { getLoginInfoSession } from '~/utils/login.server'
+import { getServerTimeHeader, time, Timings } from '~/server/metrics.server'
+import { getSession } from '~/server/auth/session.server'
+import { getLoginInfoSession } from '~/server/auth/login.server'
 import { getDomainUrl } from '~/utils/misc'
-import { getClientSession } from '~/utils/client.server'
+import { getClientSession } from '~/server/auth/client.server'
 import { pathedRoutes } from '~/other-routes.server'
 import { useSpinDelay } from 'spin-delay'
 import { NotificationMessage } from '~/components/shared/NotificationMessage'
 import { AnimatePresence, motion } from 'framer-motion'
 import { TeamCircle } from '~/components/shared/icons/TeamCircle'
-
-// eslint-disable-next-line no-console
-console.log(tailwind) // doing this prevents warning in console somehow 🤷‍
 
 export const links: LinksFunction = () => {
   return [

@@ -1,4 +1,4 @@
-import Config from '~/utils/config.server'
+import Config from '~/server/config.server'
 
 const VERIFIER_API_KEY = Config().EMAIL_VERIFIER_TOKEN
 

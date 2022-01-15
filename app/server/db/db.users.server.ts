@@ -1,5 +1,5 @@
-import { db } from '~/utils/db.server'
-import Config from '~/utils/config.server'
+import { db } from '~/server/db.server'
+import Config from '~/server/config.server'
 
 const sessionExpirationTime = Config().SESSION_EXPIRATION_TIME
 

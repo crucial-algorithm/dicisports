@@ -1,7 +1,7 @@
 import Profile from '~/components/Profile'
 import { useRootData } from '~/utils/use-root-data'
 import { json, LoaderFunction } from 'remix'
-import i18n from '~/utils/i18n.server'
+import i18n from '~/server/i18n.server'
 
 export const loader: LoaderFunction = async ({ request, params }) => {
   return json({

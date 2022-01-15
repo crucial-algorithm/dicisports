@@ -123,6 +123,6 @@ class Random extends RandomGenerator {
 
 const instance = new Random()
 
-export default function id(): string {
+export default function Id(): string {
   return instance.id()
 }

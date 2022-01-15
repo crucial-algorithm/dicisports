@@ -1,10 +1,10 @@
 import type { LoaderFunction } from 'remix'
 import { Link, redirect } from 'remix'
 import * as React from 'react'
-import { getLoginInfoSession } from '~/utils/login.server'
-import { getUserSessionFromMagicLink } from '~/utils/session.server'
+import { getLoginInfoSession } from '~/server/auth/login.server'
+import { getUserSessionFromMagicLink } from '~/server/auth/session.server'
 import { getErrorMessage } from '~/utils/misc'
-import { SSError } from '~/utils/i18n.server'
+import { SSError } from '~/server/i18n.server'
 
 export const loader: LoaderFunction = async ({ request }) => {
   const loginInfoSession = await getLoginInfoSession(request)

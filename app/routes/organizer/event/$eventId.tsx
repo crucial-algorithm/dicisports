@@ -1,6 +1,6 @@
 import { Form, useLoaderData } from '@remix-run/react'
 import { ActionFunction, json, LinksFunction, LoaderFunction } from 'remix'
-import { db } from '~/utils/db.server'
+import { db } from '~/server/db.server'
 import BasicDatePicker from '~/components/shared/form/DatePicker'
 import PickBookingSystem from '~/components/PickBookingSystem'
 import { FormEvent, useState } from 'react'
@@ -11,19 +11,19 @@ import organizerCss from '~/styles/organizer.css'
 import UploadImage from '~/components/shared/form/UploadImage'
 import { UploadHandler } from '@remix-run/node/formData'
 import { parseMultipartFormData } from '@remix-run/node/parseMultipartFormData'
-import i18n from '~/utils/i18n.server'
+import i18n from '~/server/i18n.server'
 import { useTranslation } from 'react-i18next'
 import {
   CloudinaryFileMeta,
   generateCloudinarySignatures
-} from '~/utils/cloudinary.server'
+} from '~/server/storage/cloudinary.server'
 import { Sport, Document, Event } from '@prisma/client'
 import Header from '~/components/shared/Header'
 import TextField from '~/components/shared/form/TextField'
 import Button from '~/components/shared/Button'
 import { LocationMarkerIcon } from '@heroicons/react/outline'
 import { InputClasses } from '~/components/shared/form/InputBase'
-import Config from '~/utils/config.server'
+import Config from '~/server/config.server'
 
 type ActionData = {
   formError?: string

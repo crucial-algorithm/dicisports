@@ -1,14 +1,18 @@
 import { useLoaderData } from '@remix-run/react'
 import { ActionFunction, json, LoaderFunction, redirect } from 'remix'
-import { getSession, getUser, validateMagicLink } from '~/utils/session.server'
-import { getLoginInfoSession } from '~/utils/login.server'
-import { db } from '~/utils/db.server'
+import {
+  getSession,
+  getUser,
+  validateMagicLink
+} from '~/server/auth/session.server'
+import { getLoginInfoSession } from '~/server/auth/login.server'
+import { db } from '~/server/db.server'
 import { getErrorStack } from '~/utils/misc'
-import { handleFormSubmission } from '~/utils/actions.server'
-import id from '~/utils/random.server'
+import { handleFormSubmission } from '~/server/actions.server'
+import Id from '~/server/utils/Id.server'
 import { MemberProfile } from '~/types'
 import Profile from '~/components/Profile'
-import { SSError, SSTranslate } from '~/utils/i18n.server'
+import { SSError, SSTranslate } from '~/server/i18n.server'
 
 type ActionData = {
   status: 'success' | 'error'
@@ -66,7 +70,7 @@ export const action: ActionFunction = async ({ request }) => {
 
       try {
         const user = await db.user.create({
-          data: { id: id(), email, name }
+          data: { id: Id(), email, name }
         })
 
         const headers = new Headers()

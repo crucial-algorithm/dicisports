@@ -2,8 +2,8 @@
 // the posts they've read and make useful suggestions even if they're not logged in.
 
 import { createCookieSessionStorage } from 'remix'
-import Config from '~/utils/config.server'
-import id from '~/utils/random.server'
+import Config from '~/server/config.server'
+import Id from '~/server/utils/Id.server'
 
 const clientStorage = createCookieSessionStorage({
   cookie: {
@@ -30,7 +30,7 @@ async function getClientSession(request: Request) {
   function getClientId() {
     let clientId = session.get('clientId') as string | undefined
     if (typeof clientId === 'string') return clientId
-    clientId = id()
+    clientId = Id()
     session.set('clientId', clientId)
     return clientId
   }
