@@ -1,13 +1,15 @@
 import { db } from '~/server/db.server'
 import Config from '~/server/config.server'
+import Id from '~/server/utils/Id.server'
+import { User } from '@prisma/client'
 
 const sessionExpirationTime = Config().SESSION_EXPIRATION_TIME
 
-function getUserByEmail(email: string) {
+function findUserByEmail(email: string) {
   return db.user.findUnique({ where: { email } })
 }
 
-async function getUserFromSessionId(sessionId: string) {
+async function findUserFromSessionId(sessionId: string) {
   const session = await db.session.findUnique({
     where: { id: sessionId },
     include: { user: true }
@@ -34,4 +36,16 @@ async function getUserFromSessionId(sessionId: string) {
   return session.user
 }
 
-export { getUserByEmail, getUserFromSessionId }
+async function createUser({
+  email,
+  name
+}: {
+  email: string
+  name: string
+}): Promise<User> {
+  return await db.user.create({
+    data: { id: Id(), email, name }
+  })
+}
+
+export { findUserByEmail, findUserFromSessionId, createUser }

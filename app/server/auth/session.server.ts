@@ -1,14 +1,18 @@
 import { createCookieSessionStorage, redirect } from 'remix'
-import type { User, Session } from '@prisma/client'
+import type { User } from '@prisma/client'
 import { sendMagicLinkEmail } from '../send-email.server'
 import { getLoginInfoSession } from './login.server'
 import Config from '~/server/config.server'
 import { decrypt, encrypt } from '~/server/utils/encryption.server'
 import {
-  getUserByEmail,
-  getUserFromSessionId
-} from '~/server/db/db.users.server'
-import { db } from '~/server/db.server'
+  findUserByEmail,
+  findUserFromSessionId
+} from '~/server/db/users.server'
+import {
+  createSession,
+  deleteOtherUserSessions,
+  deleteSession
+} from '~/server/db/sessions.server'
 
 const sessionIdKey = '__session_id__'
 const magicLinkSearchParam = 'kodyKey'
@@ -68,7 +72,7 @@ async function sendToken({
     domainUrl
   })
 
-  const user = await getUserByEmail(emailAddress).catch(() => {
+  const user = await findUserByEmail(emailAddress).catch(() => {
     /* ignore... */
     return null
   })
@@ -103,7 +107,7 @@ async function getSession(request: Request) {
       const token = getSessionId()
       if (!token) return null
 
-      return getUserFromSessionId(token).catch((error: unknown) => {
+      return findUserFromSessionId(token).catch((error: unknown) => {
         unsetSessionId()
         console.error(`Failure getting user from session ID:`, error)
         return null
@@ -117,14 +121,10 @@ async function getSession(request: Request) {
     },
     signOut: () => {
       const sessionId = getSessionId()
-      if (sessionId) {
-        unsetSessionId()
-        db.session
-          .delete({ where: { id: sessionId } })
-          .catch((error: unknown) => {
-            console.error(`Failure deleting user session: `, error)
-          })
-      }
+      if (!sessionId) return
+
+      unsetSessionId()
+      deleteSession(sessionId)
     },
     commit,
     /**
@@ -147,17 +147,6 @@ async function getSession(request: Request) {
   }
 }
 
-async function createSession(
-  sessionData: Omit<Session, 'id' | 'expirationDate' | 'createdAt'>
-) {
-  return db.session.create({
-    data: {
-      ...sessionData,
-      expirationDate: new Date(Date.now() + sessionExpirationTime)
-    }
-  })
-}
-
 async function deleteOtherSessions(request: Request) {
   const { session } = await getSession(request)
 
@@ -168,10 +157,8 @@ async function deleteOtherSessions(request: Request) {
     )
     return
   }
-  const user = await getUserFromSessionId(token)
-  await db.session.deleteMany({
-    where: { userId: user.id, NOT: { id: token } }
-  })
+  const user = await findUserFromSessionId(token)
+  await deleteOtherUserSessions(user.id, token)
 }
 
 async function getUser(request: Request) {
@@ -180,7 +167,7 @@ async function getUser(request: Request) {
   const token = session.get(sessionIdKey) as string | undefined
   if (!token) return null
 
-  return getUserFromSessionId(token).catch((error: unknown) => {
+  return findUserFromSessionId(token).catch((error: unknown) => {
     console.error(`Failure getting user from session ID:`, error)
     return null
   })
@@ -193,7 +180,7 @@ async function getUserSessionFromMagicLink(request: Request) {
     loginInfoSession.getMagicLink()
   )
 
-  const user = await getUserByEmail(email)
+  const user = await findUserByEmail(email)
   if (!user) return null
 
   const session = await getSession(request)

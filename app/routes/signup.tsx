@@ -6,13 +6,12 @@ import {
   validateMagicLink
 } from '~/server/auth/session.server'
 import { getLoginInfoSession } from '~/server/auth/login.server'
-import { db } from '~/server/db.server'
 import { getErrorStack } from '~/utils/misc'
 import { handleFormSubmission } from '~/server/actions.server'
-import Id from '~/server/utils/Id.server'
 import { MemberProfile } from '~/types'
 import Profile from '~/components/Profile'
 import { SSError, SSTranslate } from '~/server/i18n.server'
+import { createUser, findUserByEmail } from '~/server/db/users.server'
 
 type ActionData = {
   status: 'success' | 'error'
@@ -69,9 +68,7 @@ export const action: ActionFunction = async ({ request }) => {
       const { name } = formData
 
       try {
-        const user = await db.user.create({
-          data: { id: Id(), email, name }
-        })
+        const user = await createUser({ email, name })
 
         const headers = new Headers()
         await session.signIn(user)
@@ -109,10 +106,7 @@ export const loader: LoaderFunction = async ({ request }) => {
     })
   }
 
-  const userForMagicLink = await db.user.findFirst({
-    where: { email },
-    select: { id: true }
-  })
+  const userForMagicLink = await findUserByEmail(email)
 
   if (userForMagicLink) {
     // user exists, but they haven't clicked their magic link yet

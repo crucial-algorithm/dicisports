@@ -1,6 +1,5 @@
 import { Form, useLoaderData } from '@remix-run/react'
 import { ActionFunction, json, LinksFunction, LoaderFunction } from 'remix'
-import { db } from '~/server/db.server'
 import BasicDatePicker from '~/components/shared/form/DatePicker'
 import PickBookingSystem from '~/components/PickBookingSystem'
 import { FormEvent, useState } from 'react'
@@ -24,6 +23,8 @@ import Button from '~/components/shared/Button'
 import { LocationMarkerIcon } from '@heroicons/react/outline'
 import { InputClasses } from '~/components/shared/form/InputBase'
 import Config from '~/server/config.server'
+import { findSports } from '~/server/db/sports.server'
+import { findEvent } from '~/server/db/events.server'
 
 type ActionData = {
   formError?: string
@@ -54,12 +55,9 @@ type SportEvent = Event & {
 const badRequest = (data: ActionData) => json(data, { status: 400 })
 
 export const loader: LoaderFunction = async ({ request, params }) => {
-  const sports = await db.sport.findMany()
+  const sports = await findSports()
   const files = generateCloudinarySignatures(4)
-  const event = await db.event.findUnique({
-    where: { id: params.eventId },
-    include: { documents: true }
-  })
+  const event = params.eventId ? await findEvent(params.eventId) : null
 
   const {
     MAPBOX_TOKEN,

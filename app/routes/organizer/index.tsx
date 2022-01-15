@@ -1,12 +1,12 @@
 import { useLoaderData } from '@remix-run/react'
 import { json, Link, LinksFunction, LoaderFunction } from 'remix'
-import { db } from '~/server/db.server'
 import i18n from '~/server/i18n.server'
 import { useTranslation } from 'react-i18next'
 
-import { Status, Event } from '@prisma/client'
+import { Event } from '@prisma/client'
 import React from 'react'
 import DataTable from '~/components/shared/DataTable'
+import { findEvents } from '~/server/db/events.server'
 
 type ActionData = {
   formError?: string
@@ -27,11 +27,7 @@ type LoaderData = {
 const badRequest = (data: ActionData) => json(data, { status: 400 })
 
 export const loader: LoaderFunction = async ({ request }) => {
-  const events = await db.event.findMany({
-    where: {
-      name: { not: Status.draft }
-    }
-  })
+  const events = await findEvents()
 
   return json({
     events,
