@@ -3,5 +3,8 @@
   "Create Profile": "Guardar",
   "Email Error": "Tentamos validar o email mas obtivemos um erro: \"{{error}}\". Se esse é mesmo o seu e-mail, envie-nos um e-mail",
   "Invalid Email": "Email inválido",
-  "Problem Creating Account": "Não foi possível criar a sua conta. Tente novamente"
+  "Problem Creating Account": "Não foi possível criar a sua conta. Tente novamente",
+  "A magic link has been sent to you": "Enviamos-lhe um email para fazer login",
+  "Email": "Email",
+  "Email a login link": "Enviar email de login"
 }

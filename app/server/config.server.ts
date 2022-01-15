@@ -12,6 +12,8 @@ export type ConfigServer = {
   SESSION_SECRET: string
   SESSION_EXPIRATION_TIME: number
   EMAIL_VERIFIER_TOKEN: string
+  MAILGUN_DOMAIN: string | undefined
+  MAILGUN_SENDING_KEY: string | undefined
 }
 
 let config: ConfigServer | null = null
@@ -33,7 +35,9 @@ export default function Config(): ConfigServer {
     MAGIC_LINK_SECRET: extractVar('MAGIC_LINK_SECRET'),
     SESSION_SECRET: extractVar('SESSION_SECRET'),
     SESSION_EXPIRATION_TIME: 1000 * 60 * 60 * 24 * 365,
-    EMAIL_VERIFIER_TOKEN: extractVar('EMAIL_VERIFIER_TOKEN')
+    EMAIL_VERIFIER_TOKEN: extractVar('EMAIL_VERIFIER_TOKEN'),
+    MAILGUN_DOMAIN: process.env.MAILGUN_DOMAIN,
+    MAILGUN_SENDING_KEY: process.env.MAILGUN_SENDING_KEY
   }
 
   return config

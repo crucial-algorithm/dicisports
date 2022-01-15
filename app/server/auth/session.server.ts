@@ -1,6 +1,6 @@
 import { createCookieSessionStorage, redirect } from 'remix'
 import type { User } from '@prisma/client'
-import { sendMagicLinkEmail } from '../send-email.server'
+import { sendMagicLinkEmail } from '../email.server'
 import { getLoginInfoSession } from './login.server'
 import Config from '~/server/config.server'
 import { decrypt, encrypt } from '~/server/utils/encryption.server'
@@ -77,16 +77,12 @@ async function sendToken({
     return null
   })
 
-  if (!Config().inDev) {
-    await sendMagicLinkEmail({
-      emailAddress,
-      magicLink,
-      user,
-      domainUrl
-    })
-  } else {
-    console.log('In dev - click here to login: ', magicLink)
-  }
+  await sendMagicLinkEmail({
+    emailAddress,
+    magicLink,
+    user,
+    domainUrl
+  })
 
   return magicLink
 }

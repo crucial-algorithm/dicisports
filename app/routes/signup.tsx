@@ -10,7 +10,7 @@ import { getErrorStack } from '~/utils/misc'
 import { handleFormSubmission } from '~/server/actions.server'
 import { MemberProfile } from '~/types'
 import Profile from '~/components/Profile'
-import { SSError, SSTranslate } from '~/server/i18n.server'
+import i18n, { SSError, SSTranslate } from '~/server/i18n.server'
 import { createUser, findUserByEmail } from '~/server/db/users.server'
 
 type ActionData = {
@@ -120,7 +120,7 @@ export const loader: LoaderFunction = async ({ request }) => {
   }
 
   return json(
-    { email },
+    { email, i18n: await i18n.getTranslations(request, ['profile']) },
     {
       headers: await loginInfoSession.getHeaders()
     }

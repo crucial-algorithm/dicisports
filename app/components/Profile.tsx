@@ -22,7 +22,7 @@ const Profile: React.FC<Props> = ({ postUrl, profile }) => {
         <FormField>
           <TextField
             name="email"
-            label="Email"
+            label={t('Email')}
             defaultValue={profile?.email}
             readOnly
           />

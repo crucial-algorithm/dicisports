@@ -1,15 +1,14 @@
 import type { User } from '@prisma/client'
+import Config from '~/server/config.server'
 
-let mailgunDomain = 'mg.example.com'
-if (process.env.MAILGUN_DOMAIN) {
-  mailgunDomain = process.env.MAILGUN_DOMAIN
-} else if (process.env.NODE_ENV === 'production') {
+const { MAILGUN_DOMAIN, MAILGUN_SENDING_KEY } = Config()
+
+let mailgunDomain: string | undefined = MAILGUN_DOMAIN
+if (process.env.NODE_ENV === 'production' && !MAILGUN_DOMAIN) {
   throw new Error('MAILGUN_DOMAIN is required')
 }
-let mailgunSendingKey = 'example_send_key'
-if (process.env.MAILGUN_SENDING_KEY) {
-  mailgunSendingKey = process.env.MAILGUN_SENDING_KEY
-} else if (process.env.NODE_ENV === 'production') {
+let mailgunSendingKey: string | undefined = MAILGUN_SENDING_KEY
+if (process.env.NODE_ENV === 'production' && !MAILGUN_SENDING_KEY) {
   throw new Error('MAILGUN_SENDING_KEY is required')
 }
 
@@ -30,6 +29,11 @@ async function sendEmail({ to, from, subject, text, html }: MailgunMessage) {
 
   // @ts-ignore
   const body = new URLSearchParams({ to, from, subject, text, html })
+
+  if (!MAILGUN_DOMAIN) {
+    // eslint-disable-next-line no-console
+    console.log(html)
+  }
 
   await fetch(`https://api.mailgun.net/v3/${mailgunDomain}/messages`, {
     method: 'post',
@@ -55,10 +59,8 @@ async function sendMagicLinkEmail({
   const { hostname } = new URL(domainUrl)
   const userExists = Boolean(user)
 
-  const teamColor = 'white'
-
   const text = `
-Here's your sign-in link for ${hostname}:
+Segue o link para login no ${hostname}:
 
 ${magicLink}
 
@@ -108,29 +110,27 @@ P.S. If you did not request this email, you can safely ignore it.
 
       <h2 style='text-align: center'>${
         user
-          ? `Hey ${user.name}! Welcome back to ${hostname}!`
-          : `Hey ${emailAddress}! Welcome to ${hostname}`
+          ? `Olá ${user.name}! Bem-vindo de volta ao ${hostname}!`
+          : `Olá ${emailAddress}! Bem-vindo ao ${hostname}`
       }</h2>
-
-      <center><img src='https://res.cloudinary.com/dicisports-com/image/upload/w_800,q_auto,f_auto/dicisports.com/illustrations/kody-flying_${teamColor}' style='max-width: 80%'></center>
       
-      <h3 style='text-align: center'>Click the button below to login to ${hostname}</h3>
+      <h3 style='text-align: center'>Clica no botão para fazer login no ${hostname}</h3>
 
       <a href='${magicLink}' style='display: block; margin: 0 auto; width: 80%; padding: 1.5rem; background: #A6DEE4; border-radius: 7px; border-width: 0; font-size: 1.1rem; text-align: center; font-family: sans-serif; text-decoration: none; color: black'>
-        ${userExists ? 'Login' : 'Create Account'}
+        ${userExists ? 'Fazer login' : 'Criar conta'}
       </a>
 
       <div style='text-align: center; margin-top: 1rem; font-size: .9rem'>
-        <div style='color: grey'>This link is valid for 30 minutes.</div>
-        <a href='${domainUrl}/login' style='margin-top: .4rem; display: block'>Click here to request a new link.</a>
+        <div style='color: grey'>O link é válido por 30 minutos</div>
+        <a href='${domainUrl}/login' style='margin-top: .4rem; display: block'>Solicitar novo link.</a>
       </div>
         
       <hr style='width: 20%; height: 0px; border: 1px solid lightgrey; margin-top: 2rem; margin-bottom: 2rem'>
         
       <div style='text-align: center; color: grey; font-size: .8rem; line-height: 1.2rem'>
-        You received this because your email address was used to sign up for an account on
-        <a href='${domainUrl}' style='color: grey'>${hostname}</a>. If you didn't sign up for an account,
-        feel free to disregard this email.
+        Recebeu este email porque o seu endereço de email foi usado para fazer login em
+        <a href='${domainUrl}' style='color: grey'>${hostname}</a>. Se não solicitou o email,
+        ignore sem clickar no link, não correndo qualquer risco de segurança.
       </div>
     </div>
   </body>
@@ -140,7 +140,7 @@ P.S. If you did not request this email, you can safely ignore it.
   const message = {
     from: sender,
     to: emailAddress,
-    subject: `Here's your Magic ✨ sign-in link for dicisports.com`,
+    subject: `Link de autenticação para o dicisports.com  ✨`,
     text,
     html
   }
