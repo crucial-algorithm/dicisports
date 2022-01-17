@@ -13,11 +13,6 @@ import { handleFormSubmission } from '~/server/actions.server'
 import { updateUser } from '~/server/db/users.server'
 import { useTranslation } from 'react-i18next'
 
-export const loader: LoaderFunction = async ({ request, params }) => {
-  return json({
-    i18n: await i18n.getTranslations(request, ['profile'])
-  })
-}
 
 const actionIds = {
   logout: 'logout',
@@ -38,6 +33,13 @@ type ActionData = {
 function getFirstNameError(firstName: string | null) {
   if (!firstName?.length) return SSTranslate('profile', 'Required Name')
   return null
+}
+
+export const loader: LoaderFunction = async ({ request, params }) => {
+  await requireUser(request)
+  return json({
+    i18n: await i18n.getTranslations(request, ['profile'])
+  })
 }
 
 export const action: ActionFunction = async ({ request }) => {
