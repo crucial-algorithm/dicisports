@@ -1,23 +1,12 @@
-import Box from '@mui/material/Box'
 import { useLoaderData } from '@remix-run/react'
 import { json, Link, LinksFunction, LoaderFunction } from 'remix'
-import { db } from '~/utils/db.server'
-import i18n from '~/utils/i18n.server'
+import i18n from '~/server/i18n.server'
 import { useTranslation } from 'react-i18next'
 
-import {
-  Button,
-  Paper,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow
-} from '@mui/material'
-import { Status, Event } from '@prisma/client'
-import { RemixLinkProps } from '@remix-run/react/components'
+import { Event } from '@prisma/client'
 import React from 'react'
+import DataTable from '~/components/shared/DataTable'
+import { findEvents } from '~/server/db/events.server'
 
 type ActionData = {
   formError?: string
@@ -37,17 +26,8 @@ type LoaderData = {
 
 const badRequest = (data: ActionData) => json(data, { status: 400 })
 
-const CreateBehavior = React.forwardRef<any, Omit<RemixLinkProps, 'to'>>(
-  // eslint-disable-next-line jsx-a11y/anchor-has-content
-  (props, ref) => <Link ref={ref} to="event/create" {...props} />
-)
-
 export const loader: LoaderFunction = async ({ request }) => {
-  const events = await db.event.findMany({
-    where: {
-      name: { not: Status.draft }
-    }
-  })
+  const events = await findEvents()
 
   return json({
     events,
@@ -64,41 +44,9 @@ export default function OrganizerIndexRoute() {
   const { events } = useLoaderData<LoaderData>()
 
   return (
-    <Box>
-      <TableContainer component={Paper}>
-        <Table sx={{ minWidth: 650 }} aria-label="simple table">
-          <TableHead>
-            <TableRow>
-              <TableCell>{t('Name')}</TableCell>
-              <TableCell align="right">{t('Location')}</TableCell>
-              <TableCell align="right">{t('Date')}</TableCell>
-              <TableCell align="right">&nbsp;</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {events.map((row) => (
-              <TableRow
-                key={row.id}
-                sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-              >
-                <TableCell component="th" scope="row">
-                  {row.name}
-                </TableCell>
-                <TableCell align="right">{row.location}</TableCell>
-                <TableCell align="right">
-                  {row.startAt} - {row.endAt}
-                </TableCell>
-                <TableCell align="right">
-                  <Link to={`event/${row.id}`}>{t('Edit')}</Link>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-      <Button component={CreateBehavior} type="submit" variant="contained">
-        {t('Create')}
-      </Button>
-    </Box>
+    <div>
+      <DataTable data={events} t={t} />
+      <Link to="event/create">{t('create')}</Link>
+    </div>
   )
 }

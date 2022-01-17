@@ -1,12 +1,7 @@
 import * as React from 'react'
 import type { LoaderFunction, MetaFunction } from 'remix'
-import Typography from '@mui/material/Typography'
-import ComboBox from '~/components/ComboBox'
-import DataTable from '~/components/DataTable'
-import Valuation from '~/components/Valuation'
-import DiscreteSlider from '~/components/DiscreteSlider'
 import { json, Link } from 'remix'
-import i18n from '~/utils/i18n.server' // this is the first file you created
+import i18n from '~/server/i18n.server' // this is the first file you created
 import { useTranslation } from 'react-i18next'
 
 export const meta: MetaFunction = () => {
@@ -27,17 +22,8 @@ export default function Index() {
 
   return (
     <React.Fragment>
-      <Typography variant="h4" component="h1" gutterBottom>
-        {t('title')}
-      </Typography>
+      <h1>{t('title')}</h1>
       <Link to="/organizer">Organizer</Link>
-      <ComboBox />
-      <DataTable />
-      <Valuation />
-      <DiscreteSlider />
-      <Typography variant="h5" component="h2">
-        Something Something
-      </Typography>
     </React.Fragment>
   )
 }

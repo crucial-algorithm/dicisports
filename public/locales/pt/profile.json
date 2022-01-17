@@ -1,0 +1,22 @@
+{
+  "Login": "Entrar",
+  "Create Profile": "Criar",
+  "Update Profile": "Actualizar",
+  "Cancel": "Cancelar",
+  "Email Error": "Tentamos validar o email mas obtivemos um erro: \"{{error}}\". Se esse é mesmo o seu e-mail, envie-nos um e-mail",
+  "Invalid Email": "Email inválido",
+  "Required Name": "O nome é obrigatório",
+  "Problem Creating Account": "Não foi possível criar a sua conta. Tente novamente",
+  "A magic link has been sent to you": "Enviamos-lhe um email para fazer login",
+  "Name": "Nome",
+  "Email": "Email",
+  "Email a login link": "Enviar email de login",
+  "Logout": "Sair",
+  "Profile Saved Successfully": "Perfil actualizado...",
+  "See you again soon": "Vemo-nos em breve",
+  "Here's your profile": "Aqui está o teu perfil",
+  "Edit as you wish": "Actualiza-o",
+  "Meeting Point": "Pontos de Encontro",
+  "Switch to light mode": "Alterar para light mode",
+  "Switch to dark mode": "Alterar para dark mode"
+}

@@ -1,29 +1,15 @@
 import type { LoaderFunction } from 'remix'
 import { redirect } from 'remix'
-import { db } from '~/utils/db.server'
-import id from '~/utils/random.server'
+import Id from '~/server/utils/Id.server'
+import { createDraftEvent } from '~/server/db/events.server'
 
 export const loader: LoaderFunction = async ({ request }) => {
-  const eventId = id()
-  const eventAt = new Date()
+  const eventId = Id()
   try {
-    await db.event.create({
-      data: {
-        id: eventId,
-        name: null,
-        sportId: 1,
-        startAt: null,
-        endAt: null,
-        location: null,
-        address: null,
-        useExternalBooking: false,
-        externalBookingUrl: null,
-        createdAt: eventAt,
-        updatedAt: eventAt
-      }
-    })
+    await createDraftEvent(eventId)
   } catch (err) {
     console.error(err)
+    // TODO: redirect somewhere
   }
 
   return redirect(`/organizer/event/${eventId}`)
