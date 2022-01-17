@@ -16,6 +16,7 @@ import { useRemixI18Next } from 'remix-i18next'
 import Layout from '~/layout'
 import tailwind from './styles/tailwind.css'
 import mainCss from './styles/main.css'
+import vendorsCss from './styles/vendors.css'
 import { User } from '@prisma/client'
 import { KCDHandle } from '~/types'
 import { getServerTimeHeader, time, Timings } from '~/server/metrics.server'
@@ -28,6 +29,11 @@ import { useSpinDelay } from 'spin-delay'
 import { NotificationMessage } from '~/components/shared/NotificationMessage'
 import { AnimatePresence, motion } from 'framer-motion'
 import { TeamCircle } from '~/components/shared/icons/TeamCircle'
+import i18n from '~/server/i18n.server'
+import { useLoaderData } from '@remix-run/react'
+import { Theme, ThemeProvider, useTheme } from '~/utils/theme-provider'
+import { getThemeSession } from '~/server/theme.server'
+import clsx from 'clsx'
 
 export const links: LinksFunction = () => {
   return [
@@ -47,11 +53,15 @@ export const links: LinksFunction = () => {
     },
     {
       rel: 'stylesheet',
-      href: tailwind
+      href: mainCss
     },
     {
       rel: 'stylesheet',
-      href: mainCss
+      href: vendorsCss
+    },
+    {
+      rel: 'stylesheet',
+      href: tailwind
     }
   ]
 }
@@ -68,6 +78,7 @@ export type LoaderData = {
     session: {
       email: string | undefined
       magicLinkVerified: boolean | undefined
+      theme: Theme | null
     }
   }
 }
@@ -81,6 +92,7 @@ export const loader: LoaderFunction = async ({ request }) => {
 
   const timings: Timings = {}
   const session = await getSession(request)
+  const themeSession = await getThemeSession(request)
   const clientSession = await getClientSession(request)
   const loginInfoSession = await getLoginInfoSession(request)
 
@@ -98,7 +110,8 @@ export const loader: LoaderFunction = async ({ request }) => {
       path: new URL(request.url).pathname,
       session: {
         email: loginInfoSession.getEmail(),
-        magicLinkVerified: loginInfoSession.getMagicLinkVerified()
+        magicLinkVerified: loginInfoSession.getMagicLinkVerified(),
+        theme: themeSession.getTheme()
       }
     }
   }
@@ -113,7 +126,10 @@ export const loader: LoaderFunction = async ({ request }) => {
   await clientSession.getHeaders(headers)
   await loginInfoSession.getHeaders(headers)
 
-  return json(data, { headers })
+  return json(
+    { ...data, i18n: await i18n.getTranslations(request, ['profile']) },
+    { headers }
+  )
 }
 
 /* temporary = from kentcdodds.com implementation */
@@ -210,8 +226,9 @@ function Document({
   children: React.ReactNode
   title?: string
 }) {
+  const [theme] = useTheme()
   return (
-    <html lang="pt">
+    <html lang="pt" className={clsx(theme, 'set-color-team-current-red')}>
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width,initial-scale=1" />
@@ -219,7 +236,7 @@ function Document({
         <Meta />
         <Links />
       </head>
-      <body>
+      <body className="dark:bg-gray-900 bg-white transition duration-500 w-full">
         <PageLoadingMessage />
         {children}
         <ScrollRestoration />
@@ -234,13 +251,16 @@ export default function App() {
   // set locale statically
   // https://www.npmjs.com/package/remix-i18next
   useRemixI18Next('pt')
+  const data = useLoaderData<LoaderData>()
 
   return (
-    <Document>
-      <Layout>
-        <Outlet />
-      </Layout>
-    </Document>
+    <ThemeProvider specifiedTheme={data.requestInfo.session.theme}>
+      <Document>
+        <Layout>
+          <Outlet />
+        </Layout>
+      </Document>
+    </ThemeProvider>
   )
 }
 

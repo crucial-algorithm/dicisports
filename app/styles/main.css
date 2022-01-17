@@ -1,7 +1,0 @@
-body {
-    @apply antialiased font-sans overflow-hidden
-}
-
-:root {
-    --color-di-blue: #000a3c
-}

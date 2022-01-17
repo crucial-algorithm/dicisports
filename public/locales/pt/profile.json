@@ -6,5 +6,10 @@
   "Problem Creating Account": "Não foi possível criar a sua conta. Tente novamente",
   "A magic link has been sent to you": "Enviamos-lhe um email para fazer login",
   "Email": "Email",
-  "Email a login link": "Enviar email de login"
+  "Email a login link": "Enviar email de login",
+  "Logout": "Terminar Sessão",
+  "Meeting Point": "Pontos de Encontro",
+  "Login": "Entrar",
+  "Switch to light mode": "Alterar para light mode",
+  "Switch to dark mode": "Alterar para dark mode"
 }

@@ -3,7 +3,13 @@ const colors = require('tailwindcss/colors')
 
 module.exports = {
   content: ['./app/**/*.{ts,tsx}'],
+  darkMode: 'class',
   theme: {
+    screens: {
+      md: '640px',
+      lg: '1024px',
+      xl: '1500px' // this is the "design resolution"
+    },
     colors: {
       ...colors,
       gray: {
@@ -43,7 +49,29 @@ module.exports = {
         700: '#0043A3',
         800: '#002C6B',
         900: '#001533'
-      }
+      },
+      team: {
+        unknown: 'var(--color-team-unknown)',
+        current: 'var(--color-team-current)',
+        yellow: 'var(--color-team-yellow)',
+        blue: 'var(--color-team-blue)',
+        red: 'var(--color-team-red)',
+      },
+      yellow: {
+        500: 'var(--color-yellow-500)',
+      },
+      blue: {
+        100: 'var(--color-blue-100)',
+        500: 'var(--color-blue-500)',
+      },
+      red: {
+        500: 'var(--color-red-500)',
+      },
+      green: {
+        100: 'var(--color-green-100)',
+        500: 'var(--color-green-500)',
+        600: 'var(--color-green-600)',
+      },
     },
     extend: {
       fontFamily: {
@@ -51,6 +79,11 @@ module.exports = {
       },
       boxShadow: {
         focus: '0 0 0 0.2rem rgb(0 0 0 / 0.05)'
+      },
+      spacing: {
+        '5vw': '5vw', // pull featured sections and navbar in the margin
+        '8vw': '8vw', // positions hero img inside the margin
+        '10vw': '10vw' // page margin
       }
     }
   },
