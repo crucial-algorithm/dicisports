@@ -1,4 +1,4 @@
-import { useLoaderData } from '@remix-run/react'
+import { Form, useLoaderData } from '@remix-run/react'
 import { ActionFunction, json, LoaderFunction, redirect } from 'remix'
 import {
   getSession,
@@ -9,9 +9,14 @@ import { getLoginInfoSession } from '~/server/auth/login.server'
 import { getErrorStack } from '~/utils/misc'
 import { handleFormSubmission } from '~/server/actions.server'
 import { MemberProfile } from '~/types'
-import Profile from '~/components/Profile'
+import ProfileFragment from '~/components/ProfileFragment'
 import i18n, { SSError, SSTranslate } from '~/server/i18n.server'
 import { createUser, findUserByEmail } from '~/server/db/users.server'
+import Button from '~/components/shared/Button'
+import FormField from '~/components/shared/form/FormField'
+import React, { useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import ButtonGroup from '~/components/shared/ButtonGroup'
 
 type ActionData = {
   status: 'success' | 'error'
@@ -134,5 +139,26 @@ const actionIds = {
 
 export default function SignUp() {
   const data = useLoaderData<MemberProfile>()
-  return <Profile profile={data} postUrl="/signup" />
+  const [action, setAction] = useState<string>('submit')
+  const { t } = useTranslation('profile')
+  return (
+    <main className="mx-10vw flex">
+      <div className="m-auto">
+        <Form method="post" className="w-96">
+          <ProfileFragment profile={data} />
+          <ButtonGroup>
+            <Button
+              className="mr-2"
+              secondary={true}
+              onClick={() => setAction('cancel')}
+            >
+              {t('Cancel')}
+            </Button>
+            <Button>{t('Create Profile')}</Button>
+          </ButtonGroup>
+          <input type="hidden" name="actionId" value={action} />
+        </Form>
+      </div>
+    </main>
+  )
 }

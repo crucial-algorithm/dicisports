@@ -13,7 +13,6 @@ import {
   useTransition
 } from 'remix'
 import { useRemixI18Next } from 'remix-i18next'
-import Layout from '~/layout'
 import tailwind from './styles/tailwind.css'
 import mainCss from './styles/main.css'
 import vendorsCss from './styles/vendors.css'
@@ -220,13 +219,7 @@ function PageLoadingMessage() {
   )
 }
 
-function Document({
-  children,
-  title = 'DiciSports'
-}: {
-  children: React.ReactNode
-  title?: string
-}) {
+function Html({ title = 'DiciSports' }: { title?: string }) {
   const [theme] = useTheme()
   return (
     <html lang="pt" className={clsx(theme, 'set-color-team-current-red')}>
@@ -239,8 +232,9 @@ function Document({
       </head>
       <body className="dark:bg-gray-900 bg-white transition duration-500 w-full">
         <PageLoadingMessage />
+        <NotificationMessage queryStringKey="message" delay={0.3} />
         <Navbar />
-        {children}
+        <Outlet />
         <ScrollRestoration />
         <Scripts />
         {process.env.NODE_ENV === 'development' && <LiveReload />}
@@ -257,17 +251,19 @@ export default function App() {
 
   return (
     <ThemeProvider specifiedTheme={data.requestInfo.session.theme}>
-      <Document>
-        <Outlet />
-      </Document>
+      <Html />
     </ThemeProvider>
   )
 }
 
 export function ErrorBoundary({ error }: { error: Error }) {
   return (
-    <Document title="Error!">
-      <Layout>
+    <html lang="en" className="dark">
+      <head>
+        <title>Oh no...</title>
+        <Links />
+      </head>
+      <body className="dark:bg-gray-900 bg-white transition duration-500">
         <div>
           <h1>There was an error</h1>
           <p>{error.message}</p>
@@ -277,8 +273,9 @@ export function ErrorBoundary({ error }: { error: Error }) {
             users to see.
           </p>
         </div>
-      </Layout>
-    </Document>
+        <Scripts />
+      </body>
+    </html>
   )
 }
 
@@ -306,13 +303,17 @@ export function CatchBoundary() {
   }
 
   return (
-    <Document title={`${caught.status} ${caught.statusText}`}>
-      <Layout>
-        <h1>
-          {caught.status}: {caught.statusText}
-        </h1>
-        {message}
-      </Layout>
-    </Document>
+    <html lang="en" className="dark">
+      <head>
+        <title>{`${caught.status} ${caught.statusText}`}</title>
+        <Links />
+      </head>
+      <body className="dark:bg-gray-900 bg-white transition duration-500">
+        <div>
+          <h1>{message}</h1>
+        </div>
+        <Scripts />
+      </body>
+    </html>
   )
 }

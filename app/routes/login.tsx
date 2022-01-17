@@ -11,6 +11,7 @@ import { useState } from 'react'
 import i18n, { SSTranslations } from '~/server/i18n.server'
 import InputError from '~/components/shared/form/InputError'
 import { useTranslation } from 'react-i18next'
+import Logo from '~/components/Logo'
 
 function validateEmail(email: string | null): boolean {
   if (!email) return false
@@ -99,14 +100,6 @@ export const action: ActionFunction = async ({ request }) => {
   }
 }
 
-function Logo() {
-  return (
-    <h1 className="text-6xl text-sp-blue-500 font-extrabold mt-8 mb-8">
-      DiciSports
-    </h1>
-  )
-}
-
 function LoginButton({
   disabled = false,
   label
@@ -125,10 +118,10 @@ export default function Login() {
   const { t } = useTranslation('profile')
 
   return (
-    <div className="flex h-screen">
-      <div className="m-auto">
+    <div className="flex">
+      <div className="m-auto mt-64">
         <div className="flex flex-col items-center justify-center w-full min-w-full w-96">
-          <Logo />
+          <Logo xxl={true} className="mb-8" />
           <Form
             autoComplete="off"
             className="w-full"
@@ -140,19 +133,18 @@ export default function Login() {
             }}
             onSubmit={() => setSubmitted(true)}
           >
-            <TextField
-              name="email"
-              label={t('Email')}
-              className="h-14 text-2xl sm:text-xl"
-              defaultValue={email}
-              autoComplete="off"
-            />
-            <FormField>
-              <LoginButton
-                disabled={!formIsValid || submitted}
-                label={t('Email a login link')}
+            <FormField label={t('Email')}>
+              <TextField
+                name="email"
+                className="h-14 text-2xl sm:text-xl"
+                defaultValue={email}
+                autoComplete="off"
               />
             </FormField>
+            <LoginButton
+              disabled={!formIsValid || submitted}
+              label={t('Email a login link')}
+            />
             {data.error ? (
               <InputError id="error-message">{data.error}</InputError>
             ) : data.email ? (

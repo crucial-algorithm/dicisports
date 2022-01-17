@@ -6,7 +6,6 @@ import FormField from '~/components/shared/form/FormField'
 
 type Props = {
   name: string
-  label: string
   placeholder?: string
   defaultValue?: any
   size?: 'regular' | 'large'
@@ -15,36 +14,33 @@ type Props = {
 } & React.ComponentProps<'input'>
 
 const TextField: React.FC<Props> = ({
-  label,
   name,
   placeholder,
   defaultValue,
   onChange,
   adornment,
   className,
-  readOnly
+  readOnly,
+  disabled
 }) => {
   const id = HTMLId()
   if (!adornment)
     return (
-      <FormField>
-        <Label id={id}>{label}</Label>
-        <InputBase
-          name={name}
-          id={id}
-          defaultValue={defaultValue}
-          placeholder={placeholder}
-          onChange={onChange}
-          type="text"
-          className={className}
-          readOnly={readOnly}
-        />
-      </FormField>
+      <InputBase
+        name={name}
+        id={id}
+        defaultValue={defaultValue}
+        placeholder={placeholder}
+        onChange={onChange}
+        type="text"
+        className={className}
+        readOnly={readOnly}
+        disabled={disabled}
+      />
     )
 
   return (
-    <FormField>
-      <Label id={id}>{label}</Label>
+    <>
       <div className="mt-1 relative rounded-md shadow-sm">
         <InputBase
           name={name}
@@ -54,12 +50,14 @@ const TextField: React.FC<Props> = ({
           onChange={onChange}
           type="text"
           className={className}
+          readOnly={readOnly}
+          disabled={disabled}
         />
         <div className="absolute inset-y-0 right-1 flex items-center">
           {adornment}
         </div>
       </div>
-    </FormField>
+    </>
   )
 }
 

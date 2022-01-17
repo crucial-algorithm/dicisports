@@ -1,7 +1,7 @@
 import type { User } from '@prisma/client'
 import Config from '~/server/config.server'
 
-const { MAILGUN_DOMAIN, MAILGUN_SENDING_KEY } = Config()
+const { MAILGUN_DOMAIN, MAILGUN_SENDING_KEY, inDev } = Config()
 
 let mailgunDomain: string | undefined = MAILGUN_DOMAIN
 if (process.env.NODE_ENV === 'production' && !MAILGUN_DOMAIN) {
@@ -32,7 +32,7 @@ async function sendEmail({ to, from, subject, text, html }: MailgunMessage) {
 
   if (!MAILGUN_DOMAIN) {
     // eslint-disable-next-line no-console
-    console.log(html)
+    console.log(text)
   }
 
   await fetch(`https://api.mailgun.net/v3/${mailgunDomain}/messages`, {

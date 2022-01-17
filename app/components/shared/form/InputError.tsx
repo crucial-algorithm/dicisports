@@ -10,7 +10,7 @@ const InputError: React.FC<Props> = ({ id, children }) => {
   }
 
   return (
-    <p role="alert" id={id} className="text-red-500 text-sm mt-4">
+    <p role="alert" id={id} className="text-red-500 text-sm">
       {children}
     </p>
   )

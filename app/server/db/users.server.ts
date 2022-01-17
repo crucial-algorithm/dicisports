@@ -48,4 +48,11 @@ async function createUser({
   })
 }
 
-export { findUserByEmail, findUserFromSessionId, createUser }
+async function updateUser(id: string, name: string): Promise<User> {
+  return await db.user.update({
+    where: { id },
+    data: { name }
+  })
+}
+
+export { findUserByEmail, findUserFromSessionId, createUser, updateUser }

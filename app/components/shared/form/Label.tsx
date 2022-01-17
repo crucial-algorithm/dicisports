@@ -1,12 +1,16 @@
 import React from 'react'
+import clsx from 'clsx'
 
 type Props = {
-  id: string
-}
-const Label: React.FC<Props> = ({ id, children }) => (
+  id?: string
+} & React.ComponentProps<'label'>
+const Label: React.FC<Props> = ({ id, className, children }) => (
   <label
     htmlFor={id}
-    className="inline-block dark:text-blueGray-500 text-gray-500 text-lg"
+    className={clsx(
+      'inline-block dark:text-blueGray-500 text-gray-500 text-lg mb-4',
+      className
+    )}
   >
     {children}
   </label>
