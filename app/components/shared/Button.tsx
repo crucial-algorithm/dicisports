@@ -9,24 +9,12 @@ type Props = {
   secondary?: boolean
 } & React.ComponentProps<'button'>
 
-function classes(rounded: boolean, secondary: boolean) {
-  if (rounded) {
-    return clsx(
-      'rounder-full p-0 w-8 h-8 bg-gray-100 mouse shadow',
-      'focus:outline-none hover:bg-gray-300 active:shadow-lg',
-      'transition ease-in duration-200 '
-    )
-  }
+function classes({ className }: { className?: string }) {
   return clsx(
-    'rounded-full h-12 py-2 px-4 text-sm font-bold',
-    // focus
-    'focus:shadow-focus focus:shadow-sp-light-blue-200',
-    // colors variations
-    secondary && 'bg-with-100 text-sp-light-blue border border-sp-light-blue',
-    !secondary && 'bg-sp-light-blue-500 text-white',
-    // hover
-    secondary && 'hover:bg-sp-light-blue-500 hover:text-white',
-    !secondary && 'hover:bg-sp-light-blue-800'
+    'group relative inline-flex transition opacity-100',
+    'text-lg font-medium',
+    'focus:outline-none disabled:opacity-50',
+    className
   )
 }
 
@@ -42,11 +30,7 @@ const Button: React.FC<Props> = ({
 }) => (
   <button
     type={type}
-    className={clsx(
-      classes(rounded, secondary),
-      disabled ? 'bg-slate-500 hover:bg-slate-600' : null,
-      className
-    )}
+    className={classes({ className })}
     style={{
       transition:
         'background-color .2s,color .2s,border-color .2s,box-shadow .2s'
@@ -55,8 +39,53 @@ const Button: React.FC<Props> = ({
     ref={ref}
     disabled={disabled}
   >
-    {children}
+    <ButtonInner variant={secondary ? 'secondary' : 'primary'} size={'medium'}>
+      {children}
+    </ButtonInner>
   </button>
 )
+
+interface ButtonProps {
+  variant?: 'primary' | 'secondary' | 'danger'
+  size?: 'medium' | 'large'
+  children: React.ReactNode | React.ReactNode[]
+}
+
+function ButtonInner({
+  children,
+  variant,
+  size
+}: Pick<ButtonProps, 'children' | 'variant' | 'size'>) {
+  return (
+    <>
+      <div
+        className={clsx(
+          'focus-ring absolute inset-0 rounded-full opacity-100 disabled:opacity-50 transform transition',
+          {
+            'border-2 border-secondary bg-primary group-hover:border-transparent group-focus:border-transparent':
+              variant === 'secondary' || variant === 'danger',
+            danger: variant === 'danger',
+            'bg-inverse': variant === 'primary'
+          }
+        )}
+      />
+
+      <div
+        className={clsx(
+          'relative flex items-center justify-center w-full h-full whitespace-nowrap',
+          {
+            'text-primary': variant === 'secondary',
+            'text-inverse': variant === 'primary',
+            'text-red-500': variant === 'danger',
+            'px-11 py-6 space-x-5': size !== 'medium',
+            'px-8 py-4 space-x-3': size === 'medium'
+          }
+        )}
+      >
+        {children}
+      </div>
+    </>
+  )
+}
 
 export default Button

@@ -34,6 +34,7 @@ import { useLoaderData } from '@remix-run/react'
 import { Theme, ThemeProvider, useTheme } from '~/utils/theme-provider'
 import { getThemeSession } from '~/server/theme.server'
 import clsx from 'clsx'
+import { Navbar } from '~/components/NavBar'
 
 export const links: LinksFunction = () => {
   return [
@@ -238,6 +239,7 @@ function Document({
       </head>
       <body className="dark:bg-gray-900 bg-white transition duration-500 w-full">
         <PageLoadingMessage />
+        <Navbar />
         {children}
         <ScrollRestoration />
         <Scripts />
@@ -256,9 +258,7 @@ export default function App() {
   return (
     <ThemeProvider specifiedTheme={data.requestInfo.session.theme}>
       <Document>
-        <Layout>
-          <Outlet />
-        </Layout>
+        <Outlet />
       </Document>
     </ThemeProvider>
   )

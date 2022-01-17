@@ -6,7 +6,7 @@ type Props = {
 const Label: React.FC<Props> = ({ id, children }) => (
   <label
     htmlFor={id}
-    className="block text-sm font-medium text-gray-700 dark:text-blueGray-500"
+    className="inline-block dark:text-blueGray-500 text-gray-500 text-lg"
   >
     {children}
   </label>

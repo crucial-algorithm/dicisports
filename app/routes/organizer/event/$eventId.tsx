@@ -21,7 +21,7 @@ import Header from '~/components/shared/Header'
 import TextField from '~/components/shared/form/TextField'
 import Button from '~/components/shared/Button'
 import { LocationMarkerIcon } from '@heroicons/react/outline'
-import { InputClasses } from '~/components/shared/form/InputBase'
+import { inputBaseClasses } from '~/components/shared/form/InputBase'
 import Config from '~/server/config.server'
 import { findSports } from '~/server/db/sports.server'
 import { findEvent } from '~/server/db/events.server'
@@ -245,7 +245,7 @@ export default function OrganizerEventRoute() {
                   {t('Sport')}
                 </label>
                 <select
-                  className={InputClasses}
+                  className={inputBaseClasses()}
                   name="sport"
                   id="sport"
                   defaultValue={event?.sportId || ''}

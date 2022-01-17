@@ -1,20 +1,15 @@
 import React, { useState } from 'react'
 import clsx from 'clsx'
 
-export const InputClasses = [
-  'block',
-  'w-full',
-  'px-4',
-  'py-2',
-  'mt-1',
-  'border',
-  'border-gray-300',
-  'rounded-md',
-  'shadow-sm',
-  'focus:ring-indigo-500',
-  'focus:border-indigo-500',
-  'sm:text-sm'
-].join(' ')
+export function inputBaseClasses(className?: string) {
+  return clsx(
+    'px-11 py-4 w-full rounded-lg focus-ring',
+    'bg-gray-100 text-black placeholder-gray-500 text-lg font-medium',
+    'dark:disabled:text-blueGray-500 dark:text-white dark:bg-gray-800',
+    'disabled:text-gray-400',
+    className
+  )
+}
 
 type Props = {
   id: string
@@ -52,7 +47,7 @@ const InputBase: React.FC<Props> = ({
         onChange && onChange(e.target.value)
       }}
       autoComplete={name}
-      className={clsx(InputClasses, className)}
+      className={inputBaseClasses(className)}
       readOnly={readOnly}
     />
   )

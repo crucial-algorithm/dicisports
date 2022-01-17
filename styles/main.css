@@ -20,12 +20,12 @@ body {
     --color-green-100: #e7f9ed;
     --color-green-500: #30c85e;
     --color-green-600: #68d94a;
-    --color-red-500: #ff4545;
+    --color-red-500: #FF5C00;
     --color-yellow-500: #ffd644;
 
     --color-team-unknown: #818890;
     --color-team-blue: #36a3ff;
-    --color-team-red: #ff4545;
+    --color-team-red: #FF5C00;
     /* yellow in light mode is... hard */
     --color-team-yellow: #a08600;
     --color-yellow-500: #a08600;

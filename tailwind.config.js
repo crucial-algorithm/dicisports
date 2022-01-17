@@ -24,6 +24,19 @@ module.exports = {
         800: '#2e3039',
         900: '#1f2028'
       },
+      orange: {
+        DEFAULT: '#FF5C00',
+        50: '#FFD1B8',
+        100: '#FFC4A3',
+        200: '#FFAA7A',
+        300: '#FF9052',
+        400: '#FF7629',
+        500: '#FF5C00',
+        600: '#C74800',
+        700: '#8F3400',
+        800: '#571F00',
+        900: '#1F0B00'
+      },
       'sp-blue': {
         DEFAULT: '#000A3C',
         50: '#0029F4',
@@ -55,23 +68,23 @@ module.exports = {
         current: 'var(--color-team-current)',
         yellow: 'var(--color-team-yellow)',
         blue: 'var(--color-team-blue)',
-        red: 'var(--color-team-red)',
+        red: 'var(--color-team-red)'
       },
       yellow: {
-        500: 'var(--color-yellow-500)',
+        500: 'var(--color-yellow-500)'
       },
       blue: {
         100: 'var(--color-blue-100)',
-        500: 'var(--color-blue-500)',
+        500: 'var(--color-blue-500)'
       },
       red: {
-        500: 'var(--color-red-500)',
+        500: 'var(--color-red-500)'
       },
       green: {
         100: 'var(--color-green-100)',
         500: 'var(--color-green-500)',
-        600: 'var(--color-green-600)',
-      },
+        600: 'var(--color-green-600)'
+      }
     },
     extend: {
       fontFamily: {
