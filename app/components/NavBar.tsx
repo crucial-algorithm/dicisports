@@ -26,7 +26,7 @@ import { Theme, Themed, useTheme } from '~/utils/theme-provider'
 import { useTranslation } from 'react-i18next'
 import Logo from '~/components/shared/Logo'
 
-const LINKS = [{ name: 'Pontos de Encontro', to: '/meeting-point' }]
+const LINKS = [{ name: 'Pontos de Encontro', to: '/meeting-points' }]
 
 const MOBILE_LINKS = [{ name: 'Home', to: '/' }, ...LINKS]
 

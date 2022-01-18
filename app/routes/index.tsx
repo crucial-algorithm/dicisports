@@ -1,17 +1,10 @@
 import * as React from 'react'
-import type { LoaderFunction, MetaFunction } from 'remix'
+import type { LoaderFunction } from 'remix'
 import { json, Link } from 'remix'
 import i18n from '~/server/i18n.server' // this is the first file you created
 import { useTranslation } from 'react-i18next'
 import Main from '~/components/shared/Main'
 import { H2 } from '~/components/shared/typography'
-
-export const meta: MetaFunction = () => {
-  return {
-    title: 'Remix Starter',
-    description: 'Welcome to remix!'
-  }
-}
 
 export let loader: LoaderFunction = async ({ request }) => {
   return json({

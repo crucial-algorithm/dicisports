@@ -83,12 +83,8 @@ light-mode {
     }
 }
 
-.dark a {
-    color: var(--color-team-current);
-}
-
 a {
-    color: var(--color-gray-500);
+    color: var(--color-team-current);
     font-weight: 600;
 }
 
