@@ -307,8 +307,8 @@ function ProfileButton({
       </motion.div>
       <img
         className={clsx('inline w-10 rounded-full select-none')}
-        src="https://res.cloudinary.com/kentcdodds-com/image/upload/q_auto,f_auto/kentcdodds.com/illustrations/kody_profile_white"
-        alt="Kody Profile in White"
+        src="https://res.cloudinary.com/kentcdodds-com/image/upload/q_auto,f_auto/kentcdodds.com/illustrations/rowing"
+        alt="Illustration of a kayak"
       />
     </Link>
   )
