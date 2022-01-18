@@ -53,15 +53,15 @@ export const links: LinksFunction = () => {
     },
     {
       rel: 'stylesheet',
-      href: mainCss
-    },
-    {
-      rel: 'stylesheet',
       href: vendorsCss
     },
     {
       rel: 'stylesheet',
       href: tailwind
+    },
+    {
+      rel: 'stylesheet',
+      href: mainCss
     }
   ]
 }

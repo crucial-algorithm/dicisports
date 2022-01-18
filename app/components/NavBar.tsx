@@ -17,21 +17,16 @@ import {
   useReducedMotion
 } from 'framer-motion'
 import type { User } from '@prisma/client'
-import { SunIcon } from './icons/sun-icon'
-import { MoonIcon } from './icons/moon-icon'
-import { TeamCircle } from './team-circle'
+import { SunIcon } from './shared/icons/SunIcon'
+import { MoonIcon } from './shared/icons/MoonIcon'
+import { TeamCircle } from './shared/icons/TeamCircle'
 import { useElementState } from './hooks/useElementState'
 import { useRootData } from '~/utils/use-root-data'
 import { Theme, Themed, useTheme } from '~/utils/theme-provider'
 import { useTranslation } from 'react-i18next'
+import Logo from '~/components/shared/Logo'
 
 const LINKS = [{ name: 'Pontos de Encontro', to: '/meeting-point' }]
-
-function Logo() {
-  return (
-    <h1 className="text-3xl text-sp-blue-500 dark:text-white font-extrabold">DiciSports</h1>
-  )
-}
 
 const MOBILE_LINKS = [{ name: 'Home', to: '/' }, ...LINKS]
 
@@ -335,15 +330,14 @@ function Navbar() {
           </Link>
         </div>
 
-        <ul className="hidden lg:flex">
-          {LINKS.map((link) => (
-            <NavLink key={link.to} to={link.to}>
-              {link.name}
-            </NavLink>
-          ))}
-        </ul>
-
         <div className="flex items-center justify-center">
+          <ul className="hidden lg:flex">
+            {LINKS.map((link) => (
+              <NavLink key={link.to} to={link.to}>
+                {link.name}
+              </NavLink>
+            ))}
+          </ul>
           <div className="block lg:hidden">
             <MobileMenu />
           </div>

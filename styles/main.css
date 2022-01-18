@@ -83,8 +83,13 @@ light-mode {
     }
 }
 
-a {
+.dark a {
     color: var(--color-team-current);
+}
+
+a {
+    color: var(--color-gray-500);
+    font-weight: 600;
 }
 
 .underlined {

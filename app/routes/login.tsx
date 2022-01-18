@@ -11,7 +11,7 @@ import { useState } from 'react'
 import i18n, { SSTranslations } from '~/server/i18n.server'
 import InputError from '~/components/shared/form/InputError'
 import { useTranslation } from 'react-i18next'
-import Logo from '~/components/Logo'
+import Logo from '~/components/shared/Logo'
 
 function validateEmail(email: string | null): boolean {
   if (!email) return false

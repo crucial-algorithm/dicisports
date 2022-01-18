@@ -1,6 +1,12 @@
 import ProfileFragment from '~/components/ProfileFragment'
 import { useRootData } from '~/utils/use-root-data'
-import { ActionFunction, json, LoaderFunction, redirect, useActionData } from 'remix'
+import {
+  ActionFunction,
+  json,
+  LoaderFunction,
+  redirect,
+  useActionData
+} from 'remix'
 import i18n, { SSTranslate } from '~/server/i18n.server'
 import { Grid } from '~/components/shared/Grid'
 import { Form } from '@remix-run/react'
@@ -12,7 +18,7 @@ import { getSession, requireUser } from '~/server/auth/session.server'
 import { handleFormSubmission } from '~/server/actions.server'
 import { updateUser } from '~/server/db/users.server'
 import { useTranslation } from 'react-i18next'
-
+import Main from '~/components/shared/Main'
 
 const actionIds = {
   logout: 'logout',
@@ -78,7 +84,7 @@ export default function Me() {
   const { t } = useTranslation('profile')
 
   return (
-    <main className="mx-10vw">
+    <Main>
       <div className="mb-64 mt-24 pt-6">
         <Grid>
           <div className="col-span-full mb-12 lg:mb-20">
@@ -115,6 +121,6 @@ export default function Me() {
           </div>
         </Grid>
       </div>
-    </main>
+    </Main>
   )
 }

@@ -3,6 +3,8 @@ import type { LoaderFunction, MetaFunction } from 'remix'
 import { json, Link } from 'remix'
 import i18n from '~/server/i18n.server' // this is the first file you created
 import { useTranslation } from 'react-i18next'
+import Main from '~/components/shared/Main'
+import { H2 } from '~/components/shared/typography'
 
 export const meta: MetaFunction = () => {
   return {
@@ -21,9 +23,9 @@ export default function Index() {
   let { t } = useTranslation('common')
 
   return (
-    <React.Fragment>
-      <h1>{t('title')}</h1>
+    <Main className="dark:text-blueGray-500">
+      <H2 className="mb-6">{t('title')}</H2>
       <Link to="/organizer">Organizer</Link>
-    </React.Fragment>
+    </Main>
   )
 }
