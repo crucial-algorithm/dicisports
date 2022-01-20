@@ -27,10 +27,10 @@ export const loader: LoaderFunction = async ({ request }) => {
     console.error(error)
     loginInfoSession.clean()
     loginInfoSession.flashError(
-      getErrorMessage(error) ||
-        (await SSError(
+      await SSError(
+        getErrorMessage(error) ||
           '>>Error<<: Sign in link invalid. Please request a new one'
-        ))
+      )
     )
     return redirect('/login', {
       headers: await loginInfoSession.getHeaders()

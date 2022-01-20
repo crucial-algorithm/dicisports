@@ -26,7 +26,7 @@ import { Theme, Themed, useTheme } from '~/utils/theme-provider'
 import { useTranslation } from 'react-i18next'
 import Logo from '~/components/shared/Logo'
 
-const LINKS = [{ name: 'Pontos de Encontro', to: '/meeting-points' }]
+const LINKS = [{ name: 'NAVBAR >>> Meeting Point', to: '/meeting-points' }]
 
 const MOBILE_LINKS = [{ name: 'Home', to: '/' }, ...LINKS]
 
@@ -64,7 +64,7 @@ function DarkModeToggle({
   variant?: 'icon' | 'labelled'
 }) {
   const [, setTheme] = useTheme()
-  const { t } = useTranslation('profile')
+  const { t } = useTranslation('common')
   return (
     <button
       onClick={() => {
@@ -110,6 +110,7 @@ function DarkModeToggle({
 }
 
 function MobileMenuList() {
+  const { t } = useTranslation('common')
   const { isExpanded } = useMenuButtonContext()
   const shouldReduceMotion = useReducedMotion()
 
@@ -158,7 +159,7 @@ function MobileMenuList() {
                   as={Link}
                   to={link.to}
                 >
-                  {link.name}
+                  {t(link.name)}
                 </MenuLink>
               ))}
               <div className="noscript-hidden py-9 text-center">
@@ -315,6 +316,7 @@ function ProfileButton({
 }
 
 function Navbar() {
+  const { t } = useTranslation('common')
   const { requestInfo, user } = useRootData()
 
   return (
@@ -334,7 +336,7 @@ function Navbar() {
           <ul className="hidden lg:flex">
             {LINKS.map((link) => (
               <NavLink key={link.to} to={link.to}>
-                {link.name}
+                {t(link.name)}
               </NavLink>
             ))}
           </ul>

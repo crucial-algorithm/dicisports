@@ -1,19 +1,17 @@
 import * as React from 'react'
 import type { LoaderFunction } from 'remix'
-import { json, Link } from 'remix'
-import i18n from '~/server/i18n.server' // this is the first file you created
+import { Link } from 'remix'
 import { useTranslation } from 'react-i18next'
 import Main from '~/components/shared/Main'
 import { H2 } from '~/components/shared/typography'
+import CAGResponse from '~/server/response.server'
 
 export let loader: LoaderFunction = async ({ request }) => {
-  return json({
-    i18n: await i18n.getTranslations(request, ['common'])
-  })
+  return CAGResponse(request, ['home'])
 }
 
 export default function Index() {
-  let { t } = useTranslation('common')
+  let { t } = useTranslation('home')
 
   return (
     <Main className="dark:text-blueGray-500">

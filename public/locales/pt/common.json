@@ -1,10 +1,6 @@
 {
-  "title": "Bem-vindo ao DiciSports",
-  "Cancel": "Cancelar",
-
-  "Pick Location In Map Title": "Selecione a localização no mapa",
-  "Drag Map to Choose a Location Hint": "Arraste o mapa até à localização pretendida",
-  "Pick Location Button": "Aplicar"
-
-
+  "NAVBAR >>> Meeting Point": "Pontos de Encontro",
+  "Home": "Inicio",
+  "Switch to light mode": "Alterar para light mode",
+  "Switch to dark mode": "Alterar para dark mode"
 }

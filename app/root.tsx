@@ -34,6 +34,7 @@ import { Theme, ThemeProvider, useTheme } from '~/utils/theme-provider'
 import { getThemeSession } from '~/server/theme.server'
 import clsx from 'clsx'
 import { Navbar } from '~/components/NavBar'
+import CAGResponse from '~/server/response.server'
 
 export const links: LinksFunction = () => {
   return [
@@ -126,10 +127,7 @@ export const loader: LoaderFunction = async ({ request }) => {
   await clientSession.getHeaders(headers)
   await loginInfoSession.getHeaders(headers)
 
-  return json(
-    { ...data, i18n: await i18n.getTranslations(request, ['profile']) },
-    { headers }
-  )
+  return CAGResponse(request, data, headers)
 }
 
 /* temporary = from kentcdodds.com implementation */

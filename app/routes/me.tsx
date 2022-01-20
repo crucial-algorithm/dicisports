@@ -19,6 +19,7 @@ import { handleFormSubmission } from '~/server/actions.server'
 import { updateUser } from '~/server/db/users.server'
 import { useTranslation } from 'react-i18next'
 import Main from '~/components/shared/Main'
+import CAGResponse from '~/server/response.server'
 
 const actionIds = {
   logout: 'logout',
@@ -43,9 +44,7 @@ function getFirstNameError(firstName: string | null) {
 
 export const loader: LoaderFunction = async ({ request, params }) => {
   await requireUser(request)
-  return json({
-    i18n: await i18n.getTranslations(request, ['profile'])
-  })
+  return CAGResponse(request)
 }
 
 export const action: ActionFunction = async ({ request }) => {
@@ -81,7 +80,7 @@ export const action: ActionFunction = async ({ request }) => {
 export default function Me() {
   const { user } = useRootData()
   const actionData = useActionData<ActionData>()
-  const { t } = useTranslation('profile')
+  const { t } = useTranslation('me')
 
   return (
     <Main>
@@ -111,6 +110,8 @@ export default function Me() {
           <div className="col-span-full mb-24 lg:col-span-5 lg:mb-0">
             <Form method="post" className="w-96">
               <ProfileFragment
+                labelName={t('Name')}
+                labelEmail={t('Email')}
                 profile={{ name: user?.name, email: user?.email || '' }}
                 error={actionData?.errors.name}
               />

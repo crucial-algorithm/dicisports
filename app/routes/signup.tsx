@@ -1,5 +1,5 @@
 import { Form, useLoaderData } from '@remix-run/react'
-import { ActionFunction, json, LoaderFunction, redirect } from 'remix'
+import { ActionFunction, LoaderFunction, redirect } from 'remix'
 import {
   getSession,
   getUser,
@@ -10,13 +10,13 @@ import { getErrorStack } from '~/utils/misc'
 import { handleFormSubmission } from '~/server/actions.server'
 import { MemberProfile } from '~/types'
 import ProfileFragment from '~/components/ProfileFragment'
-import i18n, { SSError, SSTranslate } from '~/server/i18n.server'
+import { SSError, SSTranslate } from '~/server/i18n.server'
 import { createUser, findUserByEmail } from '~/server/db/users.server'
 import Button from '~/components/shared/Button'
-import FormField from '~/components/shared/form/FormField'
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import ButtonGroup from '~/components/shared/ButtonGroup'
+import CAGResponse from '~/server/response.server'
 
 type ActionData = {
   status: 'success' | 'error'
@@ -124,12 +124,8 @@ export const loader: LoaderFunction = async ({ request }) => {
     })
   }
 
-  return json(
-    { email, i18n: await i18n.getTranslations(request, ['profile']) },
-    {
-      headers: await loginInfoSession.getHeaders()
-    }
-  )
+  const headers = await loginInfoSession.getHeaders()
+  return CAGResponse(request, { email }, headers)
 }
 
 const actionIds = {
@@ -140,12 +136,16 @@ const actionIds = {
 export default function SignUp() {
   const data = useLoaderData<MemberProfile>()
   const [action, setAction] = useState<string>('submit')
-  const { t } = useTranslation('profile')
+  const { t } = useTranslation('signup')
   return (
     <main className="mx-10vw flex">
       <div className="m-auto">
         <Form method="post" className="w-96">
-          <ProfileFragment profile={data} />
+          <ProfileFragment
+            profile={data}
+            labelEmail={t('Email')}
+            labelName={t('Name')}
+          />
           <ButtonGroup>
             <Button
               className="mr-2"

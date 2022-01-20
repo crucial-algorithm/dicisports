@@ -12,6 +12,7 @@ import i18n, { SSTranslations } from '~/server/i18n.server'
 import InputError from '~/components/shared/form/InputError'
 import { useTranslation } from 'react-i18next'
 import Logo from '~/components/shared/Logo'
+import CAGResponse from '~/server/response.server'
 
 function validateEmail(email: string | null): boolean {
   if (!email) return false
@@ -40,13 +41,7 @@ export const loader: LoaderFunction = async ({ request }) => {
   })
   await loginSession.getHeaders(headers)
 
-  return json(
-    {
-      ...data,
-      i18n: await i18n.getTranslations(request, ['profile'])
-    },
-    { headers }
-  )
+  return CAGResponse(request, data, headers)
 }
 
 export const action: ActionFunction = async ({ request }) => {
@@ -115,7 +110,7 @@ export default function Login() {
   const [submitted, setSubmitted] = useState(false)
   const [email, setEmail] = useState<string | undefined>()
   const formIsValid = email?.match(/.+@.+/)
-  const { t } = useTranslation('profile')
+  const { t } = useTranslation('login')
 
   return (
     <div className="flex">
