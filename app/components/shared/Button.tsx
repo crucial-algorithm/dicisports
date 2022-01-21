@@ -7,6 +7,7 @@ type Props = {
   rounded?: boolean
   type?: 'button' | 'reset' | 'submit'
   secondary?: boolean
+  size?: 'medium' | 'large' | 'small'
 } & React.ComponentProps<'button'>
 
 function classes({ className }: { className?: string }) {
@@ -26,7 +27,8 @@ const Button: React.FC<Props> = ({
   type = 'submit',
   secondary = false,
   className,
-  disabled
+  disabled,
+  size = 'medium'
 }) => (
   <button
     type={type}
@@ -39,7 +41,7 @@ const Button: React.FC<Props> = ({
     ref={ref}
     disabled={disabled}
   >
-    <ButtonInner variant={secondary ? 'secondary' : 'primary'} size={'medium'}>
+    <ButtonInner variant={secondary ? 'secondary' : 'primary'} size={size}>
       {children}
     </ButtonInner>
   </button>
@@ -47,7 +49,7 @@ const Button: React.FC<Props> = ({
 
 interface ButtonProps {
   variant?: 'primary' | 'secondary' | 'danger'
-  size?: 'medium' | 'large'
+  size?: 'medium' | 'large' | 'small'
   children: React.ReactNode | React.ReactNode[]
 }
 
@@ -78,7 +80,8 @@ function ButtonInner({
             'text-inverse': variant === 'primary',
             'text-red-500': variant === 'danger',
             'px-11 py-6 space-x-5': size !== 'medium',
-            'px-8 py-4 space-x-3': size === 'medium'
+            'px-8 py-4 space-x-3': size === 'medium',
+            'px-6 py-3 space-x-3': size === 'small'
           }
         )}
       >

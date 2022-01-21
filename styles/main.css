@@ -136,3 +136,10 @@ a {
 .dark iframe[src*='transistor'] {
     border-radius: 8px;
 }
+
+
+.list-entry-actions {
+    position: absolute;
+    top: 0;
+    right: 0;
+}

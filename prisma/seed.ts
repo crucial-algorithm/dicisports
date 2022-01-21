@@ -213,8 +213,8 @@ function users() {
   return [
     {
       id: 'dummyuser',
-      email: 'users@email.com',
-      name: 'Filipe',
+      email: 'u@gmail.com',
+      name: 'Bike Brothers',
       role: Role.MEMBER
     }
   ]
@@ -224,7 +224,7 @@ function groups() {
   return [
     {
       id: 'FkoxmH5db6RXqBpExion',
-      name: 'Bike Brothers Sunday Road',
+      name: 'Bike Brothers Domingueira',
       groupTypeId: 1,
       groupSpiritId: 2,
       location: '39.6929301,-8.302317',
@@ -238,7 +238,7 @@ function groups() {
     },
     {
       id: 'GkoxmH5db6RXqBpExion',
-      name: 'Bike Brothers Saturday Mountain Bike',
+      name: 'Bike Brothers BTT ao Sábado',
       groupTypeId: 1,
       groupSpiritId: 2,
       location: '39.6929301,-8.302317',

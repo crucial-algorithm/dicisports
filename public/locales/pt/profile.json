@@ -1,6 +1,6 @@
 {
   "Login": "Entrar",
-  "Email Error": "Tentamos validar o email mas obtivemos um erro: \"{{error}}\". Se esse é mesmo o seu e-mail, envie-nos um e-mail",
+  "Email Error": "Tentamos validar o email mas obtivemos um erro: \"{{error}}\". Se o email está correcto, entre em contacto connosco",
   "Invalid Email": "Email inválido",
   "Required Name": "O nome é obrigatório",
   "Problem Creating Account": "Não foi possível criar a sua conta. Tente novamente",

@@ -1,8 +1,6 @@
 import React from 'react'
 import HTMLId from '~/utils/HTMLId'
-import Label from '~/components/shared/form/Label'
 import InputBase from '~/components/shared/form/InputBase'
-import FormField from '~/components/shared/form/FormField'
 
 type Props = {
   name: string

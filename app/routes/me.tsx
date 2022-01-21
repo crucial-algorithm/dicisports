@@ -1,13 +1,7 @@
 import ProfileFragment from '~/components/ProfileFragment'
 import { useRootData } from '~/utils/use-root-data'
-import {
-  ActionFunction,
-  json,
-  LoaderFunction,
-  redirect,
-  useActionData
-} from 'remix'
-import i18n, { SSTranslate } from '~/server/i18n.server'
+import { ActionFunction, LoaderFunction, redirect, useActionData } from 'remix'
+import { SSTranslate } from '~/server/i18n.server'
 import { Grid } from '~/components/shared/Grid'
 import { Form } from '@remix-run/react'
 import Button from '~/components/shared/Button'

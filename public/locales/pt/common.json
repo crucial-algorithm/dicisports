@@ -2,5 +2,13 @@
   "NAVBAR >>> Meeting Point": "Pontos de Encontro",
   "Home": "Inicio",
   "Switch to light mode": "Alterar para light mode",
-  "Switch to dark mode": "Alterar para dark mode"
+  "Switch to dark mode": "Alterar para dark mode",
+
+  "Monday": "Segunda-Feira",
+  "Tuesday": "Terça-Feira",
+  "Wednesday": "Quarta-Feira",
+  "Thursday": "Quinta-Feira",
+  "Friday": "Sexta-Feira",
+  "Saturday": "Sábado",
+  "Sunday": "Domingo"
 }
