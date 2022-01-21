@@ -217,10 +217,16 @@ function PageLoadingMessage() {
   )
 }
 
-function Html({ title = 'DiciSports' }: { title?: string }) {
+function Html({
+  title = 'DiciSports',
+  lang
+}: {
+  title?: string
+  lang: string
+}) {
   const [theme] = useTheme()
   return (
-    <html lang="pt" className={clsx(theme, 'set-color-team-current-red')}>
+    <html lang={lang} className={clsx(theme, 'set-color-team-current-red')}>
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width,initial-scale=1" />
@@ -243,13 +249,14 @@ function Html({ title = 'DiciSports' }: { title?: string }) {
 
 export default function App() {
   // set locale statically
+  const locale = 'pt'
   // https://www.npmjs.com/package/remix-i18next
-  useRemixI18Next('pt')
+  useRemixI18Next(locale)
   const data = useLoaderData<LoaderData>()
 
   return (
     <ThemeProvider specifiedTheme={data.requestInfo.session.theme}>
-      <Html />
+      <Html lang={locale} />
     </ThemeProvider>
   )
 }
@@ -261,9 +268,9 @@ export function ErrorBoundary({ error }: { error: Error }) {
         <title>Oh no...</title>
         <Links />
       </head>
-      <body className="dark:bg-gray-900 bg-white transition duration-500">
+      <body className="dark:bg-gray-900 dark:text-white bg-white transition duration-500">
         <div>
-          <h1>There was an error</h1>
+          <h1 className="font-extrabold">There was an error</h1>
           <p>{error.message}</p>
           <hr />
           <p>

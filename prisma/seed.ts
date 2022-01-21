@@ -1,4 +1,4 @@
-import { PrismaClient, Status } from '@prisma/client'
+import { PrismaClient, Status, Role } from '@prisma/client'
 
 const db = new PrismaClient()
 
@@ -6,6 +6,26 @@ async function seed() {
   await Promise.all(
     sports().map((data) => {
       return db.sport.create({ data })
+    })
+  )
+  await Promise.all(
+    groupTypes().map((data) => {
+      return db.groupType.create({ data })
+    })
+  )
+  await Promise.all(
+    groupsSpirit().map((data) => {
+      return db.groupSpirit.create({ data })
+    })
+  )
+  await Promise.all(
+    users().map((data) => {
+      return db.user.create({ data })
+    })
+  )
+  await Promise.all(
+    groups().map((data) => {
+      return db.group.create({ data })
     })
   )
   await Promise.all(
@@ -26,19 +46,61 @@ function sports() {
   return [
     {
       id: 1,
-      name: 'Atletismo'
+      name: { pt: 'Atletismo' }
     },
     {
       id: 2,
-      name: 'Trail'
+      name: { pt: 'Trail' }
     },
     {
       id: 3,
-      name: 'Ciclismo Estrada'
+      name: { pt: 'Ciclismo Estrada' }
     },
     {
       id: 4,
-      name: 'Ciclismo BTT'
+      name: { pt: 'Ciclismo BTT' }
+    }
+  ]
+}
+
+function groupTypes() {
+  return [
+    {
+      id: 1,
+      name: { pt: 'Informal' }
+    },
+    {
+      id: 2,
+      name: { pt: 'Clube' }
+    },
+    {
+      id: 3,
+      name: { pt: 'Loja' }
+    }
+  ]
+}
+
+function groupsSpirit() {
+  return [
+    {
+      id: 1,
+      name: { pt: 'Convívio' }
+    },
+    {
+      id: 2,
+      name: { pt: 'Desportivo' }
+    },
+    {
+      id: 3,
+      name: { pt: 'Treino' }
+    },
+    {
+      id: 4,
+      name: { pt: 'Amizade' }
+    },
+    {
+      id: 5,
+      name: { pt: 'Turismo' }
     }
   ]
 }
@@ -143,6 +205,50 @@ function documents() {
       eventId: 'TgKZi8NQKNoJQGArd3zc',
       createdAt: new Date('2021-12-31T08:00:00Z'),
       updatedAt: new Date('2021-12-31T08:00:00Z')
+    }
+  ]
+}
+
+function users() {
+  return [
+    {
+      id: 'dummyuser',
+      email: 'users@email.com',
+      name: 'Filipe',
+      role: Role.MEMBER
+    }
+  ]
+}
+
+function groups() {
+  return [
+    {
+      id: 'FkoxmH5db6RXqBpExion',
+      name: 'Bike Brothers Sunday Road',
+      groupTypeId: 1,
+      groupSpiritId: 2,
+      location: '39.6929301,-8.302317',
+      near: 'Loja da Bike Brothers',
+      dayOfWeek: 6,
+      timeOfDay: '09:00',
+      whatsapp: null,
+      createdAt: new Date('2021-12-31T08:00:00Z'),
+      updatedAt: new Date('2021-12-31T08:00:00Z'),
+      createdById: 'dummyuser'
+    },
+    {
+      id: 'GkoxmH5db6RXqBpExion',
+      name: 'Bike Brothers Saturday Mountain Bike',
+      groupTypeId: 1,
+      groupSpiritId: 2,
+      location: '39.6929301,-8.302317',
+      near: 'Loja da Bike Brothers',
+      dayOfWeek: 5,
+      timeOfDay: '09:00',
+      whatsapp: null,
+      createdAt: new Date('2021-12-31T08:00:00Z'),
+      updatedAt: new Date('2021-12-31T08:00:00Z'),
+      createdById: 'dummyuser'
     }
   ]
 }

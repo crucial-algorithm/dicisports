@@ -40,3 +40,14 @@ export type KCDHandle = {
     | Array<KCDSitemapEntry | null>
     | null
 }
+
+export const AvailableLanguages: {
+  pt: 'pt'
+  en: 'en'
+}
+
+export type Language =
+  typeof AvailableLanguages[keyof typeof AvailableLanguages]
+
+// eslint-disable-next-line no-unused-vars
+export type TranslationObject = { [K in Language]: string }
