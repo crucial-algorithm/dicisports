@@ -19,9 +19,10 @@ const TextField: React.FC<Props> = ({
   adornment,
   className,
   readOnly,
-  disabled
+  disabled,
+  id
 }) => {
-  const id = HTMLId()
+  id = id || HTMLId()
   if (!adornment)
     return (
       <InputBase

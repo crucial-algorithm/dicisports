@@ -90,7 +90,7 @@ export default function Me() {
               </div>
               <Form method="post">
                 <input type="hidden" name="actionId" value={actionIds.logout} />
-                <Button secondary={true}>
+                <Button variant="secondary">
                   <LogoutIcon className="w-4 h-4" />
                   <H6 as="span">{t('Logout')}</H6>
                 </Button>

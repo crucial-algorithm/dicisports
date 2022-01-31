@@ -39,7 +39,8 @@ async function CAGResponse(
   translations = translations || []
   translations.push('common')
 
-  if (path && !exclusions.includes(path)) translations.push(path)
+  if (path && !path.includes('/') && !exclusions.includes(path))
+    translations.push(path)
 
   const init: ResponseInit | null = headers ? { headers } : null
   const payload = {

@@ -1,10 +1,12 @@
 import * as React from 'react'
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import mapboxgl from 'mapbox-gl'
-import { TFunction } from 'i18next'
-import { Dialog } from '@headlessui/react'
+import { Dialog } from '@reach/dialog'
 import { LocationMarkerIcon } from '@heroicons/react/solid'
 import Button from '~/components/shared/Button'
+import ButtonGroup from '~/components/shared/ButtonGroup'
+import { useTranslation } from 'react-i18next'
+import { DiciLocation } from '~/types'
 
 type MapInfo = {
   lat: number
@@ -17,15 +19,6 @@ type MapBoxFeature = {
   text: string
   place_name: string
   context: Array<{ id: string; wikidata?: string; text: string }>
-}
-
-type PickedLocation = {
-  shortAddress: string
-  address: string
-  postcode: string | null
-  place: string | null
-  region: string | null
-  country: string | null
 }
 
 const MAP_BOX_URL = 'api.mapbox.com/geocoding/v5/mapbox.places'
@@ -42,22 +35,21 @@ const types = [
 
 type MapProps = {
   token: string
-  callback: (location: PickedLocation | null) => void
-  xtrClass?: string
+  callback: (location: DiciLocation | null) => void
   placeholder: string
-  defaultValue: string | null
-}
+  defaultValue?: DiciLocation | null
+} & Omit<React.ComponentProps<'div'>, 'defaultValue'>
 
 function Map({
   token,
   callback,
-  xtrClass = 'map-container',
   placeholder,
-  defaultValue
+  defaultValue,
+  className
 }: MapProps) {
   const coords = !defaultValue
     ? [41.55118759332092, -8.394039337203793]
-    : defaultValue.split(',').map((p) => parseFloat(p))
+    : defaultValue.coords.split(',').map((p) => parseFloat(p))
   const [, setMap] = React.useState<mapboxgl.Map>()
   const [info, setInfo] = React.useState<MapInfo>({
     lat: coords[0],
@@ -115,7 +107,7 @@ function Map({
     const getAddress = async (
       lat: number,
       lng: number
-    ): Promise<PickedLocation | null> => {
+    ): Promise<DiciLocation | null> => {
       const location = [lng, lat].join(',')
       const url = `https://${MAP_BOX_URL}/${location}.json?limit=1&types=${types.join(
         '%2C'
@@ -124,7 +116,7 @@ function Map({
       const json = await res.json()
       const feature = json.features[0] || null
       if (!feature) return null
-      return processMapBoxFeature(feature)
+      return processMapBoxFeature(feature, lat, lng)
     }
 
     return () => {
@@ -133,10 +125,10 @@ function Map({
   }, [])
 
   return (
-    <div style={{ position: 'relative' }}>
+    <div style={{ position: 'relative', left: 0 }} className={className}>
       <Label label={info.address} />
       <Pin />
-      <div ref={mapNode} className={xtrClass} />
+      <div ref={mapNode} className="map-container" />
     </div>
   )
 }
@@ -166,9 +158,14 @@ function capitalize(str: string) {
     .join(' ')
 }
 
-function processMapBoxFeature(feature: MapBoxFeature): PickedLocation | null {
+function processMapBoxFeature(
+  feature: MapBoxFeature,
+  lat: number,
+  lng: number
+): DiciLocation | null {
   const { text, place_name, context } = feature
-  const output: PickedLocation = {
+  const output: DiciLocation = {
+    coords: `${lat},${lng}`,
     shortAddress: text,
     address: place_name,
     postcode: null,
@@ -200,62 +197,53 @@ function processMapBoxFeature(feature: MapBoxFeature): PickedLocation | null {
 
 export type MapDialogProps = {
   token: string
-  xtrClass?: string
   open: boolean
-  setClosed: () => void
-  onPickedLocation: (location: PickedLocation | null) => void
-  defaultValue: string | null | undefined
-  t: TFunction // ns: common
+  setClosed?: () => void
+  onClose?: (location: DiciLocation | null) => void
+  onPickedLocation?: (location: DiciLocation | null) => void
+  defaultValue?: DiciLocation | null
+  className?: string
 }
 
 function MapDialog({
   token,
-  xtrClass,
   open,
   setClosed,
+  onClose,
   onPickedLocation,
-  defaultValue = null,
-  t
+  defaultValue,
+  className
 }: MapDialogProps) {
   const handleClose = () => {
-    setClosed()
+    if (setClosed) setClosed()
+    if (onClose) onClose(location)
   }
-  const cancelButtonRef = useRef(null)
+  const { t } = useTranslation('common')
+  const [location, setLocation] = useState<DiciLocation | null>(
+    defaultValue || null
+  )
 
   return (
     <Dialog
-      as="div"
-      className="fixed inset-0 z-10 overflow-y-auto"
-      open={open}
-      onClose={handleClose}
-      initialFocus={cancelButtonRef}
+      isOpen={open}
+      className="min-w-full h-screen fixed top-0 bottom-0 p-0 dark:bg-gray-900 opacity-100 m-0"
+      onDismiss={handleClose}
+      aria-label={t('map')}
     >
-      <div className="w-full h-screen bg-white p-6">
-        <Dialog.Overlay className="fixed inset-0 bg-black opacity-30" />
-
-        <div className="relative bg-white rounded mx-auto">
-          <Dialog.Title
-            as="h1"
-            className="text-lg antialiased font-semibold p-6"
-          >
-            {t('Pick Location In Map Title')}
-          </Dialog.Title>
-
-          <Map
-            defaultValue={defaultValue}
-            token={token}
-            xtrClass={xtrClass}
-            callback={onPickedLocation}
-            placeholder={t('Drag Map to Choose a Location Hint')}
-          />
-          <div className="px-4 py-3 bg-gray-100 text-right sm:px-6 rounded">
-            <Button onClick={handleClose} ref={cancelButtonRef}>
-              {t('Cancel')}
-            </Button>
-            <Button onClick={handleClose}>{t('Pick Location Button')}</Button>
-          </div>
-        </div>
-      </div>
+      <Map
+        defaultValue={defaultValue}
+        token={token}
+        className={className}
+        callback={(location) => {
+          if (onPickedLocation) onPickedLocation(location)
+          setLocation(location)
+        }}
+        placeholder={t('Drag Map to Choose a Location Hint')}
+      />
+      <ButtonGroup className="justify-end mt-4 pr-2">
+        <Button onClick={handleClose}>{t('Cancel')}</Button>
+        <Button onClick={handleClose}>{t('Pick Location Button')}</Button>
+      </ButtonGroup>
     </Dialog>
   )
 }

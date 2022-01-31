@@ -1,0 +1,29 @@
+{
+  "Ride Together": "Treina em grupo",
+  "Let Others know": "Divulga o teu grupo para que outros se possam juntar",
+  "Delete Group": "Apagar Grupo",
+  "Group Name": "Nome",
+  "Group Sport": "Desporto",
+  "Group Type": "Tipo de grupo",
+  "Group Spirit": "Espírito do grupo",
+  "Group Location": "Ponto de partida",
+  "Group Location Helper": "Referência do local de partida",
+  "Group Location Helper Placeholder": "Ex: Junto ao Café Viana",
+  "Map": "Abrir Mapa",
+  "Day Of Week": "Dia da semana",
+  "Time Of Day": "Hora",
+  "Group Photos": "Fotos do grupo",
+  "Hint For Picture 1": "O grupo pronto para sair",
+  "Hint For Picture 2": "O grupo a passear",
+  "Hint For Picture 3": "O pastel de nata",
+  "Create Group": "Criar Grupo",
+  "Update Group": "Actualizar Grupo",
+
+  "Field required": "Campo obrigatório",
+  "Group not found": "Estranho... não encontramos o grupo que pretende actualizar!",
+  "Not authorized": "Ei hacker... não pode actualizar um grupo de outro utilzador!",
+  "Name 5 chars or more": "O nome tem de ter 5+ letras",
+  "We dont know what happened": "Não sabemos o que aconteceu... tente novamente e se não conseguir terminar a operação, entre em contacto connosco",
+
+  "Group updated successfully": "Grupo atualizado"
+}

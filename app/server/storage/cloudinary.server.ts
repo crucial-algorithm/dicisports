@@ -1,6 +1,7 @@
 import { v2 as cloudinary } from 'cloudinary'
 import Id from '~/server/utils/Id.server'
 import Config from '~/server/config.server'
+import { setConfig } from 'cloudinary-build-url'
 
 const {
   CLOUDINARY_CLOUD_NAME,
@@ -8,6 +9,10 @@ const {
   CLOUDINARY_API_SECRET,
   CLOUDINARY_UPLOAD_PRESET
 } = Config()
+
+setConfig({
+  cloudName: CLOUDINARY_CLOUD_NAME
+})
 
 const config = {
   cloud_name: CLOUDINARY_CLOUD_NAME,

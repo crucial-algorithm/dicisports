@@ -4,10 +4,9 @@ import clsx from 'clsx'
 type Props = {
   onClick?: () => void
   ref?: React.MutableRefObject<null>
-  rounded?: boolean
   type?: 'button' | 'reset' | 'submit'
-  secondary?: boolean
   size?: 'medium' | 'large' | 'small'
+  variant?: 'primary' | 'secondary' | 'danger' | 'link'
 } & React.ComponentProps<'button'>
 
 function classes({ className }: { className?: string }) {
@@ -19,36 +18,61 @@ function classes({ className }: { className?: string }) {
   )
 }
 
+type LinkProps = {} & React.ComponentProps<'button'>
+
+function Link({ children, onClick, className, type }: LinkProps) {
+  return (
+    <button
+      onClick={onClick}
+      type={type}
+      className={clsx(
+        'text-lg font-medium text-primary',
+        'focus:outline-none disabled:opacity-50',
+        className
+      )}
+    >
+      {children}
+    </button>
+  )
+}
+
 const Button: React.FC<Props> = ({
   onClick,
-  rounded = false,
   ref,
   children,
   type = 'submit',
-  secondary = false,
   className,
   disabled,
-  size = 'medium'
-}) => (
-  <button
-    type={type}
-    className={classes({ className })}
-    style={{
-      transition:
-        'background-color .2s,color .2s,border-color .2s,box-shadow .2s'
-    }}
-    onClick={onClick}
-    ref={ref}
-    disabled={disabled}
-  >
-    <ButtonInner variant={secondary ? 'secondary' : 'primary'} size={size}>
-      {children}
-    </ButtonInner>
-  </button>
-)
+  size = 'medium',
+  variant = 'primary'
+}) => {
+  if (variant === 'link')
+    return (
+      <Link className={className} onClick={onClick} type={type}>
+        {children}
+      </Link>
+    )
+  return (
+    <button
+      type={type}
+      className={classes({ className })}
+      style={{
+        transition:
+          'background-color .2s,color .2s,border-color .2s,box-shadow .2s'
+      }}
+      onClick={onClick}
+      ref={ref}
+      disabled={disabled}
+    >
+      <ButtonInner variant={variant} size={size}>
+        {children}
+      </ButtonInner>
+    </button>
+  )
+}
 
 interface ButtonProps {
-  variant?: 'primary' | 'secondary' | 'danger'
+  variant?: 'primary' | 'secondary' | 'danger' | 'link'
   size?: 'medium' | 'large' | 'small'
   children: React.ReactNode | React.ReactNode[]
 }
@@ -56,7 +80,7 @@ interface ButtonProps {
 function ButtonInner({
   children,
   variant,
-  size
+  size = 'medium'
 }: Pick<ButtonProps, 'children' | 'variant' | 'size'>) {
   return (
     <>
@@ -79,7 +103,7 @@ function ButtonInner({
             'text-primary': variant === 'secondary',
             'text-inverse': variant === 'primary',
             'text-red-500': variant === 'danger',
-            'px-11 py-6 space-x-5': size !== 'medium',
+            'px-11 py-6 space-x-5': size === 'large',
             'px-8 py-4 space-x-3': size === 'medium',
             'px-6 py-3 space-x-3': size === 'small'
           }

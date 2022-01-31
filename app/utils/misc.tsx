@@ -1,4 +1,6 @@
-import { NonNullProperties } from '~/types'
+import { NonNullProperties, UploadImageMeta } from '~/types'
+import { json } from 'remix'
+import { FormEvent } from 'react'
 
 function getDomainUrl(request: Request) {
   const host =
@@ -48,11 +50,56 @@ function typedBoolean<T>(
   return Boolean(value)
 }
 
+function badRequest<T>(data: T): Response {
+  return json(data, { status: 400 })
+}
+
+const uploadImages = async (
+  url: string,
+  uploadPreset: string,
+  images: Array<UploadImageMeta | undefined>
+) => {
+  const formData = new FormData()
+  console.log(images)
+  await Promise.all(
+    images.map((image) => {
+      if (!image) return null
+      formData.append('file', image.file)
+      formData.append('upload_preset', uploadPreset)
+      formData.append('public_id', image.value)
+      formData.append('timestamp', image.timestamp + '')
+      formData.append('signature', image.signature)
+      formData.append('api_key', image.apiKey)
+
+      return new Promise<void>((resolve) => {
+        fetch(url, {
+          method: 'POST',
+          body: formData
+        })
+          .then((response) => {
+            return response.text()
+          })
+          .then((data) => {
+            // intentionally left blank... we could/should log upload failures here
+            resolve()
+          })
+      })
+    })
+  )
+}
+
+function getNullIfEmpty(value: string): string | null {
+  return value ? value : null
+}
+
 export {
   getDomainUrl,
   getErrorMessage,
   getErrorStack,
   getNonNull,
   removeTrailingSlash,
-  typedBoolean
+  typedBoolean,
+  badRequest,
+  uploadImages,
+  getNullIfEmpty
 }

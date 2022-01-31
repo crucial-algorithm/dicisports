@@ -1,5 +1,5 @@
 body {
-    @apply antialiased font-sans overflow-hidden
+    @apply antialiased font-sans
 }
 
 :root {
@@ -137,9 +137,66 @@ a {
     border-radius: 8px;
 }
 
-
 .list-entry-actions {
     position: absolute;
     top: 0;
     right: 0;
+}
+
+.images-container {
+    width: 100%;
+    height: 300px;
+    overflow: hidden;
+    padding: 10px 4px;
+    text-align: center;
+}
+
+.dropzone {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.images-container img {
+    width: 292px;
+}
+
+.images-container::-webkit-scrollbar {
+    height: 15px;
+    border-radius: 4px;
+    background-color: #fff;
+}
+
+.images-container::-webkit-scrollbar-track {
+    border-radius: 10px;
+}
+
+.images-container::-webkit-scrollbar-thumb {
+    border-radius: 4px;
+    height: 10px;
+    background-color: #525f7f;
+    height: 80%;
+}
+
+.images-container::-webkit-scrollbar:vertical {
+    display: none;
+}
+
+.images-container .image {
+    height: 150px;
+    width: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 10px;
+}
+
+.images-container .image img {
+    width: 100%;
+    height: 100%;
+    -o-object-fit: contain;
+    object-fit: contain;
+    border-radius: 2px;
 }

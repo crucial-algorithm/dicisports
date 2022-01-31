@@ -16,7 +16,7 @@ import {
   CloudinaryFileMeta,
   generateCloudinarySignatures
 } from '~/server/storage/cloudinary.server'
-import { Sport, Document, Event } from '@prisma/client'
+import { Sport, Document, Event } from '~/types'
 import Header from '~/components/shared/Header'
 import TextField from '~/components/shared/form/TextField'
 import Button from '~/components/shared/Button'
@@ -25,6 +25,10 @@ import { inputBaseClasses } from '~/components/shared/form/InputBase'
 import Config from '~/server/config.server'
 import { findSports } from '~/server/db/sports.server'
 import { findEvent } from '~/server/db/events.server'
+import Main from '~/components/shared/Main'
+import I18nText from '~/components/I18nText'
+import FormField from '~/components/shared/form/FormField'
+import { uploadImages } from '~/utils/misc'
 
 type ActionData = {
   formError?: string
@@ -123,42 +127,6 @@ type Image = {
   apiKey: string
 }
 
-const uploadImages = (
-  e: FormEvent<HTMLFormElement>,
-  url: string,
-  uploadPreset: string,
-  images: Array<Image | undefined>
-) => {
-  const formData = new FormData()
-  images.map((image) => {
-    if (!image) return null
-    formData.append('file', image.file)
-    formData.append('upload_preset', uploadPreset)
-    formData.append('public_id', image.value)
-    formData.append('timestamp', image.timestamp + '')
-    formData.append('signature', image.signature)
-    formData.append('api_key', image.apiKey)
-
-    fetch(url, {
-      method: 'POST',
-      body: formData
-    })
-      .then((response) => {
-        return response.text()
-      })
-      .then((data) => {
-        // intentionally left blank... we could/should log upload failures here
-      })
-
-    // file input has name like "image/1/file" and hidden shadow has "image/1"
-    const hiddenFieldName = image.name.replace('/file', '')
-    const field: HTMLInputElement | null =
-      document.querySelector<HTMLInputElement>(`[name="${hiddenFieldName}"]`)
-    if (field) field.value = image.value
-
-    return null
-  })
-}
 const encTypeUpload = 'multipart/form-data'
 const mapDbImages = (
   images: Array<Document> | undefined,
@@ -180,7 +148,6 @@ function hackyEventRevival(event: Event | null): void {
 
 export default function OrganizerEventRoute() {
   const { t } = useTranslation('create-event-form')
-  const tc = useTranslation('common').t
   const {
     sports,
     mapToken,
@@ -191,9 +158,7 @@ export default function OrganizerEventRoute() {
     event
   } = useLoaderData<LoaderData>()
   const [showLocationPicker, setShowLocationPicker] = useState<boolean>(false)
-  const [location, setLocation] = useState<string | undefined | null>(
-    event?.location
-  )
+  const [, setLocation] = useState<string | undefined | null>(event?.location)
   const images: Array<Image | undefined> = new Array(4)
   const loadedImages = mapDbImages(event?.documents, imageDisplayEndpoint)
 
@@ -217,7 +182,7 @@ export default function OrganizerEventRoute() {
   hackyEventRevival(event)
 
   return (
-    <>
+    <Main>
       <Header>{t('Create Event')}</Header>
       <Form
         method="post"
@@ -231,11 +196,9 @@ export default function OrganizerEventRoute() {
           <div className="px-4 py-5 bg-white sm:p-6">
             <div className="grid grid-cols-6 gap-6">
               <div className="col-span-6">
-                <TextField
-                  label={t('Name')}
-                  name="name"
-                  defaultValue={event?.name || ''}
-                />
+                <FormField label={t('Name')}>
+                  <TextField name="name" defaultValue={event?.name || ''} />
+                </FormField>
               </div>
               <div className="col-span-6 sm:col-span-6 lg:col-span-2">
                 <label
@@ -252,7 +215,7 @@ export default function OrganizerEventRoute() {
                 >
                   {sports.map((sport) => (
                     <option key={sport.id} value={sport.id}>
-                      {sport.name}
+                      {I18nText({ text: sport.name })}
                     </option>
                   ))}
                 </select>
@@ -266,22 +229,23 @@ export default function OrganizerEventRoute() {
                 />
               </div>
               <div className="col-span-6 sm:col-span-6 lg:col-span-2">
-                <TextField
-                  label={t('Location')}
-                  name="location"
-                  defaultValue={event?.address || ''}
-                  adornment={
-                    <Button
-                      type="button"
-                      aria-label={t('Location Aria Tip')}
-                      onClick={() => setShowLocationPicker(true)}
-                      rounded={true}
-                      className="inline-block align-middle"
-                    >
-                      <LocationMarkerIcon className="h-6 w-6 m-0 inline-block" />
-                    </Button>
-                  }
-                />
+                <FormField label={t('Location')}>
+                  <TextField
+                    name="location"
+                    defaultValue={event?.address || ''}
+                    adornment={
+                      <Button
+                        type="button"
+                        aria-label={t('Location Aria Tip')}
+                        onClick={() => setShowLocationPicker(true)}
+                        size="small"
+                        className="inline-block align-middle"
+                      >
+                        <LocationMarkerIcon className="h-6 w-6 m-0 inline-block" />
+                      </Button>
+                    }
+                  />
+                </FormField>
               </div>
               <div className="col-span-6 sm:col-span-6">
                 <PickBookingSystem
@@ -347,14 +311,13 @@ export default function OrganizerEventRoute() {
       </Form>
       <MapDialog
         token={mapToken}
-        defaultValue={location}
+        defaultValue={null}
         open={showLocationPicker}
         setClosed={() => setShowLocationPicker(false)}
         onPickedLocation={(location) =>
           setLocation(location?.shortAddress || '')
         }
-        t={tc}
       />
-    </>
+    </Main>
   )
 }

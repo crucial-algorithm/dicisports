@@ -26,9 +26,18 @@ import { Theme, Themed, useTheme } from '~/utils/theme-provider'
 import { useTranslation } from 'react-i18next'
 import Logo from '~/components/shared/Logo'
 
-const LINKS = [{ name: 'NAVBAR >>> Meeting Point', to: '/meeting-points' }]
+const LINKS = [
+  { name: 'NAVBAR >>> Meeting Point', to: '/groups', public: false }
+]
 
 const MOBILE_LINKS = [{ name: 'Home', to: '/' }, ...LINKS]
+
+const links = (
+  list: Array<{ name: string; to: string; public?: boolean }>,
+  user: User | null
+) => {
+  return list.filter((l) => l.public === undefined || (!l.public && user))
+}
 
 function NavLink({
   to,
@@ -113,6 +122,7 @@ function MobileMenuList() {
   const { t } = useTranslation('common')
   const { isExpanded } = useMenuButtonContext()
   const shouldReduceMotion = useReducedMotion()
+  const { user } = useRootData()
 
   useEffect(() => {
     if (isExpanded) {
@@ -152,7 +162,7 @@ function MobileMenuList() {
             className="bg-primary flex flex-col pb-12 h-full border-t border-gray-200 dark:border-gray-600 overflow-y-scroll"
           >
             <MenuItems className="p-0 bg-transparent border-none">
-              {MOBILE_LINKS.map((link) => (
+              {links(MOBILE_LINKS, user).map((link) => (
                 <MenuLink
                   className="hover:bg-secondary focus:bg-secondary text-primary px-5vw py-9 hover:text-team-current border-b border-gray-200 dark:border-gray-600"
                   key={link.to}
@@ -334,7 +344,7 @@ function Navbar() {
 
         <div className="flex items-center justify-center">
           <ul className="hidden lg:flex">
-            {LINKS.map((link) => (
+            {links(LINKS, user).map((link) => (
               <NavLink key={link.to} to={link.to}>
                 {t(link.name)}
               </NavLink>

@@ -1,8 +1,10 @@
 import { db } from '~/server/db.server'
-import { Sport } from '@prisma/client'
+import { Sport } from '~/types'
+import { dbSportToSport } from '~/server/db/codecs.server'
 
 async function findSports(): Promise<Array<Sport>> {
-  return db.sport.findMany()
+  const sport = await db.sport.findMany()
+  return sport.map(dbSportToSport)
 }
 
 export { findSports }

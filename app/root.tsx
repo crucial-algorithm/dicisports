@@ -28,13 +28,18 @@ import { useSpinDelay } from 'spin-delay'
 import { NotificationMessage } from '~/components/shared/NotificationMessage'
 import { AnimatePresence, motion } from 'framer-motion'
 import { TeamCircle } from '~/components/shared/icons/TeamCircle'
-import i18n from '~/server/i18n.server'
 import { useLoaderData } from '@remix-run/react'
 import { Theme, ThemeProvider, useTheme } from '~/utils/theme-provider'
 import { getThemeSession } from '~/server/theme.server'
 import clsx from 'clsx'
 import { Navbar } from '~/components/NavBar'
 import CAGResponse from '~/server/response.server'
+import { setConfig } from 'cloudinary-build-url'
+
+// TODO: can't find a way to set this value client side, globally, using config
+setConfig({
+  cloudName: 'dici-pilot'
+})
 
 export const links: LinksFunction = () => {
   return [
@@ -263,24 +268,15 @@ export default function App() {
 
 export function ErrorBoundary({ error }: { error: Error }) {
   return (
-    <html lang="en" className="dark">
-      <head>
-        <title>Oh no...</title>
-        <Links />
-      </head>
-      <body className="dark:bg-gray-900 dark:text-white bg-white transition duration-500">
-        <div>
-          <h1 className="font-extrabold">There was an error</h1>
-          <p>{error.message}</p>
-          <hr />
-          <p>
-            Hey, developer, you should replace this with what you want your
-            users to see.
-          </p>
-        </div>
-        <Scripts />
-      </body>
-    </html>
+    <div>
+      <h1 className="font-extrabold">There was an error</h1>
+      <p>{error.message}</p>
+      <hr />
+      <p>
+        Hey, developer, you should replace this with what you want your
+        users to see.
+      </p>
+    </div>
   )
 }
 

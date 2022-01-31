@@ -1,5 +1,5 @@
 {
-  "NAVBAR >>> Meeting Point": "Pontos de Encontro",
+  "NAVBAR >>> Meeting Point": "Grupos",
   "Home": "Inicio",
   "Switch to light mode": "Alterar para light mode",
   "Switch to dark mode": "Alterar para dark mode",
@@ -10,5 +10,10 @@
   "Thursday": "Quinta-Feira",
   "Friday": "Sexta-Feira",
   "Saturday": "Sábado",
-  "Sunday": "Domingo"
+  "Sunday": "Domingo",
+
+  "map": "Mapa",
+  "Pick Location In Map Title": "Selecione a localização no mapa",
+  "Drag Map to Choose a Location Hint": "Arraste o mapa até à localização pretendida",
+  "Pick Location Button": "Escolher local"
 }

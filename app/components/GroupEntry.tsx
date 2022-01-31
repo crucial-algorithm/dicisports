@@ -11,7 +11,7 @@ type Props = {
 } & React.ComponentProps<'div'>
 
 export default function GroupEntry({ group, actions, footer }: Props) {
-  const { t } = useTranslation('meeting-points')
+  const { t } = useTranslation('groups')
   const tc = useTranslation('common').t
   const day = tc(
     [

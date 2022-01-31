@@ -1,4 +1,12 @@
-import { Group as DBGroup, User as DBUser, GroupSpirit as DBGroupSpirit, Sport as DBSport } from '@prisma/client'
+import {
+  Group as DBGroup,
+  User as DBUser,
+  GroupSpirit as DBGroupSpirit,
+  GroupType as DBGroupType,
+  Sport as DBSport,
+  Document as DBDocument,
+  Event as DBEvent
+} from '@prisma/client'
 
 type NonNullProperties<Type> = {
   [Key in keyof Type]-?: Exclude<Type[Key], null | undefined>
@@ -10,9 +18,7 @@ type MemberProfile = {
   avatar?: string
 }
 
-type Await<Type> = Type extends Promise<infer Value>
-  ? Await<Value>
-  : Type
+type Await<Type> = Type extends Promise<infer Value> ? Await<Value> : Type
 
 /** Kent C Dodds types copied when recreating login */
 
@@ -65,8 +71,34 @@ type Language = typeof AvailableLanguages[keyof typeof AvailableLanguages]
 // eslint-disable-next-line no-unused-vars
 type TranslationObject = { [K in Language]: string }
 
+type DiciLocation = {
+  coords: string
+  shortAddress: string
+  address?: string
+  postcode?: string | null
+  place?: string | null
+  region?: string | null
+  country?: string | null
+}
+
+type UploadImageMeta = {
+  name: string
+  file: File
+  value: string
+  timestamp: number
+  signature: string
+  apiKey: string
+}
+
 type User = {} & DBUser
-type Sport = {} & DBSport
+type Sport = {
+  name: TranslationObject
+} & DBSport
+type Document = {} & DBDocument
+type GroupType = {
+  name: TranslationObject
+} & DBGroupType
+type Event = {} & DBEvent
 type GroupSpirit = {
   name: TranslationObject
 } & DBGroupSpirit
@@ -75,7 +107,28 @@ type Group = {
   dayOfWeek: DaysOfWeek
   createdBy?: User
   groupSpirit?: GroupSpirit
+  groupType?: GroupType
+  sport?: Sport
 } & DBGroup
+
+type CreateGroupInput = {
+  id?: string
+  name: string
+  sportId?: number | null
+  groupTypeId: number
+  groupSpiritId: number
+  location: string
+  near: string
+  dayOfWeek: number
+  timeOfDay: string
+  whatsapp?: string | null
+  image1?: string | null
+  image2?: string | null
+  image3?: string | null
+  createdAt?: Date | string
+  createdById?: string
+  updatedAt?: Date | string
+}
 
 export {
   NonNullProperties,
@@ -86,9 +139,15 @@ export {
   Language,
   TranslationObject,
   DaysOfWeek,
+  DiciLocation,
+  UploadImageMeta,
   // entities
   User,
   Group,
+  CreateGroupInput,
+  GroupType,
   GroupSpirit,
-  Sport
+  Sport,
+  Document,
+  Event
 }

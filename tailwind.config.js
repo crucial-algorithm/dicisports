@@ -96,7 +96,12 @@ module.exports = {
       spacing: {
         '5vw': '5vw', // pull featured sections and navbar in the margin
         '8vw': '8vw', // positions hero img inside the margin
-        '10vw': '10vw' // page margin
+        '10vw': '10vw', // page margin
+        80: '20rem',
+        112: '28rem',
+        120: '30rem',
+        144: '36rem',
+        160: '40rem'
       }
     }
   },

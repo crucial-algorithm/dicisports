@@ -39,14 +39,18 @@ const InputBase: React.FC<Props> = ({
       type={type}
       name={name}
       id={id}
-      value={value}
+      value={disabled ? defaultValue : value}
       placeholder={placeholder}
       disabled={disabled}
-      onChange={(e) => {
-        setValue(e.target.value)
-        onChange && onChange(e.target.value)
-      }}
-      autoComplete={name}
+      onChange={
+        disabled
+          ? undefined
+          : (e) => {
+              setValue(e.target.value)
+              onChange && onChange(e.target.value)
+            }
+      }
+      autoComplete={autoComplete}
       className={inputBaseClasses(className)}
       readOnly={readOnly}
     />
