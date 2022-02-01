@@ -5,12 +5,13 @@ import {
   LinksFunction,
   LoaderFunction,
   redirect,
-  useActionData, useSubmit
+  useActionData,
+  useSubmit
 } from 'remix'
 import { requireUser } from '~/server/auth/session.server'
 import CAGResponse from '~/server/response.server'
 import { findSports } from '~/server/db/sports.server'
-import { findGroup, updateGroup } from '~/server/db/groups.server'
+import { createGroup, findGroup, updateGroup } from '~/server/db/groups.server'
 import { useTranslation } from 'react-i18next'
 import { Grid } from '~/components/shared/Grid'
 import { Form, useLoaderData } from '@remix-run/react'
@@ -35,7 +36,7 @@ import Config from '~/server/config.server'
 import UploadImage from '~/components/shared/form/UploadImage'
 import { UploadHandler } from '@remix-run/node/formData'
 import { parseMultipartFormData } from '@remix-run/node/parseMultipartFormData'
-import { badRequest, getNullIfEmpty, uploadImages } from '~/utils/misc'
+import { badRequest, uploadImages } from '~/utils/misc'
 import UploadForm from '~/components/shared/form/UploadForm'
 import mapCss from '~/styles/map.css'
 import vendorsCss from '~/styles/vendors.css'
@@ -81,7 +82,7 @@ export const links: LinksFunction = () => {
 }
 
 export let loader: LoaderFunction = async ({ request, params }) => {
-  await requireUser(request)
+  const user = await requireUser(request)
   const {
     MAPBOX_TOKEN,
     IMAGE_UPLOAD_ENDPOINT,
@@ -90,6 +91,8 @@ export let loader: LoaderFunction = async ({ request, params }) => {
   } = Config()
 
   const files = generateCloudinarySignatures(3)
+  const group = params.groupId ? await findGroup(params.groupId) : null
+  if (!group || group.createdById !== user.id) return redirect('/m/groups')
 
   return CAGResponse(
     request,
@@ -97,7 +100,8 @@ export let loader: LoaderFunction = async ({ request, params }) => {
       sports: await findSports(),
       groupTypes: await findGroupTypes(),
       groupsSpirit: await findGroupsSpirit(),
-      group: params.groupId ? await findGroup(params.groupId) : null,
+      group,
+      groupId: params.groupId,
 
       mapToken: MAPBOX_TOKEN,
       imageUploadEndpoint: IMAGE_UPLOAD_ENDPOINT,
@@ -144,6 +148,7 @@ export const action: ActionFunction = async ({ request }) => {
   const image1 = form.get('/image/0') as string
   const image2 = form.get('/image/1') as string
   const image3 = form.get('/image/2') as string
+  const action = form.get('actionId') as string
   const data = {
     id: form.get('id') as string,
     name: form.get('name') as string,
@@ -158,30 +163,35 @@ export const action: ActionFunction = async ({ request }) => {
     image2: processImgField(p, image2, isUpdate),
     image3: processImgField(p, image3, isUpdate)
   }
-
-  console.log(data)
-
   const translate = await SSTranslations('groups-form')
   const required = { invalid_type_error: translate('Field required') }
   const str5CharsOrMore = z
     .string(required)
     .min(5, { message: translate('Name 5 chars or more') })
-
   const GroupSchema = z.object({
     name: str5CharsOrMore,
     location: z.string(required),
     near: str5CharsOrMore
   })
 
-  const group = await findGroup(data.id)
-  if (!group) return badRequest({ error: translate('Group not found') })
-  if (group.createdById !== user.id)
-    return badRequest({ error: translate('Not authorized') })
   try {
     GroupSchema.parse(data)
+    let error: string | null = null
+    const group = await findGroup(data.id)
+
+    if (!group) error = translate('Group not found')
+    if (group && group.createdById !== user.id)
+      error = translate('Not authorized')
+    if (error) return badRequest({ error })
+
     await updateGroup(data)
+
     return redirect(
-      `/groups?message=${translate('Group updated successfully')}`
+      `/m/groups?message=${translate(
+        action === actionIds.update
+          ? 'Group updated successfully'
+          : 'Group created successfully'
+      )}`
     )
   } catch (excp) {
     if (!(excp instanceof ZodError)) {
@@ -190,51 +200,12 @@ export const action: ActionFunction = async ({ request }) => {
       })
     }
     const errors: { [key: string]: string | undefined } = {}
+
     for (const error of (excp as ZodError).errors) {
       errors[error.path[0]] = error.message
     }
 
     return badRequest({ error: undefined, errors })
-  }
-}
-
-type UiGroup = {
-  id: string | null
-  name: string
-  groupType: GroupType | null
-  groupSpirit: GroupSpirit | null
-  sport: Sport | null
-  location: string | null
-  near: string
-  dayOfWeek: number
-  hour: number
-  minute: number
-  whatsapp: string | null
-  image1: string | null
-  image2: string | null
-  image3: string | null
-  createdAt: Date | null
-}
-
-function decode(group: Group | null): UiGroup {
-  const timeOfDay = group?.timeOfDay || '9:30'
-  const [hour, minute] = timeOfDay.split(':').map(parseFloat) // using parse float for 0 min's to work
-  return {
-    id: group ? group.id : null,
-    name: group ? group.name : '',
-    groupType: group && group.groupType ? group.groupType : null,
-    groupSpirit: group && group.groupSpirit ? group.groupSpirit : null,
-    sport: group && group.sport ? group.sport : null,
-    location: group ? group.location : null,
-    near: group && group.near ? group.near : '',
-    dayOfWeek: group ? group.dayOfWeek : 6,
-    hour,
-    minute,
-    whatsapp: group ? group.whatsapp : null,
-    image1: group ? group.image1 : null,
-    image2: group ? group.image2 : null,
-    image3: group ? group.image3 : null,
-    createdAt: group ? group.createdAt : null
   }
 }
 
@@ -249,10 +220,12 @@ export default function GroupRoute() {
     groupsSpirit,
     files,
     imageUploadEndpoint,
-    imageUploadPreset
+    imageUploadPreset,
+    group
   } = loadedData
-  let group = decode(loadedData.group)
-  const isUpdate = useState<boolean>(group.createdAt !== null)
+  const isUpdate = group.status !== 'auto'
+  // using parse float for 0 min's to work
+  const [hour, minute] = group.timeOfDay.split(':').map(parseFloat)
   const images: Array<UploadImageMeta | undefined> = new Array(3)
   const actionData = useActionData<ActionData>()
 
@@ -283,6 +256,7 @@ export default function GroupRoute() {
       : null
   )
   const submit = useSubmit()
+
   return (
     <Main>
       <div className="mb-64 mt-24 pt-6">
@@ -316,7 +290,7 @@ export default function GroupRoute() {
               <input
                 type="hidden"
                 name="actionId"
-                value={group.createdAt ? actionIds.update : actionIds.new}
+                value={isUpdate ? actionIds.update : actionIds.new}
               />
               <FormField
                 label={t('Group Name')}
@@ -327,7 +301,7 @@ export default function GroupRoute() {
                 <TextField
                   name="name"
                   id="group-sport"
-                  defaultValue={group.name}
+                  defaultValue={group.name || ''}
                 />
               </FormField>
               <FormField
@@ -414,7 +388,7 @@ export default function GroupRoute() {
                   name="near"
                   id="group-location-helper"
                   placeholder={t('Group Location Helper Placeholder')}
-                  defaultValue={group.near}
+                  defaultValue={group.near || ''}
                 />
               </FormField>
               <FormField
@@ -442,7 +416,7 @@ export default function GroupRoute() {
                 id="group-time-of-day"
                 className="w-48"
               >
-                <HourOfDay hour={group.hour} minute={group.minute} />
+                <HourOfDay hour={hour} minute={minute} />
               </FormField>
               <FormField label={t('Group Photos')} id="adsfsdf">
                 <div className="grid gap-4 grid-cols-3 grid-rows-1">

@@ -29,7 +29,7 @@ async function CAGResponse(
   headers?: HeadersInit,
   translations?: Array<string>
 ): Promise<Response> {
-  const path = new URL(request.url).pathname.substr(1)
+  const path = new URL(request.url).pathname.substr(1).replace('/', '-')
 
   if (Array.isArray(data)) {
     translations = data

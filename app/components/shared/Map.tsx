@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 import mapboxgl from 'mapbox-gl'
 import { Dialog } from '@reach/dialog'
 import { LocationMarkerIcon } from '@heroicons/react/solid'

@@ -97,21 +97,22 @@ model Document {
 model Group {
   @@map("groups")
   id                    String          @id
-  name                  String
+  name                  String?
   sport                 Sport?          @relation(fields: [sportId], references: [id])
   sportId               Int?            @map("sport_id")
   groupType             GroupType       @relation(fields: [groupTypeId], references: [id])
   groupTypeId           Int             @map("group_type_id")
   groupSpirit           GroupSpirit     @relation(fields: [groupSpiritId], references: [id])
   groupSpiritId         Int             @map("group_spirit_id")
-  location              String
-  near                  String
+  location              String?
+  near                  String?
   dayOfWeek             Int             @map("day_of_week")
   timeOfDay             String          @map("time_of_day")
   whatsapp              String?
   image1                String?
   image2                String?
   image3                String?
+  status                Status          @default(auto)
   createdAt             DateTime        @default(now()) @map("created_at")
   createdBy             User            @relation(fields: [createdById], references: [id], onDelete: Cascade)
   createdById           String          @map("created_by")

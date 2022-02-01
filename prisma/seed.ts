@@ -234,6 +234,7 @@ function groups() {
       whatsapp: null,
       createdAt: new Date('2021-12-31T08:00:00Z'),
       updatedAt: new Date('2021-12-31T08:00:00Z'),
+      status: Status.published,
       createdById: 'dummyuser'
     },
     {
@@ -248,6 +249,7 @@ function groups() {
       whatsapp: null,
       createdAt: new Date('2021-12-31T08:00:00Z'),
       updatedAt: new Date('2021-12-31T08:00:00Z'),
+      status: Status.published,
       createdById: 'dummyuser'
     }
   ]

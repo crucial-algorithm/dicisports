@@ -7,5 +7,5 @@ export default function I18nText({
   text: TranslationObject
 }): string {
   const { i18n } = useTranslation()
-  return text[i18n.language as Language]
+  return text ? text[i18n.language as Language] : ''
 }

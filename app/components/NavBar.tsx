@@ -27,7 +27,7 @@ import { useTranslation } from 'react-i18next'
 import Logo from '~/components/shared/Logo'
 
 const LINKS = [
-  { name: 'NAVBAR >>> Meeting Point', to: '/groups', public: false }
+  { name: 'NAVBAR >>> Meeting Point', to: '/m/groups', public: false }
 ]
 
 const MOBILE_LINKS = [{ name: 'Home', to: '/' }, ...LINKS]

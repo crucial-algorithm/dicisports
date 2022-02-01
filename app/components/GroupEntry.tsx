@@ -11,7 +11,7 @@ type Props = {
 } & React.ComponentProps<'div'>
 
 export default function GroupEntry({ group, actions, footer }: Props) {
-  const { t } = useTranslation('groups')
+  const { t } = useTranslation('m-groups')
   const tc = useTranslation('common').t
   const day = tc(
     [
@@ -34,7 +34,7 @@ export default function GroupEntry({ group, actions, footer }: Props) {
             label={t('Who')}
             value={group.createdBy?.name || group.createdById}
           />
-          <Feature label={t('Where')} value={group.near} />
+          <Feature label={t('Where')} value={group.near || ''} />
           <Feature label={t('Purpose')} value={group.groupSpirit?.name || ''} />
         </div>
       </div>

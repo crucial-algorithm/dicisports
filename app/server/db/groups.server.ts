@@ -2,6 +2,7 @@ import { CreateGroupInput, Group } from '~/types'
 import { db } from '~/server/db.server'
 import { dbGroupToGroup } from '~/server/db/codecs.server'
 import Id from '~/server/utils/Id.server'
+import { Status } from '@prisma/client'
 
 async function findGroups(): Promise<Array<Group>> {
   const groups = await db.group.findMany()
@@ -10,7 +11,7 @@ async function findGroups(): Promise<Array<Group>> {
 
 async function findUserGroups(userId: string): Promise<Array<Group>> {
   const groups = await db.group.findMany({
-    where: { createdById: userId },
+    where: { createdById: userId, status: { not: Status.auto } },
     include: {
       groupSpirit: true,
       createdBy: true
@@ -45,7 +46,42 @@ async function createGroup(
 }
 
 async function updateGroup(group: CreateGroupInput): Promise<void> {
-  await db.group.update({ where: { id: group.id }, data: group })
+  await db.group.update({
+    where: { id: group.id },
+    data: { ...group, status: Status.published }
+  })
 }
 
-export { findGroup, findGroups, findUserGroups, createGroup, updateGroup }
+async function createDraftGroup(
+  createdById: string,
+  id?: string
+): Promise<Group> {
+  const groupId = id ? id : Id()
+  const createdAt = new Date()
+  const updatedAt = createdAt
+
+  return dbGroupToGroup(
+    await db.group.create({
+      data: {
+        id: groupId,
+        sportId: 1,
+        groupTypeId: 1,
+        groupSpiritId: 1,
+        dayOfWeek: 6,
+        timeOfDay: '8:30',
+        createdById,
+        createdAt,
+        updatedAt
+      }
+    })
+  )
+}
+
+export {
+  findGroup,
+  findGroups,
+  findUserGroups,
+  createGroup,
+  updateGroup,
+  createDraftGroup
+}

@@ -25,5 +25,6 @@
   "Name 5 chars or more": "O nome tem de ter 5+ letras",
   "We dont know what happened": "Não sabemos o que aconteceu... tente novamente e se não conseguir terminar a operação, entre em contacto connosco",
 
-  "Group updated successfully": "Grupo atualizado"
+  "Group updated successfully": "Grupo atualizado",
+  "Group created successfully": "Parabéns... o novo grupo está disponível"
 }

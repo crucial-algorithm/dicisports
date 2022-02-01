@@ -37,7 +37,7 @@ export let loader: LoaderFunction = async ({ request }) => {
 export const action: ActionFunction = async ({ request }) => {}
 
 export default function Groups() {
-  let { t } = useTranslation('groups')
+  let { t } = useTranslation('m-groups')
   const { groups } = useLoaderData<LoaderData>()
 
   return (
@@ -45,7 +45,7 @@ export default function Groups() {
       <div className="col-span-full mb-12 lg:mb-12">
         <div className="flex flex-col-reverse items-start justify-between lg:flex-row lg:items-center">
           <div />
-          <Form method="post">
+          <Form method="post" action="/m/group/add">
             <input type="hidden" name="actionId" value={actionIds.create} />
             <Button variant="secondary">
               <H6 as="span">{t('Create')}</H6>
@@ -62,7 +62,7 @@ export default function Groups() {
             key={group.id}
             actions={
               <ButtonGroup>
-                <DiciLink size="small" to={`/groups/${group.id}`}>
+                <DiciLink size="small" to={`/m/group/${group.id}`}>
                   <PencilAltIcon className="h-6 w-6 m-0 inline-block" />
                 </DiciLink>
               </ButtonGroup>
