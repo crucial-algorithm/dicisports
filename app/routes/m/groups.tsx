@@ -7,14 +7,13 @@ import CAGResponse from '~/server/response.server'
 import { findSports } from '~/server/db/sports.server'
 import { Form, useLoaderData } from '@remix-run/react'
 import { Group, Sport } from '~/types'
-import Button from '~/components/shared/Button'
+import Button, { ButtonLink } from '~/components/shared/Button'
 import { PencilAltIcon } from '@heroicons/react/outline'
 import InputError from '~/components/shared/form/InputError'
 import { requireUser } from '~/server/auth/session.server'
 import { findUserGroups } from '~/server/db/groups.server'
 import GroupEntry from '~/components/GroupEntry'
 import ButtonGroup from '~/components/shared/ButtonGroup'
-import DiciLink from '~/components/shared/DiciLink'
 
 type LoaderData = {
   sports: Array<Sport>
@@ -62,9 +61,9 @@ export default function Groups() {
             key={group.id}
             actions={
               <ButtonGroup>
-                <DiciLink size="small" to={`/m/group/${group.id}`}>
+                <ButtonLink size="small" to={`/m/group/${group.id}`}>
                   <PencilAltIcon className="h-6 w-6 m-0 inline-block" />
-                </DiciLink>
+                </ButtonLink>
               </ButtonGroup>
             }
           />

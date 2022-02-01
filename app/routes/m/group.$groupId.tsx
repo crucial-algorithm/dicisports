@@ -364,7 +364,7 @@ export default function GroupRoute() {
                   adornment={
                     <Button
                       className="mr-2"
-                      variant="link"
+                      variant="adornment"
                       type="button"
                       onClick={() => setShowLocationPicker(true)}
                     >

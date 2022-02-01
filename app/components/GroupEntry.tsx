@@ -58,7 +58,7 @@ function Feature({
           {label}
         </div>
         <div className="inline-block dark:text-white text-gray-500 text-base">
-          {typeof value === 'string' ? value : <I18nText text={value} />}
+          {typeof value === 'string' ? value : I18nText({ text: value })}
         </div>
       </div>
     </>
