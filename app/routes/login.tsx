@@ -2,16 +2,15 @@ import Button from '~/components/shared/Button'
 import { Form, useLoaderData } from '@remix-run/react'
 import TextField from '~/components/shared/form/TextField'
 import FormField from '~/components/shared/form/FormField'
-import { ActionFunction, json, LoaderFunction, redirect } from 'remix'
+import { ActionFunction, LoaderFunction, redirect } from 'remix'
 import { getLoginInfoSession } from '~/server/auth/login.server'
 import { getUser, sendToken } from '~/server/auth/session.server'
 import { verifyEmailAddress } from '~/server/auth/verifier.server'
 import { getDomainUrl, getErrorMessage } from '~/utils/misc'
 import { useState } from 'react'
-import i18n, { SSTranslations } from '~/server/i18n.server'
+import { SSTranslations } from '~/server/i18n.server'
 import InputError from '~/components/shared/form/InputError'
 import { useTranslation } from 'react-i18next'
-import Logo from '~/components/shared/Logo'
 import CAGResponse from '~/server/response.server'
 
 function validateEmail(email: string | null): boolean {
@@ -116,7 +115,6 @@ export default function Login() {
     <div className="flex">
       <div className="m-auto mt-64">
         <div className="flex flex-col items-center justify-center w-full min-w-full w-96">
-          <Logo xxl={true} className="mb-8" />
           <Form
             autoComplete="off"
             className="w-full"
