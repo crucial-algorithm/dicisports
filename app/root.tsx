@@ -35,6 +35,7 @@ import clsx from 'clsx'
 import { Navbar } from '~/components/NavBar'
 import CAGResponse from '~/server/response.server'
 import { setConfig } from 'cloudinary-build-url'
+import TransitionIndicator from '~/components/shared/TransitionIndicator'
 
 // TODO: can't find a way to set this value client side, globally, using config
 setConfig({
@@ -192,33 +193,11 @@ function PageLoadingMessage() {
   const action = words[0]
 
   return (
-    <NotificationMessage position="bottom-right" visible={showLoader}>
-      <div className="flex items-center w-64">
-        <motion.div
-          transition={{ repeat: Infinity, duration: 2, ease: 'linear' }}
-          animate={{ rotate: 360 }}
-        >
-          <TeamCircle size={48} />
-        </motion.div>
-        <div className="inline-grid ml-4">
-          <AnimatePresence>
-            <div className="flex col-start-1 row-start-1 overflow-hidden">
-              <motion.span
-                key={action}
-                initial={{ y: 15, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                exit={{ y: -15, opacity: 0 }}
-                transition={{ duration: 0.25 }}
-                className="flex-none"
-              >
-                {action}
-              </motion.span>
-            </div>
-          </AnimatePresence>
-          <span className="text-secondary truncate">path: {pendingPath}</span>
-        </div>
-      </div>
-    </NotificationMessage>
+    <TransitionIndicator
+      visible={showLoader}
+      action={action}
+      secondary={pendingPath}
+    />
   )
 }
 

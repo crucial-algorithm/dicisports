@@ -11,7 +11,7 @@ import {
 import { requireUser } from '~/server/auth/session.server'
 import CAGResponse from '~/server/response.server'
 import { findSports } from '~/server/db/sports.server'
-import { createGroup, findGroup, updateGroup } from '~/server/db/groups.server'
+import { findGroup, updateGroup } from '~/server/db/groups.server'
 import { useTranslation } from 'react-i18next'
 import { Grid } from '~/components/shared/Grid'
 import { Form, useLoaderData } from '@remix-run/react'
@@ -47,6 +47,7 @@ import {
 import { z, ZodError } from 'zod'
 import { SSTranslations } from '~/server/i18n.server'
 import InputError from '~/components/shared/form/InputError'
+import TransitionIndicator from '~/components/shared/TransitionIndicator'
 
 const RESOURCES_NS = 'groups-form'
 
@@ -228,6 +229,7 @@ export default function GroupRoute() {
   const [hour, minute] = group.timeOfDay.split(':').map(parseFloat)
   const images: Array<UploadImageMeta | undefined> = new Array(3)
   const actionData = useActionData<ActionData>()
+  const [uploading, setImagesUploading] = useState<boolean>(false)
 
   const setImage = (index: number, file: File) => {
     const meta: CloudinaryFileMeta | undefined = files[index]
@@ -278,11 +280,13 @@ export default function GroupRoute() {
               className="w-full"
               onSubmit={async (e) => {
                 e.preventDefault()
+                setImagesUploading(true)
                 await uploadImages(
                   imageUploadEndpoint,
                   imageUploadPreset,
                   images
                 )
+                setImagesUploading(false)
                 submit(e.target as HTMLFormElement)
               }}
             >
@@ -418,7 +422,7 @@ export default function GroupRoute() {
               >
                 <HourOfDay hour={hour} minute={minute} />
               </FormField>
-              <FormField label={t('Group Photos')} id="adsfsdf">
+              <FormField label={t('Group Photos')} id="group-photos">
                 <div className="grid gap-4 grid-cols-3 grid-rows-1">
                   <UploadImage
                     index={0}
@@ -443,8 +447,17 @@ export default function GroupRoute() {
                   />
                 </div>
               </FormField>
-              <Button className="mt-8" type="submit" form="profile-form">
-                {isUpdate ? t('Update Group') : t('Create Group')}
+              <Button
+                className="mt-8"
+                type="submit"
+                form="profile-form"
+                disabled={uploading}
+              >
+                {uploading
+                  ? t('Button While Uploading Images')
+                  : isUpdate
+                  ? t('Update Group')
+                  : t('Create Group')}
               </Button>
               <InputError id="global-error" className="mt-4">
                 {actionData?.error}
@@ -466,6 +479,7 @@ export default function GroupRoute() {
           setLocation(location)
         }}
       />
+      <TransitionIndicator visible={uploading} action={t('Uploading Images')} />
     </Main>
   )
 }

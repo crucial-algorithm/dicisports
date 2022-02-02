@@ -60,7 +60,6 @@ const uploadImages = async (
   images: Array<UploadImageMeta | undefined>
 ) => {
   const formData = new FormData()
-  console.log(images)
   await Promise.all(
     images.map((image) => {
       if (!image) return null
