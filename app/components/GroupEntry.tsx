@@ -6,6 +6,7 @@ import I18nText from '~/components/I18nText'
 import DisplayImg from '~/components/shared/DisplayImg'
 import Bicycle from '~/components/illustrations/Bicycle'
 import { displayTimeOfDay } from '~/utils/misc'
+import Running from '~/components/illustrations/Running'
 
 type Props = {
   actions?: React.ReactNode
@@ -34,7 +35,10 @@ export default function GroupEntry({ group, actions, footer }: Props) {
         {group.image1 ? (
           <DisplayImg id={group.image1 || ''} alt="group event 1st image" />
         ) : (
-          <Bicycle className="w-full rounded-lg object-cover bg-gray-100 dark:bg-gray-300" />
+          <PlaceholderImg
+            group={group}
+            className="w-full rounded-lg object-cover bg-gray-100 dark:bg-gray-400"
+          />
         )}
       </div>
       <div className="w-full h-full">
@@ -55,6 +59,21 @@ export default function GroupEntry({ group, actions, footer }: Props) {
       {actions ? <div className="list-entry-actions p-4">{actions}</div> : null}
       {footer ? <div className="list-entry-footer">{footer}</div> : null}
     </div>
+  )
+}
+
+function PlaceholderImg({
+  group,
+  className
+}: {
+  group: Group
+  className: string
+}) {
+  const sportId = group.sportId as number
+  return sportId < 3 ? (
+    <Running className={className} />
+  ) : (
+    <Bicycle className={className} />
   )
 }
 
