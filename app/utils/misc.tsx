@@ -91,6 +91,11 @@ function getNullIfEmpty(value: string): string | null {
   return value ? value : null
 }
 
+function displayTimeOfDay(value: string): string {
+  const [hours, minutes] = value.split(':')
+  return `${hours.padStart(2, '0')}:${minutes.padStart(2, '0')}`
+}
+
 export {
   getDomainUrl,
   getErrorMessage,
@@ -100,5 +105,6 @@ export {
   typedBoolean,
   badRequest,
   uploadImages,
-  getNullIfEmpty
+  getNullIfEmpty,
+  displayTimeOfDay
 }
