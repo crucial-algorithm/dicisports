@@ -1,0 +1,10 @@
+version: '3'
+services:
+  database:
+    image: 'postgres:13'
+    environment:
+      - POSTGRES_USER=dici
+      - POSTGRES_PASSWORD=sports
+      - POSTGRES_DB=dicisports
+    ports:
+      - '6432:5432'

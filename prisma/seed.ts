@@ -225,6 +225,7 @@ function groups() {
     {
       id: 'FkoxmH5db6RXqBpExion',
       name: 'Bike Brothers Domingueira',
+      sportId: 3,
       groupTypeId: 1,
       groupSpiritId: 2,
       location: '41.5513986,-8.434844|R Cónego Dr Manuel Faria',
@@ -240,6 +241,7 @@ function groups() {
     {
       id: 'GkoxmH5db6RXqBpExion',
       name: 'Bike Brothers BTT ao Sábado',
+      sportId: 4,
       groupTypeId: 1,
       groupSpiritId: 2,
       location: '41.5513986,-8.434844|R Cónego Dr Manuel Faria',
