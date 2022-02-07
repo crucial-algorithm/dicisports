@@ -11,11 +11,12 @@ async function findGroups(): Promise<Array<Group>> {
 
 async function findUserGroups(userId: string): Promise<Array<Group>> {
   const groups = await db.group.findMany({
-    where: { createdById: userId, status: { not: Status.auto } },
+    where: { createdById: userId, status: Status.published },
     include: {
       groupSpirit: true,
       createdBy: true
-    }
+    },
+    orderBy: { name: 'asc' }
   })
   return groups.map(dbGroupToGroup)
 }
@@ -77,11 +78,19 @@ async function createDraftGroup(
   )
 }
 
+async function deleteGroup(id: string): Promise<void> {
+  await db.group.update({
+    where: { id },
+    data: { status: 'deleted' }
+  })
+}
+
 export {
   findGroup,
   findGroups,
   findUserGroups,
   createGroup,
   updateGroup,
-  createDraftGroup
+  createDraftGroup,
+  deleteGroup
 }

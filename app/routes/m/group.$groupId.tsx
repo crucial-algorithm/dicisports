@@ -1,5 +1,5 @@
 import Main from '~/components/shared/Main'
-import { H2, H3 } from '~/components/shared/typography'
+import { H2, H3, Paragraph } from '~/components/shared/typography'
 import {
   ActionFunction,
   LinksFunction,
@@ -11,7 +11,7 @@ import {
 import { requireUser } from '~/server/auth/session.server'
 import CAGResponse from '~/server/response.server'
 import { findSports } from '~/server/db/sports.server'
-import { findGroup, updateGroup } from '~/server/db/groups.server'
+import { deleteGroup, findGroup, updateGroup } from '~/server/db/groups.server'
 import { useTranslation } from 'react-i18next'
 import { Grid } from '~/components/shared/Grid'
 import { Form, useLoaderData } from '@remix-run/react'
@@ -48,6 +48,8 @@ import { z, ZodError } from 'zod'
 import { SSTranslations } from '~/server/i18n.server'
 import InputError from '~/components/shared/form/InputError'
 import TransitionIndicator from '~/components/shared/TransitionIndicator'
+import { Dialog } from '@reach/dialog'
+import { Spacer } from '~/components/shared/Spacer'
 
 const RESOURCES_NS = 'groups-form'
 
@@ -65,8 +67,7 @@ type LoaderData = {
 }
 
 const actionIds = {
-  new: 'new',
-  update: 'update'
+  delete: 'delete'
 }
 
 export const links: LinksFunction = () => {
@@ -137,7 +138,7 @@ function processImgField(
   return imgFullId(prefix, value)
 }
 
-export const action: ActionFunction = async ({ request }) => {
+export const action: ActionFunction = async ({ request, params }) => {
   const user = await requireUser(request)
   const uploadHandler: UploadHandler = async () => {
     // cleanup images from form - upload is done directly to cloudinary
@@ -145,11 +146,27 @@ export const action: ActionFunction = async ({ request }) => {
   }
   const form = await parseMultipartFormData(request, uploadHandler)
   const p = Config().CLOUDINARY_UPLOAD_FOLDER_TARGET
-  const isUpdate = (form.get('actionId') as string) === actionIds.update
+  const action = form.get('actionId') as string
+
+  // Check if user should be able to manipulate this group
+  const group = params.groupId ? await findGroup(params.groupId) : null
+  const translate = await SSTranslations('groups-form')
+
+  if (!group) return badRequest({ error: translate('Group not found') })
+  if (group.createdById !== user.id)
+    return badRequest({ error: translate('Not authorized') })
+
+  // from here on, the user is capable of doing whatever to the group
+  if (action === actionIds.delete) {
+    await deleteGroup(group.id)
+    return redirect(
+      `/m/groups?message=${translate('Group deleted successfully')}`
+    )
+  }
+  const isUpdate = group.status !== 'auto'
   const image1 = form.get('/image/0') as string
   const image2 = form.get('/image/1') as string
   const image3 = form.get('/image/2') as string
-  const action = form.get('actionId') as string
   const data = {
     id: form.get('id') as string,
     name: form.get('name') as string,
@@ -164,7 +181,6 @@ export const action: ActionFunction = async ({ request }) => {
     image2: processImgField(p, image2, isUpdate),
     image3: processImgField(p, image3, isUpdate)
   }
-  const translate = await SSTranslations('groups-form')
   const required = { invalid_type_error: translate('Field required') }
   const str5CharsOrMore = z
     .string(required)
@@ -177,21 +193,12 @@ export const action: ActionFunction = async ({ request }) => {
 
   try {
     GroupSchema.parse(data)
-    let error: string | null = null
-    const group = await findGroup(data.id)
-
-    if (!group) error = translate('Group not found')
-    if (group && group.createdById !== user.id)
-      error = translate('Not authorized')
-    if (error) return badRequest({ error })
 
     await updateGroup(data)
 
     return redirect(
       `/m/groups?message=${translate(
-        action === actionIds.update
-          ? 'Group updated successfully'
-          : 'Group created successfully'
+        isUpdate ? 'Group updated successfully' : 'Group created successfully'
       )}`
     )
   } catch (excp) {
@@ -230,6 +237,7 @@ export default function GroupRoute() {
   const images: Array<UploadImageMeta | undefined> = new Array(3)
   const actionData = useActionData<ActionData>()
   const [uploading, setImagesUploading] = useState<boolean>(false)
+  const [deleteModalOpen, setDeleteModalOpen] = useState<boolean>(false)
 
   const setImage = (index: number, file: File) => {
     const meta: CloudinaryFileMeta | undefined = files[index]
@@ -291,11 +299,6 @@ export default function GroupRoute() {
               }}
             >
               <input type="hidden" name="id" value={group?.id || ''} />
-              <input
-                type="hidden"
-                name="actionId"
-                value={isUpdate ? actionIds.update : actionIds.new}
-              />
               <FormField
                 label={t('Group Name')}
                 id="group-name"
@@ -379,7 +382,11 @@ export default function GroupRoute() {
                 <input
                   type="hidden"
                   name="location"
-                  value={`${location?.coords}|${location?.shortAddress}`}
+                  value={
+                    location
+                      ? `${location?.coords}|${location?.shortAddress}`
+                      : undefined
+                  }
                 />
               </FormField>
               <FormField
@@ -463,10 +470,20 @@ export default function GroupRoute() {
                 {actionData?.error}
               </InputError>
             </UploadForm>
-            <Form method="post" className="mt-24 border-t border-red-500 pt-6">
-              <input type="hidden" name="actionId" value="dont_know_yet" />
-              <Button variant="danger">{t('Delete Group')}</Button>
-            </Form>
+            {isUpdate ? (
+              <Form
+                method="post"
+                className="mt-24 border-t border-gray-300 dark:border-gray-300 pt-6"
+              >
+                <input type="hidden" name="actionId" value="dont_know_yet" />
+                <Button
+                  variant="danger"
+                  onClick={() => setDeleteModalOpen(true)}
+                >
+                  {t('Delete Group')}
+                </Button>
+              </Form>
+            ) : null}
           </div>
         </Grid>
       </div>
@@ -479,6 +496,32 @@ export default function GroupRoute() {
           setLocation(location)
         }}
       />
+      <Dialog
+        onDismiss={() => setDeleteModalOpen(false)}
+        isOpen={deleteModalOpen}
+        aria-label="Delete your account"
+        className="w-11/12 dark:bg-gray-900 border-2 border-black dark:border-white rounded-lg lg:px-24 lg:py-14 lg:max-w-screen-lg"
+      >
+        <H3>{t('Delete Group X', { name: group?.name })}</H3>
+        <Paragraph>{t('Are you sure you want to delete group?')}</Paragraph>
+        <Spacer size="2xs" />
+        <Form
+          id="profile-form"
+          method="post"
+          noValidate
+          aria-describedby="general-error"
+        >
+          <input type="hidden" name="actionId" value={actionIds.delete} />
+          <div className="flex flex-wrap gap-4">
+            <Button type="button" onClick={() => setDeleteModalOpen(false)}>
+              {t("No, I don't want to delete")}
+            </Button>
+            <Button variant="danger" size="medium" type="submit">
+              {t('Delete Group')}
+            </Button>
+          </div>
+        </Form>
+      </Dialog>
       <TransitionIndicator visible={uploading} action={t('Uploading Images')} />
     </Main>
   )
