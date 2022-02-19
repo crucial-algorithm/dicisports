@@ -2,7 +2,6 @@ import * as React from 'react'
 import { renderToString } from 'react-dom/server'
 import { RemixServer } from 'remix'
 import type { EntryContext } from 'remix'
-
 import i18next from 'i18next'
 import { initReactI18next } from 'react-i18next'
 import { RemixI18NextProvider } from 'remix-i18next'

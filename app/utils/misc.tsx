@@ -91,9 +91,10 @@ function getNullIfEmpty(value: string): string | null {
   return value ? value : null
 }
 
-function displayTimeOfDay(value: string): string {
-  const [hours, minutes] = value.split(':')
-  return `${hours.padStart(2, '0')}:${minutes.padStart(2, '0')}`
+function displayTimeOfDay(value: number): string {
+  const hours = Math.floor(value / 100)
+  const minutes = value % 100
+  return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`
 }
 
 export {

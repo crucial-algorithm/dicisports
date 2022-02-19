@@ -5,13 +5,16 @@ import {
   GroupType,
   TranslationObject,
   User,
-  Sport
+  Sport,
+  Location, DBRawGroup
 } from '~/types'
 import {
   Group as DBGroup,
   GroupType as DBGroupType,
   GroupSpirit as DBGroupSpirit,
-  Sport as DBSport
+  Sport as DBSport,
+  Location as DBLocation,
+  Status, Role
 } from '@prisma/client'
 
 function dbSportToSport(sport: DBSport): Sport {
@@ -21,6 +24,20 @@ function dbSportToSport(sport: DBSport): Sport {
     createdAt,
     updatedAt,
     name: name as TranslationObject
+  }
+}
+
+function dbLocationToLocation(location: DBLocation): Location {
+  const { id, city, region, country, lat, lng, createdAt, updatedAt } = location
+  return {
+    id,
+    city,
+    region,
+    country,
+    lat,
+    lng,
+    createdAt,
+    updatedAt
   }
 }
 
@@ -65,9 +82,50 @@ function dbGroupToGroup(group: GroupInput): Group {
   }
 }
 
+function dbRawGroupToGroup(group: DBRawGroup): Group {
+  return {
+    distance: group.distance,
+    id: group.id,
+    name: group.name,
+    sportId: group.sport_id,
+    groupTypeId: group.group_type_id,
+    groupSpiritId: group.group_spirit_id,
+    lat: group.lat,
+    lng: group.lng,
+    location: group.location,
+    near: group.near,
+    dayOfWeek: group.day_of_week as DaysOfWeek,
+    timeOfDay: group.time_of_day,
+    whatsapp: group.whatsapp,
+    image1: group.image1,
+    image2: group.image2,
+    image3: group.image3,
+    status: group.status as Status,
+    createdAt: new Date(group.created_at),
+    createdById: group.created_by,
+    updatedAt: new Date(group.updated_at),
+    groupSpirit: {
+      id: 0,
+      name: group.group_spirit,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    },
+    createdBy: {
+      id: group.created_by,
+      name: group.user_name,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      email: '',
+      role: Role.MEMBER
+    }
+  }
+}
+
 export {
   dbSportToSport,
+  dbLocationToLocation,
   dbGroupSpiritToGroupSpirit,
   dbGroupTypeToGroupType,
-  dbGroupToGroup
+  dbGroupToGroup,
+  dbRawGroupToGroup
 }

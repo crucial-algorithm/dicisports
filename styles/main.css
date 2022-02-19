@@ -142,6 +142,11 @@ a {
     top: 0;
     right: 0;
 }
+.list-entry-footer {
+    position: absolute;
+    bottom: 20px;
+    right: 0;
+}
 
 .images-container {
     width: 100%;

@@ -12,6 +12,6 @@
   "rules": {
     "prettier/prettier": "error",
     "no-unused-vars": "error",
-    "no-console": "error"
+    "no-console": "off"
   }
 }

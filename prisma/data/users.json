@@ -1,0 +1,162 @@
+[
+  {
+    "id": "cbda63c0793124387135",
+    "updatedAt": "2021-12-31T08:00:00Z",
+    "createdAt": "2021-12-31T08:00:00Z",
+    "email": "guarda@gmail.com",
+    "name": "Guarda",
+    "role": null
+  },
+  {
+    "id": "e5371e3f657c196fdd75",
+    "updatedAt": "2021-12-31T08:00:00Z",
+    "createdAt": "2021-12-31T08:00:00Z",
+    "email": "castelo-branco@gmail.com",
+    "name": "Castelo Branco",
+    "role": null
+  },
+  {
+    "id": "6964937293f5b22e35c8",
+    "updatedAt": "2021-12-31T08:00:00Z",
+    "createdAt": "2021-12-31T08:00:00Z",
+    "email": "viseu@gmail.com",
+    "name": "Viseu",
+    "role": null
+  },
+  {
+    "id": "069f6ada1ea40b879653",
+    "updatedAt": "2021-12-31T08:00:00Z",
+    "createdAt": "2021-12-31T08:00:00Z",
+    "email": "braga@gmail.com",
+    "name": "Braga",
+    "role": null
+  },
+  {
+    "id": "ec6a22f0bb3110bc7adb",
+    "updatedAt": "2021-12-31T08:00:00Z",
+    "createdAt": "2021-12-31T08:00:00Z",
+    "email": "porto@gmail.com",
+    "name": "Porto",
+    "role": null
+  },
+  {
+    "id": "094cafc7a07ca5fc605f",
+    "updatedAt": "2021-12-31T08:00:00Z",
+    "createdAt": "2021-12-31T08:00:00Z",
+    "email": "madeira@gmail.com",
+    "name": "Madeira",
+    "role": null
+  },
+  {
+    "id": "1e488ad571e683258934",
+    "updatedAt": "2021-12-31T08:00:00Z",
+    "createdAt": "2021-12-31T08:00:00Z",
+    "email": "setúbal@gmail.com",
+    "name": "Setúbal",
+    "role": null
+  },
+  {
+    "id": "8199f1b4efb79379dde2",
+    "updatedAt": "2021-12-31T08:00:00Z",
+    "createdAt": "2021-12-31T08:00:00Z",
+    "email": "coimbra@gmail.com",
+    "name": "Coimbra",
+    "role": null
+  },
+  {
+    "id": "29e67423f24c0c9aead0",
+    "updatedAt": "2021-12-31T08:00:00Z",
+    "createdAt": "2021-12-31T08:00:00Z",
+    "email": "viana-do-castelo@gmail.com",
+    "name": "Viana do Castelo",
+    "role": null
+  },
+  {
+    "id": "bb04302eca5170c649c6",
+    "updatedAt": "2021-12-31T08:00:00Z",
+    "createdAt": "2021-12-31T08:00:00Z",
+    "email": "portalegre@gmail.com",
+    "name": "Portalegre",
+    "role": null
+  },
+  {
+    "id": "2e263c071a39fec91831",
+    "updatedAt": "2021-12-31T08:00:00Z",
+    "createdAt": "2021-12-31T08:00:00Z",
+    "email": "beja@gmail.com",
+    "name": "Beja",
+    "role": null
+  },
+  {
+    "id": "4e1f2f8ab203efe7f966",
+    "updatedAt": "2021-12-31T08:00:00Z",
+    "createdAt": "2021-12-31T08:00:00Z",
+    "email": "bragança@gmail.com",
+    "name": "Bragança",
+    "role": null
+  },
+  {
+    "id": "4d367c13f2088054b876",
+    "updatedAt": "2021-12-31T08:00:00Z",
+    "createdAt": "2021-12-31T08:00:00Z",
+    "email": "aveiro@gmail.com",
+    "name": "Aveiro",
+    "role": null
+  },
+  {
+    "id": "8acaf92ca13f3b3f676b",
+    "updatedAt": "2021-12-31T08:00:00Z",
+    "createdAt": "2021-12-31T08:00:00Z",
+    "email": "santarém@gmail.com",
+    "name": "Santarém",
+    "role": null
+  },
+  {
+    "id": "2824f56195f7fe273651",
+    "updatedAt": "2021-12-31T08:00:00Z",
+    "createdAt": "2021-12-31T08:00:00Z",
+    "email": "faro@gmail.com",
+    "name": "Faro",
+    "role": null
+  },
+  {
+    "id": "909287b508d7a5de1975",
+    "updatedAt": "2021-12-31T08:00:00Z",
+    "createdAt": "2021-12-31T08:00:00Z",
+    "email": "leiria@gmail.com",
+    "name": "Leiria",
+    "role": null
+  },
+  {
+    "id": "08848f92687d55943d73",
+    "updatedAt": "2021-12-31T08:00:00Z",
+    "createdAt": "2021-12-31T08:00:00Z",
+    "email": "vila-real@gmail.com",
+    "name": "Vila Real",
+    "role": null
+  },
+  {
+    "id": "3c7687900e38436b29aa",
+    "updatedAt": "2021-12-31T08:00:00Z",
+    "createdAt": "2021-12-31T08:00:00Z",
+    "email": "lisboa@gmail.com",
+    "name": "Lisboa",
+    "role": null
+  },
+  {
+    "id": "27c2983fc6888a74c7fa",
+    "updatedAt": "2021-12-31T08:00:00Z",
+    "createdAt": "2021-12-31T08:00:00Z",
+    "email": "évora@gmail.com",
+    "name": "Évora",
+    "role": null
+  },
+  {
+    "id": "dcf1fe6b76b84863bcd5",
+    "updatedAt": "2021-12-31T08:00:00Z",
+    "createdAt": "2021-12-31T08:00:00Z",
+    "email": "azores@gmail.com",
+    "name": "Azores",
+    "role": null
+  }
+]

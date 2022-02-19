@@ -5,7 +5,8 @@ import {
   GroupType as DBGroupType,
   Sport as DBSport,
   Document as DBDocument,
-  Event as DBEvent
+  Event as DBEvent,
+  Location as DBLocation
 } from '@prisma/client'
 
 type NonNullProperties<Type> = {
@@ -51,7 +52,6 @@ type KCDHandle = {
 
 export const AvailableLanguages: {
   pt: 'pt'
-  en: 'en'
 }
 
 export const DaysOfWeekMap: {
@@ -94,6 +94,7 @@ type User = {} & DBUser
 type Sport = {
   name: TranslationObject
 } & DBSport
+type Location = {} & DBLocation
 type Document = {} & DBDocument
 type GroupType = {
   name: TranslationObject
@@ -103,12 +104,38 @@ type GroupSpirit = {
   name: TranslationObject
 } & DBGroupSpirit
 
+type DBRawGroup = {
+  distance: number
+  id: string
+  name: string
+  sport_id: number
+  group_type_id: number
+  group_spirit_id: number
+  lat: number
+  lng: number
+  location: string
+  near: string
+  day_of_week: number
+  time_of_day: number
+  whatsapp: string | null
+  image1: string | null
+  image2: string | null
+  image3: string | null
+  status: string
+  created_at: string
+  created_by: string
+  updated_at: string
+  user_name: string
+  group_spirit: TranslationObject
+}
+
 type Group = {
   dayOfWeek: DaysOfWeek
   createdBy?: User
   groupSpirit?: GroupSpirit
   groupType?: GroupType
   sport?: Sport
+  distance?: number
 } & DBGroup
 
 type CreateGroupInput = {
@@ -149,5 +176,7 @@ export {
   GroupSpirit,
   Sport,
   Document,
-  Event
+  Event,
+  Location,
+  DBRawGroup
 }

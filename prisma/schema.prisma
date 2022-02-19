@@ -10,6 +10,7 @@
 
 generator client {
   provider = "prisma-client-js"
+  previewFeatures = ["fullTextSearch"]
 }
 
 datasource db {
@@ -52,6 +53,18 @@ model Sport {
   name       Json
   events     Event[]
   groups     Group[]
+}
+
+model Location {
+  @@map("locations")
+  id         Int      @id @default(autoincrement())
+  city       String
+  region     String
+  country    String
+  lat        Float
+  lng        Float
+  createdAt  DateTime @default(now())  @map("created_at")
+  updatedAt  DateTime @updatedAt       @map("updated_at")
 }
 
 enum Status {
@@ -104,10 +117,12 @@ model Group {
   groupTypeId           Int             @map("group_type_id")
   groupSpirit           GroupSpirit     @relation(fields: [groupSpiritId], references: [id])
   groupSpiritId         Int             @map("group_spirit_id")
+  lat                   Float
+  lng                   Float
   location              String?
   near                  String?
   dayOfWeek             Int             @map("day_of_week")
-  timeOfDay             String          @map("time_of_day")
+  timeOfDay             Int             @map("time_of_day")
   whatsapp              String?
   image1                String?
   image2                String?

@@ -1,46 +1,42 @@
 import { PrismaClient, Status, Role } from '@prisma/client'
+// Data from https://simplemaps.com/data/pt-cities
+import pt from './data/pt.json'
+import usersSeed from './data/users.json'
+import groupsSeed from './data/groups.json'
 
 const db = new PrismaClient()
 
-async function seed() {
+async function persist(name: string, list: Array<any>, entity: any) {
   await Promise.all(
-    sports().map((data) => {
-      return db.sport.create({ data })
+    list.map((data) => {
+      return entity.create({ data })
     })
   )
-  await Promise.all(
-    groupTypes().map((data) => {
-      return db.groupType.create({ data })
+    .catch((err) => {
+      if (err.code === 'P2002') {
+        console.log(`${name} already in db. skipping...`)
+        return
+      }
+      console.error(`error seeding ${name}`, err)
     })
-  )
-  await Promise.all(
-    groupsSpirit().map((data) => {
-      return db.groupSpirit.create({ data })
+    .then(() => {
+      console.log(`seeded ${name}`)
     })
-  )
-  await Promise.all(
-    users().map((data) => {
-      return db.user.create({ data })
-    })
-  )
-  await Promise.all(
-    groups().map((data) => {
-      return db.group.create({ data })
-    })
-  )
-  await Promise.all(
-    events().map((data) => {
-      return db.event.create({ data })
-    })
-  )
-  await Promise.all(
-    documents().map((data) => {
-      return db.document.create({ data })
-    })
-  )
 }
 
-seed()
+async function seed() {
+  await persist('sports', sports(), db.sport)
+  await persist('group types', groupTypes(), db.groupType)
+  await persist('group spirit', groupsSpirit(), db.groupSpirit)
+  await persist('locations', locations(), db.location)
+
+  await persist('users', users(), db.user)
+  await persist('groups', groups(), db.group)
+  await persist('events', events(), db.event)
+  await persist('documents', documents(), db.document)
+}
+
+seed().then()
 
 function sports() {
   return [
@@ -209,50 +205,129 @@ function documents() {
   ]
 }
 
+// Generated using the following SQL statement:
+// --------------------------------------------
+//
+// SELECT substr(md5(random()::text), round(random() * 11 + 1)::int, 20) as id,
+//   '2021-12-31T08:00:00Z'                                         as "updatedAt",
+//   '2021-12-31T08:00:00Z'                                         as "createdAt",
+//   lower(region) || '@gmail.com'                                  as email,
+//   region                                                         as name,
+//   null                                                           as role
+// FROM (SELECT region, count(1) FROM locations GROUP BY region) l;
+//
+//
 function users() {
-  return [
-    {
-      id: 'dummyuser',
-      email: 'u@gmail.com',
-      name: 'Bike Brothers',
+  const users = usersSeed.map((u) => {
+    return {
+      ...u,
+      createdAt: new Date(u.createdAt),
+      updatedAt: new Date(u.updatedAt),
       role: Role.MEMBER
     }
-  ]
+  })
+
+  users.push({
+    id: '3beca472138d6d234d3f',
+    createdAt: new Date('2022-02-19 10:56:59.959'),
+    updatedAt: new Date('2022-02-19 10:56:59.959'),
+    email: 'u@gmail.com',
+    name: 'Bike Brothers',
+    role: Role.MEMBER
+  })
+  return users
 }
 
+// Generated using the following SQL statement:
+// --------------------------------------------
+//
+// SELECT substr(md5(random()::text), round(random() * 11 + 1)::int, 20) as id,
+//   CASE
+// WHEN abs(lat::int % 5) = 0 THEN 'Amigos de ' || city
+// WHEN abs(lat::int % 5) = 1 THEN 'Associação recreativa ' || city
+// WHEN abs(lat::int % 5) = 2 THEN 'Grupo Desporitvo de ' || city
+// WHEN abs(lat::int % 5) = 3 THEN 'Patos de ' || city
+// WHEN abs(lat::int % 5) = 4 THEN 'Borgas em ' || city
+// END                                                              as name,
+//   round(random() * 3 + 1)                                        as "sportId",
+//   round(random() * 2 + 1)                                        as "groupTypeId",
+//   round(random() * 4 + 1)                                        as "groupSpiritId",
+//   lat,
+//   lng,
+//   city                                                           as location,
+//   city                                                           as near,
+//   round(random() * 5 + 1)                                        as "dayOfWeek",
+//   round(random() * 16 + 5) * 100                                 as "timeOfDay",
+//   null                                                           as whatsapp,
+//   null                                                           as image1,
+//   null                                                           as image2,
+//   null                                                           as image3,
+//   'published'                                                    as status,
+//   (select id from users where name = region)                     as "createdById",
+//   '2021-12-31T08:00:00Z'                                         as "updatedAt",
+//   '2021-12-31T08:00:00Z'                                         as "createdAt"
+// FROM locations;
+//
+//
 function groups() {
-  return [
-    {
-      id: 'FkoxmH5db6RXqBpExion',
-      name: 'Bike Brothers Domingueira',
-      sportId: 3,
-      groupTypeId: 1,
-      groupSpiritId: 2,
-      location: '41.5513986,-8.434844|R Cónego Dr Manuel Faria',
-      near: 'Loja da Bike Brothers',
-      dayOfWeek: 6,
-      timeOfDay: '09:00',
-      whatsapp: null,
-      createdAt: new Date('2021-12-31T08:00:00Z'),
-      updatedAt: new Date('2021-12-31T08:00:00Z'),
-      status: Status.published,
-      createdById: 'dummyuser'
-    },
-    {
-      id: 'GkoxmH5db6RXqBpExion',
-      name: 'Bike Brothers BTT ao Sábado',
-      sportId: 4,
-      groupTypeId: 1,
-      groupSpiritId: 2,
-      location: '41.5513986,-8.434844|R Cónego Dr Manuel Faria',
-      near: 'Loja da Bike Brothers',
-      dayOfWeek: 5,
-      timeOfDay: '09:00',
-      whatsapp: null,
-      createdAt: new Date('2021-12-31T08:00:00Z'),
-      updatedAt: new Date('2021-12-31T08:00:00Z'),
-      status: Status.published,
-      createdById: 'dummyuser'
+  const groups = groupsSeed.map((g) => {
+    return {
+      ...g,
+      createdAt: new Date(g.createdAt),
+      updatedAt: new Date(g.updatedAt)
     }
-  ]
+  })
+  groups.push({
+    id: 'FkoxmH5db6RXqBpExion',
+    name: 'Bike Brothers Domingueira',
+    sportId: 3,
+    groupTypeId: 1,
+    groupSpiritId: 2,
+    location: 'R Cónego Dr Manuel Faria',
+    lat: 41.5513986,
+    lng: -8.434844,
+    near: 'Loja da Bike Brothers',
+    dayOfWeek: 6,
+    timeOfDay: 900,
+    whatsapp: null,
+    image1: null,
+    image2: null,
+    image3: null,
+    createdAt: new Date('2021-06-01T08:00:00Z'),
+    updatedAt: new Date('2021-06-01T08:00:00Z'),
+    status: Status.published,
+    createdById: '3beca472138d6d234d3f'
+  })
+
+  groups.push({
+    id: 'GkoxmH5db6RXqBpExion',
+    name: 'Bike Brothers BTT ao Sábado',
+    sportId: 4,
+    groupTypeId: 1,
+    groupSpiritId: 2,
+    location: 'R Cónego Dr Manuel Faria',
+    lat: 41.5513986,
+    lng: -8.434844,
+    near: 'Loja da Bike Brothers',
+    dayOfWeek: 5,
+    timeOfDay: 900,
+    whatsapp: null,
+    image1: null,
+    image2: null,
+    image3: null,
+    createdAt: new Date('2021-06-01T08:00:00Z'),
+    updatedAt: new Date('2021-06-01T08:00:00Z'),
+    status: Status.published,
+    createdById: '3beca472138d6d234d3f'
+  })
+  return groups
+}
+
+function locations() {
+  return pt.map((lo) => {
+    return {
+      ...lo,
+      country: 'pt'
+    }
+  })
 }
