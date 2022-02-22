@@ -48,7 +48,9 @@ const Button: React.FC<Props> = ({
   className,
   disabled,
   size = 'medium',
-  variant = 'primary'
+  variant = 'primary',
+  name,
+  value
 }) => {
   if (variant === 'adornment')
     return (
@@ -67,6 +69,8 @@ const Button: React.FC<Props> = ({
       onClick={onClick}
       ref={ref}
       disabled={disabled}
+      name={name}
+      value={value}
     >
       <ButtonInner variant={variant} size={size}>
         {children}

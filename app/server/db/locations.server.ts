@@ -16,6 +16,16 @@ async function findCity(search: string): Promise<Array<Location>> {
   return locations.map(dbLocationToLocation)
 }
 
+async function countGroups(): Promise<number> {
+  const [{ total }] = (await db.$queryRaw`
+      SELECT COUNT(1) as total
+      FROM groups
+      WHERE status NOT IN ('deleted', 'auto')
+  `) as Array<{ total: number }>
+
+  return total
+}
+
 async function findNearestGroups(
   lat: number,
   lng: number,
@@ -24,9 +34,9 @@ async function findNearestGroups(
 ) {
   const results: Array<DBRawGroup> = await db.$queryRaw`
     SELECT * FROM (
-                      SELECT (6370.0 *
-                              acos(cos(radians(${lat})) * cos(radians(lat)) * cos(radians(lng) - radians(${lng})) +
-                                   sin(radians(${lat})) * sin(radians(lat)))) AS distance,
+                      SELECT (6357.0 *
+                              acos(LEAST(cos(radians(${lat})) * cos(radians(lat)) * cos(radians(lng) - radians(${lng})) +
+                                   sin(radians(${lat})) * sin(radians(lat)), 1))) AS distance,
                              g.*,
                              u.name                                           AS "user_name",
                              gs.name                                          AS "group_spirit"
@@ -40,4 +50,4 @@ async function findNearestGroups(
   return results.map(dbRawGroupToGroup)
 }
 
-export { findCity, findNearestGroups }
+export { countGroups, findCity, findNearestGroups }

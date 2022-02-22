@@ -6,17 +6,21 @@ import Main from '~/components/shared/Main'
 import CAGResponse from '~/server/response.server'
 import { Form } from '@remix-run/react'
 import { Spacer } from '~/components/shared/Spacer'
-import Button, { ButtonLink } from '~/components/shared/Button'
+import Button from '~/components/shared/Button'
 import { AsyncComboBox, Option } from '~/components/shared/form/ComboBox'
 import MapUtils from '~/utils/MapUtils'
 import { Group, Location } from '~/types'
-import { useState } from 'react'
-import { findNearestGroups } from '~/server/db/locations.server'
+import { useEffect, useState } from 'react'
+import { countGroups, findNearestGroups } from '~/server/db/locations.server'
 import GroupEntry from '~/components/GroupEntry'
+import { ChevronDownIcon } from '@heroicons/react/solid'
 
 type ActionData = {
   search: string
   results: Array<Group>
+  total: number
+  page?: number
+  reset: boolean
 }
 
 export let loader: LoaderFunction = async ({ request }) => {
@@ -25,21 +29,79 @@ export let loader: LoaderFunction = async ({ request }) => {
 
 export const action: ActionFunction = async ({ request, params }) => {
   const form = await request.formData()
+  console.log(form)
   const search = form.get('search') as string
+  let page = 0
+  const p = form.get('page') as string
+  if (p && !isNaN(parseInt(p))) page = parseInt(p)
   const coords = form.get('coords') as string
-  const [lat, lng] = coords.split(',')
-  const results = await findNearestGroups(parseFloat(lat), parseFloat(lng))
+  let response: ActionData = {
+    results: [],
+    search: '',
+    total: 0,
+    reset: true
+  }
+  if (!coords) return json(response)
 
-  return json({ results, search })
+  const [lat, lng] = coords.split(',')
+  const results = (
+    await findNearestGroups(parseFloat(lat), parseFloat(lng), 10, page)
+  ).map((g) => {
+    return {
+      ...g,
+      distance: Math.round(g.distance || 0) // save some bandwidth
+    }
+  })
+  const total = await countGroups()
+  response = {
+    results,
+    search,
+    total,
+    page,
+    reset: form.get('load-more') === null
+  }
+  return json(response)
 }
 
 export default function Index() {
   let { t } = useTranslation('home')
   const [selection, setSelection] = useState<Option | undefined>()
   const data = useActionData<ActionData>()
+  const [page, setPage] = useState<number>(data?.page || 0)
+  const [groups, setGroups] = useState<Array<Group>>([])
   const mapUtils = new MapUtils()
+  let showMoreResults = false
 
-  console.log(data?.results)
+  function HiddenPayload() {
+    return (
+      <>
+        <input
+          type="hidden"
+          value={selection ? coords(selection.extra as Location) : ''}
+          name="coords"
+        />
+        <input
+          type="hidden"
+          value={selection ? selection.value : ''}
+          name="search"
+        />
+        <input type="hidden" value={page} name="page" />
+      </>
+    )
+  }
+
+  useEffect(() => {
+    if (!data) return
+    const { results, reset } = data
+    if (reset) setPage(0)
+    if (results) {
+      const list = reset ? [] : [...groups]
+      results.map((r) => list.push(r))
+      setGroups(list)
+    }
+  }, [data])
+
+  showMoreResults = !!data && data.results.length < data.total
   return (
     <Main className="dark:text-blueGray-500">
       <Spacer size="2xs" />
@@ -62,21 +124,12 @@ export default function Index() {
             placeholder={t('Search Placeholder')}
             className="mr-4 w-full"
           />
-          <input
-            type="hidden"
-            value={selection ? coords(selection.extra as Location) : ''}
-            name="coords"
-          />
-          <input
-            type="hidden"
-            value={selection ? selection.value : ''}
-            name="search"
-          />
+          <HiddenPayload />
           <Button>{t('Search')}</Button>
         </Form>
       </div>
       <div className="mt-8">
-        {data?.results.map((group) => (
+        {groups.map((group) => (
           <GroupEntry
             group={group}
             key={group.id}
@@ -88,6 +141,20 @@ export default function Index() {
           />
         ))}
       </div>
+      {showMoreResults ? (
+        <Form method="post">
+          <div className="mb-8 flex align-middle justify-center">
+            <Button
+              name="load-more"
+              value={page}
+              onClick={() => setPage(page + 1)}
+            >
+              <ChevronDownIcon width="22" /> {t('Load More')}
+            </Button>
+          </div>
+          <HiddenPayload />
+        </Form>
+      ) : null}
     </Main>
   )
 }
