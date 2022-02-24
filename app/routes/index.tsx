@@ -4,27 +4,31 @@ import { ActionFunction, json, useActionData } from 'remix'
 import { useTranslation } from 'react-i18next'
 import Main from '~/components/shared/Main'
 import CAGResponse from '~/server/response.server'
-import { Form } from '@remix-run/react'
+import { Form, useLoaderData } from '@remix-run/react'
 import { Spacer } from '~/components/shared/Spacer'
 import Button from '~/components/shared/Button'
-import { AsyncComboBox, Option } from '~/components/shared/form/ComboBox'
-import MapUtils from '~/utils/MapUtils'
 import { Group, Location } from '~/types'
 import { useEffect, useState } from 'react'
-import { countGroups, findNearestGroups } from '~/server/db/locations.server'
+import {
+  countGroups,
+  findCities,
+  findNearestGroups
+} from '~/server/db/locations.server'
 import GroupEntry from '~/components/GroupEntry'
 import { ChevronDownIcon } from '@heroicons/react/solid'
+import SearchLocations from '~/components/SearchLocations'
 
 type ActionData = {
   search: string
-  results: Array<Group>
+  results: Group[]
   total: number
   page?: number
   reset: boolean
 }
 
 export let loader: LoaderFunction = async ({ request }) => {
-  return CAGResponse(request, ['home', 'm-groups'])
+  const cities = await findCities()
+  return CAGResponse(request, { cities }, undefined, ['home', 'm-groups'])
 }
 
 export const action: ActionFunction = async ({ request, params }) => {
@@ -65,11 +69,11 @@ export const action: ActionFunction = async ({ request, params }) => {
 
 export default function Index() {
   let { t } = useTranslation('home')
-  const [selection, setSelection] = useState<Option | undefined>()
+  const { cities } = useLoaderData<{ cities: Location[] }>()
+  const [selection, setSelection] = useState<Location | undefined>()
   const data = useActionData<ActionData>()
   const [page, setPage] = useState<number>(data?.page || 0)
   const [groups, setGroups] = useState<Array<Group>>([])
-  const mapUtils = new MapUtils()
   let showMoreResults = false
 
   function HiddenPayload() {
@@ -77,12 +81,12 @@ export default function Index() {
       <>
         <input
           type="hidden"
-          value={selection ? coords(selection.extra as Location) : ''}
+          value={selection ? coords(selection) : ''}
           name="coords"
         />
         <input
           type="hidden"
-          value={selection ? selection.value : ''}
+          value={selection ? `${selection.city}, ${selection.region}` : ''}
           name="search"
         />
         <input type="hidden" value={page} name="page" />
@@ -107,22 +111,12 @@ export default function Index() {
       <Spacer size="2xs" />
       <div className="flex align-middle justify-center">
         <Form className="flex w-160" method="post">
-          <AsyncComboBox
+          <SearchLocations
             ariaLabel={t('Search')}
-            dataLoader={async (searchTerm) => {
-              const results = await mapUtils.searchCity(searchTerm)
-              if (results === null) return []
-              return results.map((l: Location) => {
-                return {
-                  value: `${l.city}, ${l.region}`,
-                  label: `${l.city}, ${l.region}`,
-                  extra: l
-                }
-              })
-            }}
-            onSelect={(o) => setSelection(o as Option)}
+            cities={cities}
+            onSelect={(o) => setSelection(o as Location)}
             placeholder={t('Search Placeholder')}
-            className="mr-4 w-full"
+            className="px-0 mr-4 w-full"
           />
           <HiddenPayload />
           <Button>{t('Search')}</Button>

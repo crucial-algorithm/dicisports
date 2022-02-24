@@ -5,12 +5,24 @@ import {
   dbRawGroupToGroup
 } from '~/server/db/codecs.server'
 
-async function findCity(search: string): Promise<Array<Location>> {
+async function findCity(search: string): Promise<Location[]> {
   const locations = await db.location.findMany({
     where: {
       city: {
         search
       }
+    }
+  })
+  return locations.map(dbLocationToLocation)
+}
+
+async function findCities(country = 'pt'): Promise<Location[]> {
+  const locations = await db.location.findMany({
+    where: {
+      country
+    },
+    orderBy: {
+      city: 'asc'
     }
   })
   return locations.map(dbLocationToLocation)
@@ -50,4 +62,4 @@ async function findNearestGroups(
   return results.map(dbRawGroupToGroup)
 }
 
-export { countGroups, findCity, findNearestGroups }
+export { countGroups, findCities, findCity, findNearestGroups }
