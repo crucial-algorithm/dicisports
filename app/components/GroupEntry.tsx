@@ -7,6 +7,7 @@ import DisplayImg from '~/components/shared/DisplayImg'
 import Bicycle from '~/components/illustrations/Bicycle'
 import { displayTimeOfDay } from '~/utils/misc'
 import Running from '~/components/illustrations/Running'
+import clsx from 'clsx'
 
 type Props = {
   actions?: React.ReactNode
@@ -30,7 +31,7 @@ export default function GroupEntry({ group, actions, footer }: Props) {
   )
 
   return (
-    <div className="border-b last:border-none border-gray-300 dark:border-gray-300 h-80 p-4 relative mb-12 flex">
+    <div className="border-b last:border-none border-gray-300 dark:border-gray-300 p-4 relative mb-12 flex">
       <div className="w-144 flex p-2">
         {group.image1 ? (
           <DisplayImg id={group.image1 || ''} alt="group event 1st image" />
@@ -43,7 +44,13 @@ export default function GroupEntry({ group, actions, footer }: Props) {
       </div>
       <div className="w-full h-full">
         <div className="flex flex-col">
-          <H2 className="mb-2">{group.name}</H2>
+          <H2
+            className={clsx('mb-2', {
+              'mr-24': !!actions
+            })}
+          >
+            {group.name}
+          </H2>
           <Feature
             label={t('When')}
             value={`${day}, ${displayTimeOfDay(group.timeOfDay)}`}
@@ -56,7 +63,7 @@ export default function GroupEntry({ group, actions, footer }: Props) {
           <Feature label={t('Purpose')} value={group.groupSpirit?.name || ''} />
         </div>
       </div>
-      {actions ? <div className="list-entry-actions p-4">{actions}</div> : null}
+      {actions ? <div className="list-entry-actions p-4 pr-0">{actions}</div> : null}
       {footer ? <div className="list-entry-footer">{footer}</div> : null}
     </div>
   )

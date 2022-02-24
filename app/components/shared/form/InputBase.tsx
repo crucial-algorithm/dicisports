@@ -3,10 +3,14 @@ import clsx from 'clsx'
 
 export function inputBaseClasses(className?: string) {
   return clsx(
-    'px-11 py-4 w-full rounded-lg focus-ring',
+    'w-full rounded-lg focus-ring',
     'bg-gray-100 text-black placeholder-gray-500 text-lg font-medium',
     'dark:disabled:text-blueGray-500 dark:text-white dark:bg-gray-800',
     'disabled:text-gray-400',
+    {
+      'px-11': !className || className.indexOf('px') < 0,
+      'py-4': !className || className.indexOf('py') < 0
+    },
     className
   )
 }

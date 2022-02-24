@@ -23,10 +23,6 @@ export default function SearchLocations({
   onSelect
 }: SearchLocationsProps) {
   const { t } = useTranslation('home')
-
-  useEffect(() => {
-    if (cities) onSelect(cities[0])
-  }, [cities])
   const [theme] = useTheme()
   const inDarkMode = theme === 'dark'
 
@@ -36,7 +32,7 @@ export default function SearchLocations({
         aria-label={ariaLabel}
         className={inputBaseClasses(className)}
         defaultValue={defaultValue}
-        isClearable={true}
+        isClearable={false}
         isSearchable={true}
         backspaceRemovesValue={true}
         noOptionsMessage={() => (

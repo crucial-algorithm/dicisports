@@ -6,7 +6,7 @@ import Main from '~/components/shared/Main'
 import CAGResponse from '~/server/response.server'
 import { Form, useLoaderData } from '@remix-run/react'
 import { Spacer } from '~/components/shared/Spacer'
-import Button from '~/components/shared/Button'
+import Button, { ButtonLink } from '~/components/shared/Button'
 import { Group, Location } from '~/types'
 import { useEffect, useState } from 'react'
 import {
@@ -15,8 +15,14 @@ import {
   findNearestGroups
 } from '~/server/db/locations.server'
 import GroupEntry from '~/components/GroupEntry'
-import { ChevronDownIcon } from '@heroicons/react/solid'
+import {
+  AdjustmentsIcon,
+  ChevronDownIcon,
+  ShareIcon
+} from '@heroicons/react/solid'
 import SearchLocations from '~/components/SearchLocations'
+import ButtonGroup from '~/components/shared/ButtonGroup'
+import { HeartIcon } from '@heroicons/react/outline'
 
 type ActionData = {
   search: string
@@ -122,13 +128,31 @@ export default function Index() {
           <Button>{t('Search')}</Button>
         </Form>
       </div>
-      <div className="mt-8">
+      <Spacer size="xs" />
+      {groups && groups.length > 0 ? (
+        <div className="pl-6">
+          <ButtonLink size="small">
+            <AdjustmentsIcon className="h-6" />
+          </ButtonLink>
+        </div>
+      ) : null}
+      <div>
         {groups.map((group) => (
           <GroupEntry
             group={group}
             key={group.id}
+            actions={
+              <ButtonGroup density="compact">
+                <ButtonLink size="tiny" to={'/something'}>
+                  <ShareIcon className="h-6 w-6 m-0 inline-block" />
+                </ButtonLink>
+                <ButtonLink size="tiny" to={'/something'}>
+                  <HeartIcon className="h-6 w-6 m-0 inline-block" />
+                </ButtonLink>
+              </ButtonGroup>
+            }
             footer={
-              <span className="text-white">
+              <span className="font-medium text-gray-500 dark:text-white">
                 {Math.ceil(group.distance || 0)} km
               </span>
             }
