@@ -1,5 +1,4 @@
 import * as React from 'react'
-import pt from 'date-fns/locale/pt'
 import Label from '~/components/shared/form/Label'
 import InputBase from '~/components/shared/form/InputBase'
 import HTMLId from '~/utils/HTMLId'
@@ -21,7 +20,7 @@ export default function BasicDatePicker({
   const id = HTMLId()
   return (
     <>
-      <Label id={id}>{label}</Label>
+      <Label htmlFor={id}>{label}</Label>
       <InputBase
         id={id}
         name={name}

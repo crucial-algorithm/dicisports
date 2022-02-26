@@ -11,6 +11,8 @@ export function inputBaseClasses(className?: string) {
       'px-11': !className || className.indexOf('px') < 0,
       'py-4': !className || className.indexOf('py') < 0
     },
+    // added to remove border added by @tailwindcss/forms
+    'border-0',
     className
   )
 }
@@ -20,7 +22,7 @@ type Props = {
   name: string
   placeholder?: string
   defaultValue?: any
-  type?: 'text' | 'number' | 'email' | 'date' | 'hidden'
+  type?: 'text' | 'number' | 'email' | 'date' | 'hidden' | 'checkbox'
   autoComplete?: string
   disabled?: boolean
   onChange?: (value: any) => void

@@ -4,12 +4,18 @@ import clsx from 'clsx'
 type Props = {
   id?: string
   htmlFor: string
+  variant?: 'primary' | 'secondary'
 } & React.ComponentProps<'label'>
-const Label: React.FC<Props> = ({ id, htmlFor, className, children }) => (
+const Label: React.FC<Props> = ({ variant, htmlFor, className, children }) => (
   <label
     htmlFor={htmlFor}
     className={clsx(
-      'inline-block dark:text-blueGray-500 text-gray-500 text-lg',
+      'inline-block',
+      {
+        'dark:text-blueGray-500 text-gray-500 text-lg':
+          !variant || variant === 'primary',
+        'dark:text-white text-gray-600 text-sm': variant === 'secondary'
+      },
       className
     )}
   >

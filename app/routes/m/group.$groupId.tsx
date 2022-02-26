@@ -36,7 +36,7 @@ import Config from '~/server/config.server'
 import UploadImage from '~/components/shared/form/UploadImage'
 import { UploadHandler } from '@remix-run/node/formData'
 import { parseMultipartFormData } from '@remix-run/node/parseMultipartFormData'
-import { badRequest, uploadImages } from '~/utils/misc'
+import { badRequest, timeOfDayToHoursMinutes, uploadImages } from '~/utils/misc'
 import UploadForm from '~/components/shared/form/UploadForm'
 import mapCss from '~/styles/map.css'
 import vendorsCss from '~/styles/vendors.css'
@@ -233,7 +233,7 @@ export default function GroupRoute() {
   } = loadedData
   const isUpdate = group.status !== 'auto'
   // using parse float for 0 min's to work
-  const [hour, minute] = group.timeOfDay.split(':').map(parseFloat)
+  const [hour, minute] = timeOfDayToHoursMinutes(group.timeOfDay)
   const images: Array<UploadImageMeta | undefined> = new Array(3)
   const actionData = useActionData<ActionData>()
   const [uploading, setImagesUploading] = useState<boolean>(false)
