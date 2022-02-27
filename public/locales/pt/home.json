@@ -5,15 +5,20 @@
   "Load More": "Carregar mais resultados",
 
   "Filters": "Filtros",
-  "Filters Refinement Hint": "Filtra pelos critérios que são importantes para ti",
   "Sport": "Modalidade",
   "All Sports" : "Todas",
   "Day Part": "Período do dia",
   "Group Spirit": "Espírito de grupo",
+  "Day Of Week": "Dia da semana",
+  "Number of Groups Found": "{{total}} grupos",
 
   "Cancel": "Cancelar",
   "Apply Filters": "Filtrar",
   "Morning": "Parte da Manhã",
   "Afternoon": "Durante a tarde",
-  "Evening": "Ao fim do dia"
+  "Evening": "Ao fim do dia",
+
+  "Applied Filters": "Filtros: {{filters}}",
+  "Filter Spirit": "Espírito {{sport}}",
+  "Or": "ou"
 }

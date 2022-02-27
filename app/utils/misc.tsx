@@ -1,6 +1,8 @@
-import { NonNullProperties, UploadImageMeta } from '~/types'
+import { DaysOfWeek, NonNullProperties, UploadImageMeta } from '~/types'
 import { json } from 'remix'
 import { FormEvent } from 'react'
+import ComboBox from '~/components/shared/form/ComboBox'
+import { useTranslation } from 'react-i18next'
 
 function getDomainUrl(request: Request) {
   const host =
@@ -102,6 +104,34 @@ function displayTimeOfDay(value: number): string {
   return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`
 }
 
+function PeekDayOfWeek(props: {
+  name: string
+  id: string
+  defaultValue: DaysOfWeek | null
+  addAll?: boolean
+}) {
+  const { t } = useTranslation('common')
+  const { id, name, defaultValue, addAll } = props
+  const options = [
+    { value: 6, label: t('Sunday') },
+    { value: 0, label: t('Monday') },
+    { value: 1, label: t('Tuesday') },
+    { value: 2, label: t('Wednesday') },
+    { value: 3, label: t('Thursday') },
+    { value: 4, label: t('Friday') },
+    { value: 5, label: t('Saturday') }
+  ]
+  if (addAll) options.unshift({ value: -1, label: t('Any Day Of week') })
+  return (
+    <ComboBox
+      name={name}
+      id={id}
+      defaultValue={defaultValue ? defaultValue : -1}
+      options={options}
+    />
+  )
+}
+
 export {
   getDomainUrl,
   getErrorMessage,
@@ -113,5 +143,6 @@ export {
   uploadImages,
   getNullIfEmpty,
   displayTimeOfDay,
-  timeOfDayToHoursMinutes
+  timeOfDayToHoursMinutes,
+  PeekDayOfWeek
 }

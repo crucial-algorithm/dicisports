@@ -127,6 +127,7 @@ type DBRawGroup = {
   updated_at: string
   user_name: string
   group_spirit: TranslationObject
+  records: number
 }
 
 type Group = {
@@ -157,6 +158,13 @@ type CreateGroupInput = {
   updatedAt?: Date | string
 }
 
+type GroupFilters = {
+  spirit: number[] | null
+  sport: number | null
+  dayOfWeek: number | null
+  timeOfDay: [number, number] | null
+}
+
 export {
   NonNullProperties,
   MemberProfile,
@@ -168,6 +176,7 @@ export {
   DaysOfWeek,
   DiciLocation,
   UploadImageMeta,
+  GroupFilters,
   // entities
   User,
   Group,

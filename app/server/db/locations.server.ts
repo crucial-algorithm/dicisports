@@ -1,10 +1,9 @@
 import { db } from '~/server/db.server'
-import { DBRawGroup, Location } from '~/types'
+import { DBRawGroup, Group, GroupFilters, Location } from '~/types'
 import {
   dbLocationToLocation,
   dbRawGroupToGroup
 } from '~/server/db/codecs.server'
-import { time } from '~/server/metrics.server'
 
 async function findCity(search: string): Promise<Location[]> {
   const locations = await db.location.findMany({
@@ -29,30 +28,18 @@ async function findCities(country = 'pt'): Promise<Location[]> {
   return locations.map(dbLocationToLocation)
 }
 
-async function countGroups(): Promise<number> {
-  const [{ total }] = (await db.$queryRaw`
-      SELECT COUNT(1) as total
-      FROM groups
-      WHERE status NOT IN ('deleted', 'auto')
-  `) as Array<{ total: number }>
-
-  return total
-}
-
 async function findNearestGroups(
   lat: number,
   lng: number,
-  spirit: number[] | null,
-  sport: number | null,
-  dayOfWeek: number | null,
-  timeOfDay: [number, number] | null,
+  filters: GroupFilters,
   chunkSize = 40,
   position = 0
-) {
-  const n = (a: any | null, b: string) => (a === null ? '' : b)
+): Promise<{ total: number; results: Group[] }> {
+  const { spirit, sport, dayOfWeek, timeOfDay } = filters
+  const n = (a: any | null, b: string) =>
+    a === null || (Array.isArray(a) && a.length === 0) ? '' : b
   const s = (a: number[] | null): number[] => (a ? a : [])
   const [b, e] = s(timeOfDay)
-  console.log(spirit, sport, dayOfWeek, timeOfDay)
   const query = `
       SELECT *, count(1) over () as records
       FROM (
@@ -65,7 +52,7 @@ async function findNearestGroups(
                FROM groups g
                         INNER JOIN users u ON g.created_by = u.id
                         INNER JOIN groups_spirit gs on g.group_spirit_id = gs.id
-               WHERE 1 = 1
+               WHERE status = 'published'
                    ${n(spirit, `AND gs.id IN (${s(spirit).join(', ')})`)}
                    ${n(sport, `AND g.sport_id = ${sport}`)}
                    ${n(dayOfWeek, `AND g.day_of_week = ${dayOfWeek}`)}
@@ -76,7 +63,9 @@ async function findNearestGroups(
   `
   console.log('----->', query)
   const results: Array<DBRawGroup> = await db.$queryRawUnsafe(query)
-  return results.map(dbRawGroupToGroup)
+  const mapped = results.map(dbRawGroupToGroup)
+  const total = results.length === 0 ? 0 : results[0].records
+  return { results: mapped, total }
 }
 
-export { countGroups, findCities, findCity, findNearestGroups }
+export { findCities, findCity, findNearestGroups }

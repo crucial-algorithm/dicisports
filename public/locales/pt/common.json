@@ -11,11 +11,12 @@
   "Friday": "Sexta-Feira",
   "Saturday": "Sábado",
   "Sunday": "Domingo",
+  "Any Day Of week": "Todos",
 
   "map": "Mapa",
   "Pick Location In Map Title": "Selecione a localização no mapa",
   "Drag Map to Choose a Location Hint": "Arraste o mapa até à localização pretendida",
   "Pick Location Button": "Escolher local",
 
-  "No results found": "Nenhum resultado"
+  "No results found": "Nenhum resultado encontrado!"
 }

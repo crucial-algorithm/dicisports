@@ -36,7 +36,7 @@ import Config from '~/server/config.server'
 import UploadImage from '~/components/shared/form/UploadImage'
 import { UploadHandler } from '@remix-run/node/formData'
 import { parseMultipartFormData } from '@remix-run/node/parseMultipartFormData'
-import { badRequest, timeOfDayToHoursMinutes, uploadImages } from '~/utils/misc'
+import { badRequest, PeekDayOfWeek, timeOfDayToHoursMinutes, uploadImages } from '~/utils/misc'
 import UploadForm from '~/components/shared/form/UploadForm'
 import mapCss from '~/styles/map.css'
 import vendorsCss from '~/styles/vendors.css'
@@ -407,19 +407,10 @@ export default function GroupRoute() {
                 id="group-day-of-week"
                 className="w-64"
               >
-                <ComboBox
+                <PeekDayOfWeek
                   name="dayOfWeek"
                   id="group-day-of-week"
                   defaultValue={group.dayOfWeek}
-                  options={[
-                    { value: '6', label: tc('Sunday') },
-                    { value: '0', label: tc('Monday') },
-                    { value: '1', label: tc('Tuesday') },
-                    { value: '2', label: tc('Wednesday') },
-                    { value: '3', label: tc('Thursday') },
-                    { value: '4', label: tc('Friday') },
-                    { value: '5', label: tc('Saturday') }
-                  ]}
                 />
               </FormField>
               <FormField
