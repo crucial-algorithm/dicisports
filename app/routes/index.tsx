@@ -7,7 +7,14 @@ import CAGResponse from '~/server/response.server'
 import { Form, useLoaderData } from '@remix-run/react'
 import { Spacer } from '~/components/shared/Spacer'
 import Button, { ButtonLink } from '~/components/shared/Button'
-import { Group, GroupFilters, GroupSpirit, Location, Sport } from '~/types'
+import {
+  Group,
+  GroupFilters,
+  GroupSpirit,
+  Language,
+  Location,
+  Sport
+} from '~/types'
 import { useEffect, useState } from 'react'
 import { findCities, findNearestGroups } from '~/server/db/locations.server'
 import GroupEntry from '~/components/GroupEntry'
@@ -26,9 +33,8 @@ import { findGroupsSpirit } from '~/server/db/groupsSpirit.server'
 import { findSports } from '~/server/db/sports.server'
 import ComboBox, { Option } from '~/components/shared/form/ComboBox'
 import clsx from 'clsx'
-import { PeekDayOfWeek } from '~/utils/misc'
+import { getLocalizedText, PeekDayOfWeek } from '~/utils/misc'
 import NoResults from '~/components/illustrations/NoResults'
-import I18nText from '~/components/I18nText'
 import { TFunction } from 'i18next'
 
 type LoaderData = {
@@ -151,7 +157,7 @@ async function filterAction(form: FormData): Promise<Response> {
   const filters = {
     spirit: spirit.map((s) => parseInt(s)),
     sport: sport === null || parseInt(sport) === -1 ? null : parseInt(sport),
-    dayOfWeek: dayOfWeek,
+    dayOfWeek: dayOfWeek === -1 ? null : dayOfWeek,
     timeOfDay:
       dayParts === null || dayParts.length === 0
         ? null
@@ -358,9 +364,9 @@ function FiltersDialog(props: {
     >
       <div
         aria-modal={true}
-        aria-label="Delete your account"
+        aria-label={t('Filters')}
         className={clsx(
-          'w-144 dark:bg-gray-900 border-2 border-black dark:border-white rounded-lg lg:px-24 lg:py-14 lg:max-w-screen-lg',
+          'w-144 bg-white dark:bg-gray-900 border-2 border-black dark:border-white rounded-lg lg:px-24 lg:py-14 lg:max-w-screen-lg font-extrabold',
           {
             'hidden ': !isOpen,
             'm-auto': isOpen
@@ -454,12 +460,14 @@ function DisplayFilters(props: {
   t: TFunction
   tc: TFunction
 }) {
+  const { i18n } = useTranslation()
+  const language = i18n.language
   const { filters, sports, spirits, t, tc } = props
   if (!filters) return null
   const { spirit, sport, timeOfDay, dayOfWeek } = filters
   let label: string[] = []
 
-  if (dayOfWeek)
+  if (dayOfWeek && dayOfWeek >= 0)
     label.push(
       tc(
         [
@@ -479,16 +487,16 @@ function DisplayFilters(props: {
     else label.push(t(reverseTimeOfDay(timeOfDay)))
   }
 
-  if (sport) label.push(mapIdToName(sport, sports))
+  if (sport) label.push(mapIdToName(sport, sports, language as Language))
 
   if (spirit && spirit.length > 0)
     label.push(
       t('Filter Spirit', {
-        sport: spirit.map((s) => mapIdToName(s, spirits)).join(` ${t('Or')} `)
+        sport: spirit
+          .map((s) => mapIdToName(s, spirits, language as Language))
+          .join(` ${t('Or')} `)
       })
     )
-
-  console.log(label)
 
   return (
     <div className="flex mx-2 items-center dark:text-white text-blueGray-500 text-sm">
@@ -497,9 +505,13 @@ function DisplayFilters(props: {
   )
 }
 
-function mapIdToName(id: number, universe: Sport[] | GroupSpirit[]): string {
+function mapIdToName(
+  id: number,
+  universe: Sport[] | GroupSpirit[],
+  lang: Language
+): string {
   const entity = universe.find((u) => u.id === id)
-  return entity ? I18nText({ text: entity.name }) : ''
+  return getLocalizedText(lang, entity?.name)
 }
 
 function reverseTimeOfDay(interval: [number, number]): string {

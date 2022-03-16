@@ -1,6 +1,11 @@
-import { DaysOfWeek, NonNullProperties, UploadImageMeta } from '~/types'
+import {
+  DaysOfWeek,
+  Language,
+  NonNullProperties,
+  TranslationObject,
+  UploadImageMeta
+} from '~/types'
 import { json } from 'remix'
-import { FormEvent } from 'react'
 import ComboBox from '~/components/shared/form/ComboBox'
 import { useTranslation } from 'react-i18next'
 
@@ -132,6 +137,11 @@ function PeekDayOfWeek(props: {
   )
 }
 
+function getLocalizedText(language: Language, value?: TranslationObject) {
+  if (!value) return ''
+  return value[language]
+}
+
 export {
   getDomainUrl,
   getErrorMessage,
@@ -144,5 +154,6 @@ export {
   getNullIfEmpty,
   displayTimeOfDay,
   timeOfDayToHoursMinutes,
-  PeekDayOfWeek
+  PeekDayOfWeek,
+  getLocalizedText
 }
