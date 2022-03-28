@@ -217,7 +217,6 @@ async function search(
 export default function Index() {
   let { t, i18n } = useTranslation('home')
   const lang = i18n.language as Language
-  const langs = i18n.options.supportedLngs as string[]
   let tc = useTranslation('common').t
   const { cities, sports, groupsSpirit, result } = useLoaderData<LoaderData>()
   const [selection, setSelection] = useState<Location | undefined>()
@@ -352,7 +351,7 @@ export default function Index() {
         </div>
         {!searchPerformed ? (
           <>
-            <SportsGrid sports={sports} lang={lang} t={t} langs={langs} />
+            <SportsGrid sports={sports} lang={lang} t={t} />
           </>
         ) : null}
         {showMoreResults ? (
@@ -402,33 +401,17 @@ function GroupResult({ group, img }: { group: Group; img?: string }) {
 function SportsGrid({
   sports,
   lang,
-  langs,
   t
 }: {
   sports: Sport[]
   lang: Language
-  langs: string[]
   t: TFunction
 }) {
   if (!sports) return null
-  let id = 1000000
-  const name: { [key: string]: string } = {}
-  langs.map((l) => (name[l] = t('Add Sport')))
-  const gridEntries = [...sports]
-  while (gridEntries.length < 9) {
-    gridEntries.push({
-      id,
-      name: name as TranslationObject,
-      picture: 'add-sport',
-      createdAt: new Date(),
-      updatedAt: new Date()
-    })
-    id++
-  }
 
   return (
     <div className="grid grid-rows-3 grid-flow-col gap-4">
-      {gridEntries
+      {sports
         .sort((a, b) => a.id - b.id)
         .map((s) => (
           <Link to={`?actionId=${actions.search}&sport=${s.id}`} key={s.id}>
@@ -439,6 +422,19 @@ function SportsGrid({
             />
           </Link>
         ))}
+      {new Array(9 - sports.length).fill(null).map((a, i) => (
+        <a
+          href={`mailto:info@smartcitizen.pt?subject=${t(
+            'Add Sport Mail Subject'
+          )}`}
+        >
+          <DisplayImg
+            id={`product/sports/add-sport`}
+            key={i}
+            alt={t('Add Sport')}
+          />
+        </a>
+      ))}
     </div>
   )
 }
@@ -656,11 +652,4 @@ function mapIdToName(
 ): string {
   const entity = universe.find((u) => u.id === id)
   return getLocalizedText(lang, entity?.name)
-}
-
-function reverseTimeOfDay(interval: [number, number]): string {
-  const [start, end] = interval
-  if (start === 0 && end === 1159) return dayParts.morning
-  if (start === 1200 && end === 1959) return dayParts.afternoon
-  return dayParts.evening
 }
