@@ -1,6 +1,7 @@
 import * as React from 'react'
-import type { LoaderFunction, SubmitFunction } from 'remix'
-import { ActionFunction, json, Link, useActionData, useLocation, useSubmit } from 'remix'
+import { SyntheticEvent, useEffect, useState } from 'react'
+import type { LoaderFunction } from 'remix'
+import { Link, useLocation } from 'remix'
 import { useTranslation } from 'react-i18next'
 import Main from '~/components/shared/Main'
 import CAGResponse from '~/server/response.server'
@@ -17,7 +18,6 @@ import {
   Sport,
   TranslationObject
 } from '~/types'
-import { SyntheticEvent, useEffect, useState } from 'react'
 import { findCities, findNearestGroups } from '~/server/db/locations.server'
 import GroupEntry from '~/components/GroupEntry'
 import {
@@ -117,15 +117,6 @@ export let loader: LoaderFunction = async ({ request, params, context }) => {
   )
 }
 
-export const action: ActionFunction = async ({ request, params }) => {
-  const form = await request.formData()
-  const action = form.get('actionId') as string
-  console.log('FORM ==> ', form, action)
-  if (action === actions.search) return filterAction(form)
-  if (action === actions.pickSport) return filterSportAction(form)
-  return filterAction(form, true)
-}
-
 function parseQueryString(url: string): FilterParams {
   const { searchParams } = new URL(url)
   const actionId = searchParams.get('actionId') as keyof typeof actions
@@ -181,48 +172,6 @@ const reduceDayParts = (parts: [number, number][]): [number, number] => {
   return [min, max]
 }
 
-async function filterAction(form: FormData, reset = false): Promise<Response> {
-  let page = 0
-  const p = form.get('page') as string
-  if (p && !isNaN(parseInt(p))) page = parseInt(p)
-  const dayParts = form.getAll('daypart') as string[]
-  const spirit = form.getAll('spirit') as string[]
-  const sport = form.get('sport') as string
-  const coords = form.get('coords') as string
-  const dow = form.get('dayOfWeek') as string
-  let dayOfWeek: number | null =
-    dow && !isNaN(parseInt(dow)) ? parseInt(dow) : null
-  const [lat, lng] = coords ? coords.split(',') : countryCoords.PT
-  const filters = {
-    spirit: spirit.map((s) => parseInt(s)),
-    sport: sport === null || parseInt(sport) === -1 ? null : parseInt(sport),
-    dayOfWeek: dayOfWeek === -1 ? null : dayOfWeek,
-    timeOfDay:
-      dayParts === null || dayParts.length === 0
-        ? null
-        : reduceDayParts(dayParts.map(dayPartToTimeInterval))
-  }
-  const { total, results } = await findNearestGroups(
-    typeof lat === 'string' ? parseFloat(lat) : lat,
-    typeof lng === 'string' ? parseFloat(lng) : lng,
-    filters,
-    10,
-    page
-  )
-  const response: ActionData = {
-    results: results.map((g) => {
-      return {
-        ...g,
-        distance: Math.round(g.distance || 0) // save some bandwidth
-      }
-    }),
-    total,
-    filters,
-    reset
-  }
-  return json(response)
-}
-
 async function search(
   dayParts: string[] | null,
   spirit: number[] | null,
@@ -263,30 +212,6 @@ async function search(
     reset,
     page
   }
-}
-
-async function filterSportAction(form: FormData): Promise<Response> {
-  const sport = form.get('sport') as string
-  const [lat, lng] = countryCoords.PT
-  const filters = {
-    spirit: null,
-    sport: sport === null || parseInt(sport) === -1 ? null : parseInt(sport),
-    dayOfWeek: null,
-    timeOfDay: null
-  }
-  const { total, results } = await findNearestGroups(lat, lng, filters, 10)
-  const response: ActionData = {
-    results: results.map((g) => {
-      return {
-        ...g,
-        distance: Math.round(g.distance || 0) // save some bandwidth
-      }
-    }),
-    total,
-    filters,
-    reset: true
-  }
-  return json(response)
 }
 
 export default function Index() {
@@ -402,7 +327,7 @@ export default function Index() {
                 : null}
             </div>
             <DisplayFilters
-              filters={data?.filters}
+              filters={filters}
               sports={sports}
               spirits={groupsSpirit}
               t={t}
@@ -427,7 +352,6 @@ export default function Index() {
         </div>
         {!searchPerformed ? (
           <>
-            <input type="hidden" name="actionId" value={actions.pickSport} />
             <SportsGrid sports={sports} lang={lang} t={t} langs={langs} />
           </>
         ) : null}
@@ -490,8 +414,9 @@ function SportsGrid({
   let id = 1000000
   const name: { [key: string]: string } = {}
   langs.map((l) => (name[l] = t('Add Sport')))
-  while (sports.length < 9) {
-    sports.push({
+  const gridEntries = [...sports]
+  while (gridEntries.length < 9) {
+    gridEntries.push({
       id,
       name: name as TranslationObject,
       picture: 'add-sport',
@@ -503,7 +428,7 @@ function SportsGrid({
 
   return (
     <div className="grid grid-rows-3 grid-flow-col gap-4">
-      {sports
+      {gridEntries
         .sort((a, b) => a.id - b.id)
         .map((s) => (
           <Link to={`?actionId=${actions.search}&sport=${s.id}`} key={s.id}>
@@ -656,7 +581,7 @@ function FiltersDialog(props: {
 }
 
 function DisplayFilters(props: {
-  filters: GroupFilters | null | undefined
+  filters: FilterParams
   sports: Sport[]
   spirits: GroupSpirit[]
   t: TFunction
@@ -666,10 +591,11 @@ function DisplayFilters(props: {
   const language = i18n.language
   const { filters, sports, spirits, t, tc } = props
   if (!filters) return null
-  const { spirit, sport, timeOfDay, dayOfWeek } = filters
+  const { spirit, sport, dayOfWeek, dayParts } = filters
   let label: string[] = []
+  console.log('--->', filters)
 
-  if (dayOfWeek && dayOfWeek >= 0)
+  if (dayOfWeek !== null && dayOfWeek >= 0) {
     label.push(
       tc(
         [
@@ -683,20 +609,26 @@ function DisplayFilters(props: {
         ][dayOfWeek]
       )
     )
-  if (timeOfDay) {
-    if (label.length === 1)
-      label[0] = label[0] + ', ' + t(reverseTimeOfDay(timeOfDay))
-    else label.push(t(reverseTimeOfDay(timeOfDay)))
+  }
+  // if all dayparts are picked, just ignore to save space
+  if (dayParts && dayParts.length > 0 && dayParts.length !== 3) {
+    let parts = semanticOr(
+      dayParts.map((v) => t(v)),
+      t('Or')
+    )
+    if (label.length === 1) label[0] = `${label[0]}, ${parts}`
+    else label.push(parts)
   }
 
   if (sport) label.push(mapIdToName(sport, sports, language as Language))
 
-  if (spirit && spirit.length > 0)
+  if (spirit && spirit.length > 0 && spirit.length !== 5)
     label.push(
       t('Filter Spirit', {
-        sport: spirit
-          .map((s) => mapIdToName(s, spirits, language as Language))
-          .join(` ${t('Or')} `)
+        sport: semanticOr(
+          spirit.map((s) => mapIdToName(s, spirits, language as Language)),
+          t('Or')
+        )
       })
     )
 
@@ -705,6 +637,16 @@ function DisplayFilters(props: {
       {label.join(' | ')}
     </div>
   )
+}
+
+/**
+ * Create a human readable phrase from a list of strings
+ * @param list
+ * @param or
+ */
+function semanticOr(list: string[], or: string) {
+  if (list.length === 1) return list[0]
+  return `${list.slice(0, -1).join(', ')} ${or} ${list.slice(-1)}`
 }
 
 function mapIdToName(
