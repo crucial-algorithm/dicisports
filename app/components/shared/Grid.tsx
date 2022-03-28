@@ -46,5 +46,4 @@ const Grid = React.forwardRef<HTMLElement, GridProps>(function Grid(
   )
 })
 
-
 export { Grid }

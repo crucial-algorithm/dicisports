@@ -14,7 +14,8 @@ export default function CheckBox({
   value,
   name,
   label,
-  className
+  className,
+  checked
 }: CheckBoxOptions) {
   const id = useId() || ''
   return (
@@ -27,6 +28,7 @@ export default function CheckBox({
         name={name}
         value={value}
         type="checkbox"
+        defaultChecked={checked}
         className={clsx(
           'form-checkbox h-6 w-6 text-gray-900 dark:text-blueGray-500',
           'dark:border-none',

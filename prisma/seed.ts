@@ -42,19 +42,38 @@ function sports() {
   return [
     {
       id: 1,
-      name: { pt: 'Atletismo' }
+      name: { pt: 'Atletismo' },
+      picture: 'running'
     },
     {
       id: 2,
-      name: { pt: 'Trail' }
+      name: { pt: 'Trail' },
+      picture: 'trail'
     },
     {
       id: 3,
-      name: { pt: 'Ciclismo Estrada' }
+      name: { pt: 'Ciclismo Estrada' },
+      picture: 'road'
     },
     {
       id: 4,
-      name: { pt: 'Ciclismo BTT' }
+      name: { pt: 'Ciclismo BTT' },
+      picture: 'btt'
+    },
+    {
+      id: 5,
+      name: { pt: 'E-bike' },
+      picture: 'ebike'
+    },
+    {
+      id: 6,
+      name: { pt: 'Gravel' },
+      picture: 'gravel'
+    },
+    {
+      id: 7,
+      name: { pt: 'Enduro' },
+      picture: 'enduro'
     }
   ]
 }

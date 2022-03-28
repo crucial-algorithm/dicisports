@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next'
 import I18nText from '~/components/I18nText'
 import DisplayImg from '~/components/shared/DisplayImg'
 import Bicycle from '~/components/illustrations/Bicycle'
-import { displayTimeOfDay } from '~/utils/misc'
+import { displayTimeOfDay, getLocalizedText } from '~/utils/misc'
 import Running from '~/components/illustrations/Running'
 import clsx from 'clsx'
 
@@ -13,9 +13,10 @@ type Props = {
   actions?: React.ReactNode
   footer?: ReactNode
   group: Group
+  img?: string
 } & React.ComponentProps<'div'>
 
-export default function GroupEntry({ group, actions, footer }: Props) {
+export default function GroupEntry({ group, actions, footer, img }: Props) {
   const { t } = useTranslation('m-groups')
   const tc = useTranslation('common').t
   const day = tc(
@@ -38,6 +39,7 @@ export default function GroupEntry({ group, actions, footer }: Props) {
         ) : (
           <PlaceholderImg
             group={group}
+            img={img}
             className="w-full rounded-lg object-cover bg-gray-100 dark:bg-gray-400"
           />
         )}
@@ -63,7 +65,9 @@ export default function GroupEntry({ group, actions, footer }: Props) {
           <Feature label={t('Purpose')} value={group.groupSpirit?.name || ''} />
         </div>
       </div>
-      {actions ? <div className="list-entry-actions p-4 pr-0">{actions}</div> : null}
+      {actions ? (
+        <div className="list-entry-actions p-4 pr-0">{actions}</div>
+      ) : null}
       {footer ? <div className="list-entry-footer">{footer}</div> : null}
     </div>
   )
@@ -71,17 +75,15 @@ export default function GroupEntry({ group, actions, footer }: Props) {
 
 function PlaceholderImg({
   group,
-  className
+  className,
+  img
 }: {
   group: Group
   className: string
+  img?: string
 }) {
-  const sportId = group.sportId as number
-  return sportId < 3 ? (
-    <Running className={className} />
-  ) : (
-    <Bicycle className={className} />
-  )
+  if (!img) return null
+  return <DisplayImg id={`product/sports/${img}`} alt={group.name || ''} />
 }
 
 function Feature({

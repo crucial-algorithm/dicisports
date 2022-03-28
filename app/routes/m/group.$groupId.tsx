@@ -24,7 +24,7 @@ import {
   Group,
   GroupSpirit,
   GroupType,
-  Sport
+  Sport, Language
 } from '~/types'
 import ComboBox from '~/components/shared/form/ComboBox'
 import { findGroupTypes } from '~/server/db/groupTypes.server'
@@ -218,8 +218,8 @@ export const action: ActionFunction = async ({ request, params }) => {
 }
 
 export default function GroupRoute() {
-  const { t } = useTranslation(RESOURCES_NS)
-  const tc = useTranslation('common').t
+  const { t, i18n } = useTranslation(RESOURCES_NS)
+  const language = i18n.language as Language
   const loadedData = useLoaderData<LoaderData>()
   const {
     mapToken,
@@ -274,7 +274,7 @@ export default function GroupRoute() {
           <div className="col-span-full mb-12 lg:mb-20">
             <div className="flex flex-col-reverse items-start justify-between lg:flex-row lg:items-center">
               <div>
-                <H2>{t(`Ride Together`)}</H2>
+                <H2 className="px-11">{t(`Ride Together`)}</H2>
                 <H3 variant="secondary" as="p">
                   {t('Let Others know')}
                 </H3>
@@ -319,9 +319,11 @@ export default function GroupRoute() {
                 <ComboBox
                   name="sport"
                   id="group-sport"
+                  lang={language}
+                  placeholder=""
                   defaultValue={group.sport ? group.sport.id : undefined}
                   options={sports.map((s) => {
-                    return { value: String(s.id), label: s.name }
+                    return { value: s.id, label: s.name }
                   })}
                 />
               </FormField>
@@ -333,11 +335,13 @@ export default function GroupRoute() {
                 <ComboBox
                   name="type"
                   id="group-type"
+                  lang={language}
+                  placeholder=""
                   defaultValue={
-                    group.groupType ? group.groupType.id + '' : undefined
+                    group.groupType ? group.groupType.id : undefined
                   }
                   options={groupTypes.map((g) => {
-                    return { value: String(g.id), label: g.name }
+                    return { value: g.id, label: g.name }
                   })}
                 />
               </FormField>
@@ -349,11 +353,13 @@ export default function GroupRoute() {
                 <ComboBox
                   name="spirit"
                   id="group-spirit"
+                  placeholder=""
+                  lang={language}
                   defaultValue={
-                    group.groupSpirit ? group.groupSpirit.id + '' : undefined
+                    group.groupSpirit ? group.groupSpirit.id : undefined
                   }
                   options={groupsSpirit.map((g) => {
-                    return { value: String(g.id), label: g.name }
+                    return { value: g.id, label: g.name }
                   })}
                 />
               </FormField>

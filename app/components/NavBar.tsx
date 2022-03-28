@@ -9,7 +9,7 @@ import {
   MenuPopover,
   useMenuButtonContext
 } from '@reach/menu-button'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import {
   AnimatePresence,
   motion,
@@ -318,8 +318,8 @@ function ProfileButton({
       </motion.div>
       <img
         className={clsx('inline w-10 rounded-full select-none')}
-        src="https://res.cloudinary.com/kentcdodds-com/image/upload/q_auto,f_auto/kentcdodds.com/illustrations/rowing"
-        alt="Illustration of a kayak"
+        src="https://res.cloudinary.com/dicisports/image/upload/v1647690407/product/logo-rounded.png"
+        alt="logo"
       />
     </Link>
   )
@@ -328,18 +328,28 @@ function ProfileButton({
 function Navbar() {
   const { t } = useTranslation('common')
   const { requestInfo, user } = useRootData()
+  const [isRoot, setIsRoot] = useState<boolean>(true)
+  // hacky stuff: we don't want to show the logo for the home page, because we
+  // have the logo centered in the screen
+  useEffect(() => {
+    setIsRoot(new URL(window.location.href).pathname === '/')
+  }, [])
 
   return (
     <div className="px-5vw py-9 lg:py-12">
       <nav className="text-primary flex items-center justify-between mx-auto max-w-8xl">
         <div>
-          <Link
-            prefetch="intent"
-            to="/"
-            className="text-primary underlined block whitespace-nowrap text-2xl font-medium focus:outline-none transition"
-          >
-            <Logo />
-          </Link>
+          {!isRoot ? (
+            <Link
+              prefetch="intent"
+              to="/"
+              className="text-primary underlined block whitespace-nowrap text-2xl font-medium focus:outline-none transition"
+            >
+              <Logo />
+            </Link>
+          ) : (
+            <>&nbsp;</>
+          )}
         </div>
 
         <div className="flex items-center justify-center">

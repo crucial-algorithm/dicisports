@@ -1,8 +1,11 @@
 import * as React from 'react'
 import { useId } from '@reach/auto-id'
 import { inputBaseClasses } from '~/components/shared/form/InputBase'
-import { TranslationObject } from '~/types'
-import I18nText from '~/components/I18nText'
+import { Language, TranslationObject } from '~/types'
+import { getLocalizedText } from '~/utils/misc'
+import Select from 'react-select'
+import { useEffect, useState } from 'react'
+import { useTheme } from '~/utils/theme-provider'
 
 export type Option = {
   value: string | number
@@ -12,7 +15,9 @@ export type Option = {
 
 type Props = {
   options: Array<Option>
+  lang?: Language
   defaultValue?: string | number
+  placeholder: string
 } & React.ComponentProps<'select'>
 
 export default function ComboBox({
@@ -20,19 +25,136 @@ export default function ComboBox({
   name,
   defaultValue,
   className,
-  options
+  options,
+  lang,
+  placeholder
 }: Props) {
   const generatedId = useId()
+  const [value, setValue] = useState<Option | undefined>(undefined)
+  const [theme] = useTheme()
+  const inDarkMode = theme === 'dark'
+
+  const values = options.map((o) => {
+    return {
+      value: o.value,
+      label:
+        typeof o.label === 'string'
+          ? o.label
+          : getLocalizedText(lang as Language, o.label)
+    }
+  })
+
+  function pickOption(value: string | number): Option {
+    return values.find((o) => o.value === value) as Option
+  }
+
+  useEffect(() => {
+    if (!defaultValue) return
+    setValue(pickOption(defaultValue))
+  }, [defaultValue])
+
+  function handleSelectChange(o: Option) {
+    setValue(o)
+  }
+
+  if (Math.random() < 1) {
+    return (
+      <>
+        <input type="hidden" name={name} value={value?.value || ''} />
+        <Select
+          aria-label=""
+          className={inputBaseClasses(className)}
+          value={value}
+          isClearable={false}
+          isSearchable={true}
+          backspaceRemovesValue={true}
+          noOptionsMessage={() => (
+            <div style={{ textAlign: 'start' }}>&nbsp;</div>
+          )}
+          placeholder={placeholder}
+          components={{
+            DropdownIndicator: () => null,
+            IndicatorSeparator: () => null
+          }}
+          // @ts-ignore
+          options={values}
+          // @ts-ignore
+          onChange={handleSelectChange}
+          styles={{
+            control: (base) => {
+              return {
+                ...base,
+                backgroundColor: undefined,
+                border: 0,
+                boxShadow: 'none'
+              }
+            },
+            input: (base) => {
+              return {
+                ...base,
+                color: 'var(--color-blueGray-500)',
+                outline: 'none'
+              }
+            },
+            menu: (base) => {
+              return {
+                ...base,
+                left: 0,
+                borderRadius: 0,
+                borderTopLeftRadius: 4,
+                backgroundColor: inDarkMode
+                  ? 'var(--color-gray-800)'
+                  : 'var(--color-gray-100)'
+              }
+            },
+            option: (base, { isFocused }) => {
+              return {
+                ...base,
+                color: inDarkMode
+                  ? 'var(--color-blueGray-500)'
+                  : 'var(--color-gray-500)',
+                backgroundColor:
+                  isFocused === false
+                    ? undefined
+                    : inDarkMode
+                    ? 'var(--color-gray-600)'
+                    : 'var(--color-gray-200)'
+              }
+            },
+            singleValue: (base) => {
+              return {
+                ...base,
+                color: inDarkMode
+                  ? 'var(--color-blueGray-500)'
+                  : 'var(--color-gray-500)'
+              }
+            },
+            clearIndicator: (base) => {
+              return {
+                ...base,
+                cursor: 'pointer',
+                ':hover': {
+                  color: inDarkMode ? 'var(--color-gray-200)' : 'initial'
+                }
+              }
+            }
+          }}
+        />
+      </>
+    )
+  }
+
   return (
     <select
       name={name}
       id={id || generatedId}
       className={inputBaseClasses(className)}
-      defaultValue={defaultValue}
     >
       {options.map((o, i) => (
-        <option key={i} value={o.value}>
-          {typeof o.label === 'string' ? o.label : I18nText({ text: o.label })}
+        <option key={i} value={o.value} selected={o.value === defaultValue}>
+          {typeof o.label === 'string'
+            ? o.label
+            : getLocalizedText(lang as Language, o.label)}
         </option>
       ))}
     </select>

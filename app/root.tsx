@@ -1,6 +1,5 @@
 import * as React from 'react'
 import {
-  json,
   Links,
   LinksFunction,
   LiveReload,
@@ -26,8 +25,6 @@ import { getClientSession } from '~/server/auth/client.server'
 import { pathedRoutes } from '~/other-routes.server'
 import { useSpinDelay } from 'spin-delay'
 import { NotificationMessage } from '~/components/shared/NotificationMessage'
-import { AnimatePresence, motion } from 'framer-motion'
-import { TeamCircle } from '~/components/shared/icons/TeamCircle'
 import { useLoaderData } from '@remix-run/react'
 import { Theme, ThemeProvider, useTheme } from '~/utils/theme-provider'
 import { getThemeSession } from '~/server/theme.server'
@@ -39,7 +36,7 @@ import TransitionIndicator from '~/components/shared/TransitionIndicator'
 
 // TODO: can't find a way to set this value client side, globally, using config
 setConfig({
-  cloudName: 'dici-pilot'
+  cloudName: 'dicisports'
 })
 
 export const links: LinksFunction = () => {

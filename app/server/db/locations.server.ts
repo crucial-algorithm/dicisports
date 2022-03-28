@@ -61,7 +61,7 @@ async function findNearestGroups(
            ) x
       LIMIT ${chunkSize} OFFSET ${position * chunkSize}
   `
-  console.log('----->', query)
+  //console.log('----->', query)
   const results: Array<DBRawGroup> = await db.$queryRawUnsafe(query)
   const mapped = results.map(dbRawGroupToGroup)
   const total = results.length === 0 ? 0 : results[0].records

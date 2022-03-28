@@ -115,23 +115,26 @@ function PeekDayOfWeek(props: {
   defaultValue: DaysOfWeek | null
   addAll?: boolean
 }) {
-  const { t } = useTranslation('common')
+  const { t, i18n } = useTranslation('common')
   const { id, name, defaultValue, addAll } = props
   const options = [
-    { value: 6, label: t('Sunday') },
-    { value: 0, label: t('Monday') },
-    { value: 1, label: t('Tuesday') },
-    { value: 2, label: t('Wednesday') },
-    { value: 3, label: t('Thursday') },
-    { value: 4, label: t('Friday') },
-    { value: 5, label: t('Saturday') }
+    { value: '6', label: t('Sunday') },
+    { value: '0', label: t('Monday') },
+    { value: '1', label: t('Tuesday') },
+    { value: '2', label: t('Wednesday') },
+    { value: '3', label: t('Thursday') },
+    { value: '4', label: t('Friday') },
+    { value: '5', label: t('Saturday') }
   ]
-  if (addAll) options.unshift({ value: -1, label: t('Any Day Of week') })
   return (
     <ComboBox
       name={name}
+      lang={i18n.language as Language}
       id={id}
-      defaultValue={defaultValue ? defaultValue : -1}
+      placeholder={addAll ? t('Any Day Of week') : ''}
+      defaultValue={
+        defaultValue || defaultValue === 0 ? String(defaultValue) : undefined
+      }
       options={options}
     />
   )

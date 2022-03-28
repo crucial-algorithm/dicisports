@@ -1,5 +1,4 @@
 import { useTranslation } from 'react-i18next'
-import { useEffect } from 'react'
 import { inputBaseClasses } from '~/components/shared/form/InputBase'
 import * as React from 'react'
 import { Location } from '~/types'

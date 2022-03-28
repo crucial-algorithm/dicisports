@@ -6,7 +6,8 @@ import {
   TranslationObject,
   User,
   Sport,
-  Location, DBRawGroup
+  Location,
+  DBRawGroup
 } from '~/types'
 import {
   Group as DBGroup,
@@ -14,16 +15,18 @@ import {
   GroupSpirit as DBGroupSpirit,
   Sport as DBSport,
   Location as DBLocation,
-  Status, Role
+  Status,
+  Role
 } from '@prisma/client'
 
 function dbSportToSport(sport: DBSport): Sport {
-  const { id, name, createdAt, updatedAt } = sport
+  const { id, name, createdAt, updatedAt, picture } = sport
   return {
     id,
     createdAt,
     updatedAt,
-    name: name as TranslationObject
+    name: name as TranslationObject,
+    picture
   }
 }
 

@@ -1,6 +1,6 @@
 import * as React from 'react'
-import type { LoaderFunction } from 'remix'
-import { ActionFunction, json, useActionData } from 'remix'
+import type { LoaderFunction, SubmitFunction } from 'remix'
+import { ActionFunction, json, Link, useActionData, useLocation, useSubmit } from 'remix'
 import { useTranslation } from 'react-i18next'
 import Main from '~/components/shared/Main'
 import CAGResponse from '~/server/response.server'
@@ -8,14 +8,16 @@ import { Form, useLoaderData } from '@remix-run/react'
 import { Spacer } from '~/components/shared/Spacer'
 import Button, { ButtonLink } from '~/components/shared/Button'
 import {
+  DaysOfWeek,
   Group,
   GroupFilters,
   GroupSpirit,
   Language,
   Location,
-  Sport
+  Sport,
+  TranslationObject
 } from '~/types'
-import { useEffect, useState } from 'react'
+import { SyntheticEvent, useEffect, useState } from 'react'
 import { findCities, findNearestGroups } from '~/server/db/locations.server'
 import GroupEntry from '~/components/GroupEntry'
 import {
@@ -26,7 +28,7 @@ import {
 import SearchLocations from '~/components/SearchLocations'
 import ButtonGroup from '~/components/shared/ButtonGroup'
 import { HeartIcon } from '@heroicons/react/outline'
-import { H3, H6 } from '~/components/shared/typography'
+import { H3 } from '~/components/shared/typography'
 import FormField from '~/components/shared/form/FormField'
 import CheckBox from '~/components/shared/form/CheckBox'
 import { findGroupsSpirit } from '~/server/db/groupsSpirit.server'
@@ -36,11 +38,25 @@ import clsx from 'clsx'
 import { getLocalizedText, PeekDayOfWeek } from '~/utils/misc'
 import NoResults from '~/components/illustrations/NoResults'
 import { TFunction } from 'i18next'
+import HomeLogo from '~/components/shared/HomeLogo'
+import DisplayImg from '~/components/shared/DisplayImg'
+
+type FilterParams = {
+  actionId: keyof typeof actions | null
+  coords: string | null
+  search: string | null
+  spirit: number[] | null
+  dayParts: string[] | null
+  page: number | null
+  sport: number | null
+  dayOfWeek: number | null
+}
 
 type LoaderData = {
   cities: Location[]
   sports: Sport[]
   groupsSpirit: GroupSpirit[]
+  result: ActionData
 }
 
 type ActionData = {
@@ -53,7 +69,9 @@ type ActionData = {
 
 const actions = {
   filter: 'filter',
-  search: 'search'
+  search: 'search',
+  more: 'more',
+  pickSport: 'pickSport'
 }
 
 const dayParts = {
@@ -62,61 +80,79 @@ const dayParts = {
   evening: 'Evening'
 }
 
-export let loader: LoaderFunction = async ({ request }) => {
+const countryCoords = {
+  PT: [40.2287547, -8.4512937]
+}
+
+export let loader: LoaderFunction = async ({ request, params, context }) => {
+  const data = parseQueryString(request.url)
+  console.log(data)
+  // Initial load
   const cities = await findCities()
+
+  let result: ActionData | null = null
+  let page = data.page || 0
+  if (data.actionId === actions.search || data.actionId === actions.more) {
+    result = await search(
+      data.dayParts,
+      data.spirit,
+      data.sport,
+      data.coords,
+      data.dayOfWeek || -1,
+      data.actionId === actions.more ? page + 1 : page,
+      data.actionId !== actions.more
+    )
+  }
+
   return CAGResponse(
     request,
     {
       cities,
       sports: await findSports(),
-      groupsSpirit: await findGroupsSpirit()
+      groupsSpirit: await findGroupsSpirit(),
+      result
     },
     undefined,
     ['home', 'm-groups']
   )
 }
 
-async function searchAction(form: FormData): Promise<Response> {
-  let page = 0
-  const p = form.get('page') as string
-  if (p && !isNaN(parseInt(p))) page = parseInt(p)
-  const coords = form.get('coords') as string
-  let response: ActionData = {
-    results: [],
-    filters: null,
-    total: 0,
-    reset: true
-  }
-  if (!coords) return json(response)
+export const action: ActionFunction = async ({ request, params }) => {
+  const form = await request.formData()
+  const action = form.get('actionId') as string
+  console.log('FORM ==> ', form, action)
+  if (action === actions.search) return filterAction(form)
+  if (action === actions.pickSport) return filterSportAction(form)
+  return filterAction(form, true)
+}
 
-  const [lat, lng] = coords.split(',')
-  const filters = {
-    spirit: null,
-    sport: null,
-    dayOfWeek: null,
-    timeOfDay: null
-  }
-  const { total, results } = await findNearestGroups(
-    parseFloat(lat),
-    parseFloat(lng),
-    filters,
-    10,
-    page
-  )
-
-  response = {
-    results: results.map((g) => {
-      return {
-        ...g,
-        distance: Math.round(g.distance || 0) // save some bandwidth
-      }
-    }),
-    total,
+function parseQueryString(url: string): FilterParams {
+  const { searchParams } = new URL(url)
+  const actionId = searchParams.get('actionId') as keyof typeof actions
+  const coords = searchParams.get('coords')
+  const search = searchParams.get('search')
+  const page = numberOrNull(searchParams.get('page'))
+  const sport = numberOrNull(searchParams.get('sport'))
+  const dayOfWeek = numberOrNull(searchParams.get('dow'))
+  const dayParts = searchParams.getAll('daypart')
+  const spirit = searchParams.getAll('spirit')
+  return {
+    actionId,
+    coords,
+    search,
     page,
-    filters: null,
-    reset: form.get('load-more') === null
+    sport,
+    dayOfWeek,
+    dayParts: dayParts,
+    spirit: spirit.map((v) => parseInt(v))
   }
-  return json(response)
+}
+
+function numberOrNull(value: string | null) {
+  if (value === null) return null
+  const n = parseInt(value, 10)
+  if (isNaN(n)) return null
+  return n
 }
 
 const dayPartToTimeInterval = (dayPart: string): [number, number] => {
@@ -145,7 +181,10 @@ const reduceDayParts = (parts: [number, number][]): [number, number] => {
   return [min, max]
 }
 
-async function filterAction(form: FormData): Promise<Response> {
+async function filterAction(form: FormData, reset = false): Promise<Response> {
+  let page = 0
+  const p = form.get('page') as string
+  if (p && !isNaN(parseInt(p))) page = parseInt(p)
   const dayParts = form.getAll('daypart') as string[]
   const spirit = form.getAll('spirit') as string[]
   const sport = form.get('sport') as string
@@ -153,7 +192,7 @@ async function filterAction(form: FormData): Promise<Response> {
   const dow = form.get('dayOfWeek') as string
   let dayOfWeek: number | null =
     dow && !isNaN(parseInt(dow)) ? parseInt(dow) : null
-  const [lat, lng] = coords.split(',')
+  const [lat, lng] = coords ? coords.split(',') : countryCoords.PT
   const filters = {
     spirit: spirit.map((s) => parseInt(s)),
     sport: sport === null || parseInt(sport) === -1 ? null : parseInt(sport),
@@ -164,10 +203,78 @@ async function filterAction(form: FormData): Promise<Response> {
         : reduceDayParts(dayParts.map(dayPartToTimeInterval))
   }
   const { total, results } = await findNearestGroups(
-    parseFloat(lat),
-    parseFloat(lng),
-    filters
+    typeof lat === 'string' ? parseFloat(lat) : lat,
+    typeof lng === 'string' ? parseFloat(lng) : lng,
+    filters,
+    10,
+    page
   )
+  const response: ActionData = {
+    results: results.map((g) => {
+      return {
+        ...g,
+        distance: Math.round(g.distance || 0) // save some bandwidth
+      }
+    }),
+    total,
+    filters,
+    reset
+  }
+  return json(response)
+}
+
+async function search(
+  dayParts: string[] | null,
+  spirit: number[] | null,
+  sport: number | null,
+  coords: string | null,
+  dayOfWeek: number,
+  page: number,
+  reset: boolean = true
+): Promise<ActionData> {
+  const [lat, lng] = coords ? coords.split(',') : countryCoords.PT
+  const filters = {
+    spirit: spirit || null,
+    sport: !sport || sport === -1 ? null : sport,
+    dayOfWeek: dayOfWeek === -1 ? null : dayOfWeek,
+    timeOfDay:
+      dayParts === null || dayParts.length === 0
+        ? null
+        : reduceDayParts(dayParts.map(dayPartToTimeInterval))
+  }
+  console.log('page = ', page)
+  const { total, results } = await findNearestGroups(
+    typeof lat === 'string' ? parseFloat(lat) : lat,
+    typeof lng === 'string' ? parseFloat(lng) : lng,
+    filters,
+    10,
+    page
+  )
+
+  return {
+    results: results.map((g) => {
+      return {
+        ...g,
+        distance: Math.round(g.distance || 0) // save some bandwidth
+      }
+    }),
+    total,
+    filters,
+    reset,
+    page
+  }
+}
+
+async function filterSportAction(form: FormData): Promise<Response> {
+  const sport = form.get('sport') as string
+  const [lat, lng] = countryCoords.PT
+  const filters = {
+    spirit: null,
+    sport: sport === null || parseInt(sport) === -1 ? null : parseInt(sport),
+    dayOfWeek: null,
+    timeOfDay: null
+  }
+  const { total, results } = await findNearestGroups(lat, lng, filters, 10)
   const response: ActionData = {
     results: results.map((g) => {
       return {
@@ -182,28 +289,70 @@ async function filterAction(form: FormData): Promise<Response> {
   return json(response)
 }
 
-export const action: ActionFunction = async ({ request, params }) => {
-  const form = await request.formData()
-  console.log('FORM ==> ', form)
-  const action = form.get('actionId') as string
-  if (action === actions.search) return searchAction(form)
-  return filterAction(form)
-}
-
 export default function Index() {
-  let { t } = useTranslation('home')
+  let { t, i18n } = useTranslation('home')
+  const lang = i18n.language as Language
+  const langs = i18n.options.supportedLngs as string[]
   let tc = useTranslation('common').t
-  const { cities, sports, groupsSpirit } = useLoaderData<LoaderData>()
+  const { cities, sports, groupsSpirit, result } = useLoaderData<LoaderData>()
   const [selection, setSelection] = useState<Location | undefined>()
-  const data = useActionData<ActionData>()
+  const data = result
   const [page, setPage] = useState<number>(data?.page || 0)
   const [groups, setGroups] = useState<Array<Group>>([])
   const [filtersModalOpen, setFiltersModalOpen] = useState<boolean>(false)
   const [searchPerformed, setSearchPerformed] = useState<boolean>(false)
+  const location = useLocation()
+  const filters = parseQueryString(`https://a.com/${location.search}`)
 
-  function HiddenPayload() {
-    return (
-      <>
+  useEffect(() => {
+    if (!result) {
+      if (groups.length > 0) {
+        setGroups([])
+        setSearchPerformed(false)
+        setFiltersModalOpen(false)
+      }
+      return
+    }
+    setSearchPerformed(true)
+
+    const { reset, results } = result
+
+    if (reset) setPage(0)
+    if (!results) return
+    const list = reset ? [] : [...groups]
+
+    results.map((r) => list.push(r))
+    setGroups(list)
+  }, [result, location])
+
+  let showMoreResults = !!data && data.results.length < data.total
+
+  function handleOnSubmit() {
+    setSearchPerformed(true)
+    setFiltersModalOpen(false)
+  }
+
+  function handleSearchLocations(
+    o: Location | SyntheticEvent<HTMLSelectElement>
+  ) {
+    setSelection(o as Location)
+  }
+
+  function handleOpenFilters() {
+    setFiltersModalOpen(true)
+  }
+
+  function handleCloseFilters() {
+    setFiltersModalOpen(false)
+  }
+
+  function handleLoadNextPage() {
+    setPage(page + 1)
+  }
+
+  return (
+    <Main className="dark:text-blueGray-500">
+      <Form method="get" onSubmit={handleOnSubmit}>
         <input
           type="hidden"
           value={selection ? coords(selection) : ''}
@@ -214,116 +363,158 @@ export default function Index() {
           value={selection ? `${selection.city}, ${selection.region}` : ''}
           name="search"
         />
-        <input type="hidden" value={page} name="page" />
-      </>
-    )
-  }
-
-  useEffect(() => {
-    if (!data) return
-    const { results, reset } = data
-    if (reset) setPage(0)
-    if (results) {
-      const list = reset ? [] : [...groups]
-      results.map((r) => list.push(r))
-      setGroups(list)
-    }
-  }, [data])
-
-  let showMoreResults = !!data && data.results.length < data.total
-
-  return (
-    <Main className="dark:text-blueGray-500">
-      <Spacer size="2xs" />
-      <div className="flex align-middle justify-center">
-        <Form
-          className="flex w-160"
-          method="post"
-          onSubmit={() => {
-            setSearchPerformed(true)
-            setFiltersModalOpen(false)
-          }}
-        >
-          <input type="hidden" name="actionId" value={actions.search} />
-          <SearchLocations
-            ariaLabel={t('Search')}
-            cities={cities}
-            onSelect={(o) => setSelection(o as Location)}
-            placeholder={t('Search Placeholder')}
-            className="px-0 mr-4 w-full"
-          />
-          <HiddenPayload />
-          <Button>{t('Search')}</Button>
-          <FiltersDialog
-            isOpen={filtersModalOpen}
-            sports={sports}
-            groupsSpirit={groupsSpirit}
-            triggerModalClose={() => setFiltersModalOpen(false)}
-          />
-        </Form>
-      </div>
-      <Spacer size="xs" />
-      {searchPerformed ? (
-        <div className="pl-6 flex align-middle">
-          <Button size="small" onClick={() => setFiltersModalOpen(true)}>
-            <AdjustmentsIcon className="h-6" />
-          </Button>
-          <div className="flex mx-2 items-center dark:text-white text-blueGray-500 text-sm">
-            {t('Number of Groups Found', { total: data?.total })}
-          </div>
-          <DisplayFilters
-            filters={data?.filters}
-            sports={sports}
-            spirits={groupsSpirit}
-            t={t}
-            tc={tc}
-          />
+        <div className="flex align-middle justify-center">
+          <Link to="/">
+            <HomeLogo className="w-112 h-16" />
+          </Link>
         </div>
-      ) : null}
-      <div>
-        {searchPerformed && groups.length === 0 ? (
-          <div className="w-full flex justify-center mt-8">
-            <NoResults />
-          </div>
-        ) : (
-          groups.map((group) => (
-            <GroupEntry
-              group={group}
-              key={group.id}
-              actions={
-                <ButtonGroup density="compact">
-                  <ButtonLink size="tiny" to={'/something'}>
-                    <ShareIcon className="h-6 w-6 m-0 inline-block" />
-                  </ButtonLink>
-                  <ButtonLink size="tiny" to={'/something'}>
-                    <HeartIcon className="h-6 w-6 m-0 inline-block" />
-                  </ButtonLink>
-                </ButtonGroup>
-              }
-              footer={
-                <span className="font-medium text-gray-500 dark:text-white">
-                  {Math.ceil(group.distance || 0)} km
-                </span>
-              }
+        <Spacer size="2xs" />
+        <div className="flex align-middle justify-center">
+          <div className="flex w-160">
+            <SearchLocations
+              ariaLabel={t('Search')}
+              cities={cities}
+              onSelect={handleSearchLocations}
+              placeholder={t('Search Placeholder')}
+              className="px-0 mr-4 w-full"
             />
-          ))
-        )}
-      </div>
-      {showMoreResults ? (
-        <Form method="post">
-          <div className="mb-8 flex align-middle justify-center">
-            <Button
-              name="load-more"
-              value={page}
-              onClick={() => setPage(page + 1)}
-            >
-              <ChevronDownIcon width="22" /> {t('Load More')}
+            <Button name="actionId" value={actions.search}>
+              {t('Search')}
             </Button>
           </div>
-          <HiddenPayload />
-        </Form>
-      ) : null}
+        </div>
+        <FiltersDialog
+          isOpen={filtersModalOpen}
+          sports={sports}
+          groupsSpirit={groupsSpirit}
+          triggerModalClose={handleCloseFilters}
+          filters={filters}
+        />
+        <Spacer size="xs" />
+        {searchPerformed ? (
+          <div className="pl-6 flex align-middle">
+            <Button size="small" onClick={handleOpenFilters} type="button">
+              <AdjustmentsIcon className="h-6" />
+            </Button>
+            <div className="flex mx-2 items-center dark:text-white text-blueGray-500 text-sm">
+              {data?.total
+                ? t('Number of Groups Found', { total: data?.total })
+                : null}
+            </div>
+            <DisplayFilters
+              filters={data?.filters}
+              sports={sports}
+              spirits={groupsSpirit}
+              t={t}
+              tc={tc}
+            />
+          </div>
+        ) : null}
+        <div>
+          {searchPerformed && groups.length === 0 ? (
+            <div className="w-full flex justify-center mt-8">
+              <NoResults />
+            </div>
+          ) : (
+            groups.map((group) => (
+              <GroupResult
+                group={group}
+                key={group.id}
+                img={sports.find((s) => s.id === group.sportId)?.picture}
+              />
+            ))
+          )}
+        </div>
+        {!searchPerformed ? (
+          <>
+            <input type="hidden" name="actionId" value={actions.pickSport} />
+            <SportsGrid sports={sports} lang={lang} t={t} langs={langs} />
+          </>
+        ) : null}
+        {showMoreResults ? (
+          <>
+            <div className="mb-8 flex align-middle justify-center">
+              <input type="hidden" name="page" value={result?.page || 0} />
+              <Button
+                name="actionId"
+                value={actions.more}
+                onClick={handleLoadNextPage}
+              >
+                <ChevronDownIcon width="22" /> {t('Load More')}
+              </Button>
+            </div>
+          </>
+        ) : null}
+      </Form>
     </Main>
+  )
+}
+
+function GroupResult({ group, img }: { group: Group; img?: string }) {
+  return (
+    <GroupEntry
+      group={group}
+      key={group.id}
+      img={img}
+      actions={
+        <ButtonGroup density="compact">
+          <ButtonLink size="tiny" to={'/something'}>
+            <ShareIcon className="h-6 w-6 m-0 inline-block" />
+          </ButtonLink>
+          <ButtonLink size="tiny" to={'/something'}>
+            <HeartIcon className="h-6 w-6 m-0 inline-block" />
+          </ButtonLink>
+        </ButtonGroup>
+      }
+      footer={
+        <span className="font-medium text-gray-500 dark:text-white">
+          {Math.ceil(group.distance || 0)} km
+        </span>
+      }
+    />
+  )
+}
+
+function SportsGrid({
+  sports,
+  lang,
+  langs,
+  t
+}: {
+  sports: Sport[]
+  lang: Language
+  langs: string[]
+  t: TFunction
+}) {
+  if (!sports) return null
+  let id = 1000000
+  const name: { [key: string]: string } = {}
+  langs.map((l) => (name[l] = t('Add Sport')))
+  while (sports.length < 9) {
+    sports.push({
+      id,
+      name: name as TranslationObject,
+      picture: 'add-sport',
+      createdAt: new Date(),
+      updatedAt: new Date()
+    })
+    id++
+  }
+
+  return (
+    <div className="grid grid-rows-3 grid-flow-col gap-4">
+      {sports
+        .sort((a, b) => a.id - b.id)
+        .map((s) => (
+          <Link to={`?actionId=${actions.search}&sport=${s.id}`} key={s.id}>
+            <DisplayImg
+              id={`product/sports/${s.picture}`}
+              key={s.id}
+              alt={getLocalizedText(lang, s.name)}
+            />
+          </Link>
+        ))}
+    </div>
   )
 }
 
@@ -343,10 +534,11 @@ function FiltersDialog(props: {
   sports: Sport[]
   groupsSpirit: GroupSpirit[]
   triggerModalClose: () => void
+  filters: FilterParams | null
 }) {
-  let { t } = useTranslation('home')
-  const { isOpen, sports, groupsSpirit, triggerModalClose } = props
-  const sportsOptions: Option[] = [{ value: -1, label: t('All Sports') }]
+  let { t, i18n } = useTranslation('home')
+  const { isOpen, sports, groupsSpirit, triggerModalClose, filters } = props
+  const sportsOptions: Option[] = []
   sports.map((s) => {
     sportsOptions.push({
       value: s.id,
@@ -381,7 +573,13 @@ function FiltersDialog(props: {
           id="sport"
           className="md:w-96 lg:w-96 w-96"
         >
-          <ComboBox options={sportsOptions} name="sport" />
+          <ComboBox
+            options={sportsOptions}
+            name="sport"
+            defaultValue={filters?.sport || -1}
+            placeholder={t('All Sports')}
+            lang={i18n.language as Language}
+          />
         </FormField>
         <FormField
           label={t('Day Of Week')}
@@ -389,9 +587,9 @@ function FiltersDialog(props: {
           className="md:w-96 lg:w-96 w-96"
         >
           <PeekDayOfWeek
-            name="dayOfWeek"
+            name="dow"
             id="day-of-week"
-            defaultValue={null}
+            defaultValue={filters?.dayOfWeek as DaysOfWeek}
             addAll={true}
           />
         </FormField>
@@ -404,18 +602,21 @@ function FiltersDialog(props: {
             name="daypart"
             label={t('Morning')}
             value={dayParts.morning}
+            checked={filters?.dayParts?.includes(dayParts.morning)}
             className="mb-2"
           />
           <CheckBox
             name="daypart"
             label={t('Afternoon')}
             value={dayParts.afternoon}
+            checked={filters?.dayParts?.includes(dayParts.afternoon)}
             className="mb-2"
           />
           <CheckBox
             name="daypart"
             label={t('Evening')}
             value={dayParts.evening}
+            checked={filters?.dayParts?.includes(dayParts.evening)}
             className="mb-2"
           />
         </FormField>
@@ -430,6 +631,7 @@ function FiltersDialog(props: {
               name="spirit"
               label={gs.name}
               value={gs.id}
+              checked={filters?.spirit?.includes(gs.id)}
               className="mb-2"
             />
           ))}
@@ -443,7 +645,7 @@ function FiltersDialog(props: {
             size="medium"
             type="submit"
             name="actionId"
-            value={actions.filter}
+            value={actions.search}
           >
             {t('Apply Filters')}
           </Button>
