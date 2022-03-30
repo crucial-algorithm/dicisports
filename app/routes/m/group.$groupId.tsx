@@ -24,7 +24,8 @@ import {
   Group,
   GroupSpirit,
   GroupType,
-  Sport, Language
+  Sport,
+  Language
 } from '~/types'
 import ComboBox from '~/components/shared/form/ComboBox'
 import { findGroupTypes } from '~/server/db/groupTypes.server'
@@ -36,7 +37,12 @@ import Config from '~/server/config.server'
 import UploadImage from '~/components/shared/form/UploadImage'
 import { UploadHandler } from '@remix-run/node/formData'
 import { parseMultipartFormData } from '@remix-run/node/parseMultipartFormData'
-import { badRequest, PeekDayOfWeek, timeOfDayToHoursMinutes, uploadImages } from '~/utils/misc'
+import {
+  badRequest, hoursMinutesToTimeOfDay,
+  PeekDayOfWeek,
+  timeOfDayToHoursMinutes,
+  uploadImages
+} from '~/utils/misc'
 import UploadForm from '~/components/shared/form/UploadForm'
 import mapCss from '~/styles/map.css'
 import vendorsCss from '~/styles/vendors.css'
@@ -138,6 +144,16 @@ function processImgField(
   return imgFullId(prefix, value)
 }
 
+function parseLocation(location: string) {
+  const [coords, address] = location.split('|')
+  const [lat, lng] = coords.split(',')
+  return {
+    lat: parseFloat(lat),
+    lng: parseFloat(lng),
+    address
+  }
+}
+
 export const action: ActionFunction = async ({ request, params }) => {
   const user = await requireUser(request)
   const uploadHandler: UploadHandler = async () => {
@@ -167,16 +183,22 @@ export const action: ActionFunction = async ({ request, params }) => {
   const image1 = form.get('/image/0') as string
   const image2 = form.get('/image/1') as string
   const image3 = form.get('/image/2') as string
+  const location = parseLocation(form.get('location') as string)
   const data = {
     id: form.get('id') as string,
     name: form.get('name') as string,
     sportId: parseInt(form.get('sport') as string),
     groupTypeId: parseInt(form.get('type') as string),
     groupSpiritId: parseInt(form.get('spirit') as string),
-    location: form.get('location') as string,
+    location: location.address,
+    lat: location.lat,
+    lng: location.lng,
     near: form.get('near') as string,
     dayOfWeek: parseInt(form.get('dayOfWeek') as string),
-    timeOfDay: form.get('hour') + ':' + form.get('minute'),
+    timeOfDay: hoursMinutesToTimeOfDay(
+      parseInt(form.get('hour') as string, 10),
+      parseInt(form.get('minute') as string, 10)
+    ),
     image1: processImgField(p, image1, isUpdate),
     image2: processImgField(p, image2, isUpdate),
     image3: processImgField(p, image3, isUpdate)

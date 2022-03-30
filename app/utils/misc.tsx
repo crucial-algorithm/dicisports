@@ -104,6 +104,10 @@ function timeOfDayToHoursMinutes(value: number): [number, number] {
   return [hours, minutes]
 }
 
+function hoursMinutesToTimeOfDay(hours: number, minutes: number): number {
+  return hours * 100 + minutes
+}
+
 function displayTimeOfDay(value: number): string {
   const [hours, minutes] = timeOfDayToHoursMinutes(value)
   return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`
@@ -157,6 +161,7 @@ export {
   getNullIfEmpty,
   displayTimeOfDay,
   timeOfDayToHoursMinutes,
+  hoursMinutesToTimeOfDay,
   PeekDayOfWeek,
   getLocalizedText
 }

@@ -145,10 +145,12 @@ type CreateGroupInput = {
   sportId?: number | null
   groupTypeId: number
   groupSpiritId: number
+  lat: number
+  lng: number
   location: string
   near: string
   dayOfWeek: number
-  timeOfDay: string
+  timeOfDay: number
   whatsapp?: string | null
   image1?: string | null
   image2?: string | null

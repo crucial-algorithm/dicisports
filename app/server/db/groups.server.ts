@@ -69,10 +69,12 @@ async function createDraftGroup(
         groupTypeId: 1,
         groupSpiritId: 1,
         dayOfWeek: 6,
-        timeOfDay: '8:30',
+        timeOfDay: 900,
         createdById,
         createdAt,
-        updatedAt
+        updatedAt,
+        lat: 0,
+        lng: 0
       }
     })
   )

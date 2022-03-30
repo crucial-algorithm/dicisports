@@ -37,7 +37,7 @@ export const action: ActionFunction = async ({ request }) => {}
 
 export default function Groups() {
   let { t } = useTranslation('m-groups')
-  const { groups } = useLoaderData<LoaderData>()
+  const { groups, sports } = useLoaderData<LoaderData>()
 
   return (
     <Main className="dark:text-blueGray-500">
@@ -59,6 +59,7 @@ export default function Groups() {
           <GroupEntry
             group={group}
             key={group.id}
+            img={sports.find((s) => s.id === group.sportId)?.picture}
             actions={
               <ButtonGroup>
                 <ButtonLink size="small" to={`/m/group/${group.id}`}>

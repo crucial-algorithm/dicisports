@@ -4,9 +4,7 @@ import { H2 } from '~/components/shared/typography'
 import { useTranslation } from 'react-i18next'
 import I18nText from '~/components/I18nText'
 import DisplayImg from '~/components/shared/DisplayImg'
-import Bicycle from '~/components/illustrations/Bicycle'
-import { displayTimeOfDay, getLocalizedText } from '~/utils/misc'
-import Running from '~/components/illustrations/Running'
+import { displayTimeOfDay } from '~/utils/misc'
 import clsx from 'clsx'
 
 type Props = {
@@ -35,7 +33,7 @@ export default function GroupEntry({ group, actions, footer, img }: Props) {
     <div className="border-b last:border-none border-gray-300 dark:border-gray-300 p-4 relative mb-12 flex">
       <div className="w-144 flex p-2">
         {group.image1 ? (
-          <DisplayImg id={group.image1 || ''} alt="group event 1st image" />
+          <DisplayImg id={group.image1 || ''} alt={group.name || ''} />
         ) : (
           <PlaceholderImg
             group={group}
@@ -75,7 +73,6 @@ export default function GroupEntry({ group, actions, footer, img }: Props) {
 
 function PlaceholderImg({
   group,
-  className,
   img
 }: {
   group: Group
