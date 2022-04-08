@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import Main from '~/components/shared/Main'
-import { H6 } from '~/components/shared/typography'
-import { ActionFunction, LoaderFunction } from 'remix'
+import { H3, H4, H6 } from '~/components/shared/typography'
+import { ActionFunction, json, LoaderFunction, redirect } from 'remix'
 import * as React from 'react'
 import CAGResponse from '~/server/response.server'
 import { findSports } from '~/server/db/sports.server'
@@ -9,15 +9,23 @@ import { Form, useLoaderData } from '@remix-run/react'
 import { Group, Sport } from '~/types'
 import Button, { ButtonLink } from '~/components/shared/Button'
 import { PencilAltIcon } from '@heroicons/react/outline'
+import { HeartIcon as HeartIconActive } from '@heroicons/react/solid'
 import InputError from '~/components/shared/form/InputError'
 import { requireUser } from '~/server/auth/session.server'
-import { findUserGroups } from '~/server/db/groups.server'
+import {
+  findUserFavoriteGroups,
+  findUserGroups,
+  removeGroupFromFavorites
+} from '~/server/db/groups.server'
 import GroupEntry from '~/components/GroupEntry'
 import ButtonGroup from '~/components/shared/ButtonGroup'
+import WhenListEmpty from '~/components/shared/Empty'
+import { SSTranslations } from '~/server/i18n.server'
 
 type LoaderData = {
-  sports: Array<Sport>
-  groups: Array<Group>
+  sports: Sport[]
+  groups: Group[]
+  favorites: Group[]
 }
 
 const actionIds = {
@@ -29,15 +37,25 @@ export let loader: LoaderFunction = async ({ request }) => {
   const user = await requireUser(request)
   return CAGResponse(request, {
     sports: await findSports(),
-    groups: await findUserGroups(user.id)
+    groups: await findUserGroups(user.id),
+    favorites: await findUserFavoriteGroups(user.id)
   })
 }
 
-export const action: ActionFunction = async ({ request }) => {}
+export const action: ActionFunction = async ({ request }) => {
+  const user = await requireUser(request)
+  const data = await request.formData()
+  const groupId: string | null = data.get('groupId') as string
+
+  if (!groupId) return json({})
+  await removeGroupFromFavorites(user.id, groupId)
+  const translate = await SSTranslations('m-groups')
+  return redirect(`/m/groups?message=${translate('Favorite Removed')}`)
+}
 
 export default function Groups() {
   let { t } = useTranslation('m-groups')
-  const { groups, sports } = useLoaderData<LoaderData>()
+  const { groups, sports, favorites } = useLoaderData<LoaderData>()
 
   return (
     <Main className="dark:text-blueGray-500">
@@ -53,7 +71,7 @@ export default function Groups() {
         </div>
       </div>
       <InputError id="general-error" />
-
+      <H3>{t(`My Groups`)}</H3>
       <div className="col-span-full mb-24 lg:col-span-5 lg:mb-0">
         {groups.map((group) => (
           <GroupEntry
@@ -69,6 +87,35 @@ export default function Groups() {
             }
           />
         ))}
+        <WhenListEmpty list={groups}>
+          <H4 variant="secondary" as="p">
+            {t('Favorite Groups Empty')}
+          </H4>
+        </WhenListEmpty>
+      </div>
+      <H3>{t(`Favorite Groups`)}</H3>
+      <div className="col-span-full mb-24 lg:col-span-5 lg:mb-0">
+        {favorites.map((group) => (
+          <GroupEntry
+            group={group}
+            key={group.id}
+            img={sports.find((s) => s.id === group.sportId)?.picture}
+            actions={
+              <ButtonGroup>
+                <Form method="post">
+                  <Button size="tiny" name="groupId" value={group.id}>
+                    <HeartIconActive className="h-6 w-6 m-0 inline-block" />
+                  </Button>
+                </Form>
+              </ButtonGroup>
+            }
+          />
+        ))}
+        <WhenListEmpty list={favorites}>
+          <H4 variant="secondary" as="p" className="mb-12">
+            {t('Favorite Groups Empty')}
+          </H4>
+        </WhenListEmpty>
       </div>
     </Main>
   )

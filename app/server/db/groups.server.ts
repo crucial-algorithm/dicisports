@@ -21,6 +21,23 @@ async function findUserGroups(userId: string): Promise<Array<Group>> {
   return groups.map(dbGroupToGroup)
 }
 
+async function findUserFavoriteGroups(id: string): Promise<Array<Group>> {
+  const user = await db.user.findUnique({
+    where: { id },
+    include: {
+      favGroups: true
+    }
+  })
+
+  if (!user) return []
+  const groups = await db.group.findMany({
+    where: { id: { in: user?.favGroups.map((fg) => fg.groupId) } },
+    include: { createdBy: true, groupSpirit: true }
+  })
+
+  return groups.map(dbGroupToGroup)
+}
+
 async function findGroup(id: string): Promise<Group | null> {
   const group = await db.group.findUnique({
     where: { id },
@@ -87,6 +104,24 @@ async function deleteGroup(id: string): Promise<void> {
   })
 }
 
+async function addGroupToFavorites(
+  userId: string,
+  groupId: string
+): Promise<void> {
+  await db.favoriteGroup.create({
+    data: { userId, groupId }
+  })
+}
+
+async function removeGroupFromFavorites(
+  userId: string,
+  groupId: string
+): Promise<void> {
+  await db.favoriteGroup.delete({
+    where: { userId_groupId: { userId, groupId } }
+  })
+}
+
 export {
   findGroup,
   findGroups,
@@ -94,5 +129,8 @@ export {
   createGroup,
   updateGroup,
   createDraftGroup,
-  deleteGroup
+  deleteGroup,
+  addGroupToFavorites,
+  removeGroupFromFavorites,
+  findUserFavoriteGroups
 }

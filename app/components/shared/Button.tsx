@@ -6,7 +6,7 @@ type Props = {
   onClick?: () => void
   ref?: React.MutableRefObject<null>
   type?: 'button' | 'reset' | 'submit'
-  size?: 'medium' | 'large' | 'small'
+  size?: 'medium' | 'large' | 'small' | 'tiny'
   variant?: 'primary' | 'secondary' | 'danger' | 'adornment'
 } & React.ComponentProps<'button'>
 

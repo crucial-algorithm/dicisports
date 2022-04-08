@@ -494,9 +494,10 @@ export default function GroupRoute() {
                 method="post"
                 className="mt-24 border-t border-gray-300 dark:border-gray-300 pt-6"
               >
-                <input type="hidden" name="actionId" value="dont_know_yet" />
+                <input type="hidden" name="actionId" value={actionIds.delete} />
                 <Button
                   variant="danger"
+                  type="button"
                   onClick={() => setDeleteModalOpen(true)}
                 >
                   {t('Delete Group')}

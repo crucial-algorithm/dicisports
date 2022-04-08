@@ -22,5 +22,8 @@
 
   "Applied Filters": "Filtros: {{filters}}",
   "Filter Spirit": "Espírito {{sport}}",
-  "Or": "ou"
+  "Or": "ou",
+
+  "Favorite Added": "Adicionado as favoritos",
+  "Favorite Removed": "Removido dos favoritos"
 }

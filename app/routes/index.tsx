@@ -1,13 +1,13 @@
 import * as React from 'react'
-import { SyntheticEvent, useEffect, useState } from 'react'
+import { SyntheticEvent, useEffect, useRef, useState } from 'react'
 import type { LoaderFunction } from 'remix'
-import { Link, useLocation } from 'remix'
+import { Link, useFetcher, useLocation } from 'remix'
 import { useTranslation } from 'react-i18next'
 import Main from '~/components/shared/Main'
 import CAGResponse from '~/server/response.server'
 import { Form, useLoaderData } from '@remix-run/react'
 import { Spacer } from '~/components/shared/Spacer'
-import Button, { ButtonLink } from '~/components/shared/Button'
+import Button from '~/components/shared/Button'
 import {
   DaysOfWeek,
   Group,
@@ -15,15 +15,15 @@ import {
   GroupSpirit,
   Language,
   Location,
-  Sport,
-  TranslationObject
+  Sport
 } from '~/types'
 import { findCities, findNearestGroups } from '~/server/db/locations.server'
 import GroupEntry from '~/components/GroupEntry'
 import {
   AdjustmentsIcon,
   ChevronDownIcon,
-  ShareIcon
+  ShareIcon,
+  HeartIcon as Favorite
 } from '@heroicons/react/solid'
 import SearchLocations from '~/components/SearchLocations'
 import ButtonGroup from '~/components/shared/ButtonGroup'
@@ -40,6 +40,9 @@ import NoResults from '~/components/illustrations/NoResults'
 import { TFunction } from 'i18next'
 import HomeLogo from '~/components/shared/HomeLogo'
 import DisplayImg from '~/components/shared/DisplayImg'
+import { findUserFavoriteGroups } from '~/server/db/groups.server'
+import { getUser } from '~/server/auth/session.server'
+import { Notification } from '~/components/shared/NotificationMessage'
 
 type FilterParams = {
   actionId: keyof typeof actions | null
@@ -57,6 +60,7 @@ type LoaderData = {
   sports: Sport[]
   groupsSpirit: GroupSpirit[]
   result: ActionData
+  favorites: Group[]
 }
 
 type ActionData = {
@@ -86,9 +90,10 @@ const countryCoords = {
 
 export let loader: LoaderFunction = async ({ request, params, context }) => {
   const data = parseQueryString(request.url)
-  console.log(data)
   // Initial load
   const cities = await findCities()
+  const user = await getUser(request)
+  const favorites = user ? await findUserFavoriteGroups(user.id) : []
 
   let result: ActionData | null = null
   let page = data.page || 0
@@ -110,6 +115,7 @@ export let loader: LoaderFunction = async ({ request, params, context }) => {
       cities,
       sports: await findSports(),
       groupsSpirit: await findGroupsSpirit(),
+      favorites,
       result
     },
     undefined,
@@ -191,7 +197,6 @@ async function search(
         ? null
         : reduceDayParts(dayParts.map(dayPartToTimeInterval))
   }
-  console.log('page = ', page)
   const { total, results } = await findNearestGroups(
     typeof lat === 'string' ? parseFloat(lat) : lat,
     typeof lng === 'string' ? parseFloat(lng) : lng,
@@ -218,7 +223,8 @@ export default function Index() {
   let { t, i18n } = useTranslation('home')
   const lang = i18n.language as Language
   let tc = useTranslation('common').t
-  const { cities, sports, groupsSpirit, result } = useLoaderData<LoaderData>()
+  const { cities, sports, groupsSpirit, result, favorites } =
+    useLoaderData<LoaderData>()
   const [selection, setSelection] = useState<Location | undefined>()
   const data = result
   const [page, setPage] = useState<number>(data?.page || 0)
@@ -275,7 +281,7 @@ export default function Index() {
   }
 
   return (
-    <Main className="dark:text-blueGray-500">
+    <Main className="dark:text-blueGray-500 relative mb-8">
       <Form method="get" onSubmit={handleOnSubmit}>
         <input
           type="hidden"
@@ -287,6 +293,7 @@ export default function Index() {
           value={selection ? `${selection.city}, ${selection.region}` : ''}
           name="search"
         />
+        <input type="hidden" name="page" value={result?.page || 0} />
         <div className="flex align-middle justify-center">
           <Link to="/">
             <HomeLogo className="w-112 h-16" />
@@ -334,30 +341,9 @@ export default function Index() {
             />
           </div>
         ) : null}
-        <div>
-          {searchPerformed && groups.length === 0 ? (
-            <div className="w-full flex justify-center mt-8">
-              <NoResults />
-            </div>
-          ) : (
-            groups.map((group) => (
-              <GroupResult
-                group={group}
-                key={group.id}
-                img={sports.find((s) => s.id === group.sportId)?.picture}
-              />
-            ))
-          )}
-        </div>
-        {!searchPerformed ? (
-          <>
-            <SportsGrid sports={sports} lang={lang} t={t} />
-          </>
-        ) : null}
         {showMoreResults ? (
           <>
-            <div className="mb-8 flex align-middle justify-center">
-              <input type="hidden" name="page" value={result?.page || 0} />
+            <div className="mb-8 flex align-middle justify-center absolute bottom-0 w-full">
               <Button
                 name="actionId"
                 value={actions.more}
@@ -369,11 +355,67 @@ export default function Index() {
           </>
         ) : null}
       </Form>
+      <div className="pb-12">
+        {searchPerformed && groups.length === 0 ? (
+          <div className="w-full flex justify-center mt-8">
+            <NoResults />
+          </div>
+        ) : (
+          groups.map((group) => (
+            <GroupResult
+              group={group}
+              key={group.id}
+              isUserFavorite={
+                favorites.find((g) => g.id === group.id) !== undefined
+              }
+              img={sports.find((s) => s.id === group.sportId)?.picture}
+              favAddedMessage={t('Favorite Added')}
+              favRemovedMessage={t('Favorite Removed')}
+            />
+          ))
+        )}
+      </div>
+      {!searchPerformed ? (
+        <>
+          <SportsGrid sports={sports} lang={lang} t={t} />
+        </>
+      ) : null}
     </Main>
   )
 }
 
-function GroupResult({ group, img }: { group: Group; img?: string }) {
+function GroupResult({
+  group,
+  img,
+  isUserFavorite,
+  favAddedMessage,
+  favRemovedMessage
+}: {
+  group: Group
+  img?: string
+  isUserFavorite: boolean
+  favAddedMessage: string
+  favRemovedMessage: string
+}) {
+  const favorite = useFetcher()
+  const ref = useRef()
+  const [message, setMessage] = useState<string>(favAddedMessage)
+  let showNotification: any = null
+
+  function handlerSetShowNotificationFunction(callback: () => void) {
+    showNotification = callback
+  }
+
+  useEffect(() => {
+    if (favorite.type === 'done' && favorite.data.ok) {
+      if (ref.current) (ref.current as HTMLFormElement).reset()
+      setMessage(
+        favorite.data.action === 'add' ? favAddedMessage : favRemovedMessage
+      )
+      showNotification()
+    }
+  }, [favorite, favAddedMessage, favRemovedMessage, showNotification])
+
   return (
     <GroupEntry
       group={group}
@@ -381,12 +423,28 @@ function GroupResult({ group, img }: { group: Group; img?: string }) {
       img={img}
       actions={
         <ButtonGroup density="compact">
-          <ButtonLink size="tiny" to={'/something'}>
+          <Button size="tiny" type="submit">
             <ShareIcon className="h-6 w-6 m-0 inline-block" />
-          </ButtonLink>
-          <ButtonLink size="tiny" to={'/something'}>
-            <HeartIcon className="h-6 w-6 m-0 inline-block" />
-          </ButtonLink>
+          </Button>
+          <favorite.Form
+            // @ts-ignore
+            ref={ref}
+            method="post"
+            action={`/m/group/fav/${group.id}`}
+          >
+            {isUserFavorite ? (
+              <Button size="tiny" name="action" value="remove">
+                <Favorite className="h-6 w-6 m-0 inline-block" />
+              </Button>
+            ) : (
+              <Button size="tiny" name="action" value="add">
+                <HeartIcon className="h-6 w-6 m-0 inline-block" />
+              </Button>
+            )}
+          </favorite.Form>
+          <Notification show={handlerSetShowNotificationFunction}>
+            {message}
+          </Notification>
         </ButtonGroup>
       }
       footer={
@@ -427,6 +485,7 @@ function SportsGrid({
           href={`mailto:info@smartcitizen.pt?subject=${t(
             'Add Sport Mail Subject'
           )}`}
+          key={i}
         >
           <DisplayImg
             id={`product/sports/add-sport`}
@@ -589,7 +648,6 @@ function DisplayFilters(props: {
   if (!filters) return null
   const { spirit, sport, dayOfWeek, dayParts } = filters
   let label: string[] = []
-  console.log('--->', filters)
 
   if (dayOfWeek !== null && dayOfWeek >= 0) {
     label.push(

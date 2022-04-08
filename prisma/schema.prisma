@@ -9,7 +9,7 @@
 // `npx prisma migrate dev --name <descriptive-name>` - generate a migration file for any changes you make to the schema (this will be committed).
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
   previewFeatures = ["fullTextSearch"]
 }
 
@@ -25,130 +25,152 @@ enum Role {
 }
 
 model User {
+  id        String          @id
+  createdAt DateTime        @default(now()) @map("created_at")
+  updatedAt DateTime        @updatedAt @map("updated_at")
+  email     String          @unique
+  name      String
+  role      Role            @default(MEMBER)
+  sessions  Session[]
+  groups    Group[]
+  favGroups FavoriteGroup[]
+
   @@map("users")
-  id           String     @id
-  createdAt    DateTime   @default(now())   @map("created_at")
-  updatedAt    DateTime   @updatedAt        @map("updated_at")
-  email        String     @unique
-  name         String
-  role         Role       @default(MEMBER)
-  sessions     Session[]
-  groups       Group[]
 }
 
 model Session {
-  @@map("sessions")
   id             String   @id @default(uuid())
-  createdAt      DateTime @default(now())   @map("created_at")
+  createdAt      DateTime @default(now()) @map("created_at")
   user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId         String   @map("user_id")
   expirationDate DateTime @map("expiration_date")
+
+  @@map("sessions")
 }
 
 model Sport {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  name      Json
+  picture   String
+  events    Event[]
+  groups    Group[]
+
   @@map("sports")
-  id         Int      @id @default(autoincrement())
-  createdAt  DateTime @default(now())  @map("created_at")
-  updatedAt  DateTime @updatedAt       @map("updated_at")
-  name       Json
-  picture    String
-  events     Event[]
-  groups     Group[]
 }
 
 model Location {
+  id        Int      @id @default(autoincrement())
+  city      String
+  region    String
+  country   String
+  lat       Float
+  lng       Float
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
   @@map("locations")
-  id         Int      @id @default(autoincrement())
-  city       String
-  region     String
-  country    String
-  lat        Float
-  lng        Float
-  createdAt  DateTime @default(now())  @map("created_at")
-  updatedAt  DateTime @updatedAt       @map("updated_at")
 }
 
 enum Status {
-    auto
-    draft
-    published
-    unpublished
-    deleted
+  auto
+  draft
+  published
+  unpublished
+  deleted
 }
 
 model Event {
+  id                 String     @id @default(uuid())
+  name               String?
+  sport              Sport?     @relation(fields: [sportId], references: [id])
+  sportId            Int?       @map("sport_id")
+  startAt            DateTime?  @map("start_at")
+  endAt              DateTime?  @map("end_at")
+  location           String?
+  address            String?
+  useExternalBooking Boolean    @default(false) @map("use_external_booking")
+  externalBookingUrl String?    @map("external_booking_url")
+  status             Status     @default(auto)
+  createdAt          DateTime   @default(now()) @map("created_at")
+  updatedAt          DateTime   @updatedAt @map("updated_at")
+  documents          Document[]
+
   @@map("events")
-  id                    String     @id @default(uuid())
-  name                  String?
-  sport                 Sport?     @relation(fields: [sportId], references: [id])
-  sportId               Int?       @map("sport_id")
-  startAt               DateTime?  @map("start_at")
-  endAt                 DateTime?  @map("end_at")
-  location              String?
-  address               String?
-  useExternalBooking    Boolean    @default(false)   @map("use_external_booking")
-  externalBookingUrl    String?    @map("external_booking_url")
-  status                Status     @default(auto)
-  createdAt             DateTime   @default(now())  @map("created_at")
-  updatedAt             DateTime   @updatedAt       @map("updated_at")
-  documents             Document[]
 }
 
 model Document {
+  id        String   @id @default(uuid())
+  key       String
+  position  Int
+  label     String?
+  event     Event    @relation(fields: [eventId], references: [id])
+  eventId   String   @map("event_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
   @@map("documents")
-  id                    String    @id @default(uuid())
-  key                   String
-  position              Int
-  label                 String?
-  event                 Event     @relation(fields: [eventId], references: [id])
-  eventId               String    @map("event_id")
-  createdAt             DateTime  @default(now())  @map("created_at")
-  updatedAt             DateTime  @updatedAt       @map("updated_at")
 }
 
-
-// Metting points start
+// Groups start
 model Group {
+  id            String      @id
+  name          String?
+  sport         Sport?      @relation(fields: [sportId], references: [id])
+  sportId       Int?        @map("sport_id")
+  groupType     GroupType   @relation(fields: [groupTypeId], references: [id])
+  groupTypeId   Int         @map("group_type_id")
+  groupSpirit   GroupSpirit @relation(fields: [groupSpiritId], references: [id])
+  groupSpiritId Int         @map("group_spirit_id")
+  lat           Float
+  lng           Float
+  location      String?
+  near          String?
+  dayOfWeek     Int         @map("day_of_week")
+  timeOfDay     Int         @map("time_of_day")
+  whatsapp      String?
+  image1        String?
+  image2        String?
+  image3        String?
+  status        Status      @default(auto)
+  createdAt     DateTime    @default(now()) @map("created_at")
+  createdBy     User        @relation(fields: [createdById], references: [id])
+  createdById   String      @map("created_by")
+  updatedAt     DateTime    @updatedAt @map("updated_at")
+
+  favGroups FavoriteGroup[]
   @@map("groups")
-  id                    String          @id
-  name                  String?
-  sport                 Sport?          @relation(fields: [sportId], references: [id])
-  sportId               Int?            @map("sport_id")
-  groupType             GroupType       @relation(fields: [groupTypeId], references: [id])
-  groupTypeId           Int             @map("group_type_id")
-  groupSpirit           GroupSpirit     @relation(fields: [groupSpiritId], references: [id])
-  groupSpiritId         Int             @map("group_spirit_id")
-  lat                   Float
-  lng                   Float
-  location              String?
-  near                  String?
-  dayOfWeek             Int             @map("day_of_week")
-  timeOfDay             Int             @map("time_of_day")
-  whatsapp              String?
-  image1                String?
-  image2                String?
-  image3                String?
-  status                Status          @default(auto)
-  createdAt             DateTime        @default(now()) @map("created_at")
-  createdBy             User            @relation(fields: [createdById], references: [id], onDelete: Cascade)
-  createdById           String          @map("created_by")
-  updatedAt             DateTime        @updatedAt  @map("updated_at")
 }
 
 model GroupType {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  name      Json
+  groups    Group[]
+
   @@map("groups_type")
-  id         Int      @id @default(autoincrement())
-  createdAt  DateTime @default(now())  @map("created_at")
-  updatedAt  DateTime @updatedAt       @map("updated_at")
-  name       Json
-  groups     Group[]
 }
 
 model GroupSpirit {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  name      Json
+  groups    Group[]
+
   @@map("groups_spirit")
-  id         Int      @id @default(autoincrement())
-  createdAt  DateTime @default(now())  @map("created_at")
-  updatedAt  DateTime @updatedAt       @map("updated_at")
-  name       Json
-  groups     Group[]
+}
+
+model FavoriteGroup {
+  userId    String   @map("user_id")
+  groupId   String   @map("group_id")
+  user      User     @relation(fields: [userId], references: [id])
+  group     Group    @relation(fields: [groupId], references: [id])
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([userId, groupId])
+  @@map("favorite_groups")
 }
