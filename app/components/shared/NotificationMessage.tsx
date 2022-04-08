@@ -7,7 +7,7 @@ import { PlusIcon } from '@heroicons/react/solid'
 
 function NotificationMessage({
   queryStringKey,
-  visibleMs = 8000,
+  visibleMs = 4000,
   visible: controlledVisible,
   autoClose,
   children,
@@ -48,7 +48,6 @@ function NotificationMessage({
   }, [message])
 
   React.useEffect(() => {
-    if (!latestMessageRef.current) return
     if (autoClose === false) return
     if (controlledVisible === false) return
 
@@ -57,7 +56,7 @@ function NotificationMessage({
     }, visibleMs + delay)
 
     return () => clearTimeout(timeout)
-  }, [queryStringKey, delay, autoClose, controlledVisible, visibleMs])
+  }, [queryStringKey, delay, autoClose, controlledVisible, visibleMs, message])
 
   React.useEffect(() => {
     if (!latestMessageRef.current) return
@@ -126,4 +125,69 @@ function NotificationMessage({
   )
 }
 
-export { NotificationMessage }
+type NotificationProps = {
+  duration?: number
+  children?: React.ReactNode | React.ReactNode[]
+  position?: 'bottom-right' | 'top-center'
+  show?: (a: () => void) => void
+}
+
+function Notification({
+  duration = 3000,
+  children,
+  position = 'bottom-right',
+  show = () => {}
+}: NotificationProps) {
+  const initialY = position.includes('bottom') ? 50 : -50
+  const [isVisible, setIsVisible] = useState(false)
+  const delay = 0
+
+  // hacky implementation... we receive the prop show which is a function that
+  // will be called with a single argument: a function that allows to trigger
+  // the display of the notification (handlerSetVisible will be called by the
+  // parent component)
+  function handlerSetVisible() {
+    setIsVisible(true)
+  }
+  show(handlerSetVisible)
+
+  React.useEffect(() => {
+    const timeout = setTimeout(() => {
+      setIsVisible(false)
+    }, duration)
+    return () => clearTimeout(timeout)
+  }, [isVisible, duration])
+
+  return (
+    <AnimatePresence>
+      {isVisible ? (
+        <motion.div
+          initial={{ y: initialY, opacity: 0 }}
+          animate={{ y: 0, opacity: 1, transition: { delay } }}
+          exit={{ y: initialY, opacity: 0 }}
+          transition={{ ease: 'easeInOut', duration: 0.3 }}
+          className={clsx(
+            'fixed z-50 left-0 right-0 px-5vw pointer-events-none',
+            {
+              'bottom-8': position === 'bottom-right',
+              'top-8': position === 'top-center'
+            }
+          )}
+        >
+          <div
+            className={clsx('flex mx-auto w-full max-w-8xl', {
+              'justify-end': position === 'bottom-right',
+              'justify-center': position === 'top-center'
+            })}
+          >
+            <div className="relative p-8 pr-14 max-w-xl rounded-lg shadow-md pointer-events-auto bg-gray-700 text-white">
+              {children}
+            </div>
+          </div>
+        </motion.div>
+      ) : null}
+    </AnimatePresence>
+  )
+}
+
+export { NotificationMessage, Notification }
