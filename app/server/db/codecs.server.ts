@@ -90,6 +90,7 @@ function dbRawGroupToGroup(group: DBRawGroup): Group {
     distance: group.distance,
     id: group.id,
     name: group.name,
+    slug: group.slug,
     sportId: group.sport_id,
     groupTypeId: group.group_type_id,
     groupSpiritId: group.group_spirit_id,

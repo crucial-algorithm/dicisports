@@ -117,6 +117,7 @@ model Document {
 model Group {
   id            String      @id
   name          String?
+  slug          String?     @unique
   sport         Sport?      @relation(fields: [sportId], references: [id])
   sportId       Int?        @map("sport_id")
   groupType     GroupType   @relation(fields: [groupTypeId], references: [id])

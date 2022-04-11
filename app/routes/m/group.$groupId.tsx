@@ -38,7 +38,8 @@ import UploadImage from '~/components/shared/form/UploadImage'
 import { UploadHandler } from '@remix-run/node/formData'
 import { parseMultipartFormData } from '@remix-run/node/parseMultipartFormData'
 import {
-  badRequest, hoursMinutesToTimeOfDay,
+  badRequest,
+  hoursMinutesToTimeOfDay,
   PeekDayOfWeek,
   timeOfDayToHoursMinutes,
   uploadImages

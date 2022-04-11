@@ -130,7 +130,7 @@ export const loader: LoaderFunction = async ({ request }) => {
   await clientSession.getHeaders(headers)
   await loginInfoSession.getHeaders(headers)
 
-  return CAGResponse(request, data, headers)
+  return CAGResponse(request, data, headers, [], true)
 }
 
 /* temporary = from kentcdodds.com implementation */

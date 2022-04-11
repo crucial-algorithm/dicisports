@@ -43,6 +43,7 @@ import DisplayImg from '~/components/shared/DisplayImg'
 import { findUserFavoriteGroups } from '~/server/db/groups.server'
 import { getUser } from '~/server/auth/session.server'
 import { Notification } from '~/components/shared/NotificationMessage'
+import { CopyToClipboard } from 'react-copy-to-clipboard'
 
 type FilterParams = {
   actionId: keyof typeof actions | null
@@ -231,6 +232,7 @@ export default function Index() {
   const [groups, setGroups] = useState<Array<Group>>([])
   const [filtersModalOpen, setFiltersModalOpen] = useState<boolean>(false)
   const [searchPerformed, setSearchPerformed] = useState<boolean>(false)
+  const [address, setAddress] = useState<string>('')
   const location = useLocation()
   const filters = parseQueryString(`https://a.com/${location.search}`)
 
@@ -253,6 +255,7 @@ export default function Index() {
 
     results.map((r) => list.push(r))
     setGroups(list)
+    setAddress(new URL(window.location.href).origin)
   }, [result, location])
 
   let showMoreResults = !!data && data.results.length < data.total
@@ -371,6 +374,8 @@ export default function Index() {
               img={sports.find((s) => s.id === group.sportId)?.picture}
               favAddedMessage={t('Favorite Added')}
               favRemovedMessage={t('Favorite Removed')}
+              copiedToClipMessage={t('Copied to Clipboard')}
+              address={address}
             />
           ))
         )}
@@ -389,21 +394,34 @@ function GroupResult({
   img,
   isUserFavorite,
   favAddedMessage,
-  favRemovedMessage
+  favRemovedMessage,
+  copiedToClipMessage,
+  address
 }: {
   group: Group
   img?: string
   isUserFavorite: boolean
   favAddedMessage: string
   favRemovedMessage: string
+  copiedToClipMessage: string
+  address: string
 }) {
   const favorite = useFetcher()
   const ref = useRef()
   const [message, setMessage] = useState<string>(favAddedMessage)
-  let showNotification: any = null
+  let showFavoriteAddedNotification: any = null
+  let showCopiedToClipboardNotification: any = null
 
   function handlerSetShowNotificationFunction(callback: () => void) {
-    showNotification = callback
+    showFavoriteAddedNotification = callback
+  }
+
+  function handlerSetShowNotificationCopyToClipboard(callback: () => void) {
+    showCopiedToClipboardNotification = callback
+  }
+
+  function handlerClickToCopy() {
+    showCopiedToClipboardNotification()
   }
 
   useEffect(() => {
@@ -412,9 +430,14 @@ function GroupResult({
       setMessage(
         favorite.data.action === 'add' ? favAddedMessage : favRemovedMessage
       )
-      showNotification()
+      showFavoriteAddedNotification()
     }
-  }, [favorite, favAddedMessage, favRemovedMessage, showNotification])
+  }, [
+    favorite,
+    favAddedMessage,
+    favRemovedMessage,
+    showFavoriteAddedNotification
+  ])
 
   return (
     <GroupEntry
@@ -423,9 +446,14 @@ function GroupResult({
       img={img}
       actions={
         <ButtonGroup density="compact">
-          <Button size="tiny" type="submit">
-            <ShareIcon className="h-6 w-6 m-0 inline-block" />
-          </Button>
+          <CopyToClipboard
+            text={`${address}/group/${group.slug}`}
+            onCopy={handlerClickToCopy}
+          >
+            <Button size="tiny" type="submit">
+              <ShareIcon className="h-6 w-6 m-0 inline-block" />
+            </Button>
+          </CopyToClipboard>
           <favorite.Form
             // @ts-ignore
             ref={ref}
@@ -444,6 +472,9 @@ function GroupResult({
           </favorite.Form>
           <Notification show={handlerSetShowNotificationFunction}>
             {message}
+          </Notification>
+          <Notification show={handlerSetShowNotificationCopyToClipboard}>
+            {copiedToClipMessage}
           </Notification>
         </ButtonGroup>
       }

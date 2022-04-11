@@ -3,6 +3,7 @@ import { db } from '~/server/db.server'
 import { dbGroupToGroup } from '~/server/db/codecs.server'
 import Id from '~/server/utils/Id.server'
 import { Status } from '@prisma/client'
+import { generateSlug } from '~/utils/misc'
 
 async function findGroups(): Promise<Array<Group>> {
   const groups = await db.group.findMany()
@@ -47,23 +48,36 @@ async function findGroup(id: string): Promise<Group | null> {
   return dbGroupToGroup(group)
 }
 
-async function createGroup(
-  group: CreateGroupInput,
-  userId: string
-): Promise<string> {
-  const id = Id()
-
-  await db.group.create({
-    data: {
-      ...group,
-      id,
-      createdById: userId
+async function findGroupBySlug(slug: string): Promise<Group | null> {
+  const group = await db.group.findUnique({
+    where: { slug },
+    include: {
+      groupType: true,
+      groupSpirit: true,
+      sport: true,
+      createdBy: true
     }
   })
-  return id
+  if (!group) return null
+  return dbGroupToGroup(group)
+}
+
+async function assignUniqueSlug(name: string, attempt = 0): Promise<string> {
+  const prefix = `${Math.floor(Math.random() * 1000)}-`
+  const slug = `${attempt ? prefix : ''}${generateSlug(name)}`
+  console.log(`attempt nbr ${attempt}, slug = ${slug}`)
+  const group = await db.group.findUnique({
+    where: { slug }
+  })
+  if (!group) return slug
+  return await assignUniqueSlug(name, ++attempt)
 }
 
 async function updateGroup(group: CreateGroupInput): Promise<void> {
+  const groupInDb = await findGroup(group.id as string)
+  if (!groupInDb || groupInDb.slug === null) {
+    group.slug = await assignUniqueSlug(group.name)
+  }
   await db.group.update({
     where: { id: group.id },
     data: { ...group, status: Status.published }
@@ -82,6 +96,7 @@ async function createDraftGroup(
     await db.group.create({
       data: {
         id: groupId,
+        slug: null,
         sportId: 1,
         groupTypeId: 1,
         groupSpiritId: 1,
@@ -126,7 +141,7 @@ export {
   findGroup,
   findGroups,
   findUserGroups,
-  createGroup,
+  findGroupBySlug,
   updateGroup,
   createDraftGroup,
   deleteGroup,

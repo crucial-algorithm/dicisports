@@ -299,6 +299,7 @@ function groups() {
   groups.push({
     id: 'FkoxmH5db6RXqBpExion',
     name: 'Bike Brothers Domingueira',
+    slug: 'bike-brothers-domingueira',
     sportId: 3,
     groupTypeId: 1,
     groupSpiritId: 2,
@@ -321,6 +322,7 @@ function groups() {
   groups.push({
     id: 'GkoxmH5db6RXqBpExion',
     name: 'Bike Brothers BTT ao Sábado',
+    slug: 'bike-brothers-btt-ao-sabado',
     sportId: 4,
     groupTypeId: 1,
     groupSpiritId: 2,

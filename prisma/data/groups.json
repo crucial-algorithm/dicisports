@@ -18,7 +18,8 @@
     "status": "published",
     "createdById": "8acaf92ca13f3b3f676b",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "borgas-em-abrantes"
   },
   {
     "id": "1638ac0b6fbd76618b21",
@@ -39,7 +40,8 @@
     "status": "published",
     "createdById": "3c7687900e38436b29aa",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "borgas-em-agualva"
   },
   {
     "id": "d888b22b730daaf3b70e",
@@ -60,7 +62,8 @@
     "status": "published",
     "createdById": "4d367c13f2088054b876",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-agueda"
   },
   {
     "id": "a7c4eecf117724532118",
@@ -81,7 +84,8 @@
     "status": "published",
     "createdById": "cbda63c0793124387135",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-aguiar-da-beira"
   },
   {
     "id": "704087a7a522ca580d16",
@@ -102,7 +106,8 @@
     "status": "published",
     "createdById": "27c2983fc6888a74c7fa",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "borgas-em-alandroal"
   },
   {
     "id": "a26170d4da066ce90c61",
@@ -123,7 +128,8 @@
     "status": "published",
     "createdById": "4d367c13f2088054b876",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-albergaria-a-velha"
   },
   {
     "id": "adb2e6a2fb512e5bd080",
@@ -144,7 +150,8 @@
     "status": "published",
     "createdById": "2824f56195f7fe273651",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "grupo-desportivo-de-albufeira"
   },
   {
     "id": "3964d13490c68596b0d3",
@@ -165,7 +172,8 @@
     "status": "published",
     "createdById": "1e488ad571e683258934",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "patos-de-alcacer-do-sal"
   },
   {
     "id": "091e65820aae00303bc3",
@@ -186,7 +194,8 @@
     "status": "published",
     "createdById": "8acaf92ca13f3b3f676b",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "borgas-em-alcanena"
   },
   {
     "id": "ec6e4c40e0fa337e4ac1",
@@ -207,7 +216,8 @@
     "status": "published",
     "createdById": "909287b508d7a5de1975",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "amigos-de-alcobaca"
   },
   {
     "id": "9680fab1bbd4447b2eb0",
@@ -228,7 +238,8 @@
     "status": "published",
     "createdById": "1e488ad571e683258934",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "borgas-em-alcochete"
   },
   {
     "id": "467615950263e19cce5b",
@@ -249,7 +260,8 @@
     "status": "published",
     "createdById": "2824f56195f7fe273651",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "grupo-desportivo-de-alcoutim"
   },
   {
     "id": "169624de8406c0b4daff",
@@ -270,7 +282,8 @@
     "status": "published",
     "createdById": "3c7687900e38436b29aa",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "borgas-em-alenquer"
   },
   {
     "id": "334a3081b9dd416e384d",
@@ -291,7 +304,8 @@
     "status": "published",
     "createdById": "4e1f2f8ab203efe7f966",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-alfandega-da-fe"
   },
   {
     "id": "b27b92cc56187d9329d5",
@@ -312,7 +326,8 @@
     "status": "published",
     "createdById": "ec6a22f0bb3110bc7adb",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-alfena"
   },
   {
     "id": "ef1f2789520f8c5f6b3e",
@@ -333,7 +348,8 @@
     "status": "published",
     "createdById": "08848f92687d55943d73",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-alijo"
   },
   {
     "id": "7fa7dc7ef4477200ed59",
@@ -354,7 +370,8 @@
     "status": "published",
     "createdById": "2824f56195f7fe273651",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "grupo-desportivo-de-aljezur"
   },
   {
     "id": "d19cb910b40b056e33d9",
@@ -375,7 +392,8 @@
     "status": "published",
     "createdById": "2e263c071a39fec91831",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "patos-de-aljustrel"
   },
   {
     "id": "9053899c4854da848166",
@@ -396,7 +414,8 @@
     "status": "published",
     "createdById": "1e488ad571e683258934",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "borgas-em-almada"
   },
   {
     "id": "af4200e565b331603e6a",
@@ -417,7 +436,8 @@
     "status": "published",
     "createdById": "3c7687900e38436b29aa",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "borgas-em-almargem"
   },
   {
     "id": "05b72760f9674a2abdcc",
@@ -438,7 +458,8 @@
     "status": "published",
     "createdById": "cbda63c0793124387135",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-almeida"
   },
   {
     "id": "b350770237ce978b8a6d",
@@ -459,7 +480,8 @@
     "status": "published",
     "createdById": "8acaf92ca13f3b3f676b",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "borgas-em-almeirim"
   },
   {
     "id": "235107b829678e491189",
@@ -480,7 +502,8 @@
     "status": "published",
     "createdById": "2e263c071a39fec91831",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "patos-de-almodovar"
   },
   {
     "id": "a9fe1fde3c4d20c48b26",
@@ -501,7 +524,8 @@
     "status": "published",
     "createdById": "8acaf92ca13f3b3f676b",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "borgas-em-alpiarca"
   },
   {
     "id": "2632486059874a0b03d9",
@@ -522,7 +546,8 @@
     "status": "published",
     "createdById": "bb04302eca5170c649c6",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "borgas-em-alter-do-cho"
   },
   {
     "id": "38286268ce72810b69a8",
@@ -543,7 +568,8 @@
     "status": "published",
     "createdById": "909287b508d7a5de1975",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "amigos-de-alvaiazere"
   },
   {
     "id": "639cfd68d4d17e9d62ec",
@@ -564,7 +590,8 @@
     "status": "published",
     "createdById": "2e263c071a39fec91831",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "patos-de-alvito"
   },
   {
     "id": "0f06491424a0cf12f165",
@@ -585,7 +612,8 @@
     "status": "published",
     "createdById": "3c7687900e38436b29aa",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "borgas-em-amadora"
   },
   {
     "id": "8990c606ed31130660e0",
@@ -606,7 +634,8 @@
     "status": "published",
     "createdById": "ec6a22f0bb3110bc7adb",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-amarante"
   },
   {
     "id": "fefc62834b17482178a3",
@@ -627,7 +656,8 @@
     "status": "published",
     "createdById": "069f6ada1ea40b879653",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "grupo-desportivo-de-amares"
   },
   {
     "id": "d338313921aa04e6cd0c",
@@ -648,7 +678,8 @@
     "status": "published",
     "createdById": "1e488ad571e683258934",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "borgas-em-amora"
   },
   {
     "id": "129bee87ab5c31902000",
@@ -669,7 +700,8 @@
     "status": "published",
     "createdById": "4d367c13f2088054b876",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "amigos-de-anadia"
   },
   {
     "id": "27d3edff371619a78fc1",
@@ -690,7 +722,8 @@
     "status": "published",
     "createdById": "dcf1fe6b76b84863bcd5",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "borgas-em-angra-do-heroismo"
   },
   {
     "id": "d9527f31b964ee0d8398",
@@ -711,7 +744,8 @@
     "status": "published",
     "createdById": "909287b508d7a5de1975",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "amigos-de-ansio"
   },
   {
     "id": "27a2623c4b14c0994877",
@@ -732,7 +766,8 @@
     "status": "published",
     "createdById": "29e67423f24c0c9aead0",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "grupo-desportivo-de-arcos-de-valdevez"
   },
   {
     "id": "1dce343371991050978d",
@@ -753,7 +788,8 @@
     "status": "published",
     "createdById": "29e67423f24c0c9aead0",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "grupo-desportivo-de-arcozelo"
   },
   {
     "id": "d70e6cebeb7dff745ada",
@@ -774,7 +810,8 @@
     "status": "published",
     "createdById": "ec6a22f0bb3110bc7adb",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-arcozelo"
   },
   {
     "id": "8d1cc1cdb80d59c40a53",
@@ -795,7 +832,8 @@
     "status": "published",
     "createdById": "8199f1b4efb79379dde2",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "amigos-de-arganil"
   },
   {
     "id": "6056c5e967f467cd4a7c",
@@ -816,7 +854,8 @@
     "status": "published",
     "createdById": "4d367c13f2088054b876",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-argoncilhe"
   },
   {
     "id": "dbf539f762f93a06c65e",
@@ -837,7 +876,8 @@
     "status": "published",
     "createdById": "2824f56195f7fe273651",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "grupo-desportivo-de-armaco-de-pera"
   },
   {
     "id": "cd2fcc24a5810470311a",
@@ -858,7 +898,8 @@
     "status": "published",
     "createdById": "6964937293f5b22e35c8",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-armamar"
   },
   {
     "id": "7f18c1183b8c2f2db53b",
@@ -879,7 +920,8 @@
     "status": "published",
     "createdById": "4d367c13f2088054b876",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-arouca"
   },
   {
     "id": "1e6f645e4a359f2adcef",
@@ -900,7 +942,8 @@
     "status": "published",
     "createdById": "27c2983fc6888a74c7fa",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "borgas-em-arraiolos"
   },
   {
     "id": "fff07becb27828178e60",
@@ -921,7 +964,8 @@
     "status": "published",
     "createdById": "bb04302eca5170c649c6",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "borgas-em-arronches"
   },
   {
     "id": "fc605299123752d16472",
@@ -942,7 +986,8 @@
     "status": "published",
     "createdById": "3c7687900e38436b29aa",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "borgas-em-arruda-dos-vinhos"
   },
   {
     "id": "db4ccffe6bbd162d9b19",
@@ -963,7 +1008,8 @@
     "status": "published",
     "createdById": "4d367c13f2088054b876",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-aveiro"
   },
   {
     "id": "ea44a94dc7a6187ecaac",
@@ -984,7 +1030,8 @@
     "status": "published",
     "createdById": "ec6a22f0bb3110bc7adb",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-aver-o-mar"
   },
   {
     "id": "45a8c89b7e3842c7e9f7",
@@ -1005,7 +1052,8 @@
     "status": "published",
     "createdById": "bb04302eca5170c649c6",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "borgas-em-avis"
   },
   {
     "id": "2f10443510d7fecb227e",
@@ -1026,7 +1074,8 @@
     "status": "published",
     "createdById": "3c7687900e38436b29aa",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "borgas-em-azambuja"
   },
   {
     "id": "2ca79560af27cbb60aee",
@@ -1047,7 +1096,8 @@
     "status": "published",
     "createdById": "ec6a22f0bb3110bc7adb",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-baio"
   },
   {
     "id": "e25267abc2db860f69e3",
@@ -1068,7 +1118,8 @@
     "status": "published",
     "createdById": "069f6ada1ea40b879653",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "grupo-desportivo-de-barcelos"
   },
   {
     "id": "03e875af1932357de085",
@@ -1089,7 +1140,8 @@
     "status": "published",
     "createdById": "2e263c071a39fec91831",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "patos-de-barrancos"
   },
   {
     "id": "e94b36f478cca886a8e7",
@@ -1110,7 +1162,8 @@
     "status": "published",
     "createdById": "1e488ad571e683258934",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "borgas-em-barreiro"
   },
   {
     "id": "dd1043fd176419fbbef1",
@@ -1131,7 +1184,8 @@
     "status": "published",
     "createdById": "909287b508d7a5de1975",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "amigos-de-batalha"
   },
   {
     "id": "ecc64843c5142ea176be",
@@ -1152,7 +1206,8 @@
     "status": "published",
     "createdById": "2e263c071a39fec91831",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "patos-de-beja"
   },
   {
     "id": "e42e635bed77b5ceec14",
@@ -1173,7 +1228,8 @@
     "status": "published",
     "createdById": "e5371e3f657c196fdd75",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "amigos-de-belmonte"
   },
   {
     "id": "911f0b40b1e5065f91b8",
@@ -1194,7 +1250,8 @@
     "status": "published",
     "createdById": "8acaf92ca13f3b3f676b",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "borgas-em-benavente"
   },
   {
     "id": "8eb4badce6b2548df6a5",
@@ -1215,7 +1272,8 @@
     "status": "published",
     "createdById": "909287b508d7a5de1975",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "borgas-em-bombarral"
   },
   {
     "id": "c7d6e3431c4463de3417",
@@ -1236,7 +1294,8 @@
     "status": "published",
     "createdById": "27c2983fc6888a74c7fa",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "borgas-em-borba"
   },
   {
     "id": "beeb225c711e955073a9",
@@ -1257,7 +1316,8 @@
     "status": "published",
     "createdById": "08848f92687d55943d73",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "grupo-desportivo-de-boticas"
   },
   {
     "id": "fc42e548533807c57782",
@@ -1278,7 +1338,8 @@
     "status": "published",
     "createdById": "069f6ada1ea40b879653",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "grupo-desportivo-de-braga"
   },
   {
     "id": "c6bf7d432aad2721eefe",
@@ -1299,7 +1360,8 @@
     "status": "published",
     "createdById": "4e1f2f8ab203efe7f966",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "grupo-desportivo-de-braganca"
   },
   {
     "id": "178c718f5a65838580d4",
@@ -1320,7 +1382,8 @@
     "status": "published",
     "createdById": "069f6ada1ea40b879653",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "grupo-desportivo-de-cabeceiras-de-basto"
   },
   {
     "id": "9de4e54eb34f1edb11c2",
@@ -1341,7 +1404,8 @@
     "status": "published",
     "createdById": "3c7687900e38436b29aa",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "borgas-em-cacem"
   },
   {
     "id": "7dabcfa8a568817c074a",
@@ -1362,7 +1426,8 @@
     "status": "published",
     "createdById": "3c7687900e38436b29aa",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "borgas-em-cadaval"
   },
   {
     "id": "4fbe5a431c46dffd9ba7",
@@ -1383,7 +1448,8 @@
     "status": "published",
     "createdById": "909287b508d7a5de1975",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "borgas-em-caldas-da-rainha"
   },
   {
     "id": "665a84ac685fab4d53b5",
@@ -1404,7 +1470,8 @@
     "status": "published",
     "createdById": "094cafc7a07ca5fc605f",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "patos-de-calheta"
   },
   {
     "id": "9473c5c59ff817ef5a0f",
@@ -1425,7 +1492,8 @@
     "status": "published",
     "createdById": "dcf1fe6b76b84863bcd5",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "borgas-em-calheta"
   },
   {
     "id": "fbf8e4b980d3500322f3",
@@ -1446,7 +1514,8 @@
     "status": "published",
     "createdById": "094cafc7a07ca5fc605f",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "patos-de-camara-de-lobos"
   },
   {
     "id": "8b3589d705ab60211549",
@@ -1467,7 +1536,8 @@
     "status": "published",
     "createdById": "29e67423f24c0c9aead0",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "grupo-desportivo-de-caminha"
   },
   {
     "id": "e641d9ba80423107aaee",
@@ -1488,7 +1558,8 @@
     "status": "published",
     "createdById": "bb04302eca5170c649c6",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "borgas-em-campo-maior"
   },
   {
     "id": "7954ac02e7152dd10398",
@@ -1509,7 +1580,8 @@
     "status": "published",
     "createdById": "6964937293f5b22e35c8",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-canas-de-senhorim"
   },
   {
     "id": "072aed2986d4b59883c1",
@@ -1530,7 +1602,8 @@
     "status": "published",
     "createdById": "094cafc7a07ca5fc605f",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "patos-de-canico"
   },
   {
     "id": "c5b5cd7e6cc4bf711c61",
@@ -1551,7 +1624,8 @@
     "status": "published",
     "createdById": "8199f1b4efb79379dde2",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "amigos-de-cantanhede"
   },
   {
     "id": "fd780b9fee11e18f04f9",
@@ -1572,7 +1646,8 @@
     "status": "published",
     "createdById": "909287b508d7a5de1975",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "amigos-de-caranguejeira"
   },
   {
     "id": "ae8f043f12a8bc30aa02",
@@ -1593,7 +1668,8 @@
     "status": "published",
     "createdById": "4e1f2f8ab203efe7f966",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-carrazeda-de-ancies"
   },
   {
     "id": "24569b2726d01838cc63",
@@ -1614,7 +1690,8 @@
     "status": "published",
     "createdById": "6964937293f5b22e35c8",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "amigos-de-carregal-do-sal"
   },
   {
     "id": "83da139e41e93984f48e",
@@ -1635,7 +1712,8 @@
     "status": "published",
     "createdById": "8acaf92ca13f3b3f676b",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "borgas-em-cartaxo"
   },
   {
     "id": "774183251a8cc1c027db",
@@ -1656,7 +1734,8 @@
     "status": "published",
     "createdById": "2824f56195f7fe273651",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "grupo-desportivo-de-carvoeiro"
   },
   {
     "id": "22c953c12be4659f15f0",
@@ -1677,7 +1756,8 @@
     "status": "published",
     "createdById": "3c7687900e38436b29aa",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "borgas-em-cascais"
   },
   {
     "id": "36678034356a20d50241",
@@ -1698,7 +1778,8 @@
     "status": "published",
     "createdById": "909287b508d7a5de1975",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "amigos-de-castanheira-de-pera"
   },
   {
     "id": "1fe1ca1482f441f76007",
@@ -1719,7 +1800,8 @@
     "status": "published",
     "createdById": "e5371e3f657c196fdd75",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "amigos-de-castelo-branco"
   },
   {
     "id": "88fd8c7a1bf6428a330c",
@@ -1740,7 +1822,8 @@
     "status": "published",
     "createdById": "4d367c13f2088054b876",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-castelo-de-paiva"
   },
   {
     "id": "f4663462cb0b4406925a",
@@ -1761,7 +1844,8 @@
     "status": "published",
     "createdById": "bb04302eca5170c649c6",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "borgas-em-castelo-de-vide"
   },
   {
     "id": "67640dd77315e06355a2",
@@ -1782,7 +1866,8 @@
     "status": "published",
     "createdById": "ec6a22f0bb3110bc7adb",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-casteles-de-cepeda"
   },
   {
     "id": "2819bc17a65bdd626630",
@@ -1803,7 +1888,8 @@
     "status": "published",
     "createdById": "6964937293f5b22e35c8",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-castro-daire"
   },
   {
     "id": "c6e2d8075ad354739326",
@@ -1824,7 +1910,8 @@
     "status": "published",
     "createdById": "2824f56195f7fe273651",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "grupo-desportivo-de-castro-marim"
   },
   {
     "id": "b93fb3a07185a7b4bbe8",
@@ -1845,7 +1932,8 @@
     "status": "published",
     "createdById": "2e263c071a39fec91831",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "patos-de-castro-verde"
   },
   {
     "id": "31487f48b833e9be9bfc",
@@ -1866,7 +1954,8 @@
     "status": "published",
     "createdById": "069f6ada1ea40b879653",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "grupo-desportivo-de-celeiros"
   },
   {
     "id": "08e22f84e312e4b73685",
@@ -1887,7 +1976,8 @@
     "status": "published",
     "createdById": "cbda63c0793124387135",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-celorico-da-beira"
   },
   {
     "id": "ad210ea986af95b21c60",
@@ -1908,7 +1998,8 @@
     "status": "published",
     "createdById": "069f6ada1ea40b879653",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-celorico-de-basto"
   },
   {
     "id": "046f2e29e741b7b9a1dd",
@@ -1929,7 +2020,8 @@
     "status": "published",
     "createdById": "8acaf92ca13f3b3f676b",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "borgas-em-chamusca"
   },
   {
     "id": "1f582f4ea8295b9b77f5",
@@ -1950,7 +2042,8 @@
     "status": "published",
     "createdById": "08848f92687d55943d73",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "grupo-desportivo-de-chaves"
   },
   {
     "id": "8e34dbfb5c2c581664f6",
@@ -1971,7 +2064,8 @@
     "status": "published",
     "createdById": "6964937293f5b22e35c8",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-cinfes"
   },
   {
     "id": "3b2168617d86d3c282a5",
@@ -1992,7 +2086,8 @@
     "status": "published",
     "createdById": "8199f1b4efb79379dde2",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "amigos-de-coimbra"
   },
   {
     "id": "6a394abd01cabfd25662",
@@ -2013,7 +2108,8 @@
     "status": "published",
     "createdById": "8199f1b4efb79379dde2",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "amigos-de-condeixa-a-nova"
   },
   {
     "id": "a0970d155666df180076",
@@ -2034,7 +2130,8 @@
     "status": "published",
     "createdById": "8acaf92ca13f3b3f676b",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "borgas-em-constancia"
   },
   {
     "id": "9a41afb72c83869e35ed",
@@ -2055,7 +2152,8 @@
     "status": "published",
     "createdById": "1e488ad571e683258934",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "borgas-em-corroios"
   },
   {
     "id": "d37e37513c6e5179fc08",
@@ -2076,7 +2174,8 @@
     "status": "published",
     "createdById": "8acaf92ca13f3b3f676b",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "borgas-em-coruche"
   },
   {
     "id": "abe27ebaa6dcc8b1cd93",
@@ -2097,7 +2196,8 @@
     "status": "published",
     "createdById": "1e488ad571e683258934",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "borgas-em-costa-de-caparica"
   },
   {
     "id": "5a15442804dca6dc86e0",
@@ -2118,7 +2218,8 @@
     "status": "published",
     "createdById": "e5371e3f657c196fdd75",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "amigos-de-covilh"
   },
   {
     "id": "bcccd82b819aabe23659",
@@ -2139,7 +2240,8 @@
     "status": "published",
     "createdById": "bb04302eca5170c649c6",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "borgas-em-crato"
   },
   {
     "id": "2547687b06441779ccb7",
@@ -2160,7 +2262,8 @@
     "status": "published",
     "createdById": "2e263c071a39fec91831",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "patos-de-cuba"
   },
   {
     "id": "8588a3abb2e4f93a7932",
@@ -2181,7 +2284,8 @@
     "status": "published",
     "createdById": "bb04302eca5170c649c6",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "borgas-em-elvas"
   },
   {
     "id": "6d6cb7d374f0d819032e",
@@ -2202,7 +2306,8 @@
     "status": "published",
     "createdById": "8acaf92ca13f3b3f676b",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "borgas-em-entroncamento"
   },
   {
     "id": "2c087c1e83fcadcedfc6",
@@ -2223,7 +2328,8 @@
     "status": "published",
     "createdById": "ec6a22f0bb3110bc7adb",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-ermezinde"
   },
   {
     "id": "cb97c62f8b73065c66a7",
@@ -2244,7 +2350,8 @@
     "status": "published",
     "createdById": "4d367c13f2088054b876",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-espinho"
   },
   {
     "id": "b2bcfa6998cf56365b7e",
@@ -2265,7 +2372,8 @@
     "status": "published",
     "createdById": "069f6ada1ea40b879653",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "grupo-desportivo-de-esposende"
   },
   {
     "id": "f5cfa61414ef1e26408c",
@@ -2286,7 +2394,8 @@
     "status": "published",
     "createdById": "4d367c13f2088054b876",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-estarreja"
   },
   {
     "id": "93caeaa70861415455f3",
@@ -2307,7 +2416,8 @@
     "status": "published",
     "createdById": "3c7687900e38436b29aa",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "borgas-em-estoril"
   },
   {
     "id": "c7cdeea73af90f4ef9b4",
@@ -2328,7 +2438,8 @@
     "status": "published",
     "createdById": "27c2983fc6888a74c7fa",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "borgas-em-estremoz"
   },
   {
     "id": "a2f9c5926265fdf54443",
@@ -2349,7 +2460,8 @@
     "status": "published",
     "createdById": "27c2983fc6888a74c7fa",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "borgas-em-evora"
   },
   {
     "id": "fe2558737e7583c6fa6f",
@@ -2370,7 +2482,8 @@
     "status": "published",
     "createdById": "069f6ada1ea40b879653",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-fafe"
   },
   {
     "id": "1e3f38dfb3a39041fd6b",
@@ -2391,7 +2504,8 @@
     "status": "published",
     "createdById": "3c7687900e38436b29aa",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "borgas-em-falagueira"
   },
   {
     "id": "062e667d283499dff5a3",
@@ -2412,7 +2526,8 @@
     "status": "published",
     "createdById": "069f6ada1ea40b879653",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-famalico"
   },
   {
     "id": "624f33a41fd0a87b07aa",
@@ -2433,7 +2548,8 @@
     "status": "published",
     "createdById": "2824f56195f7fe273651",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "grupo-desportivo-de-faro"
   },
   {
     "id": "048b2ccbbedba758d95b",
@@ -2454,7 +2570,8 @@
     "status": "published",
     "createdById": "4d367c13f2088054b876",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-feira"
   },
   {
     "id": "d449763b256682ede854",
@@ -2475,7 +2592,8 @@
     "status": "published",
     "createdById": "ec6a22f0bb3110bc7adb",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-felgueiras"
   },
   {
     "id": "e603e4172971f51b87ea",
@@ -2496,7 +2614,8 @@
     "status": "published",
     "createdById": "4d367c13f2088054b876",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-fermentelos"
   },
   {
     "id": "9741efdfd5883a7995a5",
@@ -2517,7 +2636,8 @@
     "status": "published",
     "createdById": "2e263c071a39fec91831",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "patos-de-ferreira-do-alentejo"
   },
   {
     "id": "4e3261cfe25adb28b1ae",
@@ -2538,7 +2658,8 @@
     "status": "published",
     "createdById": "8acaf92ca13f3b3f676b",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "amigos-de-ferreira-do-zezere"
   },
   {
     "id": "fff50c1b57aa46413860",
@@ -2559,7 +2680,8 @@
     "status": "published",
     "createdById": "069f6ada1ea40b879653",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "grupo-desportivo-de-ferreiros"
   },
   {
     "id": "0d4a9a556cd97577db51",
@@ -2580,7 +2702,8 @@
     "status": "published",
     "createdById": "8199f1b4efb79379dde2",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "amigos-de-figueira-da-foz"
   },
   {
     "id": "ad82a1c0f65edca72528",
@@ -2601,7 +2724,8 @@
     "status": "published",
     "createdById": "cbda63c0793124387135",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-figueira-de-castelo-rodrigo"
   },
   {
     "id": "9a413b36a320a996212a",
@@ -2622,7 +2746,8 @@
     "status": "published",
     "createdById": "909287b508d7a5de1975",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "amigos-de-figueiro-dos-vinhos"
   },
   {
     "id": "19c4c2b76ddbe94fd6ed",
@@ -2643,7 +2768,8 @@
     "status": "published",
     "createdById": "cbda63c0793124387135",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-fornos-de-algodres"
   },
   {
     "id": "58cfe994ae52777d1e19",
@@ -2664,7 +2790,8 @@
     "status": "published",
     "createdById": "4e1f2f8ab203efe7f966",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-freixo-de-espada-a-cinta"
   },
   {
     "id": "db6d045f3c34792b31fc",
@@ -2685,7 +2812,8 @@
     "status": "published",
     "createdById": "bb04302eca5170c649c6",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "borgas-em-fronteira"
   },
   {
     "id": "3e0075bff25a6e762baf",
@@ -2706,7 +2834,8 @@
     "status": "published",
     "createdById": "094cafc7a07ca5fc605f",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "patos-de-funchal"
   },
   {
     "id": "9c5ed76beff776dd49ac",
@@ -2727,7 +2856,8 @@
     "status": "published",
     "createdById": "e5371e3f657c196fdd75",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "amigos-de-fundo"
   },
   {
     "id": "97892d119d04d4a633d9",
@@ -2748,7 +2878,8 @@
     "status": "published",
     "createdById": "4d367c13f2088054b876",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-gafanha-da-nazare"
   },
   {
     "id": "94fd8c9a044090f12a39",
@@ -2769,7 +2900,8 @@
     "status": "published",
     "createdById": "bb04302eca5170c649c6",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "borgas-em-gavio"
   },
   {
     "id": "6ce13e7fb337fab8b61a",
@@ -2790,7 +2922,8 @@
     "status": "published",
     "createdById": "8199f1b4efb79379dde2",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "amigos-de-gois"
   },
   {
     "id": "d646a9839a4558cd3e97",
@@ -2811,7 +2944,8 @@
     "status": "published",
     "createdById": "8acaf92ca13f3b3f676b",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "borgas-em-goleg"
   },
   {
     "id": "db10339d3de3448fcba4",
@@ -2832,7 +2966,8 @@
     "status": "published",
     "createdById": "ec6a22f0bb3110bc7adb",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-gondomar"
   },
   {
     "id": "6a9539c7ad0304767977",
@@ -2853,7 +2988,8 @@
     "status": "published",
     "createdById": "cbda63c0793124387135",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "amigos-de-gouveia"
   },
   {
     "id": "223e1611de0ddbfbb7b4",
@@ -2874,7 +3010,8 @@
     "status": "published",
     "createdById": "1e488ad571e683258934",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "patos-de-grandola"
   },
   {
     "id": "cc73e1df4b3ee531865b",
@@ -2895,7 +3032,8 @@
     "status": "published",
     "createdById": "cbda63c0793124387135",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-guarda"
   },
   {
     "id": "dc2950b40a6f49e0748f",
@@ -2916,7 +3054,8 @@
     "status": "published",
     "createdById": "069f6ada1ea40b879653",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-guimares"
   },
   {
     "id": "dab6d8eb7b830d5e2a76",
@@ -2937,7 +3076,8 @@
     "status": "published",
     "createdById": "dcf1fe6b76b84863bcd5",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "borgas-em-horta"
   },
   {
     "id": "5544bf0978c23d74920f",
@@ -2958,7 +3098,8 @@
     "status": "published",
     "createdById": "e5371e3f657c196fdd75",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "amigos-de-idanha-a-nova"
   },
   {
     "id": "4af660a6fd19022910e0",
@@ -2979,7 +3120,8 @@
     "status": "published",
     "createdById": "4d367c13f2088054b876",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-ilhavo"
   },
   {
     "id": "0cd825a42ea5f904bfe1",
@@ -3000,7 +3142,8 @@
     "status": "published",
     "createdById": "069f6ada1ea40b879653",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-joane"
   },
   {
     "id": "0b2e6ce9ad02a14c03e9",
@@ -3021,7 +3164,8 @@
     "status": "published",
     "createdById": "2824f56195f7fe273651",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "grupo-desportivo-de-lagoa"
   },
   {
     "id": "f6023ccfbc7d99157674",
@@ -3042,7 +3186,8 @@
     "status": "published",
     "createdById": "2824f56195f7fe273651",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "grupo-desportivo-de-lagos"
   },
   {
     "id": "60d8238380677c300a7e",
@@ -3063,7 +3208,8 @@
     "status": "published",
     "createdById": "dcf1fe6b76b84863bcd5",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "patos-de-lajes"
   },
   {
     "id": "d4a89625677ec212609a",
@@ -3084,7 +3230,8 @@
     "status": "published",
     "createdById": "6964937293f5b22e35c8",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-lamego"
   },
   {
     "id": "1f48870f93dc13698908",
@@ -3105,7 +3252,8 @@
     "status": "published",
     "createdById": "909287b508d7a5de1975",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "amigos-de-leiria"
   },
   {
     "id": "b94c891ebb7cd665d79d",
@@ -3126,7 +3274,8 @@
     "status": "published",
     "createdById": "3c7687900e38436b29aa",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "borgas-em-lisbon"
   },
   {
     "id": "308cc6ed7138e1060560",
@@ -3147,7 +3296,8 @@
     "status": "published",
     "createdById": "8199f1b4efb79379dde2",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "amigos-de-lorvo"
   },
   {
     "id": "1618eb167caf415d7060",
@@ -3168,7 +3318,8 @@
     "status": "published",
     "createdById": "2824f56195f7fe273651",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "grupo-desportivo-de-loule"
   },
   {
     "id": "cf1a2220b4a6683b0753",
@@ -3189,7 +3340,8 @@
     "status": "published",
     "createdById": "3c7687900e38436b29aa",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "borgas-em-loures"
   },
   {
     "id": "e4455a3f7b87e69e7f72",
@@ -3210,7 +3362,8 @@
     "status": "published",
     "createdById": "3c7687900e38436b29aa",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "borgas-em-lourinh"
   },
   {
     "id": "7abf92364f3f2c9813b4",
@@ -3231,7 +3384,8 @@
     "status": "published",
     "createdById": "8199f1b4efb79379dde2",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "amigos-de-lous"
   },
   {
     "id": "91c419b1c7dd094131ed",
@@ -3252,7 +3406,8 @@
     "status": "published",
     "createdById": "ec6a22f0bb3110bc7adb",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-lousada"
   },
   {
     "id": "a54baa11fd31a2b4c288",
@@ -3273,7 +3428,8 @@
     "status": "published",
     "createdById": "8acaf92ca13f3b3f676b",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "amigos-de-maco"
   },
   {
     "id": "4d132e570d830270f2e1",
@@ -3294,7 +3450,8 @@
     "status": "published",
     "createdById": "4e1f2f8ab203efe7f966",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "grupo-desportivo-de-macedo-de-cavaleiros"
   },
   {
     "id": "590a055d663ae0a2d96c",
@@ -3315,7 +3472,8 @@
     "status": "published",
     "createdById": "dcf1fe6b76b84863bcd5",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "borgas-em-madalena"
   },
   {
     "id": "811ae4714685a14cb140",
@@ -3336,7 +3494,8 @@
     "status": "published",
     "createdById": "ec6a22f0bb3110bc7adb",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-mafamude"
   },
   {
     "id": "0e658a00c5d2c7696b0a",
@@ -3357,7 +3516,8 @@
     "status": "published",
     "createdById": "3c7687900e38436b29aa",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "borgas-em-mafra"
   },
   {
     "id": "ffe7beda8ef5e8bcd8cb",
@@ -3378,7 +3538,8 @@
     "status": "published",
     "createdById": "ec6a22f0bb3110bc7adb",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-maia"
   },
   {
     "id": "6f032d9524ae24f420f2",
@@ -3399,7 +3560,8 @@
     "status": "published",
     "createdById": "6964937293f5b22e35c8",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-mangualde"
   },
   {
     "id": "3049336373f8693c0d1a",
@@ -3420,7 +3582,8 @@
     "status": "published",
     "createdById": "cbda63c0793124387135",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "amigos-de-manteigas"
   },
   {
     "id": "b378bc048df6f0b315b4",
@@ -3441,7 +3604,8 @@
     "status": "published",
     "createdById": "ec6a22f0bb3110bc7adb",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-marco-de-canavezes"
   },
   {
     "id": "ab60643a8bb31e671a82",
@@ -3462,7 +3626,8 @@
     "status": "published",
     "createdById": "909287b508d7a5de1975",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "amigos-de-marinha-grande"
   },
   {
     "id": "dc6e1fedd40ba1db49ab",
@@ -3483,7 +3648,8 @@
     "status": "published",
     "createdById": "bb04302eca5170c649c6",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "borgas-em-marvo"
   },
   {
     "id": "6100fe9aae73ac02704e",
@@ -3504,7 +3670,8 @@
     "status": "published",
     "createdById": "3c7687900e38436b29aa",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "borgas-em-massama"
   },
   {
     "id": "ff1f623d0a2f46d14fe3",
@@ -3525,7 +3692,8 @@
     "status": "published",
     "createdById": "ec6a22f0bb3110bc7adb",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-matosinhos"
   },
   {
     "id": "7feab4c29c7add9dca36",
@@ -3546,7 +3714,8 @@
     "status": "published",
     "createdById": "4d367c13f2088054b876",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "amigos-de-mealhada"
   },
   {
     "id": "2246e51095484ac5de43",
@@ -3567,7 +3736,8 @@
     "status": "published",
     "createdById": "cbda63c0793124387135",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-meda"
   },
   {
     "id": "c6943167b96c926b14fa",
@@ -3588,7 +3758,8 @@
     "status": "published",
     "createdById": "29e67423f24c0c9aead0",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "grupo-desportivo-de-melgaco"
   },
   {
     "id": "9932ae14f32ed72dadec",
@@ -3609,7 +3780,8 @@
     "status": "published",
     "createdById": "2e263c071a39fec91831",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "patos-de-mertola"
   },
   {
     "id": "001c73028bc7710b861d",
@@ -3630,7 +3802,8 @@
     "status": "published",
     "createdById": "08848f92687d55943d73",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-meso-frio"
   },
   {
     "id": "2ef4d0a093680a893847",
@@ -3651,7 +3824,8 @@
     "status": "published",
     "createdById": "8199f1b4efb79379dde2",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "amigos-de-mira"
   },
   {
     "id": "76ae3ef82c99c3ef264a",
@@ -3672,7 +3846,8 @@
     "status": "published",
     "createdById": "8199f1b4efb79379dde2",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "amigos-de-miranda-do-corvo"
   },
   {
     "id": "33106ba274a30009d0ed",
@@ -3693,7 +3868,8 @@
     "status": "published",
     "createdById": "4e1f2f8ab203efe7f966",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "grupo-desportivo-de-miranda-do-douro"
   },
   {
     "id": "6796d1c6078eb3d9c834",
@@ -3714,7 +3890,8 @@
     "status": "published",
     "createdById": "4e1f2f8ab203efe7f966",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-mirandela"
   },
   {
     "id": "0c9aee6dd57948f7b8ac",
@@ -3735,7 +3912,8 @@
     "status": "published",
     "createdById": "4e1f2f8ab203efe7f966",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-mogadouro"
   },
   {
     "id": "71d1aeb9bf88414faa8d",
@@ -3756,7 +3934,8 @@
     "status": "published",
     "createdById": "6964937293f5b22e35c8",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-moimenta-da-beira"
   },
   {
     "id": "bcd2b0e89715a5958867",
@@ -3777,7 +3956,8 @@
     "status": "published",
     "createdById": "1e488ad571e683258934",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "borgas-em-moita"
   },
   {
     "id": "21e4d676280255b343cf",
@@ -3798,7 +3978,8 @@
     "status": "published",
     "createdById": "29e67423f24c0c9aead0",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "grupo-desportivo-de-monco"
   },
   {
     "id": "782acfaa764e3ef18734",
@@ -3819,7 +4000,8 @@
     "status": "published",
     "createdById": "2824f56195f7fe273651",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "grupo-desportivo-de-monchique"
   },
   {
     "id": "326f3cf6877a31af8710",
@@ -3840,7 +4022,8 @@
     "status": "published",
     "createdById": "08848f92687d55943d73",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-mondim-de-basto"
   },
   {
     "id": "75aa7b01f62a755896f8",
@@ -3861,7 +4044,8 @@
     "status": "published",
     "createdById": "bb04302eca5170c649c6",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "borgas-em-monforte"
   },
   {
     "id": "eaf5ebae197c39fb68fd",
@@ -3882,7 +4066,8 @@
     "status": "published",
     "createdById": "08848f92687d55943d73",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "grupo-desportivo-de-montalegre"
   },
   {
     "id": "8219c787f1f391c3c19b",
@@ -3903,7 +4088,8 @@
     "status": "published",
     "createdById": "27c2983fc6888a74c7fa",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "borgas-em-montemor-o-novo"
   },
   {
     "id": "ec8f756654007955219f",
@@ -3924,7 +4110,8 @@
     "status": "published",
     "createdById": "8199f1b4efb79379dde2",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "amigos-de-montemor-o-velho"
   },
   {
     "id": "c5d111c23b5efa4dd60b",
@@ -3945,7 +4132,8 @@
     "status": "published",
     "createdById": "1e488ad571e683258934",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "borgas-em-montijo"
   },
   {
     "id": "cc9fea89ac48cf019e3c",
@@ -3966,7 +4154,8 @@
     "status": "published",
     "createdById": "27c2983fc6888a74c7fa",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "borgas-em-mora"
   },
   {
     "id": "beb01c0028096a6e521a",
@@ -3987,7 +4176,8 @@
     "status": "published",
     "createdById": "6964937293f5b22e35c8",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "amigos-de-mortagua"
   },
   {
     "id": "9d0778ac1b40740c75d0",
@@ -4008,7 +4198,8 @@
     "status": "published",
     "createdById": "2e263c071a39fec91831",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "patos-de-moura"
   },
   {
     "id": "9119fe4c648a84b60a2f",
@@ -4029,7 +4220,8 @@
     "status": "published",
     "createdById": "27c2983fc6888a74c7fa",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "patos-de-mouro"
   },
   {
     "id": "5f1382afa3347ac55968",
@@ -4050,7 +4242,8 @@
     "status": "published",
     "createdById": "08848f92687d55943d73",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-murca"
   },
   {
     "id": "4b112779d5672a0bb628",
@@ -4071,7 +4264,8 @@
     "status": "published",
     "createdById": "4d367c13f2088054b876",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-murtosa"
   },
   {
     "id": "9806ed12fb8c3bb32320",
@@ -4092,7 +4286,8 @@
     "status": "published",
     "createdById": "909287b508d7a5de1975",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "amigos-de-nazare"
   },
   {
     "id": "f05323979f7556d2293c",
@@ -4113,7 +4308,8 @@
     "status": "published",
     "createdById": "6964937293f5b22e35c8",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-nelas"
   },
   {
     "id": "06e1994084253b8cf0f2",
@@ -4134,7 +4330,8 @@
     "status": "published",
     "createdById": "bb04302eca5170c649c6",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "amigos-de-nisa"
   },
   {
     "id": "72b43cba39d2468a9501",
@@ -4155,7 +4352,8 @@
     "status": "published",
     "createdById": "dcf1fe6b76b84863bcd5",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "patos-de-nordeste"
   },
   {
     "id": "f6ee46253a6fadce72df",
@@ -4176,7 +4374,8 @@
     "status": "published",
     "createdById": "909287b508d7a5de1975",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "borgas-em-obidos"
   },
   {
     "id": "8e0f002790cbfc142982",
@@ -4197,7 +4396,8 @@
     "status": "published",
     "createdById": "2e263c071a39fec91831",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "patos-de-odemira"
   },
   {
     "id": "2f4f74afdcc16e009036",
@@ -4218,7 +4418,8 @@
     "status": "published",
     "createdById": "3c7687900e38436b29aa",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "borgas-em-odivelas"
   },
   {
     "id": "0d0d316a510d6854483d",
@@ -4239,7 +4440,8 @@
     "status": "published",
     "createdById": "3c7687900e38436b29aa",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "borgas-em-oeiras"
   },
   {
     "id": "447497275d962052c259",
@@ -4260,7 +4462,8 @@
     "status": "published",
     "createdById": "e5371e3f657c196fdd75",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "amigos-de-oleiros"
   },
   {
     "id": "1182f38736d5b52d917c",
@@ -4281,7 +4484,8 @@
     "status": "published",
     "createdById": "2824f56195f7fe273651",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "grupo-desportivo-de-olho"
   },
   {
     "id": "eb486ff3b0ce760246ef",
@@ -4302,7 +4506,8 @@
     "status": "published",
     "createdById": "ec6a22f0bb3110bc7adb",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-olival"
   },
   {
     "id": "ce761059d629c0553d9c",
@@ -4323,7 +4528,8 @@
     "status": "published",
     "createdById": "4d367c13f2088054b876",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-oliveira-de-azemeis"
   },
   {
     "id": "5b77e3973a29baecf09c",
@@ -4344,7 +4550,8 @@
     "status": "published",
     "createdById": "6964937293f5b22e35c8",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-oliveira-de-frades"
   },
   {
     "id": "9172ca78d77f8ba4c390",
@@ -4365,7 +4572,8 @@
     "status": "published",
     "createdById": "4d367c13f2088054b876",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-oliveira-do-bairro"
   },
   {
     "id": "a2b3418e607f992d0513",
@@ -4386,7 +4594,8 @@
     "status": "published",
     "createdById": "8199f1b4efb79379dde2",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "amigos-de-oliveira-do-hospital"
   },
   {
     "id": "680d4a62857c90ab27f6",
@@ -4407,7 +4616,8 @@
     "status": "published",
     "createdById": "8acaf92ca13f3b3f676b",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "amigos-de-ourem"
   },
   {
     "id": "b8296f62de065f1a3caa",
@@ -4428,7 +4638,8 @@
     "status": "published",
     "createdById": "2e263c071a39fec91831",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "patos-de-ourique"
   },
   {
     "id": "f81cae56b7db1e4859a7",
@@ -4449,7 +4660,8 @@
     "status": "published",
     "createdById": "4d367c13f2088054b876",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-ovar"
   },
   {
     "id": "a9c55eb66de110d9e62a",
@@ -4470,7 +4682,8 @@
     "status": "published",
     "createdById": "ec6a22f0bb3110bc7adb",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-pacos-de-ferreira"
   },
   {
     "id": "afa3f9b7434fcaf3c883",
@@ -4491,7 +4704,8 @@
     "status": "published",
     "createdById": "1e488ad571e683258934",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "borgas-em-palmela"
   },
   {
     "id": "87279a38f07a94e4ebb9",
@@ -4512,7 +4726,8 @@
     "status": "published",
     "createdById": "8199f1b4efb79379dde2",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "amigos-de-pampilhosa-da-serra"
   },
   {
     "id": "34ed1bc2b0702a5cb40f",
@@ -4533,7 +4748,8 @@
     "status": "published",
     "createdById": "ec6a22f0bb3110bc7adb",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-paredes"
   },
   {
     "id": "77a4be79c77348aff2bf",
@@ -4554,7 +4770,8 @@
     "status": "published",
     "createdById": "29e67423f24c0c9aead0",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "grupo-desportivo-de-paredes-de-coura"
   },
   {
     "id": "f90a0011753819663010",
@@ -4575,7 +4792,8 @@
     "status": "published",
     "createdById": "909287b508d7a5de1975",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "amigos-de-pedrogo-grande"
   },
   {
     "id": "65410a6f9edf6a7339e1",
@@ -4596,7 +4814,8 @@
     "status": "published",
     "createdById": "8199f1b4efb79379dde2",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "amigos-de-penacova"
   },
   {
     "id": "5e87de1836a63a996037",
@@ -4617,7 +4836,8 @@
     "status": "published",
     "createdById": "ec6a22f0bb3110bc7adb",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-penafiel"
   },
   {
     "id": "914cf6c6e9dd9efc01ac",
@@ -4638,7 +4858,8 @@
     "status": "published",
     "createdById": "6964937293f5b22e35c8",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-penalva-do-castelo"
   },
   {
     "id": "0c595312ddc0f0d97101",
@@ -4659,7 +4880,8 @@
     "status": "published",
     "createdById": "e5371e3f657c196fdd75",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "amigos-de-penamacor"
   },
   {
     "id": "299bc45674ad482dc675",
@@ -4680,7 +4902,8 @@
     "status": "published",
     "createdById": "6964937293f5b22e35c8",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-penedono"
   },
   {
     "id": "7ae03b47546f4a07694e",
@@ -4701,7 +4924,8 @@
     "status": "published",
     "createdById": "8199f1b4efb79379dde2",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "amigos-de-penela"
   },
   {
     "id": "827c3a844ec8188783ee",
@@ -4722,7 +4946,8 @@
     "status": "published",
     "createdById": "909287b508d7a5de1975",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "borgas-em-peniche"
   },
   {
     "id": "420907e59b38c02a652a",
@@ -4743,7 +4968,8 @@
     "status": "published",
     "createdById": "08848f92687d55943d73",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-peso-da-regua"
   },
   {
     "id": "09b972b62f39be128a67",
@@ -4764,7 +4990,8 @@
     "status": "published",
     "createdById": "cbda63c0793124387135",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-pinhel"
   },
   {
     "id": "b7ed67cc263826aeac1d",
@@ -4785,7 +5012,8 @@
     "status": "published",
     "createdById": "8199f1b4efb79379dde2",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "amigos-de-poiares"
   },
   {
     "id": "76a083b1c89ef64a2633",
@@ -4806,7 +5034,8 @@
     "status": "published",
     "createdById": "909287b508d7a5de1975",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "amigos-de-pombal"
   },
   {
     "id": "84db4add08baf98664fe",
@@ -4827,7 +5056,8 @@
     "status": "published",
     "createdById": "dcf1fe6b76b84863bcd5",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "patos-de-ponta-delgada"
   },
   {
     "id": "9ec06d165da6ee433655",
@@ -4848,7 +5078,8 @@
     "status": "published",
     "createdById": "094cafc7a07ca5fc605f",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "patos-de-ponta-do-sol"
   },
   {
     "id": "517e1f2cb70833165c78",
@@ -4869,7 +5100,8 @@
     "status": "published",
     "createdById": "29e67423f24c0c9aead0",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "grupo-desportivo-de-ponte-da-barca"
   },
   {
     "id": "ad7a972a33e7d5761dde",
@@ -4890,7 +5122,8 @@
     "status": "published",
     "createdById": "29e67423f24c0c9aead0",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "grupo-desportivo-de-ponte-de-lima"
   },
   {
     "id": "179e64eedd9828faae11",
@@ -4911,7 +5144,8 @@
     "status": "published",
     "createdById": "bb04302eca5170c649c6",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "borgas-em-ponte-de-sor"
   },
   {
     "id": "21b7bf7de61885b28266",
@@ -4932,7 +5166,8 @@
     "status": "published",
     "createdById": "bb04302eca5170c649c6",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "borgas-em-portalegre"
   },
   {
     "id": "aba58e6d5003824a388a",
@@ -4953,7 +5188,8 @@
     "status": "published",
     "createdById": "27c2983fc6888a74c7fa",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "patos-de-portel"
   },
   {
     "id": "e3a36f6f0528cc18f538",
@@ -4974,7 +5210,8 @@
     "status": "published",
     "createdById": "2824f56195f7fe273651",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "grupo-desportivo-de-portimo"
   },
   {
     "id": "317a1ea5ecb5d05be636",
@@ -4995,7 +5232,8 @@
     "status": "published",
     "createdById": "ec6a22f0bb3110bc7adb",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-porto"
   },
   {
     "id": "46a1c1e052a08d16f036",
@@ -5016,7 +5254,8 @@
     "status": "published",
     "createdById": "909287b508d7a5de1975",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "amigos-de-porto-de-mos"
   },
   {
     "id": "19f5ed547e302e966ba7",
@@ -5037,7 +5276,8 @@
     "status": "published",
     "createdById": "dcf1fe6b76b84863bcd5",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "patos-de-povoaco"
   },
   {
     "id": "54ac890d9577788a056e",
@@ -5058,7 +5298,8 @@
     "status": "published",
     "createdById": "069f6ada1ea40b879653",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "grupo-desportivo-de-povoa-de-lanhoso"
   },
   {
     "id": "09e3bc2ddcd5b6dc750c",
@@ -5079,7 +5320,8 @@
     "status": "published",
     "createdById": "ec6a22f0bb3110bc7adb",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-povoa-de-varzim"
   },
   {
     "id": "39d45efa780b26b5c467",
@@ -5100,7 +5342,8 @@
     "status": "published",
     "createdById": "dcf1fe6b76b84863bcd5",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "borgas-em-praia-da-vitoria"
   },
   {
     "id": "7bca9ecb84681d97eb7b",
@@ -5121,7 +5364,8 @@
     "status": "published",
     "createdById": "e5371e3f657c196fdd75",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "amigos-de-proenca-a-nova"
   },
   {
     "id": "afbd58e25af8145dc085",
@@ -5142,7 +5386,8 @@
     "status": "published",
     "createdById": "2824f56195f7fe273651",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "grupo-desportivo-de-quarteira"
   },
   {
     "id": "f63f94557265acfa5d59",
@@ -5163,7 +5408,8 @@
     "status": "published",
     "createdById": "3c7687900e38436b29aa",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "borgas-em-queluz"
   },
   {
     "id": "4f3e107869ac37d81a00",
@@ -5184,7 +5430,8 @@
     "status": "published",
     "createdById": "069f6ada1ea40b879653",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "grupo-desportivo-de-real"
   },
   {
     "id": "8b2c0afe537e6040106b",
@@ -5205,7 +5452,8 @@
     "status": "published",
     "createdById": "27c2983fc6888a74c7fa",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "borgas-em-redondo"
   },
   {
     "id": "75ff44dd0268dc21d079",
@@ -5226,7 +5474,8 @@
     "status": "published",
     "createdById": "27c2983fc6888a74c7fa",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "patos-de-reguengos-de-monsaraz"
   },
   {
     "id": "5c398817a565e2c50e02",
@@ -5247,7 +5496,8 @@
     "status": "published",
     "createdById": "6964937293f5b22e35c8",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-resende"
   },
   {
     "id": "4d941eeb808f144bb069",
@@ -5268,7 +5518,8 @@
     "status": "published",
     "createdById": "8acaf92ca13f3b3f676b",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "borgas-em-riachos"
   },
   {
     "id": "bf195b3e85b146f10f1b",
@@ -5289,7 +5540,8 @@
     "status": "published",
     "createdById": "069f6ada1ea40b879653",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-riba-de-ave"
   },
   {
     "id": "cd161135fc2375368910",
@@ -5310,7 +5562,8 @@
     "status": "published",
     "createdById": "094cafc7a07ca5fc605f",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "patos-de-ribeira-brava"
   },
   {
     "id": "786e6ed6dcf3b166e794",
@@ -5331,7 +5584,8 @@
     "status": "published",
     "createdById": "08848f92687d55943d73",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "grupo-desportivo-de-ribeira-de-pena"
   },
   {
     "id": "0ec1bc739c1b5f5750a6",
@@ -5352,7 +5606,8 @@
     "status": "published",
     "createdById": "dcf1fe6b76b84863bcd5",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "patos-de-ribeira-grande"
   },
   {
     "id": "5583e9c91732ee991619",
@@ -5373,7 +5628,8 @@
     "status": "published",
     "createdById": "8acaf92ca13f3b3f676b",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "borgas-em-rio-maior"
   },
   {
     "id": "193bcbcb4fbc32e9f892",
@@ -5394,7 +5650,8 @@
     "status": "published",
     "createdById": "ec6a22f0bb3110bc7adb",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-rio-tinto"
   },
   {
     "id": "1cbbbea7a108225c4f88",
@@ -5415,7 +5672,8 @@
     "status": "published",
     "createdById": "08848f92687d55943d73",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-sabrosa"
   },
   {
     "id": "f60e71cc82c697950fae",
@@ -5436,7 +5694,8 @@
     "status": "published",
     "createdById": "cbda63c0793124387135",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "amigos-de-sabugal"
   },
   {
     "id": "dead7181650e46a9d1ff",
@@ -5457,7 +5716,8 @@
     "status": "published",
     "createdById": "3c7687900e38436b29aa",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "borgas-em-sacavem"
   },
   {
     "id": "89428a02a05ff7536727",
@@ -5478,7 +5738,8 @@
     "status": "published",
     "createdById": "8acaf92ca13f3b3f676b",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "borgas-em-salvaterra-de-magos"
   },
   {
     "id": "efab1593d6ad38ece843",
@@ -5499,7 +5760,8 @@
     "status": "published",
     "createdById": "6964937293f5b22e35c8",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "amigos-de-santa-comba-do"
   },
   {
     "id": "26704379de690db516a9",
@@ -5520,7 +5782,8 @@
     "status": "published",
     "createdById": "094cafc7a07ca5fc605f",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "patos-de-santa-cruz"
   },
   {
     "id": "369bc81902f70795e557",
@@ -5541,7 +5804,8 @@
     "status": "published",
     "createdById": "dcf1fe6b76b84863bcd5",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "borgas-em-santa-cruz-da-graciosa"
   },
   {
     "id": "0fdcb5d7c0b703089087",
@@ -5562,7 +5826,8 @@
     "status": "published",
     "createdById": "08848f92687d55943d73",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-santa-marta-de-penaguio"
   },
   {
     "id": "e0d1b5be6d737ad7c508",
@@ -5583,7 +5848,8 @@
     "status": "published",
     "createdById": "094cafc7a07ca5fc605f",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "patos-de-santana"
   },
   {
     "id": "0a6d094b77524b30f946",
@@ -5604,7 +5870,8 @@
     "status": "published",
     "createdById": "8acaf92ca13f3b3f676b",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "borgas-em-santarem"
   },
   {
     "id": "68b374f7616dfe221178",
@@ -5625,7 +5892,8 @@
     "status": "published",
     "createdById": "1e488ad571e683258934",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "patos-de-santiago-do-cacem"
   },
   {
     "id": "1e4cc5e98110994133a1",
@@ -5646,7 +5914,8 @@
     "status": "published",
     "createdById": "ec6a22f0bb3110bc7adb",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-santo-tirso"
   },
   {
     "id": "cfb1fa9f93082afbcfad",
@@ -5667,7 +5936,8 @@
     "status": "published",
     "createdById": "2824f56195f7fe273651",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "grupo-desportivo-de-so-bras-de-alportel"
   },
   {
     "id": "098e72b909eaf9a78e35",
@@ -5688,7 +5958,8 @@
     "status": "published",
     "createdById": "4d367c13f2088054b876",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-so-joo-da-madeira"
   },
   {
     "id": "ea9cfd45389ae921f082",
@@ -5709,7 +5980,8 @@
     "status": "published",
     "createdById": "6964937293f5b22e35c8",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-so-joo-da-pesqueira"
   },
   {
     "id": "e5be28b945e19c4447f4",
@@ -5730,7 +6002,8 @@
     "status": "published",
     "createdById": "3c7687900e38436b29aa",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "borgas-em-so-martinho"
   },
   {
     "id": "94ba0b3e2d8d6fe26e86",
@@ -5751,7 +6024,8 @@
     "status": "published",
     "createdById": "6964937293f5b22e35c8",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-so-pedro-do-sul"
   },
   {
     "id": "d5048a2bc22bbaa76369",
@@ -5772,7 +6046,8 @@
     "status": "published",
     "createdById": "dcf1fe6b76b84863bcd5",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "borgas-em-so-roque-do-pico"
   },
   {
     "id": "53e31a86e97e69bcda80",
@@ -5793,7 +6068,8 @@
     "status": "published",
     "createdById": "094cafc7a07ca5fc605f",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "patos-de-so-vicente"
   },
   {
     "id": "7999776fcfc49e037ba3",
@@ -5814,7 +6090,8 @@
     "status": "published",
     "createdById": "8acaf92ca13f3b3f676b",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "amigos-de-sardoal"
   },
   {
     "id": "47131e9c9c4f85ec1b8e",
@@ -5835,7 +6112,8 @@
     "status": "published",
     "createdById": "6964937293f5b22e35c8",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-sato"
   },
   {
     "id": "b9b1560ef8bcf56cfbc6",
@@ -5856,7 +6134,8 @@
     "status": "published",
     "createdById": "cbda63c0793124387135",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "amigos-de-seia"
   },
   {
     "id": "834633a28ed326cc6351",
@@ -5877,7 +6156,8 @@
     "status": "published",
     "createdById": "1e488ad571e683258934",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "borgas-em-seixal"
   },
   {
     "id": "7c0e5bb0e3e3943a10bf",
@@ -5898,7 +6178,8 @@
     "status": "published",
     "createdById": "6964937293f5b22e35c8",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-sernancelhe"
   },
   {
     "id": "619e31cc098f95a26be9",
@@ -5919,7 +6200,8 @@
     "status": "published",
     "createdById": "2e263c071a39fec91831",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "patos-de-serpa"
   },
   {
     "id": "44d915d65d03afc636a7",
@@ -5940,7 +6222,8 @@
     "status": "published",
     "createdById": "e5371e3f657c196fdd75",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "amigos-de-sert"
   },
   {
     "id": "2974c3f2bb181b948924",
@@ -5961,7 +6244,8 @@
     "status": "published",
     "createdById": "1e488ad571e683258934",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "patos-de-sesimbra"
   },
   {
     "id": "0092c7066dd953ecc661",
@@ -5982,7 +6266,8 @@
     "status": "published",
     "createdById": "1e488ad571e683258934",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "borgas-em-setubal"
   },
   {
     "id": "d51a097e4e5ca17e1b4d",
@@ -6003,7 +6288,8 @@
     "status": "published",
     "createdById": "4d367c13f2088054b876",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-sever-do-vouga"
   },
   {
     "id": "be74363093015a26a5f0",
@@ -6024,7 +6310,8 @@
     "status": "published",
     "createdById": "2824f56195f7fe273651",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "grupo-desportivo-de-silves"
   },
   {
     "id": "07119455781c76f79723",
@@ -6045,7 +6332,8 @@
     "status": "published",
     "createdById": "1e488ad571e683258934",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "patos-de-sines"
   },
   {
     "id": "eb9415d60bd5153ecf85",
@@ -6066,7 +6354,8 @@
     "status": "published",
     "createdById": "3c7687900e38436b29aa",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "borgas-em-sintra"
   },
   {
     "id": "257f057f78e80bcddd0d",
@@ -6087,7 +6376,8 @@
     "status": "published",
     "createdById": "3c7687900e38436b29aa",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "borgas-em-sobral-de-monte-agraco"
   },
   {
     "id": "ced3dd304867222c7909",
@@ -6108,7 +6398,8 @@
     "status": "published",
     "createdById": "8199f1b4efb79379dde2",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "amigos-de-soure"
   },
   {
     "id": "93605081e4a379a77280",
@@ -6129,7 +6420,8 @@
     "status": "published",
     "createdById": "bb04302eca5170c649c6",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "borgas-em-sousel"
   },
   {
     "id": "4010ba41fc43ea59d7ba",
@@ -6150,7 +6442,8 @@
     "status": "published",
     "createdById": "8199f1b4efb79379dde2",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "amigos-de-tabua"
   },
   {
     "id": "0b1277cbea50986714b7",
@@ -6171,7 +6464,8 @@
     "status": "published",
     "createdById": "6964937293f5b22e35c8",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-tabuaco"
   },
   {
     "id": "5425c88f2bd89bd8687e",
@@ -6192,7 +6486,8 @@
     "status": "published",
     "createdById": "6964937293f5b22e35c8",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-tarouca"
   },
   {
     "id": "eb4e4a7aa2e4d8603b10",
@@ -6213,7 +6508,8 @@
     "status": "published",
     "createdById": "2824f56195f7fe273651",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "grupo-desportivo-de-tavira"
   },
   {
     "id": "1ed08953f5810db9381c",
@@ -6234,7 +6530,8 @@
     "status": "published",
     "createdById": "069f6ada1ea40b879653",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "grupo-desportivo-de-terras-de-bouro"
   },
   {
     "id": "9384009c59301efd28b7",
@@ -6255,7 +6552,8 @@
     "status": "published",
     "createdById": "3c7687900e38436b29aa",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "borgas-em-terrujem"
   },
   {
     "id": "eefd839204a436838d3e",
@@ -6276,7 +6574,8 @@
     "status": "published",
     "createdById": "8acaf92ca13f3b3f676b",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "amigos-de-tomar"
   },
   {
     "id": "f5fef3fb211ba53405cd",
@@ -6297,7 +6596,8 @@
     "status": "published",
     "createdById": "6964937293f5b22e35c8",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-tondela"
   },
   {
     "id": "fc93f8f4f86af14c58c4",
@@ -6318,7 +6618,8 @@
     "status": "published",
     "createdById": "4e1f2f8ab203efe7f966",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-torre-de-moncorvo"
   },
   {
     "id": "60cffaa69a2c6fa4a634",
@@ -6339,7 +6640,8 @@
     "status": "published",
     "createdById": "8acaf92ca13f3b3f676b",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "borgas-em-torres-novas"
   },
   {
     "id": "7f70225a03223c7e09f4",
@@ -6360,7 +6662,8 @@
     "status": "published",
     "createdById": "3c7687900e38436b29aa",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "borgas-em-torres-vedras"
   },
   {
     "id": "b342408b2c7524c22132",
@@ -6381,7 +6684,8 @@
     "status": "published",
     "createdById": "8acaf92ca13f3b3f676b",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "borgas-em-tramagal"
   },
   {
     "id": "241542492020815b1359",
@@ -6402,7 +6706,8 @@
     "status": "published",
     "createdById": "cbda63c0793124387135",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-trancoso"
   },
   {
     "id": "48657a4a953f4230f54c",
@@ -6423,7 +6728,8 @@
     "status": "published",
     "createdById": "4d367c13f2088054b876",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-trofa"
   },
   {
     "id": "c7f53f5b629e7dd8056e",
@@ -6444,7 +6750,8 @@
     "status": "published",
     "createdById": "069f6ada1ea40b879653",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-trofa"
   },
   {
     "id": "03aa3f10c484f9bb4d58",
@@ -6465,7 +6772,8 @@
     "status": "published",
     "createdById": "ec6a22f0bb3110bc7adb",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-trofa"
   },
   {
     "id": "e076fb17782e62e2a143",
@@ -6486,7 +6794,8 @@
     "status": "published",
     "createdById": "8199f1b4efb79379dde2",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "amigos-de-trouxemil"
   },
   {
     "id": "ba4904b117d6ce3b7983",
@@ -6507,7 +6816,8 @@
     "status": "published",
     "createdById": "4d367c13f2088054b876",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-vagos"
   },
   {
     "id": "d46e1331262998b9980d",
@@ -6528,7 +6838,8 @@
     "status": "published",
     "createdById": "ec6a22f0bb3110bc7adb",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-valadares"
   },
   {
     "id": "27dd6a0dfa8a1c70027f",
@@ -6549,7 +6860,8 @@
     "status": "published",
     "createdById": "909287b508d7a5de1975",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "amigos-de-valado-de-frades"
   },
   {
     "id": "4ad7b25b7dd7c00e1edf",
@@ -6570,7 +6882,8 @@
     "status": "published",
     "createdById": "4d367c13f2088054b876",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-vale-de-cambra"
   },
   {
     "id": "45a425b48c34b49fa73c",
@@ -6591,7 +6904,8 @@
     "status": "published",
     "createdById": "29e67423f24c0c9aead0",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "grupo-desportivo-de-valenca"
   },
   {
     "id": "81a6498786d9f638c59b",
@@ -6612,7 +6926,8 @@
     "status": "published",
     "createdById": "ec6a22f0bb3110bc7adb",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-valongo"
   },
   {
     "id": "90c1a18cade08f7771a1",
@@ -6633,7 +6948,8 @@
     "status": "published",
     "createdById": "08848f92687d55943d73",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "grupo-desportivo-de-valpacos"
   },
   {
     "id": "5263e18f03db73138cfb",
@@ -6654,7 +6970,8 @@
     "status": "published",
     "createdById": "dcf1fe6b76b84863bcd5",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "borgas-em-velas"
   },
   {
     "id": "216d50d6a580da5dd9f8",
@@ -6675,7 +6992,8 @@
     "status": "published",
     "createdById": "27c2983fc6888a74c7fa",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "borgas-em-vendas-novas"
   },
   {
     "id": "083bf8a7de44ff60983f",
@@ -6696,7 +7014,8 @@
     "status": "published",
     "createdById": "27c2983fc6888a74c7fa",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "patos-de-viana-do-alentejo"
   },
   {
     "id": "7f47eb03304dd923634f",
@@ -6717,7 +7036,8 @@
     "status": "published",
     "createdById": "29e67423f24c0c9aead0",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "grupo-desportivo-de-viana-do-castelo"
   },
   {
     "id": "30de4a43a0b279da5a45",
@@ -6738,7 +7058,8 @@
     "status": "published",
     "createdById": "2e263c071a39fec91831",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "patos-de-vidigueira"
   },
   {
     "id": "79a071a2d6ce2927031c",
@@ -6759,7 +7080,8 @@
     "status": "published",
     "createdById": "069f6ada1ea40b879653",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "grupo-desportivo-de-vieira-do-minho"
   },
   {
     "id": "8d62b91817daba9b05b3",
@@ -6780,7 +7102,8 @@
     "status": "published",
     "createdById": "094cafc7a07ca5fc605f",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "patos-de-vila-de-porto-santo"
   },
   {
     "id": "4fa2066626fda5e23d6d",
@@ -6801,7 +7124,8 @@
     "status": "published",
     "createdById": "e5371e3f657c196fdd75",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "amigos-de-vila-de-rei"
   },
   {
     "id": "49021c20294538e78f54",
@@ -6822,7 +7146,8 @@
     "status": "published",
     "createdById": "2824f56195f7fe273651",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "grupo-desportivo-de-vila-do-bispo"
   },
   {
     "id": "d5fa9f9c2eacf3352f3b",
@@ -6843,7 +7168,8 @@
     "status": "published",
     "createdById": "ec6a22f0bb3110bc7adb",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-vila-do-conde"
   },
   {
     "id": "77b35144b2a1c1584db0",
@@ -6864,7 +7190,8 @@
     "status": "published",
     "createdById": "dcf1fe6b76b84863bcd5",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "grupo-desportivo-de-vila-do-porto"
   },
   {
     "id": "52404a2b3f36d2481ffc",
@@ -6885,7 +7212,8 @@
     "status": "published",
     "createdById": "4e1f2f8ab203efe7f966",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-vila-flor"
   },
   {
     "id": "ea4c8a2ae3c3d5464c91",
@@ -6906,7 +7234,8 @@
     "status": "published",
     "createdById": "3c7687900e38436b29aa",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "borgas-em-vila-franca-de-xira"
   },
   {
     "id": "333a11a1d35e2a8e4668",
@@ -6927,7 +7256,8 @@
     "status": "published",
     "createdById": "dcf1fe6b76b84863bcd5",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "patos-de-vila-franca-do-campo"
   },
   {
     "id": "4b3c6c3ace2def736917",
@@ -6948,7 +7278,8 @@
     "status": "published",
     "createdById": "8acaf92ca13f3b3f676b",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "borgas-em-vila-nova-da-barquinha"
   },
   {
     "id": "de785276c417771abc58",
@@ -6969,7 +7300,8 @@
     "status": "published",
     "createdById": "29e67423f24c0c9aead0",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "grupo-desportivo-de-vila-nova-de-cerveira"
   },
   {
     "id": "446c848e94729f9369d6",
@@ -6990,7 +7322,8 @@
     "status": "published",
     "createdById": "cbda63c0793124387135",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-vila-nova-de-foz-coa"
   },
   {
     "id": "7dcb6680ef5170b9ff7f",
@@ -7011,7 +7344,8 @@
     "status": "published",
     "createdById": "ec6a22f0bb3110bc7adb",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-vila-nova-de-gaia"
   },
   {
     "id": "5a44d41e3302f2c2bed3",
@@ -7032,7 +7366,8 @@
     "status": "published",
     "createdById": "2e263c071a39fec91831",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "patos-de-vila-nova-de-milfontes"
   },
   {
     "id": "3d83dd890dc426bba05d",
@@ -7053,7 +7388,8 @@
     "status": "published",
     "createdById": "6964937293f5b22e35c8",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-vila-nova-de-paiva"
   },
   {
     "id": "455a1b90fd478b515220",
@@ -7074,7 +7410,8 @@
     "status": "published",
     "createdById": "08848f92687d55943d73",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-vila-pouca-de-aguiar"
   },
   {
     "id": "0074435b837553136bb5",
@@ -7095,7 +7432,8 @@
     "status": "published",
     "createdById": "08848f92687d55943d73",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-vila-real"
   },
   {
     "id": "9d503b3dc31ed9a74f3e",
@@ -7116,7 +7454,8 @@
     "status": "published",
     "createdById": "2824f56195f7fe273651",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "grupo-desportivo-de-vila-real-de-santo-antonio"
   },
   {
     "id": "2fa70664d4df628d6661",
@@ -7137,7 +7476,8 @@
     "status": "published",
     "createdById": "e5371e3f657c196fdd75",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "amigos-de-vila-velha-de-rodo"
   },
   {
     "id": "e118e276664074d7ef42",
@@ -7158,7 +7498,8 @@
     "status": "published",
     "createdById": "069f6ada1ea40b879653",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "grupo-desportivo-de-vila-verde"
   },
   {
     "id": "d01a362e0f92a622275d",
@@ -7179,7 +7520,8 @@
     "status": "published",
     "createdById": "27c2983fc6888a74c7fa",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "borgas-em-vila-vicosa"
   },
   {
     "id": "e0adbb449392a36c7164",
@@ -7200,7 +7542,8 @@
     "status": "published",
     "createdById": "4e1f2f8ab203efe7f966",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "grupo-desportivo-de-vimioso"
   },
   {
     "id": "226dc62a23eb1d5a5ee8",
@@ -7221,7 +7564,8 @@
     "status": "published",
     "createdById": "4e1f2f8ab203efe7f966",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "grupo-desportivo-de-vinhais"
   },
   {
     "id": "61ea61f649013c454413",
@@ -7242,7 +7586,8 @@
     "status": "published",
     "createdById": "6964937293f5b22e35c8",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-viseu"
   },
   {
     "id": "655eb0320038e6b4c6c7",
@@ -7263,28 +7608,8 @@
     "status": "published",
     "createdById": "ec6a22f0bb3110bc7adb",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
-  },
-  {
-    "id": "337a1d5b0315aa1b3717",
-    "name": "Associação recreativa Vizela",
-    "sportId": 3,
-    "groupTypeId": 1,
-    "groupSpiritId": 5,
-    "lat": 41.3828,
-    "lng": -8.2647,
-    "location": "Vizela",
-    "near": "Vizela",
-    "dayOfWeek": 4,
-    "timeOfDay": 600,
-    "whatsapp": null,
-    "image1": null,
-    "image2": null,
-    "image3": null,
-    "status": "published",
-    "createdById": "069f6ada1ea40b879653",
-    "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-vizela"
   },
   {
     "id": "71ffc9762acfc4a304eb",
@@ -7305,6 +7630,7 @@
     "status": "published",
     "createdById": "6964937293f5b22e35c8",
     "updatedAt": "2021-12-31T08:00:00Z",
-    "createdAt": "2021-12-31T08:00:00Z"
+    "createdAt": "2021-12-31T08:00:00Z",
+    "slug": "associaco-recreativa-vouzela"
   }
 ]

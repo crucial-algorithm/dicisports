@@ -108,6 +108,7 @@ type DBRawGroup = {
   distance: number
   id: string
   name: string
+  slug: string
   sport_id: number
   group_type_id: number
   group_spirit_id: number
@@ -142,6 +143,7 @@ type Group = {
 type CreateGroupInput = {
   id?: string
   name: string
+  slug?: string
   sportId?: number | null
   groupTypeId: number
   groupSpiritId: number
