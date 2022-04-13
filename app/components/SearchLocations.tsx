@@ -1,63 +1,88 @@
 import { useTranslation } from 'react-i18next'
 import { inputBaseClasses } from '~/components/shared/form/InputBase'
 import * as React from 'react'
-import { Location } from '~/types'
-import Select from 'react-select'
+import { DiciLocation } from '~/types'
+import Select from 'react-select/async'
 import { useTheme } from '~/utils/theme-provider'
+import MapUtils from '~/utils/MapUtils'
+import { useEffect, useState } from 'react'
+import { useSearchParams } from 'remix'
 
 type SearchLocationsProps = {
   placeholder?: string
   ariaLabel?: string
-  onSelect: (option: Location) => void
+  onSelect: (option: DiciLocation) => void
   defaultValue?: string
-  cities: Location[] | undefined
+  mapToken: string
 } & Exclude<React.ComponentProps<'select'>, 'onSelect'>
 
 export default function SearchLocations({
-  cities,
   ariaLabel,
   className,
   placeholder,
   defaultValue,
-  onSelect
+  onSelect,
+  mapToken
 }: SearchLocationsProps) {
   const { t } = useTranslation('home')
   const [theme] = useTheme()
+  const [searchTerm, setSearchTerm] = useState<string>('')
   const inDarkMode = theme === 'dark'
+  const mapUtils = new MapUtils(mapToken)
+  const [params] = useSearchParams()
+  const search = params.get('search')
+
+  async function handlerLoadLocations(searchTerm: string) {
+    const results = await mapUtils.searchCityInMapBox(searchTerm)
+    setSearchTerm(searchTerm)
+    if (results === null) return []
+    return results.map((l: DiciLocation) => {
+      return {
+        value: `${l.coords}|${l.address}`,
+        label: l.address,
+        extra: l
+      }
+    })
+  }
+
+  function handlerLocationChanged(v: {
+    value: number
+    label: string
+    extra: DiciLocation
+  }) {
+    const { extra } = v
+    if (!extra) return
+    onSelect(extra)
+    setSearchTerm('')
+  }
 
   return (
     <>
       <Select
+        /* force re-render to prevent value to stay the same
+         * when navigating home after performing a search
+         */
+        key={`my-select-${search}`}
         aria-label={ariaLabel}
         className={inputBaseClasses(className)}
+        classNamePrefix="react-select"
         defaultValue={defaultValue}
         isClearable={false}
         isSearchable={true}
         backspaceRemovesValue={true}
         noOptionsMessage={() => (
-          <div style={{ textAlign: 'start' }}> {t('No Cities')}</div>
+          <div style={{ textAlign: 'start' }}>
+            {searchTerm.length > 2 ? t('No Cities') : t('Keep Typing')}
+          </div>
         )}
-        placeholder={placeholder}
+        placeholder={search || placeholder}
         components={{
           DropdownIndicator: () => null,
           IndicatorSeparator: () => null
         }}
+        loadOptions={handlerLoadLocations}
         // @ts-ignore
-        options={
-          cities
-            ? cities.map((c) => {
-                return {
-                  value: c.id,
-                  label: `${c.city}, ${c.region}`
-                }
-              })
-            : []
-        }
-        // @ts-ignore
-        onChange={(v: { value: number; label: string }) => {
-          const location = (cities || []).find((c) => c.id === v.value)
-          if (location) onSelect(location)
-        }}
+        onChange={handlerLocationChanged}
         styles={{
           control: (base) => {
             return {

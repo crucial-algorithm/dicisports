@@ -226,3 +226,11 @@ select:focus {
     outline-offset: 0;
     box-shadow: none;
 }
+
+
+/* hide placeholder for react-select */
+.react-select__control--is-focused.react-select__control--menu-is-open .react-select__single-value {
+    display: none;
+}
+
+

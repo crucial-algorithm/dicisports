@@ -10,14 +10,14 @@ import { Spacer } from '~/components/shared/Spacer'
 import Button from '~/components/shared/Button'
 import {
   DaysOfWeek,
+  DiciLocation,
   Group,
   GroupFilters,
   GroupSpirit,
   Language,
-  Location,
   Sport
 } from '~/types'
-import { findCities, findNearestGroups } from '~/server/db/locations.server'
+import { findNearestGroups } from '~/server/db/locations.server'
 import GroupEntry from '~/components/GroupEntry'
 import {
   AdjustmentsIcon,
@@ -44,6 +44,7 @@ import { findUserFavoriteGroups } from '~/server/db/groups.server'
 import { getUser } from '~/server/auth/session.server'
 import { Notification } from '~/components/shared/NotificationMessage'
 import { CopyToClipboard } from 'react-copy-to-clipboard'
+import Config from '~/server/config.server'
 
 type FilterParams = {
   actionId: keyof typeof actions | null
@@ -57,11 +58,11 @@ type FilterParams = {
 }
 
 type LoaderData = {
-  cities: Location[]
   sports: Sport[]
   groupsSpirit: GroupSpirit[]
   result: ActionData
   favorites: Group[]
+  mapToken: string
 }
 
 type ActionData = {
@@ -92,7 +93,6 @@ const countryCoords = {
 export let loader: LoaderFunction = async ({ request, params, context }) => {
   const data = parseQueryString(request.url)
   // Initial load
-  const cities = await findCities()
   const user = await getUser(request)
   const favorites = user ? await findUserFavoriteGroups(user.id) : []
 
@@ -110,14 +110,16 @@ export let loader: LoaderFunction = async ({ request, params, context }) => {
     )
   }
 
+  const { MAPBOX_TOKEN } = Config()
+
   return CAGResponse(
     request,
     {
-      cities,
       sports: await findSports(),
       groupsSpirit: await findGroupsSpirit(),
       favorites,
-      result
+      result,
+      mapToken: MAPBOX_TOKEN
     },
     undefined,
     ['home', 'm-groups']
@@ -224,9 +226,9 @@ export default function Index() {
   let { t, i18n } = useTranslation('home')
   const lang = i18n.language as Language
   let tc = useTranslation('common').t
-  const { cities, sports, groupsSpirit, result, favorites } =
+  const { sports, groupsSpirit, result, favorites, mapToken } =
     useLoaderData<LoaderData>()
-  const [selection, setSelection] = useState<Location | undefined>()
+  const [selection, setSelection] = useState<DiciLocation | undefined>()
   const data = result
   const [page, setPage] = useState<number>(data?.page || 0)
   const [groups, setGroups] = useState<Array<Group>>([])
@@ -266,9 +268,9 @@ export default function Index() {
   }
 
   function handleSearchLocations(
-    o: Location | SyntheticEvent<HTMLSelectElement>
+    o: DiciLocation | SyntheticEvent<HTMLSelectElement>
   ) {
-    setSelection(o as Location)
+    setSelection(o as DiciLocation)
   }
 
   function handleOpenFilters() {
@@ -288,12 +290,12 @@ export default function Index() {
       <Form method="get" onSubmit={handleOnSubmit}>
         <input
           type="hidden"
-          value={selection ? coords(selection) : ''}
+          value={selection ? selection.coords : ''}
           name="coords"
         />
         <input
           type="hidden"
-          value={selection ? `${selection.city}, ${selection.region}` : ''}
+          value={selection ? `${selection.address}` : ''}
           name="search"
         />
         <input type="hidden" name="page" value={result?.page || 0} />
@@ -307,10 +309,10 @@ export default function Index() {
           <div className="flex w-160">
             <SearchLocations
               ariaLabel={t('Search')}
-              cities={cities}
               onSelect={handleSearchLocations}
               placeholder={t('Search Placeholder')}
-              className="px-0 mr-4 w-full"
+              className="px-0 mr-4 w-full search-select"
+              mapToken={mapToken}
             />
             <Button name="actionId" value={actions.search}>
               {t('Search')}
@@ -527,10 +529,6 @@ function SportsGrid({
       ))}
     </div>
   )
-}
-
-function coords(geo: Location) {
-  return `${geo.lat},${geo.lng}`
 }
 
 /**
