@@ -6,7 +6,6 @@ import {
   TranslationObject,
   User,
   Sport,
-  Location,
   DBRawGroup
 } from '~/types'
 import {
@@ -14,7 +13,6 @@ import {
   GroupType as DBGroupType,
   GroupSpirit as DBGroupSpirit,
   Sport as DBSport,
-  Location as DBLocation,
   Status,
   Role
 } from '@prisma/client'
@@ -27,20 +25,6 @@ function dbSportToSport(sport: DBSport): Sport {
     updatedAt,
     name: name as TranslationObject,
     picture
-  }
-}
-
-function dbLocationToLocation(location: DBLocation): Location {
-  const { id, city, region, country, lat, lng, createdAt, updatedAt } = location
-  return {
-    id,
-    city,
-    region,
-    country,
-    lat,
-    lng,
-    createdAt,
-    updatedAt
   }
 }
 
@@ -127,7 +111,6 @@ function dbRawGroupToGroup(group: DBRawGroup): Group {
 
 export {
   dbSportToSport,
-  dbLocationToLocation,
   dbGroupSpiritToGroupSpirit,
   dbGroupTypeToGroupType,
   dbGroupToGroup,

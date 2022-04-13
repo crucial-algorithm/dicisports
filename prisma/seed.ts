@@ -1,6 +1,4 @@
 import { PrismaClient, Status, Role } from '@prisma/client'
-// Data from https://simplemaps.com/data/pt-cities
-import pt from './data/pt.json'
 import usersSeed from './data/users.json'
 import groupsSeed from './data/groups.json'
 
@@ -28,7 +26,6 @@ async function seed() {
   await persist('sports', sports(), db.sport)
   await persist('group types', groupTypes(), db.groupType)
   await persist('group spirit', groupsSpirit(), db.groupSpirit)
-  await persist('locations', locations(), db.location)
 
   await persist('users', users(), db.user)
   await persist('groups', groups(), db.group)
@@ -342,13 +339,4 @@ function groups() {
     createdById: '3beca472138d6d234d3f'
   })
   return groups
-}
-
-function locations() {
-  return pt.map((lo) => {
-    return {
-      ...lo,
-      country: 'pt'
-    }
-  })
 }

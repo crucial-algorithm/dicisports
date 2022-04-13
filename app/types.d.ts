@@ -94,7 +94,6 @@ type User = {} & DBUser
 type Sport = {
   name: TranslationObject
 } & DBSport
-type Location = {} & DBLocation
 type Document = {} & DBDocument
 type GroupType = {
   name: TranslationObject
@@ -190,6 +189,5 @@ export {
   Sport,
   Document,
   Event,
-  Location,
   DBRawGroup
 }

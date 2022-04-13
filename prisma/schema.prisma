@@ -60,19 +60,6 @@ model Sport {
   @@map("sports")
 }
 
-model Location {
-  id        Int      @id @default(autoincrement())
-  city      String
-  region    String
-  country   String
-  lat       Float
-  lng       Float
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  @@map("locations")
-}
-
 enum Status {
   auto
   draft

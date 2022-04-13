@@ -1,4 +1,4 @@
-import { DiciLocation, Location } from '~/types'
+import { DiciLocation } from '~/types'
 
 const MAP_BOX_URL = 'api.mapbox.com/geocoding/v5/mapbox.places'
 const types = [
@@ -71,13 +71,6 @@ class MapUtils {
     const features: Array<MapBoxFeature> | null = json.features || null
     if (features === null) return []
     return features.map(processMapBoxFeature).filter((v) => !!v.region)
-  }
-
-  async searchCity(searchTerm: string): Promise<Array<Location>> {
-    if (!searchTerm) return []
-    const url = `/action/city-search?s=${searchTerm}`
-    const res = await fetch(url)
-    return await res.json()
   }
 }
 

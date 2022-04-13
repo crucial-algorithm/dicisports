@@ -1,32 +1,6 @@
 import { db } from '~/server/db.server'
-import { DBRawGroup, Group, GroupFilters, Location } from '~/types'
-import {
-  dbLocationToLocation,
-  dbRawGroupToGroup
-} from '~/server/db/codecs.server'
-
-async function findCity(search: string): Promise<Location[]> {
-  const locations = await db.location.findMany({
-    where: {
-      city: {
-        search
-      }
-    }
-  })
-  return locations.map(dbLocationToLocation)
-}
-
-async function findCities(country = 'pt'): Promise<Location[]> {
-  const locations = await db.location.findMany({
-    where: {
-      country
-    },
-    orderBy: {
-      city: 'asc'
-    }
-  })
-  return locations.map(dbLocationToLocation)
-}
+import { DBRawGroup, Group, GroupFilters } from '~/types'
+import { dbRawGroupToGroup } from '~/server/db/codecs.server'
 
 async function findNearestGroups(
   lat: number,
@@ -68,4 +42,4 @@ async function findNearestGroups(
   return { results: mapped, total }
 }
 
-export { findCities, findCity, findNearestGroups }
+export { findNearestGroups }
