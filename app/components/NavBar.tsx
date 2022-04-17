@@ -329,11 +329,12 @@ function Navbar() {
   const { t } = useTranslation('common')
   const { requestInfo, user } = useRootData()
   const [isRoot, setIsRoot] = useState<boolean>(true)
+  const location = useLocation()
   // hacky stuff: we don't want to show the logo for the home page, because we
   // have the logo centered in the screen
   useEffect(() => {
-    setIsRoot(new URL(window.location.href).pathname === '/')
-  }, [])
+    setIsRoot(location.pathname === '/')
+  }, [location])
 
   return (
     <div className="px-5vw py-9 lg:py-12">
