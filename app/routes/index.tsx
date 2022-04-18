@@ -258,6 +258,13 @@ export default function Index() {
     results.map((r) => list.push(r))
     setGroups(list)
     setAddress(new URL(window.location.href).origin)
+
+    // when people go back, remove search performed, to make sure the
+    // grid of sports appears again
+    window.onpopstate = handleResetSearchPerformed
+    return () => {
+      window.onpopstate = null
+    }
   }, [result, location])
 
   let showMoreResults = !!data && data.results.length < data.total
@@ -285,6 +292,10 @@ export default function Index() {
     setPage(page + 1)
   }
 
+  function handleResetSearchPerformed() {
+    setSearchPerformed(false)
+  }
+
   return (
     <Main className="dark:text-blueGray-500 relative mb-8">
       <Form method="get" onSubmit={handleOnSubmit}>
@@ -300,7 +311,7 @@ export default function Index() {
         />
         <input type="hidden" name="page" value={result?.page || 0} />
         <div className="flex align-middle justify-center">
-          <Link to="/">
+          <Link to="/" onClick={handleResetSearchPerformed}>
             <HomeLogo className="w-112 h-16" />
           </Link>
         </div>
