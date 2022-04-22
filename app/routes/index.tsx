@@ -25,6 +25,7 @@ import {
   HeartIcon as Favorite,
   ShareIcon
 } from '@heroicons/react/solid'
+import { XCircleIcon } from '@heroicons/react/outline'
 import SearchLocations from '~/components/SearchLocations'
 import ButtonGroup from '~/components/shared/ButtonGroup'
 import { HeartIcon } from '@heroicons/react/outline'
@@ -635,97 +636,112 @@ function FiltersDialog(props: {
         aria-modal={true}
         aria-label={t('Filters')}
         className={clsx(
-          'w-144 bg-white dark:bg-gray-900 border-2 border-black dark:border-white rounded-lg lg:px-24 lg:py-14 lg:max-w-screen-lg font-extrabold',
+          'w-144 bg-white dark:bg-gray-900 border-2 border-black dark:border-white rounded-lg lg:max-w-screen-lg font-extrabold',
           {
             'hidden ': !isOpen,
             'm-auto': isOpen
           }
         )}
       >
-        <H3>{t('Filters')}</H3>
-        <Spacer size="2xs" />
-
-        <FormField
-          label={t('Sport')}
-          id="sport"
-          className="md:w-96 lg:w-96 w-96"
-        >
-          <ComboBox
-            options={sportsOptions}
-            name="sport"
-            defaultValue={filters?.sport || -1}
-            placeholder={t('All Sports')}
-            lang={i18n.language as Language}
-          />
-        </FormField>
-        <FormField
-          label={t('Day Of Week')}
-          id="day-of-week"
-          className="md:w-96 lg:w-96 w-96"
-        >
-          <PeekDayOfWeek
-            name="dow"
-            id="day-of-week"
-            defaultValue={filters?.dayOfWeek as DaysOfWeek}
-            addAll={true}
-          />
-        </FormField>
-        <FormField
-          label={t('Day Part')}
-          id="day-part"
-          className="md:w-96 lg:w-96 w-96"
-        >
-          <CheckBox
-            name="daypart"
-            label={t('Morning')}
-            value={dayParts.morning}
-            checked={filters?.dayParts?.includes(dayParts.morning)}
-            className="mb-2"
-          />
-          <CheckBox
-            name="daypart"
-            label={t('Afternoon')}
-            value={dayParts.afternoon}
-            checked={filters?.dayParts?.includes(dayParts.afternoon)}
-            className="mb-2"
-          />
-          <CheckBox
-            name="daypart"
-            label={t('Evening')}
-            value={dayParts.evening}
-            checked={filters?.dayParts?.includes(dayParts.evening)}
-            className="mb-2"
-          />
-        </FormField>
-        <FormField
-          label={t('Group Spirit')}
-          id="spirit"
-          className="md:w-96 lg:w-96 w-96"
-        >
-          {groupsSpirit.map((gs) => (
-            <CheckBox
-              key={gs.id}
-              name="spirit"
-              label={gs.name}
-              value={gs.id}
-              checked={filters?.spirit?.includes(gs.id)}
-              className="mb-2"
-            />
-          ))}
-        </FormField>
-        <div className="flex flex-wrap gap-4">
-          <Button variant="secondary" type="button" onClick={triggerModalClose}>
-            {t('Cancel')}
-          </Button>
-          <Button
-            variant="primary"
-            size="medium"
-            type="submit"
-            name="actionId"
-            value={actions.search}
+        <div className="relative">
+          <button
+            type="button"
+            className="absolute top-2 right-2"
+            onClick={triggerModalClose}
           >
-            {t('Apply Filters')}
-          </Button>
+            <XCircleIcon className="w-8" />
+          </button>
+          <div className="lg:px-24 lg:py-14">
+            <H3>{t('Filters')}</H3>
+            <Spacer size="2xs" />
+
+            <FormField
+              label={t('Sport')}
+              id="sport"
+              className="md:w-96 lg:w-96 w-96"
+            >
+              <ComboBox
+                options={sportsOptions}
+                name="sport"
+                defaultValue={filters?.sport || -1}
+                placeholder={t('All Sports')}
+                lang={i18n.language as Language}
+              />
+            </FormField>
+            <FormField
+              label={t('Day Of Week')}
+              id="day-of-week"
+              className="md:w-96 lg:w-96 w-96"
+            >
+              <PeekDayOfWeek
+                name="dow"
+                id="day-of-week"
+                defaultValue={filters?.dayOfWeek as DaysOfWeek}
+                addAll={true}
+              />
+            </FormField>
+            <FormField
+              label={t('Day Part')}
+              id="day-part"
+              className="md:w-96 lg:w-96 w-96"
+            >
+              <CheckBox
+                name="daypart"
+                label={t('Morning')}
+                value={dayParts.morning}
+                checked={filters?.dayParts?.includes(dayParts.morning)}
+                className="mb-2"
+              />
+              <CheckBox
+                name="daypart"
+                label={t('Afternoon')}
+                value={dayParts.afternoon}
+                checked={filters?.dayParts?.includes(dayParts.afternoon)}
+                className="mb-2"
+              />
+              <CheckBox
+                name="daypart"
+                label={t('Evening')}
+                value={dayParts.evening}
+                checked={filters?.dayParts?.includes(dayParts.evening)}
+                className="mb-2"
+              />
+            </FormField>
+            <FormField
+              label={t('Group Spirit')}
+              id="spirit"
+              className="md:w-96 lg:w-96 w-96"
+            >
+              {groupsSpirit.map((gs) => (
+                <CheckBox
+                  key={gs.id}
+                  name="spirit"
+                  label={gs.name}
+                  value={gs.id}
+                  checked={filters?.spirit?.includes(gs.id)}
+                  className="mb-2"
+                />
+              ))}
+            </FormField>
+            <div className="flex flex-wrap gap-4">
+              <Button
+                variant="secondary"
+                type="button"
+                onClick={triggerModalClose}
+              >
+                {t('Cancel')}
+              </Button>
+              <Button
+                variant="primary"
+                size="medium"
+                type="submit"
+                name="actionId"
+                value={actions.search}
+              >
+                {t('Apply Filters')}
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
