@@ -30,13 +30,13 @@ const LINKS = [
   { name: 'NAVBAR >>> Meeting Point', to: '/m/groups', public: false }
 ]
 
-const MOBILE_LINKS = [{ name: 'Home', to: '/' }, ...LINKS]
+const MOBILE_LINKS = [{ name: 'Home', to: '/', public: true }, ...LINKS]
 
 const links = (
-  list: Array<{ name: string; to: string; public?: boolean }>,
+  list: Array<{ name: string; to: string; public: boolean }>,
   user: User | null
 ) => {
-  return list.filter((l) => l.public === undefined || (!l.public && user))
+  return list.filter((l) => l.public || (!l.public && user))
 }
 
 function NavLink({
@@ -317,8 +317,12 @@ function ProfileButton({
         <TeamCircle size={56} />
       </motion.div>
       <img
-        className={clsx('inline w-10 rounded-full select-none')}
-        src="https://res.cloudinary.com/dicisports/image/upload/v1647690407/product/logo-rounded.png"
+        className={clsx('inline w-10 rounded-full select-none ', {
+          'scale-150': !user
+        })}
+        src={`https://res.cloudinary.com/dicisports/image/upload/v1650623777/product/${
+          user ? 'logo-rounded' : 'login-800'
+        }.png`}
         alt="logo"
       />
     </Link>

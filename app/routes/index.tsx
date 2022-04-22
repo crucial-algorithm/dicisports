@@ -22,8 +22,8 @@ import GroupEntry from '~/components/GroupEntry'
 import {
   AdjustmentsIcon,
   ChevronDownIcon,
-  ShareIcon,
-  HeartIcon as Favorite
+  HeartIcon as Favorite,
+  ShareIcon
 } from '@heroicons/react/solid'
 import SearchLocations from '~/components/SearchLocations'
 import ButtonGroup from '~/components/shared/ButtonGroup'
@@ -45,6 +45,8 @@ import { getUser } from '~/server/auth/session.server'
 import { Notification } from '~/components/shared/NotificationMessage'
 import { CopyToClipboard } from 'react-copy-to-clipboard'
 import Config from '~/server/config.server'
+import MyLocationIcon from '~/components/shared/MyLocationIcon'
+import TransitionIndicator from '~/components/shared/TransitionIndicator'
 
 type FilterParams = {
   actionId: keyof typeof actions | null
@@ -234,6 +236,7 @@ export default function Index() {
   const [groups, setGroups] = useState<Array<Group>>([])
   const [filtersModalOpen, setFiltersModalOpen] = useState<boolean>(false)
   const [searchPerformed, setSearchPerformed] = useState<boolean>(false)
+  const [areCoordsSet, setAreCoordsSet] = useState<boolean>(true)
   const [address, setAddress] = useState<string>('')
   const location = useLocation()
   const filters = parseQueryString(`https://a.com/${location.search}`)
@@ -257,7 +260,9 @@ export default function Index() {
 
     results.map((r) => list.push(r))
     setGroups(list)
-    setAddress(new URL(window.location.href).origin)
+    const url = new URL(window.location.href)
+    setAddress(url.origin)
+    setAreCoordsSet(url.searchParams.get('coords') !== null)
 
     // when people go back, remove search performed, to make sure the
     // grid of sports appears again
@@ -265,7 +270,7 @@ export default function Index() {
     return () => {
       window.onpopstate = null
     }
-  }, [result, location])
+  }, [result, location, areCoordsSet])
 
   let showMoreResults = !!data && data.results.length < data.total
 
@@ -337,25 +342,27 @@ export default function Index() {
           triggerModalClose={handleCloseFilters}
           filters={filters}
         />
-        <Spacer size="xs" />
         {searchPerformed ? (
-          <div className="pl-6 flex align-middle">
-            <Button size="small" onClick={handleOpenFilters} type="button">
-              <AdjustmentsIcon className="h-6" />
-            </Button>
-            <div className="flex mx-2 items-center dark:text-white text-blueGray-500 text-sm">
-              {data?.total
-                ? t('Number of Groups Found', { total: data?.total })
-                : null}
+          <>
+            <Spacer size="xs" />
+            <div className="pl-6 flex align-middle">
+              <Button size="small" onClick={handleOpenFilters} type="button">
+                <AdjustmentsIcon className="h-6" />
+              </Button>
+              <div className="flex mx-2 items-center dark:text-white text-blueGray-500 text-sm">
+                {data?.total
+                  ? t('Number of Groups Found', { total: data?.total })
+                  : null}
+              </div>
+              <DisplayFilters
+                filters={filters}
+                sports={sports}
+                spirits={groupsSpirit}
+                t={t}
+                tc={tc}
+              />
             </div>
-            <DisplayFilters
-              filters={filters}
-              sports={sports}
-              spirits={groupsSpirit}
-              t={t}
-              tc={tc}
-            />
-          </div>
+          </>
         ) : null}
         {showMoreResults ? (
           <>
@@ -371,6 +378,20 @@ export default function Index() {
           </>
         ) : null}
       </Form>
+      {!searchPerformed ? (
+        <>
+          <Spacer size="3xs" />
+          <div className="flex align-middle justify-center">
+            <Form method="post" action="/m/group/add">
+              <input type="hidden" name="actionId" value="create" />
+              <button className="background-transparent text-orange-600 dark:text-blueGray-500 font-medium">
+                {t('Create your group')}
+              </button>
+            </Form>
+          </div>
+        </>
+      ) : null}
+
       <div className="pb-12">
         {searchPerformed && groups.length === 0 ? (
           <div className="w-full flex justify-center mt-8">
@@ -388,7 +409,9 @@ export default function Index() {
               favAddedMessage={t('Favorite Added')}
               favRemovedMessage={t('Favorite Removed')}
               copiedToClipMessage={t('Copied to Clipboard')}
+              searchingLocationMessage={t('Searching Location')}
               address={address}
+              areCoordsSet={areCoordsSet}
             />
           ))
         )}
@@ -409,7 +432,9 @@ function GroupResult({
   favAddedMessage,
   favRemovedMessage,
   copiedToClipMessage,
-  address
+  searchingLocationMessage,
+  address,
+  areCoordsSet
 }: {
   group: Group
   img?: string
@@ -417,11 +442,14 @@ function GroupResult({
   favAddedMessage: string
   favRemovedMessage: string
   copiedToClipMessage: string
+  searchingLocationMessage: string
   address: string
+  areCoordsSet: boolean
 }) {
   const favorite = useFetcher()
   const ref = useRef()
   const [message, setMessage] = useState<string>(favAddedMessage)
+  const [searchingLocation, setSearchingLocation] = useState<boolean>(false)
   let showFavoriteAddedNotification: any = null
   let showCopiedToClipboardNotification: any = null
 
@@ -435,6 +463,19 @@ function GroupResult({
 
   function handlerClickToCopy() {
     showCopiedToClipboardNotification()
+  }
+
+  function getUsersLocation() {
+    setSearchingLocation(true)
+    navigator.geolocation.getCurrentPosition((position) => {
+      setSearchingLocation(false)
+      const { latitude, longitude } = position.coords
+      const url = new URL(window.location.href)
+      url.searchParams.set('coords', `${latitude},${longitude}`)
+      setTimeout(() => {
+        window.location.replace(url.toString())
+      }, 1000)
+    })
   }
 
   useEffect(() => {
@@ -452,51 +493,67 @@ function GroupResult({
     showFavoriteAddedNotification
   ])
 
+  console.log(areCoordsSet, 'group')
+
   return (
-    <GroupEntry
-      group={group}
-      key={group.id}
-      img={img}
-      actions={
-        <ButtonGroup density="compact">
-          <CopyToClipboard
-            text={`${address}/group/${group.slug}`}
-            onCopy={handlerClickToCopy}
-          >
-            <Button size="tiny" type="submit">
-              <ShareIcon className="h-6 w-6 m-0 inline-block" />
-            </Button>
-          </CopyToClipboard>
-          <favorite.Form
-            // @ts-ignore
-            ref={ref}
-            method="post"
-            action={`/m/group/fav/${group.id}`}
-          >
-            {isUserFavorite ? (
-              <Button size="tiny" name="action" value="remove">
-                <Favorite className="h-6 w-6 m-0 inline-block" />
+    <>
+      <GroupEntry
+        group={group}
+        key={group.id}
+        img={img}
+        actions={
+          <ButtonGroup density="compact">
+            <CopyToClipboard
+              text={`${address}/group/${group.slug}`}
+              onCopy={handlerClickToCopy}
+            >
+              <Button size="tiny" type="submit">
+                <ShareIcon className="h-6 w-6 m-0 inline-block" />
               </Button>
-            ) : (
-              <Button size="tiny" name="action" value="add">
-                <HeartIcon className="h-6 w-6 m-0 inline-block" />
-              </Button>
-            )}
-          </favorite.Form>
-          <Notification show={handlerSetShowNotificationFunction}>
-            {message}
-          </Notification>
-          <Notification show={handlerSetShowNotificationCopyToClipboard}>
-            {copiedToClipMessage}
-          </Notification>
-        </ButtonGroup>
-      }
-      footer={
-        <span className="font-medium text-gray-500 dark:text-white">
-          {Math.ceil(group.distance || 0)} km
-        </span>
-      }
-    />
+            </CopyToClipboard>
+            <favorite.Form
+              // @ts-ignore
+              ref={ref}
+              method="post"
+              action={`/m/group/fav/${group.id}`}
+            >
+              {isUserFavorite ? (
+                <Button size="tiny" name="action" value="remove">
+                  <Favorite className="h-6 w-6 m-0 inline-block" />
+                </Button>
+              ) : (
+                <Button size="tiny" name="action" value="add">
+                  <HeartIcon className="h-6 w-6 m-0 inline-block" />
+                </Button>
+              )}
+            </favorite.Form>
+            <Notification show={handlerSetShowNotificationFunction}>
+              {message}
+            </Notification>
+            <Notification show={handlerSetShowNotificationCopyToClipboard}>
+              {copiedToClipMessage}
+            </Notification>
+          </ButtonGroup>
+        }
+        footer={
+          <div className="font-medium text-gray-500 dark:text-white flex items-center justify-center">
+            {!areCoordsSet ? (
+              <button onClick={getUsersLocation}>
+                <MyLocationIcon
+                  className="font-medium w-6 mr-1 text-orange"
+                  color="var(--color-gray-500)"
+                />
+              </button>
+            ) : null}
+            <span>{Math.ceil(group.distance || 0)} km</span>
+          </div>
+        }
+      />
+      <TransitionIndicator
+        visible={searchingLocation}
+        action={searchingLocationMessage}
+      />
+    </>
   )
 }
 
