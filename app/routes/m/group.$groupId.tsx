@@ -226,6 +226,7 @@ export const action: ActionFunction = async ({ request, params }) => {
     )
   } catch (excp) {
     if (!(excp instanceof ZodError)) {
+      console.error(excp)
       return badRequest({
         error: translate('We dont know what happened')
       })
@@ -283,8 +284,8 @@ export default function GroupRoute() {
   const [location, setLocation] = useState<DiciLocation | null>(
     group.location
       ? {
-          coords: group.location.split('|')[0],
-          shortAddress: group.location.split('|')[1]
+          coords: `${group.lat},${group.lng}`,
+          shortAddress: group.location
         }
       : null
   )
