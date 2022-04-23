@@ -383,50 +383,72 @@ export default function Index() {
           </>
         ) : null}
       </Form>
+      {searchPerformed ? (
+        <div className="pb-12 flex flex-col justify-center">
+          {groups.length === 0 ? (
+            <div className="w-full flex justify-center mt-8">
+              <CallToActionToCreateGroup
+                className="text-xl"
+                label={t('No Groups Found - Create yours')}
+              />
+            </div>
+          ) : (
+            <>
+              <Spacer size="3xs" />
+              <div className="flex align-middle justify-center">
+                <CallToActionToCreateGroup label={t('Create your group')} />
+              </div>
+              <Spacer size="3xs" />
+              {groups.map((group) => (
+                <GroupResult
+                  group={group}
+                  key={group.id}
+                  isUserFavorite={
+                    favorites.find((g) => g.id === group.id) !== undefined
+                  }
+                  img={sports.find((s) => s.id === group.sportId)?.picture}
+                  favAddedMessage={t('Favorite Added')}
+                  favRemovedMessage={t('Favorite Removed')}
+                  copiedToClipMessage={t('Copied to Clipboard')}
+                  searchingLocationMessage={t('Searching Location')}
+                  address={address}
+                  areCoordsSet={areCoordsSet}
+                />
+              ))}
+            </>
+          )}
+        </div>
+      ) : null}
+
       {!searchPerformed ? (
         <>
           <Spacer size="3xs" />
-          <div className="flex align-middle justify-center">
-            <Form method="post" action="/m/group/add">
-              <input type="hidden" name="actionId" value="create" />
-              <button className="background-transparent text-orange-600 dark:text-blueGray-500 font-medium">
-                {t('Create your group')}
-              </button>
-            </Form>
-          </div>
-        </>
-      ) : null}
-
-      <div className="pb-12 flex flex-col justify-center">
-        {searchPerformed && groups.length === 0 ? (
-          <div className="w-full flex justify-center mt-8">
-            <NoResults />
-          </div>
-        ) : (
-          groups.map((group) => (
-            <GroupResult
-              group={group}
-              key={group.id}
-              isUserFavorite={
-                favorites.find((g) => g.id === group.id) !== undefined
-              }
-              img={sports.find((s) => s.id === group.sportId)?.picture}
-              favAddedMessage={t('Favorite Added')}
-              favRemovedMessage={t('Favorite Removed')}
-              copiedToClipMessage={t('Copied to Clipboard')}
-              searchingLocationMessage={t('Searching Location')}
-              address={address}
-              areCoordsSet={areCoordsSet}
-            />
-          ))
-        )}
-      </div>
-      {!searchPerformed ? (
-        <>
           <SportsGrid sports={sports} lang={lang} t={t} />
         </>
       ) : null}
     </Main>
+  )
+}
+
+function CallToActionToCreateGroup({
+  label,
+  className
+}: {
+  label: string
+  className?: string
+}) {
+  return (
+    <Form method="post" action="/m/group/add">
+      <input type="hidden" name="actionId" value="create" />
+      <button
+        className={clsx(
+          'background-transparent text-orange-600 dark:text-blueGray-500 font-medium',
+          className
+        )}
+      >
+        {label}
+      </button>
+    </Form>
   )
 }
 
