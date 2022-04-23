@@ -6,6 +6,7 @@ import I18nText from '~/components/I18nText'
 import DisplayImg from '~/components/shared/DisplayImg'
 import { displayTimeOfDay } from '~/utils/misc'
 import clsx from 'clsx'
+import { IdentificationIcon, LocationMarkerIcon, SparklesIcon } from '@heroicons/react/outline'
 
 type Props = {
   actions?: React.ReactNode
@@ -30,43 +31,49 @@ export default function GroupEntry({ group, actions, footer, img }: Props) {
   )
 
   return (
-    <div className="border-b last:border-none border-gray-300 dark:border-gray-300 p-4 relative mb-12 flex">
-      <div className="w-144 flex p-2">
+    <div
+      className={clsx(
+        'relative flex mb-12',
+        'flex-col',
+        'md:flex-row',
+        'p-4',
+        'border-b last:border-none border-gray-300 dark:border-gray-300'
+      )}
+    >
+      <div className="w-full m-auto flex p-2 md:max-w-sm lg:max-w-md md:h-72">
         {group.image1 ? (
           <DisplayImg id={group.image1 || ''} alt={group.name || ''} />
         ) : (
           <PlaceholderImg
             group={group}
             img={img}
-            className="w-full rounded-lg object-cover bg-gray-100 dark:bg-gray-400"
+            className="w-full rounded-lg bg-gray-100 dark:bg-gray-400 object-cover object-left-top"
           />
         )}
       </div>
-      <div className="w-full h-full">
+      <div className="w-full h-full p-2">
         <div className="flex flex-col">
-          <H2
-            className={clsx('mb-2', {
-              'mr-24': !!actions
-            })}
-          >
-            {group.name}
-          </H2>
-          <Feature
-            label={t('When')}
-            value={`${day}, ${displayTimeOfDay(group.timeOfDay)}`}
-          />
+          <span className={clsx('mb-4 text-base font-medium')}>
+            {`${day}, ${displayTimeOfDay(group.timeOfDay)}`}
+          </span>
+          <span className={clsx('mb-4 text-lg font-bold')}>{group.name}</span>
           <Feature
             label={t('Who')}
             value={group.createdBy?.name || group.createdById}
           />
           <Feature label={t('Where')} value={group.near || ''} />
-          <Feature label={t('Purpose')} value={group.groupSpirit?.name || ''} />
+          <div className="flex justify-between align-middle">
+            <Feature
+              label={t('Purpose')}
+              value={group.groupSpirit?.name || ''}
+            />
+            {footer ? <div className="flex content-end">{footer}</div> : null}
+          </div>
         </div>
       </div>
       {actions ? (
-        <div className="list-entry-actions p-4 pr-0">{actions}</div>
+        <div className="absolute top-0 right-0 p-4 pt-6">{actions}</div>
       ) : null}
-      {footer ? <div className="list-entry-footer">{footer}</div> : null}
     </div>
   )
 }
@@ -84,16 +91,16 @@ function PlaceholderImg({
 }
 
 function Feature({
-  label,
-  value
+  value,
+  label
 }: {
-  label: string
   value: string | TranslationObject
+  label?: string
 }) {
   return (
     <>
-      <div className="flex flex-col mb-4">
-        <div className="inline-block dark:text-blueGray-500 text-sm font-medium">
+      <div className="flex flex-col align-middle mb-4">
+        <div className="dark:text-blueGray-500 text-sm font-medium mr-2">
           {label}
         </div>
         <div className="inline-block dark:text-white text-gray-500 text-base">

@@ -318,12 +318,12 @@ export default function Index() {
         <input type="hidden" name="page" value={result?.page || 0} />
         <div className="flex align-middle justify-center">
           <Link to="/" onClick={handleResetSearchPerformed}>
-            <HomeLogo className="w-112 h-16" />
+            <HomeLogo className="w-80 h-16 md:w-96 lg:w-144" />
           </Link>
         </div>
         <Spacer size="2xs" />
         <div className="flex align-middle justify-center">
-          <div className="flex w-160">
+          <div className="flex flex-col w-full md:w-160 lg:flex-row">
             <SearchLocations
               ariaLabel={t('Search')}
               onSelect={handleSearchLocations}
@@ -331,7 +331,11 @@ export default function Index() {
               className="px-0 mr-4 w-full search-select"
               mapToken={mapToken}
             />
-            <Button name="actionId" value={actions.search}>
+            <Button
+              name="actionId"
+              value={actions.search}
+              className="mt-8 w-80 m-auto lg:mt-0 lg:w-auto lg:m-0"
+            >
               {t('Search')}
             </Button>
           </div>
@@ -393,7 +397,7 @@ export default function Index() {
         </>
       ) : null}
 
-      <div className="pb-12">
+      <div className="pb-12 flex flex-col justify-center">
         {searchPerformed && groups.length === 0 ? (
           <div className="w-full flex justify-center mt-8">
             <NoResults />
@@ -494,8 +498,6 @@ function GroupResult({
     showFavoriteAddedNotification
   ])
 
-  console.log(areCoordsSet, 'group')
-
   return (
     <>
       <GroupEntry
@@ -570,7 +572,7 @@ function SportsGrid({
   if (!sports) return null
 
   return (
-    <div className="grid grid-rows-3 grid-flow-col gap-4">
+    <div className="w-full m-auto grid grid-flow-row gap-4 md:w-full md:grid-flow-col md:grid-rows-3">
       {sports
         .sort((a, b) => a.id - b.id)
         .map((s) => (
@@ -636,7 +638,8 @@ function FiltersDialog(props: {
         aria-modal={true}
         aria-label={t('Filters')}
         className={clsx(
-          'w-144 bg-white dark:bg-gray-900 border-2 border-black dark:border-white rounded-lg lg:max-w-screen-lg font-extrabold',
+          'w-5/6 max-w-lg',
+          'bg-white dark:bg-gray-900 border-2 border-black dark:border-white rounded-lg font-extrabold',
           {
             'hidden ': !isOpen,
             'm-auto': isOpen
@@ -651,14 +654,14 @@ function FiltersDialog(props: {
           >
             <XCircleIcon className="w-8" />
           </button>
-          <div className="lg:px-24 lg:py-14">
-            <H3>{t('Filters')}</H3>
+          <div className="px-6 py-2 flex flex-col items-center lg:px-24 lg:py-14">
+            <H3 className="w-full md:w-112 text-left">{t('Filters')}</H3>
             <Spacer size="2xs" />
 
             <FormField
               label={t('Sport')}
               id="sport"
-              className="md:w-96 lg:w-96 w-96"
+              className="w-full md:w-112"
             >
               <ComboBox
                 options={sportsOptions}
@@ -671,7 +674,7 @@ function FiltersDialog(props: {
             <FormField
               label={t('Day Of Week')}
               id="day-of-week"
-              className="md:w-96 lg:w-96 w-96"
+              className="w-full md:w-112"
             >
               <PeekDayOfWeek
                 name="dow"
@@ -683,7 +686,7 @@ function FiltersDialog(props: {
             <FormField
               label={t('Day Part')}
               id="day-part"
-              className="md:w-96 lg:w-96 w-96"
+              className="w-full md:w-112"
             >
               <CheckBox
                 name="daypart"
@@ -710,7 +713,7 @@ function FiltersDialog(props: {
             <FormField
               label={t('Group Spirit')}
               id="spirit"
-              className="md:w-96 lg:w-96 w-96"
+              className="w-full md:w-112"
             >
               {groupsSpirit.map((gs) => (
                 <CheckBox
@@ -723,7 +726,7 @@ function FiltersDialog(props: {
                 />
               ))}
             </FormField>
-            <div className="flex flex-wrap gap-4">
+            <div className="w-full md:w-112 flex flex-wrap gap-4 justify-end">
               <Button
                 variant="secondary"
                 type="button"

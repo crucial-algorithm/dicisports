@@ -102,6 +102,9 @@ module.exports = {
         120: '30rem',
         144: '36rem',
         160: '40rem'
+      },
+      maxWidth: {
+        '8xl': '96rem'
       }
     }
   },
