@@ -240,10 +240,12 @@ function MapDialog({
         }}
         placeholder={t('Drag Map to Choose a Location Hint')}
       />
-      <ButtonGroup className="justify-end mt-4 pr-2">
-        <Button onClick={handleClose}>{t('Cancel')}</Button>
+      <div className="flex flex-row gap-2 justify-end mt-4 pr-2">
+        <Button variant="secondary" onClick={handleClose}>
+          {t('Cancel')}
+        </Button>
         <Button onClick={handleClose}>{t('Pick Location Button')}</Button>
-      </ButtonGroup>
+      </div>
     </Dialog>
   )
 }

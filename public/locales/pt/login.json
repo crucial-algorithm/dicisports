@@ -1,5 +1,7 @@
 {
   "Email": "Email",
-  "Email a login link": "Enviar email de login",
+  "Email a login link": "Enviar email de acesso",
+  "Sign In": "Entrar no DiciSports",
+  "Sign In Instructions": "Quer já tenhas conta ou não, coloca o teu endereço de email onde receberás um link de acesso à plataforma.",
   "A magic link has been sent to you": "Enviamos-lhe um email para fazer login"
 }

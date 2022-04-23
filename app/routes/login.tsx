@@ -12,6 +12,7 @@ import { SSTranslations } from '~/server/i18n.server'
 import InputError from '~/components/shared/form/InputError'
 import { useTranslation } from 'react-i18next'
 import CAGResponse from '~/server/response.server'
+import { H2, H6 } from '~/components/shared/typography'
 
 function validateEmail(email: string | null): boolean {
   if (!email) return false
@@ -112,48 +113,48 @@ export default function Login() {
   const { t } = useTranslation('login')
 
   return (
-    <div className="flex">
-      <div className="m-auto mt-64">
-        <div className="flex flex-col items-center justify-center w-full min-w-full w-96">
-          <Form
+    <div className="flex flex-col w-full h-full p-8 max-w-lg m-auto justify-center align-middle ">
+      <H2 className="mb-2">{t('Sign In')}</H2>
+      <H6 variant="secondary" as="p" className="text-white mb-8">
+        {t('Sign In Instructions')}
+      </H6>
+      <Form
+        autoComplete="off"
+        className="w-full"
+        method="post"
+        action="/login"
+        onChange={(event) => {
+          const form = event.currentTarget
+          setEmail(form.email.value)
+        }}
+        onSubmit={() => setSubmitted(true)}
+      >
+        <FormField label={t('Email')}>
+          <TextField
+            name="email"
+            className="w-full text-sm h-14 md:text-2xl md:h-20"
+            defaultValue={email}
             autoComplete="off"
-            className="w-full"
-            method="post"
-            action="/login"
-            onChange={(event) => {
-              const form = event.currentTarget
-              setEmail(form.email.value)
-            }}
-            onSubmit={() => setSubmitted(true)}
+          />
+        </FormField>
+        <LoginButton
+          disabled={!formIsValid || submitted}
+          label={t('Email a login link')}
+        />
+        {data.error ? (
+          <InputError id="error-message">{data.error}</InputError>
+        ) : data.email ? (
+          <p
+            id="success-message"
+            className="dark:text-blueGray-500 text-gray-500 text-lg mt-2"
           >
-            <FormField label={t('Email')}>
-              <TextField
-                name="email"
-                className="h-14 text-2xl sm:text-xl"
-                defaultValue={email}
-                autoComplete="off"
-              />
-            </FormField>
-            <LoginButton
-              disabled={!formIsValid || submitted}
-              label={t('Email a login link')}
-            />
-            {data.error ? (
-              <InputError id="error-message">{data.error}</InputError>
-            ) : data.email ? (
-              <p
-                id="success-message"
-                className="dark:text-blueGray-500 text-gray-500 text-lg mt-2"
-              >
-                <span role="img" aria-label="sparkles">
-                  ✨
-                </span>{' '}
-                {t('A magic link has been sent to you')}
-              </p>
-            ) : null}
-          </Form>
-        </div>
-      </div>
+            <span role="img" aria-label="sparkles">
+              ✨
+            </span>{' '}
+            {t('A magic link has been sent to you')}
+          </p>
+        ) : null}
+      </Form>
     </div>
   )
 }

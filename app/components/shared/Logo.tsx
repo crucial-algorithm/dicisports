@@ -1,10 +1,11 @@
 import * as React from 'react'
 
-export default function Logo() {
+export default function Logo({ className }: { className: string }) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
       width={260}
+      className={className}
       fillRule="evenodd"
       clipRule="evenodd"
       imageRendering="optimizeQuality"

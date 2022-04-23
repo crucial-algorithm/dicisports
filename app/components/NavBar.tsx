@@ -350,7 +350,7 @@ function Navbar() {
               to="/"
               className="text-primary underlined block whitespace-nowrap text-2xl font-medium focus:outline-none transition"
             >
-              <Logo />
+              <Logo className="w-32 md:w-64" />
             </Link>
           ) : (
             <>&nbsp;</>

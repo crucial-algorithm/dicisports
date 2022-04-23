@@ -14,6 +14,7 @@ import { updateUser } from '~/server/db/users.server'
 import { useTranslation } from 'react-i18next'
 import Main from '~/components/shared/Main'
 import CAGResponse from '~/server/response.server'
+import { Spacer } from '~/components/shared/Spacer'
 
 const actionIds = {
   logout: 'logout',
@@ -79,42 +80,35 @@ export default function Me() {
   return (
     <Main>
       <div className="mb-64 mt-24 pt-6">
-        <Grid>
-          <div className="col-span-full mb-12 lg:mb-20">
-            <div className="flex flex-col-reverse items-start justify-between lg:flex-row lg:items-center">
-              <div>
-                <H2>{t(`Here's your profile`)}</H2>
-                <H3 variant="secondary" as="p">
-                  {t('Edit as you wish')}
-                </H3>
-              </div>
-              <Form method="post">
-                <input type="hidden" name="actionId" value={actionIds.logout} />
-                <Button variant="secondary">
-                  <LogoutIcon className="w-4 h-4" />
-                  <H6 as="span">{t('Logout')}</H6>
-                </Button>
-              </Form>
-            </div>
-          </div>
-          <InputError id="general-error">
-            {actionData?.errors.generalError}
-          </InputError>
+        <Form method="post" className="w-full flex justify-end">
+          <input type="hidden" name="actionId" value={actionIds.logout} />
+          <Button variant="secondary">
+            <LogoutIcon className="w-4 h-4" />
+            <H6 as="span">{t('Logout')}</H6>
+          </Button>
+        </Form>
+        <Spacer size="xs" />
+        <H2>{t(`Here's your profile`)}</H2>
+        <H3 variant="secondary" as="p">
+          {t('Edit as you wish')}
+        </H3>
+        <InputError id="general-error">
+          {actionData?.errors.generalError}
+        </InputError>
 
-          <div className="col-span-full mb-24 lg:col-span-5 lg:mb-0">
-            <Form method="post" className="w-96">
-              <ProfileFragment
-                labelName={t('Name')}
-                labelEmail={t('Email')}
-                profile={{ name: user?.name, email: user?.email || '' }}
-                error={actionData?.errors.name}
-              />
-              <Button className="mt-8" type="submit" form="profile-form">
-                {t('Update Profile')}
-              </Button>
-            </Form>
-          </div>
-        </Grid>
+        <div className="col-span-full mb-24 lg:col-span-5 lg:mb-0">
+          <Form method="post" className="w-full md:w-96">
+            <ProfileFragment
+              labelName={t('Name')}
+              labelEmail={t('Email')}
+              profile={{ name: user?.name, email: user?.email || '' }}
+              error={actionData?.errors.name}
+            />
+            <Button className="mt-8" type="submit" form="profile-form">
+              {t('Update Profile')}
+            </Button>
+          </Form>
+        </div>
       </div>
     </Main>
   )

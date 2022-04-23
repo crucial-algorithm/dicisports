@@ -9,7 +9,7 @@ export default function HourOfDay({
   minute: number
 }) {
   return (
-    <div className="flex flex-col space-y-4 md:flex-row md:space-x-4 md:space-y-0">
+    <div className="w-full flex flex-row justify-between mr-4 md:flex-row md:space-x-4 md:space-y-0">
       <ComboBox
         name="hour"
         defaultValue={hour}

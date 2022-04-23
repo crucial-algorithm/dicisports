@@ -4,7 +4,8 @@ import clsx from 'clsx'
 export function inputBaseClasses(className?: string) {
   return clsx(
     'w-full rounded-lg focus-ring',
-    'bg-gray-100 text-black placeholder-gray-500 text-lg font-medium',
+    'text-base md:text-lg',
+    'bg-gray-100 text-black placeholder-gray-500 font-medium',
     'dark:disabled:text-blueGray-500 dark:text-white dark:bg-gray-800',
     'disabled:text-gray-400',
     {

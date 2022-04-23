@@ -31,7 +31,7 @@ import ComboBox from '~/components/shared/form/ComboBox'
 import { findGroupTypes } from '~/server/db/groupTypes.server'
 import HourOfDay from '~/components/HourOfDay'
 import { findGroupsSpirit } from '~/server/db/groupsSpirit.server'
-import { useState } from 'react'
+import { FormEvent, useState } from 'react'
 import { MapDialog } from '~/components/shared/Map'
 import Config from '~/server/config.server'
 import UploadImage from '~/components/shared/form/UploadImage'
@@ -291,223 +291,220 @@ export default function GroupRoute() {
   )
   const submit = useSubmit()
 
+  async function handleSubmitForm(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    setImagesUploading(true)
+    await uploadImages(imageUploadEndpoint, imageUploadPreset, images)
+    setImagesUploading(false)
+    submit(e.target as HTMLFormElement)
+  }
+
+  function handleShowMap() {
+    setShowLocationPicker(true)
+  }
+
   return (
     <Main>
       <div className="mb-64 mt-24 pt-6">
-        <Grid>
-          <div className="col-span-full mb-12 lg:mb-20">
-            <div className="flex flex-col-reverse items-start justify-between lg:flex-row lg:items-center">
-              <div>
-                <H2 className="px-11">{t(`Ride Together`)}</H2>
-                <H3 variant="secondary" as="p">
-                  {t('Let Others know')}
-                </H3>
-              </div>
+        <div className="mb-12 lg:mb-20">
+          <div className="flex flex-col-reverse items-start justify-between lg:flex-row lg:items-center">
+            <div>
+              <H2>{t(`Ride Together`)}</H2>
+              <H3 variant="secondary" as="p">
+                {t('Let Others know')}
+              </H3>
             </div>
           </div>
+        </div>
 
-          <div className="col-span-full mb-24 lg:col-span-full lg:mb-0">
-            <UploadForm
-              method="post"
-              className="w-full"
-              onSubmit={async (e) => {
-                e.preventDefault()
-                setImagesUploading(true)
-                await uploadImages(
-                  imageUploadEndpoint,
-                  imageUploadPreset,
-                  images
-                )
-                setImagesUploading(false)
-                submit(e.target as HTMLFormElement)
-              }}
+        <div className="mb-24 lg:mb-0">
+          <UploadForm
+            method="post"
+            className="w-full"
+            onSubmit={handleSubmitForm}
+          >
+            <input type="hidden" name="id" value={group?.id || ''} />
+            <FormField
+              label={t('Group Name')}
+              id="group-name"
+              className="w-full max-w-xl"
+              error={actionData?.errors?.name}
             >
-              <input type="hidden" name="id" value={group?.id || ''} />
-              <FormField
-                label={t('Group Name')}
-                id="group-name"
-                className="md:w-120 lg:w-144 w-160"
-                error={actionData?.errors?.name}
-              >
-                <TextField
-                  name="name"
-                  id="group-sport"
-                  defaultValue={group.name || ''}
-                />
-              </FormField>
-              <FormField
-                label={t('Group Sport')}
+              <TextField
+                name="name"
                 id="group-sport"
-                className="w-64"
-              >
-                <ComboBox
-                  name="sport"
-                  id="group-sport"
-                  lang={language}
-                  placeholder=""
-                  defaultValue={group.sport ? group.sport.id : undefined}
-                  options={sports.map((s) => {
-                    return { value: s.id, label: s.name }
-                  })}
-                />
-              </FormField>
-              <FormField
-                label={t('Group Type')}
+                defaultValue={group.name || ''}
+              />
+            </FormField>
+            <FormField
+              label={t('Group Sport')}
+              id="group-sport"
+              className="w-64"
+            >
+              <ComboBox
+                name="sport"
+                id="group-sport"
+                lang={language}
+                placeholder=""
+                defaultValue={group.sport ? group.sport.id : undefined}
+                options={sports.map((s) => {
+                  return { value: s.id, label: s.name }
+                })}
+              />
+            </FormField>
+            <FormField label={t('Group Type')} id="group-type" className="w-64">
+              <ComboBox
+                name="type"
                 id="group-type"
-                className="w-64"
-              >
-                <ComboBox
-                  name="type"
-                  id="group-type"
-                  lang={language}
-                  placeholder=""
-                  defaultValue={
-                    group.groupType ? group.groupType.id : undefined
-                  }
-                  options={groupTypes.map((g) => {
-                    return { value: g.id, label: g.name }
-                  })}
-                />
-              </FormField>
-              <FormField
-                label={t('Group Spirit')}
+                lang={language}
+                placeholder=""
+                defaultValue={group.groupType ? group.groupType.id : undefined}
+                options={groupTypes.map((g) => {
+                  return { value: g.id, label: g.name }
+                })}
+              />
+            </FormField>
+            <FormField
+              label={t('Group Spirit')}
+              id="group-spirit"
+              className="w-64"
+            >
+              <ComboBox
+                name="spirit"
                 id="group-spirit"
-                className="w-64"
-              >
-                <ComboBox
-                  name="spirit"
-                  id="group-spirit"
-                  placeholder=""
-                  lang={language}
-                  defaultValue={
-                    group.groupSpirit ? group.groupSpirit.id : undefined
-                  }
-                  options={groupsSpirit.map((g) => {
-                    return { value: g.id, label: g.name }
-                  })}
-                />
-              </FormField>
-              <FormField
-                label={t('Group Location')}
-                id="group-location"
-                className="w-112"
-                error={actionData?.errors?.location}
-              >
-                <TextField
-                  name="discard-location"
-                  id="group-sport"
-                  defaultValue={location?.shortAddress}
-                  disabled={true}
-                  adornment={
-                    <Button
-                      className="mr-2"
-                      variant="adornment"
-                      type="button"
-                      onClick={() => setShowLocationPicker(true)}
-                    >
-                      {t('Map')}
-                    </Button>
-                  }
-                />
-                <input
-                  type="hidden"
-                  name="location"
-                  value={
-                    location
-                      ? `${location?.coords}|${location?.shortAddress}`
-                      : undefined
-                  }
-                />
-              </FormField>
-              <FormField
-                label={t('Group Location Helper')}
+                placeholder=""
+                lang={language}
+                defaultValue={
+                  group.groupSpirit ? group.groupSpirit.id : undefined
+                }
+                options={groupsSpirit.map((g) => {
+                  return { value: g.id, label: g.name }
+                })}
+              />
+            </FormField>
+            <FormField
+              label={t('Group Location')}
+              id="group-location"
+              className="w-full max-w-xl"
+              error={actionData?.errors?.location}
+            >
+              <TextField
+                name="discard-location"
+                id="group-sport"
+                defaultValue={location?.shortAddress}
+                disabled={true}
+                adornment={
+                  <Button
+                    className="mr-2"
+                    variant="adornment"
+                    type="button"
+                    onClick={handleShowMap}
+                  >
+                    {t('Map')}
+                  </Button>
+                }
+              />
+              <input
+                type="hidden"
+                name="location"
+                value={
+                  location
+                    ? `${location?.coords}|${location?.shortAddress}`
+                    : undefined
+                }
+              />
+            </FormField>
+            <FormField
+              label={t('Group Location Helper')}
+              id="group-location-helper"
+              className="w-full max-w-xl"
+              error={actionData?.errors?.near}
+            >
+              <TextField
+                name="near"
                 id="group-location-helper"
-                className="w-112"
-                error={actionData?.errors?.near}
-              >
-                <TextField
-                  name="near"
-                  id="group-location-helper"
-                  placeholder={t('Group Location Helper Placeholder')}
-                  defaultValue={group.near || ''}
-                />
-              </FormField>
-              <FormField
-                label={t('Day Of Week')}
+                placeholder={t('Group Location Helper Placeholder')}
+                defaultValue={group.near || ''}
+              />
+            </FormField>
+            <FormField
+              label={t('Day Of Week')}
+              id="group-day-of-week"
+              className="w-64"
+            >
+              <PeekDayOfWeek
+                name="dayOfWeek"
                 id="group-day-of-week"
-                className="w-64"
-              >
-                <PeekDayOfWeek
-                  name="dayOfWeek"
-                  id="group-day-of-week"
-                  defaultValue={group.dayOfWeek}
+                defaultValue={group.dayOfWeek}
+              />
+            </FormField>
+            <FormField
+              label={t('Time Of Day')}
+              id="group-time-of-day"
+              className="w-80 md:w-48"
+            >
+              <HourOfDay hour={hour} minute={minute} />
+            </FormField>
+            <FormField label={t('Group Photos')} id="group-photos">
+              <div className="w-full m-auto grid grid-flow-row gap-4 md:w-full md:grid-flow-col md:grid-rows-1">
+                <UploadImage
+                  index={0}
+                  imageId={files[0].publicId}
+                  label={t('Hint For Picture 1')}
+                  onDrop={setImage}
+                  defaultValue={group.image1}
+                  className="w-1/3"
                 />
-              </FormField>
-              <FormField
-                label={t('Time Of Day')}
-                id="group-time-of-day"
-                className="w-48"
-              >
-                <HourOfDay hour={hour} minute={minute} />
-              </FormField>
-              <FormField label={t('Group Photos')} id="group-photos">
-                <div className="grid gap-4 grid-cols-3 grid-rows-1">
-                  <UploadImage
-                    index={0}
-                    imageId={files[0].publicId}
-                    label={t('Hint For Picture 1')}
-                    onDrop={setImage}
-                    defaultValue={group.image1}
-                  />
-                  <UploadImage
-                    index={1}
-                    imageId={files[1].publicId}
-                    label={t('Hint For Picture 2')}
-                    onDrop={setImage}
-                    defaultValue={group.image2}
-                  />
-                  <UploadImage
-                    index={2}
-                    imageId={files[2].publicId}
-                    label={t('Hint For Picture 3')}
-                    onDrop={setImage}
-                    defaultValue={group.image3}
-                  />
-                </div>
-              </FormField>
+                <UploadImage
+                  index={1}
+                  imageId={files[1].publicId}
+                  label={t('Hint For Picture 2')}
+                  onDrop={setImage}
+                  defaultValue={group.image2}
+                  className="w-1/3"
+                />
+                <UploadImage
+                  index={2}
+                  imageId={files[2].publicId}
+                  label={t('Hint For Picture 3')}
+                  onDrop={setImage}
+                  defaultValue={group.image3}
+                  className="w-1/3"
+                />
+              </div>
+            </FormField>
+            <Button
+              className="mt-8"
+              type="submit"
+              form="profile-form"
+              disabled={uploading}
+            >
+              {uploading
+                ? t('Button While Uploading Images')
+                : isUpdate
+                ? t('Update Group')
+                : t('Create Group')}
+            </Button>
+            <InputError id="global-error" className="mt-4">
+              {actionData?.error}
+            </InputError>
+          </UploadForm>
+          {isUpdate ? (
+            <Form
+              method="post"
+              className="mt-24 border-t border-gray-300 dark:border-gray-300 pt-6"
+            >
+              <input type="hidden" name="actionId" value={actionIds.delete} />
               <Button
-                className="mt-8"
-                type="submit"
-                form="profile-form"
-                disabled={uploading}
+                variant="danger"
+                type="button"
+                onClick={() => setDeleteModalOpen(true)}
               >
-                {uploading
-                  ? t('Button While Uploading Images')
-                  : isUpdate
-                  ? t('Update Group')
-                  : t('Create Group')}
+                {t('Delete Group')}
               </Button>
-              <InputError id="global-error" className="mt-4">
-                {actionData?.error}
-              </InputError>
-            </UploadForm>
-            {isUpdate ? (
-              <Form
-                method="post"
-                className="mt-24 border-t border-gray-300 dark:border-gray-300 pt-6"
-              >
-                <input type="hidden" name="actionId" value={actionIds.delete} />
-                <Button
-                  variant="danger"
-                  type="button"
-                  onClick={() => setDeleteModalOpen(true)}
-                >
-                  {t('Delete Group')}
-                </Button>
-              </Form>
-            ) : null}
-          </div>
-        </Grid>
+            </Form>
+          ) : null}
+        </div>
       </div>
       <MapDialog
         token={mapToken}

@@ -41,7 +41,7 @@ export default function UploadImage({
   return (
     <section
       className={clsx(
-        'images-container',
+        'h-80 py-4 px-2 w-full min-w-full',
         'bg-gray-100 text-black placeholder-gray-500 text-lg font-medium',
         'dark:disabled:text-blueGray-500 dark:text-white dark:bg-gray-800',
         className
