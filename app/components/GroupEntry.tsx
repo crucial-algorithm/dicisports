@@ -56,7 +56,9 @@ export default function GroupEntry({ group, actions, footer, img }: Props) {
           <span className={clsx('mb-4 text-base font-medium')}>
             {`${day}, ${displayTimeOfDay(group.timeOfDay)}`}
           </span>
-          <span className={clsx('mb-4 text-lg font-bold')}>{group.name}</span>
+          <span className={clsx('mb-4 text-lg font-extrabold dark:text-white')}>
+            {group.name}
+          </span>
           <Feature
             label={t('Who')}
             value={group.createdBy?.name || group.createdById}
