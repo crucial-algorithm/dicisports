@@ -11,7 +11,8 @@ export default function DisplayImg({ alt, id, className }: DisplayImgProps) {
     <img
       alt={alt}
       className={clsx(
-        'w-full rounded-lg object-cover object-left-top',
+        'w-full h-72 md:max-w-sm md:h-72 lg:w-144 lg:max-w-md',
+        'rounded-lg object-cover object-left-top',
         className
       )}
       src={buildImageUrl(id, {})}

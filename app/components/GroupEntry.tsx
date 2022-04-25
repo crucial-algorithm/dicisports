@@ -1,12 +1,11 @@
 import React, { ReactNode } from 'react'
 import { Group, TranslationObject } from '~/types'
-import { H2 } from '~/components/shared/typography'
 import { useTranslation } from 'react-i18next'
 import I18nText from '~/components/I18nText'
 import DisplayImg from '~/components/shared/DisplayImg'
 import { displayTimeOfDay } from '~/utils/misc'
 import clsx from 'clsx'
-import { IdentificationIcon, LocationMarkerIcon, SparklesIcon } from '@heroicons/react/outline'
+import { Carousel } from 'react-responsive-carousel'
 
 type Props = {
   actions?: React.ReactNode
@@ -40,17 +39,7 @@ export default function GroupEntry({ group, actions, footer, img }: Props) {
         'border-b last:border-none border-gray-300 dark:border-gray-300'
       )}
     >
-      <div className="w-full m-auto flex p-2 md:max-w-sm lg:max-w-md md:h-72">
-        {group.image1 ? (
-          <DisplayImg id={group.image1 || ''} alt={group.name || ''} />
-        ) : (
-          <PlaceholderImg
-            group={group}
-            img={img}
-            className="w-full rounded-lg bg-gray-100 dark:bg-gray-400 object-cover object-left-top"
-          />
-        )}
-      </div>
+      <GroupImage group={group} img={img} />
       <div className="w-full h-full p-2">
         <div className="flex flex-col">
           <span className={clsx('mb-4 text-base font-medium')}>
@@ -110,5 +99,55 @@ function Feature({
         </div>
       </div>
     </>
+  )
+}
+
+function GroupImage({ group, img }: { group: Group; img?: string }) {
+  function Wrapper({ children }: {} & React.ComponentProps<'div'>) {
+    return (
+      <div className="w-full m-auto flex p-2 md:max-w-sm md:h-72 lg:w-144 lg:max-w-md">
+        {children}
+      </div>
+    )
+  }
+
+  const { image1, image2, image3 } = group
+  const images: string[] = [image1, image2, image3].filter(Boolean) as string[]
+
+  if (images.length === 0) {
+    return (
+      <Wrapper>
+        <PlaceholderImg
+          group={group}
+          img={img}
+          className="w-full rounded-lg bg-gray-100 dark:bg-gray-400 object-cover object-left-top"
+        />
+      </Wrapper>
+    )
+  }
+
+  if (images.length === 1) {
+    return (
+      <Wrapper>
+        <DisplayImg
+          id={image1 || image2 || image3 || ''}
+          alt={group.name || ''}
+        />
+      </Wrapper>
+    )
+  }
+
+  function cleanStatus() {
+    return ''
+  }
+
+  return (
+    <Wrapper>
+      <Carousel statusFormatter={cleanStatus}>
+        {images.map((image, idx) => (
+          <DisplayImg key={idx} id={image} />
+        ))}
+      </Carousel>
+    </Wrapper>
   )
 }
