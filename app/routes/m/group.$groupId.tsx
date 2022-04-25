@@ -446,7 +446,7 @@ export default function GroupRoute() {
               <HourOfDay hour={hour} minute={minute} />
             </FormField>
             <FormField label={t('Group Photos')} id="group-photos">
-              <div className="w-full m-auto grid grid-flow-row gap-4 md:w-full md:grid-flow-col md:grid-rows-1">
+              <div className="w-full m-auto flex flex-row justify-begin gap-4 md:w-full md:grid-flow-col md:grid-rows-1">
                 <UploadImage
                   index={0}
                   imageId={files[0].publicId}

@@ -41,15 +41,20 @@ export default function UploadImage({
   return (
     <section
       className={clsx(
-        'h-80 py-4 px-2 w-full min-w-full',
-        'bg-gray-100 text-black placeholder-gray-500 text-lg font-medium',
+        'h-80 bg-gray-100 text-black placeholder-gray-500 text-lg font-medium',
         'dark:disabled:text-blueGray-500 dark:text-white dark:bg-gray-800',
+        'object-cover object-left-top overflow-hidden',
+        'flex content-center justify-center',
         className
       )}
     >
-      <div {...getRootProps({ className: 'dropzone' })}>
+      <div {...getRootProps({ className: 'h-80 w-full overflow-hidden' })}>
         <input {...getInputProps()} name={inputFileName} />
-        {thumb ? <img src={thumb} alt="" /> : <p>{label}</p>}
+        {thumb ? (
+          <img src={thumb} alt="" className="object-cover object-left-top" />
+        ) : (
+          <p className="h-80 w-full flex items-center justify-center">{label}</p>
+        )}
       </div>
       <input type="hidden" name={inputShadowName} value={value} />
     </section>
