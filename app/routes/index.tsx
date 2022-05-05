@@ -603,6 +603,7 @@ function SportsGrid({
               id={`product/sports/${s.picture}`}
               key={s.id}
               alt={getLocalizedText(lang, s.name)}
+              dontMessWithImgSize={true}
             />
           </Link>
         ))}
@@ -617,6 +618,8 @@ function SportsGrid({
             id={`product/sports/add-sport`}
             key={i}
             alt={t('Add Sport')}
+            className="w-full"
+            dontMessWithImgSize={true}
           />
         </a>
       ))}
