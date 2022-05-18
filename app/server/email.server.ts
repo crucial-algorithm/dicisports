@@ -1,7 +1,12 @@
 import type { User } from '@prisma/client'
 import Config from '~/server/config.server'
 
-const { MAILGUN_DOMAIN, MAILGUN_SENDING_KEY } = Config()
+const {
+  MAILGUN_DOMAIN,
+  MAILGUN_SENDING_KEY,
+  CONVERT_KIT_API_KEY,
+  CONVERT_KIT_FORM
+} = Config()
 
 let mailgunDomain: string | undefined = MAILGUN_DOMAIN
 if (process.env.NODE_ENV === 'production' && !MAILGUN_DOMAIN) {
@@ -68,16 +73,13 @@ ${
   userExists
     ? `Welcome back ${emailAddress}!`
     : `
-Clicking the link above will create a *new* account on ${hostname} with the email ${emailAddress}. Welcome!
-If you'd instead like to change your email address for an existing account, please send an email to team+email-change@dicisports.com from the original email address.
+Ao abrir o link irás criar uma nova conta no ${hostname} com o email ${emailAddress}.
       `.trim()
 }
 
-Thanks!
+Obrigado!
 
-– The KCD Team
-
-P.S. If you did not request this email, you can safely ignore it.
+P.S.  Se não solicitaste o email, ignora sem clickar no link (não incorres em qualquer risco de segurança).
   `.trim()
 
   const html = `
@@ -128,9 +130,9 @@ P.S. If you did not request this email, you can safely ignore it.
       <hr style='width: 20%; height: 0px; border: 1px solid lightgrey; margin-top: 2rem; margin-bottom: 2rem'>
         
       <div style='text-align: center; color: grey; font-size: .8rem; line-height: 1.2rem'>
-        Recebeu este email porque o seu endereço de email foi usado para fazer login em
-        <a href='${domainUrl}' style='color: grey'>${hostname}</a>. Se não solicitou o email,
-        ignore sem clickar no link, não correndo qualquer risco de segurança.
+        Recebeste este email porque o teu endereço de email foi usado para fazer login em
+        <a href='${domainUrl}' style='color: grey'>${hostname}</a>. Se não solicitaste o email,
+        ignora sem clickar no link (não corres qualquer risco de segurança).
       </div>
     </div>
   </body>
@@ -148,7 +150,113 @@ P.S. If you did not request this email, you can safely ignore it.
   await sendEmail(message)
 }
 
-export { sendEmail, sendMagicLinkEmail }
+async function sendWhatsAppGroupLink({
+  emailAddress,
+  domainUrl,
+  groupName,
+  whatsAppLink
+}: {
+  emailAddress: string
+  domainUrl: string
+  groupName: string
+  whatsAppLink: string
+}) {
+  const sender = `"DiciSports" <sports@dicisports.com>`
+  const { hostname } = new URL(domainUrl)
+
+  const text = `
+Abre o link no teu telemóvel para te juntares ao group "${groupName}":
+
+${whatsAppLink}
+
+Obrigado!
+
+  `.trim()
+
+  const html = `
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <head>
+    <meta http-equiv='Content-Type' content='text/html charset=UTF-8' />
+    <style type='text/css'>
+      @font-face {
+        font-family: 'Matter';
+        src: url('https://kcd-img.netlify.app/Matter-Medium.woff2') format('woff2'),
+          url('https://kcd-img.netlify.app/Matter-Medium.woff') format('woff');
+        font-weight: 500;
+        font-style: normal;
+        font-display: swap;
+      }
+
+      @font-face {
+        font-family: 'Matter';
+        src: url('https://kcd-img.netlify.app/Matter-Regular.woff2') format('woff2'),
+          url('https://kcd-img.netlify.app/Matter-Regular.woff') format('woff');
+        font-weight: normal;
+        font-style: normal;
+        font-display: swap;
+      }
+    </style>
+  </head>
+  <body style='font-family:Matter, sans-serif;'>
+    <div style='margin: 0 auto; max-width: 450px;'>
+
+      <h2 style='text-align: center'>Estás prestar a juntar-te ao grupo: "${groupName}"</h2>
+      
+      <h3 style='text-align: center'>📱No teu telemóvel, clica no botão para te juntares</h3>
+
+      <a href='${whatsAppLink}' style='display: block; margin: 0 auto; width: 80%; padding: 1.5rem; background: #A6DEE4; border-radius: 7px; border-width: 0; font-size: 1.1rem; text-align: center; font-family: sans-serif; text-decoration: none; color: black'>
+        Entrar no grupo WhatsApp
+      </a>
+
+        
+      <hr style='width: 20%; height: 0px; border: 1px solid lightgrey; margin-top: 2rem; margin-bottom: 2rem'>
+        
+      <div style='text-align: center; color: grey; font-size: .8rem; line-height: 1.2rem'>
+        Recebeste este email porque o teu endereço de email foi usado para tentar juntar-te a um grupo no
+        <a href='${domainUrl}' style='color: grey'>${hostname}</a>. Se não solicitaste o email,
+        ignora sem clickar no link.
+      </div>
+    </div>
+  </body>
+</html>
+  `
+
+  const message = {
+    from: sender,
+    to: emailAddress,
+    subject: `Link de autenticação para o dicisports.com  ✨`,
+    text,
+    html
+  }
+
+  await sendEmail(message)
+}
+
+async function subscribeUser(email: string, name?: string) {
+  if (!CONVERT_KIT_FORM || !CONVERT_KIT_API_KEY) {
+    console.log('missing convertkit key && form... bypassing subscription')
+    return
+  }
+
+  const payload = {
+    api_key: CONVERT_KIT_API_KEY,
+    email,
+    name
+  }
+  return fetch(
+    `https://api.convertkit.com/v3/forms/${CONVERT_KIT_FORM}/subscribe`,
+    {
+      method: 'post',
+      body: JSON.stringify(payload),
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    }
+  )
+}
+
+export { sendEmail, sendMagicLinkEmail, sendWhatsAppGroupLink, subscribeUser }
 
 /*
 eslint

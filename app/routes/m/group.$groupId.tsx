@@ -200,6 +200,7 @@ export const action: ActionFunction = async ({ request, params }) => {
       parseInt(form.get('hour') as string, 10),
       parseInt(form.get('minute') as string, 10)
     ),
+    whatsapp: form.get('whatsapp') as string,
     image1: processImgField(p, image1, isUpdate),
     image2: processImgField(p, image2, isUpdate),
     image3: processImgField(p, image3, isUpdate)
@@ -444,6 +445,19 @@ export default function GroupRoute() {
               className="w-80 md:w-48"
             >
               <HourOfDay hour={hour} minute={minute} />
+            </FormField>
+            <FormField label={t('WhatsApp Group')}>
+              <TextField
+                name="whatsapp"
+                defaultValue={group.whatsapp || ''}
+                className="w-full max-w-xl"
+              />
+              <Paragraph className="text-xs mt-1">
+                1. {t('WhatsApp Create Group')}
+              </Paragraph>
+              <Paragraph className="text-xs mt-1">
+                2. {t('WhatsApp Get Link')}
+              </Paragraph>
             </FormField>
             <FormField label={t('Group Photos')} id="group-photos">
               <div className="w-full m-auto flex flex-row justify-begin gap-4 md:w-full md:grid-flow-col md:grid-rows-1">

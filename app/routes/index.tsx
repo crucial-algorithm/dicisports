@@ -7,7 +7,7 @@ import Main from '~/components/shared/Main'
 import CAGResponse from '~/server/response.server'
 import { Form, useLoaderData } from '@remix-run/react'
 import { Spacer } from '~/components/shared/Spacer'
-import Button from '~/components/shared/Button'
+import Button, { ButtonLink } from '~/components/shared/Button'
 import {
   DaysOfWeek,
   DiciLocation,
@@ -37,7 +37,6 @@ import { findSports } from '~/server/db/sports.server'
 import ComboBox, { Option } from '~/components/shared/form/ComboBox'
 import clsx from 'clsx'
 import { getLocalizedText, PeekDayOfWeek } from '~/utils/misc'
-import NoResults from '~/components/illustrations/NoResults'
 import { TFunction } from 'i18next'
 import HomeLogo from '~/components/shared/HomeLogo'
 import DisplayImg from '~/components/shared/DisplayImg'
@@ -48,6 +47,7 @@ import { CopyToClipboard } from 'react-copy-to-clipboard'
 import Config from '~/server/config.server'
 import MyLocationIcon from '~/components/shared/MyLocationIcon'
 import TransitionIndicator from '~/components/shared/TransitionIndicator'
+import WhatsApp from '~/components/shared/icons/WhatsApp'
 
 type FilterParams = {
   actionId: keyof typeof actions | null
@@ -413,6 +413,7 @@ export default function Index() {
                   searchingLocationMessage={t('Searching Location')}
                   address={address}
                   areCoordsSet={areCoordsSet}
+                  location={`${location.pathname}${location.search}`}
                 />
               ))}
             </>
@@ -461,7 +462,8 @@ function GroupResult({
   copiedToClipMessage,
   searchingLocationMessage,
   address,
-  areCoordsSet
+  areCoordsSet,
+  location
 }: {
   group: Group
   img?: string
@@ -472,6 +474,7 @@ function GroupResult({
   searchingLocationMessage: string
   address: string
   areCoordsSet: boolean
+  location: string
 }) {
   const favorite = useFetcher()
   const ref = useRef()
@@ -528,6 +531,16 @@ function GroupResult({
         img={img}
         actions={
           <ButtonGroup density="compact">
+            {group.whatsapp ? (
+              <ButtonLink
+                size="tiny"
+                type="button"
+                to={`/login?a=ws&g=${group.id}&l=${location}`}
+              >
+                <WhatsApp className="h-6 w-6 m-0 inline-block" />
+              </ButtonLink>
+            ) : null}
+            {/* @ts-ignore */}
             <CopyToClipboard
               text={`${address}/group/${group.slug}`}
               onCopy={handlerClickToCopy}

@@ -5,8 +5,7 @@ import {
   GroupType as DBGroupType,
   Sport as DBSport,
   Document as DBDocument,
-  Event as DBEvent,
-  Location as DBLocation
+  Event as DBEvent
 } from '@prisma/client'
 
 type NonNullProperties<Type> = {

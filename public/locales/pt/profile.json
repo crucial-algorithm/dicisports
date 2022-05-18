@@ -3,9 +3,14 @@
   "Email Error": "Tentamos validar o email mas obtivemos um erro: \"{{error}}\". Se o email está correcto, entre em contacto connosco",
   "Invalid Email": "Email inválido",
   "Required Name": "O nome é obrigatório",
-  "Problem Creating Account": "Não foi possível criar a sua conta. Tente novamente",
+  "Problem Creating Account": "Não foi possível criar a conta. Tenta novamente",
   "Name": "Nome",
   "Email": "Email",
   "Profile Saved Successfully": "Perfil actualizado...",
-  "See you again soon": "Vemo-nos em breve"
+  "See you again soon": "Vemo-nos em breve",
+  "WhatsApp Email Sent": "Link de acesso ao WhatsApp enviado para o email",
+  "Join WhatsApp: Missing group": "Falta o grupo",
+  "Join WhatsApp: Group not found": "Hmmm, aparentemente este grupo não existe",
+  "Join WhatsApp: Group does not have whatsapp": "O grupo não tem WhatsApp (como é que chegamos aqui 🤷‍♂️?)"
+
 }

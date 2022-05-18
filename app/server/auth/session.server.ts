@@ -61,10 +61,12 @@ const sessionStorage = createCookieSessionStorage({
 
 async function sendToken({
   emailAddress,
-  domainUrl
+  domainUrl,
+  redirectTo
 }: {
   emailAddress: string
   domainUrl: string
+  redirectTo: string | null
 }) {
   const magicLink = getMagicLink({
     emailAddress,

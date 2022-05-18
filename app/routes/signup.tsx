@@ -149,7 +149,7 @@ export default function SignUp() {
           <ButtonGroup>
             <Button
               className="mr-2"
-              secondary={true}
+              variant="secondary"
               onClick={() => setAction('cancel')}
             >
               {t('Cancel')}

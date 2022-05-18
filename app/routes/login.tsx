@@ -2,7 +2,12 @@ import Button from '~/components/shared/Button'
 import { Form, useLoaderData } from '@remix-run/react'
 import TextField from '~/components/shared/form/TextField'
 import FormField from '~/components/shared/form/FormField'
-import { ActionFunction, LoaderFunction, redirect } from 'remix'
+import {
+  ActionFunction,
+  LoaderFunction,
+  redirect,
+  useSearchParams
+} from 'remix'
 import { getLoginInfoSession } from '~/server/auth/login.server'
 import { getUser, sendToken } from '~/server/auth/session.server'
 import { verifyEmailAddress } from '~/server/auth/verifier.server'
@@ -13,6 +18,9 @@ import InputError from '~/components/shared/form/InputError'
 import { useTranslation } from 'react-i18next'
 import CAGResponse from '~/server/response.server'
 import { H2, H6 } from '~/components/shared/typography'
+import { TFunction } from 'i18next'
+import { sendWhatsAppGroupLink, subscribeUser } from '~/server/email.server'
+import { findGroup } from '~/server/db/groups.server'
 
 function validateEmail(email: string | null): boolean {
   if (!email) return false
@@ -22,6 +30,11 @@ function validateEmail(email: string | null): boolean {
 type LoaderData = {
   email?: string
   error?: string
+}
+
+const actions = {
+  login: 'login',
+  joinWhatsAppGroup: 'ws'
 }
 
 export const loader: LoaderFunction = async ({ request }) => {
@@ -48,6 +61,7 @@ export const action: ActionFunction = async ({ request }) => {
   const params = new URLSearchParams(await request.text())
   const loginSession = await getLoginInfoSession(request)
   const emailAddress = params.get('email')
+  const action = params.get('action')
   // always loading errors!?!?
   const t = await SSTranslations('profile')
 
@@ -79,9 +93,52 @@ export const action: ActionFunction = async ({ request }) => {
     // IDEA: notify me of this issue...
   }
 
+  const domainUrl = getDomainUrl(request)
+  const redirectTo = params.get('location')
+
+  // Is this not to login but to share whatsapp group link?
+  if (action === actions.joinWhatsAppGroup) {
+    const groupId = params.get('group')
+
+    if (!groupId) {
+      loginSession.flashError(t('Join WhatsApp: Missing group'))
+      return redirect(`/login`, {
+        status: 400,
+        headers: await loginSession.getHeaders()
+      })
+    }
+    const group = await findGroup(groupId)
+
+    if (!group || !group.whatsapp) {
+      loginSession.flashError(
+        !group
+          ? t('Join WhatsApp: Group not found')
+          : t('Join WhatsApp: Group does not have whatsapp')
+      )
+      return redirect(`/login`, {
+        status: 400,
+        headers: await loginSession.getHeaders()
+      })
+    }
+
+    await sendWhatsAppGroupLink({
+      emailAddress,
+      domainUrl,
+      groupName: group.name || '',
+      whatsAppLink: group.whatsapp
+    })
+
+    await subscribeUser(emailAddress)
+
+    return redirect(
+      redirectTo
+        ? `${redirectTo}&message=${t('WhatsApp Email Sent')}`
+        : '/login'
+    )
+  }
+
   try {
-    const domainUrl = getDomainUrl(request)
-    const magicLink = await sendToken({ emailAddress, domainUrl })
+    const magicLink = await sendToken({ emailAddress, domainUrl, redirectTo })
     loginSession.setMagicLink(magicLink)
     return redirect(`/login`, {
       headers: await loginSession.getHeaders()
@@ -105,30 +162,45 @@ function LoginButton({
   return <Button disabled={disabled}>{label}</Button>
 }
 
+function isProxyToJoinWhatsApp(searchParams: URLSearchParams) {
+  return searchParams.get('a') === 'ws'
+}
+
 export default function Login() {
   const data = useLoaderData<LoaderData>()
   const [submitted, setSubmitted] = useState(false)
   const [email, setEmail] = useState<string | undefined>()
   const formIsValid = email?.match(/.+@.+/)
   const { t } = useTranslation('login')
+  const [searchParams] = useSearchParams()
+  const action = isProxyToJoinWhatsApp(searchParams)
+    ? actions.joinWhatsAppGroup
+    : actions.login
+
+  function onSubmit() {
+    setSubmitted(true)
+  }
 
   return (
     <div className="flex flex-col w-full h-full p-8 max-w-lg m-auto justify-center align-middle ">
-      <H2 className="mb-2">{t('Sign In')}</H2>
-      <H6 variant="secondary" as="p" className="text-white mb-8">
-        {t('Sign In Instructions')}
-      </H6>
+      {action === null ? <LoginHeader t={t} /> : <WhatsAppHeader t={t} />}
       <Form
         autoComplete="off"
         className="w-full"
         method="post"
-        action="/login"
         onChange={(event) => {
           const form = event.currentTarget
           setEmail(form.email.value)
         }}
-        onSubmit={() => setSubmitted(true)}
+        onSubmit={onSubmit}
       >
+        <input type="hidden" value={action} name="action" />
+        <input type="hidden" value={searchParams.get('g') || ''} name="group" />
+        <input
+          type="hidden"
+          value={searchParams.get('l') || ''}
+          name="location"
+        />
         <FormField label={t('Email')}>
           <TextField
             name="email"
@@ -139,7 +211,9 @@ export default function Login() {
         </FormField>
         <LoginButton
           disabled={!formIsValid || submitted}
-          label={t('Email a login link')}
+          label={t(
+            action === null ? 'Email a login link' : 'Email WhatsApp Link'
+          )}
         />
         {data.error ? (
           <InputError id="error-message">{data.error}</InputError>
@@ -151,10 +225,36 @@ export default function Login() {
             <span role="img" aria-label="sparkles">
               ✨
             </span>{' '}
-            {t('A magic link has been sent to you')}
+            {t(
+              action === null
+                ? 'A magic link has been sent to you'
+                : 'WhatsApp Link Success'
+            )}
           </p>
         ) : null}
       </Form>
     </div>
+  )
+}
+
+function LoginHeader({ t }: { t: TFunction }) {
+  return (
+    <>
+      <H2 className="mb-2 text-secondary">{t('Sign In')}</H2>
+      <H6 variant="secondary" as="p" className="text-white mb-8">
+        {t('Sign In Instructions')}
+      </H6>
+    </>
+  )
+}
+
+function WhatsAppHeader({ t }: { t: TFunction }) {
+  return (
+    <>
+      <H2 className="mb-2 text-secondary">{t('WhatsApp Header')}</H2>
+      <H6 variant="secondary" as="p" className="text-white mb-8">
+        {t('WhatsApp Link Instructions')}
+      </H6>
+    </>
   )
 }

@@ -40,7 +40,7 @@ export default function GroupEntry({ group, actions, footer, img }: Props) {
       )}
     >
       <GroupImage group={group} img={img} />
-      <div className="w-full h-full p-2">
+      <div className="w-full h-full p-2 lg:pl-6">
         <div className="flex flex-col">
           <span className={clsx('mb-4 text-base font-medium')}>
             {`${day}, ${displayTimeOfDay(group.timeOfDay)}`}
