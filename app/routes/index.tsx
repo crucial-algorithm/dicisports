@@ -48,6 +48,7 @@ import Config from '~/server/config.server'
 import MyLocationIcon from '~/components/shared/MyLocationIcon'
 import TransitionIndicator from '~/components/shared/TransitionIndicator'
 import WhatsApp from '~/components/shared/icons/WhatsApp'
+import { useRootData } from '~/utils/use-root-data'
 
 type FilterParams = {
   actionId: keyof typeof actions | null
@@ -227,6 +228,7 @@ async function search(
 
 export default function Index() {
   let { t, i18n } = useTranslation('home')
+  const { user } = useRootData()
   const lang = i18n.language as Language
   let tc = useTranslation('common').t
   const { sports, groupsSpirit, result, favorites, mapToken } =
@@ -414,6 +416,7 @@ export default function Index() {
                   address={address}
                   areCoordsSet={areCoordsSet}
                   location={`${location.pathname}${location.search}`}
+                  isLoggedIn={user !== null}
                 />
               ))}
             </>
@@ -463,7 +466,8 @@ function GroupResult({
   searchingLocationMessage,
   address,
   areCoordsSet,
-  location
+  location,
+  isLoggedIn
 }: {
   group: Group
   img?: string
@@ -475,6 +479,7 @@ function GroupResult({
   address: string
   areCoordsSet: boolean
   location: string
+  isLoggedIn: boolean
 }) {
   const favorite = useFetcher()
   const ref = useRef()
@@ -523,6 +528,10 @@ function GroupResult({
     showFavoriteAddedNotification
   ])
 
+  const whatsAppLink = isLoggedIn
+    ? group.whatsapp || ''
+    : `/login?a=ws&g=${group.id}&l=${location}`
+
   return (
     <>
       <GroupEntry
@@ -532,12 +541,8 @@ function GroupResult({
         actions={
           <ButtonGroup density="compact">
             {group.whatsapp ? (
-              <ButtonLink
-                size="tiny"
-                type="button"
-                to={`/login?a=ws&g=${group.id}&l=${location}`}
-              >
-                <WhatsApp className="h-6 w-6 m-0 inline-block" />
+              <ButtonLink size="tiny" type="button" to={whatsAppLink}>
+                <WhatsApp className="h-6 w-6 m-0 inline-block fill-white dark:fill-black" />
               </ButtonLink>
             ) : null}
             {/* @ts-ignore */}
