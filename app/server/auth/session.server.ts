@@ -13,6 +13,7 @@ import {
   deleteOtherUserSessions,
   deleteSession
 } from '~/server/db/sessions.server'
+import { LoginAction } from '~/types'
 
 const sessionIdKey = '__session_id__'
 const magicLinkSearchParam = 'kodyKey'
@@ -23,22 +24,31 @@ type MagicLinkPayload = {
   emailAddress: string
   creationDate: string
   validateSessionMagicLink: boolean
+  action?: LoginAction
+  group?: string | null
 }
 
 function getMagicLink({
   emailAddress,
   validateSessionMagicLink,
-  domainUrl
+  domainUrl,
+  action,
+  group
 }: {
   emailAddress: string
   validateSessionMagicLink: boolean
   domainUrl: string
+  action?: LoginAction
+  group?: string | null
 }) {
   const payload: MagicLinkPayload = {
     emailAddress,
     validateSessionMagicLink,
-    creationDate: new Date().toISOString()
+    creationDate: new Date().toISOString(),
+    action,
+    group
   }
+  console.log('.... encrypting payload', payload)
   const stringToEncrypt = JSON.stringify(payload)
   const encryptedString = encrypt(stringToEncrypt)
   const url = new URL(domainUrl)
@@ -49,7 +59,7 @@ function getMagicLink({
 
 const sessionStorage = createCookieSessionStorage({
   cookie: {
-    name: 'KCD_root_session',
+    name: 'DS_root_session',
     secure: true,
     secrets: [Config().SESSION_SECRET],
     sameSite: 'lax',
@@ -62,16 +72,20 @@ const sessionStorage = createCookieSessionStorage({
 async function sendToken({
   emailAddress,
   domainUrl,
-  redirectTo
+  action,
+  group
 }: {
   emailAddress: string
   domainUrl: string
-  redirectTo: string | null
+  action?: LoginAction
+  group?: string | null
 }) {
   const magicLink = getMagicLink({
     emailAddress,
     validateSessionMagicLink: true,
-    domainUrl
+    domainUrl,
+    action,
+    group
   })
 
   const user = await findUserByEmail(emailAddress).catch(() => {
@@ -173,17 +187,17 @@ async function getUser(request: Request) {
 
 async function getUserSessionFromMagicLink(request: Request) {
   const loginInfoSession = await getLoginInfoSession(request)
-  const email = await validateMagicLink(
+  const { email, action, group } = await validateMagicLink(
     request.url,
     loginInfoSession.getMagicLink()
   )
 
   const user = await findUserByEmail(email)
-  if (!user) return null
+  if (!user) return { session: null, action, group }
 
   const session = await getSession(request)
   await session.signIn(user)
-  return session
+  return { session, action, group }
 }
 
 async function requireAdminUser(request: Request): Promise<User> {
@@ -199,12 +213,15 @@ async function requireAdminUser(request: Request): Promise<User> {
   return user
 }
 
-async function requireUser(request: Request): Promise<User> {
+async function requireUser(
+  request: Request,
+  redirectTo: string = '/login'
+): Promise<User> {
   const user = await getUser(request)
   if (!user) {
     const session = await getSession(request)
     session.signOut()
-    throw redirect('/login', { headers: await session.getHeaders() })
+    throw redirect(redirectTo, { headers: await session.getHeaders() })
   }
   return user
 }
@@ -227,7 +244,11 @@ async function validateMagicLink(
   const sessionLinkCode = sessionMagicLink
     ? getMagicLinkCode(sessionMagicLink)
     : null
-  let emailAddress, linkCreationDateString, validateSessionMagicLink
+  let emailAddress,
+    linkCreationDateString,
+    validateSessionMagicLink,
+    action,
+    group
   const invalidLinkError = new Error(
     '>>Error<<: Sign in link invalid. Please request a new one'
   )
@@ -237,6 +258,9 @@ async function validateMagicLink(
     emailAddress = payload.emailAddress
     linkCreationDateString = payload.creationDate
     validateSessionMagicLink = payload.validateSessionMagicLink
+    action = payload.action
+    group = payload.group
+    console.log('.... payload', payload)
   } catch (error: unknown) {
     console.error(error)
     throw invalidLinkError
@@ -272,7 +296,7 @@ async function validateMagicLink(
   if (Date.now() > expirationTime) {
     throw new Error('>>Error<<: Magic link expired')
   }
-  return emailAddress
+  return { email: emailAddress, action, group }
 }
 
 export {

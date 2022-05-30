@@ -21,6 +21,7 @@ import { H2, H6 } from '~/components/shared/typography'
 import { TFunction } from 'i18next'
 import { sendWhatsAppGroupLink, subscribeUser } from '~/server/email.server'
 import { findGroup } from '~/server/db/groups.server'
+import { LoginAction } from '~/types'
 
 function validateEmail(email: string | null): boolean {
   if (!email) return false
@@ -34,7 +35,29 @@ type LoaderData = {
 
 const actions = {
   login: 'login',
-  joinWhatsAppGroup: 'ws'
+  joinWhatsAppGroup: 'ws',
+  addToFavorites: 'favorite'
+}
+
+type QueryStringArgs = {
+  group: null | string
+  redirectTo: null | string
+  action: LoginAction
+}
+
+function queryStringArgs(searchParams: URLSearchParams): QueryStringArgs {
+  const a = searchParams.get('a')
+  // @ts-ignore
+  let action: LoginAction =
+    a === null
+      ? actions.login
+      : Object.values(actions).find((v) => v === a) || actions.login
+
+  return {
+    group: searchParams.get('g'),
+    redirectTo: searchParams.get('l'),
+    action
+  }
 }
 
 export const loader: LoaderFunction = async ({ request }) => {
@@ -61,7 +84,7 @@ export const action: ActionFunction = async ({ request }) => {
   const params = new URLSearchParams(await request.text())
   const loginSession = await getLoginInfoSession(request)
   const emailAddress = params.get('email')
-  const action = params.get('action')
+  const action = params.get('action') as LoginAction
   // always loading errors!?!?
   const t = await SSTranslations('profile')
 
@@ -95,11 +118,10 @@ export const action: ActionFunction = async ({ request }) => {
 
   const domainUrl = getDomainUrl(request)
   const redirectTo = params.get('location')
+  const groupId = params.get('group')
 
   // Is this not to login but to share whatsapp group link?
   if (action === actions.joinWhatsAppGroup) {
-    const groupId = params.get('group')
-
     if (!groupId) {
       loginSession.flashError(t('Join WhatsApp: Missing group'))
       return redirect(`/login`, {
@@ -138,7 +160,12 @@ export const action: ActionFunction = async ({ request }) => {
   }
 
   try {
-    const magicLink = await sendToken({ emailAddress, domainUrl, redirectTo })
+    const magicLink = await sendToken({
+      emailAddress,
+      domainUrl,
+      action,
+      group: groupId
+    })
     loginSession.setMagicLink(magicLink)
     return redirect(`/login`, {
       headers: await loginSession.getHeaders()
@@ -162,10 +189,6 @@ function LoginButton({
   return <Button disabled={disabled}>{label}</Button>
 }
 
-function isProxyToJoinWhatsApp(searchParams: URLSearchParams) {
-  return searchParams.get('a') === 'ws'
-}
-
 export default function Login() {
   const data = useLoaderData<LoaderData>()
   const [submitted, setSubmitted] = useState(false)
@@ -173,17 +196,21 @@ export default function Login() {
   const formIsValid = email?.match(/.+@.+/)
   const { t } = useTranslation('login')
   const [searchParams] = useSearchParams()
-  const action = isProxyToJoinWhatsApp(searchParams)
-    ? actions.joinWhatsAppGroup
-    : actions.login
+  const { action, group, redirectTo } = queryStringArgs(searchParams)
 
   function onSubmit() {
     setSubmitted(true)
   }
 
   return (
-    <div className="flex flex-col w-full h-full p-8 max-w-lg m-auto justify-center align-middle ">
-      {action === null ? <LoginHeader t={t} /> : <WhatsAppHeader t={t} />}
+    <div className="flex flex-col w-full h-full p-8 max-w-lg m-auto justify-center align-middle">
+      {action === 'ws' ? (
+        <WhatsAppHeader t={t} />
+      ) : action === 'favorite' ? (
+        <AddToFavoritesHeader t={t} />
+      ) : (
+        <LoginHeader t={t} />
+      )}
       <Form
         autoComplete="off"
         className="w-full"
@@ -194,13 +221,9 @@ export default function Login() {
         }}
         onSubmit={onSubmit}
       >
-        <input type="hidden" value={action} name="action" />
-        <input type="hidden" value={searchParams.get('g') || ''} name="group" />
-        <input
-          type="hidden"
-          value={searchParams.get('l') || ''}
-          name="location"
-        />
+        <input type="hidden" value={action || ''} name="action" />
+        <input type="hidden" value={group || ''} name="group" />
+        <input type="hidden" value={redirectTo || ''} name="location" />
         <FormField label={t('Email')}>
           <TextField
             name="email"
@@ -254,6 +277,17 @@ function WhatsAppHeader({ t }: { t: TFunction }) {
       <H2 className="mb-2 text-secondary">{t('WhatsApp Header')}</H2>
       <H6 variant="secondary" as="p" className="text-white mb-8">
         {t('WhatsApp Link Instructions')}
+      </H6>
+    </>
+  )
+}
+
+function AddToFavoritesHeader({ t }: { t: TFunction }) {
+  return (
+    <>
+      <H2 className="mb-2 text-secondary">{t('Sign In')}</H2>
+      <H6 variant="secondary" as="p" className="text-white mb-8">
+        {t('Add To Favorites Sign In Instructions')}
       </H6>
     </>
   )

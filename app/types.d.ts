@@ -167,6 +167,8 @@ type GroupFilters = {
   timeOfDay: [number, number] | null
 }
 
+type LoginAction = null | 'login' | 'ws' | 'favorite'
+
 export {
   NonNullProperties,
   MemberProfile,
@@ -188,5 +190,6 @@ export {
   Sport,
   Document,
   Event,
-  DBRawGroup
+  DBRawGroup,
+  LoginAction
 }

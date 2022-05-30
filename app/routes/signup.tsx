@@ -51,7 +51,9 @@ export const action: ActionFunction = async ({ request }) => {
   const magicLink = loginInfoSession.getMagicLink()
   let email: string
   try {
-    email = await validateMagicLink(magicLink, loginInfoSession.getMagicLink())
+    email = (
+      await validateMagicLink(magicLink, loginInfoSession.getMagicLink())
+    ).email
   } catch (error: unknown) {
     console.error(getErrorStack(error))
 

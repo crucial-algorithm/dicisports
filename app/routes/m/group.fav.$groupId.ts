@@ -7,7 +7,10 @@ import {
 } from '~/server/db/groups.server'
 
 export const action: ActionFunction = async ({ request, params }) => {
-  const user = await requireUser(request)
+  const user = await requireUser(
+    request,
+    `/login?a=favorite&g=${params.groupId}`
+  )
   const group = params.groupId ? await findGroup(params.groupId) : null
   if (!group) return json({ added: false })
   const data = await request.formData()
