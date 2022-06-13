@@ -4,6 +4,7 @@ import TextField from '~/components/shared/form/TextField'
 import FormField from '~/components/shared/form/FormField'
 import {
   ActionFunction,
+  Link,
   LoaderFunction,
   redirect,
   useSearchParams
@@ -256,6 +257,10 @@ export default function Login() {
           </p>
         ) : null}
       </Form>
+      <p className="dark:text-blueGray-500 text-gray-500 mt-8">
+        {t('Privacy Policy Presentation')} &nbsp;
+        <Link to="/privacy">{t('Privacy Policy')}</Link>
+      </p>
     </div>
   )
 }
