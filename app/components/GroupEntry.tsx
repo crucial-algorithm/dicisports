@@ -104,11 +104,7 @@ function Feature({
 
 function GroupImage({ group, img }: { group: Group; img?: string }) {
   function Wrapper({ children }: {} & React.ComponentProps<'div'>) {
-    return (
-      <div className="w-full m-auto flex p-2 md:max-w-sm md:h-72 lg:w-144 lg:max-w-md">
-        {children}
-      </div>
-    )
+    return <div className="w-full lg:w-144 lg:max-h-144">{children}</div>
   }
 
   const { image1, image2, image3 } = group
@@ -145,7 +141,17 @@ function GroupImage({ group, img }: { group: Group; img?: string }) {
     <Wrapper>
       <Carousel statusFormatter={cleanStatus}>
         {images.map((image, idx) => (
-          <DisplayImg key={idx} id={image} />
+          <DisplayImg
+            key={idx}
+            id={image}
+            transformations={{
+              resize: {
+                type: 'fill',
+                width: 800,
+                height: 800
+              }
+            }}
+          />
         ))}
       </Carousel>
     </Wrapper>

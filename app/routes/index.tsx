@@ -610,9 +610,10 @@ function SportsGrid({
   t: TFunction
 }) {
   if (!sports) return null
+  const width = 'w-full md:w-56 lg:w-56 xl:w-56'
 
   return (
-    <div className="w-full m-auto grid grid-flow-row gap-4 md:w-full md:grid-flow-col md:grid-rows-3">
+    <div className="w-full m-auto grid grid-flow-row gap-2 md:w-full md:grid-flow-col md:grid-rows-2">
       {sports
         .sort((a, b) => a.id - b.id)
         .map((s) => (
@@ -622,10 +623,11 @@ function SportsGrid({
               key={s.id}
               alt={getLocalizedText(lang, s.name)}
               dontMessWithImgSize={true}
+              className={width}
             />
           </Link>
         ))}
-      {new Array(9 - sports.length).fill(null).map((a, i) => (
+      {new Array(8 - sports.length).fill(null).map((a, i) => (
         <a
           href={`mailto:info@smartcitizen.pt?subject=${t(
             'Add Sport Mail Subject'
@@ -633,10 +635,10 @@ function SportsGrid({
           key={i}
         >
           <DisplayImg
-            id={`product/sports/add-sport`}
+            id={`product/sports/add-sport_xe6eok`}
             key={i}
             alt={t('Add Sport')}
-            className="w-full"
+            className={width}
             dontMessWithImgSize={true}
           />
         </a>

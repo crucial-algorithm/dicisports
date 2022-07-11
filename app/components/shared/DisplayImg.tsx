@@ -5,26 +5,27 @@ import clsx from 'clsx'
 type DisplayImgProps = {
   id: string | null
   dontMessWithImgSize?: boolean
+  transformations?: object
 } & React.ComponentProps<'img'>
 
 export default function DisplayImg({
   alt,
   id,
   className,
-  dontMessWithImgSize
+  dontMessWithImgSize,
+  transformations = {}
 }: DisplayImgProps) {
   return (
     <img
       alt={alt}
       className={clsx(
         {
-          'w-full h-72 md:max-w-sm md:h-72 lg:w-144 lg:max-w-md':
-            !dontMessWithImgSize
+          'w-full lg:w-144 lg:max-h-144': !dontMessWithImgSize
         },
-        'rounded-lg object-cover object-left-top',
+        'rounded-lg object-cover object-top',
         className
       )}
-      src={buildImageUrl(id, {})}
+      src={buildImageUrl(id, { transformations })}
     />
   )
 }
