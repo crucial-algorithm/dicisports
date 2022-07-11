@@ -39,8 +39,7 @@ async function sendEmail({ to, from, subject, text, html }: MailgunMessage) {
     // eslint-disable-next-line no-console
     console.log(text)
   }
-
-  await fetch(`https://api.mailgun.net/v3/${mailgunDomain}/messages`, {
+  await fetch(`https://api.eu.mailgun.net/v3/${mailgunDomain}/messages`, {
     method: 'post',
     body,
     headers: {
@@ -60,7 +59,7 @@ async function sendMagicLinkEmail({
   user?: User | null
   domainUrl: string
 }) {
-  const sender = `"DiciSports" <sports@dicisports.com>`
+  const sender = `"DiciSports" <noreply@mail.dicisports.com>`
   const { hostname } = new URL(domainUrl)
   const userExists = Boolean(user)
 
@@ -161,7 +160,7 @@ async function sendWhatsAppGroupLink({
   groupName: string
   whatsAppLink: string
 }) {
-  const sender = `"DiciSports" <sports@dicisports.com>`
+  const sender = `"DiciSports" <noreply@mail.dicisports.com>`
   const { hostname } = new URL(domainUrl)
 
   const text = `
@@ -201,7 +200,7 @@ Obrigado!
   <body style='font-family:Matter, sans-serif;'>
     <div style='margin: 0 auto; max-width: 450px;'>
 
-      <h2 style='text-align: center'>Estás prestar a juntar-te ao grupo: "${groupName}"</h2>
+      <h2 style='text-align: center'>Estás prestes a juntar-te ao grupo <i>${groupName}</i></h2>
       
       <h3 style='text-align: center'>📱No teu telemóvel, clica no botão para te juntares</h3>
 
@@ -225,7 +224,7 @@ Obrigado!
   const message = {
     from: sender,
     to: emailAddress,
-    subject: `Link de autenticação para o dicisports.com  ✨`,
+    subject: `Estás prestes a juntar-te ao ${groupName}✨`,
     text,
     html
   }

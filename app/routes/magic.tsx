@@ -4,7 +4,7 @@ import * as React from 'react'
 import { getLoginInfoSession } from '~/server/auth/login.server'
 import { getUserSessionFromMagicLink } from '~/server/auth/session.server'
 import { getErrorMessage } from '~/utils/misc'
-import { SSError } from '~/server/i18n.server'
+import { SSError, SSTranslate } from '~/server/i18n.server'
 import { addGroupToFavorites } from '~/server/db/groups.server'
 
 export const loader: LoaderFunction = async ({ request }) => {
@@ -24,7 +24,13 @@ export const loader: LoaderFunction = async ({ request }) => {
         if (user && group) await addGroupToFavorites(user.id, group)
         return redirect('/m/groups', { headers })
       }
-      return redirect('/me', { headers })
+      const user = await session.getUser()
+      if (!user) return redirect('/message', { headers })
+
+      const message = await SSTranslate('profile', 'Welcome back', {
+        name: user.name
+      })
+      return redirect(`/?message=${message}`, { headers })
     }
 
     loginInfoSession.setMagicLink(request.url)

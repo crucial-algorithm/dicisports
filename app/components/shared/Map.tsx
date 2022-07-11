@@ -48,7 +48,7 @@ function Map({
   className
 }: MapProps) {
   const coords = !defaultValue
-    ? [41.55118759332092, -8.394039337203793]
+    ? [40.211945184369455, -8.432174917415097]
     : defaultValue.coords.split(',').map((p) => parseFloat(p))
   const [, setMap] = React.useState<mapboxgl.Map>()
   const [info, setInfo] = React.useState<MapInfo>({
