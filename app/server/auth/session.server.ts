@@ -59,7 +59,7 @@ function getMagicLink({
 
 const sessionStorage = createCookieSessionStorage({
   cookie: {
-    name: 'DS_root_session',
+    name: 'ds_root_session',
     secure: true,
     secrets: [Config().SESSION_SECRET],
     sameSite: 'lax',

@@ -7,7 +7,7 @@ import Id from '~/server/utils/Id.server'
 
 const clientStorage = createCookieSessionStorage({
   cookie: {
-    name: 'KCD_client_id',
+    name: 'ds_client_id',
     secure: true,
     secrets: [Config().SESSION_SECRET],
     sameSite: 'lax',

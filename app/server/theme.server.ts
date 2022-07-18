@@ -6,7 +6,7 @@ const { SESSION_SECRET } = Config()
 
 const themeStorage = createCookieSessionStorage({
   cookie: {
-    name: 'KCD_theme',
+    name: 'ds_theme',
     secure: true,
     secrets: [SESSION_SECRET],
     sameSite: 'lax',

@@ -6,7 +6,7 @@ const linkExpirationTime = 1000 * 60 * 30
 
 const loginInfoStorage = createCookieSessionStorage({
   cookie: {
-    name: 'DS_login',
+    name: 'ds_login',
     secure: true,
     secrets: [Config().SESSION_SECRET],
     sameSite: 'lax',
