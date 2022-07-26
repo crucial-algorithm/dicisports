@@ -3,7 +3,7 @@ import { Form, useLoaderData } from '@remix-run/react'
 import TextField from '~/components/shared/form/TextField'
 import FormField from '~/components/shared/form/FormField'
 import {
-  ActionFunction,
+  ActionFunction, json,
   Link,
   LoaderFunction,
   redirect,
@@ -14,15 +14,14 @@ import { getUser, sendToken } from '~/server/auth/session.server'
 import { verifyEmailAddress } from '~/server/auth/verifier.server'
 import { getDomainUrl, getErrorMessage } from '~/utils/misc'
 import { useState } from 'react'
-import { SSTranslations } from '~/server/i18n.server'
+import i18n from '~/server/i18n.server'
 import InputError from '~/components/shared/form/InputError'
 import { useTranslation } from 'react-i18next'
-import CAGResponse from '~/server/response.server'
 import { H2, H6 } from '~/components/shared/typography'
-import { TFunction } from 'i18next'
+import type { TFunction } from 'i18next'
 import { sendWhatsAppGroupLink, subscribeUser } from '~/server/email.server'
 import { findGroup } from '~/server/db/groups.server'
-import { LoginAction } from '~/types'
+import type { LoginAction } from '~/types'
 
 function validateEmail(email: string | null): boolean {
   if (!email) return false
@@ -61,6 +60,10 @@ function queryStringArgs(searchParams: URLSearchParams): QueryStringArgs {
   }
 }
 
+export const handle = {
+  i18n: ['common', 'login']
+}
+
 export const loader: LoaderFunction = async ({ request }) => {
   const user = await getUser(request)
   if (user) return redirect('/me')
@@ -73,21 +76,20 @@ export const loader: LoaderFunction = async ({ request }) => {
   }
 
   const headers = new Headers({
-    'Cache-Control': 'private, max-age=3600',
+    'Cache-Control': 'private, max-age=7200',
     Vary: 'Cookie'
   })
   await loginSession.getHeaders(headers)
 
-  return CAGResponse(request, data, headers)
+  return json(data, { headers })
 }
 
 export const action: ActionFunction = async ({ request }) => {
+  const t = await i18n.getFixedT(request, 'profile');
   const params = new URLSearchParams(await request.text())
   const loginSession = await getLoginInfoSession(request)
   const emailAddress = params.get('email')
   const action = params.get('action') as LoginAction
-  // always loading errors!?!?
-  const t = await SSTranslations('profile')
 
   if (emailAddress) loginSession.setEmail(emailAddress)
 

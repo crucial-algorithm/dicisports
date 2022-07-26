@@ -1,23 +1,25 @@
 import * as React from 'react'
+import type {
+  LinksFunction,
+  LoaderFunction} from 'remix';
 import {
   Links,
-  LinksFunction,
   LiveReload,
-  LoaderFunction,
   Meta,
   Outlet,
   Scripts,
   ScrollRestoration,
   useCatch,
   useTransition
-} from 'remix'
-import { useRemixI18Next } from 'remix-i18next'
+} from '@remix-run/react'
+import { useTranslation } from 'react-i18next'
 import tailwind from './styles/tailwind.css'
 import mainCss from './styles/main.css'
 import vendorsCss from './styles/vendors.css'
-import { User } from '@prisma/client'
-import { KCDHandle } from '~/types'
-import { getServerTimeHeader, time, Timings } from '~/server/metrics.server'
+import type { User } from '@prisma/client'
+import type { KCDHandle } from '~/types'
+import type { Timings } from '~/server/metrics.server';
+import { getServerTimeHeader, time } from '~/server/metrics.server'
 import { getSession } from '~/server/auth/session.server'
 import { getLoginInfoSession } from '~/server/auth/login.server'
 import { getDomainUrl } from '~/utils/misc'
@@ -26,13 +28,15 @@ import { pathedRoutes } from '~/other-routes.server'
 import { useSpinDelay } from 'spin-delay'
 import { NotificationMessage } from '~/components/shared/NotificationMessage'
 import { useLoaderData } from '@remix-run/react'
-import { Theme, ThemeProvider, useTheme } from '~/utils/theme-provider'
+import type { Theme} from '~/utils/theme-provider';
+import { ThemeProvider, useTheme } from '~/utils/theme-provider'
 import { getThemeSession } from '~/server/theme.server'
 import clsx from 'clsx'
 import { Navbar } from '~/components/NavBar'
-import CAGResponse from '~/server/response.server'
 import { setConfig } from 'cloudinary-build-url'
 import TransitionIndicator from '~/components/shared/TransitionIndicator'
+import { json } from 'remix'
+import { useChangeLanguage } from 'remix-i18next'
 
 // TODO: can't find a way to set this value client side, globally, using config
 setConfig({
@@ -70,8 +74,9 @@ export const links: LinksFunction = () => {
   ]
 }
 
-export const handle: KCDHandle & { id: string } = {
-  id: 'root'
+export const handle: KCDHandle & { id: string, i18n: string[] } = {
+  id: 'root',
+  i18n: ['common', 'home']
 }
 
 export type LoaderData = {
@@ -94,6 +99,10 @@ export const loader: LoaderFunction = async ({ request }) => {
     return new Response()
   }
 
+  function getUser() {
+    return session.getUser()
+  }
+
   const timings: Timings = {}
   const session = await getSession(request)
   const themeSession = await getThemeSession(request)
@@ -104,7 +113,7 @@ export const loader: LoaderFunction = async ({ request }) => {
     name: 'getUser in root loader',
     type: 'postgres read',
     timings,
-    fn: () => session.getUser()
+    fn: getUser
   })
 
   const data: LoaderData = {
@@ -130,7 +139,7 @@ export const loader: LoaderFunction = async ({ request }) => {
   await clientSession.getHeaders(headers)
   await loginInfoSession.getHeaders(headers)
 
-  return CAGResponse(request, data, headers, [], true)
+  return json(data, { headers })
 }
 
 /* temporary = from kentcdodds.com implementation */
@@ -206,8 +215,12 @@ function Html({
   lang: string
 }) {
   const [theme] = useTheme()
+  const { i18n } = useTranslation();
+
+  useChangeLanguage(lang);
+
   return (
-    <html lang={lang} className={clsx(theme, 'set-color-team-current-red')}>
+    <html lang={lang} className={clsx(theme, 'set-color-team-current-red')} dir={i18n.dir()}>
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width,initial-scale=1" />
@@ -231,8 +244,6 @@ function Html({
 export default function App() {
   // set locale statically
   const locale = 'pt'
-  // https://www.npmjs.com/package/remix-i18next
-  useRemixI18Next(locale)
   const data = useLoaderData<LoaderData>()
 
   return (

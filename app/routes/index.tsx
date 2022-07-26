@@ -1,14 +1,14 @@
 import * as React from 'react'
-import { SyntheticEvent, useEffect, useRef, useState } from 'react'
+import type { SyntheticEvent} from 'react';
+import { useEffect, useRef, useState } from 'react'
 import type { LoaderFunction } from 'remix'
-import { Link, useFetcher, useLocation } from 'remix'
+import { Link, useFetcher, useLocation } from '@remix-run/react'
 import { useTranslation } from 'react-i18next'
 import Main from '~/components/shared/Main'
-import CAGResponse from '~/server/response.server'
 import { Form, useLoaderData } from '@remix-run/react'
 import { Spacer } from '~/components/shared/Spacer'
 import Button, { ButtonLink } from '~/components/shared/Button'
-import {
+import type {
   DaysOfWeek,
   DiciLocation,
   Group,
@@ -34,10 +34,11 @@ import FormField from '~/components/shared/form/FormField'
 import CheckBox from '~/components/shared/form/CheckBox'
 import { findGroupsSpirit } from '~/server/db/groupsSpirit.server'
 import { findSports } from '~/server/db/sports.server'
-import ComboBox, { Option } from '~/components/shared/form/ComboBox'
+import type { Option } from '~/components/shared/form/ComboBox';
+import ComboBox from '~/components/shared/form/ComboBox'
 import clsx from 'clsx'
 import { getLocalizedText, PeekDayOfWeek } from '~/utils/misc'
-import { TFunction } from 'i18next'
+import type { TFunction } from 'i18next'
 import HomeLogo from '~/components/shared/HomeLogo'
 import DisplayImg from '~/components/shared/DisplayImg'
 import { findUserFavoriteGroups } from '~/server/db/groups.server'
@@ -49,6 +50,7 @@ import MyLocationIcon from '~/components/shared/MyLocationIcon'
 import TransitionIndicator from '~/components/shared/TransitionIndicator'
 import WhatsApp from '~/components/shared/icons/WhatsApp'
 import { useRootData } from '~/utils/use-root-data'
+import { json } from 'remix'
 
 type FilterParams = {
   actionId: keyof typeof actions | null
@@ -94,6 +96,10 @@ const countryCoords = {
   PT: [40.2287547, -8.4512937]
 }
 
+export const handle = {
+  i18n: ['common', 'home', 'm-groups']
+}
+
 export let loader: LoaderFunction = async ({ request, params, context }) => {
   const data = parseQueryString(request.url)
   // Initial load
@@ -116,17 +122,14 @@ export let loader: LoaderFunction = async ({ request, params, context }) => {
 
   const { MAPBOX_TOKEN } = Config()
 
-  return CAGResponse(
-    request,
+  return json(
     {
       sports: await findSports(),
       groupsSpirit: await findGroupsSpirit(),
       favorites,
       result,
       mapToken: MAPBOX_TOKEN
-    },
-    undefined,
-    ['home', 'm-groups']
+    }
   )
 }
 
@@ -255,7 +258,7 @@ export default function Index() {
     }
     setSearchPerformed(true)
 
-    const { reset, results } = result
+    const { reset, results } = result as ActionData
 
     if (reset) setPage(0)
     if (!results) return
@@ -406,9 +409,9 @@ export default function Index() {
                   group={group}
                   key={group.id}
                   isUserFavorite={
-                    favorites.find((g) => g.id === group.id) !== undefined
+                    favorites.find((g: Group) => g.id === group.id) !== undefined
                   }
-                  img={sports.find((s) => s.id === group.sportId)?.picture}
+                  img={sports.find((s: Sport) => s.id === group.sportId)?.picture}
                   favAddedMessage={t('Favorite Added')}
                   favRemovedMessage={t('Favorite Removed')}
                   copiedToClipMessage={t('Copied to Clipboard')}

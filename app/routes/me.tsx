@@ -1,7 +1,9 @@
 import ProfileFragment from '~/components/ProfileFragment'
 import { useRootData } from '~/utils/use-root-data'
-import { ActionFunction, LoaderFunction, redirect, useActionData } from 'remix'
-import { SSTranslate } from '~/server/i18n.server'
+import type { ActionFunction, LoaderFunction} from 'remix';
+import { json, redirect } from 'remix'
+import { useActionData } from '@remix-run/react'
+import i18n from '~/server/i18n.server'
 import { Form } from '@remix-run/react'
 import Button from '~/components/shared/Button'
 import { LogoutIcon } from '@heroicons/react/solid'
@@ -12,7 +14,6 @@ import { handleFormSubmission } from '~/server/actions.server'
 import { updateUser } from '~/server/db/users.server'
 import { useTranslation } from 'react-i18next'
 import Main from '~/components/shared/Main'
-import CAGResponse from '~/server/response.server'
 import { Spacer } from '~/components/shared/Spacer'
 
 const actionIds = {
@@ -31,17 +32,17 @@ type ActionData = {
   }
 }
 
-function getFirstNameError(firstName: string | null) {
-  if (!firstName?.length) return SSTranslate('profile', 'Required Name')
-  return null
+export const handle = {
+  i18n: ['common', 'me']
 }
 
 export const loader: LoaderFunction = async ({ request, params }) => {
   await requireUser(request)
-  return CAGResponse(request)
+  return json({})
 }
 
 export const action: ActionFunction = async ({ request }) => {
+  const t = await i18n.getFixedT(request, 'profile')
   const user = await requireUser(request)
   const form = new URLSearchParams(await request.text())
   const actionId = form.get('actionId')
@@ -49,11 +50,16 @@ export const action: ActionFunction = async ({ request }) => {
     const session = await getSession(request)
     session.signOut()
     const searchParams = new URLSearchParams({
-      message: await SSTranslate('profile', 'See you again soon')
+      message: await t('See you again soon')
     })
     return redirect(`/?${searchParams.toString()}`, {
       headers: await session.getHeaders()
     })
+  }
+
+  function getFirstNameError(firstName: string | null) {
+    if (!firstName?.length) return t('Required Name')
+    return null
   }
 
   return await handleFormSubmission<ActionData>({
@@ -64,7 +70,7 @@ export const action: ActionFunction = async ({ request }) => {
         await updateUser(user.id, name)
       }
       const searchParams = new URLSearchParams({
-        message: await SSTranslate('profile', 'Profile Saved Successfully')
+        message: await t('Profile Saved Successfully')
       })
       return redirect(`/me?${searchParams.toString()}`)
     }

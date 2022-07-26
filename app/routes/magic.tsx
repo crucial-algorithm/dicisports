@@ -1,14 +1,17 @@
 import type { LoaderFunction } from 'remix'
-import { Link, redirect } from 'remix'
+import { Link } from '@remix-run/react'
 import * as React from 'react'
 import { getLoginInfoSession } from '~/server/auth/login.server'
 import { getUserSessionFromMagicLink } from '~/server/auth/session.server'
 import { getErrorMessage } from '~/utils/misc'
-import { SSError, SSTranslate } from '~/server/i18n.server'
+import i18n, { ERRORS_NAMESPACE } from '~/server/i18n.server'
 import { addGroupToFavorites } from '~/server/db/groups.server'
+import { redirect } from 'remix'
 
 export const loader: LoaderFunction = async ({ request }) => {
   const loginInfoSession = await getLoginInfoSession(request)
+  const t = await i18n.getFixedT(request, 'profile')
+
   try {
     const { session, action, group } = await getUserSessionFromMagicLink(
       request
@@ -27,7 +30,7 @@ export const loader: LoaderFunction = async ({ request }) => {
       const user = await session.getUser()
       if (!user) return redirect('/message', { headers })
 
-      const message = await SSTranslate('profile', 'Welcome back', {
+      const message = await t('Welcome back', {
         name: user.name
       })
       return redirect(`/?message=${message}`, { headers })
@@ -43,9 +46,10 @@ export const loader: LoaderFunction = async ({ request }) => {
     })
   } catch (error: unknown) {
     console.error(error)
+    const te = await i18n.getFixedT(request, ERRORS_NAMESPACE)
     loginInfoSession.clean()
     loginInfoSession.flashError(
-      await SSError(
+      await te(
         getErrorMessage(error) ||
           '>>Error<<: Sign in link invalid. Please request a new one'
       )

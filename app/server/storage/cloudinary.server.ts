@@ -1,7 +1,8 @@
-import { v2 as cloudinary } from 'cloudinary'
+import { v2 as cloudinary, UploadApiResponse } from 'cloudinary'
 import Id from '~/server/utils/Id.server'
 import Config from '~/server/config.server'
 import { setConfig } from 'cloudinary-build-url'
+import { writeAsyncIterableToWritable } from '@remix-run/node'
 
 const {
   CLOUDINARY_CLOUD_NAME,
@@ -58,6 +59,24 @@ const generateCloudinarySignatures = (
     })
   }
   return result
+}
+
+async function uploadImageToCloudinary(data: AsyncIterable<Uint8Array>) {
+  return new Promise<UploadApiResponse>(async (resolve, reject) => {
+    const uploadStream = cloudinary.uploader.upload_stream(
+      {
+        folder: 'remix'
+      },
+      (error, result) => {
+        if (error) {
+          reject(error)
+          return
+        }
+        resolve(result as UploadApiResponse)
+      }
+    )
+    await writeAsyncIterableToWritable(data, uploadStream)
+  })
 }
 
 export { generateCloudinarySignature, generateCloudinarySignatures }

@@ -1,5 +1,6 @@
 import { Form, useLoaderData } from '@remix-run/react'
-import { ActionFunction, LoaderFunction, redirect } from 'remix'
+import type { ActionFunction, LoaderFunction} from 'remix';
+import { json, redirect } from 'remix'
 import {
   getSession,
   getUser,
@@ -8,15 +9,14 @@ import {
 import { getLoginInfoSession } from '~/server/auth/login.server'
 import { getErrorStack } from '~/utils/misc'
 import { handleFormSubmission } from '~/server/actions.server'
-import { MemberProfile } from '~/types'
+import type { MemberProfile } from '~/types'
 import ProfileFragment from '~/components/ProfileFragment'
-import { SSError, SSTranslate } from '~/server/i18n.server'
+import i18n, { ERRORS_NAMESPACE } from '~/server/i18n.server'
 import { createUser, findUserByEmail } from '~/server/db/users.server'
 import Button from '~/components/shared/Button'
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import ButtonGroup from '~/components/shared/ButtonGroup'
-import CAGResponse from '~/server/response.server'
 
 type ActionData = {
   status: 'success' | 'error'
@@ -37,6 +37,7 @@ function getErrorForName(name: string | null) {
 
 export const action: ActionFunction = async ({ request }) => {
   const loginInfoSession = await getLoginInfoSession(request)
+  const t = await i18n.getFixedT(request, 'profile')
 
   const requestText = await request.text()
   const form = new URLSearchParams(requestText)
@@ -56,10 +57,11 @@ export const action: ActionFunction = async ({ request }) => {
     ).email
   } catch (error: unknown) {
     console.error(getErrorStack(error))
+    const te = await i18n.getFixedT(request, ERRORS_NAMESPACE)
 
     loginInfoSession.clean()
     loginInfoSession.flashError(
-      await SSError('>>Error<<: Sign in link invalid. Please request a new one')
+      await te('>>Error<<: Sign in link invalid. Please request a new one')
     )
     return redirect('/login', {
       headers: await loginInfoSession.getHeaders()
@@ -88,7 +90,7 @@ export const action: ActionFunction = async ({ request }) => {
         console.error(getErrorStack(error))
 
         loginInfoSession.flashError(
-          await SSTranslate('profile', 'Problem Creating Account')
+          await t('Problem Creating Account')
         )
         return redirect('/login', {
           headers: await loginInfoSession.getHeaders()
@@ -99,6 +101,7 @@ export const action: ActionFunction = async ({ request }) => {
 }
 
 export const loader: LoaderFunction = async ({ request }) => {
+  const te = await i18n.getFixedT(request, ERRORS_NAMESPACE)
   const user = await getUser(request)
   if (user) return redirect('/me')
 
@@ -107,7 +110,7 @@ export const loader: LoaderFunction = async ({ request }) => {
   const email = loginInfoSession.getEmail()
   if (!magicLink || !email) {
     loginInfoSession.clean()
-    loginInfoSession.flashError(await SSError('>>Error<<: Invalid magic link'))
+    loginInfoSession.flashError(await te('>>Error<<: Invalid magic link'))
     return redirect('/login', {
       headers: await loginInfoSession.getHeaders()
     })
@@ -120,14 +123,18 @@ export const loader: LoaderFunction = async ({ request }) => {
     // we don't want to tell them that a user exists with that email though
     // so we'll invalidate the magic link and force them to try again.
     loginInfoSession.clean()
-    loginInfoSession.flashError(await SSError('>>Error<<: Invalid magic link'))
+    loginInfoSession.flashError(await te('>>Error<<: Invalid magic link'))
     return redirect('/login', {
       headers: await loginInfoSession.getHeaders()
     })
   }
 
   const headers = await loginInfoSession.getHeaders()
-  return CAGResponse(request, { email }, headers)
+  return json({ email }, { headers })
+}
+
+export const handle = {
+  i18n: ['common', 'signup']
 }
 
 const actionIds = {

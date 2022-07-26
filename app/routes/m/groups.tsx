@@ -1,12 +1,12 @@
 import { useTranslation } from 'react-i18next'
 import Main from '~/components/shared/Main'
 import { H3, H4, H6 } from '~/components/shared/typography'
-import { ActionFunction, json, LoaderFunction, redirect } from 'remix'
+import type { ActionFunction, LoaderFunction} from 'remix';
+import { json, redirect } from 'remix'
 import * as React from 'react'
-import CAGResponse from '~/server/response.server'
 import { findSports } from '~/server/db/sports.server'
 import { Form, useLoaderData } from '@remix-run/react'
-import { Group, Sport } from '~/types'
+import type { Group, Sport } from '~/types'
 import Button, { ButtonLink } from '~/components/shared/Button'
 import { PencilAltIcon } from '@heroicons/react/outline'
 import { HeartIcon as HeartIconActive } from '@heroicons/react/solid'
@@ -20,7 +20,7 @@ import {
 import GroupEntry from '~/components/GroupEntry'
 import ButtonGroup from '~/components/shared/ButtonGroup'
 import WhenListEmpty from '~/components/shared/Empty'
-import { SSTranslations } from '~/server/i18n.server'
+import i18n from '~/server/i18n.server'
 
 type LoaderData = {
   sports: Sport[]
@@ -33,9 +33,13 @@ const actionIds = {
   changeDetails: 'change details'
 }
 
+export const handle = {
+  i18n: 'm-groups'
+}
+
 export let loader: LoaderFunction = async ({ request }) => {
   const user = await requireUser(request)
-  return CAGResponse(request, {
+  return json({
     sports: await findSports(),
     groups: await findUserGroups(user.id),
     favorites: await findUserFavoriteGroups(user.id)
@@ -43,14 +47,14 @@ export let loader: LoaderFunction = async ({ request }) => {
 }
 
 export const action: ActionFunction = async ({ request }) => {
+  const t = await i18n.getFixedT(request, 'm-groups')
   const user = await requireUser(request)
   const data = await request.formData()
   const groupId: string | null = data.get('groupId') as string
 
   if (!groupId) return json({})
   await removeGroupFromFavorites(user.id, groupId)
-  const translate = await SSTranslations('m-groups')
-  return redirect(`/m/groups?message=${translate('Favorite Removed')}`)
+  return redirect(`/m/groups?message=${t('Favorite Removed')}`)
 }
 
 export default function Groups() {
@@ -73,11 +77,11 @@ export default function Groups() {
       <InputError id="general-error" />
       <H3>{t(`My Groups`)}</H3>
       <div className="col-span-full mb-24 lg:col-span-5 lg:mb-0">
-        {groups.map((group) => (
+        {groups.map((group: Group) => (
           <GroupEntry
             group={group}
             key={group.id}
-            img={sports.find((s) => s.id === group.sportId)?.picture}
+            img={sports.find((s: Sport) => s.id === group.sportId)?.picture}
             actions={
               <ButtonGroup>
                 <ButtonLink size="small" to={`/m/group/${group.id}`}>
@@ -95,11 +99,11 @@ export default function Groups() {
       </div>
       <H3>{t(`Favorite Groups`)}</H3>
       <div className="col-span-full mb-24 lg:col-span-5 lg:mb-0">
-        {favorites.map((group) => (
+        {favorites.map((group: Group) => (
           <GroupEntry
             group={group}
             key={group.id}
-            img={sports.find((s) => s.id === group.sportId)?.picture}
+            img={sports.find((s: Sport) => s.id === group.sportId)?.picture}
             actions={
               <ButtonGroup>
                 <Form method="post">

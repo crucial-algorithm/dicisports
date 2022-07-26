@@ -1,24 +1,24 @@
-import { LoaderFunction, redirect } from 'remix'
-import CAGResponse from '~/server/response.server'
+import type { LoaderFunction} from 'remix';
+import { json, redirect } from 'remix'
 import { findSports } from '~/server/db/sports.server'
 import { findGroupBySlug } from '~/server/db/groups.server'
 import { useLoaderData } from '@remix-run/react'
-import { Group, Sport } from '~/types'
+import type { Group, Sport } from '~/types'
 import GroupEntry from '~/components/GroupEntry'
 import { H2 } from '~/components/shared/typography'
+
+export const handle = {
+  i18n: 'm-groups'
+}
 
 export let loader: LoaderFunction = async ({ request, params }) => {
   const slug = params.slug as string
   if (!slug) redirect('/')
-  return CAGResponse(
-    request,
+  return json(
     {
       sports: await findSports(),
       group: await findGroupBySlug(slug)
-    },
-    undefined,
-    ['m-groups'],
-    true
+    }
   )
 }
 
@@ -32,7 +32,7 @@ export default function GroupDisplayRoute() {
 
       <GroupEntry
         group={group}
-        img={sports.find((s) => s.id === group.sportId)?.picture}
+        img={sports.find((s: Sport) => s.id === group.sportId)?.picture}
       />
     </>
   )

@@ -1,24 +1,17 @@
 import Main from '~/components/shared/Main'
 import { H2, H3, Paragraph } from '~/components/shared/typography'
-import {
-  ActionFunction,
-  LinksFunction,
-  LoaderFunction,
-  redirect,
-  useActionData,
-  useSubmit
-} from 'remix'
+import type { ActionFunction, LinksFunction, LoaderFunction } from 'remix'
+import { json, redirect } from 'remix'
+import { useActionData, useSubmit } from '@remix-run/react'
 import { requireUser } from '~/server/auth/session.server'
-import CAGResponse from '~/server/response.server'
 import { findSports } from '~/server/db/sports.server'
 import { deleteGroup, findGroup, updateGroup } from '~/server/db/groups.server'
 import { useTranslation } from 'react-i18next'
-import { Grid } from '~/components/shared/Grid'
 import { Form, useLoaderData } from '@remix-run/react'
 import Button from '~/components/shared/Button'
 import FormField from '~/components/shared/form/FormField'
 import TextField from '~/components/shared/form/TextField'
-import {
+import type {
   DiciLocation,
   UploadImageMeta,
   Group,
@@ -31,12 +24,12 @@ import ComboBox from '~/components/shared/form/ComboBox'
 import { findGroupTypes } from '~/server/db/groupTypes.server'
 import HourOfDay from '~/components/HourOfDay'
 import { findGroupsSpirit } from '~/server/db/groupsSpirit.server'
-import { FormEvent, useState } from 'react'
+import type { FormEvent } from 'react'
+import { useState } from 'react'
 import { MapDialog } from '~/components/shared/Map'
 import Config from '~/server/config.server'
 import UploadImage from '~/components/shared/form/UploadImage'
-import { UploadHandler } from '@remix-run/node/formData'
-import { parseMultipartFormData } from '@remix-run/node/parseMultipartFormData'
+import type { UploadHandler } from '@remix-run/node'
 import {
   badRequest,
   hoursMinutesToTimeOfDay,
@@ -47,16 +40,14 @@ import {
 import UploadForm from '~/components/shared/form/UploadForm'
 import mapCss from '~/styles/map.css'
 import vendorsCss from '~/styles/vendors.css'
-import {
-  CloudinaryFileMeta,
-  generateCloudinarySignatures
-} from '~/server/storage/cloudinary.server'
+import type { CloudinaryFileMeta } from '~/server/storage/cloudinary.server'
 import { z, ZodError } from 'zod'
-import { SSTranslations } from '~/server/i18n.server'
+import i18n from '~/server/i18n.server'
 import InputError from '~/components/shared/form/InputError'
 import TransitionIndicator from '~/components/shared/TransitionIndicator'
 import { Dialog } from '@reach/dialog'
 import { Spacer } from '~/components/shared/Spacer'
+import { parseMultipartFormData } from '@remix-run/server-runtime/dist/formData'
 
 const RESOURCES_NS = 'groups-form'
 
@@ -68,7 +59,6 @@ type LoaderData = {
 
   mapToken: string
   imageUploadEndpoint: string
-  imageDisplayEndpoint: string
   imageUploadPreset: string
   files: Array<CloudinaryFileMeta>
 }
@@ -90,21 +80,18 @@ export const links: LinksFunction = () => {
   ]
 }
 
+export const handle = {
+  i18n: RESOURCES_NS
+}
+
 export let loader: LoaderFunction = async ({ request, params }) => {
   const user = await requireUser(request)
-  const {
-    MAPBOX_TOKEN,
-    IMAGE_UPLOAD_ENDPOINT,
-    IMAGE_DISPLAY_ENDPOINT,
-    CLOUDINARY_UPLOAD_PRESET
-  } = Config()
+  const { MAPBOX_TOKEN, IMAGE_UPLOAD_ENDPOINT, CLOUDINARY_UPLOAD_PRESET } = Config()
 
-  const files = generateCloudinarySignatures(3)
   const group = params.groupId ? await findGroup(params.groupId) : null
   if (!group || group.createdById !== user.id) return redirect('/m/groups')
 
-  return CAGResponse(
-    request,
+  return json(
     {
       sports: await findSports(),
       groupTypes: await findGroupTypes(),
@@ -114,12 +101,8 @@ export let loader: LoaderFunction = async ({ request, params }) => {
 
       mapToken: MAPBOX_TOKEN,
       imageUploadEndpoint: IMAGE_UPLOAD_ENDPOINT,
-      imageDisplayEndpoint: IMAGE_DISPLAY_ENDPOINT,
-      imageUploadPreset: CLOUDINARY_UPLOAD_PRESET,
-      files
-    },
-    undefined,
-    [RESOURCES_NS]
+      imageUploadPreset: CLOUDINARY_UPLOAD_PRESET
+    }
   )
 }
 
@@ -156,6 +139,7 @@ function parseLocation(location: string) {
 }
 
 export const action: ActionFunction = async ({ request, params }) => {
+  const t = await i18n.getFixedT(request, RESOURCES_NS)
   const user = await requireUser(request)
   const uploadHandler: UploadHandler = async () => {
     // cleanup images from form - upload is done directly to cloudinary
@@ -167,17 +151,16 @@ export const action: ActionFunction = async ({ request, params }) => {
 
   // Check if user should be able to manipulate this group
   const group = params.groupId ? await findGroup(params.groupId) : null
-  const translate = await SSTranslations('groups-form')
 
-  if (!group) return badRequest({ error: translate('Group not found') })
+  if (!group) return badRequest({ error: t('Group not found') })
   if (group.createdById !== user.id)
-    return badRequest({ error: translate('Not authorized') })
+    return badRequest({ error: t('Not authorized') })
 
   // from here on, the user is capable of doing whatever to the group
   if (action === actionIds.delete) {
     await deleteGroup(group.id)
     return redirect(
-      `/m/groups?message=${translate('Group deleted successfully')}`
+      `/m/groups?message=${t('Group deleted successfully')}`
     )
   }
   const isUpdate = group.status !== 'auto'
@@ -205,10 +188,10 @@ export const action: ActionFunction = async ({ request, params }) => {
     image2: processImgField(p, image2, isUpdate),
     image3: processImgField(p, image3, isUpdate)
   }
-  const required = { invalid_type_error: translate('Field required') }
+  const required = { invalid_type_error: t('Field required') }
   const str5CharsOrMore = z
     .string(required)
-    .min(5, { message: translate('Name 5 chars or more') })
+    .min(5, { message: t('Name 5 chars or more') })
   const GroupSchema = z.object({
     name: str5CharsOrMore,
     location: z.string(required),
@@ -221,7 +204,7 @@ export const action: ActionFunction = async ({ request, params }) => {
     await updateGroup(data)
 
     return redirect(
-      `/m/groups?message=${translate(
+      `/m/groups?message=${t(
         isUpdate ? 'Group updated successfully' : 'Group created successfully'
       )}`
     )
@@ -229,7 +212,7 @@ export const action: ActionFunction = async ({ request, params }) => {
     if (!(excp instanceof ZodError)) {
       console.error(excp)
       return badRequest({
-        error: translate('We dont know what happened')
+        error: t('We dont know what happened')
       })
     }
     const errors: { [key: string]: string | undefined } = {}
@@ -348,7 +331,7 @@ export default function GroupRoute() {
                 lang={language}
                 placeholder=""
                 defaultValue={group.sport ? group.sport.id : undefined}
-                options={sports.map((s) => {
+                options={sports.map((s: Sport) => {
                   return { value: s.id, label: s.name }
                 })}
               />
@@ -360,7 +343,7 @@ export default function GroupRoute() {
                 lang={language}
                 placeholder=""
                 defaultValue={group.groupType ? group.groupType.id : undefined}
-                options={groupTypes.map((g) => {
+                options={groupTypes.map((g: GroupType) => {
                   return { value: g.id, label: g.name }
                 })}
               />
@@ -378,7 +361,7 @@ export default function GroupRoute() {
                 defaultValue={
                   group.groupSpirit ? group.groupSpirit.id : undefined
                 }
-                options={groupsSpirit.map((g) => {
+                options={groupsSpirit.map((g: GroupSpirit) => {
                   return { value: g.id, label: g.name }
                 })}
               />

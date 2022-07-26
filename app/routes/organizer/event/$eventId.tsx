@@ -1,5 +1,6 @@
 import { Form, useLoaderData } from '@remix-run/react'
-import { ActionFunction, json, LinksFunction, LoaderFunction } from 'remix'
+import type { ActionFunction, LinksFunction, LoaderFunction } from 'remix'
+import { json } from 'remix'
 import BasicDatePicker from '~/components/shared/form/DatePicker'
 import PickBookingSystem from '~/components/PickBookingSystem'
 import { useState } from 'react'
@@ -8,15 +9,14 @@ import mapBoxGlCss from 'mapbox-gl/dist/mapbox-gl.css'
 import mapCss from '~/styles/map.css'
 import organizerCss from '~/styles/organizer.css'
 import UploadImage from '~/components/shared/form/UploadImage'
-import { UploadHandler } from '@remix-run/node/formData'
-import { parseMultipartFormData } from '@remix-run/node/parseMultipartFormData'
-import i18n from '~/server/i18n.server'
+import type { UploadHandler } from '@remix-run/node'
 import { useTranslation } from 'react-i18next'
+import type {
+  CloudinaryFileMeta} from '~/server/storage/cloudinary.server';
 import {
-  CloudinaryFileMeta,
   generateCloudinarySignatures
 } from '~/server/storage/cloudinary.server'
-import { Sport, Document, Event } from '~/types'
+import type { Sport, Document, Event } from '~/types'
 import Header from '~/components/shared/Header'
 import TextField from '~/components/shared/form/TextField'
 import Button from '~/components/shared/Button'
@@ -29,6 +29,7 @@ import Main from '~/components/shared/Main'
 import I18nText from '~/components/I18nText'
 import FormField from '~/components/shared/form/FormField'
 import { uploadImages } from '~/utils/misc'
+import { parseMultipartFormData } from '@remix-run/server-runtime/dist/formData'
 
 type ActionData = {
   formError?: string
@@ -58,6 +59,10 @@ type SportEvent = Event & {
 
 const badRequest = (data: ActionData) => json(data, { status: 400 })
 
+export const handle = {
+  i18n: ['common', 'create-event-form']
+}
+
 export const loader: LoaderFunction = async ({ request, params }) => {
   const sports = await findSports()
   const files = generateCloudinarySignatures(4)
@@ -79,8 +84,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     event,
     sports: sports.map((sport) => {
       return { id: sport.id, name: sport.name }
-    }),
-    i18n: await i18n.getTranslations(request, ['common', 'create-event-form'])
+    })
   })
 }
 
@@ -162,14 +166,14 @@ export default function OrganizerEventRoute() {
   const images: Array<Image | undefined> = new Array(4)
   const loadedImages = mapDbImages(event?.documents, imageDisplayEndpoint)
 
-  const setImages = (position: number) => (name: string, file: File) => {
-    const meta: CloudinaryFileMeta | undefined = files[position]
+  const setImage = (index: number, file: File) => {
+    const meta: CloudinaryFileMeta | undefined = files[index]
     if (!meta)
       throw new Error(
         'No upload metadata for this file - did you increased the number of pictures in the form (limited to 4)?'
       )
-    images[position] = {
-      name,
+    images[index] = {
+      name: `/image/${index}`,
       file,
       value: meta.publicId,
       timestamp: meta.timestamp,
@@ -189,7 +193,7 @@ export default function OrganizerEventRoute() {
         autoComplete="off"
         encType={encTypeUpload}
         onSubmit={(e) =>
-          uploadImages(e, imageUploadEndpoint, imageUploadPreset, images)
+          uploadImages(imageUploadEndpoint, imageUploadPreset, images)
         }
       >
         <div className="shadow overflow-hidden sm:rounded-md">
@@ -213,7 +217,7 @@ export default function OrganizerEventRoute() {
                   id="sport"
                   defaultValue={event?.sportId || ''}
                 >
-                  {sports.map((sport) => (
+                  {sports.map((sport: Sport) => (
                     <option key={sport.id} value={sport.id}>
                       {I18nText({ text: sport.name })}
                     </option>
@@ -258,9 +262,10 @@ export default function OrganizerEventRoute() {
               <div className="col-span-1">
                 <div>
                   <UploadImage
-                    name="image/1/file"
+                    index={0}
+                    imageId={files[0].publicId}
                     label={t('Hint For Picture 1')}
-                    onDrop={setImages(0)}
+                    onDrop={setImage}
                     defaultValue={loadedImages[0]}
                   />
                   <input type="hidden" name="image/1" />
@@ -270,9 +275,10 @@ export default function OrganizerEventRoute() {
               <div className="col-span-1">
                 <div>
                   <UploadImage
-                    name="image/2/file"
+                    index={1}
+                    imageId={files[1].publicId}
                     label={t('Hint For Picture 2')}
-                    onDrop={setImages(0)}
+                    onDrop={setImage}
                     defaultValue={loadedImages[0]}
                   />
                   <input type="hidden" name="image/2" />
@@ -282,9 +288,10 @@ export default function OrganizerEventRoute() {
               <div className="col-span-1">
                 <div>
                   <UploadImage
-                    name="image/3/file"
+                    index={2}
+                    imageId={files[2].publicId}
                     label={t('Hint For Picture 3')}
-                    onDrop={setImages(0)}
+                    onDrop={setImage}
                     defaultValue={loadedImages[0]}
                   />
                   <input type="hidden" name="image/3" />
@@ -294,9 +301,10 @@ export default function OrganizerEventRoute() {
               <div className="col-span-1">
                 <div>
                   <UploadImage
-                    name="image/4/file"
+                    index={3}
+                    imageId={files[3].publicId}
                     label={t('Hint For Picture 4')}
-                    onDrop={setImages(0)}
+                    onDrop={setImage}
                     defaultValue={loadedImages[0]}
                   />
                   <input type="hidden" name="image/4" />
