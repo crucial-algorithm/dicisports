@@ -218,14 +218,25 @@ function MapDialog({
   defaultValue,
   className
 }: MapDialogProps) {
-  const handleClose = () => {
-    if (setClosed) {setClosed();}
-    if (onClose) {onClose(location);}
-  };
   const { t } = useTranslation('common');
   const [location, setLocation] = useState<DiciLocation | null>(
     defaultValue || null
   );
+
+  function handleClose() {
+    if (setClosed) {
+      setClosed();
+    }
+    if (onClose) {
+      onClose(location);
+    }
+  }
+
+  function handleCallback(location: DiciLocation | null) {
+    if (onPickedLocation) {onPickedLocation(location);}
+    setLocation(location);
+  }
+
 
   return (
     <Dialog
@@ -238,10 +249,7 @@ function MapDialog({
         defaultValue={defaultValue}
         token={token}
         className={className}
-        callback={(location) => {
-          if (onPickedLocation) {onPickedLocation(location);}
-          setLocation(location);
-        }}
+        callback={handleCallback}
         placeholder={t('Drag Map to Choose a Location Hint')}
       />
       <div className="flex flex-row gap-2 justify-end mt-4 pr-2">

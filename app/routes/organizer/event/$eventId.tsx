@@ -29,7 +29,7 @@ import type {
 import {
   generateCloudinarySignatures
 } from '~/server/storage/cloudinary.server';
-import type { Sport, Document, Event } from '~/types';
+import type { Sport, Document, Event, DiciLocation } from '~/types'
 import Header from '~/components/shared/Header';
 import TextField from '~/components/shared/form/TextField';
 import Button from '~/components/shared/Button';
@@ -180,7 +180,7 @@ export default function OrganizerEventRoute() {
   const images: Array<Image | undefined> = new Array(4);
   const loadedImages = mapDbImages(event?.documents, imageDisplayEndpoint);
 
-  const setImage = (index: number, file: File) => {
+  function setImage (index: number, file: File) {
     const meta: CloudinaryFileMeta | undefined = files[index];
 
     if (!meta)
@@ -200,6 +200,22 @@ export default function OrganizerEventRoute() {
   // Hack: while remix doesn't handle dates properly
   hackyEventRevival(event);
 
+  async function handleSubmit() {
+    return uploadImages(imageUploadEndpoint, imageUploadPreset, images);
+  }
+
+  function handleShowMap() {
+    setShowLocationPicker(true);
+  }
+
+  function handleCloseMap() {
+    setShowLocationPicker(false);
+  }
+
+  function handlePickedLocation(location: DiciLocation | null) {
+    setLocation(location?.shortAddress || '');
+  }
+
   return (
     <Main>
       <Header>{t('Create Event')}</Header>
@@ -207,9 +223,7 @@ export default function OrganizerEventRoute() {
         method="post"
         autoComplete="off"
         encType={encTypeUpload}
-        onSubmit={(e) =>
-          uploadImages(imageUploadEndpoint, imageUploadPreset, images)
-        }
+        onSubmit={handleSubmit}
       >
         <div className="shadow overflow-hidden sm:rounded-md">
           <div className="px-4 py-5 bg-white sm:p-6">
@@ -256,7 +270,7 @@ export default function OrganizerEventRoute() {
                       <Button
                         type="button"
                         aria-label={t('Location Aria Tip')}
-                        onClick={() => setShowLocationPicker(true)}
+                        onClick={handleShowMap}
                         size="small"
                         className="inline-block align-middle"
                       >
@@ -336,10 +350,8 @@ export default function OrganizerEventRoute() {
         token={mapToken}
         defaultValue={null}
         open={showLocationPicker}
-        setClosed={() => setShowLocationPicker(false)}
-        onPickedLocation={(location) =>
-          setLocation(location?.shortAddress || '')
-        }
+        setClosed={handleCloseMap}
+        onPickedLocation={handlePickedLocation}
       />
     </Main>
   );

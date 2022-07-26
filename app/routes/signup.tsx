@@ -157,6 +157,10 @@ export default function SignUp() {
   const [action, setAction] = useState<string>('submit');
   const { t } = useTranslation('signup');
 
+  function handleSetAction() {
+    setAction('cancel')
+  }
+
   return (
     <main className="mx-10vw flex">
       <div className="m-auto">
@@ -170,7 +174,7 @@ export default function SignUp() {
             <Button
               className="mr-2"
               variant="secondary"
-              onClick={() => setAction('cancel')}
+              onClick={handleSetAction}
             >
               {t('Cancel')}
             </Button>

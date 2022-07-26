@@ -20,6 +20,10 @@ export default function BasicDatePicker({
   );
   const id = HTMLId();
 
+  function handleOnChange(e: any) {
+    setValue(new Date(e.target.value).toISOString);
+  }
+
   return (
     <>
       <Label htmlFor={id}>{label}</Label>
@@ -29,7 +33,7 @@ export default function BasicDatePicker({
         type="date"
         placeholder={label}
         defaultValue={value}
-        onChange={(e) => setValue(new Date(e.target.value).toISOString)}
+        onChange={handleOnChange}
       />
     </>
   );

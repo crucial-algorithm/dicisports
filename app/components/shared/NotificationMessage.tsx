@@ -85,6 +85,10 @@ function NotificationMessage({
       ? controlledVisible
       : isVisible;
 
+  function handleClose() {
+    setIsVisible(false);
+  }
+
   return (
     <AnimatePresence>
       {show ? (
@@ -111,7 +115,7 @@ function NotificationMessage({
               {typeof controlledVisible === 'undefined' ? (
                 <button
                   aria-label="dismiss message"
-                  onClick={() => setIsVisible(false)}
+                  onClick={handleClose}
                   className="text-secondary hover:text-inverse focus:text-inverse absolute right-4 top-8 transform rotate-45"
                 >
                   <PlusIcon />

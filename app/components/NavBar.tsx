@@ -1,4 +1,5 @@
 import * as React from 'react';
+import type { PRect } from '@reach/rect';
 import { Link, useLocation } from '@remix-run/react';
 import clsx from 'clsx';
 import {
@@ -81,13 +82,15 @@ function DarkModeToggle({
   const [, setTheme] = useTheme();
   const { t } = useTranslation('common');
 
+  function handleOnClick() {
+    setTheme((previousTheme) =>
+      previousTheme === Theme.DARK ? Theme.LIGHT : Theme.DARK
+    );
+  }
+
   return (
     <button
-      onClick={() => {
-        setTheme((previousTheme) =>
-          previousTheme === Theme.DARK ? Theme.LIGHT : Theme.DARK
-        );
-      }}
+      onClick={handleOnClick}
       className={clsx(
         'border-secondary hover:border-primary focus:border-primary inline-flex items-center justify-center p-1 h-14 border-2 rounded-full focus:outline-none overflow-hidden transition',
         {
@@ -145,19 +148,20 @@ function MobileMenuList() {
     }
   }, [isExpanded]);
 
+  function handlePosition(r: PRect | null) {
+    return {
+      top: `calc(${Number(r?.top) + Number(r?.height)}px + 2.25rem)`, // 2.25 rem = py-9 from navbar
+      left: 0,
+      bottom: 0,
+      right: 0
+    };
+  }
+
   return (
     <AnimatePresence>
       {isExpanded ? (
-        <MenuPopover
-          position={(r) => ({
-            top: `calc(${Number(r?.top) + Number(r?.height)}px + 2.25rem)`, // 2.25 rem = py-9 from navbar
-            left: 0,
-            bottom: 0,
-            right: 0
-          })}
-          style={{ display: 'block' }}
-          className="z-50"
-        >
+        // @ts-ignore
+        <MenuPopover position={handlePosition} style={{ display: 'block' }} className="z-50">
           <motion.div
             initial={{ y: -50, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}

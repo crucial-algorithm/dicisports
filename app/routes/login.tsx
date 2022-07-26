@@ -8,7 +8,7 @@ import { json, redirect } from 'remix';
 
 import { Link, useSearchParams } from '@remix-run/react';
 
-import { useState } from 'react';
+import { FormEvent, useState } from 'react'
 
 import { useTranslation } from 'react-i18next';
 
@@ -223,6 +223,12 @@ export default function Login() {
     setSubmitted(true);
   }
 
+  function handleOnChange(event: FormEvent<HTMLFormElement>) {
+    const form = event.currentTarget;
+
+    setEmail(form.email.value);
+  }
+
   return (
     <div className="flex flex-col w-full h-full p-8 max-w-lg m-auto justify-center align-middle">
       {action === 'ws' ? (
@@ -236,11 +242,7 @@ export default function Login() {
         autoComplete="off"
         className="w-full"
         method="post"
-        onChange={(event) => {
-          const form = event.currentTarget;
-
-          setEmail(form.email.value);
-        }}
+        onChange={handleOnChange}
         onSubmit={onSubmit}
       >
         <input type="hidden" value={action || ''} name="action" />

@@ -66,6 +66,13 @@ export default function SearchLocations({
     setSearchTerm('');
   }
 
+  function NoOptionsMessage() {
+    return (
+      <div className="text-start">
+        {searchTerm.length > 2 ? t('No Cities') : t('Keep Typing')}
+      </div>
+    );
+  }
 
   return (
     <>
@@ -81,11 +88,7 @@ export default function SearchLocations({
         isClearable={false}
         isSearchable={true}
         backspaceRemovesValue={true}
-        noOptionsMessage={() => (
-          <div style={{ textAlign: 'start' }}>
-            {searchTerm.length > 2 ? t('No Cities') : t('Keep Typing')}
-          </div>
-        )}
+        noOptionsMessage={NoOptionsMessage}
         placeholder={search || placeholder}
         components={{
           DropdownIndicator: () => null,

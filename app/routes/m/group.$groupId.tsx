@@ -272,7 +272,7 @@ export default function GroupRoute() {
   const [uploading, setImagesUploading] = useState<boolean>(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState<boolean>(false);
 
-  const setImage = (index: number, file: File) => {
+  function setImage(index: number, file: File) {
     const meta: CloudinaryFileMeta | undefined = files[index];
 
     if (!meta)
@@ -287,7 +287,7 @@ export default function GroupRoute() {
       signature: meta.signature,
       apiKey: meta.apiKey
     };
-  };
+  }
 
   // open map stuff
   const [showLocationPicker, setShowLocationPicker] = useState<boolean>(false);
@@ -311,6 +311,19 @@ export default function GroupRoute() {
 
   function handleShowMap() {
     setShowLocationPicker(true);
+  }
+
+  function handleCloseMap(location: DiciLocation | null) {
+    setShowLocationPicker(false);
+    setLocation(location);
+  }
+
+  function handleShowDeleteWarning() {
+    setDeleteModalOpen(true);
+  }
+
+  function handleDiscardDelete() {
+    setDeleteModalOpen(false);
   }
 
   return (
@@ -521,7 +534,7 @@ export default function GroupRoute() {
               <Button
                 variant="danger"
                 type="button"
-                onClick={() => setDeleteModalOpen(true)}
+                onClick={handleShowDeleteWarning}
               >
                 {t('Delete Group')}
               </Button>
@@ -529,17 +542,16 @@ export default function GroupRoute() {
           ) : null}
         </div>
       </div>
+
       <MapDialog
         token={mapToken}
         defaultValue={location}
         open={showLocationPicker}
-        onClose={(location) => {
-          setShowLocationPicker(false);
-          setLocation(location);
-        }}
+        onClose={handleCloseMap}
       />
+
       <Dialog
-        onDismiss={() => setDeleteModalOpen(false)}
+        onDismiss={handleDiscardDelete}
         isOpen={deleteModalOpen}
         aria-label="Delete your account"
         className="w-11/12 dark:bg-gray-900 border-2 border-black dark:border-white rounded-lg lg:px-24 lg:py-14 lg:max-w-screen-lg"
@@ -555,7 +567,7 @@ export default function GroupRoute() {
         >
           <input type="hidden" name="actionId" value={actionIds.delete} />
           <div className="flex flex-wrap gap-4">
-            <Button type="button" onClick={() => setDeleteModalOpen(false)}>
+            <Button type="button" onClick={handleDiscardDelete}>
               {t("No, I don't want to delete")}
             </Button>
             <Button variant="danger" size="medium" type="submit">

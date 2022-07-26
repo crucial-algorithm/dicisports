@@ -44,5 +44,7 @@ module.exports = {
     'import/no-cycle': 'error',
     'import/no-useless-path-segments': 'error',
     'import/no-mutable-exports': 'error',
+    'react/jsx-no-bind': ['error', { allowFunctions: true }],
+    'react/jsx-handler-names': ['error'],
   }
 };

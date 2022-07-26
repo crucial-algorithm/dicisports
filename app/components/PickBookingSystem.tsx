@@ -30,12 +30,12 @@ export default function PickBookingSystem({
     disabled: !useExternal
   });
 
-  const onChange = (e: ChangeEvent<HTMLInputElement>) => {
+  function onChange(e: ChangeEvent<HTMLInputElement>) {
     setState({
       value: e.target.value,
       disabled: e.target.value === 'internal'
     });
-  };
+  }
 
   return (
     <fieldset>

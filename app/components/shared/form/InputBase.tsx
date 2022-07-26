@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { ChangeEvent, useState } from 'react'
 import clsx from 'clsx';
 
 export function inputBaseClasses(className?: string) {
@@ -42,6 +42,11 @@ const InputBase: React.FC<Props> = ({
 }) => {
   const [value, setValue] = useState<string>(defaultValue || '');
 
+  function handleOnChange(e: ChangeEvent<HTMLInputElement>) {
+    setValue(e.target.value);
+    onChange && onChange(e.target.value);
+  }
+
   return (
     <input
       type={type}
@@ -50,14 +55,7 @@ const InputBase: React.FC<Props> = ({
       value={disabled ? defaultValue : value}
       placeholder={placeholder}
       disabled={disabled}
-      onChange={
-        disabled
-          ? undefined
-          : (e) => {
-              setValue(e.target.value);
-              onChange && onChange(e.target.value);
-            }
-      }
+      onChange={disabled ? undefined : handleOnChange}
       autoComplete={autoComplete}
       className={inputBaseClasses(className)}
       readOnly={readOnly}
