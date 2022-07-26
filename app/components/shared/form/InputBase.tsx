@@ -1,5 +1,5 @@
-import React, { useState } from 'react'
-import clsx from 'clsx'
+import React, { useState } from 'react';
+import clsx from 'clsx';
 
 export function inputBaseClasses(className?: string) {
   return clsx(
@@ -15,7 +15,7 @@ export function inputBaseClasses(className?: string) {
     // added to remove border added by @tailwindcss/forms
     'border-0',
     className
-  )
+  );
 }
 
 type Props = {
@@ -40,7 +40,8 @@ const InputBase: React.FC<Props> = ({
   className,
   readOnly = false
 }) => {
-  const [value, setValue] = useState<string>(defaultValue || '')
+  const [value, setValue] = useState<string>(defaultValue || '');
+
   return (
     <input
       type={type}
@@ -53,15 +54,15 @@ const InputBase: React.FC<Props> = ({
         disabled
           ? undefined
           : (e) => {
-              setValue(e.target.value)
-              onChange && onChange(e.target.value)
+              setValue(e.target.value);
+              onChange && onChange(e.target.value);
             }
       }
       autoComplete={autoComplete}
       className={inputBaseClasses(className)}
       readOnly={readOnly}
     />
-  )
-}
+  );
+};
 
-export default InputBase
+export default InputBase;

@@ -1,5 +1,6 @@
-import React from 'react'
-import ComboBox from '~/components/shared/form/ComboBox'
+import React from 'react';
+
+import ComboBox from '~/components/shared/form/ComboBox';
 
 export default function HourOfDay({
   hour = 8,
@@ -111,5 +112,5 @@ export default function HourOfDay({
         ]}
       />
     </div>
-  )
+  );
 }

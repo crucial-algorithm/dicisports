@@ -1,4 +1,4 @@
-import {
+import type {
   Group as DBGroup,
   User as DBUser,
   GroupSpirit as DBGroupSpirit,
@@ -6,7 +6,7 @@ import {
   Sport as DBSport,
   Document as DBDocument,
   Event as DBEvent
-} from '@prisma/client'
+} from '@prisma/client';
 
 type NonNullProperties<Type> = {
   [Key in keyof Type]-?: Exclude<Type[Key], null | undefined>
@@ -51,7 +51,7 @@ type KCDHandle = {
 
 export const AvailableLanguages: {
   pt: 'pt'
-}
+};
 
 export const DaysOfWeekMap: {
   6: 'Sunday'
@@ -61,7 +61,7 @@ export const DaysOfWeekMap: {
   3: 'Thursday'
   4: 'Friday'
   5: 'Saturday'
-}
+};
 
 type DaysOfWeek = keyof typeof DaysOfWeekMap
 
@@ -192,4 +192,4 @@ export {
   Event,
   DBRawGroup,
   LoginAction
-}
+};

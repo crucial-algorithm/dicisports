@@ -1,7 +1,7 @@
-import * as React from 'react'
-import type { Event } from '@prisma/client'
-import { Link } from '@remix-run/react'
-import type { TFunction } from 'react-i18next'
+import * as React from 'react';
+import type { Event } from '@prisma/client';
+import { Link } from '@remix-run/react';
+import type { TFunction } from 'react-i18next';
 
 export type DataTableProps = {
   data: Array<Event>
@@ -67,5 +67,5 @@ export default function DataTable({ data, t }: DataTableProps) {
         </div>
       </div>
     </div>
-  )
+  );
 }

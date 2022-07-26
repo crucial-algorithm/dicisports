@@ -1,32 +1,36 @@
-import { v2 as cloudinary, UploadApiResponse } from 'cloudinary'
-import Id from '~/server/utils/Id.server'
-import Config from '~/server/config.server'
-import { setConfig } from 'cloudinary-build-url'
-import { writeAsyncIterableToWritable } from '@remix-run/node'
+import type { UploadApiResponse } from 'cloudinary';
+import { v2 as cloudinary } from 'cloudinary';
+
+import { setConfig } from 'cloudinary-build-url';
+
+import { writeAsyncIterableToWritable } from '@remix-run/node';
+
+import Id from '~/server/utils/Id.server';
+import Config from '~/server/config.server';
 
 const {
   CLOUDINARY_CLOUD_NAME,
   CLOUDINARY_API_KEY,
   CLOUDINARY_API_SECRET,
   CLOUDINARY_UPLOAD_PRESET
-} = Config()
+} = Config();
 
 setConfig({
   cloudName: CLOUDINARY_CLOUD_NAME
-})
+});
 
 const config = {
   cloud_name: CLOUDINARY_CLOUD_NAME,
   api_key: CLOUDINARY_API_KEY,
   api_secret: CLOUDINARY_API_SECRET
-}
+};
 
-const uploadPreset = CLOUDINARY_UPLOAD_PRESET
+const uploadPreset = CLOUDINARY_UPLOAD_PRESET;
 
-cloudinary.config(config)
+cloudinary.config(config);
 
 const generateCloudinarySignature = (publicId: string) => {
-  const timestamp = Math.round(Date.now() / 1000)
+  const timestamp = Math.round(Date.now() / 1000);
   const signature = cloudinary.utils.api_sign_request(
     {
       timestamp: timestamp,
@@ -34,10 +38,10 @@ const generateCloudinarySignature = (publicId: string) => {
       public_id: publicId
     },
     config.api_secret || ''
-  )
+  );
 
-  return { timestamp, signature }
-}
+  return { timestamp, signature };
+};
 
 export type CloudinaryFileMeta = {
   publicId: string
@@ -49,17 +53,19 @@ export type CloudinaryFileMeta = {
 const generateCloudinarySignatures = (
   nbr: number
 ): Array<CloudinaryFileMeta> => {
-  const result = []
+  const result = [];
+
   for (let i = 0; i < nbr; i++) {
-    const publicId = Id()
+    const publicId = Id();
+
     result.push({
       publicId,
       apiKey: config.api_key || '',
       ...generateCloudinarySignature(publicId)
-    })
+    });
   }
-  return result
-}
+  return result;
+};
 
 async function uploadImageToCloudinary(data: AsyncIterable<Uint8Array>) {
   return new Promise<UploadApiResponse>(async (resolve, reject) => {
@@ -69,14 +75,15 @@ async function uploadImageToCloudinary(data: AsyncIterable<Uint8Array>) {
       },
       (error, result) => {
         if (error) {
-          reject(error)
-          return
+          reject(error);
+          return;
         }
-        resolve(result as UploadApiResponse)
+        resolve(result as UploadApiResponse);
       }
-    )
-    await writeAsyncIterableToWritable(data, uploadStream)
-  })
+    );
+
+    await writeAsyncIterableToWritable(data, uploadStream);
+  });
 }
 
-export { generateCloudinarySignature, generateCloudinarySignatures }
+export { generateCloudinarySignature, generateCloudinarySignatures };

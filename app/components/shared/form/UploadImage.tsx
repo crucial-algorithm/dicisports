@@ -1,7 +1,7 @@
-import React, { useState } from 'react'
-import { useDropzone } from 'react-dropzone'
-import clsx from 'clsx'
-import { buildImageUrl } from 'cloudinary-build-url'
+import React, { useState } from 'react';
+import { useDropzone } from 'react-dropzone';
+import clsx from 'clsx';
+import { buildImageUrl } from 'cloudinary-build-url';
 
 type UploadImageProps = {
   index: number
@@ -21,22 +21,23 @@ export default function UploadImage({
 }: UploadImageProps) {
   const [thumb, setThumb] = useState<string | null>(
     defaultValue ? buildImageUrl(defaultValue, {}) : null
-  )
+  );
   const { getRootProps, getInputProps } = useDropzone({
     multiple: false,
     accept: 'image/*',
     onDrop: (acceptedFiles) => {
-      if (acceptedFiles.length === 0) return
-      const file: File = acceptedFiles[0] as File
-      setThumb(URL.createObjectURL(file))
-      setValue(imageId)
-      onDrop(index, file)
-    }
-  })
+      if (acceptedFiles.length === 0) {return;}
+      const file: File = acceptedFiles[0] as File;
 
-  const [value, setValue] = useState<string | undefined>('')
-  const inputFileName = `/image/${index}/file`
-  const inputShadowName = `/image/${index}`
+      setThumb(URL.createObjectURL(file));
+      setValue(imageId);
+      onDrop(index, file);
+    }
+  });
+
+  const [value, setValue] = useState<string | undefined>('');
+  const inputFileName = `/image/${index}/file`;
+  const inputShadowName = `/image/${index}`;
 
   return (
     <section
@@ -58,5 +59,5 @@ export default function UploadImage({
       </div>
       <input type="hidden" name={inputShadowName} value={value} />
     </section>
-  )
+  );
 }

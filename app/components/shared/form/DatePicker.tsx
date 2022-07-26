@@ -1,7 +1,8 @@
-import * as React from 'react'
-import Label from '~/components/shared/form/Label'
-import InputBase from '~/components/shared/form/InputBase'
-import HTMLId from '~/utils/HTMLId'
+import * as React from 'react';
+
+import Label from '~/components/shared/form/Label';
+import InputBase from '~/components/shared/form/InputBase';
+import HTMLId from '~/utils/HTMLId';
 
 type DatePickerOptions = {
   name: string
@@ -16,8 +17,9 @@ export default function BasicDatePicker({
 }: DatePickerOptions) {
   const [value, setValue] = React.useState<string>(
     date ? date.toISOString().split('T')[0] : ''
-  )
-  const id = HTMLId()
+  );
+  const id = HTMLId();
+
   return (
     <>
       <Label htmlFor={id}>{label}</Label>
@@ -30,5 +32,5 @@ export default function BasicDatePicker({
         onChange={(e) => setValue(new Date(e.target.value).toISOString)}
       />
     </>
-  )
+  );
 }

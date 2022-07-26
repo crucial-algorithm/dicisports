@@ -1,9 +1,9 @@
-import * as crypto from 'crypto'
+import * as crypto from 'crypto';
 
 const UNMISTAKABLE_CHARS =
-  '23456789ABCDEFGHJKLMNPQRSTWXYZabcdefghijkmnopqrstuvwxyz'
+  '23456789ABCDEFGHJKLMNPQRSTWXYZabcdefghijkmnopqrstuvwxyz';
 const BASE64_CHARS =
-  'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_'
+  'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_';
 
 // `type` is one of `RandomGenerator.Type` as defined below.
 //
@@ -19,7 +19,7 @@ abstract class RandomGenerator {
    */
   // eslint-disable-next-line class-methods-use-this
   fraction(): number {
-    throw new Error(`Unknown random generator type`)
+    throw new Error('Unknown random generator type');
   }
 
   /**
@@ -29,15 +29,16 @@ abstract class RandomGenerator {
    * @param digits
    */
   hexString(digits: number) {
-    return this.randomString(digits, '0123456789abcdef')
+    return this.randomString(digits, '0123456789abcdef');
   }
 
   private randomString(charsCount: number, alphabet: string) {
-    let result = ''
+    let result = '';
+
     for (let i = 0; i < charsCount; i++) {
-      result += this.choice(alphabet)
+      result += this.choice(alphabet);
     }
-    return result
+    return result;
   }
 
   /**
@@ -47,7 +48,7 @@ abstract class RandomGenerator {
    * @param charsCount
    */
   id(charsCount = 20): string {
-    return this.randomString(charsCount, UNMISTAKABLE_CHARS)
+    return this.randomString(charsCount, UNMISTAKABLE_CHARS);
   }
 
   /**
@@ -62,12 +63,13 @@ abstract class RandomGenerator {
   secret(charsCount: number | undefined) {
     // Default to 256 bits of entropy, or 43 characters at 6 bits per
     // character.
-    let chars = charsCount
+    let chars = charsCount;
+
     if (chars === undefined) {
-      chars = 43
+      chars = 43;
     }
 
-    return this.randomString(chars, BASE64_CHARS)
+    return this.randomString(chars, BASE64_CHARS);
   }
 
   /**
@@ -77,11 +79,12 @@ abstract class RandomGenerator {
    * @param {Array|String} arrayOrString Array or string to choose from
    */
   choice(arrayOrString: Array<any> | string) {
-    const index = Math.floor(this.fraction() * arrayOrString.length)
+    const index = Math.floor(this.fraction() * arrayOrString.length);
+
     if (typeof arrayOrString === 'string') {
-      return arrayOrString.substr(index, 1)
+      return arrayOrString.substr(index, 1);
     }
-    return arrayOrString[index]
+    return arrayOrString[index];
   }
 }
 
@@ -92,8 +95,9 @@ class Random extends RandomGenerator {
    * @locus Anywhere
    */
   fraction() {
-    const numerator = Number.parseInt(this.hexString(8), 16)
-    return numerator * 2.3283064365386963e-10 // 2^-3;
+    const numerator = Number.parseInt(this.hexString(8), 16);
+
+    return numerator * 2.3283064365386963e-10; // 2^-3;
   }
 
   /**
@@ -104,25 +108,27 @@ class Random extends RandomGenerator {
    */
   // eslint-disable-next-line class-methods-use-this
   hexString(digits: number) {
-    const numBytes = Math.ceil(digits / 2)
-    let bytes: Buffer
+    const numBytes = Math.ceil(digits / 2);
+    let bytes: Buffer;
+
     // Try to get cryptographically strong randomness. Fall back to
     // non-cryptographically strong if not available.
     try {
-      bytes = crypto.randomBytes(numBytes)
+      bytes = crypto.randomBytes(numBytes);
     } catch (e) {
       // XXX should re-throw any error except insufficient entropy
-      bytes = crypto.pseudoRandomBytes(numBytes)
+      bytes = crypto.pseudoRandomBytes(numBytes);
     }
-    const result = bytes.toString('hex')
+    const result = bytes.toString('hex');
+
     // If the number of digits is odd, we'll have generated an extra 4 bits
     // of randomness, so we need to trim the last digit.
-    return result.substring(0, digits)
+    return result.substring(0, digits);
   }
 }
 
-const instance = new Random()
+const instance = new Random();
 
 export default function Id(): string {
-  return instance.id()
+  return instance.id();
 }

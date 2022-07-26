@@ -1,6 +1,8 @@
-import { ChangeEvent, useState } from 'react'
-import { TFunction } from 'i18next'
-import InputBase from '~/components/shared/form/InputBase'
+import type { ChangeEvent } from 'react';
+import { useState } from 'react';
+import type { TFunction } from 'i18next';
+
+import InputBase from '~/components/shared/form/InputBase';
 
 export type PickBookingSystemOptions = {
   name: string
@@ -12,7 +14,7 @@ export type PickBookingSystemOptions = {
 const Values = {
   External: 'external',
   Internal: 'internal'
-}
+};
 
 export default function PickBookingSystem({
   name,
@@ -26,14 +28,14 @@ export default function PickBookingSystem({
   }>({
     value: useExternal ? Values.External : Values.Internal,
     disabled: !useExternal
-  })
+  });
 
   const onChange = (e: ChangeEvent<HTMLInputElement>) => {
     setState({
       value: e.target.value,
       disabled: e.target.value === 'internal'
-    })
-  }
+    });
+  };
 
   return (
     <fieldset>
@@ -98,5 +100,5 @@ export default function PickBookingSystem({
         </div>
       </div>
     </fieldset>
-  )
+  );
 }

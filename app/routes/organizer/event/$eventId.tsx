@@ -1,35 +1,49 @@
-import { Form, useLoaderData } from '@remix-run/react'
-import type { ActionFunction, LinksFunction, LoaderFunction } from 'remix'
-import { json } from 'remix'
-import BasicDatePicker from '~/components/shared/form/DatePicker'
-import PickBookingSystem from '~/components/PickBookingSystem'
-import { useState } from 'react'
-import { MapDialog } from '~/components/shared/Map'
-import mapBoxGlCss from 'mapbox-gl/dist/mapbox-gl.css'
-import mapCss from '~/styles/map.css'
-import organizerCss from '~/styles/organizer.css'
-import UploadImage from '~/components/shared/form/UploadImage'
-import type { UploadHandler } from '@remix-run/node'
-import { useTranslation } from 'react-i18next'
+import { Form, useLoaderData } from '@remix-run/react';
+import type { ActionFunction, LinksFunction, LoaderFunction } from 'remix';
+import { json } from 'remix';
+
+import { useState } from 'react';
+
+import mapBoxGlCss from 'mapbox-gl/dist/mapbox-gl.css';
+
+import type { UploadHandler } from '@remix-run/node';
+
+import { useTranslation } from 'react-i18next';
+
+import { LocationMarkerIcon } from '@heroicons/react/outline';
+
+import { parseMultipartFormData } from '@remix-run/server-runtime/dist/formData';
+
+import BasicDatePicker from '~/components/shared/form/DatePicker';
+import PickBookingSystem from '~/components/PickBookingSystem';
+import { MapDialog } from '~/components/shared/Map';
+
+
+import mapCss from '~/styles/map.css';
+import organizerCss from '~/styles/organizer.css';
+import UploadImage from '~/components/shared/form/UploadImage';
+
+
 import type {
-  CloudinaryFileMeta} from '~/server/storage/cloudinary.server';
+  CloudinaryFileMeta } from '~/server/storage/cloudinary.server';
 import {
   generateCloudinarySignatures
-} from '~/server/storage/cloudinary.server'
-import type { Sport, Document, Event } from '~/types'
-import Header from '~/components/shared/Header'
-import TextField from '~/components/shared/form/TextField'
-import Button from '~/components/shared/Button'
-import { LocationMarkerIcon } from '@heroicons/react/outline'
-import { inputBaseClasses } from '~/components/shared/form/InputBase'
-import Config from '~/server/config.server'
-import { findSports } from '~/server/db/sports.server'
-import { findEvent } from '~/server/db/events.server'
-import Main from '~/components/shared/Main'
-import I18nText from '~/components/I18nText'
-import FormField from '~/components/shared/form/FormField'
-import { uploadImages } from '~/utils/misc'
-import { parseMultipartFormData } from '@remix-run/server-runtime/dist/formData'
+} from '~/server/storage/cloudinary.server';
+import type { Sport, Document, Event } from '~/types';
+import Header from '~/components/shared/Header';
+import TextField from '~/components/shared/form/TextField';
+import Button from '~/components/shared/Button';
+
+
+import { inputBaseClasses } from '~/components/shared/form/InputBase';
+import Config from '~/server/config.server';
+import { findSports } from '~/server/db/sports.server';
+import { findEvent } from '~/server/db/events.server';
+import Main from '~/components/shared/Main';
+import I18nText from '~/components/I18nText';
+import FormField from '~/components/shared/form/FormField';
+import { uploadImages } from '~/utils/misc';
+
 
 type ActionData = {
   formError?: string
@@ -57,23 +71,23 @@ type SportEvent = Event & {
   documents?: Array<Document>
 }
 
-const badRequest = (data: ActionData) => json(data, { status: 400 })
+const badRequest = (data: ActionData) => json(data, { status: 400 });
 
 export const handle = {
   i18n: ['common', 'create-event-form']
-}
+};
 
 export const loader: LoaderFunction = async ({ request, params }) => {
-  const sports = await findSports()
-  const files = generateCloudinarySignatures(4)
-  const event = params.eventId ? await findEvent(params.eventId) : null
+  const sports = await findSports();
+  const files = generateCloudinarySignatures(4);
+  const event = params.eventId ? await findEvent(params.eventId) : null;
 
   const {
     MAPBOX_TOKEN,
     IMAGE_UPLOAD_ENDPOINT,
     IMAGE_DISPLAY_ENDPOINT,
     CLOUDINARY_UPLOAD_PRESET
-  } = Config()
+  } = Config();
 
   return json({
     mapToken: MAPBOX_TOKEN,
@@ -83,27 +97,27 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     files,
     event,
     sports: sports.map((sport) => {
-      return { id: sport.id, name: sport.name }
+      return { id: sport.id, name: sport.name };
     })
-  })
-}
+  });
+};
 
 export const action: ActionFunction = async ({ request }) => {
   const uploadHandler: UploadHandler = async () => {
     // cleanup images from form - upload is done directly to cloudinary
-    return undefined
-  }
-  let form = await parseMultipartFormData(request, uploadHandler)
-  const x = 1
+    return undefined;
+  };
+  const form = await parseMultipartFormData(request, uploadHandler);
+  const x = 1;
 
   // eslint-disable-next-line no-console
-  console.log('form = ', form)
+  console.log('form = ', form);
   if (x === 1) {
     return badRequest({
-      formError: `Form not submitted correctly.`
-    })
+      formError: 'Form not submitted correctly.'
+    });
   }
-}
+};
 
 export const links: LinksFunction = () => {
   return [
@@ -119,8 +133,8 @@ export const links: LinksFunction = () => {
       rel: 'stylesheet',
       href: organizerCss
     }
-  ]
-}
+  ];
+};
 
 type Image = {
   name: string
@@ -131,27 +145,27 @@ type Image = {
   apiKey: string
 }
 
-const encTypeUpload = 'multipart/form-data'
+const encTypeUpload = 'multipart/form-data';
 const mapDbImages = (
   images: Array<Document> | undefined,
   url: string | undefined
 ): Array<string> => {
-  if (!images || images.length === 0) return []
+  if (!images || images.length === 0) {return [];}
   return images
     .sort((a, b) => a.position - b.position)
-    .map((img) => `${url}/${img.key}`)
-}
+    .map((img) => `${url}/${img.key}`);
+};
 
 function hackyEventRevival(event: Event | null): void {
-  if (!event) return
+  if (!event) {return;}
   // @ts-ignore
-  event.startAt = new Date(event.startAt)
+  event.startAt = new Date(event.startAt);
   // @ts-ignore
-  event.endAt = new Date(event.endAt)
+  event.endAt = new Date(event.endAt);
 }
 
 export default function OrganizerEventRoute() {
-  const { t } = useTranslation('create-event-form')
+  const { t } = useTranslation('create-event-form');
   const {
     sports,
     mapToken,
@@ -160,18 +174,19 @@ export default function OrganizerEventRoute() {
     imageDisplayEndpoint,
     files,
     event
-  } = useLoaderData<LoaderData>()
-  const [showLocationPicker, setShowLocationPicker] = useState<boolean>(false)
-  const [, setLocation] = useState<string | undefined | null>(event?.location)
-  const images: Array<Image | undefined> = new Array(4)
-  const loadedImages = mapDbImages(event?.documents, imageDisplayEndpoint)
+  } = useLoaderData<LoaderData>();
+  const [showLocationPicker, setShowLocationPicker] = useState<boolean>(false);
+  const [, setLocation] = useState<string | undefined | null>(event?.location);
+  const images: Array<Image | undefined> = new Array(4);
+  const loadedImages = mapDbImages(event?.documents, imageDisplayEndpoint);
 
   const setImage = (index: number, file: File) => {
-    const meta: CloudinaryFileMeta | undefined = files[index]
+    const meta: CloudinaryFileMeta | undefined = files[index];
+
     if (!meta)
-      throw new Error(
+      {throw new Error(
         'No upload metadata for this file - did you increased the number of pictures in the form (limited to 4)?'
-      )
+      );}
     images[index] = {
       name: `/image/${index}`,
       file,
@@ -179,11 +194,11 @@ export default function OrganizerEventRoute() {
       timestamp: meta.timestamp,
       signature: meta.signature,
       apiKey: meta.apiKey
-    }
-  }
+    };
+  };
 
   // Hack: while remix doesn't handle dates properly
-  hackyEventRevival(event)
+  hackyEventRevival(event);
 
   return (
     <Main>
@@ -327,5 +342,5 @@ export default function OrganizerEventRoute() {
         }
       />
     </Main>
-  )
+  );
 }

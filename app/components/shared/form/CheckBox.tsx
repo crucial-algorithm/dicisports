@@ -1,9 +1,11 @@
-import * as React from 'react'
-import Label from '~/components/shared/form/Label'
-import { useId } from '@reach/auto-id'
-import clsx from 'clsx'
-import { TranslationObject } from '~/types'
-import I18nText from '~/components/I18nText'
+import * as React from 'react';
+
+import { useId } from '@reach/auto-id';
+import clsx from 'clsx';
+
+import Label from '~/components/shared/form/Label';
+import type { TranslationObject } from '~/types';
+import I18nText from '~/components/I18nText';
 
 type CheckBoxOptions = {
   name: string
@@ -17,7 +19,8 @@ export default function CheckBox({
   className,
   checked
 }: CheckBoxOptions) {
-  const id = useId() || ''
+  const id = useId() || '';
+
   return (
     <div className={clsx('flex align-middle justify-between', className)}>
       <Label variant="secondary" htmlFor={id}>
@@ -36,5 +39,5 @@ export default function CheckBox({
         )}
       />
     </div>
-  )
+  );
 }

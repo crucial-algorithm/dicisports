@@ -1,4 +1,4 @@
-import * as React from 'react'
+import * as React from 'react';
 
 function MoonIcon() {
   return (
@@ -15,7 +15,7 @@ function MoonIcon() {
         fill="currentColor"
       />
     </svg>
-  )
+  );
 }
 
-export {MoonIcon}
+export { MoonIcon };

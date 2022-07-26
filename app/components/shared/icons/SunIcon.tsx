@@ -1,4 +1,4 @@
-import * as React from 'react'
+import * as React from 'react';
 
 function SunIcon() {
   return (
@@ -63,7 +63,7 @@ function SunIcon() {
         fill="currentColor"
       />
     </svg>
-  )
+  );
 }
 
-export {SunIcon}
+export { SunIcon };

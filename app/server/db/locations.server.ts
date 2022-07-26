@@ -1,6 +1,6 @@
-import { db } from '~/server/db.server'
-import { DBRawGroup, Group, GroupFilters } from '~/types'
-import { dbRawGroupToGroup } from '~/server/db/codecs.server'
+import { db } from '~/server/db.server';
+import type { DBRawGroup, Group, GroupFilters } from '~/types';
+import { dbRawGroupToGroup } from '~/server/db/codecs.server';
 
 async function findNearestGroups(
   lat: number,
@@ -9,11 +9,11 @@ async function findNearestGroups(
   chunkSize = 40,
   position = 0
 ): Promise<{ total: number; results: Group[] }> {
-  const { spirit, sport, dayOfWeek, timeOfDay } = filters
+  const { spirit, sport, dayOfWeek, timeOfDay } = filters;
   const n = (a: any | null, b: string) =>
-    a === null || (Array.isArray(a) && a.length === 0) ? '' : b
-  const s = (a: number[] | null): number[] => (a ? a : [])
-  const [b, e] = s(timeOfDay)
+    a === null || (Array.isArray(a) && a.length === 0) ? '' : b;
+  const s = (a: number[] | null): number[] => (a ? a : []);
+  const [b, e] = s(timeOfDay);
   const query = `
       SELECT *, count(1) over () as records
       FROM (
@@ -34,12 +34,13 @@ async function findNearestGroups(
                ORDER BY 1
            ) x
       LIMIT ${chunkSize} OFFSET ${position * chunkSize}
-  `
+  `;
   //console.log('----->', query)
-  const results: Array<DBRawGroup> = await db.$queryRawUnsafe(query)
-  const mapped = results.map(dbRawGroupToGroup)
-  const total = results.length === 0 ? 0 : results[0].records
-  return { results: mapped, total }
+  const results: Array<DBRawGroup> = await db.$queryRawUnsafe(query);
+  const mapped = results.map(dbRawGroupToGroup);
+  const total = results.length === 0 ? 0 : results[0].records;
+
+  return { results: mapped, total };
 }
 
-export { findNearestGroups }
+export { findNearestGroups };

@@ -1,7 +1,9 @@
-import * as React from 'react'
-import { NotificationMessage } from '~/components/shared/NotificationMessage'
-import { AnimatePresence, motion } from 'framer-motion'
-import { TeamCircle } from '~/components/shared/icons/TeamCircle'
+import * as React from 'react';
+
+import { AnimatePresence, motion } from 'framer-motion';
+
+import { NotificationMessage } from '~/components/shared/NotificationMessage';
+import { TeamCircle } from '~/components/shared/icons/TeamCircle';
 
 type Props = {
   visible: boolean
@@ -44,5 +46,5 @@ export default function TransitionIndicator({
         </div>
       </div>
     </NotificationMessage>
-  )
+  );
 }

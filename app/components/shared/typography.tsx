@@ -1,5 +1,5 @@
-import * as React from 'react'
-import clsx from 'clsx'
+import * as React from 'react';
+import clsx from 'clsx';
 
 type TitleProps = {
   variant?: 'primary' | 'secondary'
@@ -22,12 +22,12 @@ const fontSize = {
   h4: 'text-xl font-medium md:text-2xl',
   h5: 'text-lg font-medium md:text-xl',
   h6: 'text-lg font-medium'
-}
+};
 
 const titleColors = {
   primary: 'text-black dark:text-white',
   secondary: 'text-gray-400 dark:text-blueGray-500'
-}
+};
 
 function Title({
   variant = 'primary',
@@ -36,37 +36,38 @@ function Title({
   className,
   ...rest
 }: TitleProps & { size: keyof typeof fontSize }) {
-  const Tag = as ?? size
+  const Tag = as ?? size;
+
   return (
     <Tag
       className={clsx(fontSize[size], titleColors[variant], className)}
       {...rest}
     />
-  )
+  );
 }
 
 function H1(props: TitleProps) {
-  return <Title {...props} size="h1" />
+  return <Title {...props} size="h1" />;
 }
 
 function H2(props: TitleProps) {
-  return <Title {...props} size="h2" />
+  return <Title {...props} size="h2" />;
 }
 
 function H3(props: TitleProps) {
-  return <Title {...props} size="h3" />
+  return <Title {...props} size="h3" />;
 }
 
 function H4(props: TitleProps) {
-  return <Title {...props} size="h4" />
+  return <Title {...props} size="h4" />;
 }
 
 function H5(props: TitleProps) {
-  return <Title {...props} size="h5" />
+  return <Title {...props} size="h5" />;
 }
 
 function H6(props: TitleProps) {
-  return <Title {...props} size="h6" />
+  return <Title {...props} size="h6" />;
 }
 
 type ParagraphProps = {
@@ -91,7 +92,7 @@ function Paragraph({
       'prose prose-light dark:prose-dark': prose
     }),
     ...rest
-  })
+  });
 }
 
-export { H1, H2, H3, H4, H5, H6, Paragraph }
+export { H1, H2, H3, H4, H5, H6, Paragraph };

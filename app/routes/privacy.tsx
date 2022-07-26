@@ -1,5 +1,5 @@
-import PrivacyPolicyPT from '~/markdown/privacy.md'
-import Main from '~/components/shared/Main'
+import PrivacyPolicyPT from '~/markdown/privacy.md';
+import Main from '~/components/shared/Main';
 
 export default function Privacy() {
   return (
@@ -9,5 +9,5 @@ export default function Privacy() {
         <PrivacyPolicyPT />
       </article>
     </Main>
-  )
+  );
 }

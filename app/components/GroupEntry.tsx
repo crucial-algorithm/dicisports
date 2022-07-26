@@ -1,11 +1,17 @@
-import React, { ReactNode } from 'react'
-import { Group, TranslationObject } from '~/types'
-import { useTranslation } from 'react-i18next'
-import I18nText from '~/components/I18nText'
-import DisplayImg from '~/components/shared/DisplayImg'
-import { displayTimeOfDay } from '~/utils/misc'
-import clsx from 'clsx'
-import { Carousel } from 'react-responsive-carousel'
+import type { ReactNode } from 'react';
+import React from 'react';
+
+import { useTranslation } from 'react-i18next';
+
+import clsx from 'clsx';
+
+import { Carousel } from 'react-responsive-carousel';
+
+import type { Group, TranslationObject } from '~/types';
+import I18nText from '~/components/I18nText';
+import DisplayImg from '~/components/shared/DisplayImg';
+import { displayTimeOfDay } from '~/utils/misc';
+
 
 type Props = {
   actions?: React.ReactNode
@@ -15,8 +21,8 @@ type Props = {
 } & React.ComponentProps<'div'>
 
 export default function GroupEntry({ group, actions, footer, img }: Props) {
-  const { t } = useTranslation('m-groups')
-  const tc = useTranslation('common').t
+  const { t } = useTranslation('m-groups');
+  const tc = useTranslation('common').t;
   const day = tc(
     [
       'Monday',
@@ -27,7 +33,7 @@ export default function GroupEntry({ group, actions, footer, img }: Props) {
       'Saturday',
       'Sunday'
     ][group.dayOfWeek]
-  )
+  );
 
   return (
     <div
@@ -66,7 +72,7 @@ export default function GroupEntry({ group, actions, footer, img }: Props) {
         <div className="absolute top-0 right-0 p-4 pt-6">{actions}</div>
       ) : null}
     </div>
-  )
+  );
 }
 
 function PlaceholderImg({
@@ -77,8 +83,8 @@ function PlaceholderImg({
   className: string
   img?: string
 }) {
-  if (!img) return null
-  return <DisplayImg id={`product/sports/${img}`} alt={group.name || ''} />
+  if (!img) {return null;}
+  return <DisplayImg id={`product/sports/${img}`} alt={group.name || ''} />;
 }
 
 function Feature({
@@ -99,16 +105,16 @@ function Feature({
         </div>
       </div>
     </>
-  )
+  );
 }
 
 function GroupImage({ group, img }: { group: Group; img?: string }) {
   function Wrapper({ children }: {} & React.ComponentProps<'div'>) {
-    return <div className="w-full lg:w-144 lg:max-h-144">{children}</div>
+    return <div className="w-full lg:w-144 lg:max-h-144">{children}</div>;
   }
 
-  const { image1, image2, image3 } = group
-  const images: string[] = [image1, image2, image3].filter(Boolean) as string[]
+  const { image1, image2, image3 } = group;
+  const images: string[] = [image1, image2, image3].filter(Boolean) as string[];
 
   if (images.length === 0) {
     return (
@@ -119,7 +125,7 @@ function GroupImage({ group, img }: { group: Group; img?: string }) {
           className="w-full rounded-lg bg-gray-100 dark:bg-gray-400 object-cover object-left-top"
         />
       </Wrapper>
-    )
+    );
   }
 
   if (images.length === 1) {
@@ -130,11 +136,11 @@ function GroupImage({ group, img }: { group: Group; img?: string }) {
           alt={group.name || ''}
         />
       </Wrapper>
-    )
+    );
   }
 
   function cleanStatus() {
-    return ''
+    return '';
   }
 
   return (
@@ -155,5 +161,5 @@ function GroupImage({ group, img }: { group: Group; img?: string }) {
         ))}
       </Carousel>
     </Wrapper>
-  )
+  );
 }

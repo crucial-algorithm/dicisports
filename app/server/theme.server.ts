@@ -1,8 +1,9 @@
-import { createCookieSessionStorage } from 'remix'
-import { Theme, isTheme } from '~/utils/theme-provider'
-import Config from '~/server/config.server'
+import { createCookieSessionStorage } from 'remix';
 
-const { SESSION_SECRET } = Config()
+import { Theme, isTheme } from '~/utils/theme-provider';
+import Config from '~/server/config.server';
+
+const { SESSION_SECRET } = Config();
 
 const themeStorage = createCookieSessionStorage({
   cookie: {
@@ -15,18 +16,20 @@ const themeStorage = createCookieSessionStorage({
     expires: new Date('2082-09-13'),
     httpOnly: true
   }
-})
+});
 
 async function getThemeSession(request: Request) {
-  const session = await themeStorage.getSession(request.headers.get('Cookie'))
+  const session = await themeStorage.getSession(request.headers.get('Cookie'));
+
   return {
     getTheme: () => {
-      const themeValue = session.get('theme')
-      return isTheme(themeValue) ? themeValue : Theme.DARK
+      const themeValue = session.get('theme');
+
+      return isTheme(themeValue) ? themeValue : Theme.DARK;
     },
     setTheme: (theme: Theme) => session.set('theme', theme),
     commit: () => themeStorage.commitSession(session)
-  }
+  };
 }
 
-export { getThemeSession }
+export { getThemeSession };

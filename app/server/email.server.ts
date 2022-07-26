@@ -1,20 +1,23 @@
-import type { User } from '@prisma/client'
-import Config from '~/server/config.server'
+import type { User } from '@prisma/client';
+
+import Config from '~/server/config.server';
 
 const {
   MAILGUN_DOMAIN,
   MAILGUN_SENDING_KEY,
   CONVERT_KIT_API_KEY,
   CONVERT_KIT_FORM
-} = Config()
+} = Config();
 
-let mailgunDomain: string | undefined = MAILGUN_DOMAIN
+const mailgunDomain: string | undefined = MAILGUN_DOMAIN;
+
 if (process.env.NODE_ENV === 'production' && !MAILGUN_DOMAIN) {
-  throw new Error('MAILGUN_DOMAIN is required')
+  throw new Error('MAILGUN_DOMAIN is required');
 }
-let mailgunSendingKey: string | undefined = MAILGUN_SENDING_KEY
+const mailgunSendingKey: string | undefined = MAILGUN_SENDING_KEY;
+
 if (process.env.NODE_ENV === 'production' && !MAILGUN_SENDING_KEY) {
-  throw new Error('MAILGUN_SENDING_KEY is required')
+  throw new Error('MAILGUN_SENDING_KEY is required');
 }
 
 type MailgunMessage = {
@@ -26,18 +29,18 @@ type MailgunMessage = {
 }
 
 async function sendEmail({ to, from, subject, text, html }: MailgunMessage) {
-  const auth = `${Buffer.from(`api:${mailgunSendingKey}`).toString('base64')}`
+  const auth = `${Buffer.from(`api:${mailgunSendingKey}`).toString('base64')}`;
 
   if (html === null) {
-    html = text
+    html = text;
   }
 
   // @ts-ignore
-  const body = new URLSearchParams({ to, from, subject, text, html })
+  const body = new URLSearchParams({ to, from, subject, text, html });
 
   if (!MAILGUN_DOMAIN) {
     // eslint-disable-next-line no-console
-    console.log(text)
+    console.log(text);
   }
   await fetch(`https://api.eu.mailgun.net/v3/${mailgunDomain}/messages`, {
     method: 'post',
@@ -45,7 +48,7 @@ async function sendEmail({ to, from, subject, text, html }: MailgunMessage) {
     headers: {
       Authorization: `Basic ${auth}`
     }
-  })
+  });
 }
 
 async function sendMagicLinkEmail({
@@ -59,9 +62,9 @@ async function sendMagicLinkEmail({
   user?: User | null
   domainUrl: string
 }) {
-  const sender = `"DiciSports" <noreply@mail.dicisports.com>`
-  const { hostname } = new URL(domainUrl)
-  const userExists = Boolean(user)
+  const sender = '"DiciSports" <noreply@mail.dicisports.com>';
+  const { hostname } = new URL(domainUrl);
+  const userExists = Boolean(user);
 
   const text = `
 Segue o link para login no ${hostname}:
@@ -79,7 +82,7 @@ Ao abrir o link irás criar uma nova conta no ${hostname} com o email ${emailAdd
 Obrigado!
 
 P.S.  Se não solicitaste o email, ignora sem clickar no link (não incorres em qualquer risco de segurança).
-  `.trim()
+  `.trim();
 
   const html = `
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -136,17 +139,17 @@ P.S.  Se não solicitaste o email, ignora sem clickar no link (não incorres em 
     </div>
   </body>
 </html>
-  `
+  `;
 
   const message = {
     from: sender,
     to: emailAddress,
-    subject: `Link de autenticação para o dicisports.com  ✨`,
+    subject: 'Link de autenticação para o dicisports.com  ✨',
     text,
     html
-  }
+  };
 
-  await sendEmail(message)
+  await sendEmail(message);
 }
 
 async function sendWhatsAppGroupLink({
@@ -160,8 +163,8 @@ async function sendWhatsAppGroupLink({
   groupName: string
   whatsAppLink: string
 }) {
-  const sender = `"DiciSports" <noreply@mail.dicisports.com>`
-  const { hostname } = new URL(domainUrl)
+  const sender = '"DiciSports" <noreply@mail.dicisports.com>';
+  const { hostname } = new URL(domainUrl);
 
   const text = `
 Abre o link no teu telemóvel para te juntares ao group "${groupName}":
@@ -170,7 +173,7 @@ ${whatsAppLink}
 
 Obrigado!
 
-  `.trim()
+  `.trim();
 
   const html = `
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -219,7 +222,7 @@ Obrigado!
     </div>
   </body>
 </html>
-  `
+  `;
 
   const message = {
     from: sender,
@@ -227,22 +230,23 @@ Obrigado!
     subject: `Estás prestes a juntar-te ao ${groupName}✨`,
     text,
     html
-  }
+  };
 
-  await sendEmail(message)
+  await sendEmail(message);
 }
 
 async function subscribeUser(email: string, name?: string) {
   if (!CONVERT_KIT_FORM || !CONVERT_KIT_API_KEY) {
-    console.log('missing convertkit key && form... bypassing subscription')
-    return
+    console.log('missing convertkit key && form... bypassing subscription');
+    return;
   }
 
   const payload = {
     api_key: CONVERT_KIT_API_KEY,
     email,
     name
-  }
+  };
+
   return fetch(
     `https://api.convertkit.com/v3/forms/${CONVERT_KIT_FORM}/subscribe`,
     {
@@ -252,10 +256,10 @@ async function subscribeUser(email: string, name?: string) {
         'Content-Type': 'application/json'
       }
     }
-  )
+  );
 }
 
-export { sendEmail, sendMagicLinkEmail, sendWhatsAppGroupLink, subscribeUser }
+export { sendEmail, sendMagicLinkEmail, sendWhatsAppGroupLink, subscribeUser };
 
 /*
 eslint

@@ -1,5 +1,5 @@
-import React from 'react'
-import clsx from 'clsx'
+import React from 'react';
+import clsx from 'clsx';
 
 type Props = {
   id?: string
@@ -21,6 +21,6 @@ const Label: React.FC<Props> = ({ variant, htmlFor, className, children }) => (
   >
     {children}
   </label>
-)
+);
 
-export default Label
+export default Label;

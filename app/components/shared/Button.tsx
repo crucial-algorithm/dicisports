@@ -1,6 +1,7 @@
-import React from 'react'
-import clsx from 'clsx'
-import { Link, LinkProps } from 'remix'
+import React from 'react';
+import clsx from 'clsx';
+import type { LinkProps } from '@remix-run/react';
+import { Link } from '@remix-run/react';
 
 type Props = {
   onClick?: () => void
@@ -16,7 +17,7 @@ function classes({ className }: { className?: string }) {
     'text-lg font-medium',
     'focus:outline-none disabled:opacity-50',
     className
-  )
+  );
 }
 
 function AdornmentButton({
@@ -37,7 +38,7 @@ function AdornmentButton({
     >
       {children}
     </button>
-  )
+  );
 }
 
 const Button: React.FC<Props> = ({
@@ -53,11 +54,11 @@ const Button: React.FC<Props> = ({
   value
 }) => {
   if (variant === 'adornment')
-    return (
+    {return (
       <AdornmentButton className={className} onClick={onClick} type={type}>
         {children}
       </AdornmentButton>
-    )
+    );}
   return (
     <button
       type={type}
@@ -76,8 +77,8 @@ const Button: React.FC<Props> = ({
         {children}
       </ButtonInner>
     </button>
-  )
-}
+  );
+};
 
 interface ButtonProps {
   variant?: 'primary' | 'secondary' | 'danger' | 'link'
@@ -121,7 +122,7 @@ function ButtonInner({
         {children}
       </div>
     </>
-  )
+  );
 }
 
 type AnchorProps = React.DetailedHTMLProps<
@@ -145,24 +146,24 @@ const AnchorOrLink = React.forwardRef<
     prefetch,
     children,
     ...rest
-  } = props
-  let toUrl = ''
-  let shouldUserRegularAnchor = reload || download
+  } = props;
+  let toUrl = '';
+  let shouldUserRegularAnchor = reload || download;
 
   if (!shouldUserRegularAnchor && typeof href === 'string') {
-    shouldUserRegularAnchor = href.includes(':') || href.startsWith('#')
+    shouldUserRegularAnchor = href.includes(':') || href.startsWith('#');
   }
 
   if (!shouldUserRegularAnchor && typeof to === 'string') {
-    toUrl = to
-    shouldUserRegularAnchor = to.includes(':')
+    toUrl = to;
+    shouldUserRegularAnchor = to.includes(':');
   }
 
   if (!shouldUserRegularAnchor && typeof to === 'object') {
     toUrl = `${to.pathname ?? ''}${to.hash ? `#${to.hash}` : ''}${
       to.search ? `?${to.search}` : ''
-    }`
-    shouldUserRegularAnchor = to.pathname?.includes(':')
+    }`;
+    shouldUserRegularAnchor = to.pathname?.includes(':');
   }
 
   if (shouldUserRegularAnchor) {
@@ -170,15 +171,15 @@ const AnchorOrLink = React.forwardRef<
       <a {...rest} download={download} href={href ?? toUrl} ref={ref}>
         {children}
       </a>
-    )
+    );
   } else {
     return (
       <Link prefetch={prefetch} to={to ?? href ?? ''} {...rest} ref={ref}>
         {children}
       </Link>
-    )
+    );
   }
-})
+});
 
 const ButtonLink = React.forwardRef<
   HTMLAnchorElement,
@@ -193,9 +194,9 @@ const ButtonLink = React.forwardRef<
         {children}
       </ButtonInner>
     </AnchorOrLink>
-  )
-})
+  );
+});
 
-export default Button
+export default Button;
 
-export { ButtonLink }
+export { ButtonLink };

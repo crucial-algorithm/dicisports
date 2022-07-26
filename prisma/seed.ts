@@ -1,39 +1,40 @@
-import { PrismaClient, Status, Role } from '@prisma/client'
-import usersSeed from './data/users.json'
-import groupsSeed from './data/groups.json'
+import { PrismaClient, Status, Role } from '@prisma/client';
 
-const db = new PrismaClient()
+import usersSeed from './data/users.json';
+import groupsSeed from './data/groups.json';
+
+const db = new PrismaClient();
 
 async function persist(name: string, list: Array<any>, entity: any) {
   await Promise.all(
     list.map((data) => {
-      return entity.create({ data })
+      return entity.create({ data });
     })
   )
     .catch((err) => {
       if (err.code === 'P2002') {
-        console.log(`${name} already in db. skipping...`)
-        return
+        console.log(`${name} already in db. skipping...`);
+        return;
       }
-      console.error(`error seeding ${name}`, err)
+      console.error(`error seeding ${name}`, err);
     })
     .then(() => {
-      console.log(`seeded ${name}`)
-    })
+      console.log(`seeded ${name}`);
+    });
 }
 
 async function seed() {
-  await persist('sports', sports(), db.sport)
-  await persist('group types', groupTypes(), db.groupType)
-  await persist('group spirit', groupsSpirit(), db.groupSpirit)
+  await persist('sports', sports(), db.sport);
+  await persist('group types', groupTypes(), db.groupType);
+  await persist('group spirit', groupsSpirit(), db.groupSpirit);
 
-  await persist('users', users(), db.user)
-  await persist('groups', groups(), db.group)
-  await persist('events', events(), db.event)
-  await persist('documents', documents(), db.document)
+  await persist('users', users(), db.user);
+  await persist('groups', groups(), db.group);
+  await persist('events', events(), db.event);
+  await persist('documents', documents(), db.document);
 }
 
-seed().then()
+seed().then();
 
 function sports() {
   return [
@@ -72,7 +73,7 @@ function sports() {
       name: { pt: 'Enduro' },
       picture: 'enduro'
     }
-  ]
+  ];
 }
 
 function groupTypes() {
@@ -89,7 +90,7 @@ function groupTypes() {
       id: 3,
       name: { pt: 'Loja' }
     }
-  ]
+  ];
 }
 
 function groupsSpirit() {
@@ -114,7 +115,7 @@ function groupsSpirit() {
       id: 5,
       name: { pt: 'Turismo' }
     }
-  ]
+  ];
 }
 
 function events() {
@@ -148,7 +149,7 @@ function events() {
       createdAt: new Date('2021-12-31T08:00:00Z'),
       updatedAt: new Date('2021-12-31T08:00:00Z')
     }
-  ]
+  ];
 }
 
 function documents() {
@@ -218,7 +219,7 @@ function documents() {
       createdAt: new Date('2021-12-31T08:00:00Z'),
       updatedAt: new Date('2021-12-31T08:00:00Z')
     }
-  ]
+  ];
 }
 
 // Generated using the following SQL statement:
@@ -240,8 +241,8 @@ function users() {
       createdAt: new Date(u.createdAt),
       updatedAt: new Date(u.updatedAt),
       role: Role.MEMBER
-    }
-  })
+    };
+  });
 
   users.push({
     id: '3beca472138d6d234d3f',
@@ -250,8 +251,8 @@ function users() {
     email: 'u@gmail.com',
     name: 'Bike Brothers',
     role: Role.MEMBER
-  })
-  return users
+  });
+  return users;
 }
 
 // Generated using the following SQL statement:
@@ -291,8 +292,9 @@ function groups() {
       ...g,
       createdAt: new Date(g.createdAt),
       updatedAt: new Date(g.updatedAt)
-    }
-  })
+    };
+  });
+
   groups.push({
     id: 'FkoxmH5db6RXqBpExion',
     name: 'Bike Brothers Domingueira',
@@ -314,7 +316,7 @@ function groups() {
     updatedAt: new Date('2021-06-01T08:00:00Z'),
     status: Status.published,
     createdById: '3beca472138d6d234d3f'
-  })
+  });
 
   groups.push({
     id: 'GkoxmH5db6RXqBpExion',
@@ -337,6 +339,6 @@ function groups() {
     updatedAt: new Date('2021-06-01T08:00:00Z'),
     status: Status.published,
     createdById: '3beca472138d6d234d3f'
-  })
-  return groups
+  });
+  return groups;
 }

@@ -1,5 +1,5 @@
-import * as React from 'react'
-import clsx from 'clsx'
+import * as React from 'react';
+import clsx from 'clsx';
 
 interface GridProps {
   children: React.ReactNode
@@ -43,7 +43,7 @@ const Grid = React.forwardRef<HTMLElement, GridProps>(function Grid(
         {children}
       </div>
     </Tag>
-  )
-})
+  );
+});
 
-export { Grid }
+export { Grid };

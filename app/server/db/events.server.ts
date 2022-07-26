@@ -1,25 +1,27 @@
-import { db } from '~/server/db.server'
-import { Event, Status } from '@prisma/client'
-import Id from '~/server/utils/Id.server'
+import type { Event } from '@prisma/client';
+import { Status } from '@prisma/client';
+
+import { db } from '~/server/db.server';
+import Id from '~/server/utils/Id.server';
 
 async function findEvents(): Promise<Array<Event>> {
   return db.event.findMany({
     where: {
       name: { not: Status.draft }
     }
-  })
+  });
 }
 
 async function findEvent(id: string): Promise<Event | null> {
   return db.event.findUnique({
     where: { id },
     include: { documents: true }
-  })
+  });
 }
 
 async function createDraftEvent(id?: string): Promise<Event | null> {
-  const eventId = id ? id : Id()
-  const eventAt = new Date()
+  const eventId = id ? id : Id();
+  const eventAt = new Date();
 
   return db.event.create({
     data: {
@@ -35,7 +37,7 @@ async function createDraftEvent(id?: string): Promise<Event | null> {
       createdAt: eventAt,
       updatedAt: eventAt
     }
-  })
+  });
 }
 
-export { findEvents, findEvent, createDraftEvent }
+export { findEvents, findEvent, createDraftEvent };

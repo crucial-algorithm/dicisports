@@ -1,8 +1,10 @@
-import React from 'react'
-import clsx from 'clsx'
-import Label from '~/components/shared/form/Label'
-import InputError from '~/components/shared/form/InputError'
-import { useId } from '@reach/auto-id'
+import React from 'react';
+import clsx from 'clsx';
+
+import { useId } from '@reach/auto-id';
+
+import Label from '~/components/shared/form/Label';
+import InputError from '~/components/shared/form/InputError';
 
 type Props = {
   label: string
@@ -18,10 +20,10 @@ const FormField: React.FC<Props> = ({
   description,
   children
 }) => {
-  const prefix = useId()
-  const inputId = id ?? `${prefix}-${label}`
-  const errorId = `${inputId}-error`
-  const descriptionId = `${inputId}-description`
+  const prefix = useId();
+  const inputId = id ?? `${prefix}-${label}`;
+  const errorId = `${inputId}-error`;
+  const descriptionId = `${inputId}-description`;
 
   return (
     <div className={clsx('mb-8', className)}>
@@ -38,7 +40,7 @@ const FormField: React.FC<Props> = ({
 
       {children}
     </div>
-  )
-}
+  );
+};
 
-export default FormField
+export default FormField;

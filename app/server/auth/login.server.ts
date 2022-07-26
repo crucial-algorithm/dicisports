@@ -1,8 +1,10 @@
-import { createCookieSessionStorage } from 'remix'
-import { decrypt, encrypt } from '../utils/encryption.server'
-import Config from '~/server/config.server'
+import { createCookieSessionStorage } from 'remix';
 
-const linkExpirationTime = 1000 * 60 * 30
+import Config from '~/server/config.server';
+
+import { decrypt, encrypt } from '../utils/encryption.server';
+
+const linkExpirationTime = 1000 * 60 * 30;
 
 const loginInfoStorage = createCookieSessionStorage({
   cookie: {
@@ -14,18 +16,20 @@ const loginInfoStorage = createCookieSessionStorage({
     maxAge: linkExpirationTime / 1000,
     httpOnly: true
   }
-})
+});
 
 async function getLoginInfoSession(request: Request) {
   const session = await loginInfoStorage.getSession(
     request.headers.get('Cookie')
-  )
-  const initialValue = await loginInfoStorage.commitSession(session)
+  );
+  const initialValue = await loginInfoStorage.commitSession(session);
 
   const commit = async () => {
-    const currentValue = await loginInfoStorage.commitSession(session)
-    return currentValue === initialValue ? null : currentValue
-  }
+    const currentValue = await loginInfoStorage.commitSession(session);
+
+    return currentValue === initialValue ? null : currentValue;
+  };
+
   return {
     getEmail: () => session.get('email') as string | undefined,
     setEmail: (email: string) => session.set('email', email),
@@ -34,8 +38,9 @@ async function getLoginInfoSession(request: Request) {
     // end user can access the cookie and see the plaintext magic link which
     // would allow them to login as any user 😬
     getMagicLink: () => {
-      const link = session.get('magicLink') as string | undefined
-      if (link) return decrypt(link)
+      const link = session.get('magicLink') as string | undefined;
+
+      if (link) {return decrypt(link);}
     },
     setMagicLink: (magicLink: string) =>
       session.set('magicLink', encrypt(magicLink)),
@@ -48,10 +53,10 @@ async function getLoginInfoSession(request: Request) {
     getError: () => session.get('error') as string | undefined,
     flashError: (error: string) => session.flash('error', error),
     clean: () => {
-      session.unset('email')
-      session.unset('magicLink')
-      session.unset('error')
-      session.unset('magicLinkVerified')
+      session.unset('email');
+      session.unset('magicLink');
+      session.unset('error');
+      session.unset('magicLinkVerified');
     },
     destroy: () => loginInfoStorage.destroySession(session),
     commit,
@@ -60,19 +65,21 @@ async function getLoginInfoSession(request: Request) {
      * It will set the 'Set-Cookie' header value on that headers object.
      * It will then return that Headers object.
      */
+    // eslint-disable-next-line no-undef
     getHeaders: async (headers: ResponseInit['headers'] = new Headers()) => {
-      const value = await commit()
-      if (!value) return headers
+      const value = await commit();
+
+      if (!value) {return headers;}
       if (headers instanceof Headers) {
-        headers.append('Set-Cookie', value)
+        headers.append('Set-Cookie', value);
       } else if (Array.isArray(headers)) {
-        headers.push(['Set-Cookie', value])
+        headers.push(['Set-Cookie', value]);
       } else {
-        headers['Set-Cookie'] = value
+        headers['Set-Cookie'] = value;
       }
-      return headers
+      return headers;
     }
-  }
+  };
 }
 
-export { getLoginInfoSession }
+export { getLoginInfoSession };

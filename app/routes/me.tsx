@@ -1,25 +1,38 @@
-import ProfileFragment from '~/components/ProfileFragment'
-import { useRootData } from '~/utils/use-root-data'
-import type { ActionFunction, LoaderFunction} from 'remix';
-import { json, redirect } from 'remix'
-import { useActionData } from '@remix-run/react'
-import i18n from '~/server/i18n.server'
-import { Form } from '@remix-run/react'
-import Button from '~/components/shared/Button'
-import { LogoutIcon } from '@heroicons/react/solid'
-import InputError from '~/components/shared/form/InputError'
-import { H2, H3, H6 } from '~/components/shared/typography'
-import { getSession, requireUser } from '~/server/auth/session.server'
-import { handleFormSubmission } from '~/server/actions.server'
-import { updateUser } from '~/server/db/users.server'
-import { useTranslation } from 'react-i18next'
-import Main from '~/components/shared/Main'
-import { Spacer } from '~/components/shared/Spacer'
+import type { ActionFunction, LoaderFunction } from 'remix';
+
+import { json, redirect } from 'remix';
+
+import { useActionData } from '@remix-run/react';
+
+import { Form } from '@remix-run/react';
+
+import { LogoutIcon } from '@heroicons/react/solid';
+
+import { useTranslation } from 'react-i18next';
+
+import ProfileFragment from '~/components/ProfileFragment';
+import { useRootData } from '~/utils/use-root-data';
+
+import i18n from '~/server/i18n.server';
+
+
+import Button from '~/components/shared/Button';
+
+
+import InputError from '~/components/shared/form/InputError';
+import { H2, H3, H6 } from '~/components/shared/typography';
+import { getSession, requireUser } from '~/server/auth/session.server';
+import { handleFormSubmission } from '~/server/actions.server';
+import { updateUser } from '~/server/db/users.server';
+
+
+import Main from '~/components/shared/Main';
+import { Spacer } from '~/components/shared/Spacer';
 
 const actionIds = {
   logout: 'logout',
   changeDetails: 'change details'
-}
+};
 
 type ActionData = {
   status: 'success' | 'error'
@@ -34,32 +47,35 @@ type ActionData = {
 
 export const handle = {
   i18n: ['common', 'me']
-}
+};
 
 export const loader: LoaderFunction = async ({ request, params }) => {
-  await requireUser(request)
-  return json({})
-}
+  await requireUser(request);
+  return json({});
+};
 
 export const action: ActionFunction = async ({ request }) => {
-  const t = await i18n.getFixedT(request, 'profile')
-  const user = await requireUser(request)
-  const form = new URLSearchParams(await request.text())
-  const actionId = form.get('actionId')
+  const t = await i18n.getFixedT(request, 'profile');
+  const user = await requireUser(request);
+  const form = new URLSearchParams(await request.text());
+  const actionId = form.get('actionId');
+
   if (actionId === actionIds.logout) {
-    const session = await getSession(request)
-    session.signOut()
+    const session = await getSession(request);
+
+    session.signOut();
     const searchParams = new URLSearchParams({
       message: await t('See you again soon')
-    })
+    });
+
     return redirect(`/?${searchParams.toString()}`, {
       headers: await session.getHeaders()
-    })
+    });
   }
 
   function getFirstNameError(firstName: string | null) {
-    if (!firstName?.length) return t('Required Name')
-    return null
+    if (!firstName?.length) {return t('Required Name');}
+    return null;
   }
 
   return await handleFormSubmission<ActionData>({
@@ -67,20 +83,21 @@ export const action: ActionFunction = async ({ request }) => {
     validators: { name: getFirstNameError },
     handleFormValues: async ({ name }) => {
       if (name && user.name !== name) {
-        await updateUser(user.id, name)
+        await updateUser(user.id, name);
       }
       const searchParams = new URLSearchParams({
         message: await t('Profile Saved Successfully')
-      })
-      return redirect(`/me?${searchParams.toString()}`)
+      });
+
+      return redirect(`/me?${searchParams.toString()}`);
     }
-  })
-}
+  });
+};
 
 export default function Me() {
-  const { user } = useRootData()
-  const actionData = useActionData<ActionData>()
-  const { t } = useTranslation('me')
+  const { user } = useRootData();
+  const actionData = useActionData<ActionData>();
+  const { t } = useTranslation('me');
 
   return (
     <Main>
@@ -93,7 +110,7 @@ export default function Me() {
           </Button>
         </Form>
         <Spacer size="xs" />
-        <H2>{t(`Here's your profile`)}</H2>
+        <H2>{t('Here\'s your profile')}</H2>
         <H3 variant="secondary" as="p">
           {t('Edit as you wish')}
         </H3>
@@ -116,5 +133,5 @@ export default function Me() {
         </div>
       </div>
     </Main>
-  )
+  );
 }

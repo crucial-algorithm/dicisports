@@ -1,4 +1,14 @@
+import type {
+  Group as DBGroup,
+  GroupType as DBGroupType,
+  GroupSpirit as DBGroupSpirit,
+  Sport as DBSport,
+  Status } from '@prisma/client';
 import {
+  Role
+} from '@prisma/client';
+
+import type {
   DaysOfWeek,
   Group,
   GroupSpirit,
@@ -7,45 +17,40 @@ import {
   User,
   Sport,
   DBRawGroup
-} from '~/types'
-import {
-  Group as DBGroup,
-  GroupType as DBGroupType,
-  GroupSpirit as DBGroupSpirit,
-  Sport as DBSport,
-  Status,
-  Role
-} from '@prisma/client'
+} from '~/types';
 
 function dbSportToSport(sport: DBSport): Sport {
-  const { id, name, createdAt, updatedAt, picture } = sport
+  const { id, name, createdAt, updatedAt, picture } = sport;
+
   return {
     id,
     createdAt,
     updatedAt,
     name: name as TranslationObject,
     picture
-  }
+  };
 }
 
 function dbGroupSpiritToGroupSpirit(group: DBGroupSpirit): GroupSpirit {
-  const { id, name, createdAt, updatedAt } = group
+  const { id, name, createdAt, updatedAt } = group;
+
   return {
     id,
     createdAt,
     updatedAt,
     name: name as TranslationObject
-  }
+  };
 }
 
 function dbGroupTypeToGroupType(group: DBGroupType): GroupType {
-  const { id, name, createdAt, updatedAt } = group
+  const { id, name, createdAt, updatedAt } = group;
+
   return {
     id,
     createdAt,
     updatedAt,
     name: name as TranslationObject
-  }
+  };
 }
 
 type GroupInput = {
@@ -66,7 +71,7 @@ function dbGroupToGroup(group: GroupInput): Group {
       ? dbGroupTypeToGroupType(group.groupType)
       : undefined,
     sport: group.sport ? dbSportToSport(group.sport) : undefined
-  }
+  };
 }
 
 function dbRawGroupToGroup(group: DBRawGroup): Group {
@@ -106,7 +111,7 @@ function dbRawGroupToGroup(group: DBRawGroup): Group {
       email: '',
       role: Role.MEMBER
     }
-  }
+  };
 }
 
 export {
@@ -115,4 +120,4 @@ export {
   dbGroupTypeToGroupType,
   dbGroupToGroup,
   dbRawGroupToGroup
-}
+};

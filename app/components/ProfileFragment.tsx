@@ -1,7 +1,8 @@
-import React from 'react'
-import FormField from '~/components/shared/form/FormField'
-import TextField from '~/components/shared/form/TextField'
-import { MemberProfile } from '~/types'
+import React from 'react';
+
+import FormField from '~/components/shared/form/FormField';
+import TextField from '~/components/shared/form/TextField';
+import type { MemberProfile } from '~/types';
 
 type Props = {
   profile?: MemberProfile
@@ -24,7 +25,7 @@ const ProfileFragment: React.FC<Props> = ({
         <TextField name="email" defaultValue={profile?.email} disabled />
       </FormField>
     </>
-  )
-}
+  );
+};
 
-export default ProfileFragment
+export default ProfileFragment;

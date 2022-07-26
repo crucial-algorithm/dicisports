@@ -1,13 +1,34 @@
-import * as React from 'react'
-import type { SyntheticEvent} from 'react';
-import { useEffect, useRef, useState } from 'react'
-import type { LoaderFunction } from 'remix'
-import { Link, useFetcher, useLocation } from '@remix-run/react'
-import { useTranslation } from 'react-i18next'
-import Main from '~/components/shared/Main'
-import { Form, useLoaderData } from '@remix-run/react'
-import { Spacer } from '~/components/shared/Spacer'
-import Button, { ButtonLink } from '~/components/shared/Button'
+import * as React from 'react';
+import type { SyntheticEvent } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import type { LoaderFunction } from 'remix';
+import { Link, useFetcher, useLocation } from '@remix-run/react';
+import { useTranslation } from 'react-i18next';
+
+import { Form, useLoaderData } from '@remix-run/react';
+
+import {
+  AdjustmentsIcon,
+  ChevronDownIcon,
+  HeartIcon as Favorite,
+  ShareIcon
+} from '@heroicons/react/solid';
+
+import { XCircleIcon } from '@heroicons/react/outline';
+
+import { HeartIcon } from '@heroicons/react/outline';
+
+import clsx from 'clsx';
+
+import type { TFunction } from 'i18next';
+
+import { CopyToClipboard } from 'react-copy-to-clipboard';
+
+import { json } from 'remix';
+
+import Main from '~/components/shared/Main';
+import { Spacer } from '~/components/shared/Spacer';
+import Button, { ButtonLink } from '~/components/shared/Button';
 import type {
   DaysOfWeek,
   DiciLocation,
@@ -16,41 +37,40 @@ import type {
   GroupSpirit,
   Language,
   Sport
-} from '~/types'
-import { findNearestGroups } from '~/server/db/locations.server'
-import GroupEntry from '~/components/GroupEntry'
-import {
-  AdjustmentsIcon,
-  ChevronDownIcon,
-  HeartIcon as Favorite,
-  ShareIcon
-} from '@heroicons/react/solid'
-import { XCircleIcon } from '@heroicons/react/outline'
-import SearchLocations from '~/components/SearchLocations'
-import ButtonGroup from '~/components/shared/ButtonGroup'
-import { HeartIcon } from '@heroicons/react/outline'
-import { H3 } from '~/components/shared/typography'
-import FormField from '~/components/shared/form/FormField'
-import CheckBox from '~/components/shared/form/CheckBox'
-import { findGroupsSpirit } from '~/server/db/groupsSpirit.server'
-import { findSports } from '~/server/db/sports.server'
+} from '~/types';
+import { findNearestGroups } from '~/server/db/locations.server';
+import GroupEntry from '~/components/GroupEntry';
+
+
+import SearchLocations from '~/components/SearchLocations';
+import ButtonGroup from '~/components/shared/ButtonGroup';
+
+
+import { H3 } from '~/components/shared/typography';
+import FormField from '~/components/shared/form/FormField';
+import CheckBox from '~/components/shared/form/CheckBox';
+import { findGroupsSpirit } from '~/server/db/groupsSpirit.server';
+import { findSports } from '~/server/db/sports.server';
 import type { Option } from '~/components/shared/form/ComboBox';
-import ComboBox from '~/components/shared/form/ComboBox'
-import clsx from 'clsx'
-import { getLocalizedText, PeekDayOfWeek } from '~/utils/misc'
-import type { TFunction } from 'i18next'
-import HomeLogo from '~/components/shared/HomeLogo'
-import DisplayImg from '~/components/shared/DisplayImg'
-import { findUserFavoriteGroups } from '~/server/db/groups.server'
-import { getUser } from '~/server/auth/session.server'
-import { Notification } from '~/components/shared/NotificationMessage'
-import { CopyToClipboard } from 'react-copy-to-clipboard'
-import Config from '~/server/config.server'
-import MyLocationIcon from '~/components/shared/MyLocationIcon'
-import TransitionIndicator from '~/components/shared/TransitionIndicator'
-import WhatsApp from '~/components/shared/icons/WhatsApp'
-import { useRootData } from '~/utils/use-root-data'
-import { json } from 'remix'
+import ComboBox from '~/components/shared/form/ComboBox';
+
+
+import { getLocalizedText, PeekDayOfWeek } from '~/utils/misc';
+
+
+import HomeLogo from '~/components/shared/HomeLogo';
+import DisplayImg from '~/components/shared/DisplayImg';
+import { findUserFavoriteGroups } from '~/server/db/groups.server';
+import { getUser } from '~/server/auth/session.server';
+import { Notification } from '~/components/shared/NotificationMessage';
+
+
+import Config from '~/server/config.server';
+import MyLocationIcon from '~/components/shared/MyLocationIcon';
+import TransitionIndicator from '~/components/shared/TransitionIndicator';
+import WhatsApp from '~/components/shared/icons/WhatsApp';
+import { useRootData } from '~/utils/use-root-data';
+
 
 type FilterParams = {
   actionId: keyof typeof actions | null
@@ -84,30 +104,31 @@ const actions = {
   search: 'search',
   more: 'more',
   pickSport: 'pickSport'
-}
+};
 
 const dayParts = {
   morning: 'Morning',
   afternoon: 'Afternoon',
   evening: 'Evening'
-}
+};
 
 const countryCoords = {
   PT: [40.2287547, -8.4512937]
-}
+};
 
 export const handle = {
   i18n: ['common', 'home', 'm-groups']
-}
+};
 
-export let loader: LoaderFunction = async ({ request, params, context }) => {
-  const data = parseQueryString(request.url)
+export const loader: LoaderFunction = async ({ request, params, context }) => {
+  const data = parseQueryString(request.url);
   // Initial load
-  const user = await getUser(request)
-  const favorites = user ? await findUserFavoriteGroups(user.id) : []
+  const user = await getUser(request);
+  const favorites = user ? await findUserFavoriteGroups(user.id) : [];
 
-  let result: ActionData | null = null
-  let page = data.page || 0
+  let result: ActionData | null = null;
+  const page = data.page || 0;
+
   if (data.actionId === actions.search || data.actionId === actions.more) {
     result = await search(
       data.dayParts,
@@ -117,10 +138,10 @@ export let loader: LoaderFunction = async ({ request, params, context }) => {
       data.dayOfWeek || -1,
       data.actionId === actions.more ? page + 1 : page,
       data.actionId !== actions.more
-    )
+    );
   }
 
-  const { MAPBOX_TOKEN } = Config()
+  const { MAPBOX_TOKEN } = Config();
 
   return json(
     {
@@ -130,19 +151,20 @@ export let loader: LoaderFunction = async ({ request, params, context }) => {
       result,
       mapToken: MAPBOX_TOKEN
     }
-  )
-}
+  );
+};
 
 function parseQueryString(url: string): FilterParams {
-  const { searchParams } = new URL(url)
-  const actionId = searchParams.get('actionId') as keyof typeof actions
-  const coords = searchParams.get('coords')
-  const search = searchParams.get('search')
-  const page = numberOrNull(searchParams.get('page'))
-  const sport = numberOrNull(searchParams.get('sport'))
-  const dayOfWeek = numberOrNull(searchParams.get('dow'))
-  const dayParts = searchParams.getAll('daypart')
-  const spirit = searchParams.getAll('spirit')
+  const { searchParams } = new URL(url);
+  const actionId = searchParams.get('actionId') as keyof typeof actions;
+  const coords = searchParams.get('coords');
+  const search = searchParams.get('search');
+  const page = numberOrNull(searchParams.get('page'));
+  const sport = numberOrNull(searchParams.get('sport'));
+  const dayOfWeek = numberOrNull(searchParams.get('dow'));
+  const dayParts = searchParams.getAll('daypart');
+  const spirit = searchParams.getAll('spirit');
+
   return {
     actionId,
     coords,
@@ -152,41 +174,44 @@ function parseQueryString(url: string): FilterParams {
     dayOfWeek,
     dayParts: dayParts,
     spirit: spirit.map((v) => parseInt(v))
-  }
+  };
 }
 
 function numberOrNull(value: string | null) {
-  if (value === null) return null
-  const n = parseInt(value, 10)
-  if (isNaN(n)) return null
-  return n
+  if (value === null) {return null;}
+  const n = parseInt(value, 10);
+
+  if (isNaN(n)) {return null;}
+  return n;
 }
 
 const dayPartToTimeInterval = (dayPart: string): [number, number] => {
   switch (dayPart) {
     case dayParts.morning:
-      return [0, 1159]
+      return [0, 1159];
     case dayParts.afternoon:
-      return [1200, 1959]
+      return [1200, 1959];
     case dayParts.evening:
-      return [2000, 2359]
+      return [2000, 2359];
     default:
-      return [0, 2400]
+      return [0, 2400];
   }
-}
+};
 
 const reduceDayParts = (parts: [number, number][]): [number, number] => {
-  const flattened: number[] = []
-  parts.map((p) => flattened.push(...p))
-  let min = 2500
-  let max = 0
+  const flattened: number[] = [];
+
+  parts.map((p) => flattened.push(...p));
+  let min = 2500;
+  let max = 0;
+
   flattened.map((value) => {
-    min = Math.min(value, min)
-    max = Math.max(value, max)
-    return value
-  })
-  return [min, max]
-}
+    min = Math.min(value, min);
+    max = Math.max(value, max);
+    return value;
+  });
+  return [min, max];
+};
 
 async function search(
   dayParts: string[] | null,
@@ -197,7 +222,7 @@ async function search(
   page: number,
   reset: boolean = true
 ): Promise<ActionData> {
-  const [lat, lng] = coords ? coords.split(',') : countryCoords.PT
+  const [lat, lng] = coords ? coords.split(',') : countryCoords.PT;
   const filters = {
     spirit: spirit || null,
     sport: !sport || sport === -1 ? null : sport,
@@ -206,105 +231,106 @@ async function search(
       dayParts === null || dayParts.length === 0
         ? null
         : reduceDayParts(dayParts.map(dayPartToTimeInterval))
-  }
+  };
   const { total, results } = await findNearestGroups(
     typeof lat === 'string' ? parseFloat(lat) : lat,
     typeof lng === 'string' ? parseFloat(lng) : lng,
     filters,
     10,
     page
-  )
+  );
 
   return {
     results: results.map((g) => {
       return {
         ...g,
         distance: Math.round(g.distance || 0) // save some bandwidth
-      }
+      };
     }),
     total,
     filters,
     reset,
     page
-  }
+  };
 }
 
 export default function Index() {
-  let { t, i18n } = useTranslation('home')
-  const { user } = useRootData()
-  const lang = i18n.language as Language
-  let tc = useTranslation('common').t
+  const { t, i18n } = useTranslation('home');
+  const { user } = useRootData();
+  const lang = i18n.language as Language;
+  const tc = useTranslation('common').t;
   const { sports, groupsSpirit, result, favorites, mapToken } =
-    useLoaderData<LoaderData>()
-  const [selection, setSelection] = useState<DiciLocation | undefined>()
-  const data = result
-  const [page, setPage] = useState<number>(data?.page || 0)
-  const [groups, setGroups] = useState<Array<Group>>([])
-  const [filtersModalOpen, setFiltersModalOpen] = useState<boolean>(false)
-  const [searchPerformed, setSearchPerformed] = useState<boolean>(false)
-  const [areCoordsSet, setAreCoordsSet] = useState<boolean>(true)
-  const [address, setAddress] = useState<string>('')
-  const location = useLocation()
-  const filters = parseQueryString(`https://a.com/${location.search}`)
+    useLoaderData<LoaderData>();
+  const [selection, setSelection] = useState<DiciLocation | undefined>();
+  const data = result;
+  const [page, setPage] = useState<number>(data?.page || 0);
+  const [groups, setGroups] = useState<Array<Group>>([]);
+  const [filtersModalOpen, setFiltersModalOpen] = useState<boolean>(false);
+  const [searchPerformed, setSearchPerformed] = useState<boolean>(false);
+  const [areCoordsSet, setAreCoordsSet] = useState<boolean>(true);
+  const [address, setAddress] = useState<string>('');
+  const location = useLocation();
+  const filters = parseQueryString(`https://a.com/${location.search}`);
 
   useEffect(() => {
     if (!result) {
       if (groups.length > 0) {
-        setGroups([])
-        setSearchPerformed(false)
-        setFiltersModalOpen(false)
+        setGroups([]);
+        setSearchPerformed(false);
+        setFiltersModalOpen(false);
       }
-      return
+      return;
     }
-    setSearchPerformed(true)
+    setSearchPerformed(true);
 
-    const { reset, results } = result as ActionData
+    const { reset, results } = result as ActionData;
 
-    if (reset) setPage(0)
-    if (!results) return
-    const list = reset ? [] : [...groups]
+    if (reset) {setPage(0);}
+    if (!results) {return;}
+    const list = reset ? [] : [...groups];
 
-    results.map((r) => list.push(r))
-    setGroups(list)
-    const url = new URL(window.location.href)
-    setAddress(url.origin)
-    setAreCoordsSet(url.searchParams.get('coords') !== null)
+    results.map((r) => list.push(r));
+    setGroups(list);
+    const url = new URL(window.location.href);
+
+    setAddress(url.origin);
+    setAreCoordsSet(url.searchParams.get('coords') !== null);
 
     // when people go back, remove search performed, to make sure the
     // grid of sports appears again
-    window.onpopstate = handleResetSearchPerformed
+    window.onpopstate = handleResetSearchPerformed;
     return () => {
-      window.onpopstate = null
-    }
-  }, [result, location, areCoordsSet])
+      window.onpopstate = null;
+    };
+  }, [result, location, areCoordsSet]);
 
-  let showMoreResults = !!data && data.results.length < data.total
+  const showMoreResults = !!data && data.results.length < data.total;
 
   function handleOnSubmit() {
-    setSearchPerformed(true)
-    setFiltersModalOpen(false)
+    setSearchPerformed(true);
+    setFiltersModalOpen(false);
   }
 
   function handleSearchLocations(
     o: DiciLocation | SyntheticEvent<HTMLSelectElement>
   ) {
-    setSelection(o as DiciLocation)
+    setSelection(o as DiciLocation);
   }
 
   function handleOpenFilters() {
-    setFiltersModalOpen(true)
+    setFiltersModalOpen(true);
   }
 
   function handleCloseFilters() {
-    setFiltersModalOpen(false)
+    setFiltersModalOpen(false);
   }
 
   function handleLoadNextPage() {
-    setPage(page + 1)
+    setPage(page + 1);
   }
 
   function handleResetSearchPerformed() {
-    setSearchPerformed(false)
+    setSearchPerformed(false);
   }
 
   return (
@@ -434,7 +460,7 @@ export default function Index() {
         </>
       ) : null}
     </Main>
-  )
+  );
 }
 
 function CallToActionToCreateGroup({
@@ -456,7 +482,7 @@ function CallToActionToCreateGroup({
         {label}
       </button>
     </Form>
-  )
+  );
 }
 
 function GroupResult({
@@ -484,56 +510,57 @@ function GroupResult({
   location: string
   isLoggedIn: boolean
 }) {
-  const favorite = useFetcher()
-  const ref = useRef()
-  const [message, setMessage] = useState<string>(favAddedMessage)
-  const [searchingLocation, setSearchingLocation] = useState<boolean>(false)
-  let showFavoriteAddedNotification: any = null
-  let showCopiedToClipboardNotification: any = null
+  const favorite = useFetcher();
+  const ref = useRef();
+  const [message, setMessage] = useState<string>(favAddedMessage);
+  const [searchingLocation, setSearchingLocation] = useState<boolean>(false);
+  let showFavoriteAddedNotification: any = null;
+  let showCopiedToClipboardNotification: any = null;
 
   function handlerSetShowNotificationFunction(callback: () => void) {
-    showFavoriteAddedNotification = callback
+    showFavoriteAddedNotification = callback;
   }
 
   function handlerSetShowNotificationCopyToClipboard(callback: () => void) {
-    showCopiedToClipboardNotification = callback
+    showCopiedToClipboardNotification = callback;
   }
 
   function handlerClickToCopy() {
-    showCopiedToClipboardNotification()
+    showCopiedToClipboardNotification();
   }
 
   function getUsersLocation() {
-    setSearchingLocation(true)
+    setSearchingLocation(true);
     navigator.geolocation.getCurrentPosition((position) => {
-      setSearchingLocation(false)
-      const { latitude, longitude } = position.coords
-      const url = new URL(window.location.href)
-      url.searchParams.set('coords', `${latitude},${longitude}`)
+      setSearchingLocation(false);
+      const { latitude, longitude } = position.coords;
+      const url = new URL(window.location.href);
+
+      url.searchParams.set('coords', `${latitude},${longitude}`);
       setTimeout(() => {
-        window.location.replace(url.toString())
-      }, 1000)
-    })
+        window.location.replace(url.toString());
+      }, 1000);
+    });
   }
 
   useEffect(() => {
     if (favorite.type === 'done' && favorite.data.ok) {
-      if (ref.current) (ref.current as HTMLFormElement).reset()
+      if (ref.current) {(ref.current as HTMLFormElement).reset();}
       setMessage(
         favorite.data.action === 'add' ? favAddedMessage : favRemovedMessage
-      )
-      showFavoriteAddedNotification()
+      );
+      showFavoriteAddedNotification();
     }
   }, [
     favorite,
     favAddedMessage,
     favRemovedMessage,
     showFavoriteAddedNotification
-  ])
+  ]);
 
   const whatsAppLink = isLoggedIn
     ? group.whatsapp || ''
-    : `/login?a=ws&g=${group.id}&l=${location}`
+    : `/login?a=ws&g=${group.id}&l=${location}`;
 
   return (
     <>
@@ -600,7 +627,7 @@ function GroupResult({
         action={searchingLocationMessage}
       />
     </>
-  )
+  );
 }
 
 function SportsGrid({
@@ -612,8 +639,8 @@ function SportsGrid({
   lang: Language
   t: TFunction
 }) {
-  if (!sports) return null
-  const width = 'w-full md:w-56 lg:w-56 xl:w-56'
+  if (!sports) {return null;}
+  const width = 'w-full md:w-56 lg:w-56 xl:w-56';
 
   return (
     <div className="w-full m-auto grid grid-flow-row gap-2 md:w-full md:grid-flow-col md:grid-rows-2">
@@ -638,7 +665,7 @@ function SportsGrid({
           key={i}
         >
           <DisplayImg
-            id={`product/sports/add-sport_xe6eok`}
+            id={'product/sports/add-sport_xe6eok'}
             key={i}
             alt={t('Add Sport')}
             className={width}
@@ -647,7 +674,7 @@ function SportsGrid({
         </a>
       ))}
     </div>
-  )
+  );
 }
 
 /**
@@ -664,16 +691,17 @@ function FiltersDialog(props: {
   triggerModalClose: () => void
   filters: FilterParams | null
 }) {
-  let { t, i18n } = useTranslation('home')
-  const { isOpen, sports, groupsSpirit, triggerModalClose, filters } = props
-  const sportsOptions: Option[] = []
+  const { t, i18n } = useTranslation('home');
+  const { isOpen, sports, groupsSpirit, triggerModalClose, filters } = props;
+  const sportsOptions: Option[] = [];
+
   sports.map((s) => {
     sportsOptions.push({
       value: s.id,
       label: s.name
-    })
-    return s
-  })
+    });
+    return s;
+  });
   return (
     <div
       data-reach-dialog-overlay={true}
@@ -796,7 +824,7 @@ function FiltersDialog(props: {
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 function DisplayFilters(props: {
@@ -806,12 +834,13 @@ function DisplayFilters(props: {
   t: TFunction
   tc: TFunction
 }) {
-  const { i18n } = useTranslation()
-  const language = i18n.language
-  const { filters, sports, spirits, t, tc } = props
-  if (!filters) return null
-  const { spirit, sport, dayOfWeek, dayParts } = filters
-  let label: string[] = []
+  const { i18n } = useTranslation();
+  const language = i18n.language;
+  const { filters, sports, spirits, t, tc } = props;
+
+  if (!filters) {return null;}
+  const { spirit, sport, dayOfWeek, dayParts } = filters;
+  const label: string[] = [];
 
   if (dayOfWeek !== null && dayOfWeek >= 0) {
     label.push(
@@ -826,35 +855,36 @@ function DisplayFilters(props: {
           'Sunday'
         ][dayOfWeek]
       )
-    )
+    );
   }
   // if all dayparts are picked, just ignore to save space
   if (dayParts && dayParts.length > 0 && dayParts.length !== 3) {
-    let parts = semanticOr(
+    const parts = semanticOr(
       dayParts.map((v) => t(v)),
       t('Or')
-    )
-    if (label.length === 1) label[0] = `${label[0]}, ${parts}`
-    else label.push(parts)
+    );
+
+    if (label.length === 1) {label[0] = `${label[0]}, ${parts}`;}
+    else {label.push(parts);}
   }
 
-  if (sport) label.push(mapIdToName(sport, sports, language as Language))
+  if (sport) {label.push(mapIdToName(sport, sports, language as Language));}
 
   if (spirit && spirit.length > 0 && spirit.length !== 5)
-    label.push(
+    {label.push(
       t('Filter Spirit', {
         sport: semanticOr(
           spirit.map((s) => mapIdToName(s, spirits, language as Language)),
           t('Or')
         )
       })
-    )
+    );}
 
   return (
     <div className="flex mx-2 items-center dark:text-white text-blueGray-500 text-sm">
       {label.join(' | ')}
     </div>
-  )
+  );
 }
 
 /**
@@ -863,8 +893,8 @@ function DisplayFilters(props: {
  * @param or
  */
 function semanticOr(list: string[], or: string) {
-  if (list.length === 1) return list[0]
-  return `${list.slice(0, -1).join(', ')} ${or} ${list.slice(-1)}`
+  if (list.length === 1) {return list[0];}
+  return `${list.slice(0, -1).join(', ')} ${or} ${list.slice(-1)}`;
 }
 
 function mapIdToName(
@@ -872,6 +902,7 @@ function mapIdToName(
   universe: Sport[] | GroupSpirit[],
   lang: Language
 ): string {
-  const entity = universe.find((u) => u.id === id)
-  return getLocalizedText(lang, entity?.name)
+  const entity = universe.find((u) => u.id === id);
+
+  return getLocalizedText(lang, entity?.name);
 }

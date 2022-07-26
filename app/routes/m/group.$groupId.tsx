@@ -1,16 +1,36 @@
-import Main from '~/components/shared/Main'
-import { H2, H3, Paragraph } from '~/components/shared/typography'
-import type { ActionFunction, LinksFunction, LoaderFunction } from 'remix'
-import { json, redirect } from 'remix'
-import { useActionData, useSubmit } from '@remix-run/react'
-import { requireUser } from '~/server/auth/session.server'
-import { findSports } from '~/server/db/sports.server'
-import { deleteGroup, findGroup, updateGroup } from '~/server/db/groups.server'
-import { useTranslation } from 'react-i18next'
-import { Form, useLoaderData } from '@remix-run/react'
-import Button from '~/components/shared/Button'
-import FormField from '~/components/shared/form/FormField'
-import TextField from '~/components/shared/form/TextField'
+import type { ActionFunction, LinksFunction, LoaderFunction } from 'remix';
+
+import { json, redirect } from 'remix';
+
+import { useActionData, useSubmit } from '@remix-run/react';
+
+import { useTranslation } from 'react-i18next';
+
+import { Form, useLoaderData } from '@remix-run/react';
+
+import type { FormEvent } from 'react';
+
+import { useState } from 'react';
+
+import type { UploadHandler } from '@remix-run/node';
+
+import { z, ZodError } from 'zod';
+
+import { Dialog } from '@reach/dialog';
+import { parseMultipartFormData } from '@remix-run/server-runtime/dist/formData';
+
+import Main from '~/components/shared/Main';
+import { H2, H3, Paragraph } from '~/components/shared/typography';
+
+
+import { requireUser } from '~/server/auth/session.server';
+import { findSports } from '~/server/db/sports.server';
+import { deleteGroup, findGroup, updateGroup } from '~/server/db/groups.server';
+
+
+import Button from '~/components/shared/Button';
+import FormField from '~/components/shared/form/FormField';
+import TextField from '~/components/shared/form/TextField';
 import type {
   DiciLocation,
   UploadImageMeta,
@@ -19,37 +39,40 @@ import type {
   GroupType,
   Sport,
   Language
-} from '~/types'
-import ComboBox from '~/components/shared/form/ComboBox'
-import { findGroupTypes } from '~/server/db/groupTypes.server'
-import HourOfDay from '~/components/HourOfDay'
-import { findGroupsSpirit } from '~/server/db/groupsSpirit.server'
-import type { FormEvent } from 'react'
-import { useState } from 'react'
-import { MapDialog } from '~/components/shared/Map'
-import Config from '~/server/config.server'
-import UploadImage from '~/components/shared/form/UploadImage'
-import type { UploadHandler } from '@remix-run/node'
+} from '~/types';
+import ComboBox from '~/components/shared/form/ComboBox';
+import { findGroupTypes } from '~/server/db/groupTypes.server';
+import HourOfDay from '~/components/HourOfDay';
+import { findGroupsSpirit } from '~/server/db/groupsSpirit.server';
+
+
+import { MapDialog } from '~/components/shared/Map';
+import Config from '~/server/config.server';
+import UploadImage from '~/components/shared/form/UploadImage';
+
+
 import {
   badRequest,
   hoursMinutesToTimeOfDay,
   PeekDayOfWeek,
   timeOfDayToHoursMinutes,
   uploadImages
-} from '~/utils/misc'
-import UploadForm from '~/components/shared/form/UploadForm'
-import mapCss from '~/styles/map.css'
-import vendorsCss from '~/styles/vendors.css'
-import type { CloudinaryFileMeta } from '~/server/storage/cloudinary.server'
-import { z, ZodError } from 'zod'
-import i18n from '~/server/i18n.server'
-import InputError from '~/components/shared/form/InputError'
-import TransitionIndicator from '~/components/shared/TransitionIndicator'
-import { Dialog } from '@reach/dialog'
-import { Spacer } from '~/components/shared/Spacer'
-import { parseMultipartFormData } from '@remix-run/server-runtime/dist/formData'
+} from '~/utils/misc';
+import UploadForm from '~/components/shared/form/UploadForm';
+import mapCss from '~/styles/map.css';
+import vendorsCss from '~/styles/vendors.css';
+import type { CloudinaryFileMeta } from '~/server/storage/cloudinary.server';
 
-const RESOURCES_NS = 'groups-form'
+
+import i18n from '~/server/i18n.server';
+import InputError from '~/components/shared/form/InputError';
+import TransitionIndicator from '~/components/shared/TransitionIndicator';
+
+
+import { Spacer } from '~/components/shared/Spacer';
+
+
+const RESOURCES_NS = 'groups-form';
 
 type LoaderData = {
   sports: Array<Sport>
@@ -65,7 +88,7 @@ type LoaderData = {
 
 const actionIds = {
   delete: 'delete'
-}
+};
 
 export const links: LinksFunction = () => {
   return [
@@ -77,19 +100,20 @@ export const links: LinksFunction = () => {
       rel: 'stylesheet',
       href: vendorsCss
     }
-  ]
-}
+  ];
+};
 
 export const handle = {
   i18n: RESOURCES_NS
-}
+};
 
-export let loader: LoaderFunction = async ({ request, params }) => {
-  const user = await requireUser(request)
-  const { MAPBOX_TOKEN, IMAGE_UPLOAD_ENDPOINT, CLOUDINARY_UPLOAD_PRESET } = Config()
+export const loader: LoaderFunction = async ({ request, params }) => {
+  const user = await requireUser(request);
+  const { MAPBOX_TOKEN, IMAGE_UPLOAD_ENDPOINT, CLOUDINARY_UPLOAD_PRESET } = Config();
 
-  const group = params.groupId ? await findGroup(params.groupId) : null
-  if (!group || group.createdById !== user.id) return redirect('/m/groups')
+  const group = params.groupId ? await findGroup(params.groupId) : null;
+
+  if (!group || group.createdById !== user.id) {return redirect('/m/groups');}
 
   return json(
     {
@@ -103,8 +127,8 @@ export let loader: LoaderFunction = async ({ request, params }) => {
       imageUploadEndpoint: IMAGE_UPLOAD_ENDPOINT,
       imageUploadPreset: CLOUDINARY_UPLOAD_PRESET
     }
-  )
-}
+  );
+};
 
 type ActionData = {
   error?: string
@@ -116,7 +140,7 @@ type ActionData = {
 }
 
 function imgFullId(prefix: string, uuid: string | null): string | null {
-  return uuid ? `${prefix}${uuid}` : null
+  return uuid ? `${prefix}${uuid}` : null;
 }
 
 function processImgField(
@@ -124,50 +148,51 @@ function processImgField(
   value: string | null,
   isUpdate: boolean
 ): string | null | undefined {
-  if (isUpdate && !value) return undefined
-  return imgFullId(prefix, value)
+  if (isUpdate && !value) {return undefined;}
+  return imgFullId(prefix, value);
 }
 
 function parseLocation(location: string) {
-  const [coords, address] = location.split('|')
-  const [lat, lng] = coords.split(',')
+  const [coords, address] = location.split('|');
+  const [lat, lng] = coords.split(',');
+
   return {
     lat: parseFloat(lat),
     lng: parseFloat(lng),
     address
-  }
+  };
 }
 
 export const action: ActionFunction = async ({ request, params }) => {
-  const t = await i18n.getFixedT(request, RESOURCES_NS)
-  const user = await requireUser(request)
+  const t = await i18n.getFixedT(request, RESOURCES_NS);
+  const user = await requireUser(request);
   const uploadHandler: UploadHandler = async () => {
     // cleanup images from form - upload is done directly to cloudinary
-    return undefined
-  }
-  const form = await parseMultipartFormData(request, uploadHandler)
-  const p = Config().CLOUDINARY_UPLOAD_FOLDER_TARGET
-  const action = form.get('actionId') as string
+    return undefined;
+  };
+  const form = await parseMultipartFormData(request, uploadHandler);
+  const p = Config().CLOUDINARY_UPLOAD_FOLDER_TARGET;
+  const action = form.get('actionId') as string;
 
   // Check if user should be able to manipulate this group
-  const group = params.groupId ? await findGroup(params.groupId) : null
+  const group = params.groupId ? await findGroup(params.groupId) : null;
 
-  if (!group) return badRequest({ error: t('Group not found') })
+  if (!group) {return badRequest({ error: t('Group not found') });}
   if (group.createdById !== user.id)
-    return badRequest({ error: t('Not authorized') })
+    {return badRequest({ error: t('Not authorized') });}
 
   // from here on, the user is capable of doing whatever to the group
   if (action === actionIds.delete) {
-    await deleteGroup(group.id)
+    await deleteGroup(group.id);
     return redirect(
       `/m/groups?message=${t('Group deleted successfully')}`
-    )
+    );
   }
-  const isUpdate = group.status !== 'auto'
-  const image1 = form.get('/image/0') as string
-  const image2 = form.get('/image/1') as string
-  const image3 = form.get('/image/2') as string
-  const location = parseLocation(form.get('location') as string)
+  const isUpdate = group.status !== 'auto';
+  const image1 = form.get('/image/0') as string;
+  const image2 = form.get('/image/1') as string;
+  const image3 = form.get('/image/2') as string;
+  const location = parseLocation(form.get('location') as string);
   const data = {
     id: form.get('id') as string,
     name: form.get('name') as string,
@@ -187,48 +212,48 @@ export const action: ActionFunction = async ({ request, params }) => {
     image1: processImgField(p, image1, isUpdate),
     image2: processImgField(p, image2, isUpdate),
     image3: processImgField(p, image3, isUpdate)
-  }
-  const required = { invalid_type_error: t('Field required') }
+  };
+  const required = { invalid_type_error: t('Field required') };
   const str5CharsOrMore = z
     .string(required)
-    .min(5, { message: t('Name 5 chars or more') })
+    .min(5, { message: t('Name 5 chars or more') });
   const GroupSchema = z.object({
     name: str5CharsOrMore,
     location: z.string(required),
     near: str5CharsOrMore
-  })
+  });
 
   try {
-    GroupSchema.parse(data)
+    GroupSchema.parse(data);
 
-    await updateGroup(data)
+    await updateGroup(data);
 
     return redirect(
       `/m/groups?message=${t(
         isUpdate ? 'Group updated successfully' : 'Group created successfully'
       )}`
-    )
+    );
   } catch (excp) {
     if (!(excp instanceof ZodError)) {
-      console.error(excp)
+      console.error(excp);
       return badRequest({
         error: t('We dont know what happened')
-      })
+      });
     }
-    const errors: { [key: string]: string | undefined } = {}
+    const errors: { [key: string]: string | undefined } = {};
 
     for (const error of (excp as ZodError).errors) {
-      errors[error.path[0]] = error.message
+      errors[error.path[0]] = error.message;
     }
 
-    return badRequest({ error: undefined, errors })
+    return badRequest({ error: undefined, errors });
   }
-}
+};
 
 export default function GroupRoute() {
-  const { t, i18n } = useTranslation(RESOURCES_NS)
-  const language = i18n.language as Language
-  const loadedData = useLoaderData<LoaderData>()
+  const { t, i18n } = useTranslation(RESOURCES_NS);
+  const language = i18n.language as Language;
+  const loadedData = useLoaderData<LoaderData>();
   const {
     mapToken,
     sports,
@@ -238,21 +263,22 @@ export default function GroupRoute() {
     imageUploadEndpoint,
     imageUploadPreset,
     group
-  } = loadedData
-  const isUpdate = group.status !== 'auto'
+  } = loadedData;
+  const isUpdate = group.status !== 'auto';
   // using parse float for 0 min's to work
-  const [hour, minute] = timeOfDayToHoursMinutes(group.timeOfDay)
-  const images: Array<UploadImageMeta | undefined> = new Array(3)
-  const actionData = useActionData<ActionData>()
-  const [uploading, setImagesUploading] = useState<boolean>(false)
-  const [deleteModalOpen, setDeleteModalOpen] = useState<boolean>(false)
+  const [hour, minute] = timeOfDayToHoursMinutes(group.timeOfDay);
+  const images: Array<UploadImageMeta | undefined> = new Array(3);
+  const actionData = useActionData<ActionData>();
+  const [uploading, setImagesUploading] = useState<boolean>(false);
+  const [deleteModalOpen, setDeleteModalOpen] = useState<boolean>(false);
 
   const setImage = (index: number, file: File) => {
-    const meta: CloudinaryFileMeta | undefined = files[index]
+    const meta: CloudinaryFileMeta | undefined = files[index];
+
     if (!meta)
-      throw new Error(
+      {throw new Error(
         'No upload metadata for this file - did you increased the number of pictures in the form (limited to 4)?'
-      )
+      );}
     images[index] = {
       name: `/image/${index}`,
       file,
@@ -260,11 +286,11 @@ export default function GroupRoute() {
       timestamp: meta.timestamp,
       signature: meta.signature,
       apiKey: meta.apiKey
-    }
-  }
+    };
+  };
 
   // open map stuff
-  const [showLocationPicker, setShowLocationPicker] = useState<boolean>(false)
+  const [showLocationPicker, setShowLocationPicker] = useState<boolean>(false);
   const [location, setLocation] = useState<DiciLocation | null>(
     group.location
       ? {
@@ -272,19 +298,19 @@ export default function GroupRoute() {
           shortAddress: group.location
         }
       : null
-  )
-  const submit = useSubmit()
+  );
+  const submit = useSubmit();
 
   async function handleSubmitForm(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault()
-    setImagesUploading(true)
-    await uploadImages(imageUploadEndpoint, imageUploadPreset, images)
-    setImagesUploading(false)
-    submit(e.target as HTMLFormElement)
+    e.preventDefault();
+    setImagesUploading(true);
+    await uploadImages(imageUploadEndpoint, imageUploadPreset, images);
+    setImagesUploading(false);
+    submit(e.target as HTMLFormElement);
   }
 
   function handleShowMap() {
-    setShowLocationPicker(true)
+    setShowLocationPicker(true);
   }
 
   return (
@@ -293,7 +319,7 @@ export default function GroupRoute() {
         <div className="mb-12 lg:mb-20">
           <div className="flex flex-col-reverse items-start justify-between lg:flex-row lg:items-center">
             <div>
-              <H2>{t(`Ride Together`)}</H2>
+              <H2>{t('Ride Together')}</H2>
               <H3 variant="secondary" as="p">
                 {t('Let Others know')}
               </H3>
@@ -332,7 +358,7 @@ export default function GroupRoute() {
                 placeholder=""
                 defaultValue={group.sport ? group.sport.id : undefined}
                 options={sports.map((s: Sport) => {
-                  return { value: s.id, label: s.name }
+                  return { value: s.id, label: s.name };
                 })}
               />
             </FormField>
@@ -344,7 +370,7 @@ export default function GroupRoute() {
                 placeholder=""
                 defaultValue={group.groupType ? group.groupType.id : undefined}
                 options={groupTypes.map((g: GroupType) => {
-                  return { value: g.id, label: g.name }
+                  return { value: g.id, label: g.name };
                 })}
               />
             </FormField>
@@ -362,7 +388,7 @@ export default function GroupRoute() {
                   group.groupSpirit ? group.groupSpirit.id : undefined
                 }
                 options={groupsSpirit.map((g: GroupSpirit) => {
-                  return { value: g.id, label: g.name }
+                  return { value: g.id, label: g.name };
                 })}
               />
             </FormField>
@@ -508,8 +534,8 @@ export default function GroupRoute() {
         defaultValue={location}
         open={showLocationPicker}
         onClose={(location) => {
-          setShowLocationPicker(false)
-          setLocation(location)
+          setShowLocationPicker(false);
+          setLocation(location);
         }}
       />
       <Dialog
@@ -540,5 +566,5 @@ export default function GroupRoute() {
       </Dialog>
       <TransitionIndicator visible={uploading} action={t('Uploading Images')} />
     </Main>
-  )
+  );
 }

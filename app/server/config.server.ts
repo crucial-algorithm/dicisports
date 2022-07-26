@@ -19,12 +19,13 @@ export type ConfigServer = {
   CONVERT_KIT_API_KEY: string
 }
 
-let config: ConfigServer | null = null
+let config: ConfigServer | null = null;
 
 export default function Config(): ConfigServer {
-  if (config) return config
+  if (config) {return config;}
   const env =
-    process.env.NODE_ENV === 'development' ? 'development' : 'production'
+    process.env.NODE_ENV === 'development' ? 'development' : 'production';
+
   config = {
     env,
     inDev: () => env === 'development',
@@ -47,16 +48,16 @@ export default function Config(): ConfigServer {
 
     CONVERT_KIT_FORM: extractVar('CONVERT_KIT_FORM'),
     CONVERT_KIT_API_KEY: extractVar('CONVERT_KIT_API_KEY')
-  }
+  };
 
-  return config
+  return config;
 }
 
 function extractVar(varName: string | undefined): string {
   if (!varName)
-    throw `reading config for an empty varName... something is wrong`
+    {throw 'reading config for an empty varName... something is wrong';}
 
-  if (!process.env[varName]) throw `Missing ${varName} in .env`
+  if (!process.env[varName]) {throw `Missing ${varName} in .env`;}
 
-  return process.env[varName] as string
+  return process.env[varName] as string;
 }

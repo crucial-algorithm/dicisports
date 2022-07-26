@@ -1,6 +1,7 @@
-import React from 'react'
-import HTMLId from '~/utils/HTMLId'
-import InputBase from '~/components/shared/form/InputBase'
+import React from 'react';
+
+import HTMLId from '~/utils/HTMLId';
+import InputBase from '~/components/shared/form/InputBase';
 
 type Props = {
   name: string
@@ -22,9 +23,9 @@ const TextField: React.FC<Props> = ({
   disabled,
   id
 }) => {
-  id = id || HTMLId()
+  id = id || HTMLId();
   if (!adornment)
-    return (
+    {return (
       <InputBase
         name={name}
         id={id}
@@ -36,7 +37,7 @@ const TextField: React.FC<Props> = ({
         readOnly={readOnly}
         disabled={disabled}
       />
-    )
+    );}
 
   return (
     <>
@@ -57,7 +58,7 @@ const TextField: React.FC<Props> = ({
         </div>
       </div>
     </>
-  )
-}
+  );
+};
 
-export default TextField
+export default TextField;

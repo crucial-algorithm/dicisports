@@ -1,6 +1,6 @@
-import { buildImageUrl } from 'cloudinary-build-url'
-import React from 'react'
-import clsx from 'clsx'
+import { buildImageUrl } from 'cloudinary-build-url';
+import React from 'react';
+import clsx from 'clsx';
 
 type DisplayImgProps = {
   id: string | null
@@ -27,5 +27,5 @@ export default function DisplayImg({
       )}
       src={buildImageUrl(id, { transformations })}
     />
-  )
+  );
 }

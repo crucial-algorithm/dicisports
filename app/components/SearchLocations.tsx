@@ -1,12 +1,20 @@
-import { useTranslation } from 'react-i18next'
-import { inputBaseClasses } from '~/components/shared/form/InputBase'
-import * as React from 'react'
-import { DiciLocation } from '~/types'
-import Select from 'react-select/async'
-import { useTheme } from '~/utils/theme-provider'
-import MapUtils from '~/utils/MapUtils'
-import { useEffect, useState } from 'react'
-import { useSearchParams } from 'remix'
+import { useTranslation } from 'react-i18next';
+
+import * as React from 'react';
+
+import Select from 'react-select/async';
+
+import { useState } from 'react';
+
+import { useSearchParams } from '@remix-run/react';
+
+import { inputBaseClasses } from '~/components/shared/form/InputBase';
+import type { DiciLocation } from '~/types';
+
+
+import { useTheme } from '~/utils/theme-provider';
+import MapUtils from '~/utils/MapUtils';
+
 
 type SearchLocationsProps = {
   placeholder?: string
@@ -24,25 +32,26 @@ export default function SearchLocations({
   onSelect,
   mapToken
 }: SearchLocationsProps) {
-  const { t } = useTranslation('home')
-  const [theme] = useTheme()
-  const [searchTerm, setSearchTerm] = useState<string>('')
-  const inDarkMode = theme === 'dark'
-  const mapUtils = new MapUtils(mapToken)
-  const [params] = useSearchParams()
-  const search = params.get('search')
+  const { t } = useTranslation('home');
+  const [theme] = useTheme();
+  const [searchTerm, setSearchTerm] = useState<string>('');
+  const inDarkMode = theme === 'dark';
+  const mapUtils = new MapUtils(mapToken);
+  const [params] = useSearchParams();
+  const search = params.get('search');
 
   async function handlerLoadLocations(searchTerm: string) {
-    const results = await mapUtils.searchCityInMapBox(searchTerm)
-    setSearchTerm(searchTerm)
-    if (results === null) return []
+    const results = await mapUtils.searchCityInMapBox(searchTerm);
+
+    setSearchTerm(searchTerm);
+    if (results === null) {return [];}
     return results.map((l: DiciLocation) => {
       return {
         value: `${l.coords}|${l.address}`,
         label: l.address,
         extra: l
-      }
-    })
+      };
+    });
   }
 
   function handlerLocationChanged(v: {
@@ -50,11 +59,13 @@ export default function SearchLocations({
     label: string
     extra: DiciLocation
   }) {
-    const { extra } = v
-    if (!extra) return
-    onSelect(extra)
-    setSearchTerm('')
+    const { extra } = v;
+
+    if (!extra) {return;}
+    onSelect(extra);
+    setSearchTerm('');
   }
+
 
   return (
     <>
@@ -80,6 +91,7 @@ export default function SearchLocations({
           DropdownIndicator: () => null,
           IndicatorSeparator: () => null
         }}
+        // @ts-ignore
         loadOptions={handlerLoadLocations}
         // @ts-ignore
         onChange={handlerLocationChanged}
@@ -90,14 +102,14 @@ export default function SearchLocations({
               backgroundColor: undefined,
               border: 0,
               boxShadow: 'none'
-            }
+            };
           },
           input: (base) => {
             return {
               ...base,
               color: 'var(--color-blueGray-500)',
               outline: 'none'
-            }
+            };
           },
           menu: (base) => {
             return {
@@ -107,7 +119,7 @@ export default function SearchLocations({
               backgroundColor: inDarkMode
                 ? 'var(--color-gray-800)'
                 : 'var(--color-gray-100)'
-            }
+            };
           },
           option: (base, { isFocused }) => {
             return {
@@ -121,7 +133,7 @@ export default function SearchLocations({
                   : inDarkMode
                   ? 'var(--color-gray-600)'
                   : 'var(--color-gray-200)'
-            }
+            };
           },
           singleValue: (base) => {
             return {
@@ -129,7 +141,7 @@ export default function SearchLocations({
               color: inDarkMode
                 ? 'var(--color-blueGray-500)'
                 : 'var(--color-gray-500)'
-            }
+            };
           },
           clearIndicator: (base) => {
             return {
@@ -138,10 +150,10 @@ export default function SearchLocations({
               ':hover': {
                 color: inDarkMode ? 'var(--color-gray-200)' : 'initial'
               }
-            }
+            };
           }
         }}
       />
     </>
-  )
+  );
 }

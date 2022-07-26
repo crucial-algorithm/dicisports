@@ -1,22 +1,26 @@
-import { Form, useLoaderData } from '@remix-run/react'
-import type { ActionFunction, LoaderFunction} from 'remix';
-import { json, redirect } from 'remix'
+import { Form, useLoaderData } from '@remix-run/react';
+import type { ActionFunction, LoaderFunction } from 'remix';
+import { json, redirect } from 'remix';
+
+import React, { useState } from 'react';
+
+import { useTranslation } from 'react-i18next';
+
 import {
   getSession,
   getUser,
   validateMagicLink
-} from '~/server/auth/session.server'
-import { getLoginInfoSession } from '~/server/auth/login.server'
-import { getErrorStack } from '~/utils/misc'
-import { handleFormSubmission } from '~/server/actions.server'
-import type { MemberProfile } from '~/types'
-import ProfileFragment from '~/components/ProfileFragment'
-import i18n, { ERRORS_NAMESPACE } from '~/server/i18n.server'
-import { createUser, findUserByEmail } from '~/server/db/users.server'
-import Button from '~/components/shared/Button'
-import React, { useState } from 'react'
-import { useTranslation } from 'react-i18next'
-import ButtonGroup from '~/components/shared/ButtonGroup'
+} from '~/server/auth/session.server';
+import { getLoginInfoSession } from '~/server/auth/login.server';
+import { getErrorStack } from '~/utils/misc';
+import { handleFormSubmission } from '~/server/actions.server';
+import type { MemberProfile } from '~/types';
+import ProfileFragment from '~/components/ProfileFragment';
+import i18n, { ERRORS_NAMESPACE } from '~/server/i18n.server';
+import { createUser, findUserByEmail } from '~/server/db/users.server';
+import Button from '~/components/shared/Button';
+
+import ButtonGroup from '~/components/shared/ButtonGroup';
 
 type ActionData = {
   status: 'success' | 'error'
@@ -30,42 +34,44 @@ type ActionData = {
 }
 
 function getErrorForName(name: string | null) {
-  if (!name) return `Name is required`
-  if (name.length > 60) return `Name is too long`
-  return null
+  if (!name) {return 'Name is required';}
+  if (name.length > 60) {return 'Name is too long';}
+  return null;
 }
 
 export const action: ActionFunction = async ({ request }) => {
-  const loginInfoSession = await getLoginInfoSession(request)
-  const t = await i18n.getFixedT(request, 'profile')
+  const loginInfoSession = await getLoginInfoSession(request);
+  const t = await i18n.getFixedT(request, 'profile');
 
-  const requestText = await request.text()
-  const form = new URLSearchParams(requestText)
+  const requestText = await request.text();
+  const form = new URLSearchParams(requestText);
+
   if (form.get('actionId') === actionIds.cancel) {
-    loginInfoSession.clean()
+    loginInfoSession.clean();
     return redirect('/', {
       headers: await loginInfoSession.getHeaders()
-    })
+    });
   }
 
-  const session = await getSession(request)
-  const magicLink = loginInfoSession.getMagicLink()
-  let email: string
+  const session = await getSession(request);
+  const magicLink = loginInfoSession.getMagicLink();
+  let email: string;
+
   try {
     email = (
       await validateMagicLink(magicLink, loginInfoSession.getMagicLink())
-    ).email
+    ).email;
   } catch (error: unknown) {
-    console.error(getErrorStack(error))
-    const te = await i18n.getFixedT(request, ERRORS_NAMESPACE)
+    console.error(getErrorStack(error));
+    const te = await i18n.getFixedT(request, ERRORS_NAMESPACE);
 
-    loginInfoSession.clean()
+    loginInfoSession.clean();
     loginInfoSession.flashError(
       await te('>>Error<<: Sign in link invalid. Please request a new one')
-    )
+    );
     return redirect('/login', {
       headers: await loginInfoSession.getHeaders()
-    })
+    });
   }
 
   return handleFormSubmission<ActionData>({
@@ -74,78 +80,83 @@ export const action: ActionFunction = async ({ request }) => {
       name: getErrorForName
     },
     handleFormValues: async (formData) => {
-      const { name } = formData
+      const { name } = formData;
 
       try {
-        const user = await createUser({ email, name })
+        const user = await createUser({ email, name });
 
-        const headers = new Headers()
-        await session.signIn(user)
-        await session.getHeaders(headers)
+        const headers = new Headers();
+
+        await session.signIn(user);
+        await session.getHeaders(headers);
         // IDEA: try using destroy... Didn't seem to work last time I tried though.
-        loginInfoSession.clean()
-        await loginInfoSession.getHeaders(headers)
-        return redirect('/me', { headers })
+        loginInfoSession.clean();
+        await loginInfoSession.getHeaders(headers);
+        return redirect('/me', { headers });
       } catch (error: unknown) {
-        console.error(getErrorStack(error))
+        console.error(getErrorStack(error));
 
         loginInfoSession.flashError(
           await t('Problem Creating Account')
-        )
+        );
         return redirect('/login', {
           headers: await loginInfoSession.getHeaders()
-        })
+        });
       }
     }
-  })
-}
+  });
+};
 
 export const loader: LoaderFunction = async ({ request }) => {
-  const te = await i18n.getFixedT(request, ERRORS_NAMESPACE)
-  const user = await getUser(request)
-  if (user) return redirect('/me')
+  const te = await i18n.getFixedT(request, ERRORS_NAMESPACE);
+  const user = await getUser(request);
 
-  const loginInfoSession = await getLoginInfoSession(request)
-  const magicLink = loginInfoSession.getMagicLink()
-  const email = loginInfoSession.getEmail()
+  if (user) {return redirect('/me');}
+
+  const loginInfoSession = await getLoginInfoSession(request);
+  const magicLink = loginInfoSession.getMagicLink();
+  const email = loginInfoSession.getEmail();
+
   if (!magicLink || !email) {
-    loginInfoSession.clean()
-    loginInfoSession.flashError(await te('>>Error<<: Invalid magic link'))
+    loginInfoSession.clean();
+    loginInfoSession.flashError(await te('>>Error<<: Invalid magic link'));
     return redirect('/login', {
       headers: await loginInfoSession.getHeaders()
-    })
+    });
   }
 
-  const userForMagicLink = await findUserByEmail(email)
+  const userForMagicLink = await findUserByEmail(email);
 
   if (userForMagicLink) {
     // user exists, but they haven't clicked their magic link yet
     // we don't want to tell them that a user exists with that email though
     // so we'll invalidate the magic link and force them to try again.
-    loginInfoSession.clean()
-    loginInfoSession.flashError(await te('>>Error<<: Invalid magic link'))
+    loginInfoSession.clean();
+    loginInfoSession.flashError(await te('>>Error<<: Invalid magic link'));
     return redirect('/login', {
       headers: await loginInfoSession.getHeaders()
-    })
+    });
   }
 
-  const headers = await loginInfoSession.getHeaders()
-  return json({ email }, { headers })
-}
+  const headers = await loginInfoSession.getHeaders();
+
+  return json({ email }, { headers });
+};
 
 export const handle = {
   i18n: ['common', 'signup']
-}
+};
 
 const actionIds = {
   cancel: 'cancel',
   signUp: 'sign up'
-}
+};
 
 export default function SignUp() {
-  const data = useLoaderData<MemberProfile>()
-  const [action, setAction] = useState<string>('submit')
-  const { t } = useTranslation('signup')
+  const data = useLoaderData<MemberProfile>();
+  const [action, setAction] = useState<string>('submit');
+  const { t } = useTranslation('signup');
+
   return (
     <main className="mx-10vw flex">
       <div className="m-auto">
@@ -169,5 +180,5 @@ export default function SignUp() {
         </Form>
       </div>
     </main>
-  )
+  );
 }

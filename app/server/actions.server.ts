@@ -1,6 +1,7 @@
-import { json } from 'remix'
-import type { NonNullProperties } from '~/types'
-import { getErrorMessage, getNonNull } from '~/utils/misc'
+import { json } from 'remix';
+
+import type { NonNullProperties } from '~/types';
+import { getErrorMessage, getNonNull } from '~/utils/misc';
 
 type ErrorMessage = string
 type NoError = null
@@ -42,46 +43,50 @@ async function handleFormSubmission<
 )): Promise<Response> {
   try {
     if (!form) {
-      const requestText = await request!.text()
-      form = new URLSearchParams(requestText)
+      const requestText = await request!.text();
+
+      form = new URLSearchParams(requestText);
     }
 
     // collect all values first because validators can reference them
     for (const fieldName of Object.keys(validators)) {
-      const formValue = form.get(fieldName)
+      const formValue = form.get(fieldName);
+
       // Default the value to empty string so it doesn't have trouble with
       // getNonNull later. This allows us to have a validator that allows
       // for optional values.
-      actionData.fields[fieldName] = formValue ?? ''
+      actionData.fields[fieldName] = formValue ?? '';
     }
 
     await Promise.all(
       Object.entries(validators).map(async ([fieldName, validator]) => {
-        const formValue = form!.get(fieldName)
+        const formValue = form!.get(fieldName);
+
         // Default the value to empty string so it doesn't have trouble with
         // getNonNull later. This allows us to have a validator that allows
         // for optional values.
         actionData.errors[fieldName] = await validator(
           formValue,
           actionData.fields
-        )
+        );
       })
-    )
+    );
 
     if (Object.values(actionData.errors).some((err) => err !== null)) {
-      return json({ ...actionData, status: 'error' }, 400)
+      return json({ ...actionData, status: 'error' }, 400);
     }
 
-    const nonNullFields = getNonNull(actionData.fields)
+    const nonNullFields = getNonNull(actionData.fields);
     // not sure why, but it wasn't happy without the type cast 🤷‍♂️
     const response = await handleFormValues(
       nonNullFields as NonNullProperties<ActionData['fields']>
-    )
-    return response
+    );
+
+    return response;
   } catch (error: unknown) {
-    actionData.errors.generalError = getErrorMessage(error)
-    return json(actionData, 500)
+    actionData.errors.generalError = getErrorMessage(error);
+    return json(actionData, 500);
   }
 }
 
-export { handleFormSubmission }
+export { handleFormSubmission };

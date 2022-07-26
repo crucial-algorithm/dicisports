@@ -1,4 +1,4 @@
-import * as React from 'react'
+import * as React from 'react';
 
 export default function Logo({ className }: { className: string }) {
   return (
@@ -59,5 +59,5 @@ export default function Logo({ className }: { className: string }) {
         />
       </g>
     </svg>
-  )
+  );
 }

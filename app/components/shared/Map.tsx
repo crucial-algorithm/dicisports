@@ -1,12 +1,13 @@
-import * as React from 'react'
-import { useState } from 'react'
-import mapboxgl from 'mapbox-gl'
-import { Dialog } from '@reach/dialog'
-import { LocationMarkerIcon } from '@heroicons/react/solid'
-import Button from '~/components/shared/Button'
-import ButtonGroup from '~/components/shared/ButtonGroup'
-import { useTranslation } from 'react-i18next'
-import { DiciLocation } from '~/types'
+import * as React from 'react';
+import { useState } from 'react';
+import mapboxgl from 'mapbox-gl';
+import { Dialog } from '@reach/dialog';
+import { LocationMarkerIcon } from '@heroicons/react/solid';
+
+import { useTranslation } from 'react-i18next';
+
+import Button from '~/components/shared/Button';
+import type { DiciLocation } from '~/types';
 
 type MapInfo = {
   lat: number
@@ -21,8 +22,8 @@ type MapBoxFeature = {
   context: Array<{ id: string; wikidata?: string; text: string }>
 }
 
-const MAP_BOX_URL = 'api.mapbox.com/geocoding/v5/mapbox.places'
-const MAP_STYLE = 'mapbox://styles/mapbox/streets-v11'
+const MAP_BOX_URL = 'api.mapbox.com/geocoding/v5/mapbox.places';
+const MAP_STYLE = 'mapbox://styles/mapbox/streets-v11';
 const types = [
   'address',
   'country',
@@ -31,7 +32,7 @@ const types = [
   'district',
   'place',
   'locality'
-]
+];
 
 type MapProps = {
   token: string
@@ -49,21 +50,21 @@ function Map({
 }: MapProps) {
   const coords = !defaultValue
     ? [40.211945184369455, -8.432174917415097]
-    : defaultValue.coords.split(',').map((p) => parseFloat(p))
-  const [, setMap] = React.useState<mapboxgl.Map>()
+    : defaultValue.coords.split(',').map((p) => parseFloat(p));
+  const [, setMap] = React.useState<mapboxgl.Map>();
   const [info, setInfo] = React.useState<MapInfo>({
     lat: coords[0],
     lng: coords[1],
     zoom: 15,
     address: placeholder
-  })
+  });
 
-  const mapNode = React.useRef(null)
+  const mapNode = React.useRef(null);
 
   React.useEffect(() => {
-    const node = mapNode.current
+    const node = mapNode.current;
 
-    if (typeof window === 'undefined' || node === null) return
+    if (typeof window === 'undefined' || node === null) {return;}
 
     // otherwise, create a map instance
     const map = new mapboxgl.Map({
@@ -73,7 +74,7 @@ function Map({
       center: [info.lng, info.lat],
       zoom: info.zoom,
       boxZoom: true
-    })
+    });
 
     // add the button to "center in current location"
     map.addControl(
@@ -84,45 +85,47 @@ function Map({
         trackUserLocation: true,
         showUserHeading: true
       })
-    )
+    );
 
     // save the map object to React.useState
-    setMap(map)
+    setMap(map);
 
     map.on('moveend', () => {
-      const center = map.getCenter()
+      const center = map.getCenter();
+
       getAddress(center.lat, center.lng).then((location) => {
         setInfo({
           lat: center.lat,
           lng: center.lng,
           zoom: map.getZoom(),
           address: capitalize(location?.shortAddress || '')
-        })
-        callback(location)
-      })
-    })
+        });
+        callback(location);
+      });
+    });
 
-    map.on('load', () => {})
+    map.on('load', () => {});
 
     const getAddress = async (
       lat: number,
       lng: number
     ): Promise<DiciLocation | null> => {
-      const location = [lng, lat].join(',')
+      const location = [lng, lat].join(',');
       const url = `https://${MAP_BOX_URL}/${location}.json?limit=1&types=${types.join(
         '%2C'
-      )}&access_token=${token}`
-      const res = await fetch(url)
-      const json = await res.json()
-      const feature = json.features[0] || null
-      if (!feature) return null
-      return processMapBoxFeature(feature, lat, lng)
-    }
+      )}&access_token=${token}`;
+      const res = await fetch(url);
+      const json = await res.json();
+      const feature = json.features[0] || null;
+
+      if (!feature) {return null;}
+      return processMapBoxFeature(feature, lat, lng);
+    };
 
     return () => {
-      map.remove()
-    }
-  }, [])
+      map.remove();
+    };
+  }, []);
 
   return (
     <div style={{ position: 'relative', left: 0 }} className={className}>
@@ -130,7 +133,7 @@ function Map({
       <Pin />
       <div ref={mapNode} className="map-container" />
     </div>
-  )
+  );
 }
 
 function Pin() {
@@ -138,11 +141,11 @@ function Pin() {
     <div className="map-pin">
       <LocationMarkerIcon className="text-black w-8 h-8" />
     </div>
-  )
+  );
 }
 
 function Label({ label }: { label: string | null }) {
-  return label ? <div className="map-location-label">{label}</div> : null
+  return label ? <div className="map-location-label">{label}</div> : null;
 }
 
 /**
@@ -151,11 +154,11 @@ function Label({ label }: { label: string | null }) {
  * @param str
  */
 function capitalize(str: string) {
-  if (!str) return str
+  if (!str) {return str;}
   return str
     .split(/\s/)
     .map((s) => (s.length > 0 ? (s[0] + '').toUpperCase() + s.slice(1) : ''))
-    .join(' ')
+    .join(' ');
 }
 
 function processMapBoxFeature(
@@ -163,7 +166,7 @@ function processMapBoxFeature(
   lat: number,
   lng: number
 ): DiciLocation | null {
-  const { text, place_name, context } = feature
+  const { text, place_name, context } = feature;
   const output: DiciLocation = {
     coords: `${lat},${lng}`,
     shortAddress: text,
@@ -172,27 +175,28 @@ function processMapBoxFeature(
     place: null,
     region: null,
     country: null
-  }
+  };
 
   for (const ctx of context) {
-    const { id, text } = ctx
-    const key = id.split('.')[0]
+    const { id, text } = ctx;
+    const key = id.split('.')[0];
+
     switch (key) {
       case 'postcode':
-        output.postcode = text
-        break
+        output.postcode = text;
+        break;
       case 'place':
-        output.place = text
-        break
+        output.place = text;
+        break;
       case 'region':
-        output.region = text
-        break
+        output.region = text;
+        break;
       case 'country':
-        output.country = text
-        break
+        output.country = text;
+        break;
     }
   }
-  return output
+  return output;
 }
 
 export type MapDialogProps = {
@@ -215,13 +219,13 @@ function MapDialog({
   className
 }: MapDialogProps) {
   const handleClose = () => {
-    if (setClosed) setClosed()
-    if (onClose) onClose(location)
-  }
-  const { t } = useTranslation('common')
+    if (setClosed) {setClosed();}
+    if (onClose) {onClose(location);}
+  };
+  const { t } = useTranslation('common');
   const [location, setLocation] = useState<DiciLocation | null>(
     defaultValue || null
-  )
+  );
 
   return (
     <Dialog
@@ -235,8 +239,8 @@ function MapDialog({
         token={token}
         className={className}
         callback={(location) => {
-          if (onPickedLocation) onPickedLocation(location)
-          setLocation(location)
+          if (onPickedLocation) {onPickedLocation(location);}
+          setLocation(location);
         }}
         placeholder={t('Drag Map to Choose a Location Hint')}
       />
@@ -247,7 +251,7 @@ function MapDialog({
         <Button onClick={handleClose}>{t('Pick Location Button')}</Button>
       </div>
     </Dialog>
-  )
+  );
 }
 
-export { Map, MapDialog }
+export { Map, MapDialog };

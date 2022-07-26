@@ -1,7 +1,5 @@
-import * as React from 'react'
-import type {
-  LinksFunction,
-  LoaderFunction} from 'remix';
+import * as React from 'react';
+import type { LinksFunction, LoaderFunction } from 'remix';
 import {
   Links,
   LiveReload,
@@ -11,37 +9,53 @@ import {
   ScrollRestoration,
   useCatch,
   useTransition
-} from '@remix-run/react'
-import { useTranslation } from 'react-i18next'
-import tailwind from './styles/tailwind.css'
-import mainCss from './styles/main.css'
-import vendorsCss from './styles/vendors.css'
-import type { User } from '@prisma/client'
-import type { KCDHandle } from '~/types'
+} from '@remix-run/react';
+import { useTranslation } from 'react-i18next';
+
+import type { User } from '@prisma/client';
+
+import { useSpinDelay } from 'spin-delay';
+
+import { useLoaderData } from '@remix-run/react';
+
+import clsx from 'clsx';
+
+import { setConfig } from 'cloudinary-build-url';
+
+import { json } from 'remix';
+
+import { useChangeLanguage } from 'remix-i18next';
+
+import type { KCDHandle } from '~/types';
 import type { Timings } from '~/server/metrics.server';
-import { getServerTimeHeader, time } from '~/server/metrics.server'
-import { getSession } from '~/server/auth/session.server'
-import { getLoginInfoSession } from '~/server/auth/login.server'
-import { getDomainUrl } from '~/utils/misc'
-import { getClientSession } from '~/server/auth/client.server'
-import { pathedRoutes } from '~/other-routes.server'
-import { useSpinDelay } from 'spin-delay'
-import { NotificationMessage } from '~/components/shared/NotificationMessage'
-import { useLoaderData } from '@remix-run/react'
-import type { Theme} from '~/utils/theme-provider';
-import { ThemeProvider, useTheme } from '~/utils/theme-provider'
-import { getThemeSession } from '~/server/theme.server'
-import clsx from 'clsx'
-import { Navbar } from '~/components/NavBar'
-import { setConfig } from 'cloudinary-build-url'
-import TransitionIndicator from '~/components/shared/TransitionIndicator'
-import { json } from 'remix'
-import { useChangeLanguage } from 'remix-i18next'
+import { getServerTimeHeader, time } from '~/server/metrics.server';
+import { getSession } from '~/server/auth/session.server';
+import { getLoginInfoSession } from '~/server/auth/login.server';
+import { getDomainUrl } from '~/utils/misc';
+import { getClientSession } from '~/server/auth/client.server';
+import { pathedRoutes } from '~/other-routes.server';
+import { NotificationMessage } from '~/components/shared/NotificationMessage';
+
+
+import type { Theme } from '~/utils/theme-provider';
+import { ThemeProvider, useTheme } from '~/utils/theme-provider';
+import { getThemeSession } from '~/server/theme.server';
+
+
+import { Navbar } from '~/components/NavBar';
+
+
+import TransitionIndicator from '~/components/shared/TransitionIndicator';
+
+
+import vendorsCss from './styles/vendors.css';
+import mainCss from './styles/main.css';
+import tailwind from './styles/tailwind.css';
 
 // TODO: can't find a way to set this value client side, globally, using config
 setConfig({
   cloudName: 'dicisports'
-})
+});
 
 export const links: LinksFunction = () => {
   return [
@@ -71,13 +85,13 @@ export const links: LinksFunction = () => {
       rel: 'stylesheet',
       href: mainCss
     }
-  ]
-}
+  ];
+};
 
 export const handle: KCDHandle & { id: string, i18n: string[] } = {
   id: 'root',
   i18n: ['common', 'home']
-}
+};
 
 export type LoaderData = {
   user: User | null
@@ -96,25 +110,25 @@ export const loader: LoaderFunction = async ({ request }) => {
   // because this is called for every route, we'll do an early return for anything
   // that has a other route setup. The response will be handled there.
   if (pathedRoutes[new URL(request.url).pathname]) {
-    return new Response()
+    return new Response();
   }
 
   function getUser() {
-    return session.getUser()
+    return session.getUser();
   }
 
-  const timings: Timings = {}
-  const session = await getSession(request)
-  const themeSession = await getThemeSession(request)
-  const clientSession = await getClientSession(request)
-  const loginInfoSession = await getLoginInfoSession(request)
+  const timings: Timings = {};
+  const session = await getSession(request);
+  const themeSession = await getThemeSession(request);
+  const clientSession = await getClientSession(request);
+  const loginInfoSession = await getLoginInfoSession(request);
 
   const user = await time({
     name: 'getUser in root loader',
     type: 'postgres read',
     timings,
     fn: getUser
-  })
+  });
 
   const data: LoaderData = {
     user,
@@ -127,20 +141,21 @@ export const loader: LoaderFunction = async ({ request }) => {
         theme: themeSession.getTheme()
       }
     }
-  }
+  };
 
-  const headers: HeadersInit = new Headers()
-  headers.append('Server-Timing', getServerTimeHeader(timings))
+  const headers = new Headers();
+
+  headers.append('Server-Timing', getServerTimeHeader(timings));
   // this can lead to race conditions if a child route is also trying to commit
   // the cookie as well. This is a bug in remix that will hopefully be fixed.
   // we reduce the likelihood of a problem by only committing if the value is
   // different.
-  await session.getHeaders(headers)
-  await clientSession.getHeaders(headers)
-  await loginInfoSession.getHeaders(headers)
+  await session.getHeaders(headers);
+  await clientSession.getHeaders(headers);
+  await loginInfoSession.getHeaders(headers);
 
-  return json(data, { headers })
-}
+  return json(data, { headers });
+};
 
 /* temporary = from kentcdodds.com implementation */
 const LOADER_WORDS = [
@@ -151,7 +166,7 @@ const LOADER_WORDS = [
   'compiling mdx',
   'updating cache',
   'transfer'
-]
+];
 const ACTION_WORDS = [
   'packaging',
   'zapping',
@@ -160,43 +175,43 @@ const ACTION_WORDS = [
   'calculating',
   'computing',
   'computering'
-]
+];
 
-let firstRender = true
+let firstRender = true;
 
 function PageLoadingMessage() {
-  const transition = useTransition()
-  const [words, setWords] = React.useState<Array<string>>([])
-  const [pendingPath, setPendingPath] = React.useState('')
+  const transition = useTransition();
+  const [words, setWords] = React.useState<Array<string>>([]);
+  const [pendingPath, setPendingPath] = React.useState('');
   const showLoader = useSpinDelay(Boolean(transition.state !== 'idle'), {
     delay: 400,
     minDuration: 1000
-  })
+  });
 
   React.useEffect(() => {
-    if (firstRender) return
-    if (transition.state === 'idle') return
-    if (transition.state === 'loading') setWords(LOADER_WORDS)
-    if (transition.state === 'submitting') setWords(ACTION_WORDS)
+    if (firstRender) {return;}
+    if (transition.state === 'idle') {return;}
+    if (transition.state === 'loading') {setWords(LOADER_WORDS);}
+    if (transition.state === 'submitting') {setWords(ACTION_WORDS);}
 
     const interval = setInterval(() => {
-      setWords(([first, ...rest]) => [...rest, first] as Array<string>)
-    }, 2000)
+      setWords(([first, ...rest]) => [...rest, first] as Array<string>);
+    }, 2000);
 
-    return () => clearInterval(interval)
-  }, [pendingPath, transition.state])
-
-  React.useEffect(() => {
-    if (firstRender) return
-    if (transition.state === 'idle') return
-    setPendingPath(transition.location.pathname)
-  }, [transition])
+    return () => clearInterval(interval);
+  }, [pendingPath, transition.state]);
 
   React.useEffect(() => {
-    firstRender = false
-  }, [])
+    if (firstRender) {return;}
+    if (transition.state === 'idle') {return;}
+    setPendingPath(transition.location.pathname);
+  }, [transition]);
 
-  const action = words[0]
+  React.useEffect(() => {
+    firstRender = false;
+  }, []);
+
+  const action = words[0];
 
   return (
     <TransitionIndicator
@@ -204,7 +219,7 @@ function PageLoadingMessage() {
       action={action}
       secondary={pendingPath}
     />
-  )
+  );
 }
 
 function Html({
@@ -214,7 +229,7 @@ function Html({
   title?: string
   lang: string
 }) {
-  const [theme] = useTheme()
+  const [theme] = useTheme();
   const { i18n } = useTranslation();
 
   useChangeLanguage(lang);
@@ -238,19 +253,19 @@ function Html({
         {process.env.NODE_ENV === 'development' && <LiveReload />}
       </body>
     </html>
-  )
+  );
 }
 
 export default function App() {
   // set locale statically
-  const locale = 'pt'
-  const data = useLoaderData<LoaderData>()
+  const locale = 'pt';
+  const data = useLoaderData<LoaderData>();
 
   return (
     <ThemeProvider specifiedTheme={data.requestInfo.session.theme}>
       <Html lang={locale} />
     </ThemeProvider>
-  )
+  );
 }
 
 export function ErrorBoundary({ error }: { error: Error }) {
@@ -264,13 +279,14 @@ export function ErrorBoundary({ error }: { error: Error }) {
         users to see.
       </p>
     </div>
-  )
+  );
 }
 
 export function CatchBoundary() {
-  const caught = useCatch()
+  const caught = useCatch();
 
-  let message
+  let message;
+
   switch (caught.status) {
     case 401:
       message = (
@@ -278,16 +294,16 @@ export function CatchBoundary() {
           Oops! Looks like you tried to visit a page that you do not have access
           to.
         </p>
-      )
-      break
+      );
+      break;
     case 404:
       message = (
         <p>Oops! Looks like you tried to visit a page that does not exist.</p>
-      )
-      break
+      );
+      break;
 
     default:
-      throw new Error(caught.data || caught.statusText)
+      throw new Error(caught.data || caught.statusText);
   }
 
   return (
@@ -303,5 +319,5 @@ export function CatchBoundary() {
         <Scripts />
       </body>
     </html>
-  )
+  );
 }

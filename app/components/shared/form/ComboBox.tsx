@@ -1,11 +1,15 @@
-import * as React from 'react'
-import { useId } from '@reach/auto-id'
-import { inputBaseClasses } from '~/components/shared/form/InputBase'
-import { Language, TranslationObject } from '~/types'
-import { getLocalizedText } from '~/utils/misc'
-import Select from 'react-select'
-import { useEffect, useState } from 'react'
-import { useTheme } from '~/utils/theme-provider'
+import * as React from 'react';
+import { useId } from '@reach/auto-id';
+
+import Select from 'react-select';
+
+import { useEffect, useState } from 'react';
+
+import { inputBaseClasses } from '~/components/shared/form/InputBase';
+import type { Language, TranslationObject } from '~/types';
+import { getLocalizedText } from '~/utils/misc';
+
+import { useTheme } from '~/utils/theme-provider';
 
 export type Option = {
   value: string | number
@@ -29,10 +33,10 @@ export default function ComboBox({
   lang,
   placeholder
 }: Props) {
-  const generatedId = useId()
-  const [value, setValue] = useState<Option | undefined>(undefined)
-  const [theme] = useTheme()
-  const inDarkMode = theme === 'dark'
+  const generatedId = useId();
+  const [value, setValue] = useState<Option | undefined>(undefined);
+  const [theme] = useTheme();
+  const inDarkMode = theme === 'dark';
 
   const values = options.map((o) => {
     return {
@@ -41,20 +45,20 @@ export default function ComboBox({
         typeof o.label === 'string'
           ? o.label
           : getLocalizedText(lang as Language, o.label)
-    }
-  })
+    };
+  });
 
   function pickOption(value: string | number): Option {
-    return values.find((o) => o.value === value) as Option
+    return values.find((o) => o.value === value) as Option;
   }
 
   useEffect(() => {
-    if (!defaultValue) return
-    setValue(pickOption(defaultValue))
-  }, [defaultValue])
+    if (!defaultValue) {return;}
+    setValue(pickOption(defaultValue));
+  }, [defaultValue]);
 
   function handleSelectChange(o: Option) {
-    setValue(o)
+    setValue(o);
   }
 
   if (Math.random() < 1) {
@@ -87,14 +91,14 @@ export default function ComboBox({
                 backgroundColor: undefined,
                 border: 0,
                 boxShadow: 'none'
-              }
+              };
             },
             input: (base) => {
               return {
                 ...base,
                 color: 'var(--color-blueGray-500)',
                 outline: 'none'
-              }
+              };
             },
             menu: (base) => {
               return {
@@ -105,7 +109,7 @@ export default function ComboBox({
                 backgroundColor: inDarkMode
                   ? 'var(--color-gray-800)'
                   : 'var(--color-gray-100)'
-              }
+              };
             },
             option: (base, { isFocused }) => {
               return {
@@ -119,7 +123,7 @@ export default function ComboBox({
                     : inDarkMode
                     ? 'var(--color-gray-600)'
                     : 'var(--color-gray-200)'
-              }
+              };
             },
             singleValue: (base) => {
               return {
@@ -127,7 +131,7 @@ export default function ComboBox({
                 color: inDarkMode
                   ? 'var(--color-blueGray-500)'
                   : 'var(--color-gray-500)'
-              }
+              };
             },
             clearIndicator: (base) => {
               return {
@@ -136,12 +140,12 @@ export default function ComboBox({
                 ':hover': {
                   color: inDarkMode ? 'var(--color-gray-200)' : 'initial'
                 }
-              }
+              };
             }
           }}
         />
       </>
-    )
+    );
   }
 
   return (
@@ -158,5 +162,5 @@ export default function ComboBox({
         </option>
       ))}
     </select>
-  )
+  );
 }

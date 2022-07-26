@@ -1,6 +1,6 @@
-import * as React from 'react'
-import { Link, useLocation } from 'remix'
-import clsx from 'clsx'
+import * as React from 'react';
+import { Link, useLocation } from '@remix-run/react';
+import clsx from 'clsx';
 import {
   Menu,
   MenuButton,
@@ -8,44 +8,50 @@ import {
   MenuLink,
   MenuPopover,
   useMenuButtonContext
-} from '@reach/menu-button'
-import { useEffect, useState } from 'react'
+} from '@reach/menu-button';
+import { useEffect, useState } from 'react';
 import {
   AnimatePresence,
   motion,
   useAnimation,
   useReducedMotion
-} from 'framer-motion'
-import type { User } from '@prisma/client'
-import { SunIcon } from './shared/icons/SunIcon'
-import { MoonIcon } from './shared/icons/MoonIcon'
-import { TeamCircle } from './shared/icons/TeamCircle'
-import { useElementState } from './hooks/useElementState'
-import { useRootData } from '~/utils/use-root-data'
-import { Theme, Themed, useTheme } from '~/utils/theme-provider'
-import { useTranslation } from 'react-i18next'
-import Logo from '~/components/shared/Logo'
+} from 'framer-motion';
+import type { User } from '@prisma/client';
+
+import { useTranslation } from 'react-i18next';
+
+import { useRootData } from '~/utils/use-root-data';
+
+import { Theme, Themed, useTheme } from '~/utils/theme-provider';
+
+import Logo from '~/components/shared/Logo';
+
+import { SunIcon } from './shared/icons/SunIcon';
+import { MoonIcon } from './shared/icons/MoonIcon';
+import { TeamCircle } from './shared/icons/TeamCircle';
+import { useElementState } from './hooks/useElementState';
+
 
 const LINKS = [
   { name: 'NAVBAR >>> Meeting Point', to: '/m/groups', public: false }
-]
+];
 
-const MOBILE_LINKS = [{ name: 'Home', to: '/', public: true }, ...LINKS]
+const MOBILE_LINKS = [{ name: 'Home', to: '/', public: true }, ...LINKS];
 
 const links = (
   list: Array<{ name: string; to: string; public: boolean }>,
   user: User | null
 ) => {
-  return list.filter((l) => l.public || (!l.public && user))
-}
+  return list.filter((l) => l.public || (!l.public && user));
+};
 
 function NavLink({
   to,
   ...rest
 }: Omit<Parameters<typeof Link>['0'], 'to'> & { to: string }) {
-  const location = useLocation()
+  const location = useLocation();
   const isSelected =
-    to === location.pathname || location.pathname.startsWith(`${to}/`)
+    to === location.pathname || location.pathname.startsWith(`${to}/`);
 
   return (
     <li className="px-5 py-2">
@@ -62,24 +68,25 @@ function NavLink({
         {...rest}
       />
     </li>
-  )
+  );
 }
 
-const iconTransformOrigin = { transformOrigin: '50% 100px' }
+const iconTransformOrigin = { transformOrigin: '50% 100px' };
 
 function DarkModeToggle({
   variant = 'icon'
 }: {
   variant?: 'icon' | 'labelled'
 }) {
-  const [, setTheme] = useTheme()
-  const { t } = useTranslation('common')
+  const [, setTheme] = useTheme();
+  const { t } = useTranslation('common');
+
   return (
     <button
       onClick={() => {
         setTheme((previousTheme) =>
           previousTheme === Theme.DARK ? Theme.LIGHT : Theme.DARK
-        )
+        );
       }}
       className={clsx(
         'border-secondary hover:border-primary focus:border-primary inline-flex items-center justify-center p-1 h-14 border-2 rounded-full focus:outline-none overflow-hidden transition',
@@ -115,28 +122,28 @@ function DarkModeToggle({
         />
       </span>
     </button>
-  )
+  );
 }
 
 function MobileMenuList() {
-  const { t } = useTranslation('common')
-  const { isExpanded } = useMenuButtonContext()
-  const shouldReduceMotion = useReducedMotion()
-  const { user } = useRootData()
+  const { t } = useTranslation('common');
+  const { isExpanded } = useMenuButtonContext();
+  const shouldReduceMotion = useReducedMotion();
+  const { user } = useRootData();
 
   useEffect(() => {
     if (isExpanded) {
       // don't use overflow-hidden, as that toggles the scrollbar and causes layout shift
-      document.body.classList.add('fixed')
-      document.body.classList.add('overflow-y-scroll')
+      document.body.classList.add('fixed');
+      document.body.classList.add('overflow-y-scroll');
       // alternatively, get bounding box of the menu, and set body height to that.
-      document.body.style.height = '100vh'
+      document.body.style.height = '100vh';
     } else {
-      document.body.classList.remove('fixed')
-      document.body.classList.remove('overflow-y-scroll')
-      document.body.style.removeProperty('height')
+      document.body.classList.remove('fixed');
+      document.body.classList.remove('overflow-y-scroll');
+      document.body.style.removeProperty('height');
     }
-  }, [isExpanded])
+  }, [isExpanded]);
 
   return (
     <AnimatePresence>
@@ -180,31 +187,33 @@ function MobileMenuList() {
         </MenuPopover>
       ) : null}
     </AnimatePresence>
-  )
+  );
 }
 
 const topVariants = {
   open: { rotate: 45, y: 7 },
   closed: { rotate: 0, y: 0 }
-}
+};
 
 const centerVariants = {
   open: { opacity: 0 },
   closed: { opacity: 1 }
-}
+};
 
 const bottomVariants = {
   open: { rotate: -45, y: -5 },
   closed: { rotate: 0, y: 0 }
-}
+};
 
 function MobileMenu() {
-  const shouldReduceMotion = useReducedMotion()
-  const transition = shouldReduceMotion ? { duration: 0 } : {}
+  const shouldReduceMotion = useReducedMotion();
+  const transition = shouldReduceMotion ? { duration: 0 } : {};
+
   return (
     <Menu>
       {({ isExpanded }) => {
-        const state = isExpanded ? 'open' : 'closed'
+        const state = isExpanded ? 'open' : 'closed';
+
         return (
           <>
             <MenuButton className="focus:border-primary hover:border-primary border-secondary text-primary inline-flex items-center justify-center p-1 w-14 h-14 border-2 rounded-full focus:outline-none transition">
@@ -253,10 +262,10 @@ function MobileMenu() {
 
             <MobileMenuList />
           </>
-        )
+        );
       }}
     </Menu>
-  )
+  );
 }
 
 // Timing durations used to control the speed of the team ring in the profile button.
@@ -266,7 +275,7 @@ const durations = {
   hover: 3,
   focus: 3,
   active: 0.25
-}
+};
 
 function ProfileButton({
   user,
@@ -275,9 +284,9 @@ function ProfileButton({
   user: User | null
   magicLinkVerified: boolean | undefined
 }) {
-  const controls = useAnimation()
-  const [ref, state] = useElementState()
-  const shouldReduceMotion = useReducedMotion()
+  const controls = useAnimation();
+  const [ref, state] = useElementState();
+  const shouldReduceMotion = useReducedMotion();
 
   React.useEffect(() => {
     void controls.start((_, { rotate = 0 }) => {
@@ -286,7 +295,7 @@ function ProfileButton({
           ? state === 'initial'
             ? rotate - 360
             : rotate + 360
-          : 360
+          : 360;
 
       return shouldReduceMotion
         ? {}
@@ -297,9 +306,9 @@ function ProfileButton({
               repeat: Infinity,
               ease: 'linear'
             }
-          }
-    })
-  }, [state, controls, shouldReduceMotion])
+          };
+    });
+  }, [state, controls, shouldReduceMotion]);
 
   return (
     <Link
@@ -326,19 +335,20 @@ function ProfileButton({
         alt="logo"
       />
     </Link>
-  )
+  );
 }
 
 function Navbar() {
-  const { t } = useTranslation('common')
-  const { requestInfo, user } = useRootData()
-  const [isRoot, setIsRoot] = useState<boolean>(true)
-  const location = useLocation()
+  const { t } = useTranslation('common');
+  const { requestInfo, user } = useRootData();
+  const [isRoot, setIsRoot] = useState<boolean>(true);
+  const location = useLocation();
+
   // hacky stuff: we don't want to show the logo for the home page, because we
   // have the logo centered in the screen
   useEffect(() => {
-    setIsRoot(location.pathname === '/')
-  }, [location])
+    setIsRoot(location.pathname === '/');
+  }, [location]);
 
   return (
     <div className="px-5vw py-9 lg:py-12">
@@ -379,7 +389,7 @@ function Navbar() {
         </div>
       </nav>
     </div>
-  )
+  );
 }
 
-export { Navbar }
+export { Navbar };

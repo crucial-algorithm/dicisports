@@ -1,9 +1,10 @@
 // This just allows us to track individual clients so we can keep track of
 // the posts they've read and make useful suggestions even if they're not logged in.
 
-import { createCookieSessionStorage } from 'remix'
-import Config from '~/server/config.server'
-import Id from '~/server/utils/Id.server'
+import { createCookieSessionStorage } from 'remix';
+
+import Config from '~/server/config.server';
+import Id from '~/server/utils/Id.server';
 
 const clientStorage = createCookieSessionStorage({
   cookie: {
@@ -16,27 +17,29 @@ const clientStorage = createCookieSessionStorage({
     expires: new Date('2082-09-13'),
     httpOnly: true
   }
-})
+});
 
 async function getClientSession(request: Request) {
-  const session = await clientStorage.getSession(request.headers.get('Cookie'))
-  const initialValue = await clientStorage.commitSession(session)
+  const session = await clientStorage.getSession(request.headers.get('Cookie'));
+  const initialValue = await clientStorage.commitSession(session);
 
   async function commit() {
-    const currentValue = await clientStorage.commitSession(session)
-    return currentValue === initialValue ? null : currentValue
+    const currentValue = await clientStorage.commitSession(session);
+
+    return currentValue === initialValue ? null : currentValue;
   }
 
   function getClientId() {
-    let clientId = session.get('clientId') as string | undefined
-    if (typeof clientId === 'string') return clientId
-    clientId = Id()
-    session.set('clientId', clientId)
-    return clientId
+    let clientId = session.get('clientId') as string | undefined;
+
+    if (typeof clientId === 'string') {return clientId;}
+    clientId = Id();
+    session.set('clientId', clientId);
+    return clientId;
   }
 
   // get the clientId set if it's not already
-  getClientId()
+  getClientId();
 
   return {
     getClientId,
@@ -46,19 +49,25 @@ async function getClientSession(request: Request) {
      * It will set the 'Set-Cookie' header value on that headers object.
      * It will then return that Headers object.
      */
+    // eslint-disable-next-line no-undef
     getHeaders: async (headers: ResponseInit['headers'] = new Headers()) => {
-      const value = await commit()
-      if (!value) return headers
-      if (headers instanceof Headers) {
-        headers.append('Set-Cookie', value)
-      } else if (Array.isArray(headers)) {
-        headers.push(['Set-Cookie', value])
-      } else {
-        headers['Set-Cookie'] = value
+      const value = await commit();
+
+      if (!value) {
+        return headers;
       }
-      return headers
+      if (headers instanceof Headers) {
+        headers.append('Set-Cookie', value);
+      } else if (Array.isArray(headers)) {
+        // @ts-ignore
+        headers.push(['Set-Cookie', value]);
+      } else {
+        // @ts-ignore
+        headers['Set-Cookie'] = value;
+      }
+      return headers;
     }
-  }
+  };
 }
 
-export { getClientSession }
+export { getClientSession };

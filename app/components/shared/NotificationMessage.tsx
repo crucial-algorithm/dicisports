@@ -1,9 +1,9 @@
-import * as React from 'react'
-import { useState } from 'react'
-import { useSearchParams } from 'remix'
-import { AnimatePresence, motion } from 'framer-motion'
-import clsx from 'clsx'
-import { PlusIcon } from '@heroicons/react/solid'
+import * as React from 'react';
+import { useState } from 'react';
+import { useSearchParams } from '@remix-run/react';
+import { AnimatePresence, motion } from 'framer-motion';
+import clsx from 'clsx';
+import { PlusIcon } from '@heroicons/react/solid';
 
 function NotificationMessage({
   queryStringKey,
@@ -25,44 +25,45 @@ function NotificationMessage({
   | { autoClose: false; visibleMs?: never }
   | { visibleMs?: number; autoClose?: never }
 )) {
-  const [searchParams] = useSearchParams()
+  const [searchParams] = useSearchParams();
   const hasQueryStringValue = queryStringKey
     ? searchParams.has(queryStringKey)
-    : false
+    : false;
   const [isVisible, setIsVisible] = useState(
     !queryStringKey || hasQueryStringValue
-  )
-  const messageFromQuery = queryStringKey && searchParams.get(queryStringKey)
+  );
+  const messageFromQuery = queryStringKey && searchParams.get(queryStringKey);
   // Eslint is wrong here, params.get can return an empty string
   // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-  const message = messageFromQuery || children
-  const latestMessageRef = React.useRef(message)
+  const message = messageFromQuery || children;
+  const latestMessageRef = React.useRef(message);
 
   // if the query gets a message after the initial mount then we want to toggle visibility
   React.useEffect(() => {
-    if (hasQueryStringValue) setIsVisible(true)
-  }, [hasQueryStringValue])
+    if (hasQueryStringValue) {setIsVisible(true);}
+  }, [hasQueryStringValue]);
 
   React.useEffect(() => {
-    latestMessageRef.current = message
-  }, [message])
+    latestMessageRef.current = message;
+  }, [message]);
 
   React.useEffect(() => {
-    if (autoClose === false) return
-    if (controlledVisible === false) return
+    if (autoClose === false) {return;}
+    if (controlledVisible === false) {return;}
 
     const timeout = setTimeout(() => {
-      setIsVisible(false)
-    }, visibleMs + delay)
+      setIsVisible(false);
+    }, visibleMs + delay);
 
-    return () => clearTimeout(timeout)
-  }, [queryStringKey, delay, autoClose, controlledVisible, visibleMs, message])
+    return () => clearTimeout(timeout);
+  }, [queryStringKey, delay, autoClose, controlledVisible, visibleMs, message]);
 
   React.useEffect(() => {
-    if (!latestMessageRef.current) return
+    if (!latestMessageRef.current) {return;}
     if (queryStringKey && searchParams.has(queryStringKey)) {
-      const newSearchParams = new URLSearchParams(searchParams)
-      newSearchParams.delete(queryStringKey)
+      const newSearchParams = new URLSearchParams(searchParams);
+
+      newSearchParams.delete(queryStringKey);
 
       // use setSearchParams from useSearchParams resulted in redirecting the
       // user to the homepage (wut?) and left a `?` at the end of the URL even
@@ -74,15 +75,15 @@ function NotificationMessage({
         [window.location.pathname, newSearchParams.toString()]
           .filter(Boolean)
           .join('?')
-      )
+      );
     }
-  }, [queryStringKey, searchParams])
+  }, [queryStringKey, searchParams]);
 
-  const initialY = position.includes('bottom') ? 50 : -50
+  const initialY = position.includes('bottom') ? 50 : -50;
   const show =
     message && typeof controlledVisible === 'boolean'
       ? controlledVisible
-      : isVisible
+      : isVisible;
 
   return (
     <AnimatePresence>
@@ -122,7 +123,7 @@ function NotificationMessage({
         </motion.div>
       ) : null}
     </AnimatePresence>
-  )
+  );
 }
 
 type NotificationProps = {
@@ -138,25 +139,26 @@ function Notification({
   position = 'bottom-right',
   show = () => {}
 }: NotificationProps) {
-  const initialY = position.includes('bottom') ? 50 : -50
-  const [isVisible, setIsVisible] = useState(false)
-  const delay = 0
+  const initialY = position.includes('bottom') ? 50 : -50;
+  const [isVisible, setIsVisible] = useState(false);
+  const delay = 0;
 
   // hacky implementation... we receive the prop show which is a function that
   // will be called with a single argument: a function that allows to trigger
   // the display of the notification (handlerSetVisible will be called by the
   // parent component)
   function handlerSetVisible() {
-    setIsVisible(true)
+    setIsVisible(true);
   }
-  show(handlerSetVisible)
+  show(handlerSetVisible);
 
   React.useEffect(() => {
     const timeout = setTimeout(() => {
-      setIsVisible(false)
-    }, duration)
-    return () => clearTimeout(timeout)
-  }, [isVisible, duration])
+      setIsVisible(false);
+    }, duration);
+
+    return () => clearTimeout(timeout);
+  }, [isVisible, duration]);
 
   return (
     <AnimatePresence>
@@ -187,7 +189,7 @@ function Notification({
         </motion.div>
       ) : null}
     </AnimatePresence>
-  )
+  );
 }
 
-export { NotificationMessage, Notification }
+export { NotificationMessage, Notification };

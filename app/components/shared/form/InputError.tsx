@@ -1,5 +1,5 @@
-import React from 'react'
-import clsx from 'clsx'
+import React from 'react';
+import clsx from 'clsx';
 
 type Props = {
   id: string
@@ -7,14 +7,14 @@ type Props = {
 } & React.ComponentProps<'div'>
 const InputError: React.FC<Props> = ({ id, className, children }) => {
   if (!children) {
-    return null
+    return null;
   }
 
   return (
     <p role="alert" id={id} className={clsx('text-red-500 text-sm', className)}>
       {children}
     </p>
-  )
-}
+  );
+};
 
-export default InputError
+export default InputError;
