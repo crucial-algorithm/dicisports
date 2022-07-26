@@ -1,11 +1,11 @@
 import * as React from 'react'
-import { Event } from '@prisma/client'
-import { Link } from 'remix'
-import { TFunction } from 'react-i18next'
+import type { Event } from '@prisma/client'
+import { Link } from '@remix-run/react'
+import type { TFunction } from 'react-i18next'
 
 export type DataTableProps = {
   data: Array<Event>
-  t: TFunction
+  t: TFunction<any>
 }
 
 export default function DataTable({ data, t }: DataTableProps) {
@@ -21,6 +21,7 @@ export default function DataTable({ data, t }: DataTableProps) {
                     scope="col"
                     className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                   >
+                    {/* @ts-ignore */}
                     {t('Name')}
                   </th>
                   <th
