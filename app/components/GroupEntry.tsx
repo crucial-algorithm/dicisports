@@ -134,6 +134,13 @@ function GroupImage({ group, img }: { group: Group; img?: string }) {
         <DisplayImg
           id={image1 || image2 || image3 || ''}
           alt={group.name || ''}
+          transformations={{
+            resize: {
+              type: 'fill',
+              width: 800,
+              height: 800
+            }
+          }}
         />
       </Wrapper>
     );
