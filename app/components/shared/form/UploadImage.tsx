@@ -5,18 +5,25 @@ import { buildImageUrl } from 'cloudinary-build-url';
 
 type UploadImageProps = {
   index: number
-  imageId?: string
   label: string
-  onDrop?: (index: number, file: File) => void
   defaultValue?: string | undefined | null
 } & Omit<React.ComponentProps<'section'>, 'defaultValue' | 'onDrop'>
 
+// Hack from https://stackoverflow.com/questions/52078853/is-it-possible-to-update-filelist
+// to get react-dropzone to populate the file when dropping an image
+function FileListItems(files: File[]) {
+  const dt = new ClipboardEvent('').clipboardData || new DataTransfer();
+
+  for (let i = 0, len = files.length; i < len; i++) {
+    dt.items.add(files[i]);
+  }
+  return dt.files;
+}
+
 export default function UploadImage({
   index,
-  imageId,
   label,
   className,
-  onDrop = () => true,
   defaultValue = null
 }: UploadImageProps) {
   const [thumb, setThumb] = useState<string | null>(
@@ -25,19 +32,26 @@ export default function UploadImage({
   const { getRootProps, getInputProps } = useDropzone({
     multiple: false,
     accept: 'image/*',
-    onDrop: (acceptedFiles) => {
-      if (acceptedFiles.length === 0) {return;}
-      const file: File = acceptedFiles[0] as File;
+    onDrop: (accepted) => {
+      if (accepted.length === 0) {
+        return;
+      }
+      const file: File = accepted[0] as File;
+
+      if (!inputEl || !inputEl.current) {
+        return;
+      }
+
+      // @ts-ignore
+      inputEl.current.files = new FileListItems([file]);
 
       setThumb(URL.createObjectURL(file));
-      setValue(imageId);
-      onDrop(index, file);
     }
   });
-
-  const [value, setValue] = useState<string | undefined>('');
-  const inputFileName = `/image/${index}/file`;
-  const inputShadowName = `/image/${index}`;
+  const inputProps = getInputProps();
+  const inputFileName = `/file/image/${index}`;
+  // @ts-ignore
+  const inputEl = inputProps.ref;
 
   return (
     <section
@@ -50,14 +64,13 @@ export default function UploadImage({
       )}
     >
       <div {...getRootProps({ className: 'h-80 w-full overflow-hidden' })}>
-        <input {...getInputProps()} name={inputFileName} />
+        <input {...inputProps} name={inputFileName} ref={inputEl} />
         {thumb ? (
           <img src={thumb} alt="" className="object-cover object-left-top" />
         ) : (
           <p className="h-80 w-full flex items-center justify-center">{label}</p>
         )}
       </div>
-      <input type="hidden" name={inputShadowName} value={value} />
     </section>
   );
 }

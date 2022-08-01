@@ -1,23 +1,22 @@
 import type { ActionFunction, LinksFunction, LoaderFunction } from 'remix';
 
-import { json, redirect } from 'remix';
+import { json, redirect, unstable_createMemoryUploadHandler, unstable_parseMultipartFormData } from 'remix';
 
-import { useActionData, useSubmit } from '@remix-run/react';
+import { useActionData } from '@remix-run/react';
 
 import { useTranslation } from 'react-i18next';
 
 import { Form, useLoaderData } from '@remix-run/react';
 
-import type { FormEvent } from 'react';
-
 import { useState } from 'react';
 
 import type { UploadHandler } from '@remix-run/node';
 
+import { unstable_composeUploadHandlers } from '@remix-run/node';
+
 import { z, ZodError } from 'zod';
 
 import { Dialog } from '@reach/dialog';
-import { parseMultipartFormData } from '@remix-run/server-runtime/dist/formData';
 
 import Main from '~/components/shared/Main';
 import { H2, H3, Paragraph } from '~/components/shared/typography';
@@ -33,7 +32,6 @@ import FormField from '~/components/shared/form/FormField';
 import TextField from '~/components/shared/form/TextField';
 import type {
   DiciLocation,
-  UploadImageMeta,
   Group,
   GroupSpirit,
   GroupType,
@@ -55,21 +53,18 @@ import {
   badRequest,
   hoursMinutesToTimeOfDay,
   PeekDayOfWeek,
-  timeOfDayToHoursMinutes,
-  uploadImages
+  timeOfDayToHoursMinutes
 } from '~/utils/misc';
 import UploadForm from '~/components/shared/form/UploadForm';
 import mapCss from '~/styles/map.css';
 import vendorsCss from '~/styles/vendors.css';
-import type { CloudinaryFileMeta } from '~/server/storage/cloudinary.server';
 
 
 import i18n from '~/server/i18n.server';
 import InputError from '~/components/shared/form/InputError';
-import TransitionIndicator from '~/components/shared/TransitionIndicator';
-
-
 import { Spacer } from '~/components/shared/Spacer';
+
+import { uploadImageToCloudinary } from '~/server/storage/cloudinary.server';
 
 
 const RESOURCES_NS = 'groups-form';
@@ -83,7 +78,6 @@ type LoaderData = {
   mapToken: string
   imageUploadEndpoint: string
   imageUploadPreset: string
-  files: Array<CloudinaryFileMeta>
 }
 
 const actionIds = {
@@ -113,7 +107,9 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 
   const group = params.groupId ? await findGroup(params.groupId) : null;
 
-  if (!group || group.createdById !== user.id) {return redirect('/m/groups');}
+  if (!group || group.createdById !== user.id) {
+    return redirect('/m/groups');
+  }
 
   return json(
     {
@@ -139,17 +135,14 @@ type ActionData = {
   }
 }
 
-function imgFullId(prefix: string, uuid: string | null): string | null {
-  return uuid ? `${prefix}${uuid}` : null;
-}
-
 function processImgField(
-  prefix: string,
-  value: string | null,
+  value: string | null | File,
   isUpdate: boolean
 ): string | null | undefined {
-  if (isUpdate && !value) {return undefined;}
-  return imgFullId(prefix, value);
+  if (isUpdate && !value || value instanceof File) {
+    return undefined;
+  }
+  return value || null;
 }
 
 function parseLocation(location: string) {
@@ -166,12 +159,21 @@ function parseLocation(location: string) {
 export const action: ActionFunction = async ({ request, params }) => {
   const t = await i18n.getFixedT(request, RESOURCES_NS);
   const user = await requireUser(request);
-  const uploadHandler: UploadHandler = async () => {
-    // cleanup images from form - upload is done directly to cloudinary
-    return undefined;
-  };
-  const form = await parseMultipartFormData(request, uploadHandler);
-  const p = Config().CLOUDINARY_UPLOAD_FOLDER_TARGET;
+  const uploadHandler: UploadHandler = unstable_composeUploadHandlers(
+    // our custom upload handler
+    async ({ name, contentType, data, filename }) => {
+      if (!name.startsWith('/file/image') || !filename) {
+        return undefined;
+      }
+      const uploadedImage = await uploadImageToCloudinary(data);
+
+      return uploadedImage.public_id;
+    },
+    // fallback to memory for everything else
+    unstable_createMemoryUploadHandler()
+  );
+
+  const form = await unstable_parseMultipartFormData(request, uploadHandler);
   const action = form.get('actionId') as string;
 
   // Check if user should be able to manipulate this group
@@ -189,9 +191,9 @@ export const action: ActionFunction = async ({ request, params }) => {
     );
   }
   const isUpdate = group.status !== 'auto';
-  const image1 = form.get('/image/0') as string;
-  const image2 = form.get('/image/1') as string;
-  const image3 = form.get('/image/2') as string;
+  const image1 = form.get('/file/image/0') as string;
+  const image2 = form.get('/file/image/1') as string;
+  const image3 = form.get('/file/image/2') as string;
   const location = parseLocation(form.get('location') as string);
   const data = {
     id: form.get('id') as string,
@@ -209,9 +211,9 @@ export const action: ActionFunction = async ({ request, params }) => {
       parseInt(form.get('minute') as string, 10)
     ),
     whatsapp: form.get('whatsapp') as string,
-    image1: processImgField(p, image1, isUpdate),
-    image2: processImgField(p, image2, isUpdate),
-    image3: processImgField(p, image3, isUpdate)
+    image1: processImgField(image1, isUpdate),
+    image2: processImgField(image2, isUpdate),
+    image3: processImgField(image3, isUpdate)
   };
   const required = { invalid_type_error: t('Field required') };
   const str5CharsOrMore = z
@@ -225,9 +227,7 @@ export const action: ActionFunction = async ({ request, params }) => {
 
   try {
     GroupSchema.parse(data);
-
     await updateGroup(data);
-
     return redirect(
       `/m/groups?message=${t(
         isUpdate ? 'Group updated successfully' : 'Group created successfully'
@@ -259,35 +259,13 @@ export default function GroupRoute() {
     sports,
     groupTypes,
     groupsSpirit,
-    files,
-    imageUploadEndpoint,
-    imageUploadPreset,
     group
   } = loadedData;
   const isUpdate = group.status !== 'auto';
   // using parse float for 0 min's to work
   const [hour, minute] = timeOfDayToHoursMinutes(group.timeOfDay);
-  const images: Array<UploadImageMeta | undefined> = new Array(3);
   const actionData = useActionData<ActionData>();
-  const [uploading, setImagesUploading] = useState<boolean>(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState<boolean>(false);
-
-  function setImage(index: number, file: File) {
-    const meta: CloudinaryFileMeta | undefined = files[index];
-
-    if (!meta)
-      {throw new Error(
-        'No upload metadata for this file - did you increased the number of pictures in the form (limited to 4)?'
-      );}
-    images[index] = {
-      name: `/image/${index}`,
-      file,
-      value: meta.publicId,
-      timestamp: meta.timestamp,
-      signature: meta.signature,
-      apiKey: meta.apiKey
-    };
-  }
 
   // open map stuff
   const [showLocationPicker, setShowLocationPicker] = useState<boolean>(false);
@@ -299,15 +277,6 @@ export default function GroupRoute() {
         }
       : null
   );
-  const submit = useSubmit();
-
-  async function handleSubmitForm(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    setImagesUploading(true);
-    await uploadImages(imageUploadEndpoint, imageUploadPreset, images);
-    setImagesUploading(false);
-    submit(e.target as HTMLFormElement);
-  }
 
   function handleShowMap() {
     setShowLocationPicker(true);
@@ -344,7 +313,6 @@ export default function GroupRoute() {
           <UploadForm
             method="post"
             className="w-full"
-            onSubmit={handleSubmitForm}
           >
             <input type="hidden" name="id" value={group?.id || ''} />
             <FormField
@@ -485,25 +453,19 @@ export default function GroupRoute() {
               <div className="w-full m-auto flex flex-row justify-begin gap-4 md:w-full md:grid-flow-col md:grid-rows-1">
                 <UploadImage
                   index={0}
-                  imageId={files[0].publicId}
                   label={t('Hint For Picture 1')}
-                  onDrop={setImage}
                   defaultValue={group.image1}
                   className="w-1/3"
                 />
                 <UploadImage
                   index={1}
-                  imageId={files[1].publicId}
                   label={t('Hint For Picture 2')}
-                  onDrop={setImage}
                   defaultValue={group.image2}
                   className="w-1/3"
                 />
                 <UploadImage
                   index={2}
-                  imageId={files[2].publicId}
                   label={t('Hint For Picture 3')}
-                  onDrop={setImage}
                   defaultValue={group.image3}
                   className="w-1/3"
                 />
@@ -513,11 +475,8 @@ export default function GroupRoute() {
               className="mt-8"
               type="submit"
               form="profile-form"
-              disabled={uploading}
             >
-              {uploading
-                ? t('Button While Uploading Images')
-                : isUpdate
+              {isUpdate
                 ? t('Update Group')
                 : t('Create Group')}
             </Button>
@@ -576,7 +535,6 @@ export default function GroupRoute() {
           </div>
         </Form>
       </Dialog>
-      <TransitionIndicator visible={uploading} action={t('Uploading Images')} />
     </Main>
   );
 }

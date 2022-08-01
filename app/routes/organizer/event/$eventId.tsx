@@ -23,13 +23,7 @@ import mapCss from '~/styles/map.css';
 import organizerCss from '~/styles/organizer.css';
 import UploadImage from '~/components/shared/form/UploadImage';
 
-
-import type {
-  CloudinaryFileMeta } from '~/server/storage/cloudinary.server';
-import {
-  generateCloudinarySignatures
-} from '~/server/storage/cloudinary.server';
-import type { Sport, Document, Event, DiciLocation } from '~/types'
+import type { Sport, Document, Event, DiciLocation } from '~/types';
 import Header from '~/components/shared/Header';
 import TextField from '~/components/shared/form/TextField';
 import Button from '~/components/shared/Button';
@@ -42,7 +36,6 @@ import { findEvent } from '~/server/db/events.server';
 import Main from '~/components/shared/Main';
 import I18nText from '~/components/I18nText';
 import FormField from '~/components/shared/form/FormField';
-import { uploadImages } from '~/utils/misc';
 
 
 type ActionData = {
@@ -63,7 +56,6 @@ type LoaderData = {
   imageUploadEndpoint: string
   imageDisplayEndpoint: string
   imageUploadPreset: string
-  files: Array<CloudinaryFileMeta>
   event: SportEvent | null
 }
 
@@ -79,7 +71,6 @@ export const handle = {
 
 export const loader: LoaderFunction = async ({ request, params }) => {
   const sports = await findSports();
-  const files = generateCloudinarySignatures(4);
   const event = params.eventId ? await findEvent(params.eventId) : null;
 
   const {
@@ -94,7 +85,6 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     imageUploadEndpoint: IMAGE_UPLOAD_ENDPOINT,
     imageDisplayEndpoint: IMAGE_DISPLAY_ENDPOINT,
     imageUploadPreset: CLOUDINARY_UPLOAD_PRESET,
-    files,
     event,
     sports: sports.map((sport) => {
       return { id: sport.id, name: sport.name };
@@ -169,40 +159,15 @@ export default function OrganizerEventRoute() {
   const {
     sports,
     mapToken,
-    imageUploadEndpoint,
-    imageUploadPreset,
     imageDisplayEndpoint,
-    files,
     event
   } = useLoaderData<LoaderData>();
   const [showLocationPicker, setShowLocationPicker] = useState<boolean>(false);
   const [, setLocation] = useState<string | undefined | null>(event?.location);
-  const images: Array<Image | undefined> = new Array(4);
   const loadedImages = mapDbImages(event?.documents, imageDisplayEndpoint);
-
-  function setImage (index: number, file: File) {
-    const meta: CloudinaryFileMeta | undefined = files[index];
-
-    if (!meta)
-      {throw new Error(
-        'No upload metadata for this file - did you increased the number of pictures in the form (limited to 4)?'
-      );}
-    images[index] = {
-      name: `/image/${index}`,
-      file,
-      value: meta.publicId,
-      timestamp: meta.timestamp,
-      signature: meta.signature,
-      apiKey: meta.apiKey
-    };
-  };
 
   // Hack: while remix doesn't handle dates properly
   hackyEventRevival(event);
-
-  async function handleSubmit() {
-    return uploadImages(imageUploadEndpoint, imageUploadPreset, images);
-  }
 
   function handleShowMap() {
     setShowLocationPicker(true);
@@ -223,7 +188,6 @@ export default function OrganizerEventRoute() {
         method="post"
         autoComplete="off"
         encType={encTypeUpload}
-        onSubmit={handleSubmit}
       >
         <div className="shadow overflow-hidden sm:rounded-md">
           <div className="px-4 py-5 bg-white sm:p-6">
@@ -292,9 +256,7 @@ export default function OrganizerEventRoute() {
                 <div>
                   <UploadImage
                     index={0}
-                    imageId={files[0].publicId}
                     label={t('Hint For Picture 1')}
-                    onDrop={setImage}
                     defaultValue={loadedImages[0]}
                   />
                   <input type="hidden" name="image/1" />
@@ -305,9 +267,7 @@ export default function OrganizerEventRoute() {
                 <div>
                   <UploadImage
                     index={1}
-                    imageId={files[1].publicId}
                     label={t('Hint For Picture 2')}
-                    onDrop={setImage}
                     defaultValue={loadedImages[0]}
                   />
                   <input type="hidden" name="image/2" />
@@ -318,9 +278,7 @@ export default function OrganizerEventRoute() {
                 <div>
                   <UploadImage
                     index={2}
-                    imageId={files[2].publicId}
                     label={t('Hint For Picture 3')}
-                    onDrop={setImage}
                     defaultValue={loadedImages[0]}
                   />
                   <input type="hidden" name="image/3" />
@@ -331,9 +289,7 @@ export default function OrganizerEventRoute() {
                 <div>
                   <UploadImage
                     index={3}
-                    imageId={files[3].publicId}
                     label={t('Hint For Picture 4')}
-                    onDrop={setImage}
                     defaultValue={loadedImages[0]}
                   />
                   <input type="hidden" name="image/4" />

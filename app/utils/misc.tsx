@@ -6,8 +6,7 @@ import type {
   DaysOfWeek,
   Language,
   NonNullProperties,
-  TranslationObject,
-  UploadImageMeta
+  TranslationObject
 } from '~/types';
 import ComboBox from '~/components/shared/form/ComboBox';
 
@@ -65,40 +64,6 @@ function typedBoolean<T>(
 function badRequest<T>(data: T): Response {
   return json(data, { status: 400 });
 }
-
-const uploadImages = async (
-  url: string,
-  uploadPreset: string,
-  images: Array<UploadImageMeta | undefined>
-) => {
-  const formData = new FormData();
-
-  await Promise.all(
-    images.map((image) => {
-      if (!image) {return null;}
-      formData.append('file', image.file);
-      formData.append('upload_preset', uploadPreset);
-      formData.append('public_id', image.value);
-      formData.append('timestamp', image.timestamp + '');
-      formData.append('signature', image.signature);
-      formData.append('api_key', image.apiKey);
-
-      return new Promise<void>((resolve) => {
-        fetch(url, {
-          method: 'POST',
-          body: formData
-        })
-          .then((response) => {
-            return response.text();
-          })
-          .then((data) => {
-            // intentionally left blank... we could/should log upload failures here
-            resolve();
-          });
-      });
-    })
-  );
-};
 
 function getNullIfEmpty(value: string): string | null {
   return value ? value : null;
@@ -186,7 +151,6 @@ export {
   removeTrailingSlash,
   typedBoolean,
   badRequest,
-  uploadImages,
   getNullIfEmpty,
   displayTimeOfDay,
   timeOfDayToHoursMinutes,
