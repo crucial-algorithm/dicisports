@@ -27,7 +27,16 @@ export default function UploadImage({
   defaultValue = null
 }: UploadImageProps) {
   const [thumb, setThumb] = useState<string | null>(
-    defaultValue ? buildImageUrl(defaultValue, {}) : null
+    defaultValue
+      ? buildImageUrl(defaultValue, {
+          transformations: {
+            resize: {
+              type: 'fill',
+              width: 400
+            }
+          }
+        })
+      : null
   );
   const { getRootProps, getInputProps } = useDropzone({
     multiple: false,

@@ -654,6 +654,7 @@ function SportsGrid({
               alt={getLocalizedText(lang, s.name)}
               dontMessWithImgSize={true}
               className={width}
+              variant="Grid"
             />
           </Link>
         ))}
@@ -670,6 +671,7 @@ function SportsGrid({
             alt={t('Add Sport')}
             className={width}
             dontMessWithImgSize={true}
+            variant="Grid"
           />
         </a>
       ))}

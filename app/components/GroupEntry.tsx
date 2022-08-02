@@ -84,7 +84,13 @@ function PlaceholderImg({
   img?: string
 }) {
   if (!img) {return null;}
-  return <DisplayImg id={`product/sports/${img}`} alt={group.name || ''} />;
+  return (
+    <DisplayImg
+      id={`product/sports/${img}`}
+      alt={group.name || ''}
+      variant="List"
+    />
+  );
 }
 
 function Feature({
@@ -137,8 +143,8 @@ function GroupImage({ group, img }: { group: Group; img?: string }) {
           transformations={{
             resize: {
               type: 'fill',
-              width: 800,
-              height: 800
+              width: 400,
+              height: 400
             }
           }}
         />
@@ -160,8 +166,8 @@ function GroupImage({ group, img }: { group: Group; img?: string }) {
             transformations={{
               resize: {
                 type: 'fill',
-                width: 800,
-                height: 800
+                width: 400,
+                height: 400
               }
             }}
           />
