@@ -1,4 +1,4 @@
-import { Form, useLoaderData } from '@remix-run/react';
+import {Form, useActionData, useLoaderData} from '@remix-run/react';
 import type { ActionFunction, LinksFunction, LoaderFunction } from 'remix';
 import { json } from 'remix';
 
@@ -36,6 +36,8 @@ import { findEvent } from '~/server/db/events.server';
 import Main from '~/components/shared/Main';
 import I18nText from '~/components/I18nText';
 import FormField from '~/components/shared/form/FormField';
+import {H2, H3} from "~/components/shared/typography";
+import UploadForm from "~/components/shared/form/UploadForm";
 
 
 type ActionData = {
@@ -162,6 +164,7 @@ export default function OrganizerEventRoute() {
     imageDisplayEndpoint,
     event
   } = useLoaderData<LoaderData>();
+  const actionData= useActionData<ActionData>();
   const [showLocationPicker, setShowLocationPicker] = useState<boolean>(false);
   const [, setLocation] = useState<string | undefined | null>(event?.location);
   const loadedImages = mapDbImages(event?.documents, imageDisplayEndpoint);
@@ -183,125 +186,39 @@ export default function OrganizerEventRoute() {
 
   return (
     <Main>
-      <Header>{t('Create Event')}</Header>
-      <Form
-        method="post"
-        autoComplete="off"
-        encType={encTypeUpload}
-      >
-        <div className="shadow overflow-hidden sm:rounded-md">
-          <div className="px-4 py-5 bg-white sm:p-6">
-            <div className="grid grid-cols-6 gap-6">
-              <div className="col-span-6">
-                <FormField label={t('Name')}>
-                  <TextField name="name" defaultValue={event?.name || ''} />
-                </FormField>
-              </div>
-              <div className="col-span-6 sm:col-span-6 lg:col-span-2">
-                <label
-                  htmlFor="sport"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  {t('Sport')}
-                </label>
-                <select
-                  className={inputBaseClasses()}
-                  name="sport"
-                  id="sport"
-                  defaultValue={event?.sportId || ''}
-                >
-                  {sports.map((sport: Sport) => (
-                    <option key={sport.id} value={sport.id}>
-                      {I18nText({ text: sport.name })}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="col-span-6 sm:col-span-6 lg:col-span-2">
-                <BasicDatePicker
-                  label={t('Date')}
-                  name="date"
-                  date={event?.startAt}
-                />
-              </div>
-              <div className="col-span-6 sm:col-span-6 lg:col-span-2">
-                <FormField label={t('Location')}>
-                  <TextField
-                    name="location"
-                    defaultValue={event?.address || ''}
-                    adornment={
-                      <Button
-                        type="button"
-                        aria-label={t('Location Aria Tip')}
-                        onClick={handleShowMap}
-                        size="small"
-                        className="inline-block align-middle"
-                      >
-                        <LocationMarkerIcon className="h-6 w-6 m-0 inline-block" />
-                      </Button>
-                    }
-                  />
-                </FormField>
-              </div>
-              <div className="col-span-6 sm:col-span-6">
-                <PickBookingSystem
-                  name="booking"
-                  t={t}
-                  useExternal={event?.useExternalBooking}
-                  url={event?.externalBookingUrl}
-                />
-              </div>
-              <div className="col-span-1">
-                <div>
-                  <UploadImage
-                    index={0}
-                    label={t('Hint For Picture 1')}
-                    defaultValue={loadedImages[0]}
-                  />
-                  <input type="hidden" name="image/1" />
-                </div>
-              </div>
-
-              <div className="col-span-1">
-                <div>
-                  <UploadImage
-                    index={1}
-                    label={t('Hint For Picture 2')}
-                    defaultValue={loadedImages[0]}
-                  />
-                  <input type="hidden" name="image/2" />
-                </div>
-              </div>
-
-              <div className="col-span-1">
-                <div>
-                  <UploadImage
-                    index={2}
-                    label={t('Hint For Picture 3')}
-                    defaultValue={loadedImages[0]}
-                  />
-                  <input type="hidden" name="image/3" />
-                </div>
-              </div>
-
-              <div className="col-span-1">
-                <div>
-                  <UploadImage
-                    index={3}
-                    label={t('Hint For Picture 4')}
-                    defaultValue={loadedImages[0]}
-                  />
-                  <input type="hidden" name="image/4" />
-                </div>
-              </div>
+      <div className="mb-64 mt-24 pt-6">
+        <div className="mb-12 lg:mb-20">
+          <div className="flex flex-col-reverse items-start justify-between lg:flex-row lg:items-center">
+            <div>
+              <H2>{t('Create Event')}</H2>
+              <H3 variant="secondary" as="p">
+                {t('Let Others know')}
+              </H3>
             </div>
           </div>
-          <div className="px-4 py-3 bg-gray-50 text-right sm:px-6">
-            <Button>{t('Create Button')}</Button>
-          </div>
         </div>
-      </Form>
+      </div>
+
+      <div className="mb-24 lg:mb-0">
+        <UploadForm
+          method="post"
+          className="w-full"
+        >
+          <input type="hidden" name="name" />
+          <FormField label={t('Name')}
+            id="event-name"
+            className="w-full max-w-xl"
+            error={actionData?.errors?.name}
+          >
+            <TextField
+                name="name"
+                id="event-name"
+                defaultValue={event.name || ''}
+            />
+          </FormField>
+        </UploadForm>
+      </div>
+
       <MapDialog
         token={mapToken}
         defaultValue={null}

@@ -34,6 +34,7 @@ import { useElementState } from './hooks/useElementState';
 
 
 const LINKS = [
+  { name: 'NAVBAR >>> Events', to: '/organizer', public: false },
   { name: 'NAVBAR >>> Meeting Point', to: '/m/groups', public: false }
 ];
 
