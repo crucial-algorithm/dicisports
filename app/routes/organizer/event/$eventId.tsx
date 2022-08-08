@@ -1,6 +1,10 @@
-import {Form, useActionData, useLoaderData} from '@remix-run/react';
+import { Form, useActionData, useLoaderData } from '@remix-run/react';
 import type { ActionFunction, LinksFunction, LoaderFunction } from 'remix';
-import { json } from 'remix';
+import {
+  json,
+  unstable_createMemoryUploadHandler,
+  unstable_parseMultipartFormData
+} from 'remix';
 
 import { useState } from 'react';
 
@@ -18,7 +22,6 @@ import BasicDatePicker from '~/components/shared/form/DatePicker';
 import PickBookingSystem from '~/components/PickBookingSystem';
 import { MapDialog } from '~/components/shared/Map';
 
-
 import mapCss from '~/styles/map.css';
 import organizerCss from '~/styles/organizer.css';
 import UploadImage from '~/components/shared/form/UploadImage';
@@ -28,42 +31,42 @@ import Header from '~/components/shared/Header';
 import TextField from '~/components/shared/form/TextField';
 import Button from '~/components/shared/Button';
 
-
 import { inputBaseClasses } from '~/components/shared/form/InputBase';
 import Config from '~/server/config.server';
 import { findSports } from '~/server/db/sports.server';
-import { findEvent } from '~/server/db/events.server';
+import { findEvent, updateEvent } from '~/server/db/events.server';
 import Main from '~/components/shared/Main';
 import I18nText from '~/components/I18nText';
 import FormField from '~/components/shared/form/FormField';
-import {H2, H3} from "~/components/shared/typography";
-import UploadForm from "~/components/shared/form/UploadForm";
-
+import { H2, H3 } from '~/components/shared/typography';
+import UploadForm from '~/components/shared/form/UploadForm';
+import { unstable_composeUploadHandlers } from '@remix-run/node';
+import { uploadImageToCloudinary } from '~/server/storage/cloudinary.server';
 
 type ActionData = {
-  formError?: string
+  formError?: string;
   fieldErrors?: {
-    name: string | undefined
-    content: string | undefined
-  }
+    name: string | undefined;
+    content: string | undefined;
+  };
   fields?: {
-    name: string
-    content: string
-  }
-}
+    name: string;
+    content: string;
+  };
+};
 
 type LoaderData = {
-  sports: Array<Sport>
-  mapToken: string
-  imageUploadEndpoint: string
-  imageDisplayEndpoint: string
-  imageUploadPreset: string
-  event: SportEvent | null
-}
+  sports: Array<Sport>;
+  mapToken: string;
+  imageUploadEndpoint: string;
+  imageDisplayEndpoint: string;
+  imageUploadPreset: string;
+  event: SportEvent | null;
+};
 
 type SportEvent = Event & {
-  documents?: Array<Document>
-}
+  documents?: Array<Document>;
+};
 
 const badRequest = (data: ActionData) => json(data, { status: 400 });
 
@@ -94,16 +97,27 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   });
 };
 
-export const action: ActionFunction = async ({ request }) => {
-  const uploadHandler: UploadHandler = async () => {
-    // cleanup images from form - upload is done directly to cloudinary
-    return undefined;
-  };
-  const form = await parseMultipartFormData(request, uploadHandler);
+export const action: ActionFunction = async ({ request, params }) => {
+  const uploadHandler: UploadHandler = unstable_composeUploadHandlers(
+    // our custom upload handler
+    async ({ name, contentType, data, filename }) => {
+      if (!name.startsWith('/file/image') || !filename) {
+        return undefined;
+      }
+      const uploadedImage = await uploadImageToCloudinary(data);
+
+      return uploadedImage.public_id;
+    },
+    // fallback to memory for everything else
+    unstable_createMemoryUploadHandler()
+  );
+
+  const form = await unstable_parseMultipartFormData(request, uploadHandler);
   const x = 1;
 
+  await updateEvent({ id: params.eventId as string, name: form.get('name') as string });
   // eslint-disable-next-line no-console
-  console.log('form = ', form);
+  console.log('form = ', form.get('name'));
   if (x === 1) {
     return badRequest({
       formError: 'Form not submitted correctly.'
@@ -129,27 +143,31 @@ export const links: LinksFunction = () => {
 };
 
 type Image = {
-  name: string
-  file: File
-  value: string
-  timestamp: number
-  signature: string
-  apiKey: string
-}
+  name: string;
+  file: File;
+  value: string;
+  timestamp: number;
+  signature: string;
+  apiKey: string;
+};
 
 const encTypeUpload = 'multipart/form-data';
 const mapDbImages = (
   images: Array<Document> | undefined,
   url: string | undefined
 ): Array<string> => {
-  if (!images || images.length === 0) {return [];}
+  if (!images || images.length === 0) {
+    return [];
+  }
   return images
     .sort((a, b) => a.position - b.position)
     .map((img) => `${url}/${img.key}`);
 };
 
 function hackyEventRevival(event: Event | null): void {
-  if (!event) {return;}
+  if (!event) {
+    return;
+  }
   // @ts-ignore
   event.startAt = new Date(event.startAt);
   // @ts-ignore
@@ -158,13 +176,9 @@ function hackyEventRevival(event: Event | null): void {
 
 export default function OrganizerEventRoute() {
   const { t } = useTranslation('create-event-form');
-  const {
-    sports,
-    mapToken,
-    imageDisplayEndpoint,
-    event
-  } = useLoaderData<LoaderData>();
-  const actionData= useActionData<ActionData>();
+  const { sports, mapToken, imageDisplayEndpoint, event } =
+    useLoaderData<LoaderData>();
+  const actionData = useActionData<ActionData>();
   const [showLocationPicker, setShowLocationPicker] = useState<boolean>(false);
   const [, setLocation] = useState<string | undefined | null>(event?.location);
   const loadedImages = mapDbImages(event?.documents, imageDisplayEndpoint);
@@ -200,22 +214,22 @@ export default function OrganizerEventRoute() {
       </div>
 
       <div className="mb-24 lg:mb-0">
-        <UploadForm
-          method="post"
-          className="w-full"
-        >
-          <input type="hidden" name="name" />
-          <FormField label={t('Name')}
+        <UploadForm method="post" className="w-full">
+          <FormField
+            label={t('Name')}
             id="event-name"
             className="w-full max-w-xl"
             error={actionData?.errors?.name}
           >
             <TextField
-                name="name"
-                id="event-name"
-                defaultValue={event.name || ''}
+              name="name"
+              id="event-name"
+              defaultValue={event.name || ''}
             />
           </FormField>
+          <Button className="mt-8" type="submit" form="profile-form">
+            {t('Create Button')}
+          </Button>
         </UploadForm>
       </div>
 

@@ -97,7 +97,16 @@ type Document = {} & DBDocument
 type GroupType = {
   name: TranslationObject
 } & DBGroupType
+
+
 type Event = {} & DBEvent
+
+type CreateEventInput = {
+  id: string
+  name: string
+}
+
+
 type GroupSpirit = {
   name: TranslationObject
 } & DBGroupSpirit
@@ -190,6 +199,7 @@ export {
   Sport,
   Document,
   Event,
+  CreateEventInput,
   DBRawGroup,
   LoginAction
 };

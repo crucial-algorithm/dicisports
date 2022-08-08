@@ -3,6 +3,7 @@ import { Status } from '@prisma/client';
 
 import { db } from '~/server/db.server';
 import Id from '~/server/utils/Id.server';
+import { CreateEventInput } from '~/types';
 
 async function findEvents(): Promise<Array<Event>> {
   return db.event.findMany({
@@ -40,4 +41,11 @@ async function createDraftEvent(id?: string): Promise<Event | null> {
   });
 }
 
-export { findEvents, findEvent, createDraftEvent };
+async function updateEvent(event: CreateEventInput): Promise<void> {
+  await db.event.update({
+    where: { id: event.id },
+    data: { name: event.name, status: Status.draft }
+  });
+}
+
+export { findEvents, findEvent, createDraftEvent, updateEvent };
