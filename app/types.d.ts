@@ -104,6 +104,17 @@ type Event = {} & DBEvent
 type CreateEventInput = {
   id: string
   name: string
+  sportId: number
+  location: string
+  address: string
+  useExternalBooking: boolean
+  externalBookingUrl: string | null
+  image1?: string | null
+  image2?: string | null
+  image3?: string | null
+  image4?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
 }
 
 

@@ -1,4 +1,4 @@
-import { Form } from '@remix-run/react';
+import {Form, useLoaderData} from '@remix-run/react';
 import type {LinksFunction, LoaderFunction} from 'remix';
 import { useTranslation } from 'react-i18next';
 
@@ -32,7 +32,7 @@ export const links: LinksFunction = () => {
 
 export default function OrganizerIndexRoute() {
   const { t } = useTranslation('organizer');
-  //const { events } = useLoaderData<LoaderData>();
+  const { events } = useLoaderData<LoaderData>();
 
   return (
     <Main>
@@ -48,6 +48,7 @@ export default function OrganizerIndexRoute() {
           </div>
         </div>
       </div>
+
     </Main>
   );
 }

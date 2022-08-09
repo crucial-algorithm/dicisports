@@ -42,9 +42,20 @@ async function createDraftEvent(id?: string): Promise<Event | null> {
 }
 
 async function updateEvent(event: CreateEventInput): Promise<void> {
+  console.log(event);
   await db.event.update({
     where: { id: event.id },
-    data: { name: event.name, status: Status.draft }
+    data: {
+      name: event.name,
+      sportId: event.sportId,
+      startAt: new Date().toISOString(), // TODO: Adicionar um date picker
+      endAt: new Date().toISOString(), // TODO: usar a mesma data do start date
+      location: event.location,
+      address: event.address,
+      useExternalBooking: event.useExternalBooking,
+      externalBookingUrl: event.externalBookingUrl,
+      status: Status.draft
+    }
   });
 }
 
