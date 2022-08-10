@@ -150,14 +150,15 @@ export const action: ActionFunction = async ({ request, params }) => {
     address: location.address,
     useExternalBooking: form.get('booking') === 'external',
     externalBookingUrl: (form.get('booking-url') as string) || null,
+    eventDescription: (form.get('description') as string) || null,
     image1: processImgField(image1, isUpdate),
     image2: processImgField(image2, isUpdate),
     image3: processImgField(image3, isUpdate),
     image4: processImgField(image4, isUpdate),
-    image5: processImgField(image5, isUpdate),
+    image5: processImgField(image5, isUpdate)
   };
   await updateEvent(data);
-  // eslint-disable-next-line no-console
+  // eslint-disable-next-line no-consoleTex
   if (x === 1) {
     return badRequest({
       formError: 'Form not submitted correctly.'
@@ -260,7 +261,7 @@ export default function OrganizerEventRoute() {
         <FormField
           label={t('Name')}
           id="event-name"
-          className="w-full max-w-xl"
+          className="col-span-6 sm:col-span-4"
           error={actionData?.errors?.name}
         >
           <TextField
@@ -370,13 +371,20 @@ export default function OrganizerEventRoute() {
               className="w-1/3"
             />
             <UploadImage
-                index={4}
-                label={t('Hint For Picture 5')}
-                defaultValue={event.image4}
-                className="w-1/3"
+              index={4}
+              label={t('Hint For Picture 5')}
+              defaultValue={event.image4}
+              className="w-1/3"
             />
           </div>
         </FormField>
+        {/*TODO: add size to textarea*/}
+        <FormField label="">
+          <div className="mt-1 relative rounded-md shadow-sm">
+            <textarea name="description" className={inputBaseClasses('p-10')} placeholder={t('Event description')} defaultValue={event.eventDescription || ''}/>
+          </div>
+        </FormField>
+
         <Button className="mt-8" type="submit" form="profile-form">
           {t('Create Button')}
         </Button>

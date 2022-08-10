@@ -58,6 +58,7 @@ async function updateEvent(event: CreateEventInput): Promise<void> {
       image3: event.image3,
       image4: event.image4,
       image5: event.image5,
+      eventDescription: event.eventDescription,
       status: Status.draft
     }
   });
