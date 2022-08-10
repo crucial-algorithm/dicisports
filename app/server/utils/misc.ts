@@ -9,6 +9,17 @@ function parseLocation(location: string) {
     };
 }
 
+function processImgField(
+    value: string | null | File,
+    isUpdate: boolean
+): string | null | undefined {
+    if (isUpdate && !value || value instanceof File) {
+        return undefined;
+    }
+    return value || null;
+}
+
 export {
-    parseLocation
+    parseLocation,
+    processImgField
 }

@@ -105,6 +105,7 @@ type CreateEventInput = {
   id: string
   name: string
   sportId: number
+  startAt: Date | string
   location: string
   address: string
   useExternalBooking: boolean
@@ -113,6 +114,7 @@ type CreateEventInput = {
   image2?: string | null
   image3?: string | null
   image4?: string | null
+  image5?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }

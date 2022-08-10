@@ -81,6 +81,11 @@ model Event {
   useExternalBooking Boolean    @default(false) @map("use_external_booking")
   externalBookingUrl String?    @map("external_booking_url")
   status             Status     @default(auto)
+  image1            String?
+  image2            String?
+  image3            String?
+  image4            String?
+  image5            String?
   createdAt          DateTime   @default(now()) @map("created_at")
   updatedAt          DateTime   @updatedAt @map("updated_at")
   documents          Document[]

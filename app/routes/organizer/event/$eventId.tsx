@@ -26,7 +26,13 @@ import mapCss from '~/styles/map.css';
 import organizerCss from '~/styles/organizer.css';
 import UploadImage from '~/components/shared/form/UploadImage';
 
-import type {Sport, Document, Event, DiciLocation, CreateEventInput} from '~/types';
+import type {
+  Sport,
+  Document,
+  Event,
+  DiciLocation,
+  CreateEventInput
+} from '~/types';
 import Header from '~/components/shared/Header';
 import TextField from '~/components/shared/form/TextField';
 import Button from '~/components/shared/Button';
@@ -44,7 +50,9 @@ import { unstable_composeUploadHandlers } from '@remix-run/node';
 import { uploadImageToCloudinary } from '~/server/storage/cloudinary.server';
 import ComboBox from '~/components/shared/form/ComboBox';
 import { Language } from '~/types';
-import {parseLocation} from "~/server/utils/misc";
+import { parseLocation, processImgField } from '~/server/utils/misc';
+import i18n from '~/server/i18n.server';
+import { badRequest } from '~/utils/misc';
 
 type ActionData = {
   formError?: string;
@@ -58,6 +66,8 @@ type ActionData = {
   };
 };
 
+const RESOURCES_NS = 'create-event-form';
+
 type LoaderData = {
   sports: Array<Sport>;
   mapToken: string;
@@ -70,8 +80,6 @@ type LoaderData = {
 type SportEvent = Event & {
   documents?: Array<Document>;
 };
-
-const badRequest = (data: ActionData) => json(data, { status: 400 });
 
 export const handle = {
   i18n: ['common', 'create-event-form']
@@ -101,6 +109,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 };
 
 export const action: ActionFunction = async ({ request, params }) => {
+  const t = await i18n.getFixedT(request, RESOURCES_NS);
   const uploadHandler: UploadHandler = unstable_composeUploadHandlers(
     // our custom upload handler
     async ({ name, contentType, data, filename }) => {
@@ -115,19 +124,37 @@ export const action: ActionFunction = async ({ request, params }) => {
     unstable_createMemoryUploadHandler()
   );
 
+  const event = params.eventId ? await findEvent(params.eventId) : null;
+  if (!event) {
+    return badRequest({ error: t('Event not found') });
+  }
+
   const form = await unstable_parseMultipartFormData(request, uploadHandler);
   const x = 1;
 
+  const isUpdate = event.status !== 'auto';
+  const date = form.get('date') as string;
+  const image1 = form.get('/file/image/0') as string;
+  const image2 = form.get('/file/image/1') as string;
+  const image3 = form.get('/file/image/2') as string;
+  const image4 = form.get('/file/image/3') as string;
+  const image5 = form.get('/file/image/4') as string;
   const location = parseLocation(form.get('location') as string);
+
   const data: CreateEventInput = {
     id: params.eventId as string,
     name: form.get('name') as string,
     sportId: parseInt(form.get('sport') as string),
+    startAt: new Date(date), //TODO: hour
     location: `${location.lat},${location.lng}`,
     address: location.address,
     useExternalBooking: form.get('booking') === 'external',
-    externalBookingUrl: form.get('booking-url') as string || null,
-
+    externalBookingUrl: (form.get('booking-url') as string) || null,
+    image1: processImgField(image1, isUpdate),
+    image2: processImgField(image2, isUpdate),
+    image3: processImgField(image3, isUpdate),
+    image4: processImgField(image4, isUpdate),
+    image5: processImgField(image5, isUpdate),
   };
   await updateEvent(data);
   // eslint-disable-next-line no-console
@@ -218,16 +245,16 @@ export default function OrganizerEventRoute() {
 
   return (
     <Main>
-        <div className="mb-12 lg:mb-20">
-          <div className="flex flex-col-reverse items-start justify-between lg:flex-row lg:items-center">
-            <div>
-              <H2>{t('Create Event')}</H2>
-              <H3 variant="secondary" as="p">
-                {t('Let Others know')}
-              </H3>
-            </div>
+      <div className="mb-12 lg:mb-20">
+        <div className="flex flex-col-reverse items-start justify-between lg:flex-row lg:items-center">
+          <div>
+            <H2>{t('Create Event')}</H2>
+            <H3 variant="secondary" as="p">
+              {t('Let Others know')}
+            </H3>
           </div>
         </div>
+      </div>
 
       <UploadForm method="post" className="w-full">
         <FormField
@@ -244,64 +271,66 @@ export default function OrganizerEventRoute() {
           />
         </FormField>
         <div className="flex flex-row flex-wrap space-x-4">
-
-          <FormField label={t('Sport')} id="event-sport" className="basis-1/3 lg:basis-1/4">
+          <FormField
+            label={t('Sport')}
+            id="event-sport"
+            className="basis-1/3 lg:basis-1/4"
+          >
             <ComboBox
-                name="sport"
-                id="event-sport"
-                lang={language}
-                placeholder=""
-                defaultValue={event.sport ? event.sport.id : undefined}
-                options={sports.map((s: Sport) => {
-                  return { value: s.id, label: s.name };
-                })}
+              name="sport"
+              id="event-sport"
+              lang={language}
+              placeholder=""
+              defaultValue={event.sportId ? event.sportId : undefined}
+              options={sports.map((s: Sport) => {
+                return { value: s.id, label: s.name };
+              })}
             />
           </FormField>
 
           <FormField
+            label={''}
+            id="event-date"
+            className="basis-1/3 lg:basis-1/5"
+            error={actionData?.errors?.name}
+          >
+            <BasicDatePicker
               label={t('Date')}
-              id="event-name"
-              className="basis-1/3 lg:basis-1/5"
-              error={actionData?.errors?.name}
-          >
-            <TextField
-                name="name"
-                id="event-name"
-                placeholder="Ex: Biclas e Borgas"
-                defaultValue={event.name || ''}
+              name="date"
+              date={event?.startAt}
             />
           </FormField>
 
           <FormField
-              label={t('Location')}
-              id="event-location"
-              className="basis-1/2 lg:basis-1/3"
-              error={actionData?.errors?.location}
+            label={t('Location')}
+            id="event-location"
+            className="basis-1/2 lg:basis-1/3"
+            error={actionData?.errors?.location}
           >
             <TextField
-                name="discard-location"
-                id="event-sport"
-                defaultValue={location?.shortAddress}
-                disabled={true}
-                adornment={
-                  <Button
-                      className="mr-2"
-                      variant="adornment"
-                      type="button"
-                      onClick={handleShowMap}
-                  >
-                    <LocationMarkerIcon className="h-6 w-6 m-0 inline-block" />
-                  </Button>
-                }
+              name="discard-location"
+              id="event-sport"
+              defaultValue={location?.shortAddress}
+              disabled={true}
+              adornment={
+                <Button
+                  className="mr-2"
+                  variant="adornment"
+                  type="button"
+                  onClick={handleShowMap}
+                >
+                  <LocationMarkerIcon className="h-6 w-6 m-0 inline-block" />
+                </Button>
+              }
             />
             <input
-                type="hidden"
-                name="location"
-                value={
-                  location
-                      ? `${location?.coords}|${location?.shortAddress}`
-                      : undefined
-                }
+              type="hidden"
+              name="location"
+              value={
+                location
+                  ? `${location?.coords}|${location?.shortAddress}`
+                  : undefined
+              }
             />
           </FormField>
         </div>
@@ -339,6 +368,12 @@ export default function OrganizerEventRoute() {
               label={t('Hint For Picture 4')}
               defaultValue={event.image4}
               className="w-1/3"
+            />
+            <UploadImage
+                index={4}
+                label={t('Hint For Picture 5')}
+                defaultValue={event.image4}
+                className="w-1/3"
             />
           </div>
         </FormField>
