@@ -18,6 +18,8 @@ import { LocationMarkerIcon } from '@heroicons/react/outline';
 
 import { parseMultipartFormData } from '@remix-run/server-runtime/dist/formData';
 
+import { unstable_composeUploadHandlers } from '@remix-run/node';
+
 import BasicDatePicker from '~/components/shared/form/DatePicker';
 import PickBookingSystem from '~/components/PickBookingSystem';
 import { MapDialog } from '~/components/shared/Map';
@@ -45,8 +47,9 @@ import Main from '~/components/shared/Main';
 import I18nText from '~/components/I18nText';
 import FormField from '~/components/shared/form/FormField';
 import { H2, H3 } from '~/components/shared/typography';
+
 import UploadForm from '~/components/shared/form/UploadForm';
-import { unstable_composeUploadHandlers } from '@remix-run/node';
+
 import { uploadImageToCloudinary } from '~/server/storage/cloudinary.server';
 import ComboBox from '~/components/shared/form/ComboBox';
 import { Language } from '~/types';
@@ -125,6 +128,7 @@ export const action: ActionFunction = async ({ request, params }) => {
   );
 
   const event = params.eventId ? await findEvent(params.eventId) : null;
+
   if (!event) {
     return badRequest({ error: t('Event not found') });
   }
@@ -157,6 +161,7 @@ export const action: ActionFunction = async ({ request, params }) => {
     image4: processImgField(image4, isUpdate),
     image5: processImgField(image5, isUpdate)
   };
+
   await updateEvent(data);
   // eslint-disable-next-line no-consoleTex
   if (x === 1) {
@@ -381,13 +386,14 @@ export default function OrganizerEventRoute() {
         {/*TODO: add size to textarea*/}
         <FormField label="">
           <div className="mt-1 relative rounded-md shadow-sm">
-            <textarea name="description" className={inputBaseClasses('p-10')} placeholder={t('Event description')} defaultValue={event.eventDescription || ''}/>
+            <textarea
+              name="description"
+              className={inputBaseClasses('p-10')}
+              placeholder={t('Event description')}
+              defaultValue={event.eventDescription || ''}
+            />
           </div>
         </FormField>
-
-        <Button className="mt-8" type="submit" form="profile-form">
-          {t('Create Button')}
-        </Button>
       </UploadForm>
 
       <MapDialog

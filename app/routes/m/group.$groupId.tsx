@@ -65,7 +65,7 @@ import InputError from '~/components/shared/form/InputError';
 import { Spacer } from '~/components/shared/Spacer';
 
 import { uploadImageToCloudinary } from '~/server/storage/cloudinary.server';
-import {processImgField} from "~/server/utils/misc";
+import { processImgField } from '~/server/utils/misc';
 
 
 const RESOURCES_NS = 'groups-form';

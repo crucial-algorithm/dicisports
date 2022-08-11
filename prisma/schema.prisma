@@ -90,6 +90,7 @@ model Event {
   createdAt          DateTime   @default(now()) @map("created_at")
   updatedAt          DateTime   @updatedAt @map("updated_at")
   documents          Document[]
+  perks              Perk[]
 
   @@map("events")
 }
@@ -168,4 +169,15 @@ model FavoriteGroup {
 
   @@unique([userId, groupId])
   @@map("favorite_groups")
+}
+
+model Perk {
+  id            Int             @id  @default(autoincrement())
+  name          Json
+  isDefault     Boolean         @map("is_default")
+  isEnabled     Boolean         @default(false) @map("is_enabled")
+  eventId       String          @map("event_id")
+  event         Event           @relation(fields: [eventId], references: [id])
+
+  @@map("perk")
 }

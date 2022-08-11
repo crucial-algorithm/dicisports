@@ -3,12 +3,18 @@ import type {LinksFunction, LoaderFunction} from 'remix';
 import { useTranslation } from 'react-i18next';
 
 import type { Event } from '@prisma/client';
+
 import React from 'react';
-import { ButtonLink } from '~/components/shared/Button';
+
+import {json} from 'remix';
+
 import { H6 } from '~/components/shared/typography';
+
+import { ButtonLink } from '~/components/shared/Button';
+
 import Main from '~/components/shared/Main';
-import {findEvents} from "~/server/db/events.server";
-import {json} from "remix";
+
+import {findEvents} from '~/server/db/events.server';
 
 type LoaderData = {
   events: Array<Event>;
