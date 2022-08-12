@@ -174,7 +174,7 @@ model FavoriteGroup {
 model Perk {
   id            Int             @id  @default(autoincrement())
   name          Json
-  isDefault     Boolean         @map("is_default")
+  isDefault     Boolean         @default(false) @map("is_default")
   isEnabled     Boolean         @default(false) @map("is_enabled")
   eventId       String          @map("event_id")
   event         Event           @relation(fields: [eventId], references: [id])

@@ -162,6 +162,8 @@ export const action: ActionFunction = async ({ request, params }) => {
     image5: processImgField(image5, isUpdate)
   };
 
+  console.log(form.getAll('perks'));
+
   await updateEvent(data);
   // eslint-disable-next-line no-consoleTex
   if (x === 1) {
@@ -228,6 +230,8 @@ export default function OrganizerEventRoute() {
   const actionData = useActionData<ActionData>();
   const [showLocationPicker, setShowLocationPicker] = useState<boolean>(false);
   const loadedImages = mapDbImages(event?.documents, imageDisplayEndpoint);
+  const [checked, setChecked] = useState(false);
+  const [text, setText] = useState("");
   const [location, setLocation] = useState<DiciLocation | null>(
     event.address
       ? {
@@ -248,6 +252,41 @@ export default function OrganizerEventRoute() {
     setShowLocationPicker(false);
     setLocation(location);
   }
+
+  const perks = [
+    {
+      id: 'a',
+      name: 'Goodies bag'
+    },
+    {
+      id: 'b',
+      name: 'Water Stations'
+    },
+    {
+      id: 'c',
+      name: 'Showers'
+    },
+    {
+      id: 'd',
+      name: 'Event T-shirt'
+    },
+    {
+      id: 'e',
+      name: "Finisher's medal"
+    },
+    {
+      id: 'f',
+      name: 'Chip-timed results'
+    },
+    {
+      id: 'g',
+      name: 'Event photos'
+    },
+    {
+      id: 'h',
+      name: 'Live music'
+    }
+  ];
 
   return (
     <Main>
@@ -383,7 +422,7 @@ export default function OrganizerEventRoute() {
             />
           </div>
         </FormField>
-        {/*TODO: add size to textarea*/}
+
         <FormField label="">
           <div className="mt-1 relative rounded-md shadow-sm">
             <textarea
@@ -391,9 +430,62 @@ export default function OrganizerEventRoute() {
               className={inputBaseClasses('p-10')}
               placeholder={t('Event description')}
               defaultValue={event.eventDescription || ''}
+              rows={5}
+              cols={50}
             />
           </div>
         </FormField>
+
+        <FormField label={t('Perks')}>
+          <div className="grid grid-rows-6 grid-flow-col gap-y-px">
+            {perks.map((p) => (
+              <>
+                <div className=" flex items-center mb-1">
+                  <input
+                    type="checkbox"
+                    id={p.id}
+                    name="perks"
+                    value={p.id}
+                    className="w-4 h-4 text-indigo-500 bg-gray-100 rounded border-gray-300 focus:ring-indigo-500 dark:focus:ring-indigo-500 dark:ring-offset-gray-800 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600"
+                  />
+                  <label
+                    htmlFor={p.id}
+                    className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300"
+                  >
+                    {p.name}
+                  </label>
+                </div>
+              </>
+            ))}
+
+            <div>
+              <input
+                  id="new-perk"
+                  name="perks"
+                  type="checkbox"
+                  value="new-perk"
+                  className="w-4 h-4 text-indigo-500 bg-gray-100 rounded border-gray-300 focus:ring-indigo-500 dark:focus:ring-indigo-500 dark:ring-offset-gray-800 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600"
+                  onChange={() => {
+                    if(checked){
+                      setText('')
+                    }
+                    setChecked(!checked)
+                  }}
+              />
+              <input
+                  name="new-perk-input"
+                  type="text" disabled={!checked}
+                  placeholder={t('Type to create new')}
+                  onChange={e => setText(e.target.value)}
+                  className='ml-2 rounded-lg text-sm md:text-sm bg-gray-100 text-black placeholder-gray-500 font-medium box-border w-41 dark:disabled:bg-gray-700 dark:text-white dark:bg-gray-800 disabled:text-gray-700 border-0 sm:col-span-4'
+              />
+            </div>
+          </div>
+        </FormField>
+
+        <Button className="mt-8" type="submit" form="profile-form">
+          {t('Create Button')}
+        </Button>
       </UploadForm>
 
       <MapDialog

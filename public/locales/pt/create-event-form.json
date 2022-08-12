@@ -19,5 +19,6 @@
   "Create Button": "Guardar Evento",
   "Event not found": "Estranho... não encontramos o evento que pretende actualizar!",
   "Event description": "Descrição do evento",
-  "Perks": "Extras"
+  "Perks": "Extras",
+  "Type to create new": "Clique parar criar um novo extra"
 }
