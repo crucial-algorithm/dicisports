@@ -5,7 +5,8 @@ import type {
   GroupType as DBGroupType,
   Sport as DBSport,
   Document as DBDocument,
-  Event as DBEvent
+  Event as DBEvent,
+  Perks as DBPerks
 } from '@prisma/client';
 
 type NonNullProperties<Type> = {
@@ -120,6 +121,17 @@ type CreateEventInput = {
   updatedAt?: Date | string
 }
 
+type Perks = {} & DBPerks
+
+type CreatePerksInput = {
+  id: string
+  name: string
+  createdAt?: Date | string
+  isDefault: boolean
+  isEnabled: boolean
+  eventId: string
+}
+
 
 type GroupSpirit = {
   name: TranslationObject
@@ -214,6 +226,7 @@ export {
   Document,
   Event,
   CreateEventInput,
+  CreatePerksInput,
   DBRawGroup,
   LoginAction
 };

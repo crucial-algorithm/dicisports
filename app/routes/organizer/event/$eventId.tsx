@@ -165,7 +165,7 @@ export const action: ActionFunction = async ({ request, params }) => {
   console.log(form.getAll('perks'));
 
   await updateEvent(data);
-  // eslint-disable-next-line no-consoleTex
+  // eslint-disable-next-line no-console
   if (x === 1) {
     return badRequest({
       formError: 'Form not submitted correctly.'
@@ -231,7 +231,7 @@ export default function OrganizerEventRoute() {
   const [showLocationPicker, setShowLocationPicker] = useState<boolean>(false);
   const loadedImages = mapDbImages(event?.documents, imageDisplayEndpoint);
   const [checked, setChecked] = useState(false);
-  const [text, setText] = useState("");
+  const [text, setText] = useState('');
   const [location, setLocation] = useState<DiciLocation | null>(
     event.address
       ? {
@@ -343,6 +343,7 @@ export default function OrganizerEventRoute() {
               label={t('Date')}
               name="date"
               date={event?.startAt}
+              // defaultValue={} TODO: Add default date
             />
           </FormField>
 
@@ -446,7 +447,7 @@ export default function OrganizerEventRoute() {
                     id={p.id}
                     name="perks"
                     value={p.id}
-                    className="w-4 h-4 text-indigo-500 bg-gray-100 rounded border-gray-300 focus:ring-indigo-500 dark:focus:ring-indigo-500 dark:ring-offset-gray-800 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600"
+                    className="w-4 h-4 text-indigo-500 bg-gray-100 rounded border-gray-300 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600"
                   />
                   <label
                     htmlFor={p.id}
@@ -460,24 +461,25 @@ export default function OrganizerEventRoute() {
 
             <div>
               <input
-                  id="new-perk"
-                  name="perks"
-                  type="checkbox"
-                  value="new-perk"
-                  className="w-4 h-4 text-indigo-500 bg-gray-100 rounded border-gray-300 focus:ring-indigo-500 dark:focus:ring-indigo-500 dark:ring-offset-gray-800 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600"
-                  onChange={() => {
-                    if(checked){
-                      setText('')
-                    }
-                    setChecked(!checked)
-                  }}
+                id="new-perk"
+                name="perks"
+                type="checkbox"
+                value="new-perk"
+                className="w-4 h-4 text-indigo-500 bg-gray-100 rounded border-gray-300 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600"
+                onChange={() => {
+                  if (checked) {
+                    setText('');
+                  }
+                  setChecked(!checked);
+                }}
               />
               <input
-                  name="new-perk-input"
-                  type="text" disabled={!checked}
-                  placeholder={t('Type to create new')}
-                  onChange={e => setText(e.target.value)}
-                  className='ml-2 rounded-lg text-sm md:text-sm bg-gray-100 text-black placeholder-gray-500 font-medium box-border w-41 dark:disabled:bg-gray-700 dark:text-white dark:bg-gray-800 disabled:text-gray-700 border-0 sm:col-span-4'
+                name="new-perk-input"
+                type="text"
+                disabled={!checked}
+                placeholder={t('Type to create new')}
+                onChange={(e) => setText(e.target.value)}
+                className="ml-2 rounded-lg focus-ring text-sm md:text-sm bg-gray-100 text-black placeholder-gray-500 font-medium box-border w-41 dark:disabled:bg-gray-700 dark:text-white dark:bg-gray-800 disabled:text-gray-700 border-0 sm:col-span-4"
               />
             </div>
           </div>
