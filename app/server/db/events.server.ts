@@ -3,7 +3,8 @@ import { Status } from '@prisma/client';
 
 import { db } from '~/server/db.server';
 import Id from '~/server/utils/Id.server';
-import { CreateEventInput } from '~/types';
+import type { CreateEventInput } from '~/types';
+import { createDefaultPerks } from '~/server/db/perks.server';
 
 async function findEvents(): Promise<Array<Event>> {
   return db.event.findMany({
@@ -20,11 +21,11 @@ async function findEvent(id: string): Promise<Event | null> {
   });
 }
 
-async function createDraftEvent(id?: string): Promise<Event | null> {
+async function createDraftEvent(id?: string): Promise<Event | void> {
   const eventId = id ? id : Id();
   const eventAt = new Date();
 
-  return db.event.create({
+  await db.event.create({
     data: {
       id: eventId,
       name: null,
@@ -39,6 +40,8 @@ async function createDraftEvent(id?: string): Promise<Event | null> {
       updatedAt: eventAt
     }
   });
+
+  await createDefaultPerks(eventId);
 }
 
 async function updateEvent(event: CreateEventInput): Promise<void> {

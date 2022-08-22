@@ -33,7 +33,8 @@ import type {
   Document,
   Event,
   DiciLocation,
-  CreateEventInput
+  CreateEventInput,
+  CreatePerksInput
 } from '~/types';
 import Header from '~/components/shared/Header';
 import TextField from '~/components/shared/form/TextField';
@@ -56,6 +57,17 @@ import { Language } from '~/types';
 import { parseLocation, processImgField } from '~/server/utils/misc';
 import i18n from '~/server/i18n.server';
 import { badRequest } from '~/utils/misc';
+
+import {
+  createDefaultPerks,
+  createPerks,
+  deletePerks,
+  findEventPerks,
+  findPerk,
+  updatePerks
+} from '~/server/db/perks.server';
+
+import perks from '../../../server/db/perks.json';
 
 type ActionData = {
   formError?: string;
@@ -107,7 +119,8 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     event,
     sports: sports.map((sport) => {
       return { id: sport.id, name: sport.name };
-    })
+    }),
+    perks: await findEventPerks(params.eventId as string)
   });
 };
 
@@ -162,8 +175,39 @@ export const action: ActionFunction = async ({ request, params }) => {
     image5: processImgField(image5, isUpdate)
   };
 
-  console.log(form.getAll('perks'));
+  const p = form.getAll('perks');
+  const np = form.getAll('new-perk-input');
 
+  for (const perks of p) {
+    const dbPerks = await findPerk(perks as string);
+
+    if (!dbPerks) {
+      return await createDefaultPerks(params.eventId as string);
+    }
+
+    const perkData: CreatePerksInput = {
+      id: dbPerks.id,
+      name: dbPerks.name,
+      isDefault: true,
+      isEnabled: true,
+      eventId: params.eventId as string
+    };
+
+    await createPerks(perkData);
+  }
+
+  for (const newPerks of np) {
+    const newPerkData: CreatePerksInput = {
+      name: newPerks as string,
+      isDefault: false,
+      isEnabled: true,
+      eventId: params.eventId as string
+    };
+
+    await createPerks(newPerkData);
+  }
+
+  await deletePerks(params.eventId as string);
   await updateEvent(data);
   // eslint-disable-next-line no-console
   if (x === 1) {
@@ -225,13 +269,19 @@ function hackyEventRevival(event: Event | null): void {
 export default function OrganizerEventRoute() {
   const { t, i18n } = useTranslation('create-event-form');
   const language = i18n.language as Language;
-  const { sports, mapToken, imageDisplayEndpoint, event } =
-    useLoaderData<LoaderData>();
+  const {
+    sports,
+    mapToken,
+    imageDisplayEndpoint,
+    event,
+    perks: dbPerks
+  } = useLoaderData<LoaderData>();
   const actionData = useActionData<ActionData>();
   const [showLocationPicker, setShowLocationPicker] = useState<boolean>(false);
   const loadedImages = mapDbImages(event?.documents, imageDisplayEndpoint);
   const [checked, setChecked] = useState(false);
   const [text, setText] = useState('');
+  const [perks, setPerks] = useState(dbPerks);
   const [location, setLocation] = useState<DiciLocation | null>(
     event.address
       ? {
@@ -253,40 +303,12 @@ export default function OrganizerEventRoute() {
     setLocation(location);
   }
 
-  const perks = [
-    {
-      id: 'a',
-      name: 'Goodies bag'
-    },
-    {
-      id: 'b',
-      name: 'Water Stations'
-    },
-    {
-      id: 'c',
-      name: 'Showers'
-    },
-    {
-      id: 'd',
-      name: 'Event T-shirt'
-    },
-    {
-      id: 'e',
-      name: "Finisher's medal"
-    },
-    {
-      id: 'f',
-      name: 'Chip-timed results'
-    },
-    {
-      id: 'g',
-      name: 'Event photos'
-    },
-    {
-      id: 'h',
-      name: 'Live music'
+  function handleOnCheckPerk() {
+    if (checked) {
+      setText('');
     }
-  ];
+    setChecked(!checked);
+  }
 
   return (
     <Main>
@@ -439,7 +461,7 @@ export default function OrganizerEventRoute() {
 
         <FormField label={t('Perks')}>
           <div className="grid grid-rows-6 grid-flow-col gap-y-px">
-            {perks.map((p) => (
+            {perks.map((p: any) => (
               <>
                 <div className=" flex items-center mb-1">
                   <input
@@ -453,7 +475,7 @@ export default function OrganizerEventRoute() {
                     htmlFor={p.id}
                     className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300"
                   >
-                    {p.name}
+                    {t(p.name)}
                   </label>
                 </div>
               </>
@@ -462,16 +484,11 @@ export default function OrganizerEventRoute() {
             <div>
               <input
                 id="new-perk"
-                name="perks"
+                name="new-perk"
                 type="checkbox"
                 value="new-perk"
                 className="w-4 h-4 text-indigo-500 bg-gray-100 rounded border-gray-300 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600"
-                onChange={() => {
-                  if (checked) {
-                    setText('');
-                  }
-                  setChecked(!checked);
-                }}
+                onChange={handleOnCheckPerk}
               />
               <input
                 name="new-perk-input"

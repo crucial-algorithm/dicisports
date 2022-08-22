@@ -124,14 +124,13 @@ type CreateEventInput = {
 type Perks = {} & DBPerks
 
 type CreatePerksInput = {
-  id: string
+  id?: string
   name: string
   createdAt?: Date | string
   isDefault: boolean
   isEnabled: boolean
   eventId: string
 }
-
 
 type GroupSpirit = {
   name: TranslationObject
@@ -225,6 +224,7 @@ export {
   Sport,
   Document,
   Event,
+  Perks,
   CreateEventInput,
   CreatePerksInput,
   DBRawGroup,

@@ -20,5 +20,14 @@
   "Event not found": "Estranho... não encontramos o evento que pretende actualizar!",
   "Event description": "Descrição do evento",
   "Perks": "Extras",
-  "Type to create new": "Clique parar criar um novo extra"
+  "Type to create new": "Clique parar criar um novo extra",
+
+  "Showers": "Chuveiros",
+  "Goodies bag": "Saco de goluseimas",
+  "Water Stations": "Bebedouros",
+  "Event t-shirts": "T-shirts do evento",
+  "Finisher's medal": "Medalhas",
+  "Chip-timed results": "Resultados cronometrados",
+  "Event photos": "Fotos do evento",
+  "Live music": "Música ao vivo"
 }
