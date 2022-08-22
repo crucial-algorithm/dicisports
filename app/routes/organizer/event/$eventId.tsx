@@ -310,6 +310,10 @@ export default function OrganizerEventRoute() {
     setChecked(!checked);
   }
 
+  function handleOnSetText(e: any) {
+    setText(e.target.value);
+  }
+
   return (
     <Main>
       <div className="mb-12 lg:mb-20">
@@ -495,7 +499,7 @@ export default function OrganizerEventRoute() {
                 type="text"
                 disabled={!checked}
                 placeholder={t('Type to create new')}
-                onChange={(e) => setText(e.target.value)}
+                onChange={handleOnSetText}
                 className="ml-2 rounded-lg focus-ring text-sm md:text-sm bg-gray-100 text-black placeholder-gray-500 font-medium box-border w-41 dark:disabled:bg-gray-700 dark:text-white dark:bg-gray-800 disabled:text-gray-700 border-0 sm:col-span-4"
               />
             </div>
