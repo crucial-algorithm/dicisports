@@ -21,9 +21,21 @@ async function findPerk(id: string): Promise<Perks | null> {
   });
 }
 
-async function deletePerks(eventId: string): Promise<void> {
+async function resetEventPerks(eventId: string): Promise<void> {
   await db.perks.deleteMany({
-    where: { eventId: eventId, isEnabled: false }
+    where: {
+      eventId: eventId,
+      isDefault: false
+    }
+  });
+
+  await db.perks.updateMany({
+    where: {
+      eventId: eventId
+    },
+    data: {
+      isEnabled: false
+    }
   });
 }
 
@@ -45,42 +57,38 @@ async function createDefaultPerks(eventId: string): Promise<Perks | void> {
   }
 }
 
-async function createPerks(
-  perks: CreatePerksInput
-): Promise<Perks | void> {
-  const perksId = Id();
-  const perksAt = new Date();
+async function createPerk(perk: CreatePerksInput): Promise<Perks | void> {
+  const perkId = Id();
+  const perkAt = new Date();
 
   await db.perks.create({
     data: {
-      id: perksId,
-      name: perks.name,
-      createdAt: perksAt,
-      isDefault: perks.isDefault,
-      isEnabled: perks.isEnabled,
-      eventId: perks.eventId
+      id: perkId,
+      name: perk.name,
+      createdAt: perkAt,
+      isDefault: perk.isDefault,
+      isEnabled: perk.isEnabled,
+      eventId: perk.eventId
     }
   });
 }
 
-async function updatePerks(perks: CreatePerksInput): Promise<void> {
-  await db.perks.update({
-    where: { id: perks.id },
-    data: {
-      name: perks.name,
-      createdAt: perks.createdAt,
-      isDefault: perks.isDefault,
-      isEnabled: perks.isEnabled,
-      eventId: perks.eventId
-    }
-  });
+async function enableEventPerks(perks: string[]): Promise<void> {
+  for (const p of perks) {
+    await db.perks.update({
+      where: { id: p },
+      data: {
+        isEnabled: true
+      }
+    });
+  }
 }
 
 export {
   createDefaultPerks,
-  updatePerks,
+  enableEventPerks,
   findEventPerks,
   findPerk,
-  createPerks,
-  deletePerks
+  createPerk,
+  resetEventPerks
 };

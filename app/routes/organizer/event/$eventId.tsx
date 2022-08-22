@@ -6,7 +6,7 @@ import {
   unstable_parseMultipartFormData
 } from 'remix';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 
 import mapBoxGlCss from 'mapbox-gl/dist/mapbox-gl.css';
 
@@ -34,7 +34,8 @@ import type {
   Event,
   DiciLocation,
   CreateEventInput,
-  CreatePerksInput
+  CreatePerksInput,
+  Perks
 } from '~/types';
 import Header from '~/components/shared/Header';
 import TextField from '~/components/shared/form/TextField';
@@ -59,12 +60,10 @@ import i18n from '~/server/i18n.server';
 import { badRequest } from '~/utils/misc';
 
 import {
-  createDefaultPerks,
-  createPerks,
-  deletePerks,
+  createPerk,
+  enableEventPerks,
   findEventPerks,
-  findPerk,
-  updatePerks
+  resetEventPerks
 } from '~/server/db/perks.server';
 
 import perks from '../../../server/db/perks.json';
@@ -90,6 +89,7 @@ type LoaderData = {
   imageDisplayEndpoint: string;
   imageUploadPreset: string;
   event: SportEvent | null;
+  perks: Array<Perks>;
 };
 
 type SportEvent = Event & {
@@ -175,39 +175,24 @@ export const action: ActionFunction = async ({ request, params }) => {
     image5: processImgField(image5, isUpdate)
   };
 
-  const p = form.getAll('perks');
-  const np = form.getAll('new-perk-input');
+  const perks: string[] = form.getAll('perks') as string[];
+  const newPerks: string[] = form.getAll('new-perk-input') as string[];
+  const eventId = params.eventId as string;
 
-  for (const perks of p) {
-    const dbPerks = await findPerk(perks as string);
+  await resetEventPerks(eventId);
+  await enableEventPerks(perks);
 
-    if (!dbPerks) {
-      return await createDefaultPerks(params.eventId as string);
-    }
-
-    const perkData: CreatePerksInput = {
-      id: dbPerks.id,
-      name: dbPerks.name,
-      isDefault: true,
-      isEnabled: true,
-      eventId: params.eventId as string
-    };
-
-    await createPerks(perkData);
-  }
-
-  for (const newPerks of np) {
+  for (const perk of newPerks) {
     const newPerkData: CreatePerksInput = {
-      name: newPerks as string,
+      name: perk,
       isDefault: false,
       isEnabled: true,
-      eventId: params.eventId as string
+      eventId: eventId
     };
 
-    await createPerks(newPerkData);
+    await createPerk(newPerkData);
   }
 
-  await deletePerks(params.eventId as string);
   await updateEvent(data);
   // eslint-disable-next-line no-console
   if (x === 1) {
@@ -290,6 +275,7 @@ export default function OrganizerEventRoute() {
         }
       : null
   );
+  const inputEl = useRef(null);
 
   // Hack: while remix doesn't handle dates properly
   hackyEventRevival(event);
@@ -310,8 +296,19 @@ export default function OrganizerEventRoute() {
     setChecked(!checked);
   }
 
-  function handleOnSetText(e: any) {
-    setText(e.target.value);
+  function handleOnCreatePerk(e: any) {
+    if (!e.target.value) {
+      return null;
+    }
+
+    const newPerks = [...perks];
+
+    newPerks.push({ id: null, name: e?.target?.value });
+    setPerks(newPerks);
+
+    if (inputEl.current) {
+      inputEl.current.value = '';
+    }
   }
 
   return (
@@ -495,11 +492,11 @@ export default function OrganizerEventRoute() {
                 onChange={handleOnCheckPerk}
               />
               <input
+                ref={inputEl}
                 name="new-perk-input"
                 type="text"
-                disabled={!checked}
                 placeholder={t('Type to create new')}
-                onChange={handleOnSetText}
+                onBlur={handleOnCreatePerk}
                 className="ml-2 rounded-lg focus-ring text-sm md:text-sm bg-gray-100 text-black placeholder-gray-500 font-medium box-border w-41 dark:disabled:bg-gray-700 dark:text-white dark:bg-gray-800 disabled:text-gray-700 border-0 sm:col-span-4"
               />
             </div>
