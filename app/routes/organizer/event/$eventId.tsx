@@ -237,18 +237,21 @@ function hackyEventRevival(event: Event | null): void {
 }
 
 export default function OrganizerEventRoute() {
+  type StrippedPerk =  Omit<Perk, 'id' | 'eventId' | 'isDefault'> & {
+    id: string | null;
+  }
+
   const { t, i18n } = useTranslation('create-event-form');
   const language = i18n.language as Language;
   const {
     sports,
     mapToken,
-    imageDisplayEndpoint,
     event,
     perks: dbPerks
   } = useLoaderData<LoaderData>();
   const actionData = useActionData<ActionData>();
   const [showLocationPicker, setShowLocationPicker] = useState<boolean>(false);
-  const [perks, setPerks] = useState<Array<Perk>>(dbPerks);
+  const [perks, setPerks] = useState<Array<StrippedPerk>>(dbPerks);
   const [location, setLocation] = useState<DiciLocation | null>(
     event.address
       ? {
@@ -283,7 +286,7 @@ export default function OrganizerEventRoute() {
     setPerks(newPerks);
 
     if (inputEl.current) {
-      inputEl.current.value = '';
+      (inputEl.current as HTMLInputElement).value = '';
     }
   }
 
