@@ -237,9 +237,9 @@ function hackyEventRevival(event: Event | null): void {
 }
 
 export default function OrganizerEventRoute() {
-  type StrippedPerk =  Omit<Perk, 'id' | 'eventId' | 'isDefault'> & {
+  type StrippedPerk = Omit<Perk, 'id' | 'eventId' | 'isDefault'> & {
     id: string | null;
-  }
+  };
 
   const { t, i18n } = useTranslation('create-event-form');
   const language = i18n.language as Language;
@@ -262,7 +262,6 @@ export default function OrganizerEventRoute() {
   );
   const inputEl = useRef(null);
 
-  console.log(perks);
   // Hack: while remix doesn't handle dates properly
   hackyEventRevival(event);
 
@@ -282,7 +281,12 @@ export default function OrganizerEventRoute() {
 
     const newPerks = [...perks];
 
-    newPerks.push({ id: null, name: e?.target?.value, isEnabled: true });
+    newPerks.push({
+      id: null,
+      name: e?.target?.value,
+      isEnabled: true,
+      createdAt: new Date()
+    });
     setPerks(newPerks);
 
     if (inputEl.current) {
@@ -442,7 +446,11 @@ export default function OrganizerEventRoute() {
         <FormField label={t('Perks')}>
           <div className="grid grid-rows-6 grid-flow-col gap-y-px">
             {perks
-              .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+              .sort(
+                (a, b) =>
+                  new Date(a.createdAt).getTime() -
+                  new Date(b.createdAt).getTime()
+              )
               .map((p: any) => (
                 <>
                   <div className=" flex items-center mb-1">
