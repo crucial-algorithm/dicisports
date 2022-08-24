@@ -10,7 +10,7 @@
     "dev:css": "postcss styles/**/*.css --base styles --dir app/styles --watch",
     "postinstall": "remix setup node",
     "start": "remix-serve build",
-    "lint": "yarn lint:eslint",
+    "lint": "npm run lint:eslint",
     "lint:eslint": "eslint ./ --ext .tsx --ext .ts",
     "deploy:staging": "flyctl --app dicistg deploy ."
   },

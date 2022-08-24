@@ -2,7 +2,7 @@ import { db } from '~/server/db.server';
 import Id from '~/server/utils/Id.server';
 import { dbPerkToPerk } from '~/server/db/codecs.server';
 
-import type { CreatePerksInput, Perk } from '~/types';
+import type { CreatePerksInput, Language, Perk } from '~/types'
 
 import json from './perks.json';
 
@@ -42,7 +42,7 @@ async function resetEventPerks(
   });
 }
 
-async function createDefaultPerks(eventId: string): Promise<Perk | void> {
+async function createDefaultPerks(eventId: string, language: Language): Promise<Perk | void> {
   const perks: CreatePerksInput[] = [];
 
   for (const perk of json) {
@@ -51,7 +51,7 @@ async function createDefaultPerks(eventId: string): Promise<Perk | void> {
 
     perks.push({
       id: perksId,
-      name: perk.name.pt,
+      name: perk.name[language],
       createdAt: perksAt,
       isDefault: true,
       isEnabled: false,

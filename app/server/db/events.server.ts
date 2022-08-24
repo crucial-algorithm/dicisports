@@ -1,13 +1,11 @@
 import type { Event } from '@prisma/client';
-import { Status } from '@prisma/client';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Status } from '@prisma/client';
 
 import { db } from '~/server/db.server';
 import Id from '~/server/utils/Id.server';
-import type { CreateEventInput, CreatePerksInput } from '~/types';
+import type { CreateEventInput, Language } from '~/types';
 import {
   createDefaultPerks,
-  createPerk,
   createPerks,
   enableEventPerks,
   resetEventPerks
@@ -30,7 +28,10 @@ async function findEvent(id: string): Promise<Event | null> {
   });
 }
 
-async function createDraftEvent(id?: string): Promise<Event | void> {
+async function createDraftEvent(
+  language: Language,
+  id?: string
+): Promise<Event | void> {
   const eventId = id ? id : Id();
   const eventAt = new Date();
 
@@ -50,7 +51,7 @@ async function createDraftEvent(id?: string): Promise<Event | void> {
     }
   });
 
-  await createDefaultPerks(eventId);
+  await createDefaultPerks(eventId, language);
 }
 
 async function updateEvent(
