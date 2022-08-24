@@ -11,7 +11,7 @@
 
 generator client {
   provider        = "prisma-client-js"
-  previewFeatures = ["fullTextSearch"]
+  previewFeatures = ["fullTextSearch", "interactiveTransactions"]
 }
 
 datasource db {
@@ -90,7 +90,7 @@ model Event {
   createdAt          DateTime   @default(now()) @map("created_at")
   updatedAt          DateTime   @updatedAt @map("updated_at")
   documents          Document[]
-  perks              Perks[]
+  perks              Perk[]
 
   @@map("events")
 }
@@ -171,7 +171,7 @@ model FavoriteGroup {
   @@map("favorite_groups")
 }
 
-model Perks {
+model Perk {
   id            String          @id @default(uuid())
   name          String
   createdAt     DateTime        @default(now()) @map("created_at")

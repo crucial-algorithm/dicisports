@@ -3,7 +3,7 @@ import type {
   GroupType as DBGroupType,
   GroupSpirit as DBGroupSpirit,
   Sport as DBSport,
-  Perks as DBPerks,
+  Perk as DBPerk,
   Status
 } from '@prisma/client';
 import { Role } from '@prisma/client';
@@ -16,7 +16,7 @@ import type {
   TranslationObject,
   User,
   Sport,
-  Perks,
+  Perk,
   DBRawGroup
 } from '~/types';
 
@@ -32,10 +32,10 @@ function dbSportToSport(sport: DBSport): Sport {
   };
 }
 
-function dbPerkToPerk(perk: DBPerks): Perks {
+function dbPerkToPerk(perk: DBPerk): Perk {
   const { id, name, createdAt, isDefault, isEnabled, eventId } = perk;
 
-  return { id, name, createdAt, isDefault, isEnabled, eventId };
+  return { id, name, createdAt: new Date(createdAt), isDefault, isEnabled, eventId };
 }
 
 function dbGroupSpiritToGroupSpirit(group: DBGroupSpirit): GroupSpirit {

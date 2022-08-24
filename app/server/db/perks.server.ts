@@ -1,35 +1,38 @@
-import type { Perks } from '@prisma/client';
-
 import { db } from '~/server/db.server';
 import Id from '~/server/utils/Id.server';
-import type { CreatePerksInput } from '~/types';
 import { dbPerkToPerk } from '~/server/db/codecs.server';
+
+import type { CreatePerksInput, Perk } from '~/types';
 
 import json from './perks.json';
 
-async function findEventPerks(eventId: string): Promise<Array<Perks>> {
-  const perks = await db.perks.findMany({
+async function findEventPerks(eventId: string): Promise<Array<Perk>> {
+  const perks = await db.perk.findMany({
     where: { eventId: eventId }
   });
 
   return perks.map(dbPerkToPerk);
 }
 
-async function findPerk(id: string): Promise<Perks | null> {
-  return await db.perks.findUnique({
+async function findPerk(id: string): Promise<Perk | null> {
+  return await db.perk.findUnique({
     where: { id: id }
   });
 }
 
-async function resetEventPerks(eventId: string): Promise<void> {
-  await db.perks.deleteMany({
+async function resetEventPerks(
+  eventId: string,
+  perks: string[]
+): Promise<void> {
+  await db.perk.deleteMany({
     where: {
+      id: { notIn: perks },
       eventId: eventId,
       isDefault: false
     }
   });
 
-  await db.perks.updateMany({
+  await db.perk.updateMany({
     where: {
       eventId: eventId
     },
@@ -39,29 +42,33 @@ async function resetEventPerks(eventId: string): Promise<void> {
   });
 }
 
-async function createDefaultPerks(eventId: string): Promise<Perks | void> {
-  for (const perks of json) {
+async function createDefaultPerks(eventId: string): Promise<Perk | void> {
+  const perks: CreatePerksInput[] = [];
+
+  for (const perk of json) {
     const perksId = Id();
     const perksAt = new Date();
 
-    await db.perks.create({
-      data: {
-        id: perksId,
-        name: perks.name.en,
-        createdAt: perksAt,
-        isDefault: true,
-        isEnabled: false,
-        eventId: eventId
-      }
+    perks.push({
+      id: perksId,
+      name: perk.name.pt,
+      createdAt: perksAt,
+      isDefault: true,
+      isEnabled: false,
+      eventId: eventId
     });
   }
+
+  await db.perk.createMany({
+    data: perks
+  });
 }
 
-async function createPerk(perk: CreatePerksInput): Promise<Perks | void> {
+async function createPerk(perk: CreatePerksInput): Promise<Perk | void> {
   const perkId = Id();
   const perkAt = new Date();
 
-  await db.perks.create({
+  await db.perk.create({
     data: {
       id: perkId,
       name: perk.name,
@@ -73,15 +80,19 @@ async function createPerk(perk: CreatePerksInput): Promise<Perks | void> {
   });
 }
 
+async function createPerks(perks: CreatePerksInput[]): Promise<Perk | void> {
+  await db.perk.createMany({
+    data: perks
+  });
+}
+
 async function enableEventPerks(perks: string[]): Promise<void> {
-  for (const p of perks) {
-    await db.perks.update({
-      where: { id: p },
-      data: {
-        isEnabled: true
-      }
-    });
-  }
+  await db.perk.updateMany({
+    where: { id: { in: perks } },
+    data: {
+      isEnabled: true
+    }
+  });
 }
 
 export {
@@ -90,5 +101,6 @@ export {
   findEventPerks,
   findPerk,
   createPerk,
+  createPerks,
   resetEventPerks
 };

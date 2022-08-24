@@ -35,7 +35,7 @@ import type {
   DiciLocation,
   CreateEventInput,
   CreatePerksInput,
-  Perks
+  Perk
 } from '~/types';
 import Header from '~/components/shared/Header';
 import TextField from '~/components/shared/form/TextField';
@@ -89,7 +89,7 @@ type LoaderData = {
   imageDisplayEndpoint: string;
   imageUploadPreset: string;
   event: SportEvent | null;
-  perks: Array<Perks>;
+  perks: Array<Perk>;
 };
 
 type SportEvent = Event & {
@@ -177,23 +177,8 @@ export const action: ActionFunction = async ({ request, params }) => {
 
   const perks: string[] = form.getAll('perks') as string[];
   const newPerks: string[] = form.getAll('new-perk-input') as string[];
-  const eventId = params.eventId as string;
 
-  await resetEventPerks(eventId);
-  await enableEventPerks(perks);
-
-  for (const perk of newPerks) {
-    const newPerkData: CreatePerksInput = {
-      name: perk,
-      isDefault: false,
-      isEnabled: true,
-      eventId: eventId
-    };
-
-    await createPerk(newPerkData);
-  }
-
-  await updateEvent(data);
+  await updateEvent(data, perks, newPerks);
   // eslint-disable-next-line no-console
   if (x === 1) {
     return badRequest({
@@ -263,10 +248,7 @@ export default function OrganizerEventRoute() {
   } = useLoaderData<LoaderData>();
   const actionData = useActionData<ActionData>();
   const [showLocationPicker, setShowLocationPicker] = useState<boolean>(false);
-  const loadedImages = mapDbImages(event?.documents, imageDisplayEndpoint);
-  const [checked, setChecked] = useState(false);
-  const [text, setText] = useState('');
-  const [perks, setPerks] = useState(dbPerks);
+  const [perks, setPerks] = useState<Array<Perk>>(dbPerks);
   const [location, setLocation] = useState<DiciLocation | null>(
     event.address
       ? {
@@ -277,6 +259,7 @@ export default function OrganizerEventRoute() {
   );
   const inputEl = useRef(null);
 
+  console.log(perks);
   // Hack: while remix doesn't handle dates properly
   hackyEventRevival(event);
 
@@ -289,13 +272,6 @@ export default function OrganizerEventRoute() {
     setLocation(location);
   }
 
-  function handleOnCheckPerk() {
-    if (checked) {
-      setText('');
-    }
-    setChecked(!checked);
-  }
-
   function handleOnCreatePerk(e: any) {
     if (!e.target.value) {
       return null;
@@ -303,7 +279,7 @@ export default function OrganizerEventRoute() {
 
     const newPerks = [...perks];
 
-    newPerks.push({ id: null, name: e?.target?.value });
+    newPerks.push({ id: null, name: e?.target?.value, isEnabled: true });
     setPerks(newPerks);
 
     if (inputEl.current) {
@@ -462,35 +438,30 @@ export default function OrganizerEventRoute() {
 
         <FormField label={t('Perks')}>
           <div className="grid grid-rows-6 grid-flow-col gap-y-px">
-            {perks.map((p: any) => (
-              <>
-                <div className=" flex items-center mb-1">
-                  <input
-                    type="checkbox"
-                    id={p.id}
-                    name="perks"
-                    value={p.id}
-                    className="w-4 h-4 text-indigo-500 bg-gray-100 rounded border-gray-300 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600"
-                  />
-                  <label
-                    htmlFor={p.id}
-                    className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300"
-                  >
-                    {t(p.name)}
-                  </label>
-                </div>
-              </>
-            ))}
+            {perks
+              .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+              .map((p: any) => (
+                <>
+                  <div className=" flex items-center mb-1">
+                    <input
+                      type="checkbox"
+                      id={p.id}
+                      name={p.id ? 'perks' : 'new-perk-input'}
+                      value={p.id ? p.id : p.name}
+                      defaultChecked={p.isEnabled}
+                      className="w-4 h-4 text-indigo-500 bg-gray-100 rounded border-gray-300 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600"
+                    />
+                    <label
+                      htmlFor={p.id}
+                      className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300"
+                    >
+                      {p.name}
+                    </label>
+                  </div>
+                </>
+              ))}
 
             <div>
-              <input
-                id="new-perk"
-                name="new-perk"
-                type="checkbox"
-                value="new-perk"
-                className="w-4 h-4 text-indigo-500 bg-gray-100 rounded border-gray-300 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600"
-                onChange={handleOnCheckPerk}
-              />
               <input
                 ref={inputEl}
                 name="new-perk-input"

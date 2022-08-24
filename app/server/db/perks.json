@@ -1,34 +1,26 @@
 [
   {
-    "name": {"pt": "Chuveiros", "en":  "Showers"},
-    "displayOrder": 3
+    "name": {"pt":  "Saco de guloseimas", "en":  "Goodies bag"}
   },
   {
-    "name": {"pt":  "Saco de guloseimas", "en":  "Goodies bag"},
-    "displayOrder": 1
+    "name": {"pt":  "Bebedouros", "en":  "Water Stations"}
   },
   {
-    "name": {"pt":  "Bebedouros", "en":  "Water Stations"},
-    "displayOrder": 2
+    "name": {"pt": "Chuveiros", "en":  "Showers"}
   },
   {
-    "name": {"pt":  "T-shirts do evento", "en":  "Event t-shirts"},
-    "displayOrder": 4
+    "name": {"pt":  "T-shirts do evento", "en":  "Event t-shirts"}
   },
   {
-    "name": {"pt":  "Medalhas", "en":  "Finisher's medal"},
-    "displayOrder": 5
+    "name": {"pt":  "Medalhas", "en":  "Finisher's medal"}
   },
   {
-    "name": {"pt":  "Resultados cronometrados", "en":  "Chip-timed results"},
-    "displayOrder": 6
+    "name": {"pt":  "Resultados cronometrados", "en":  "Chip-timed results"}
   },
   {
-    "name": {"pt":  "Fotos do evento", "en":  "Event photos"},
-    "displayOrder": 7
+    "name": {"pt":  "Fotos do evento", "en":  "Event photos"}
   },
   {
-    "name": {"pt":  "Música ao vivo", "en":  "Live music"},
-    "displayOrder": 8
+    "name": {"pt":  "Música ao vivo", "en":  "Live music"}
   }
 ]

@@ -6,7 +6,7 @@ import type {
   Sport as DBSport,
   Document as DBDocument,
   Event as DBEvent,
-  Perks as DBPerks
+  Perk as DBPerk
 } from '@prisma/client';
 
 type NonNullProperties<Type> = {
@@ -121,7 +121,7 @@ type CreateEventInput = {
   updatedAt?: Date | string
 }
 
-type Perks = {} & DBPerks
+type Perk = {} & DBPerk
 
 type CreatePerksInput = {
   id?: string
@@ -224,7 +224,7 @@ export {
   Sport,
   Document,
   Event,
-  Perks,
+  Perk,
   CreateEventInput,
   CreatePerksInput,
   DBRawGroup,
