@@ -1,4 +1,4 @@
-import { Form, useActionData, useLoaderData } from '@remix-run/react';
+import { useActionData, useLoaderData } from '@remix-run/react';
 import type { ActionFunction, LinksFunction, LoaderFunction } from 'remix';
 import {
   json,
@@ -11,14 +11,11 @@ import { useRef, useState } from 'react';
 import mapBoxGlCss from 'mapbox-gl/dist/mapbox-gl.css';
 
 import type { UploadHandler } from '@remix-run/node';
+import { unstable_composeUploadHandlers } from '@remix-run/node';
 
 import { useTranslation } from 'react-i18next';
 
 import { LocationMarkerIcon } from '@heroicons/react/outline';
-
-import { parseMultipartFormData } from '@remix-run/server-runtime/dist/formData';
-
-import { unstable_composeUploadHandlers } from '@remix-run/node';
 
 import BasicDatePicker from '~/components/shared/form/DatePicker';
 import PickBookingSystem from '~/components/PickBookingSystem';
@@ -29,15 +26,14 @@ import organizerCss from '~/styles/organizer.css';
 import UploadImage from '~/components/shared/form/UploadImage';
 
 import type {
-  Sport,
+  CreateEventInput,
+  DiciLocation,
   Document,
   Event,
-  DiciLocation,
-  CreateEventInput,
-  CreatePerksInput,
-  Perk
+  Perk,
+  Sport
 } from '~/types';
-import Header from '~/components/shared/Header';
+import type { Language } from '~/types';
 import TextField from '~/components/shared/form/TextField';
 import Button from '~/components/shared/Button';
 
@@ -46,7 +42,6 @@ import Config from '~/server/config.server';
 import { findSports } from '~/server/db/sports.server';
 import { findEvent, updateEvent } from '~/server/db/events.server';
 import Main from '~/components/shared/Main';
-import I18nText from '~/components/I18nText';
 import FormField from '~/components/shared/form/FormField';
 import { H2, H3 } from '~/components/shared/typography';
 
@@ -54,19 +49,11 @@ import UploadForm from '~/components/shared/form/UploadForm';
 
 import { uploadImageToCloudinary } from '~/server/storage/cloudinary.server';
 import ComboBox from '~/components/shared/form/ComboBox';
-import { Language } from '~/types';
 import { parseLocation, processImgField } from '~/server/utils/misc';
 import i18n from '~/server/i18n.server';
 import { badRequest } from '~/utils/misc';
 
-import {
-  createPerk,
-  enableEventPerks,
-  findEventPerks,
-  resetEventPerks
-} from '~/server/db/perks.server';
-
-import perks from '../../../server/db/perks.json';
+import { findEventPerks } from '~/server/db/perks.server';
 
 type ActionData = {
   formError?: string;
@@ -202,28 +189,6 @@ export const links: LinksFunction = () => {
       href: organizerCss
     }
   ];
-};
-
-type Image = {
-  name: string;
-  file: File;
-  value: string;
-  timestamp: number;
-  signature: string;
-  apiKey: string;
-};
-
-const encTypeUpload = 'multipart/form-data';
-const mapDbImages = (
-  images: Array<Document> | undefined,
-  url: string | undefined
-): Array<string> => {
-  if (!images || images.length === 0) {
-    return [];
-  }
-  return images
-    .sort((a, b) => a.position - b.position)
-    .map((img) => `${url}/${img.key}`);
 };
 
 function hackyEventRevival(event: Event | null): void {
