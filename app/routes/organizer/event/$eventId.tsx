@@ -230,7 +230,6 @@ export default function OrganizerEventRoute() {
   );
   const inputEl = useRef(null);
 
-  console.log(dbPerks.displayOrder);
   // Hack: while remix doesn't handle dates properly
   hackyEventRevival(event);
 
