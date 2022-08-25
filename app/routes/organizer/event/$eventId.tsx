@@ -237,7 +237,10 @@ function hackyEventRevival(event: Event | null): void {
 }
 
 export default function OrganizerEventRoute() {
-  type StrippedPerk = Omit<Perk, 'id' | 'eventId' | 'isDefault'> & {
+  type StrippedPerk = Omit<
+    Perk,
+    'id' | 'eventId' | 'isDefault'
+  > & {
     id: string | null;
   };
 
@@ -262,6 +265,7 @@ export default function OrganizerEventRoute() {
   );
   const inputEl = useRef(null);
 
+  console.log(dbPerks.displayOrder);
   // Hack: while remix doesn't handle dates properly
   hackyEventRevival(event);
 
@@ -280,11 +284,13 @@ export default function OrganizerEventRoute() {
     }
 
     const newPerks = [...perks];
+    let max = newPerks[newPerks.length - 1].displayOrder;
 
     newPerks.push({
       id: null,
       name: e?.target?.value,
       isEnabled: true,
+      displayOrder: ++max,
       createdAt: new Date()
     });
     setPerks(newPerks);
@@ -444,13 +450,9 @@ export default function OrganizerEventRoute() {
         </FormField>
 
         <FormField label={t('Perks')}>
-          <div className="grid grid-rows-6 grid-flow-col gap-y-px">
+          <div className="grid grid-rows-6 grid-flow-col gap-y-px mb-2">
             {perks
-              .sort(
-                (a, b) =>
-                  new Date(a.createdAt).getTime() -
-                  new Date(b.createdAt).getTime()
-              )
+              .sort((a, b) => a.displayOrder - b.displayOrder)
               .map((p: any) => (
                 <>
                   <div className=" flex items-center mb-1">
@@ -483,6 +485,8 @@ export default function OrganizerEventRoute() {
               />
             </div>
           </div>
+
+          <FormField label={t('Races / Distances')}></FormField>
         </FormField>
 
         <Button className="mt-8" type="submit" form="profile-form">

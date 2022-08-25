@@ -33,9 +33,9 @@ function dbSportToSport(sport: DBSport): Sport {
 }
 
 function dbPerkToPerk(perk: DBPerk): Perk {
-  const { id, name, createdAt, isDefault, isEnabled, eventId } = perk;
+  const { id, name, createdAt, isDefault, isEnabled, eventId, displayOrder } = perk;
 
-  return { id, name, createdAt: new Date(createdAt), isDefault, isEnabled, eventId };
+  return { id, name, createdAt: new Date(createdAt), isDefault, isEnabled, eventId, displayOrder };
 }
 
 function dbGroupSpiritToGroupSpirit(group: DBGroupSpirit): GroupSpirit {
