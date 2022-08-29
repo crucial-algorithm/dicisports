@@ -1,5 +1,5 @@
 import type { ActionFunction } from 'remix';
-import { redirect } from 'remix';
+import { json, redirect } from 'remix';
 
 import { z, ZodError } from 'zod';
 
@@ -11,7 +11,7 @@ export const action: ActionFunction = async ({ request }) => {
   const form = await request.formData();
 
   const eventId = form.get('event-id') as string;
-  const name = form.get('race-name') as string;
+  const name = form.get('name') as string;
   const data = { name, eventId };
 
   const required = { invalid_type_error: 'Field required' };
@@ -26,6 +26,7 @@ export const action: ActionFunction = async ({ request }) => {
   try {
     RaceSchema.parse(data);
     await createRace(eventId, name);
+    return json({ ok: true, errors: null });
   } catch (e) {
     if (!(e instanceof ZodError)) {
       console.error(e);
@@ -41,8 +42,6 @@ export const action: ActionFunction = async ({ request }) => {
       errors[error.path[0]] = error.message;
     }
 
-    return badRequest({ error: undefined, errors });
+    return badRequest({ ok: false, errors });
   }
-
-  return redirect(`/organizer/event/${eventId}`);
 };

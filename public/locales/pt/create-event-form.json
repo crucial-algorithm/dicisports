@@ -25,5 +25,6 @@
   "Add Race": "Adicionar Corrida",
   "Create Distance": "Criar Distância",
   "Cancel": "Cancelar",
-  "Race name": "Nome da corrida (ex. Trilha Curta)"
+  "Race name": "Nome",
+  "Race Name Placeholder": "Minifondo, 5k, ..."
 }

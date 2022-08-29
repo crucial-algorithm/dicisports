@@ -12,7 +12,7 @@ import {
 } from 'remix';
 
 import * as React from 'react';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import mapBoxGlCss from 'mapbox-gl/dist/mapbox-gl.css';
 
@@ -64,16 +64,7 @@ import { badRequest } from '~/utils/misc';
 import { findEventPerks } from '~/server/db/perks.server';
 
 type ActionData = {
-  formError?: string;
-  fieldErrors?: {
-    name: string | undefined;
-    content: string | undefined;
-  };
-  fields?: {
-    name: string;
-    content: string;
-  };
-  error?: string;
+  ok: boolean;
   errors?: {
     name?: string;
   };
@@ -436,24 +427,22 @@ export default function OrganizerEventRoute() {
             {perks
               .sort((a, b) => a.displayOrder - b.displayOrder)
               .map((p: any) => (
-                <>
-                  <div className=" flex items-center mb-1">
-                    <input
-                      type="checkbox"
-                      id={p.id}
-                      name={p.id ? 'perks' : 'new-perk-input'}
-                      value={p.id ? p.id : p.name}
-                      defaultChecked={p.isEnabled}
-                      className="w-4 h-4 text-indigo-500 bg-gray-100 rounded border-gray-300 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600"
-                    />
-                    <label
-                      htmlFor={p.id}
-                      className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300"
-                    >
-                      {p.name}
-                    </label>
-                  </div>
-                </>
+                <div key={p.id} className="flex items-center mb-1">
+                  <input
+                    type="checkbox"
+                    id={p.id}
+                    name={p.id ? 'perks' : 'new-perk-input'}
+                    value={p.id ? p.id : p.name}
+                    defaultChecked={p.isEnabled}
+                    className="w-4 h-4 text-indigo-500 bg-gray-100 rounded border-gray-300 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600"
+                  />
+                  <label
+                    htmlFor={p.id}
+                    className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300"
+                  >
+                    {p.name}
+                  </label>
+                </div>
               ))}
 
             <div>
@@ -496,6 +485,10 @@ export default function OrganizerEventRoute() {
   );
 }
 
+type FormErrors = {
+  name?: string
+}
+
 function RaceDialog(props: {
   isOpen: boolean;
   triggerModalClose: () => void;
@@ -503,8 +496,22 @@ function RaceDialog(props: {
 }) {
   const { t } = useTranslation('create-event-form');
   const { isOpen, triggerModalClose, eventId } = props;
-  const actionData = useActionData<ActionData>();
   const race = useFetcher();
+  const [errors, setErrors] = useState<FormErrors>({});
+
+  useEffect(() => {
+    if (race.type !== 'done') {
+      return;
+    }
+    const { errors, ok } = race.data as ActionData;
+
+    if (ok) {
+      // TODO: reload page
+      return triggerModalClose();
+    }
+
+    setErrors(errors as FormErrors);
+  }, [race, triggerModalClose]);
 
   return (
     <div
@@ -532,13 +539,13 @@ function RaceDialog(props: {
               <input type="hidden" name="event-id" value={eventId} />
 
               <FormField
-                label=""
-                error={actionData?.errors?.name}
+                label={t('Race name')}
+                error={errors?.name}
               >
                 <TextField
                   id="race-name"
-                  name="race-name"
-                  placeholder={t('Race name')}
+                  name="name"
+                  placeholder={t('Race Name Placeholder')}
                 />
               </FormField>
 
