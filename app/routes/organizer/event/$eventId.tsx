@@ -1,4 +1,4 @@
-import { useActionData, useLoaderData } from '@remix-run/react';
+import { Form, useActionData, useLoaderData } from '@remix-run/react';
 import type { ActionFunction, LinksFunction, LoaderFunction } from 'remix';
 import {
   json,
@@ -6,6 +6,7 @@ import {
   unstable_parseMultipartFormData
 } from 'remix';
 
+import * as React from 'react';
 import { useRef, useState } from 'react';
 
 import mapBoxGlCss from 'mapbox-gl/dist/mapbox-gl.css';
@@ -16,6 +17,8 @@ import { unstable_composeUploadHandlers } from '@remix-run/node';
 import { useTranslation } from 'react-i18next';
 
 import { LocationMarkerIcon } from '@heroicons/react/outline';
+
+import clsx from 'clsx';
 
 import BasicDatePicker from '~/components/shared/form/DatePicker';
 import PickBookingSystem from '~/components/PickBookingSystem';
@@ -30,10 +33,10 @@ import type {
   DiciLocation,
   Document,
   Event,
+  Language,
   Perk,
   Sport
 } from '~/types';
-import type { Language } from '~/types';
 import TextField from '~/components/shared/form/TextField';
 import Button from '~/components/shared/Button';
 
@@ -202,10 +205,7 @@ function hackyEventRevival(event: Event | null): void {
 }
 
 export default function OrganizerEventRoute() {
-  type StrippedPerk = Omit<
-    Perk,
-    'id' | 'eventId' | 'isDefault'
-  > & {
+  type StrippedPerk = Omit<Perk, 'id' | 'eventId' | 'isDefault'> & {
     id: string | null;
   };
 
@@ -219,6 +219,7 @@ export default function OrganizerEventRoute() {
   } = useLoaderData<LoaderData>();
   const actionData = useActionData<ActionData>();
   const [showLocationPicker, setShowLocationPicker] = useState<boolean>(false);
+  const [showRacesDialog, setShowRacesDialog] = useState<boolean>(false);
   const [perks, setPerks] = useState<Array<StrippedPerk>>(dbPerks);
   const [location, setLocation] = useState<DiciLocation | null>(
     event.address
@@ -235,6 +236,14 @@ export default function OrganizerEventRoute() {
 
   function handleShowMap() {
     setShowLocationPicker(true);
+  }
+
+  function handleShowRace() {
+    setShowRacesDialog(true);
+  }
+
+  function handleCloseRace() {
+    setShowRacesDialog(false);
   }
 
   function handleCloseMap(location: DiciLocation | null) {
@@ -450,13 +459,23 @@ export default function OrganizerEventRoute() {
             </div>
           </div>
 
-          <FormField label={t('Races / Distances')}></FormField>
+          <FormField label={t('Distances')}>
+            <Button className="mt-8" type="button" onClick={handleShowRace}>
+              {t('Create Distance')}
+            </Button>
+          </FormField>
         </FormField>
 
-        <Button className="mt-8" type="submit" form="profile-form">
+        <Button className="mt-8" type="submit">
           {t('Create Button')}
         </Button>
       </UploadForm>
+
+      <RaceDialog
+        isOpen={showRacesDialog}
+        triggerModalClose={handleCloseRace}
+        eventId={event.id}
+      />
 
       <MapDialog
         token={mapToken}
@@ -465,5 +484,67 @@ export default function OrganizerEventRoute() {
         onClose={handleCloseMap}
       />
     </Main>
+  );
+}
+
+function RaceDialog(props: {
+  isOpen: boolean;
+  triggerModalClose: () => void;
+  eventId: string;
+}) {
+  const { t } = useTranslation('create-event-form');
+  const { isOpen, triggerModalClose, eventId } = props;
+  const actionData = useActionData<ActionData>();
+
+  return (
+    <div
+      data-reach-dialog-overlay={true}
+      className={clsx({
+        'hidden ': !isOpen,
+        'z-50 flex h-screen': isOpen
+      })}
+    >
+      <div
+        aria-modal={true}
+        aria-label={t('Filters')}
+        className={clsx(
+          'w-5/6 max-w-lg',
+          'bg-white dark:bg-gray-900 border-2 border-black dark:border-white rounded-lg font-extrabold',
+          {
+            'hidden ': !isOpen,
+            'm-auto': isOpen
+          }
+        )}
+      >
+        <div className="relative">
+          <div className="px-6 py-2 flex flex-col items-center lg:px-24 lg:py-14">
+            <Form method="post" action="/organizer/race/create">
+              <input type="hidden" name="event-id" value={eventId} />
+
+              <TextField
+                type="text"
+                id="race-name"
+                name="race-name"
+                placeholder={t('Race name')}
+              />
+
+              <div className="w-full m-auto flex flex-row justify-begin gap-4 md:w-full md:grid-flow-col md:grid-rows-1">
+                <Button
+                  className="mt-8"
+                  type="button"
+                  onClick={triggerModalClose}
+                >
+                  {t('Cancel')}
+                </Button>
+
+                <Button className="mt-8 ml-7" type="submit">
+                  {t('Create Distance')}
+                </Button>
+              </div>
+            </Form>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
