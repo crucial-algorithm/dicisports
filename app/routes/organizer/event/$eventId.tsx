@@ -1,9 +1,4 @@
-import {
-  Form,
-  useActionData,
-  useLoaderData,
-  useFetcher
-} from '@remix-run/react';
+import { useActionData, useFetcher, useLoaderData } from '@remix-run/react';
 import type { ActionFunction, LinksFunction, LoaderFunction } from 'remix';
 import {
   json,
@@ -64,7 +59,6 @@ import { badRequest } from '~/utils/misc';
 import { findEventPerks } from '~/server/db/perks.server';
 
 type ActionData = {
-  ok: boolean;
   errors?: {
     name?: string;
   };
@@ -489,6 +483,16 @@ type FormErrors = {
   name?: string
 }
 
+function clearForm(name: React.RefObject<HTMLInputElement> | null) {
+  clearInputField(name);
+}
+
+function clearInputField(ref: React.RefObject<HTMLInputElement> | null) {
+  if (ref && ref.current) {
+    ref.current.value = '';
+  }
+}
+
 function RaceDialog(props: {
   isOpen: boolean;
   triggerModalClose: () => void;
@@ -496,22 +500,23 @@ function RaceDialog(props: {
 }) {
   const { t } = useTranslation('create-event-form');
   const { isOpen, triggerModalClose, eventId } = props;
-  const race = useFetcher();
+  const fetcher = useFetcher();
   const [errors, setErrors] = useState<FormErrors>({});
+  const name = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
-    if (race.type !== 'done') {
-      return;
-    }
-    const { errors, ok } = race.data as ActionData;
+    if (fetcher.type === 'actionRedirect') {
+      // redirect means success, since we redirect when race was created
+      clearForm(name);
 
-    if (ok) {
-      // TODO: reload page
       return triggerModalClose();
     }
 
-    setErrors(errors as FormErrors);
-  }, [race, triggerModalClose]);
+    if (fetcher.type === 'done' && fetcher.data?.errors) {
+      return setErrors(fetcher.data.errors as FormErrors);
+    }
+
+  }, [fetcher, triggerModalClose]);
 
   return (
     <div
@@ -535,7 +540,7 @@ function RaceDialog(props: {
       >
         <div className="relative">
           <div className="px-6 py-2 flex flex-col items-center lg:px-24 lg:py-14">
-            <race.Form method="post" action="/organizer/race/create">
+            <fetcher.Form method="post" action="/organizer/race/create">
               <input type="hidden" name="event-id" value={eventId} />
 
               <FormField
@@ -546,6 +551,7 @@ function RaceDialog(props: {
                   id="race-name"
                   name="name"
                   placeholder={t('Race Name Placeholder')}
+                  input={name}
                 />
               </FormField>
 
@@ -562,7 +568,7 @@ function RaceDialog(props: {
                   {t('Create Distance')}
                 </Button>
               </div>
-            </race.Form>
+            </fetcher.Form>
           </div>
         </div>
       </div>

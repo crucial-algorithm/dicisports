@@ -1,5 +1,5 @@
 import type { ActionFunction } from 'remix';
-import { json, redirect } from 'remix';
+import { redirect } from 'remix';
 
 import { z, ZodError } from 'zod';
 
@@ -26,7 +26,7 @@ export const action: ActionFunction = async ({ request }) => {
   try {
     RaceSchema.parse(data);
     await createRace(eventId, name);
-    return json({ ok: true, errors: null });
+    return redirect(`/organizer/event/${eventId}`);
   } catch (e) {
     if (!(e instanceof ZodError)) {
       console.error(e);
@@ -42,6 +42,6 @@ export const action: ActionFunction = async ({ request }) => {
       errors[error.path[0]] = error.message;
     }
 
-    return badRequest({ ok: false, errors });
+    return badRequest({ errors });
   }
 };
