@@ -1,4 +1,9 @@
-import { Form, useActionData, useLoaderData } from '@remix-run/react';
+import {
+  Form,
+  useActionData,
+  useLoaderData,
+  useFetcher
+} from '@remix-run/react';
 import type { ActionFunction, LinksFunction, LoaderFunction } from 'remix';
 import {
   json,
@@ -67,6 +72,10 @@ type ActionData = {
   fields?: {
     name: string;
     content: string;
+  };
+  error?: string;
+  errors?: {
+    name?: string;
   };
 };
 
@@ -495,6 +504,7 @@ function RaceDialog(props: {
   const { t } = useTranslation('create-event-form');
   const { isOpen, triggerModalClose, eventId } = props;
   const actionData = useActionData<ActionData>();
+  const race = useFetcher();
 
   return (
     <div
@@ -518,15 +528,19 @@ function RaceDialog(props: {
       >
         <div className="relative">
           <div className="px-6 py-2 flex flex-col items-center lg:px-24 lg:py-14">
-            <Form method="post" action="/organizer/race/create">
+            <race.Form method="post" action="/organizer/race/create">
               <input type="hidden" name="event-id" value={eventId} />
 
-              <TextField
-                type="text"
-                id="race-name"
-                name="race-name"
-                placeholder={t('Race name')}
-              />
+              <FormField
+                label=""
+                error={actionData?.errors?.name}
+              >
+                <TextField
+                  id="race-name"
+                  name="race-name"
+                  placeholder={t('Race name')}
+                />
+              </FormField>
 
               <div className="w-full m-auto flex flex-row justify-begin gap-4 md:w-full md:grid-flow-col md:grid-rows-1">
                 <Button
@@ -541,7 +555,7 @@ function RaceDialog(props: {
                   {t('Create Distance')}
                 </Button>
               </div>
-            </Form>
+            </race.Form>
           </div>
         </div>
       </div>

@@ -19,8 +19,8 @@ export const action: ActionFunction = async ({ request }) => {
     .string(required)
     .min(5, { message: 'name 5 chars or more' });
   const RaceSchema = z.object({
-    name: str5CharsOrMore,
-    elevationGain: z.number().nonnegative() //TODO: add error message
+    name: str5CharsOrMore
+    // elevationGain: z.number().nonnegative() TODO: add error message
   });
 
   try {
