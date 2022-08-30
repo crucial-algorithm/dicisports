@@ -19,16 +19,16 @@ export function inputBaseClasses(className?: string) {
 }
 
 type Props = {
-  id: string
-  name: string
-  placeholder?: string
-  defaultValue?: any
-  type?: 'text' | 'number' | 'email' | 'date' | 'hidden' | 'checkbox'
-  autoComplete?: string
-  disabled?: boolean
-  onChange?: (value: any) => void
-  input?:  React.RefObject<HTMLInputElement>
-} & React.ComponentProps<'input'>
+  id: string;
+  name: string;
+  placeholder?: string;
+  defaultValue?: any;
+  type?: 'text' | 'number' | 'email' | 'date' | 'hidden' | 'checkbox';
+  autoComplete?: string;
+  disabled?: boolean;
+  onChange?: (value: any) => void;
+  input?: React.RefObject<HTMLInputElement>;
+} & React.ComponentProps<'input'>;
 const InputBase: React.FC<Props> = ({
   id,
   name,
@@ -49,21 +49,37 @@ const InputBase: React.FC<Props> = ({
     onChange && onChange(e.target.value);
   }
 
+  // hack: when using outside ref, use a controlled component throughout the control lifecycle
+  if (input) {
+    return (
+      <input
+        type={type}
+        name={name}
+        id={id}
+        defaultValue={defaultValue}
+        placeholder={placeholder}
+        disabled={disabled}
+        onChange={disabled ? undefined : handleOnChange}
+        autoComplete={autoComplete}
+        className={inputBaseClasses(className)}
+        readOnly={readOnly}
+        ref={input}
+      />
+    );
+  }
+
   return (
     <input
       type={type}
       name={name}
       id={id}
-      // Hack for cleaning add races form... maybe we shouldn't have such a generic component?!?!
-      // Not using the value from useState allows to set the value of the component using ref.current.value = ''
-      value={input ? undefined : disabled ? defaultValue : value}
+      value={disabled ? defaultValue : value}
       placeholder={placeholder}
       disabled={disabled}
       onChange={disabled ? undefined : handleOnChange}
       autoComplete={autoComplete}
       className={inputBaseClasses(className)}
       readOnly={readOnly}
-      ref={input}
     />
   );
 };

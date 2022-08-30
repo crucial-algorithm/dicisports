@@ -13,8 +13,9 @@ export const action: ActionFunction = async ({ request }) => {
   const form = await request.formData();
 
   const eventId = form.get('event-id') as string;
+  // const raceId = form.get('race-id') as string;
   const name = form.get('name') as string;
-  const data = { name, eventId };
+
   const raceData: CreateRaceInput = {
     id: Id(),
     name: name,
@@ -39,7 +40,7 @@ export const action: ActionFunction = async ({ request }) => {
   });
 
   try {
-    RaceSchema.parse(data);
+    RaceSchema.parse(raceData);
     await createRace(raceData);
     return redirect(`/organizer/event/${eventId}`);
   } catch (e) {
