@@ -16,7 +16,7 @@ import { unstable_composeUploadHandlers } from '@remix-run/node';
 
 import { useTranslation } from 'react-i18next';
 
-import { LocationMarkerIcon } from '@heroicons/react/outline';
+import { LocationMarkerIcon, PencilAltIcon } from '@heroicons/react/outline';
 
 import clsx from 'clsx';
 
@@ -35,6 +35,7 @@ import type {
   Event,
   Language,
   Perk,
+  Race,
   Sport
 } from '~/types';
 import TextField from '~/components/shared/form/TextField';
@@ -46,7 +47,7 @@ import { findSports } from '~/server/db/sports.server';
 import { findEvent, updateEvent } from '~/server/db/events.server';
 import Main from '~/components/shared/Main';
 import FormField from '~/components/shared/form/FormField';
-import { H2, H3 } from '~/components/shared/typography';
+import { H2, H3, H6 } from '~/components/shared/typography';
 
 import UploadForm from '~/components/shared/form/UploadForm';
 
@@ -57,6 +58,9 @@ import i18n from '~/server/i18n.server';
 import { badRequest } from '~/utils/misc';
 
 import { findEventPerks } from '~/server/db/perks.server';
+import { findEventRaces } from '~/server/db/races.server';
+import Label from '~/components/shared/form/Label';
+import WhenListEmpty from '~/components/shared/Empty';
 
 type ActionData = {
   errors?: {
@@ -74,6 +78,7 @@ type LoaderData = {
   imageUploadPreset: string;
   event: SportEvent | null;
   perks: Array<Perk>;
+  races: Array<Race>;
 };
 
 type SportEvent = Event & {
@@ -86,7 +91,8 @@ export const handle = {
 
 export const loader: LoaderFunction = async ({ request, params }) => {
   const sports = await findSports();
-  const event = params.eventId ? await findEvent(params.eventId) : null;
+  const eventId = params.eventId as string;
+  const event = eventId ? await findEvent(eventId) : null;
 
   const {
     MAPBOX_TOKEN,
@@ -104,7 +110,8 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     sports: sports.map((sport) => {
       return { id: sport.id, name: sport.name };
     }),
-    perks: await findEventPerks(params.eventId as string)
+    perks: await findEventPerks(eventId),
+    races: await findEventRaces(eventId)
   });
 };
 
@@ -209,7 +216,8 @@ export default function OrganizerEventRoute() {
     sports,
     mapToken,
     event,
-    perks: dbPerks
+    perks: dbPerks,
+    races
   } = useLoaderData<LoaderData>();
   const actionData = useActionData<ActionData>();
   const [showLocationPicker, setShowLocationPicker] = useState<boolean>(false);
@@ -450,13 +458,40 @@ export default function OrganizerEventRoute() {
               />
             </div>
           </div>
+        </FormField>
 
-          <FormField label={t('Distances')}>
-            <Button className="mt-8" type="button" onClick={handleShowRace}>
+        <div id="races" className="mb-2">
+          <Label
+            htmlFor="races"
+            className={clsx('mb-5 flex justify-between items-center flex-row')}
+          >
+            {t('Distances')}
+
+            <Button type="button" onClick={handleShowRace}>
               {t('Create Distance')}
             </Button>
-          </FormField>
-        </FormField>
+          </Label>
+          <div>
+            {races.map((r: any) => (
+              <div
+                key={r.id}
+                className="relative flex mb-4 justify-between items-center flex-col md:flex-row border-b p-4 last:border-none border-gray-300 dark:border-gray-300"
+              >
+                <div className={clsx('text-lg font-extrabold dark:text-white')}>
+                  {r.name}
+                </div>
+                <Button className="ml-8" type="button">
+                  <PencilAltIcon className="h-6 w-6 m-0 inline-block" />
+                </Button>
+              </div>
+            ))}
+          </div>
+          <WhenListEmpty list={races}>
+            <H6 className="text-center p-12" variant="secondary" as="p">
+              {t('No Races')}
+            </H6>
+          </WhenListEmpty>
+        </div>
 
         <Button className="mt-8" type="submit">
           {t('Create Button')}
@@ -480,8 +515,8 @@ export default function OrganizerEventRoute() {
 }
 
 type FormErrors = {
-  name?: string
-}
+  name?: string;
+};
 
 function clearForm(name: React.RefObject<HTMLInputElement> | null) {
   clearInputField(name);
@@ -515,7 +550,6 @@ function RaceDialog(props: {
     if (fetcher.type === 'done' && fetcher.data?.errors) {
       return setErrors(fetcher.data.errors as FormErrors);
     }
-
   }, [fetcher, triggerModalClose]);
 
   return (
@@ -543,10 +577,7 @@ function RaceDialog(props: {
             <fetcher.Form method="post" action="/organizer/race/create">
               <input type="hidden" name="event-id" value={eventId} />
 
-              <FormField
-                label={t('Race name')}
-                error={errors?.name}
-              >
+              <FormField label={t('Race name')} error={errors?.name}>
                 <TextField
                   id="race-name"
                   name="name"
