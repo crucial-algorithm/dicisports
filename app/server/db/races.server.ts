@@ -26,4 +26,10 @@ async function createRace(race: CreateRaceInput): Promise<Race | void> {
   });
 }
 
-export { createRace };
+async function findEventRaces(eventId: string): Promise<Race[] | void> {
+  return await db.race.findMany({
+    where: { eventId: eventId }
+  });
+}
+
+export { createRace, findEventRaces };
