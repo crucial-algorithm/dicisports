@@ -1,4 +1,4 @@
-import React, { ChangeEvent, useState } from 'react'
+import React, { ChangeEvent, useState } from 'react';
 import clsx from 'clsx';
 
 export function inputBaseClasses(className?: string) {
@@ -27,6 +27,7 @@ type Props = {
   autoComplete?: string
   disabled?: boolean
   onChange?: (value: any) => void
+  input?:  React.RefObject<HTMLInputElement>
 } & React.ComponentProps<'input'>
 const InputBase: React.FC<Props> = ({
   id,
@@ -38,7 +39,8 @@ const InputBase: React.FC<Props> = ({
   type = 'text',
   onChange,
   className,
-  readOnly = false
+  readOnly = false,
+  input
 }) => {
   const [value, setValue] = useState<string>(defaultValue || '');
 
@@ -52,13 +54,16 @@ const InputBase: React.FC<Props> = ({
       type={type}
       name={name}
       id={id}
-      value={disabled ? defaultValue : value}
+      // Hack for cleaning add races form... maybe we shouldn't have such a generic component?!?!
+      // Not using the value from useState allows to set the value of the component using ref.current.value = ''
+      value={input ? undefined : disabled ? defaultValue : value}
       placeholder={placeholder}
       disabled={disabled}
       onChange={disabled ? undefined : handleOnChange}
       autoComplete={autoComplete}
       className={inputBaseClasses(className)}
       readOnly={readOnly}
+      ref={input}
     />
   );
 };

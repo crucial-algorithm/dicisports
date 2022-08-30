@@ -2,7 +2,7 @@ import { db } from '~/server/db.server';
 import Id from '~/server/utils/Id.server';
 import { dbPerkToPerk } from '~/server/db/codecs.server';
 
-import type { CreatePerksInput, Language, Perk } from '~/types'
+import type { CreatePerksInput, Language, Perk } from '~/types';
 
 import json from './perks.json';
 

@@ -6,7 +6,8 @@ import type {
   Sport as DBSport,
   Document as DBDocument,
   Event as DBEvent,
-  Perk as DBPerk
+  Perk as DBPerk,
+  Race as DBRace
 } from '@prisma/client';
 
 type NonNullProperties<Type> = {
@@ -132,6 +133,24 @@ type CreatePerksInput = {
   eventId: string
 }
 
+type Race = {} & DBRace
+
+type CreateRaceInput = {
+  id: string
+  name: string
+  distance: number
+  createdAt?: Date
+  updatedAt?: Date
+  startTime: number
+  elevationGain: number
+  elevationLoss?: number
+  price: number
+  priceEarlyBird?: number
+  validUntil?: Date | null
+  raceDescription?: string
+  eventId: string
+}
+
 type GroupSpirit = {
   name: TranslationObject
 } & DBGroupSpirit
@@ -225,8 +244,10 @@ export {
   Document,
   Event,
   Perk,
+  Race,
   CreateEventInput,
   CreatePerksInput,
+  CreateRaceInput,
   DBRawGroup,
   LoginAction
 };

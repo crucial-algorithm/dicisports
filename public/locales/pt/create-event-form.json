@@ -21,5 +21,10 @@
   "Event description": "Descrição do evento",
   "Perks": "Comodidades",
   "Type to create new": "Adicione uma nova comodidade",
-  "Distances": "Distâncias"
+  "Distances": "Distâncias",
+  "Add Race": "Adicionar Corrida",
+  "Create Distance": "Criar Distância",
+  "Cancel": "Cancelar",
+  "Race name": "Nome",
+  "Race Name Placeholder": "Minifondo, 5k, ..."
 }
