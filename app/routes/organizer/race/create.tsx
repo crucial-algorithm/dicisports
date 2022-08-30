@@ -23,6 +23,7 @@ export const action: ActionFunction = async ({ request }) => {
     elevationGain: 20,
     elevationLoss: 20,
     price: 10,
+    priceEarlyBird: 8,
     validUntil: new Date(),
     raceDescription: 'lets run 10 miles',
     eventId: eventId

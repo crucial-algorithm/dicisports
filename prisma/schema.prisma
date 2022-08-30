@@ -197,7 +197,7 @@ model Race {
   elevationLoss     Int?            @map("elevation_loss")
   price             Float
   priceEarlyBird    Float?          @map("price_early_bird")
-  validUntil        DateTime        @map("valid_until")
+  validUntil        DateTime?       @map("valid_until")
   raceDescription   String?         @map("race_description")
   eventId           String          @map("event_id")
   event             Event           @relation(fields: [eventId], references: [id])
