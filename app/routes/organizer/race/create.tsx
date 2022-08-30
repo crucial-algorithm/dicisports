@@ -6,6 +6,8 @@ import { z, ZodError } from 'zod';
 import { createRace } from '~/server/db/races.server';
 
 import { badRequest } from '~/utils/misc';
+import type { CreateRaceInput } from '~/types';
+import Id from '~/server/utils/Id.server';
 
 export const action: ActionFunction = async ({ request }) => {
   const form = await request.formData();
@@ -13,6 +15,18 @@ export const action: ActionFunction = async ({ request }) => {
   const eventId = form.get('event-id') as string;
   const name = form.get('name') as string;
   const data = { name, eventId };
+  const raceData: CreateRaceInput = {
+    id: Id(),
+    name: name,
+    distance: 10,
+    startTime: 10,
+    elevationGain: 20,
+    elevationLoss: 20,
+    price: 10,
+    validUntil: new Date(),
+    raceDescription: 'lets run 10 miles',
+    eventId: eventId
+  };
 
   const required = { invalid_type_error: 'Field required' };
   const str5CharsOrMore = z
@@ -25,7 +39,7 @@ export const action: ActionFunction = async ({ request }) => {
 
   try {
     RaceSchema.parse(data);
-    await createRace(eventId, name);
+    await createRace(raceData);
     return redirect(`/organizer/event/${eventId}`);
   } catch (e) {
     if (!(e instanceof ZodError)) {

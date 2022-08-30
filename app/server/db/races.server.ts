@@ -1,26 +1,26 @@
 import { db } from '~/server/db.server';
 import Id from '~/server/utils/Id.server';
 
-import type { Race } from '~/types';
+import type {CreateRaceInput, Race} from '~/types';
 
-async function createRace(eventId: string, name: string): Promise<Race | void>{
+async function createRace(race: CreateRaceInput): Promise<Race | void>{
     const raceId = Id();
     const raceAt = new Date();
 
     await db.race.create({
        data:{
            id: raceId,
-           name: name,
-           distance: 10,
+           name: race.name,
+           distance: race.distance,
            createdAt: raceAt,
            updatedAt: raceAt,
-           startTime: 10,
-           elevationGain: 20,
-           elevationLoss: 20,
-           price: 10,
+           startTime: race.startTime,
+           elevationGain: race.elevationGain,
+           elevationLoss: race.elevationLoss,
+           price: race.price,
            validUntil: raceAt,
-           raceDescription: 'lets run 10 miles',
-           eventId: eventId
+           raceDescription: race.raceDescription,
+           eventId: race.eventId
        }
     });
 }
