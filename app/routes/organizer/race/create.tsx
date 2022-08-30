@@ -19,6 +19,7 @@ export const action: ActionFunction = async ({ request }) => {
   const eventId = form.get('event-id') as string;
   // const raceId = form.get('race-id') as string;
   const name = form.get('name') as string;
+  const hash = form.get('hash') as string;
 
   const raceData: CreateRaceInput = {
     id: Id(),
@@ -62,6 +63,6 @@ export const action: ActionFunction = async ({ request }) => {
       errors[error.path[0]] = error.message;
     }
 
-    return badRequest({ errors });
+    return badRequest({ errors, hash: parseInt(hash) });
   }
 };
