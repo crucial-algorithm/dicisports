@@ -549,20 +549,31 @@ function RaceDialog(props: {
   const fetcher = useFetcher();
   const [errors, setErrors] = useState<FormErrors>({});
   const name = useRef<HTMLInputElement | null>(null);
+  const form = useRef<HTMLFormElement | null>(null);
+
+  function close() {
+
+    if (form.current) {
+        form.current?.reset();
+    }
+
+    clearForm(name);
+    setErrors({});
+    triggerModalClose();
+  }
 
   useEffect(() => {
     if (fetcher.type === 'actionRedirect') {
       // redirect means success, since we redirect when race was created
-      clearForm(name);
 
-      return triggerModalClose();
+      return close();
     }
 
     if (fetcher.type === 'done' && fetcher.data?.errors) {
       return setErrors(fetcher.data.errors as FormErrors);
     }
-  }, [fetcher, triggerModalClose]);
-
+  }, [fetcher, close]);
+  console.log(errors);
   return (
     <div
       data-reach-dialog-overlay={true}
@@ -585,7 +596,7 @@ function RaceDialog(props: {
       >
         <div className="relative">
           <div className="px-6 py-2 flex flex-col items-center lg:px-24 lg:py-14">
-            <fetcher.Form method="post" action="/organizer/race/create">
+            <fetcher.Form method="post" action="/organizer/race/create" ref={form}>
               <input type="hidden" name="event-id" value={eventId} />
               <input type="hidden" name="race-id" value={race?.id} />
 
@@ -603,13 +614,13 @@ function RaceDialog(props: {
                 <Button
                   className="mt-8"
                   type="button"
-                  onClick={triggerModalClose}
+                  onClick={close}
                 >
                   {t('Cancel')}
                 </Button>
 
                 <Button className="mt-8 ml-7" type="submit">
-                  {t('Create Distance')}
+                  {race?.id? t('Update Distance') : t('Create Distance')}
                 </Button>
               </div>
             </fetcher.Form>

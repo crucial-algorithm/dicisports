@@ -8,8 +8,12 @@ import { createRace } from '~/server/db/races.server';
 import { badRequest } from '~/utils/misc';
 import type { CreateRaceInput } from '~/types';
 import Id from '~/server/utils/Id.server';
+import i18n from '~/server/i18n.server';
+
+const RESOURCES_NS = 'create-event-form';
 
 export const action: ActionFunction = async ({ request }) => {
+  const t = await i18n.getFixedT(request, RESOURCES_NS);
   const form = await request.formData();
 
   const eventId = form.get('event-id') as string;
@@ -30,10 +34,10 @@ export const action: ActionFunction = async ({ request }) => {
     eventId: eventId
   };
 
-  const required = { invalid_type_error: 'Field required' };
+  const required = { invalid_type_error: t('Field required') };
   const str5CharsOrMore = z
     .string(required)
-    .min(5, { message: 'name 5 chars or more' });
+    .min(5, { message: t('Min 5 chars') });
   const RaceSchema = z.object({
     name: str5CharsOrMore
     // elevationGain: z.number().nonnegative() TODO: add error message

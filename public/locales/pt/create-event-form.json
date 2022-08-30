@@ -24,8 +24,11 @@
   "Distances": "Distâncias",
   "Add Race": "Adicionar Corrida",
   "Create Distance": "Criar Distância",
+  "Update Distance": "Guardar",
   "Cancel": "Cancelar",
   "Race name": "Nome",
   "Race Name Placeholder": "Minifondo, 5k, ...",
-  "No Races": "Clica no botão \"Criar Distância\" e adiciona as várias distâncias que irão decorrer no evento"
+  "No Races": "Clica no botão \"Criar Distância\" e adiciona as várias distâncias que irão decorrer no evento",
+  "Field required": "Campo obrigatório",
+  "Min 5 chars": "O nome tem de ter 5+ letras"
 }
