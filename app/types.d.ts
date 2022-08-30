@@ -139,14 +139,14 @@ type CreateRaceInput = {
   id: string
   name: string
   distance: number
-  createdAt?: Date | string
-  updatedAt?: Date | string
+  createdAt?: Date
+  updatedAt?: Date
   startTime: number
   elevationGain: number
   elevationLoss?: number
   price: number
   priceEarlyBird?: number
-  validUntil?: Date | string | null
+  validUntil?: Date | null
   raceDescription?: string
   eventId: string
 }
