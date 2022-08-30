@@ -19,7 +19,7 @@ async function createRace(race: CreateRaceInput): Promise<Race | void> {
       elevationLoss: race.elevationLoss,
       price: race.price,
       priceEarlyBird: race.priceEarlyBird,
-      validUntil: raceAt,
+      validUntil: race.validUntil,
       raceDescription: race.raceDescription,
       eventId: race.eventId
     }

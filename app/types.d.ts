@@ -146,7 +146,7 @@ type CreateRaceInput = {
   elevationLoss?: number
   price: number
   priceEarlyBird?: number
-  validUntil?: Date | string
+  validUntil?: Date | string | null
   raceDescription?: string
   eventId: string
 }
