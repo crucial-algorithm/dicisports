@@ -5,18 +5,15 @@ import InputBase from '~/components/shared/form/InputBase';
 import HTMLId from '~/utils/HTMLId';
 
 type DatePickerOptions = {
-  name: string
-  label: string
-  date: Date | null | undefined
-} & React.ComponentProps<'input'>
+  name: string;
+  label: string;
+  date: Date | null | undefined;
+} & React.ComponentProps<'input'>;
 
-export default function BasicDatePicker({
-  name,
-  label,
-  date = null
-}: DatePickerOptions) {
+export default function BasicDatePicker({ name, label }: DatePickerOptions) {
+  const date = new Date();
   const [value, setValue] = React.useState<string>(
-    date ? date.toISOString().split('T')[0] : ''
+    date.toISOString().split('T')[0]
   );
   const id = HTMLId();
 

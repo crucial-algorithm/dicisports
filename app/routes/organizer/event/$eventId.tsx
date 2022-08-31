@@ -339,7 +339,6 @@ export default function OrganizerEventRoute() {
               label={t('Date')}
               name="date"
               date={event?.startAt}
-              // defaultValue={} TODO: Add default date
             />
           </FormField>
 
@@ -489,14 +488,8 @@ export default function OrganizerEventRoute() {
                 <div className={clsx('text-lg font-extrabold dark:text-white')}>
                   {r.name}
                 </div>
-                <Button
-                  className="ml-8"
-                  type="button"
-                  { /* eslint-disable-next-line react/jsx-no-bind */ }
-                  onClick={() => {
-                    handleUpdateRace(r);
-                  }}
-                >
+                { /* eslint-disable-next-line react/jsx-no-bind */ }
+                <Button className="ml-8" type="button" onClick={() => {handleUpdateRace(r);}}>
                   <PencilAltIcon className="h-6 w-6 m-0 inline-block" />
                 </Button>
               </div>
@@ -558,8 +551,6 @@ function RaceDialog(props: {
   const fetcher = useFetcher();
   const [errors, setErrors] = useState<FormErrors>({});
   const name = useRef<HTMLInputElement | null>(null);
-
-  console.log('refresh', race?.name);
 
   const close = useCallback(() => {
     clearForm(name);
