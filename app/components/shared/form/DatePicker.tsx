@@ -10,10 +10,13 @@ type DatePickerOptions = {
   date: Date | null | undefined;
 } & React.ComponentProps<'input'>;
 
-export default function BasicDatePicker({ name, label }: DatePickerOptions) {
-  const date = new Date();
+export default function BasicDatePicker({
+  name,
+  label,
+  date = null
+}: DatePickerOptions) {
   const [value, setValue] = React.useState<string>(
-    date.toISOString().split('T')[0]
+    date ? date.toISOString().split('T')[0] : ''
   );
   const id = HTMLId();
 
