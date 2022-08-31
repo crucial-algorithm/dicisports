@@ -7,7 +7,7 @@ import {
 } from 'remix';
 
 import * as React from 'react';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import mapBoxGlCss from 'mapbox-gl/dist/mapbox-gl.css';
 
@@ -63,6 +63,7 @@ import Label from '~/components/shared/form/Label';
 import WhenListEmpty from '~/components/shared/Empty';
 
 type ActionData = {
+  hash: number;
   errors?: {
     name?: string;
   };
@@ -221,7 +222,11 @@ export default function OrganizerEventRoute() {
   } = useLoaderData<LoaderData>();
   const actionData = useActionData<ActionData>();
   const [showLocationPicker, setShowLocationPicker] = useState<boolean>(false);
-  const [showRacesDialog, setShowRacesDialog] = useState<boolean>(false);
+  const [showRacesDialog, setShowRacesDialog] = useState<{
+    show: boolean;
+    hash: number;
+    race?: Race;
+  }>({ show: false, hash: 0 });
   const [perks, setPerks] = useState<Array<StrippedPerk>>(dbPerks);
   const [location, setLocation] = useState<DiciLocation | null>(
     event.address
@@ -240,12 +245,16 @@ export default function OrganizerEventRoute() {
     setShowLocationPicker(true);
   }
 
-  function handleShowRace() {
-    setShowRacesDialog(true);
+  function handleCreateRace() {
+    setShowRacesDialog({ show: true, hash: Date.now() });
+  }
+
+  function handleUpdateRace(race: Race) {
+    setShowRacesDialog({ show: true, race, hash: Date.now() });
   }
 
   function handleCloseRace() {
-    setShowRacesDialog(false);
+    setShowRacesDialog({ show: false, hash: 0 });
   }
 
   function handleCloseMap(location: DiciLocation | null) {
@@ -330,7 +339,6 @@ export default function OrganizerEventRoute() {
               label={t('Date')}
               name="date"
               date={event?.startAt}
-              // defaultValue={} TODO: Add default date
             />
           </FormField>
 
@@ -467,7 +475,7 @@ export default function OrganizerEventRoute() {
           >
             {t('Distances')}
 
-            <Button type="button" onClick={handleShowRace}>
+            <Button type="button" onClick={handleCreateRace}>
               {t('Create Distance')}
             </Button>
           </Label>
@@ -480,7 +488,8 @@ export default function OrganizerEventRoute() {
                 <div className={clsx('text-lg font-extrabold dark:text-white')}>
                   {r.name}
                 </div>
-                <Button className="ml-8" type="button">
+                { /* eslint-disable-next-line react/jsx-no-bind */ }
+                <Button className="ml-8" type="button" onClick={() => {handleUpdateRace(r);}}>
                   <PencilAltIcon className="h-6 w-6 m-0 inline-block" />
                 </Button>
               </div>
@@ -499,9 +508,11 @@ export default function OrganizerEventRoute() {
       </UploadForm>
 
       <RaceDialog
-        isOpen={showRacesDialog}
+        isOpen={showRacesDialog.show}
         triggerModalClose={handleCloseRace}
         eventId={event.id}
+        race={showRacesDialog.race}
+        hash={showRacesDialog.hash}
       />
 
       <MapDialog
@@ -532,25 +543,36 @@ function RaceDialog(props: {
   isOpen: boolean;
   triggerModalClose: () => void;
   eventId: string;
+  race?: Race;
+  hash: number;
 }) {
   const { t } = useTranslation('create-event-form');
-  const { isOpen, triggerModalClose, eventId } = props;
+  const { isOpen, triggerModalClose, eventId, race, hash } = props;
   const fetcher = useFetcher();
   const [errors, setErrors] = useState<FormErrors>({});
   const name = useRef<HTMLInputElement | null>(null);
 
+  const close = useCallback(() => {
+    clearForm(name);
+    setErrors({});
+    triggerModalClose();
+  }, [triggerModalClose]);
+
   useEffect(() => {
     if (fetcher.type === 'actionRedirect') {
       // redirect means success, since we redirect when race was created
-      clearForm(name);
 
-      return triggerModalClose();
+      return close();
     }
 
-    if (fetcher.type === 'done' && fetcher.data?.errors) {
+    if (
+      fetcher.type === 'done' &&
+      fetcher.data?.errors &&
+      fetcher.data?.hash === hash
+    ) {
       return setErrors(fetcher.data.errors as FormErrors);
     }
-  }, [fetcher, triggerModalClose]);
+  }, [fetcher, close, hash]);
 
   return (
     <div
@@ -572,10 +594,12 @@ function RaceDialog(props: {
           }
         )}
       >
-        <div className="relative">
+        <div className="relative" key={hash}>
           <div className="px-6 py-2 flex flex-col items-center lg:px-24 lg:py-14">
             <fetcher.Form method="post" action="/organizer/race/create">
               <input type="hidden" name="event-id" value={eventId} />
+              <input type="hidden" name="race-id" value={race?.id} />
+              <input type="hidden" name="hash" value={hash} />
 
               <FormField label={t('Race name')} error={errors?.name}>
                 <TextField
@@ -583,20 +607,17 @@ function RaceDialog(props: {
                   name="name"
                   placeholder={t('Race Name Placeholder')}
                   input={name}
+                  defaultValue={race?.name}
                 />
               </FormField>
 
               <div className="w-full m-auto flex flex-row justify-begin gap-4 md:w-full md:grid-flow-col md:grid-rows-1">
-                <Button
-                  className="mt-8"
-                  type="button"
-                  onClick={triggerModalClose}
-                >
+                <Button className="mt-8" type="button" onClick={close}>
                   {t('Cancel')}
                 </Button>
 
                 <Button className="mt-8 ml-7" type="submit">
-                  {t('Create Distance')}
+                  {race?.id ? t('Update Distance') : t('Create Distance')}
                 </Button>
               </div>
             </fetcher.Form>

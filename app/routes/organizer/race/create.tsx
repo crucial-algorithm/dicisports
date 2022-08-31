@@ -3,21 +3,26 @@ import { redirect } from 'remix';
 
 import { z, ZodError } from 'zod';
 
-import { createRace } from '~/server/db/races.server';
+import { createRace, updateRace } from '~/server/db/races.server';
 
 import { badRequest } from '~/utils/misc';
 import type { CreateRaceInput } from '~/types';
-import Id from '~/server/utils/Id.server';
+import i18n from '~/server/i18n.server';
+
+const RESOURCES_NS = 'create-event-form';
 
 export const action: ActionFunction = async ({ request }) => {
+  const t = await i18n.getFixedT(request, RESOURCES_NS);
   const form = await request.formData();
 
   const eventId = form.get('event-id') as string;
+  const raceId = form.get('race-id') as string;
   const name = form.get('name') as string;
-  const data = { name, eventId };
+  const hash = form.get('hash') as string;
+
   const raceData: CreateRaceInput = {
-    id: Id(),
-    name: name,
+    id: raceId,
+    name,
     distance: 10,
     startTime: 10,
     elevationGain: 20,
@@ -26,21 +31,21 @@ export const action: ActionFunction = async ({ request }) => {
     priceEarlyBird: 8,
     validUntil: null,
     raceDescription: 'lets run 10 miles',
-    eventId: eventId
+    eventId
   };
 
-  const required = { invalid_type_error: 'Field required' };
+  const required = { invalid_type_error: t('Field required') };
   const str5CharsOrMore = z
     .string(required)
-    .min(5, { message: 'name 5 chars or more' });
+    .min(5, { message: t('Min 5 chars') });
   const RaceSchema = z.object({
     name: str5CharsOrMore
     // elevationGain: z.number().nonnegative() TODO: add error message
   });
 
   try {
-    RaceSchema.parse(data);
-    await createRace(raceData);
+    RaceSchema.parse(raceData);
+    raceId? await updateRace(raceData): await createRace(raceData);
     return redirect(`/organizer/event/${eventId}`);
   } catch (e) {
     if (!(e instanceof ZodError)) {
@@ -57,6 +62,6 @@ export const action: ActionFunction = async ({ request }) => {
       errors[error.path[0]] = error.message;
     }
 
-    return badRequest({ errors });
+    return badRequest({ errors, hash: parseInt(hash) });
   }
 };
