@@ -7,8 +7,6 @@ on:
 
 env:
   FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
-  APP_PROD: diciprd
-  APP_STAGING: dicistg
 
 jobs:
   build:
@@ -81,7 +79,7 @@ jobs:
         uses: superfly/flyctl-actions@1.1
         with:
           args:
-            'deploy -a ${{ APP_PROD }} -i registry.fly.io/${{ APP_PROD }}:${{ github.sha }}
+            'deploy -a diciprd -i registry.fly.io/diciprd:${{ github.sha }}
             --strategy rolling'
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
@@ -91,7 +89,7 @@ jobs:
         uses: superfly/flyctl-actions@1.1
         with:
           args:
-            'deploy -a ${{ APP_STAGING }} -i registry.fly.io/${{ APP_STAGING }}:${{ github.sha }}
+            'deploy -a dicistg -i registry.fly.io/dicistg:${{ github.sha }}
             --strategy rolling'
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
