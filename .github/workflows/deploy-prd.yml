@@ -3,15 +3,26 @@ on:
   push:
     branches:
       - master
+      - staging
 
 env:
   - FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
 
 jobs:
-  name: Deploy app
-  runs-on: ubuntu-latest
-  steps:
-    - uses: actions/checkout@v2
-    - uses: superfly/flyctl-actions/setup-flyctl@master
-      with:
-        args: "deploy --app diciprd --remote-only"
+  build-and-deploy:
+    name: Build and deploy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - run: flyctl -a our-app-staging deploy --remote-only
+        if: github.ref == 'refs/heads/develop'
+        env:
+          - FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+      - run: flyctl -a our-app-production deploy --remote-only
+        if: github.ref == 'refs/heads/main'
+        env:
+          - FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
