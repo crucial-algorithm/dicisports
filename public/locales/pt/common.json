@@ -20,13 +20,5 @@
   "Drag Map to Choose a Location Hint": "Arraste o mapa até à localização pretendida",
   "Pick Location Button": "Escolher local",
 
-  "No results found": "Nenhum resultado encontrado!",
-
-  "No Races": "Clica no botão \"Criar Distância\" e adiciona as várias distâncias que irão decorrer no evento",
-  "Field required": "Campo obrigatório",
-  "Min 5 chars": "O nome tem de ter 5+ letras",
-  "Future Date": "A data tem de estar no futuro",
-  "Elevation Positive": "Elevação tem de ser positiva",
-  "Elevation Negative": "Elevação tem de ser negativa",
-  "Positive Number": "Insira um número positivo"
+  "No results found": "Nenhum resultado encontrado!"
 }

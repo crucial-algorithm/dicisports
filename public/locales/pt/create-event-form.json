@@ -26,6 +26,7 @@
   "Create Distance": "Criar Distância",
   "Update Distance": "Guardar",
   "Cancel": "Cancelar",
+  "No Races": "Clica no botão \"Criar Distância\" e adiciona as várias distâncias que irão decorrer no evento",
   "Race name": "Nome",
   "Race Name Placeholder": "Minifondo, 5k, ...",
   "Distance": "Distância (KM)",
@@ -40,5 +41,12 @@
   "Price Early Bird Placeholder": "(Opcional)",
   "Race Description": "Descrição da corrida (Opcional)",
   "Start At": "Hora de partida",
-  "Valid Until": "Válido até"
+  "Valid Until": "Válido até",
+
+  "Field required": "Campo obrigatório",
+  "Min 5 chars": "O nome tem de ter 5+ letras",
+  "Future Date": "A data tem de estar no futuro",
+  "Elevation Positive": "Elevação tem de ser positiva",
+  "Elevation Negative": "Elevação tem de ser negativa",
+  "Positive Number": "Insira um número positivo"
 }

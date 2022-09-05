@@ -9,7 +9,7 @@ import { badRequest, hoursMinutesToTimeOfDay } from '~/utils/misc';
 import type { CreateRaceInput } from '~/types';
 import i18n from '~/server/i18n.server';
 
-const RESOURCES_NS = 'common';
+const RESOURCES_NS = 'create-event-form';
 
 export const action: ActionFunction = async ({ request }) => {
   const t = await i18n.getFixedT(request, RESOURCES_NS);
