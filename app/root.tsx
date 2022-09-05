@@ -47,15 +47,12 @@ import { Navbar } from '~/components/NavBar';
 
 import TransitionIndicator from '~/components/shared/TransitionIndicator';
 
+import Config from '~/server/config.server';
 
 import vendorsCss from './styles/vendors.css';
 import mainCss from './styles/main.css';
 import tailwind from './styles/tailwind.css';
 
-// TODO: can't find a way to set this value client side, globally, using config
-setConfig({
-  cloudName: 'dicisports'
-});
 
 export const links: LinksFunction = () => {
   return [
@@ -95,6 +92,7 @@ export const handle: KCDHandle & { id: string, i18n: string[] } = {
 
 export type LoaderData = {
   user: User | null
+  ENV: { CLOUDINARY_CLOUD_NAME: string }
   requestInfo: {
     origin: string
     path: string
@@ -132,6 +130,9 @@ export const loader: LoaderFunction = async ({ request }) => {
 
   const data: LoaderData = {
     user,
+    ENV: {
+      CLOUDINARY_CLOUD_NAME: Config().CLOUDINARY_CLOUD_NAME
+    },
     requestInfo: {
       origin: getDomainUrl(request),
       path: new URL(request.url).pathname,
@@ -231,8 +232,14 @@ function Html({
 }) {
   const [theme] = useTheme();
   const { i18n } = useTranslation();
+  const data = useLoaderData<LoaderData>();
 
   useChangeLanguage(lang);
+  // script bellow setting window.ENV is not actually being used; Just keeping
+  // in case we need other vars to be available and for debugging in production
+  setConfig({
+    cloudName: data.ENV.CLOUDINARY_CLOUD_NAME
+  });
 
   return (
     <html lang={lang} className={clsx(theme, 'set-color-team-current-red')} dir={i18n.dir()}>
@@ -249,6 +256,13 @@ function Html({
         <Navbar />
         <Outlet />
         <ScrollRestoration />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `window.ENV = ${JSON.stringify(
+              data.ENV
+            )}`
+          }}
+        />
         <Scripts />
         {process.env.NODE_ENV === 'development' && <LiveReload />}
       </body>
