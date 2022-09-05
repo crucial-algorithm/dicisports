@@ -3,9 +3,12 @@ on:
   push:
     branches:
       - master
+      - staging
 
 env:
   FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+  APP_PROD: diciprd
+  APP_STAGING: dicistg
 
 jobs:
   build:
@@ -73,11 +76,22 @@ jobs:
       - name: ⬇️ Checkout repo
         uses: actions/checkout@v2
 
-      - name: 🚀 Deploy
+      - name: 🚀 Deploy Production
+        if: ${{ github.ref == 'refs/heads/master' && github.event_name == 'push' }}
         uses: superfly/flyctl-actions@1.1
         with:
           args:
-            'deploy -a diciprd -i registry.fly.io/diciprd:${{ github.sha }}
+            'deploy -a ${{ APP_PROD }} -i registry.fly.io/${{ APP_PROD }}:${{ github.sha }}
+            --strategy rolling'
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+      - name: 🚀 Deploy Staging
+        if: ${{ github.ref == 'refs/heads/staging' && github.event_name == 'push' }}
+        uses: superfly/flyctl-actions@1.1
+        with:
+          args:
+            'deploy -a ${{ APP_STAGING }} -i registry.fly.io/${{ APP_STAGING }}:${{ github.sha }}
             --strategy rolling'
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
