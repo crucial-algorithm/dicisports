@@ -62,6 +62,7 @@ import { findEventRaces } from '~/server/db/races.server';
 import Label from '~/components/shared/form/Label';
 import WhenListEmpty from '~/components/shared/Empty';
 import HourOfDay from '~/components/HourOfDay';
+import { Spacer } from '~/components/shared/Spacer';
 
 type ActionData = {
   hash: number;
@@ -309,7 +310,7 @@ export default function OrganizerEventRoute() {
             <TextField
               name="name"
               id="event-name"
-              placeholder="Ex: Biclas e Borgas"
+              placeholder={t('Event Name')}
               defaultValue={event.name || ''}
             />
           </FormField>
@@ -421,7 +422,7 @@ export default function OrganizerEventRoute() {
             </div>
           </FormField>
 
-          <FormField label="">
+          <FormField label={t('Description')}>
             <div className="mt-1 relative rounded-md shadow-sm">
               <textarea
                 name="description"
@@ -601,6 +602,7 @@ function RaceDialog(props: {
     >
       <div
         aria-modal={true}
+        aria-label={t('Distance Modal')}
         className={clsx(
           'w-5/6',
           'bg-white dark:bg-gray-900 border-2 border-black dark:border-white rounded-lg font-extrabold',
@@ -616,6 +618,9 @@ function RaceDialog(props: {
             action="/organizer/race/create"
             className="px-6 py-2 flex flex-col lg:px-24 lg:py-14"
           >
+            <H3 className="w-full md:w-112 text-left">{t('Distance Modal')}</H3>
+            <Spacer size="2xs" />
+
             <input type="hidden" name="event-id" value={eventId} />
             <input type="hidden" name="race-id" value={race?.id} />
             <input type="hidden" name="hash" value={hash} />
@@ -648,7 +653,7 @@ function RaceDialog(props: {
             <FormField
               label={t('Start At')}
               id="race-time-of-day"
-              className="w-80 w-full"
+              className="w-80"
               error={errors?.startTime}
             >
               <HourOfDay hour={hour} minute={minute} />
@@ -717,7 +722,7 @@ function RaceDialog(props: {
               </FormField>
             </div>
 
-            <FormField label="">
+            <FormField label={t('Description')}>
               <div className="mt-1 relative rounded-md shadow-sm">
                 <textarea
                   name="description"
