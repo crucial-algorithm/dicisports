@@ -536,6 +536,7 @@ export default function OrganizerEventRoute() {
 type FormErrors = {
   name?: string;
   distance?: string;
+  startTime?: string;
   elevationGain?: string;
   elevationLoss?: string;
   price?: string;
@@ -567,6 +568,7 @@ function RaceDialog(props: {
   const [hour, minute] = timeOfDayToHoursMinutes(race?.startTime as number);
   const name = useRef<HTMLInputElement | null>(null);
 
+  console.log(race);
   const close = useCallback(() => {
     clearForm(name);
     setErrors({});
@@ -599,9 +601,8 @@ function RaceDialog(props: {
     >
       <div
         aria-modal={true}
-        aria-label={t('Filters')}
         className={clsx(
-          'w-5/6 max-w-2xl',
+          'w-5/6 max-w-lg',
           'bg-white dark:bg-gray-900 border-2 border-black dark:border-white rounded-lg font-extrabold',
           {
             'hidden ': !isOpen,
@@ -610,144 +611,139 @@ function RaceDialog(props: {
         )}
       >
         <div className="relative" key={hash}>
-          <div className="px-6 py-2 flex flex-col items-center lg:px-24 lg:py-14">
-            <fetcher.Form method="post" action="/organizer/race/create">
-              <input type="hidden" name="event-id" value={eventId} />
-              <input type="hidden" name="race-id" value={race?.id} />
-              <input type="hidden" name="hash" value={hash} />
+          <fetcher.Form
+            method="post"
+            action="/organizer/race/create"
+            className="px-6 py-2 flex flex-col lg:px-24 lg:py-14"
+          >
+            <input type="hidden" name="event-id" value={eventId} />
+            <input type="hidden" name="race-id" value={race?.id} />
+            <input type="hidden" name="hash" value={hash} />
 
-              <FormField label={t('Race name')} error={errors?.name}>
-                <TextField
-                  id="race-name"
-                  name="name"
-                  placeholder={t('Race Name Placeholder')}
-                  input={name}
-                  defaultValue={race?.name}
-                />
-              </FormField>
+            <FormField
+              label={t('Race name')}
+              error={errors?.name}
+            >
+              <TextField
+                id="race-name"
+                name="name"
+                placeholder={t('Race Name Placeholder')}
+                input={name}
+                defaultValue={race?.name}
+              />
+            </FormField>
 
-              <div className="flex flex-col md:flex flex-row">
-                <FormField
-                  label={t('Distance')}
-                  className="basis-1/3"
-                  error={errors?.distance}
-                >
-                  <TextField
-                    id="race-distance"
-                    name="distance"
-                    type="number"
-                    placeholder={t('Distance Placeholder')}
-                    className="basis-1/3"
-                    defaultValue={race?.distance}
-                  ></TextField>
-                </FormField>
+            <FormField label={t('Distance')} error={errors?.distance} className="w-full">
+              <TextField
+                id="race-distance"
+                name="distance"
+                type="number"
+                className="w-44"
+                placeholder={t('Distance Placeholder')}
+                defaultValue={race?.distance}
+              ></TextField>
+            </FormField>
 
-                <FormField
-                  label={t('Start At')}
-                  id="race-time-of-day"
-                  className="w-80 pl-2"
-                >
-                  <HourOfDay hour={hour} minute={minute} />
-                </FormField>
-              </div>
+            <FormField
+              label={t('Start At')}
+              id="race-time-of-day"
+              className="w-80 w-full"
+              error={errors?.startTime}
+            >
+              <HourOfDay hour={hour} minute={minute} />
+            </FormField>
 
-              <div className="flex flex-col md:w-full m-auto flex flex-row">
-                <FormField
-                  label={t('D+')}
-                  className="md:basis-1/2"
-                  error={errors?.elevationGain}
-                >
-                  <TextField
-                    id="race-elevation-gain"
-                    name="elevation-gain"
-                    type="number"
-                    placeholder={t('D+ Placeholder')}
-                    defaultValue={race?.elevationGain}
-                  ></TextField>
-                </FormField>
-                <FormField
-                  label={t('D-')}
-                  className="md: basis-1/2"
-                  error={errors?.elevationLoss}
-                >
-                  <TextField
-                    id="race-elevation-los"
-                    name="elevation-loss"
-                    type="number"
-                    placeholder={t('D- Placeholder')}
-                    defaultValue={race?.elevationGain}
-                  ></TextField>
-                </FormField>
-              </div>
+            <FormField label={t('D+')} error={errors?.elevationGain}>
+              <TextField
+                id="race-elevation-gain"
+                name="elevation-gain"
+                type="number"
+                className="w-44"
+                placeholder={t('D+ Placeholder')}
+                defaultValue={race?.elevationGain}
+              ></TextField>
+            </FormField>
+            <FormField label={t('D-')} error={errors?.elevationLoss}>
+              <TextField
+                id="race-elevation-los"
+                name="elevation-loss"
+                type="number"
+                className="w-44"
+                placeholder={t('D- Placeholder')}
+                defaultValue={race?.elevationLoss as number}
+              ></TextField>
+            </FormField>
 
-              <FormField label={t('Price')} error={errors?.price}>
-                <TextField
-                  id="race-price"
-                  name="price"
-                  type="number"
-                  placeholder={t('Price Placeholder')}
-                  defaultValue={race?.price}
-                ></TextField>
-              </FormField>
+            <FormField label={t('Price')} error={errors?.price}>
+              <TextField
+                id="race-price"
+                name="price"
+                type="number"
+                className="w-44"
+                placeholder={t('Price Placeholder')}
+                defaultValue={race?.price}
+              ></TextField>
+            </FormField>
 
+            <div className="flex flex-wrap w-full">
               <FormField
                 label={t('Price Early Bird')}
-                className="basis-1/2"
                 error={errors?.priceEarlyBird}
+                className="pr-3.5"
               >
                 <TextField
                   id="race-early-bird"
                   name="price-early-bird"
                   type="number"
+                  className="w-44"
                   placeholder={t('Price Early Bird Placeholder')}
                   defaultValue={race?.priceEarlyBird as number}
                 ></TextField>
               </FormField>
 
               <FormField
-                label={''}
+                label={t('Valid Until')}
                 id="event-date"
-                className="basis-1/3 lg:basis-1/5"
+                className="w-56 w-full"
                 error={errors?.validUntil}
               >
                 <BasicDatePicker
-                  label={t('Date')}
+                  label={''}
                   name="date"
-                  date={
-                    race?.validUntil ? new Date(race.validUntil) : null
-                  }
+                  date={race?.validUntil ? new Date(race.validUntil) : null}
+                  className="w-full"
                 />
               </FormField>
+            </div>
 
-              <FormField label="">
-                <div className="mt-1 relative rounded-md shadow-sm">
-                  <textarea
-                    name="description"
-                    className={inputBaseClasses('p-10')}
-                    placeholder={t('Race Description')}
-                    defaultValue={race?.raceDescription || ''}
-                    rows={5}
-                    cols={50}
-                  />
-                </div>
-              </FormField>
-
-              <div className="w-full m-auto flex flex-row justify-begin gap-4 md:w-full md:grid-flow-col md:grid-rows-1">
-                <Button
-                  className="mt-8"
-                  variant="secondary"
-                  type="button"
-                  onClick={close}
-                >
-                  {t('Cancel')}
-                </Button>
-
-                <Button className="mt-8 ml-7" type="submit">
-                  {race?.id ? t('Update Distance') : t('Create Distance')}
-                </Button>
+            <FormField label="">
+              <div className="mt-1 relative rounded-md shadow-sm">
+                <textarea
+                  name="description"
+                  className={inputBaseClasses('p-10')}
+                  placeholder={t('Race Description')}
+                  defaultValue={race?.raceDescription || ''}
+                  rows={5}
+                  cols={50}
+                />
               </div>
-            </fetcher.Form>
-          </div>
+            </FormField>
+
+            <div className="w-full md:w-112 flex flex-wrap gap-4 justify-begin">
+              <Button
+                className="mt-8"
+                variant="secondary"
+                type="button"
+                onClick={close}
+              >
+                {t('Cancel')}
+              </Button>
+
+              <Button size="medium" className="mt-8" type="submit">
+                {race?.id ? t('Update Distance') : t('Create Distance')}
+              </Button>
+            </div>
+          </fetcher.Form>
         </div>
       </div>
     </div>

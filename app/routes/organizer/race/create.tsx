@@ -33,8 +33,8 @@ export const action: ActionFunction = async ({ request }) => {
     elevationLoss: parseInt(form.get('elevation-loss') as string) || null,
     price: parseFloat(form.get('price') as string),
     priceEarlyBird: parseFloat(form.get('price-early-bird') as string) || null,
-    validUntil: date? new Date(date) : null,
-    raceDescription: form.get('description') as string || null,
+    validUntil: date ? new Date(date) : null,
+    raceDescription: (form.get('description') as string) || null,
     eventId
   };
 
@@ -44,12 +44,43 @@ export const action: ActionFunction = async ({ request }) => {
     .min(5, { message: t('Min 5 chars') });
   const RaceSchema = z.object({
     name: str5CharsOrMore,
-    distance: z.number().positive({ message: t('Positive Number') }),
-    elevationGain: z.number().nonnegative({ message: t('Elevation Positive') }),
-    elevationLoss: z.number().nonnegative({ message: t('Elevation Positive') }).nullable(),
-    price: z.number().positive({ message: t('Positive Number') }),
-    priceEarlyBird: z.number().positive({ message: t('Positive Number') }).nullable(),
-    validUntil: z.date().min(new Date(), { message: t('Future Date') }).nullable()
+    distance: z
+      .number({
+        required_error: t('Field Required'),
+        invalid_type_error: t('Must Be Number')
+      })
+      .positive({ message: t('Positive Number') }),
+    startTime: z.number({ invalid_type_error: t('Start Time') }),
+    elevationGain: z
+      .number({
+        required_error: t('Field Required'),
+        invalid_type_error: t('Must Be Number')
+      })
+      .nonnegative({ message: t('Elevation Positive') }),
+    elevationLoss: z
+      .number({
+        required_error: t('Field Required'),
+        invalid_type_error: t('Must Be Number')
+      })
+      .nonnegative({ message: t('Elevation Positive') })
+      .nullable(),
+    price: z
+      .number({
+        required_error: t('Field Required'),
+        invalid_type_error: t('Must Be Number')
+      })
+      .positive({ message: t('Positive Number') }),
+    priceEarlyBird: z
+      .number({
+        required_error: t('Field Required'),
+        invalid_type_error: t('Must Be Number')
+      })
+      .positive({ message: t('Positive Number') })
+      .nullable(),
+    validUntil: z
+      .date()
+      .min(new Date(), { message: t('Future Date') })
+      .nullable()
   });
 
   try {

@@ -42,7 +42,7 @@ const InputBase: React.FC<Props> = ({
   readOnly = false,
   input
 }) => {
-  const [value, setValue] = useState<string>(defaultValue || '');
+  const [value, setValue] = useState<string>(defaultValue);
 
   function handleOnChange(e: ChangeEvent<HTMLInputElement>) {
     setValue(e.target.value);
