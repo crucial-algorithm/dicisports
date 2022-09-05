@@ -33,7 +33,7 @@ export const action: ActionFunction = async ({ request }) => {
     elevationLoss: parseInt(form.get('elevation-loss') as string) || null,
     price: parseFloat(form.get('price') as string),
     priceEarlyBird: parseFloat(form.get('price-early-bird') as string) || null,
-    validUntil: new Date(date),
+    validUntil: date? new Date(date) : null,
     raceDescription: form.get('description') as string || null,
     eventId
   };
@@ -48,9 +48,8 @@ export const action: ActionFunction = async ({ request }) => {
     elevationGain: z.number().nonnegative({ message: t('Elevation Positive') }),
     elevationLoss: z.number().nonnegative({ message: t('Elevation Positive') }).nullable(),
     price: z.number().positive({ message: t('Positive Number') }),
-    priceEarlyBird: z.number().positive({ message: t('Positive Number') }).nullable()
-    // validation works if u set a Date, otherwise error message pops up TODO: "Invalid Date type"
-    // validUntil: z.date().min(new Date(), { message: t('Future Date') }).nullable()
+    priceEarlyBird: z.number().positive({ message: t('Positive Number') }).nullable(),
+    validUntil: z.date().min(new Date(), { message: t('Future Date') }).nullable()
   });
 
   try {
