@@ -16,7 +16,12 @@ import { unstable_composeUploadHandlers } from '@remix-run/node';
 
 import { useTranslation } from 'react-i18next';
 
-import { LocationMarkerIcon, PencilAltIcon } from '@heroicons/react/outline';
+import {
+  LocationMarkerIcon,
+  PencilAltIcon,
+  ArrowDownIcon,
+  ArrowUpIcon
+} from '@heroicons/react/outline';
 
 import clsx from 'clsx';
 
@@ -220,7 +225,7 @@ export default function OrganizerEventRoute() {
     mapToken,
     event,
     perks: dbPerks,
-    races
+    races: dbRaces
   } = useLoaderData<LoaderData>();
   const actionData = useActionData<ActionData>();
   const [showLocationPicker, setShowLocationPicker] = useState<boolean>(false);
@@ -230,6 +235,8 @@ export default function OrganizerEventRoute() {
     race?: Race;
   }>({ show: false, hash: 0 });
   const [perks, setPerks] = useState<Array<StrippedPerk>>(dbPerks);
+  const [races, setRaces] = useState<Array<Race>>(dbRaces);
+  const [sort, setSort] = useState(false);
   const [location, setLocation] = useState<DiciLocation | null>(
     event.address
       ? {
@@ -284,6 +291,46 @@ export default function OrganizerEventRoute() {
     if (inputEl.current) {
       (inputEl.current as HTMLInputElement).value = '';
     }
+  }
+
+  function handleMoveUp(r: Race) {
+    const rs = races.sort(
+      (a: Race, b: Race) => a.displayOrder - b.displayOrder
+    );
+
+    const position = rs.findIndex((value) => value.id === r.id);
+
+    if (position === -1) {
+      return;
+    }
+
+    const previous = races[position - 1];
+    const displayOrder = previous.displayOrder;
+
+    previous.displayOrder = r.displayOrder;
+    r.displayOrder = displayOrder;
+    setRaces([...races]);
+    setSort(true);
+  }
+
+  function handleMoveDown(r: Race) {
+    const rs = races.sort(
+      (a: Race, b: Race) => a.displayOrder - b.displayOrder
+    );
+
+    const position = rs.findIndex((value) => value.id === r.id);
+
+    if (position === -1) {
+      return;
+    }
+
+    const next = races[position + 1];
+    const displayOrder = next.displayOrder;
+
+    next.displayOrder = r.displayOrder;
+    r.displayOrder = displayOrder;
+    setRaces([...races]);
+    setSort(true);
   }
 
   return (
@@ -485,23 +532,74 @@ export default function OrganizerEventRoute() {
               </Button>
             </Label>
             <div>
-              {races.map((r: any) => (
-                <div
-                  key={r.id}
-                  className="relative flex mb-4 justify-between items-center flex-col md:flex-row border-b p-4 last:border-none border-gray-300 dark:border-gray-300"
-                >
+              {races
+                .sort((a: Race, b: Race) => a.displayOrder - b.displayOrder)
+                .map((r: any) => (
                   <div
-                    className={clsx('text-lg font-extrabold dark:text-white')}
+                    key={r.id}
+                    className="relative flex mb-4 justify-between items-center flex-col md:flex-row border-b p-4 last:border-none border-gray-300 dark:border-gray-300"
                   >
-                    {r.name}
+                    <div
+                      className={clsx('text-lg font-extrabold dark:text-white')}
+                    >
+                      {r.name}
+                    </div>
+                    {/* eslint-disable-next-line react/jsx-no-bind */}
+                    <Button
+                      className="ml-8"
+                      type="button"
+                      onClick={() => {
+                        handleUpdateRace(r);
+                      }}
+                    >
+                      <PencilAltIcon className="md:h-6 w-6 m-0 inline-block" />
+                    </Button>
+                    {r.displayOrder === 1 ? (
+                      <Button
+                        className="ml-8"
+                        type="button"
+                        onClick={() => {
+                          handleMoveDown(r);
+                        }}
+                      >
+                        <ArrowDownIcon className="md:h-6 w-6 m-0 inline-block" />
+                      </Button>
+                    ) : r.displayOrder === races.length ? (
+                      <Button
+                        className="ml-8"
+                        type="button"
+                        onClick={() => {
+                          handleMoveUp(r);
+                        }}
+                      >
+                        <ArrowUpIcon className="md:h-6 w-6 m-0 inline-block" />
+                      </Button>
+                    ) : (
+                      <div>
+                        <Button
+                          className="ml-8"
+                          type="button"
+                          onClick={() => {
+                            handleMoveUp(r);
+                          }}
+                        >
+                          <ArrowUpIcon className="md:h-6 w-6 m-0 inline-block" />
+                        </Button>
+
+                        <Button
+                          className="ml-8"
+                          type="button"
+                          onClick={() => {
+                            handleMoveDown(r);
+                          }}
+                        >
+                          <ArrowDownIcon className="md:h-6 w-6 m-0 inline-block" />
+                        </Button>
+                      </div>
+                    )}
                   </div>
-                  {/* eslint-disable-next-line react/jsx-no-bind */}
-                  <Button className="ml-8" type="button" onClick={() => {handleUpdateRace(r);}}
-                  >
-                    <PencilAltIcon className="md:h-6 w-6 m-0 inline-block" />
-                  </Button>
-                </div>
-              ))}
+                ))}
+              <input type="hidden" name="sort" value={sort ? 1 : 0} />
             </div>
             <WhenListEmpty list={races}>
               <H6 className="text-center p-12" variant="secondary" as="p">
@@ -625,10 +723,7 @@ function RaceDialog(props: {
             <input type="hidden" name="race-id" value={race?.id} />
             <input type="hidden" name="hash" value={hash} />
 
-            <FormField
-              label={t('Race name')}
-              error={errors?.name}
-            >
+            <FormField label={t('Race name')} error={errors?.name}>
               <TextField
                 id="race-name"
                 name="name"
@@ -639,7 +734,11 @@ function RaceDialog(props: {
               />
             </FormField>
 
-            <FormField label={t('Distance')} error={errors?.distance} className="w-full">
+            <FormField
+              label={t('Distance')}
+              error={errors?.distance}
+              className="w-full"
+            >
               <TextField
                 id="race-distance"
                 name="distance"

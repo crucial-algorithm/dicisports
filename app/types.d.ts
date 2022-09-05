@@ -148,6 +148,7 @@ type CreateRaceInput = {
   priceEarlyBird?: number | null
   validUntil?: Date | null
   raceDescription?: string | null
+  displayOrder?: number | null
   eventId: string
 }
 

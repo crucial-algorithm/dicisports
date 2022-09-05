@@ -47,7 +47,8 @@ async function updateRace(race: CreateRaceInput): Promise<void> {
       price: race.price,
       priceEarlyBird: race.priceEarlyBird,
       validUntil: race.validUntil,
-      raceDescription: race.raceDescription
+      raceDescription: race.raceDescription,
+      displayOrder: race.displayOrder as number
     }
   });
 }
