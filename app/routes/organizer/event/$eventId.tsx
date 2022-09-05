@@ -602,7 +602,7 @@ function RaceDialog(props: {
       <div
         aria-modal={true}
         className={clsx(
-          'w-5/6 max-w-lg',
+          'w-5/6',
           'bg-white dark:bg-gray-900 border-2 border-black dark:border-white rounded-lg font-extrabold',
           {
             'hidden ': !isOpen,
@@ -629,6 +629,7 @@ function RaceDialog(props: {
                 name="name"
                 placeholder={t('Race Name Placeholder')}
                 input={name}
+                className="max-w-md"
                 defaultValue={race?.name}
               />
             </FormField>
@@ -720,7 +721,7 @@ function RaceDialog(props: {
               <div className="mt-1 relative rounded-md shadow-sm">
                 <textarea
                   name="description"
-                  className={inputBaseClasses('p-10')}
+                  className={inputBaseClasses('p-10 max-w-lg')}
                   placeholder={t('Race Description')}
                   defaultValue={race?.raceDescription || ''}
                   rows={5}
