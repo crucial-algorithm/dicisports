@@ -20,7 +20,6 @@ export const action: ActionFunction = async ({ request }) => {
   const date = form.get('date') as string;
   const hash = form.get('hash') as string;
 
-  console.log(date);
   const raceData: CreateRaceInput = {
     id: raceId,
     name: form.get('name') as string,

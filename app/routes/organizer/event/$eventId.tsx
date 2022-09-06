@@ -217,7 +217,6 @@ export default function OrganizerEventRoute() {
   type StrippedPerk = Omit<Perk, 'id' | 'eventId' | 'isDefault'> & {
     id: string | null;
   };
-
   const { t, i18n } = useTranslation('create-event-form');
   const language = i18n.language as Language;
   const {
@@ -236,7 +235,7 @@ export default function OrganizerEventRoute() {
   }>({ show: false, hash: 0 });
   const [perks, setPerks] = useState<Array<StrippedPerk>>(dbPerks);
   const [races, setRaces] = useState<Array<Race>>(dbRaces);
-  const [sort, setSort] = useState(false);
+  const [wasSorted, setWasSorted] = useState<boolean>(false);
   const [location, setLocation] = useState<DiciLocation | null>(
     event.address
       ? {
@@ -247,6 +246,7 @@ export default function OrganizerEventRoute() {
   );
   const inputEl = useRef(null);
 
+  console.log(races[races.length -1 ]);
   // Hack: while remix doesn't handle dates properly
   hackyEventRevival(event);
 
@@ -310,7 +310,7 @@ export default function OrganizerEventRoute() {
     previous.displayOrder = r.displayOrder;
     r.displayOrder = displayOrder;
     setRaces([...races]);
-    setSort(true);
+    setWasSorted(true);
   }
 
   function handleMoveDown(r: Race) {
@@ -330,7 +330,7 @@ export default function OrganizerEventRoute() {
     next.displayOrder = r.displayOrder;
     r.displayOrder = displayOrder;
     setRaces([...races]);
-    setSort(true);
+    setWasSorted(true);
   }
 
   return (
@@ -545,61 +545,35 @@ export default function OrganizerEventRoute() {
                       {r.name}
                     </div>
                     {/* eslint-disable-next-line react/jsx-no-bind */}
-                    <Button
-                      className="ml-8"
-                      type="button"
-                      onClick={() => {
-                        handleUpdateRace(r);
-                      }}
-                    >
+                    <Button className="ml-8" type="button" onClick={() => {handleUpdateRace(r);}}>
                       <PencilAltIcon className="md:h-6 w-6 m-0 inline-block" />
                     </Button>
-                    {r.displayOrder === 1 ? (
-                      <Button
-                        className="ml-8"
-                        type="button"
-                        onClick={() => {
-                          handleMoveDown(r);
-                        }}
-                      >
+                    {r.displayOrder === races[0].displayOrder ? (
+                      // eslint-disable-next-line react/jsx-no-bind
+                      <Button className="ml-8" type="button" onClick={() => {handleMoveDown(r);}}>
                         <ArrowDownIcon className="md:h-6 w-6 m-0 inline-block" />
                       </Button>
-                    ) : r.displayOrder === races.length ? (
-                      <Button
-                        className="ml-8"
-                        type="button"
-                        onClick={() => {
-                          handleMoveUp(r);
-                        }}
-                      >
+                    ) : r.displayOrder === races[races.length - 1].displayOrder ? (
+                      //eslint-disable-next-line react/jsx-no-bind
+                      <Button className="ml-8" type="button" onClick={() => {handleMoveUp(r);}}>
                         <ArrowUpIcon className="md:h-6 w-6 m-0 inline-block" />
                       </Button>
                     ) : (
                       <div>
-                        <Button
-                          className="ml-8"
-                          type="button"
-                          onClick={() => {
-                            handleMoveUp(r);
-                          }}
-                        >
+                        {/*eslint-disable-next-line react/jsx-no-bind*/}
+                        <Button className="ml-8" type="button" onClick={() => {handleMoveUp(r);}}>
                           <ArrowUpIcon className="md:h-6 w-6 m-0 inline-block" />
                         </Button>
 
-                        <Button
-                          className="ml-8"
-                          type="button"
-                          onClick={() => {
-                            handleMoveDown(r);
-                          }}
-                        >
+                        {/*eslint-disable-next-line react/jsx-no-bind*/}
+                        <Button className="ml-8" type="button" onClick={() => {handleMoveDown(r);}}>
                           <ArrowDownIcon className="md:h-6 w-6 m-0 inline-block" />
                         </Button>
                       </div>
                     )}
                   </div>
                 ))}
-              <input type="hidden" name="sort" value={sort ? 1 : 0} />
+              <input type="hidden" name="was-sorted" value={wasSorted ? 1 : 0} />
             </div>
             <WhenListEmpty list={races}>
               <H6 className="text-center p-12" variant="secondary" as="p">
@@ -667,7 +641,6 @@ function RaceDialog(props: {
   const [hour, minute] = timeOfDayToHoursMinutes(race?.startTime as number);
   const name = useRef<HTMLInputElement | null>(null);
 
-  console.log(race);
   const close = useCallback(() => {
     clearForm(name);
     setErrors({});
