@@ -17,10 +17,10 @@ import { unstable_composeUploadHandlers } from '@remix-run/node';
 import { useTranslation } from 'react-i18next';
 
 import {
-  LocationMarkerIcon,
-  PencilAltIcon,
   ArrowDownIcon,
-  ArrowUpIcon
+  ArrowUpIcon,
+  LocationMarkerIcon,
+  PencilAltIcon
 } from '@heroicons/react/outline';
 
 import clsx from 'clsx';
@@ -535,55 +535,7 @@ export default function OrganizerEventRoute() {
               </Button>
             </Label>
             <div>
-              {races
-                .sort((a: Race, b: Race) => a.displayOrder - b.displayOrder)
-                .map((r: Race, index) => (
-                  <div
-                    key={r.id}
-                    className="relative flex mb-4 justify-between items-center flex-col md:flex-row border-b p-4 last:border-none border-gray-300 dark:border-gray-300"
-                  >
-                    <div
-                      className={clsx('text-lg font-extrabold dark:text-white')}
-                    >
-                      {r.name}
-                    </div>
-                    <div>
-                      {index === 0 ? null : (
-                        <Button
-                          className="ml-6"
-                          type="button"
-                          onClick={() => {
-                            handleMoveUp(r);
-                          }}
-                        >
-                          <ArrowUpIcon className="md:h-6 w-6 m-0 inline-block" />
-                        </Button>
-                      )}
-                      {/*eslint-disable-next-line react/jsx-no-bind*/}
-                      {index === races.length - 1 ? null : (
-                        <Button
-                          className="ml-6"
-                          type="button"
-                          onClick={() => {
-                            handleMoveDown(r);
-                          }}
-                        >
-                          <ArrowDownIcon className="md:h-6 w-6 m-0 inline-block" />
-                        </Button>
-                      )}
-
-                      <Button
-                        className="ml-14"
-                        type="button"
-                        onClick={() => {
-                          handleUpdateRace(r);
-                        }}
-                      >
-                        <PencilAltIcon className="md:h-6 w-6 m-0 inline-block" />
-                      </Button>
-                    </div>
-                  </div>
-                ))}
+              <RacesList races={races} />
               <input
                 type="hidden"
                 name="was-sorted"
@@ -840,5 +792,85 @@ function RaceDialog(props: {
         </div>
       </div>
     </div>
+  );
+}
+
+
+function RacesList({ races }: { races: Race[] }) {
+  const fetcher = useFetcher();
+
+  function handleMoveUp(r: Race) {
+    fetcher.submit(
+      { },
+      {
+        method: 'post',
+        action: `/organizer/${r.id}/move-up`
+      }
+    );
+  }
+
+  function handleMoveDown(r: Race) {
+    fetcher.submit(
+      { },
+      {
+        method: 'post',
+        action: `/organizer/${r.id}/move-down`
+      }
+    );
+  }
+
+  function handleUpdateRace(r: Race) {
+  }
+
+  return (
+    <>
+      {races
+        .sort((a: Race, b: Race) => a.displayOrder - b.displayOrder)
+        .map((r: Race, index) => (
+          <div
+            key={r.id}
+            className="relative flex mb-4 justify-between items-center flex-col md:flex-row border-b p-4 last:border-none border-gray-300 dark:border-gray-300"
+          >
+            <div className={clsx('text-lg font-extrabold dark:text-white')}>
+              {r.name}
+            </div>
+            <div>
+              {index === 0 ? null : (
+                <Button
+                  className="ml-6"
+                  type="button"
+                  onClick={() => {
+                    handleMoveUp(r);
+                  }}
+                >
+                  <ArrowUpIcon className="md:h-6 w-6 m-0 inline-block" />
+                </Button>
+              )}
+              {/*eslint-disable-next-line react/jsx-no-bind*/}
+              {index === races.length - 1 ? null : (
+                <Button
+                  className="ml-6"
+                  type="button"
+                  onClick={() => {
+                    handleMoveDown(r);
+                  }}
+                >
+                  <ArrowDownIcon className="md:h-6 w-6 m-0 inline-block" />
+                </Button>
+              )}
+
+              <Button
+                className="ml-14"
+                type="button"
+                onClick={() => {
+                  handleUpdateRace(r);
+                }}
+              >
+                <PencilAltIcon className="md:h-6 w-6 m-0 inline-block" />
+              </Button>
+            </div>
+          </div>
+        ))}
+    </>
   );
 }
