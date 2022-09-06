@@ -246,7 +246,6 @@ export default function OrganizerEventRoute() {
   );
   const inputEl = useRef(null);
 
-  console.log(races[races.length -1 ]);
   // Hack: while remix doesn't handle dates properly
   hackyEventRevival(event);
 
@@ -332,6 +331,10 @@ export default function OrganizerEventRoute() {
     setRaces([...races]);
     setWasSorted(true);
   }
+
+  useEffect(() => {
+    setRaces(dbRaces);
+  }, [dbRaces]);
 
   return (
     <Main>
@@ -534,7 +537,7 @@ export default function OrganizerEventRoute() {
             <div>
               {races
                 .sort((a: Race, b: Race) => a.displayOrder - b.displayOrder)
-                .map((r: any) => (
+                .map((r: Race, index) => (
                   <div
                     key={r.id}
                     className="relative flex mb-4 justify-between items-center flex-col md:flex-row border-b p-4 last:border-none border-gray-300 dark:border-gray-300"
@@ -544,36 +547,48 @@ export default function OrganizerEventRoute() {
                     >
                       {r.name}
                     </div>
-                    {/* eslint-disable-next-line react/jsx-no-bind */}
-                    <Button className="ml-8" type="button" onClick={() => {handleUpdateRace(r);}}>
-                      <PencilAltIcon className="md:h-6 w-6 m-0 inline-block" />
-                    </Button>
-                    {r.displayOrder === races[0].displayOrder ? (
-                      // eslint-disable-next-line react/jsx-no-bind
-                      <Button className="ml-8" type="button" onClick={() => {handleMoveDown(r);}}>
-                        <ArrowDownIcon className="md:h-6 w-6 m-0 inline-block" />
-                      </Button>
-                    ) : r.displayOrder === races[races.length - 1].displayOrder ? (
-                      //eslint-disable-next-line react/jsx-no-bind
-                      <Button className="ml-8" type="button" onClick={() => {handleMoveUp(r);}}>
-                        <ArrowUpIcon className="md:h-6 w-6 m-0 inline-block" />
-                      </Button>
-                    ) : (
-                      <div>
-                        {/*eslint-disable-next-line react/jsx-no-bind*/}
-                        <Button className="ml-8" type="button" onClick={() => {handleMoveUp(r);}}>
+                    <div>
+                      {index === 0 ? null : (
+                        <Button
+                          className="ml-6"
+                          type="button"
+                          onClick={() => {
+                            handleMoveUp(r);
+                          }}
+                        >
                           <ArrowUpIcon className="md:h-6 w-6 m-0 inline-block" />
                         </Button>
-
-                        {/*eslint-disable-next-line react/jsx-no-bind*/}
-                        <Button className="ml-8" type="button" onClick={() => {handleMoveDown(r);}}>
+                      )}
+                      {/*eslint-disable-next-line react/jsx-no-bind*/}
+                      {index === races.length - 1 ? null : (
+                        <Button
+                          className="ml-6"
+                          type="button"
+                          onClick={() => {
+                            handleMoveDown(r);
+                          }}
+                        >
                           <ArrowDownIcon className="md:h-6 w-6 m-0 inline-block" />
                         </Button>
-                      </div>
-                    )}
+                      )}
+
+                      <Button
+                        className="ml-14"
+                        type="button"
+                        onClick={() => {
+                          handleUpdateRace(r);
+                        }}
+                      >
+                        <PencilAltIcon className="md:h-6 w-6 m-0 inline-block" />
+                      </Button>
+                    </div>
                   </div>
                 ))}
-              <input type="hidden" name="was-sorted" value={wasSorted ? 1 : 0} />
+              <input
+                type="hidden"
+                name="was-sorted"
+                value={wasSorted ? 1 : 0}
+              />
             </div>
             <WhenListEmpty list={races}>
               <H6 className="text-center p-12" variant="secondary" as="p">
