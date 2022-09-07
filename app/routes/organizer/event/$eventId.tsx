@@ -874,7 +874,7 @@ function RacesList(props: { races: Race[]; eventId: string }) {
         hash={showRacesDialog.hash}
       />
 
-      <DeleteDialog
+      <DeleteRaceDialog
         isOpen={deleteModalOpen.show}
         onDismiss={handleDeleteRaceClose}
         race={deleteModalOpen.race}
@@ -884,7 +884,7 @@ function RacesList(props: { races: Race[]; eventId: string }) {
   );
 }
 
-function DeleteDialog(props: {
+function DeleteRaceDialog(props: {
   isOpen: boolean;
   onDismiss: () => void;
   race?: Race;
@@ -917,7 +917,7 @@ function DeleteDialog(props: {
         <Spacer size="2xs" />
 
         <fetcher.Form method="post" action="/organizer/race/create">
-          <input type="hidden" name="actionId" value={'delete'} />
+          <input type="hidden" name="actionId" value="delete" />
           <input type="hidden" name="race-id" value={race?.id} />
           <input type="hidden" name="event-id" value={eventId} />
           <div className="flex flex-wrap gap-4">
