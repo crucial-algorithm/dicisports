@@ -660,7 +660,7 @@ function SportsGrid({
         ))}
       {new Array(8 - sports.length).fill(null).map((a, i) => (
         <a
-          href={`mailto:info@smartcitizen.pt?subject=${t(
+          href={`mailto:feedback@dicisports.com?subject=${t(
             'Add Sport Mail Subject'
           )}`}
           key={i}
