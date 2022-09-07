@@ -17,7 +17,8 @@
   "Hint For Picture 3": "Uma bela paisagem ilustrativa",
   "Hint For Picture 4": "Linha de partida ou 'comes e bebes'",
   "Hint For Picture 5": "Banquete",
-  "Create Button": "Guardar Evento",
+  "Create Button": "Criar Evento",
+  "Save Button": "Guardar Evento",
   "Event not found": "Estranho... não encontramos o evento que pretende actualizar!",
   "Event description": "A edição deste ano será a melhor de sempre...",
   "Perks": "Comodidades",
@@ -32,6 +33,7 @@
   "Race name": "Nome",
   "Race Name Placeholder": "Minifondo, 5k, ...",
   "Distance": "Distância (KM)",
+  "Distances": "Distâncias",
   "Distance Placeholder": "Ex: 5",
   "D+": "Ganho de elevação",
   "D+ Placeholder": "Ex: 10",
@@ -52,5 +54,10 @@
   "Future Date": "A data tem de estar no futuro",
   "Elevation Positive": "Elevação tem de ser positiva",
   "Elevation Negative": "Elevação tem de ser negativa",
-  "Positive Number": "Insira um número positivo"
+  "Positive Number": "Insira um número positivo",
+
+  "Delete": "Apagar Distância",
+  "Delete Race X": "Apagar a corrida \"{{name}}\"",
+  "Are you sure you want to delete race?": "Tem a certeza que quer apagar a corrida ? Não há como voltar atrás",
+  "Ignore": "Ignorar"
 }
