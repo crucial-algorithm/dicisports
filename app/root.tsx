@@ -244,6 +244,7 @@ function Html({
   return (
     <html lang={lang} className={clsx(theme, 'set-color-team-current-red')} dir={i18n.dir()}>
       <head>
+        <script defer data-domain="dicisports.com" src="https://plausible.io/js/plausible.js" />
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width,initial-scale=1" />
         <title>{title}</title>
