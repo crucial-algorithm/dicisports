@@ -807,7 +807,7 @@ function RacesList(props: { races: Race[], eventId: string }) {
 
   function handleMoveUp(r: Race) {
     fetcher.submit(
-      { id: r.id },
+      { },
       {
         method: 'post',
         action: `/organizer/${r.id}/move-up`
@@ -817,7 +817,7 @@ function RacesList(props: { races: Race[], eventId: string }) {
 
   function handleMoveDown(r: Race) {
     fetcher.submit(
-      { id: r.id },
+      { },
       {
         method: 'post',
         action: `/organizer/${r.id}/move-down`

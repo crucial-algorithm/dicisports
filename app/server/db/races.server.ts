@@ -60,34 +60,40 @@ async function updateRace(race: CreateRaceInput): Promise<void> {
   });
 }
 
-async function updateDisplayOrderUp(current: Race, previous: Race): Promise<void> {
+async function updateDisplayOrderUp(
+  current: Race,
+  previous: Race
+): Promise<void> {
   await db.race.update({
     where: { id: current.id },
     data: {
-      displayOrder: current.displayOrder - 1
+      displayOrder: previous.displayOrder
     }
   });
 
   await db.race.update({
     where: { id: previous.id },
     data: {
-      displayOrder: previous.displayOrder + 1
+      displayOrder: current.displayOrder
     }
   });
 }
 
-async function updateDisplayOrderDown(current: Race, next: Race): Promise<void> {
+async function updateDisplayOrderDown(
+  current: Race,
+  next: Race
+): Promise<void> {
   await db.race.update({
     where: { id: current.id },
     data: {
-      displayOrder: current.displayOrder + 1
+      displayOrder: next.displayOrder
     }
   });
 
   await db.race.update({
     where: { id: next.id },
     data: {
-      displayOrder: next.displayOrder - 1
+      displayOrder: current.displayOrder
     }
   });
 }
