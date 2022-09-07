@@ -16,7 +16,12 @@ import { unstable_composeUploadHandlers } from '@remix-run/node';
 
 import { useTranslation } from 'react-i18next';
 
-import { LocationMarkerIcon, PencilAltIcon } from '@heroicons/react/outline';
+import {
+  ArrowDownIcon,
+  ArrowUpIcon,
+  LocationMarkerIcon,
+  PencilAltIcon
+} from '@heroicons/react/outline';
 
 import clsx from 'clsx';
 
@@ -212,7 +217,6 @@ export default function OrganizerEventRoute() {
   type StrippedPerk = Omit<Perk, 'id' | 'eventId' | 'isDefault'> & {
     id: string | null;
   };
-
   const { t, i18n } = useTranslation('create-event-form');
   const language = i18n.language as Language;
   const {
@@ -220,7 +224,7 @@ export default function OrganizerEventRoute() {
     mapToken,
     event,
     perks: dbPerks,
-    races
+    races: dbRaces
   } = useLoaderData<LoaderData>();
   const actionData = useActionData<ActionData>();
   const [showLocationPicker, setShowLocationPicker] = useState<boolean>(false);
@@ -230,6 +234,8 @@ export default function OrganizerEventRoute() {
     race?: Race;
   }>({ show: false, hash: 0 });
   const [perks, setPerks] = useState<Array<StrippedPerk>>(dbPerks);
+  const [races, setRaces] = useState<Array<Race>>(dbRaces);
+  const [wasSorted, setWasSorted] = useState<boolean>(false);
   const [location, setLocation] = useState<DiciLocation | null>(
     event.address
       ? {
@@ -285,6 +291,50 @@ export default function OrganizerEventRoute() {
       (inputEl.current as HTMLInputElement).value = '';
     }
   }
+
+  function handleMoveUp(r: Race) {
+    const rs = races.sort(
+      (a: Race, b: Race) => a.displayOrder - b.displayOrder
+    );
+
+    const position = rs.findIndex((value) => value.id === r.id);
+
+    if (position === -1) {
+      return;
+    }
+
+    const previous = races[position - 1];
+    const displayOrder = previous.displayOrder;
+
+    previous.displayOrder = r.displayOrder;
+    r.displayOrder = displayOrder;
+    setRaces([...races]);
+    setWasSorted(true);
+  }
+
+  function handleMoveDown(r: Race) {
+    const rs = races.sort(
+      (a: Race, b: Race) => a.displayOrder - b.displayOrder
+    );
+
+    const position = rs.findIndex((value) => value.id === r.id);
+
+    if (position === -1) {
+      return;
+    }
+
+    const next = races[position + 1];
+    const displayOrder = next.displayOrder;
+
+    next.displayOrder = r.displayOrder;
+    r.displayOrder = displayOrder;
+    setRaces([...races]);
+    setWasSorted(true);
+  }
+
+  useEffect(() => {
+    setRaces(dbRaces);
+  }, [dbRaces]);
 
   return (
     <Main>
@@ -485,23 +535,12 @@ export default function OrganizerEventRoute() {
               </Button>
             </Label>
             <div>
-              {races.map((r: any) => (
-                <div
-                  key={r.id}
-                  className="relative flex mb-4 justify-between items-center flex-col md:flex-row border-b p-4 last:border-none border-gray-300 dark:border-gray-300"
-                >
-                  <div
-                    className={clsx('text-lg font-extrabold dark:text-white')}
-                  >
-                    {r.name}
-                  </div>
-                  {/* eslint-disable-next-line react/jsx-no-bind */}
-                  <Button className="ml-8" type="button" onClick={() => {handleUpdateRace(r);}}
-                  >
-                    <PencilAltIcon className="md:h-6 w-6 m-0 inline-block" />
-                  </Button>
-                </div>
-              ))}
+              <RacesList races={races} eventId={event.id} />
+              <input
+                type="hidden"
+                name="was-sorted"
+                value={wasSorted ? 1 : 0}
+              />
             </div>
             <WhenListEmpty list={races}>
               <H6 className="text-center p-12" variant="secondary" as="p">
@@ -569,7 +608,6 @@ function RaceDialog(props: {
   const [hour, minute] = timeOfDayToHoursMinutes(race?.startTime as number);
   const name = useRef<HTMLInputElement | null>(null);
 
-  console.log(race);
   const close = useCallback(() => {
     clearForm(name);
     setErrors({});
@@ -625,10 +663,7 @@ function RaceDialog(props: {
             <input type="hidden" name="race-id" value={race?.id} />
             <input type="hidden" name="hash" value={hash} />
 
-            <FormField
-              label={t('Race name')}
-              error={errors?.name}
-            >
+            <FormField label={t('Race name')} error={errors?.name}>
               <TextField
                 id="race-name"
                 name="name"
@@ -639,7 +674,11 @@ function RaceDialog(props: {
               />
             </FormField>
 
-            <FormField label={t('Distance')} error={errors?.distance} className="w-full">
+            <FormField
+              label={t('Distance')}
+              error={errors?.distance}
+              className="w-full"
+            >
               <TextField
                 id="race-distance"
                 name="distance"
@@ -753,5 +792,104 @@ function RaceDialog(props: {
         </div>
       </div>
     </div>
+  );
+}
+
+function RacesList(props: { races: Race[], eventId: string }) {
+  const { races, eventId } = props;
+  const fetcher = useFetcher();
+
+  const [showRacesDialog, setShowRacesDialog] = useState<{
+    show: boolean;
+    hash: number;
+    race?: Race;
+  }>({ show: false, hash: 0 });
+
+  function handleMoveUp(r: Race) {
+    fetcher.submit(
+      { },
+      {
+        method: 'post',
+        action: `/organizer/${r.id}/move-up`
+      }
+    );
+  }
+
+  function handleMoveDown(r: Race) {
+    fetcher.submit(
+      { },
+      {
+        method: 'post',
+        action: `/organizer/${r.id}/move-down`
+      }
+    );
+  }
+
+  function handleUpdateRace(r: Race) {
+    setShowRacesDialog({ show: true, race: r, hash: Date.now() });
+  }
+
+  function handleCloseRace() {
+    setShowRacesDialog({ show: false, hash: 0 });
+  }
+
+  return (
+    <>
+      {races
+        .sort((a: Race, b: Race) => a.displayOrder - b.displayOrder)
+        .map((r: Race, index) => (
+          <div
+            key={r.id}
+            className="relative flex mb-4 justify-between items-center flex-col md:flex-row border-b p-4 last:border-none border-gray-300 dark:border-gray-300"
+          >
+            <div className={clsx('text-lg font-extrabold dark:text-white')}>
+              {r.name}
+            </div>
+            <div>
+              {index === 0 ? null : (
+                <Button
+                  className="ml-6"
+                  type="button"
+                  onClick={() => {
+                    handleMoveUp(r);
+                  }}
+                >
+                  <ArrowUpIcon className="md:h-6 w-6 m-0 inline-block" />
+                </Button>
+              )}
+              {/*eslint-disable-next-line react/jsx-no-bind*/}
+              {index === races.length - 1 ? null : (
+                <Button
+                  className="ml-6"
+                  type="button"
+                  onClick={() => {
+                    handleMoveDown(r);
+                  }}
+                >
+                  <ArrowDownIcon className="md:h-6 w-6 m-0 inline-block" />
+                </Button>
+              )}
+
+              <Button
+                className="ml-14"
+                type="button"
+                onClick={() => {
+                  handleUpdateRace(r);
+                }}
+              >
+                <PencilAltIcon className="md:h-6 w-6 m-0 inline-block" />
+              </Button>
+            </div>
+          </div>
+        ))}
+
+      <RaceDialog
+          isOpen={showRacesDialog.show}
+          triggerModalClose={handleCloseRace}
+          eventId={eventId}
+          race={showRacesDialog.race}
+          hash={showRacesDialog.hash}
+      />
+    </>
   );
 }
