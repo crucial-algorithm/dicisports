@@ -1,6 +1,4 @@
-# fly.toml file generated for dicistg on 2022-02-15T12:19:00Z
-
-app = "dicistg"
+# fly.toml file generated for diciprd on 2022-08-30T10:15:09+01:00
 
 kill_signal = "SIGINT"
 kill_timeout = 5
@@ -22,13 +20,13 @@ processes = []
   processes = ["app"]
   protocol = "tcp"
   script_checks = []
-
   [services.concurrency]
     hard_limit = 25
     soft_limit = 20
     type = "connections"
 
   [[services.ports]]
+    force_https = true
     handlers = ["http"]
     port = 80
 

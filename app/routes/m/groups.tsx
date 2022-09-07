@@ -100,8 +100,8 @@ export default function Groups() {
           />
         ))}
         <WhenListEmpty list={groups}>
-          <H4 variant="secondary" as="p">
-            {t('Favorite Groups Empty')}
+          <H4 variant="secondary" as="p" className="mb-12">
+            {t('Groups Empty')}
           </H4>
         </WhenListEmpty>
       </div>
@@ -124,7 +124,7 @@ export default function Groups() {
           />
         ))}
         <WhenListEmpty list={favorites}>
-          <H4 variant="secondary" as="p" className="mb-12">
+          <H4 variant="secondary" as="p">
             {t('Favorite Groups Empty')}
           </H4>
         </WhenListEmpty>

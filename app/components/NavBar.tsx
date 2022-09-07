@@ -18,6 +18,7 @@ import {
   useReducedMotion
 } from 'framer-motion';
 import type { User } from '@prisma/client';
+import { buildImageUrl } from 'cloudinary-build-url';
 
 import { useTranslation } from 'react-i18next';
 
@@ -334,10 +335,8 @@ function ProfileButton({
         className={clsx('inline w-10 rounded-full select-none ', {
           'scale-150': !user
         })}
-        src={`https://res.cloudinary.com/dicisports/image/upload/v1650623777/product/${
-          user ? 'logo-rounded' : 'login-800'
-        }.png`}
-        alt="logo"
+        src={buildImageUrl(user ? 'product/logo' : 'product/login', {})}
+        alt={user ? 'logo' : 'login'}
       />
     </Link>
   );

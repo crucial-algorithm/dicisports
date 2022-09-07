@@ -149,7 +149,7 @@ function Label({ label }: { label: string | null }) {
 }
 
 /**
- * Use a capitalize implementation so that default label (hint) is not
+ * Use capitalize implementation so that default label (hint) is not
  * capitalized through the CSS
  * @param str
  */

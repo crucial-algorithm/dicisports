@@ -6,8 +6,10 @@
   "scripts": {
     "build": "npm run build:css && remix build",
     "dev": "concurrently \"npm run dev:css\" \"node -r dotenv/config node_modules/.bin/remix dev\"",
-    "build:css": "tailwindcss -o ./app/styles/tailwind.css",
-    "dev:css": "postcss styles/**/*.css --base styles --dir app/styles --watch",
+    "build:css": "npm run generate:css && npm run deploy:css",
+    "dev:css": "npm run generate:css && npm run deploy:css -- --watch",
+    "generate:css": "tailwindcss -o ./app/styles/tailwind.css",
+    "deploy:css": "postcss styles/**/*.css --base styles --dir app/styles",
     "postinstall": "remix setup node",
     "start": "remix-serve build",
     "lint": "npm run lint:eslint",
