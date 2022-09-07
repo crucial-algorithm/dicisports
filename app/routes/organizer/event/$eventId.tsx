@@ -535,7 +535,7 @@ export default function OrganizerEventRoute() {
               </Button>
             </Label>
             <div>
-              <RacesList races={races} />
+              <RacesList races={races} eventId={event.id} />
               <input
                 type="hidden"
                 name="was-sorted"
@@ -795,13 +795,19 @@ function RaceDialog(props: {
   );
 }
 
-
-function RacesList({ races }: { races: Race[] }) {
+function RacesList(props: { races: Race[], eventId: string }) {
+  const { races, eventId } = props;
   const fetcher = useFetcher();
+
+  const [showRacesDialog, setShowRacesDialog] = useState<{
+    show: boolean;
+    hash: number;
+    race?: Race;
+  }>({ show: false, hash: 0 });
 
   function handleMoveUp(r: Race) {
     fetcher.submit(
-      { },
+      { id: r.id },
       {
         method: 'post',
         action: `/organizer/${r.id}/move-up`
@@ -811,7 +817,7 @@ function RacesList({ races }: { races: Race[] }) {
 
   function handleMoveDown(r: Race) {
     fetcher.submit(
-      { },
+      { id: r.id },
       {
         method: 'post',
         action: `/organizer/${r.id}/move-down`
@@ -820,6 +826,11 @@ function RacesList({ races }: { races: Race[] }) {
   }
 
   function handleUpdateRace(r: Race) {
+    setShowRacesDialog({ show: true, race: r, hash: Date.now() });
+  }
+
+  function handleCloseRace() {
+    setShowRacesDialog({ show: false, hash: 0 });
   }
 
   return (
@@ -871,6 +882,14 @@ function RacesList({ races }: { races: Race[] }) {
             </div>
           </div>
         ))}
+
+      <RaceDialog
+          isOpen={showRacesDialog.show}
+          triggerModalClose={handleCloseRace}
+          eventId={eventId}
+          race={showRacesDialog.race}
+          hash={showRacesDialog.hash}
+      />
     </>
   );
 }

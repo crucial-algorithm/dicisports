@@ -28,7 +28,14 @@ async function createRace(race: CreateRaceInput): Promise<Race | void> {
 
 async function findEventRaces(eventId: string): Promise<Race[] | void> {
   return await db.race.findMany({
-    where: { eventId: eventId }
+    where: { eventId: eventId },
+    orderBy: { displayOrder: 'asc' }
+  });
+}
+
+async function findRace(raceId: string): Promise<Race | null> {
+  return await db.race.findUnique({
+    where: { id: raceId }
   });
 }
 
@@ -53,4 +60,43 @@ async function updateRace(race: CreateRaceInput): Promise<void> {
   });
 }
 
-export { createRace, findEventRaces, updateRace };
+async function updateDisplayOrderUp(current: Race, previous: Race): Promise<void> {
+  await db.race.update({
+    where: { id: current.id },
+    data: {
+      displayOrder: current.displayOrder - 1
+    }
+  });
+
+  await db.race.update({
+    where: { id: previous.id },
+    data: {
+      displayOrder: previous.displayOrder + 1
+    }
+  });
+}
+
+async function updateDisplayOrderDown(current: Race, next: Race): Promise<void> {
+  await db.race.update({
+    where: { id: current.id },
+    data: {
+      displayOrder: current.displayOrder + 1
+    }
+  });
+
+  await db.race.update({
+    where: { id: next.id },
+    data: {
+      displayOrder: next.displayOrder - 1
+    }
+  });
+}
+
+export {
+  createRace,
+  findEventRaces,
+  findRace,
+  updateRace,
+  updateDisplayOrderUp,
+  updateDisplayOrderDown
+};
