@@ -28,7 +28,7 @@ async function createRace(race: CreateRaceInput): Promise<Race | void> {
 
 async function findEventRaces(eventId: string): Promise<Race[] | void> {
   return await db.race.findMany({
-    where: { eventId: eventId },
+    where: { eventId: eventId, status: { not: 'deleted' } },
     orderBy: { displayOrder: 'asc' }
   });
 }
@@ -98,11 +98,21 @@ async function updateDisplayOrderDown(
   });
 }
 
+async function deleteRace(id: string) {
+  await db.race.update({
+    where: { id },
+    data: {
+      status: 'deleted'
+    }
+  });
+}
+
 export {
   createRace,
   findEventRaces,
   findRace,
   updateRace,
   updateDisplayOrderUp,
-  updateDisplayOrderDown
+  updateDisplayOrderDown,
+  deleteRace
 };

@@ -3,7 +3,7 @@ import { redirect } from 'remix';
 
 import { z, ZodError } from 'zod';
 
-import { createRace, updateRace } from '~/server/db/races.server';
+import { createRace, updateRace, deleteRace } from '~/server/db/races.server';
 
 import { badRequest, hoursMinutesToTimeOfDay } from '~/utils/misc';
 import type { CreateRaceInput } from '~/types';
@@ -19,6 +19,13 @@ export const action: ActionFunction = async ({ request }) => {
   const raceId = form.get('race-id') as string;
   const date = form.get('date') as string;
   const hash = form.get('hash') as string;
+  const action = form.get('actionId');
+
+  if (action === 'delete') {
+    await deleteRace(raceId);
+
+    return redirect(`/organizer/event/${eventId}`);
+  }
 
   const raceData: CreateRaceInput = {
     id: raceId,

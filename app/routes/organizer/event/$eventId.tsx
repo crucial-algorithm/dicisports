@@ -20,7 +20,8 @@ import {
   ArrowDownIcon,
   ArrowUpIcon,
   LocationMarkerIcon,
-  PencilAltIcon
+  PencilAltIcon,
+  XCircleIcon
 } from '@heroicons/react/outline';
 
 import clsx from 'clsx';
@@ -44,7 +45,7 @@ import type {
   Sport
 } from '~/types';
 import TextField from '~/components/shared/form/TextField';
-import Button from '~/components/shared/Button';
+import Button, { ButtonLink } from '~/components/shared/Button';
 
 import { inputBaseClasses } from '~/components/shared/form/InputBase';
 import Config from '~/server/config.server';
@@ -52,7 +53,7 @@ import { findSports } from '~/server/db/sports.server';
 import { findEvent, updateEvent } from '~/server/db/events.server';
 import Main from '~/components/shared/Main';
 import FormField from '~/components/shared/form/FormField';
-import { H2, H3, H6 } from '~/components/shared/typography';
+import { H2, H3, H6, Paragraph } from '~/components/shared/typography';
 
 import UploadForm from '~/components/shared/form/UploadForm';
 
@@ -235,7 +236,6 @@ export default function OrganizerEventRoute() {
   }>({ show: false, hash: 0 });
   const [perks, setPerks] = useState<Array<StrippedPerk>>(dbPerks);
   const [races, setRaces] = useState<Array<Race>>(dbRaces);
-  const [wasSorted, setWasSorted] = useState<boolean>(false);
   const [location, setLocation] = useState<DiciLocation | null>(
     event.address
       ? {
@@ -255,10 +255,6 @@ export default function OrganizerEventRoute() {
 
   function handleCreateRace() {
     setShowRacesDialog({ show: true, hash: Date.now() });
-  }
-
-  function handleUpdateRace(race: Race) {
-    setShowRacesDialog({ show: true, race, hash: Date.now() });
   }
 
   function handleCloseRace() {
@@ -290,46 +286,6 @@ export default function OrganizerEventRoute() {
     if (inputEl.current) {
       (inputEl.current as HTMLInputElement).value = '';
     }
-  }
-
-  function handleMoveUp(r: Race) {
-    const rs = races.sort(
-      (a: Race, b: Race) => a.displayOrder - b.displayOrder
-    );
-
-    const position = rs.findIndex((value) => value.id === r.id);
-
-    if (position === -1) {
-      return;
-    }
-
-    const previous = races[position - 1];
-    const displayOrder = previous.displayOrder;
-
-    previous.displayOrder = r.displayOrder;
-    r.displayOrder = displayOrder;
-    setRaces([...races]);
-    setWasSorted(true);
-  }
-
-  function handleMoveDown(r: Race) {
-    const rs = races.sort(
-      (a: Race, b: Race) => a.displayOrder - b.displayOrder
-    );
-
-    const position = rs.findIndex((value) => value.id === r.id);
-
-    if (position === -1) {
-      return;
-    }
-
-    const next = races[position + 1];
-    const displayOrder = next.displayOrder;
-
-    next.displayOrder = r.displayOrder;
-    r.displayOrder = displayOrder;
-    setRaces([...races]);
-    setWasSorted(true);
   }
 
   useEffect(() => {
@@ -536,11 +492,6 @@ export default function OrganizerEventRoute() {
             </Label>
             <div>
               <RacesList races={races} eventId={event.id} />
-              <input
-                type="hidden"
-                name="was-sorted"
-                value={wasSorted ? 1 : 0}
-              />
             </div>
             <WhenListEmpty list={races}>
               <H6 className="text-center p-12" variant="secondary" as="p">
@@ -549,8 +500,17 @@ export default function OrganizerEventRoute() {
             </WhenListEmpty>
           </div>
 
-          <Button className="mt-8" type="submit">
-            {t('Create Button')}
+          <ButtonLink
+            className="mt-8"
+            type="button"
+            variant="secondary"
+            to={'/organizer'}
+          >
+            {t('Cancel')}
+          </ButtonLink>
+
+          <Button className="mt-8 ml-8" type="submit" variant="primary">
+            {event.status === 'auto' ? t('Create Button') : t('Save Button')}
           </Button>
         </UploadForm>
       </div>
@@ -795,7 +755,7 @@ function RaceDialog(props: {
   );
 }
 
-function RacesList(props: { races: Race[], eventId: string }) {
+function RacesList(props: { races: Race[]; eventId: string }) {
   const { races, eventId } = props;
   const fetcher = useFetcher();
 
@@ -804,10 +764,14 @@ function RacesList(props: { races: Race[], eventId: string }) {
     hash: number;
     race?: Race;
   }>({ show: false, hash: 0 });
+  const [deleteModalOpen, setDeleteModalOpen] = useState<{
+    show: boolean;
+    race?: Race;
+  }>({ show: false });
 
   function handleMoveUp(r: Race) {
     fetcher.submit(
-      { },
+      {},
       {
         method: 'post',
         action: `/organizer/${r.id}/move-up`
@@ -817,12 +781,20 @@ function RacesList(props: { races: Race[], eventId: string }) {
 
   function handleMoveDown(r: Race) {
     fetcher.submit(
-      { },
+      {},
       {
         method: 'post',
         action: `/organizer/${r.id}/move-down`
       }
     );
+  }
+
+  function handleDeleteRace(r: Race) {
+    setDeleteModalOpen({ show: true, race: r });
+  }
+
+  function handleDeleteRaceClose() {
+    setDeleteModalOpen({ show: false });
   }
 
   function handleUpdateRace(r: Race) {
@@ -873,6 +845,17 @@ function RacesList(props: { races: Race[], eventId: string }) {
               <Button
                 className="ml-14"
                 type="button"
+                variant="danger"
+                onClick={() => {
+                  handleDeleteRace(r);
+                }}
+              >
+                <XCircleIcon className="md:h-6 w-6 m-0 inline-block"></XCircleIcon>
+              </Button>
+
+              <Button
+                className="ml-6"
+                type="button"
                 onClick={() => {
                   handleUpdateRace(r);
                 }}
@@ -884,12 +867,69 @@ function RacesList(props: { races: Race[], eventId: string }) {
         ))}
 
       <RaceDialog
-          isOpen={showRacesDialog.show}
-          triggerModalClose={handleCloseRace}
-          eventId={eventId}
-          race={showRacesDialog.race}
-          hash={showRacesDialog.hash}
+        isOpen={showRacesDialog.show}
+        triggerModalClose={handleCloseRace}
+        eventId={eventId}
+        race={showRacesDialog.race}
+        hash={showRacesDialog.hash}
+      />
+
+      <DeleteRaceDialog
+        isOpen={deleteModalOpen.show}
+        onDismiss={handleDeleteRaceClose}
+        race={deleteModalOpen.race}
+        eventId={eventId}
       />
     </>
+  );
+}
+
+function DeleteRaceDialog(props: {
+  isOpen: boolean;
+  onDismiss: () => void;
+  race?: Race;
+  eventId: string;
+}) {
+  const { t } = useTranslation(RESOURCES_NS);
+  const { isOpen, onDismiss, race, eventId } = props;
+  const fetcher = useFetcher();
+
+  return (
+    <div
+      data-reach-dialog-overlay={true}
+      className={clsx({
+        'hidden ': !isOpen,
+        'z-50 flex h-screen': isOpen
+      })}
+    >
+      <div
+        aria-modal={true}
+        className={clsx(
+          'w-11/12 dark:bg-gray-900 border-2 border-black dark:border-white rounded-lg lg:px-24 lg:py-14 lg:max-w-screen-lg',
+          {
+            'hidden ': !isOpen,
+            'm-auto': isOpen
+          }
+        )}
+      >
+        <H3>{t('Delete Race X', { name: race?.name })}</H3>
+        <Paragraph>{t('Are you sure you want to delete race?')}</Paragraph>
+        <Spacer size="2xs" />
+
+        <fetcher.Form method="post" action="/organizer/race/create">
+          <input type="hidden" name="actionId" value="delete" />
+          <input type="hidden" name="race-id" value={race?.id} />
+          <input type="hidden" name="event-id" value={eventId} />
+          <div className="flex flex-wrap gap-4">
+            <Button type="button" onClick={onDismiss}>
+              {t('Ignore')}
+            </Button>
+            <Button variant="danger" size="medium" type="submit">
+              {t('Delete')}
+            </Button>
+          </div>
+        </fetcher.Form>
+      </div>
+    </div>
   );
 }
