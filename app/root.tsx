@@ -233,6 +233,7 @@ function Html({
   const [theme] = useTheme();
   const { i18n } = useTranslation();
   const data = useLoaderData<LoaderData>();
+  const analyticsUrl = 'https://plausible.io/js/plausible.js';
 
   useChangeLanguage(lang);
   // script bellow setting window.ENV is not actually being used; Just keeping
@@ -242,9 +243,16 @@ function Html({
   });
 
   return (
-    <html lang={lang} className={clsx(theme, 'set-color-team-current-red')} dir={i18n.dir()}>
+    <html
+      lang={lang}
+      className={clsx(theme, 'set-color-team-current-red')}
+      dir={i18n.dir()}
+    >
       <head>
-        <script defer data-domain="dicisports.com" src="https://plausible.io/js/plausible.js" />
+        {process.env.NODE_ENV === 'production' && (
+          <script defer data-domain="dicisports.com" src={analyticsUrl} />
+        )}
+
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width,initial-scale=1" />
         <title>{title}</title>
@@ -259,9 +267,7 @@ function Html({
         <ScrollRestoration />
         <script
           dangerouslySetInnerHTML={{
-            __html: `window.ENV = ${JSON.stringify(
-              data.ENV
-            )}`
+            __html: `window.ENV = ${JSON.stringify(data.ENV)}`
           }}
         />
         <Scripts />

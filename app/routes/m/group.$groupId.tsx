@@ -76,7 +76,6 @@ type LoaderData = {
   group: Group
 
   mapToken: string
-  imageUploadEndpoint: string
   imageUploadPreset: string
 }
 
@@ -103,7 +102,7 @@ export const handle = {
 
 export const loader: LoaderFunction = async ({ request, params }) => {
   const user = await requireUser(request);
-  const { MAPBOX_TOKEN, IMAGE_UPLOAD_ENDPOINT, CLOUDINARY_UPLOAD_PRESET } = Config();
+  const { MAPBOX_TOKEN, CLOUDINARY_UPLOAD_PRESET } = Config();
 
   const group = params.groupId ? await findGroup(params.groupId) : null;
 
@@ -120,7 +119,6 @@ export const loader: LoaderFunction = async ({ request, params }) => {
       groupId: params.groupId,
 
       mapToken: MAPBOX_TOKEN,
-      imageUploadEndpoint: IMAGE_UPLOAD_ENDPOINT,
       imageUploadPreset: CLOUDINARY_UPLOAD_PRESET
     }
   );
@@ -165,7 +163,10 @@ export const action: ActionFunction = async ({ request, params }) => {
       if (!name.startsWith('/file/image') || !filename) {
         return undefined;
       }
-      const uploadedImage = await uploadImageToCloudinary(data);
+      const uploadedImage = await uploadImageToCloudinary(
+        data,
+        params.groupId || null
+      );
 
       return uploadedImage.public_id;
     },

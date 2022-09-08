@@ -53,8 +53,6 @@ type ActionData = {
 type LoaderData = {
   sports: Array<Sport>
   mapToken: string
-  imageUploadEndpoint: string
-  imageDisplayEndpoint: string
   imageUploadPreset: string
   event: SportEvent | null
 }
@@ -75,15 +73,11 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 
   const {
     MAPBOX_TOKEN,
-    IMAGE_UPLOAD_ENDPOINT,
-    IMAGE_DISPLAY_ENDPOINT,
     CLOUDINARY_UPLOAD_PRESET
   } = Config();
 
   return json({
     mapToken: MAPBOX_TOKEN,
-    imageUploadEndpoint: IMAGE_UPLOAD_ENDPOINT,
-    imageDisplayEndpoint: IMAGE_DISPLAY_ENDPOINT,
     imageUploadPreset: CLOUDINARY_UPLOAD_PRESET,
     event,
     sports: sports.map((sport) => {
@@ -126,15 +120,6 @@ export const links: LinksFunction = () => {
   ];
 };
 
-type Image = {
-  name: string
-  file: File
-  value: string
-  timestamp: number
-  signature: string
-  apiKey: string
-}
-
 const encTypeUpload = 'multipart/form-data';
 const mapDbImages = (
   images: Array<Document> | undefined,
@@ -159,12 +144,11 @@ export default function OrganizerEventRoute() {
   const {
     sports,
     mapToken,
-    imageDisplayEndpoint,
     event
   } = useLoaderData<LoaderData>();
   const [showLocationPicker, setShowLocationPicker] = useState<boolean>(false);
   const [, setLocation] = useState<string | undefined | null>(event?.location);
-  const loadedImages = mapDbImages(event?.documents, imageDisplayEndpoint);
+  const loadedImages = mapDbImages(event?.documents, 'tbd');
 
   // Hack: while remix doesn't handle dates properly
   hackyEventRevival(event);
