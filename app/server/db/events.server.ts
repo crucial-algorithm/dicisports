@@ -16,7 +16,7 @@ const prisma = new PrismaClient();
 async function findEvents(): Promise<Array<Event>> {
   return db.event.findMany({
     where: {
-      name: { not: Status.draft }
+      status: { not: Status.auto }
     }
   });
 }
