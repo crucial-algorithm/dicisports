@@ -8,7 +8,7 @@ import type { Event } from '@prisma/client';
 import React from 'react';
 import clsx from 'clsx';
 
-import { H4, H6 } from '~/components/shared/typography';
+import { H4, H5, H6 } from '~/components/shared/typography';
 
 import { ButtonLink } from '~/components/shared/Button';
 
@@ -21,7 +21,6 @@ import type { Sport } from '~/types';
 import DisplayImg from '~/components/shared/DisplayImg';
 
 import { findSports } from '~/server/db/sports.server';
-import Label from '~/components/shared/form/Label';
 
 type LoaderData = {
   events: Array<Event>;
@@ -76,19 +75,7 @@ export default function OrganizerIndexRoute() {
                 )}
               >
                 <div id="event-image">
-                  <Label
-                    htmlFor="event-image"
-                    className={clsx(
-                      'mb-5'
-                    )}
-                    variant={
-                      event.status === 'draft' || event.status === 'unpublished'
-                        ? 'primary'
-                        : 'third'
-                    }
-                  >
-                    {event.name}
-                  </Label>
+                  <H5 className={clsx('mb-5')}>{event.name}</H5>
                   <RaceImage
                     event={event}
                     img={
@@ -139,30 +126,26 @@ function RaceImage({ event, img }: { event: Event; img?: string }) {
   const { image1, image2, image3 } = event;
   const images: string[] = [image1, image2, image3].filter(Boolean) as string[];
 
-  if (images.length === 0) {
-    return (
-      <Wrapper>
+  return (
+    <Wrapper>
+      {images.length === 0 ? (
         <PlaceholderImg
           event={event}
           img={img}
           className="w-full rounded-lg bg-gray-100 dark:bg-gray-400 object-cover object-left-top"
         />
-      </Wrapper>
-    );
-  }
-
-  return (
-    <Wrapper>
-      <DisplayImg
-        id={image1 as string}
-        transformations={{
-          resize: {
-            type: 'fill',
-            width: 100,
-            height: 100
-          }
-        }}
-      />
+      ) : (
+        <DisplayImg
+          id={image1 || image2 || image3 || ''}
+          transformations={{
+            resize: {
+              type: 'fill',
+              width: 100,
+              height: 100
+            }
+          }}
+        />
+      )}
     </Wrapper>
   );
 }

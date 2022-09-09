@@ -14,8 +14,7 @@ const Label: React.FC<Props> = ({ variant, htmlFor, className, children }) => (
       {
         'dark:text-blueGray-500 text-gray-500 text-lg':
           !variant || variant === 'primary',
-        'dark:text-white text-gray-600 text-sm': variant === 'secondary',
-        'dark:text-white text-gray-600 text-lg': variant === 'third'
+        'dark:text-white text-gray-600 text-sm': variant === 'secondary'
       },
       className
     )}
