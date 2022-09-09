@@ -168,6 +168,7 @@ export const action: ActionFunction = async ({ request, params }) => {
     useExternalBooking: form.get('booking') === 'external',
     externalBookingUrl: (form.get('booking-url') as string) || null,
     eventDescription: (form.get('description') as string) || null,
+    directions: (form.get('get-there') as string) || null,
     image1: processImgField(image1, isUpdate),
     image2: processImgField(image2, isUpdate),
     image3: processImgField(image3, isUpdate),
@@ -477,7 +478,7 @@ export default function OrganizerEventRoute() {
             </div>
           </FormField>
 
-          <div id="races" className="mb-2">
+          <div id="races" className="mb-12">
             <Label
               htmlFor="races"
               className={clsx(
@@ -499,6 +500,19 @@ export default function OrganizerEventRoute() {
               </H6>
             </WhenListEmpty>
           </div>
+
+          <FormField label={t('Directions')}>
+            <div className="mt-2 relative rounded-md shadow-sm">
+              <textarea
+                  name="get-there"
+                  className={inputBaseClasses('p-10')}
+                  placeholder={t('How to get there')}
+                  defaultValue={event.directions || ''}
+                  rows={5}
+                  cols={50}
+              />
+            </div>
+          </FormField>
 
           <ButtonLink
             className="mt-8"

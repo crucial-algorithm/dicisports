@@ -113,6 +113,7 @@ type CreateEventInput = {
   useExternalBooking: boolean
   externalBookingUrl: string | null
   eventDescription: string | null
+  directions: string | null
   image1?: string | null
   image2?: string | null
   image3?: string | null
