@@ -77,6 +77,7 @@ async function updateEvent(
         image4: event.image4,
         image5: event.image5,
         eventDescription: event.eventDescription,
+        directions: event.directions,
         status: Status.draft
       }
     });
