@@ -35,8 +35,6 @@ export const loader: LoaderFunction = async ({ request }) => {
   const events = await findEvents();
   const sports = await findSports();
 
-  console.log(events);
-
   return json({
     events,
     sports
@@ -62,42 +60,47 @@ export default function OrganizerIndexRoute() {
             </ButtonLink>
           </div>
         </div>
-        {events.map((event: Event) => (
-          <div
-            className={clsx(
-              'relative flex mb-12',
-              'flex-col',
-              'md:flex-row',
-              'p-4',
-              'border-b last:border-none border-gray-300 dark:border-gray-300',
-              {
-                'opacity-60':
-                  event.status === 'draft' || event.status === 'unpublished'
-              }
-            )}
-            key={event.id}
-          >
-            <Link to={`/organizer/event/${event.id}`}>
-              <div id="event-image">
-                <Label
-                  htmlFor="event-image"
-                  className={clsx(
-                    'mb-5 flex justify-between items-center flex-row'
-                  )}
-                >
-                  {event.name}
-                </Label>
-                <RaceImage
-                  event={event}
-                  img={
-                    sports.find((s: Sport) => s.id === event.sportId)?.picture
+        <div className="events-list">
+          {events.map((event: Event) => (
+            <Link to={`/organizer/event/${event.id}`} key={event.id}>
+              <div
+                className={clsx(
+                  'relative flex mb-12',
+                  'flex-col',
+                  'p-4',
+                  'border-b border-gray-300 dark:border-gray-300',
+                  {
+                    'opacity-60':
+                      event.status === 'draft' || event.status === 'unpublished'
                   }
-                />
+                )}
+              >
+                <div id="event-image">
+                  <Label
+                    htmlFor="event-image"
+                    className={clsx(
+                      'mb-5'
+                    )}
+                    variant={
+                      event.status === 'draft' || event.status === 'unpublished'
+                        ? 'primary'
+                        : 'third'
+                    }
+                  >
+                    {event.name}
+                  </Label>
+                  <RaceImage
+                    event={event}
+                    img={
+                      sports.find((s: Sport) => s.id === event.sportId)?.picture
+                    }
+                  />
+                </div>
+                <div className="w-full h-full p-2 lg:pl-6"></div>
               </div>
-              <div className="w-full h-full p-2 lg:pl-6"></div>
             </Link>
-          </div>
-        ))}
+          ))}
+        </div>
         <WhenListEmpty list={events}>
           <H4 variant="secondary" as="p" className="text-center p-12">
             {t('Events Empty')}
@@ -130,11 +133,7 @@ function PlaceholderImg({
 
 function RaceImage({ event, img }: { event: Event; img?: string }) {
   function Wrapper({ children }: {} & React.ComponentProps<'div'>) {
-    return (
-      <div className="w-[100px] h-[100px] lg:w-[100px] lg:max-h-[100px]">
-        {children}
-      </div>
-    );
+    return <div className="w-[100px] h-[100px]">{children}</div>;
   }
 
   const { image1, image2, image3 } = event;
@@ -152,24 +151,6 @@ function RaceImage({ event, img }: { event: Event; img?: string }) {
     );
   }
 
-  if (images.length === 1) {
-    return (
-      <Wrapper>
-        <DisplayImg
-          id={image1 || image2 || image3 || ''}
-          alt={event.name || ''}
-          transformations={{
-            resize: {
-              type: 'fill',
-              width: 400,
-              height: 400
-            }
-          }}
-        />
-      </Wrapper>
-    );
-  }
-
   return (
     <Wrapper>
       <DisplayImg
@@ -177,8 +158,8 @@ function RaceImage({ event, img }: { event: Event; img?: string }) {
         transformations={{
           resize: {
             type: 'fill',
-            width: 400,
-            height: 400
+            width: 100,
+            height: 100
           }
         }}
       />
