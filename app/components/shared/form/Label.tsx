@@ -4,7 +4,7 @@ import clsx from 'clsx';
 type Props = {
   id?: string
   htmlFor: string
-  variant?: 'primary' | 'secondary' | 'third'
+  variant?: 'primary' | 'secondary'
 } & React.ComponentProps<'label'>
 const Label: React.FC<Props> = ({ variant, htmlFor, className, children }) => (
   <label
