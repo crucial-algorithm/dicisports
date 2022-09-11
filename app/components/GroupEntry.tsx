@@ -62,6 +62,7 @@ export default function GroupEntry({ group, actions, footer, img }: Props) {
             &nbsp;
             <a
               href={`https://www.google.com/maps/search/?api=1&query=${group.lat}%2C${group.lng}`}
+              target="_blank"
             >
               ({t('View in Map')})
             </a>
