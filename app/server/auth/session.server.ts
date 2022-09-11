@@ -253,7 +253,7 @@ function getMagicLinkCode(link: string) {
 
     console.log('... url', url, url.searchParams.get(magicLinkSearchParam) ?? '');
 
-    return url.searchParams.get(magicLinkSearchParam) ?? '';
+    return url.searchParams.get(magicLinkSearchParam) || '';
   } catch {
     return '';
   }
@@ -301,6 +301,7 @@ async function validateMagicLink(
 
   if (validateSessionMagicLink) {
     if (!sessionLinkCode) {
+      console.log('... here!!!', sessionLinkCode);
       console.error(
         'Must validate session magic link but no session link provided'
       );
