@@ -251,7 +251,7 @@ function getMagicLinkCode(link: string) {
   try {
     const url = new URL(link);
 
-    console.log('... url', url, url.searchParams.get(magicLinkSearchParam) ?? '');
+    console.log('... url magic link >>', url.searchParams.get(magicLinkSearchParam), '<<');
 
     return url.searchParams.get(magicLinkSearchParam) || '';
   } catch {
