@@ -251,6 +251,8 @@ function getMagicLinkCode(link: string) {
   try {
     const url = new URL(link);
 
+    console.log('... url', url, url.searchParams.get(magicLinkSearchParam) ?? '');
+
     return url.searchParams.get(magicLinkSearchParam) ?? '';
   } catch {
     return '';
@@ -261,7 +263,9 @@ async function validateMagicLink(
   link: string | undefined,
   sessionMagicLink?: string
 ) {
-  if (!link) {throw new Error('>>Error<<: Magic link is undefined');}
+  if (!link) {
+    throw new Error('>>Error<<: Magic link is undefined');
+  }
   const linkCode = getMagicLinkCode(link);
   const sessionLinkCode = sessionMagicLink
     ? getMagicLinkCode(sessionMagicLink)
