@@ -300,19 +300,19 @@ async function validateMagicLink(
   }
 
   if (validateSessionMagicLink) {
-    if (!sessionLinkCode) {
-      console.log('... here!!!', sessionLinkCode);
-      console.error(
-        'Must validate session magic link but no session link provided'
-      );
-      throw invalidLinkError;
-    }
-    if (linkCode !== sessionLinkCode) {
-      console.error('Magic link does not match sessionMagicLink');
-      throw new Error(
-        '>>Error<<: You must open the magic link on the same device it was created'
-      );
-    }
+    // disable session to link validation for now: causing issues in production (at least safari not working)
+//    if (!sessionLinkCode) {
+//      console.error(
+//        'Must validate session magic link but no session link provided'
+//      );
+//      throw invalidLinkError;
+//    }
+//    if (linkCode !== sessionLinkCode) {
+//      console.error('Magic link does not match sessionMagicLink');
+//      throw new Error(
+//        '>>Error<<: You must open the magic link on the same device it was created'
+//      );
+//    }
   }
 
   if (typeof linkCreationDateString !== 'string') {
