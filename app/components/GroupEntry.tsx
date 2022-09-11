@@ -58,7 +58,14 @@ export default function GroupEntry({ group, actions, footer, img }: Props) {
             label={t('Who')}
             value={group.createdBy?.name || group.createdById}
           />
-          <Feature label={t('Where')} value={group.near || ''} />
+          <Feature label={t('Where')} value={group.near || ''}>
+            &nbsp;
+            <a
+              href={`https://www.google.com/maps/search/?api=1&query=${group.lat}%2C${group.lng}`}
+            >
+              ({t('View in Map')})
+            </a>
+          </Feature>
           <div className="flex justify-between align-middle">
             <Feature
               label={t('Purpose')}
@@ -93,13 +100,12 @@ function PlaceholderImg({
   );
 }
 
-function Feature({
-  value,
-  label
-}: {
+type FeatureProps = {
   value: string | TranslationObject
   label?: string
-}) {
+} & React.ComponentProps<'div'>
+
+function Feature({ value, label, children }: FeatureProps) {
   return (
     <>
       <div className="flex flex-col align-middle mb-4">
@@ -108,6 +114,7 @@ function Feature({
         </div>
         <div className="inline-block dark:text-white text-gray-500 text-base">
           {typeof value === 'string' ? value : I18nText({ text: value })}
+          {children}
         </div>
       </div>
     </>
