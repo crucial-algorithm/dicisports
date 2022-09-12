@@ -29,12 +29,16 @@ export const loader: LoaderFunction = async ({ request }) => {
       if (action === 'favorite') {
         const user = await session.getUser();
 
-        if (user && group) {await addGroupToFavorites(user.id, group);}
+        if (user && group) {
+          await addGroupToFavorites(user.id, group);
+        }
         return redirect('/m/groups', { headers });
       }
       const user = await session.getUser();
 
-      if (!user) {return redirect('/message', { headers });}
+      if (!user) {
+        return redirect('/message', { headers });
+      }
 
       const message = await t('Welcome back', {
         name: user.name
@@ -46,8 +50,12 @@ export const loader: LoaderFunction = async ({ request }) => {
     loginInfoSession.setMagicLink(request.url);
     const url = new URL('https://a.com');
 
-    if (group) {url.searchParams.append('g', group);}
-    if (action) {url.searchParams.append('a', action);}
+    if (group) {
+      url.searchParams.append('g', group);
+    }
+    if (action) {
+      url.searchParams.append('a', action);
+    }
 
     return redirect(`/signup${url.search}`, {
       headers: await loginInfoSession.getHeaders()

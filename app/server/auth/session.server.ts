@@ -24,12 +24,12 @@ const sessionExpirationTime = Config().SESSION_EXPIRATION_TIME;
 const linkExpirationTime = 1000 * 60 * 30;
 
 type MagicLinkPayload = {
-  emailAddress: string
-  creationDate: string
-  validateSessionMagicLink: boolean
-  action?: LoginAction
-  group?: string | null
-}
+  emailAddress: string;
+  creationDate: string;
+  validateSessionMagicLink: boolean;
+  action?: LoginAction;
+  group?: string | null;
+};
 
 function getMagicLink({
   emailAddress,
@@ -38,11 +38,11 @@ function getMagicLink({
   action,
   group
 }: {
-  emailAddress: string
-  validateSessionMagicLink: boolean
-  domainUrl: string
-  action?: LoginAction
-  group?: string | null
+  emailAddress: string;
+  validateSessionMagicLink: boolean;
+  domainUrl: string;
+  action?: LoginAction;
+  group?: string | null;
 }) {
   const payload: MagicLinkPayload = {
     emailAddress,
@@ -80,10 +80,10 @@ async function sendToken({
   action,
   group
 }: {
-  emailAddress: string
-  domainUrl: string
-  action?: LoginAction
-  group?: string | null
+  emailAddress: string;
+  domainUrl: string;
+  action?: LoginAction;
+  group?: string | null;
 }) {
   const magicLink = getMagicLink({
     emailAddress,
@@ -109,7 +109,9 @@ async function sendToken({
 }
 
 async function getSession(request: Request) {
-  const session = await sessionStorage.getSession(request.headers.get('Cookie'));
+  const session = await sessionStorage.getSession(
+    request.headers.get('Cookie')
+  );
   const initialValue = await sessionStorage.commitSession(session);
   const getSessionId = () => session.get(sessionIdKey) as string | undefined;
   const unsetSessionId = () => session.unset(sessionIdKey);
@@ -125,7 +127,9 @@ async function getSession(request: Request) {
     getUser: async () => {
       const token = getSessionId();
 
-      if (!token) {return null;}
+      if (!token) {
+        return null;
+      }
 
       return findUserFromSessionId(token).catch((error: unknown) => {
         unsetSessionId();
@@ -143,7 +147,9 @@ async function getSession(request: Request) {
     signOut: () => {
       const sessionId = getSessionId();
 
-      if (!sessionId) {return;}
+      if (!sessionId) {
+        return;
+      }
 
       unsetSessionId();
       deleteSession(sessionId);
@@ -158,7 +164,9 @@ async function getSession(request: Request) {
     getHeaders: async (headers: ResponseInit['headers'] = new Headers()) => {
       const value = await commit();
 
-      if (!value) {return headers;}
+      if (!value) {
+        return headers;
+      }
       if (headers instanceof Headers) {
         headers.append('Set-Cookie', value);
       } else if (Array.isArray(headers)) {
@@ -192,7 +200,9 @@ async function getUser(request: Request) {
 
   const token = session.get(sessionIdKey) as string | undefined;
 
-  if (!token) {return null;}
+  if (!token) {
+    return null;
+  }
 
   return findUserFromSessionId(token).catch((error: unknown) => {
     console.error('Failure getting user from session ID:', error);
@@ -209,7 +219,9 @@ async function getUserSessionFromMagicLink(request: Request) {
 
   const user = await findUserByEmail(email);
 
-  if (!user) {return { session: null, action, group };}
+  if (!user) {
+    return { session: null, action, group };
+  }
 
   const session = await getSession(request);
 
@@ -250,8 +262,6 @@ async function requireUser(
 function getMagicLinkCode(link: string) {
   try {
     const url = new URL(link);
-
-    console.log('... url magic link >>', url.searchParams.get(magicLinkSearchParam), '<<');
 
     return url.searchParams.get(magicLinkSearchParam) || '';
   } catch {
@@ -295,24 +305,24 @@ async function validateMagicLink(
   }
 
   if (typeof emailAddress !== 'string') {
-    console.error('Email is not a string. Maybe wasn\'t set in the session?');
+    console.error("Email is not a string. Maybe wasn't set in the session?");
     throw invalidLinkError;
   }
 
   if (validateSessionMagicLink) {
-    // disable session to link validation for now: causing issues in production (at least safari not working)
-//    if (!sessionLinkCode) {
-//      console.error(
-//        'Must validate session magic link but no session link provided'
-//      );
-//      throw invalidLinkError;
-//    }
-//    if (linkCode !== sessionLinkCode) {
-//      console.error('Magic link does not match sessionMagicLink');
-//      throw new Error(
-//        '>>Error<<: You must open the magic link on the same device it was created'
-//      );
-//    }
+    // check https://github.com/crucial-algorithm/dici-pilot/issues/12
+    //    if (!sessionLinkCode) {
+    //      console.error(
+    //        'Must validate session magic link but no session link provided'
+    //      );
+    //      throw invalidLinkError;
+    //    }
+    //    if (linkCode !== sessionLinkCode) {
+    //      console.error('Magic link does not match sessionMagicLink');
+    //      throw new Error(
+    //        '>>Error<<: You must open the magic link on the same device it was created'
+    //      );
+    //    }
   }
 
   if (typeof linkCreationDateString !== 'string') {

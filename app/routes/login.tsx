@@ -1,14 +1,12 @@
 import { Form, useLoaderData } from '@remix-run/react';
 
-import type {
-  ActionFunction,
-  LoaderFunction } from 'remix';
+import type { ActionFunction, LoaderFunction } from 'remix';
 
 import { json, redirect } from 'remix';
 
 import { Link, useSearchParams } from '@remix-run/react';
 
-import { FormEvent, useState } from 'react'
+import { FormEvent, useState } from 'react';
 
 import { useTranslation } from 'react-i18next';
 
@@ -18,33 +16,31 @@ import Button from '~/components/shared/Button';
 import TextField from '~/components/shared/form/TextField';
 import FormField from '~/components/shared/form/FormField';
 
-
 import { getLoginInfoSession } from '~/server/auth/login.server';
 import { getUser, sendToken } from '~/server/auth/session.server';
 import { verifyEmailAddress } from '~/server/auth/verifier.server';
 import { getDomainUrl, getErrorMessage } from '~/utils/misc';
 
-
 import i18n from '~/server/i18n.server';
 import InputError from '~/components/shared/form/InputError';
 
-
 import { H2, H6 } from '~/components/shared/typography';
-
 
 import { sendWhatsAppGroupLink, subscribeUser } from '~/server/email.server';
 import { findGroup } from '~/server/db/groups.server';
 import type { LoginAction } from '~/types';
 
 function validateEmail(email: string | null): boolean {
-  if (!email) {return false;}
+  if (!email) {
+    return false;
+  }
   return !!email.match(/.+@.+/);
 }
 
 type LoaderData = {
-  email?: string
-  error?: string
-}
+  email?: string;
+  error?: string;
+};
 
 const actions = {
   login: 'login',
@@ -53,10 +49,10 @@ const actions = {
 };
 
 type QueryStringArgs = {
-  group: null | string
-  redirectTo: null | string
-  action: LoginAction
-}
+  group: null | string;
+  redirectTo: null | string;
+  action: LoginAction;
+};
 
 function queryStringArgs(searchParams: URLSearchParams): QueryStringArgs {
   const a = searchParams.get('a');
@@ -80,7 +76,9 @@ export const handle = {
 export const loader: LoaderFunction = async ({ request }) => {
   const user = await getUser(request);
 
-  if (user) {return redirect('/me');}
+  if (user) {
+    return redirect('/me');
+  }
 
   const loginSession = await getLoginInfoSession(request);
 
@@ -106,7 +104,9 @@ export const action: ActionFunction = async ({ request }) => {
   const emailAddress = params.get('email');
   const action = params.get('action') as LoginAction;
 
-  if (emailAddress) {loginSession.setEmail(emailAddress);}
+  if (emailAddress) {
+    loginSession.setEmail(emailAddress);
+  }
 
   if (!emailAddress || !validateEmail(emailAddress)) {
     loginSession.flashError(t('Invalid Email'));
@@ -204,8 +204,8 @@ function LoginButton({
   disabled = false,
   label
 }: {
-  disabled: boolean
-  label: string
+  disabled: boolean;
+  label: string;
 }) {
   return <Button disabled={disabled}>{label}</Button>;
 }

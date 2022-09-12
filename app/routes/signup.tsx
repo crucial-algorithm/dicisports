@@ -111,12 +111,27 @@ export const loader: LoaderFunction = async ({ request }) => {
   const te = await i18n.getFixedT(request, ERRORS_NAMESPACE);
   const user = await getUser(request);
 
-  if (user) {return redirect('/me');}
+  if (user) {
+    return redirect('/me');
+  }
 
   const loginInfoSession = await getLoginInfoSession(request);
   const magicLink = loginInfoSession.getMagicLink();
-  const email = loginInfoSession.getEmail();
 
+  // https://github.com/crucial-algorithm/dici-pilot/issues/12
+  //  const email = loginInfoSession.getEmail();
+  let email: string | null;
+
+  try {
+    email = (
+      await validateMagicLink(magicLink, loginInfoSession.getMagicLink())
+    ).email;
+  } catch (err) {
+    console.error(err);
+    email = null;
+  }
+
+  console.log('.... Signup', magicLink, email);
   if (!magicLink || !email) {
     loginInfoSession.clean();
     loginInfoSession.flashError(await te('>>Error<<: Invalid magic link'));
