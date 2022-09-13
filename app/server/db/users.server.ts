@@ -80,6 +80,24 @@ async function loginUser({
   return user.password === hash ? user : null;
 }
 
+async function updateUserPassword({
+  id,
+  password
+}: {
+  id: string;
+  password: string;
+}): Promise<User | null> {
+  const salt = crypto.randomBytes(16).toString('hex');
+  const hash = crypto
+    .pbkdf2Sync(password, salt, 1000, 64, 'sha512')
+    .toString('hex');
+
+  return await db.user.update({
+    where: { id },
+    data: { password: hash, salt }
+  });
+}
+
 async function updateUser(id: string, name: string): Promise<User> {
   return await db.user.update({
     where: { id },
@@ -92,5 +110,6 @@ export {
   findUserFromSessionId,
   createUser,
   updateUser,
-  loginUser
+  loginUser,
+  updateUserPassword
 };

@@ -1,5 +1,5 @@
-import { Form, Link, useActionData, useSearchParams } from "@remix-run/react";
-import type { ActionFunction , LoaderFunction} from 'remix';
+import { Form, Link, useActionData, useSearchParams } from '@remix-run/react';
+import type { ActionFunction, LoaderFunction } from 'remix';
 import { json, redirect } from 'remix';
 
 import { z, ZodError } from 'zod';
@@ -21,7 +21,7 @@ import FormField from '~/components/shared/form/FormField';
 import TextField from '~/components/shared/form/TextField';
 import { H2, H6 } from '~/components/shared/typography';
 import { verifyEmailAddress } from '~/server/auth/verifier.server';
-import { addGroupToFavorites } from "~/server/db/groups.server";
+import { addGroupToFavorites } from '~/server/db/groups.server';
 
 type ActionData = {
   fields: {

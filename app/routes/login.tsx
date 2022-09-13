@@ -297,11 +297,17 @@ export default function Login() {
       </Form>
 
       {action !== actions.joinWhatsAppGroup && (
-        <CreateAccount
-          text={t('Create Account')}
-          cta={t('Create Account CTA')}
-          queryString={searchParams.toString()}
-        />
+        <>
+          <CreateAccount
+            text={t('Create Account')}
+            cta={t('Create Account CTA')}
+            queryString={searchParams.toString()}
+          />
+          <RecoverPassword
+            text={t('Recover Password')}
+            cta={t('Recover CTA')}
+          />
+        </>
       )}
     </Main>
   );
@@ -323,6 +329,21 @@ function CreateAccount({
       <Link to={`/signup${queryString ? `?${queryString}` : '' }`}>
         {cta}
       </Link>
+    </p>
+  );
+}
+
+function RecoverPassword({
+  text,
+  cta
+}: {
+  text: string;
+  cta: string
+}) {
+  return (
+    <p className="dark:text-blueGray-500 text-gray-500 mt-2">
+      {text} &nbsp;
+      <Link to="/recover">{cta}</Link>
     </p>
   );
 }
