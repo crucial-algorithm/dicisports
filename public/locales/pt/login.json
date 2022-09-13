@@ -1,14 +1,23 @@
 {
   "Email": "Email",
+  "Invalid Email": "Email inválido",
+  "Password": "Password",
+  "Password min length": "Password inválida",
   "Sign In": "Entrar no DiciSports",
-  "Sign In Instructions": "Quer já tenhas conta ou não, coloca o teu endereço de email onde receberás um link de acesso à plataforma.",
-  "Add To Favorites Sign In Instructions": "Para adicionares um grupo aos favoritos precisas de fazer login (ou criar conta). Digita o teu e-mail e receberás um link para completar o processo.",
+  "Create Account": "Ainda não tens conta? Cria a tua conta",
+  "Create Account CTA": "aqui",
+  "Login Failed": "Email ou password inválidos",
+  "Sign In Instructions": "Estás a um passo de entrar na comunidade de aficionados por desporto",
+  "Add To Favorites Sign In Instructions": "Para adicionares um grupo aos favoritos precisas de fazer login (ou criar conta).",
   "WhatsApp Header": "Precisamos do teu email",
   "WhatsApp Link Instructions": "Para evitar bots WhatsApp e garantir a segurança de todos, enviamos-te o link e instruções por email.",
-  "Email a login link": "Enviar email de acesso",
+  "Login": "Autenticar",
   "Email WhatsApp Link": "Enviar link de acesso",
   "A magic link has been sent to you": "Procura no teu email as instruções para fazer login",
   "WhatsApp Link Success": "Procura o nosso email na tua caixa de correio com o link para o grupo",
-  "Privacy Policy Presentation": "Os teus dados estão seguros connosco. Se não acreditas, lê a nossa",
-  "Privacy Policy": "política de privacidade"
+  "Join WhatsApp: Missing group": "Falta o grupo",
+  "Join WhatsApp: Group not found": "Hmmm, aparentemente este grupo não existe",
+  "Join WhatsApp: Group does not have whatsapp": "O grupo não tem WhatsApp (como é que chegamos aqui 🤷‍♂️?)",
+  "WhatsApp Email Sent": "Link de acesso ao WhatsApp enviado para o email"
+
 }

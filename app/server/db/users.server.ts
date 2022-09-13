@@ -1,3 +1,5 @@
+import crypto from 'crypto';
+
 import type { User } from '@prisma/client';
 
 import { db } from '~/server/db.server';
@@ -42,14 +44,40 @@ async function findUserFromSessionId(sessionId: string) {
 
 async function createUser({
   email,
-  name
+  name,
+  password
 }: {
-  email: string
-  name: string
+  email: string;
+  name: string;
+  password: string;
 }): Promise<User> {
+  const salt = crypto.randomBytes(16).toString('hex');
+  const hash = crypto
+    .pbkdf2Sync(password, salt, 1000, 64, 'sha512')
+    .toString('hex');
+
   return await db.user.create({
-    data: { id: Id(), email, name }
+    data: { id: Id(), email, name, password: hash, salt }
   });
+}
+
+async function loginUser({
+  email,
+  password
+}: {
+  email: string;
+  password: string;
+}): Promise<User | null> {
+  const user = await findUserByEmail(email);
+
+  if (!user) {
+    return null;
+  }
+  const hash = crypto
+    .pbkdf2Sync(password, user.salt || '', 1000, 64, 'sha512')
+    .toString('hex');
+
+  return user.password === hash ? user : null;
 }
 
 async function updateUser(id: string, name: string): Promise<User> {
@@ -59,4 +87,10 @@ async function updateUser(id: string, name: string): Promise<User> {
   });
 }
 
-export { findUserByEmail, findUserFromSessionId, createUser, updateUser };
+export {
+  findUserByEmail,
+  findUserFromSessionId,
+  createUser,
+  updateUser,
+  loginUser
+};

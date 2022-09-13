@@ -44,9 +44,6 @@ async function getLoginInfoSession(request: Request) {
         return decrypt(link);
       }
     },
-    setMagicLink: (magicLink: string) =>
-      session.set('magicLink', encrypt(magicLink)),
-    unsetMagicLink: () => session.unset('magicLink'),
     getMagicLinkVerified: () =>
       session.get('magicLinkVerified') as boolean | undefined,
     setMagicLinkVerified: (verified: boolean) =>

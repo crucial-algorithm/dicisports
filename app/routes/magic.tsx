@@ -19,7 +19,6 @@ export const loader: LoaderFunction = async ({ request }) => {
       request
     );
 
-    loginInfoSession.setMagicLinkVerified(true);
     if (session) {
       const headers = new Headers();
 
@@ -47,7 +46,6 @@ export const loader: LoaderFunction = async ({ request }) => {
       return redirect(`/?message=${message}`, { headers });
     }
 
-    loginInfoSession.setMagicLink(request.url);
     const url = new URL('https://a.com');
 
     if (group) {

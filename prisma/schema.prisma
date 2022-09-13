@@ -30,6 +30,11 @@ model User {
   createdAt DateTime        @default(now()) @map("created_at")
   updatedAt DateTime        @updatedAt @map("updated_at")
   email     String          @unique
+  password  String?
+  salt      String?
+  lat       Float?
+  lng       Float?
+  location  String?
   name      String
   role      Role            @default(MEMBER)
   sessions  Session[]

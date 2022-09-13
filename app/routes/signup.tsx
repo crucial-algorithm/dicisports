@@ -1,203 +1,202 @@
-import { Form, useLoaderData } from '@remix-run/react';
-import type { ActionFunction, LoaderFunction } from 'remix';
+import { Form, Link, useActionData, useSearchParams } from "@remix-run/react";
+import type { ActionFunction , LoaderFunction} from 'remix';
 import { json, redirect } from 'remix';
 
-import React, { useState } from 'react';
+import { z, ZodError } from 'zod';
+
+import React from 'react';
 
 import { useTranslation } from 'react-i18next';
 
-import {
-  getSession,
-  getUser,
-  validateMagicLink
-} from '~/server/auth/session.server';
+import { getSession, getUser } from '~/server/auth/session.server';
 import { getLoginInfoSession } from '~/server/auth/login.server';
-import { getErrorStack } from '~/utils/misc';
-import { handleFormSubmission } from '~/server/actions.server';
-import type { MemberProfile } from '~/types';
-import ProfileFragment from '~/components/ProfileFragment';
-import i18n, { ERRORS_NAMESPACE } from '~/server/i18n.server';
+import { badRequest } from '~/utils/misc';
+import i18n from '~/server/i18n.server';
 import { createUser, findUserByEmail } from '~/server/db/users.server';
-import Button from '~/components/shared/Button';
+import Button, { ButtonLink } from '~/components/shared/Button';
 
 import ButtonGroup from '~/components/shared/ButtonGroup';
+import Main from '~/components/shared/Main';
+import FormField from '~/components/shared/form/FormField';
+import TextField from '~/components/shared/form/TextField';
+import { H2, H6 } from '~/components/shared/typography';
+import { verifyEmailAddress } from '~/server/auth/verifier.server';
+import { addGroupToFavorites } from "~/server/db/groups.server";
 
 type ActionData = {
-  status: 'success' | 'error'
   fields: {
-    name: string | null
-  }
+    name: string;
+    email: string;
+  };
   errors: {
-    generalError?: string
-    name: string | null
-  }
-}
-
-function getErrorForName(name: string | null) {
-  if (!name) {return 'Name is required';}
-  if (name.length > 60) {return 'Name is too long';}
-  return null;
-}
-
-export const action: ActionFunction = async ({ request }) => {
-  const loginInfoSession = await getLoginInfoSession(request);
-  const t = await i18n.getFixedT(request, 'profile');
-
-  const requestText = await request.text();
-  const form = new URLSearchParams(requestText);
-
-  if (form.get('actionId') === actionIds.cancel) {
-    loginInfoSession.clean();
-    return redirect('/', {
-      headers: await loginInfoSession.getHeaders()
-    });
-  }
-
-  const session = await getSession(request);
-  const magicLink = loginInfoSession.getMagicLink();
-  let email: string;
-
-  try {
-    email = (
-      await validateMagicLink(magicLink, loginInfoSession.getMagicLink())
-    ).email;
-  } catch (error: unknown) {
-    console.error(getErrorStack(error));
-    const te = await i18n.getFixedT(request, ERRORS_NAMESPACE);
-
-    loginInfoSession.clean();
-    loginInfoSession.flashError(
-      await te('>>Error<<: Sign in link invalid. Please request a new one')
-    );
-    return redirect('/login', {
-      headers: await loginInfoSession.getHeaders()
-    });
-  }
-
-  return handleFormSubmission<ActionData>({
-    form,
-    validators: {
-      name: getErrorForName
-    },
-    handleFormValues: async (formData) => {
-      const { name } = formData;
-
-      try {
-        const user = await createUser({ email, name });
-
-        const headers = new Headers();
-
-        await session.signIn(user);
-        await session.getHeaders(headers);
-        // IDEA: try using destroy... Didn't seem to work last time I tried though.
-        loginInfoSession.clean();
-        await loginInfoSession.getHeaders(headers);
-        return redirect('/me', { headers });
-      } catch (error: unknown) {
-        console.error(getErrorStack(error));
-
-        loginInfoSession.flashError(
-          await t('Problem Creating Account')
-        );
-        return redirect('/login', {
-          headers: await loginInfoSession.getHeaders()
-        });
-      }
-    }
-  });
+    generalError?: string;
+    name: string | null;
+    email: string | null;
+    confirmation: string | null;
+    password: string | null;
+  };
 };
 
 export const loader: LoaderFunction = async ({ request }) => {
-  const te = await i18n.getFixedT(request, ERRORS_NAMESPACE);
   const user = await getUser(request);
 
   if (user) {
     return redirect('/me');
   }
 
-  const loginInfoSession = await getLoginInfoSession(request);
-  const magicLink = loginInfoSession.getMagicLink();
+  return null;
+};
 
-  // https://github.com/crucial-algorithm/dici-pilot/issues/12
-  //  const email = loginInfoSession.getEmail();
-  let email: string | null;
+export const action: ActionFunction = async ({ request }) => {
+  const loginInfoSession = await getLoginInfoSession(request);
+  const t = await i18n.getFixedT(request, 'signup');
+  const { searchParams } = new URL(request.url);
+  const postSignUpAction = searchParams.get('a');
+
+
+  const requestText = await request.text();
+  const form = new URLSearchParams(requestText);
+  const session = await getSession(request);
+
+  const data = {
+    name: form.get('name'),
+    email: form.get('email'),
+    confirmation: form.get('confirmation'),
+    password: form.get('password')
+  };
+
+  const Schema = z
+    .object({
+      name: z
+        .string()
+        .min(5, t('Name min length'))
+        .max(60, t('Name max length')),
+      email: z
+        .string()
+        .email(t('Invalid Email'))
+        .refine(async (v) => !(await findUserByEmail(v)), t('User Already Exists'))
+        .refine(async (v) => verifyEmailAddress(v), t('Fake email')),
+      confirmation: z.string().email(t('Invalid Email')),
+      password: z.string().min(6, t('Password min length'))
+    })
+    .refine((data) => data.email === data.confirmation, {
+      message: t('Emails mismatch'),
+      path: ['confirmation']
+    });
 
   try {
-    email = (
-      await validateMagicLink(magicLink, loginInfoSession.getMagicLink())
-    ).email;
-  } catch (err) {
-    console.error(err);
-    email = null;
-  }
+    await Schema.parseAsync(data);
+    const { email, name, password } = data as {
+      email: string;
+      name: string;
+      password: string;
+    };
 
-  console.log('.... Signup', magicLink, email);
-  if (!magicLink || !email) {
+    const user = await createUser({ email, name, password });
+
+    const headers = new Headers();
+
+    await session.signIn(user);
+    await session.getHeaders(headers);
     loginInfoSession.clean();
-    loginInfoSession.flashError(await te('>>Error<<: Invalid magic link'));
-    return redirect('/login', {
-      headers: await loginInfoSession.getHeaders()
-    });
+    await loginInfoSession.getHeaders(headers);
+
+    if (postSignUpAction === 'favorite') {
+      try {
+        await addGroupToFavorites(user.id, searchParams.get('g') as string);
+      } catch (err) {
+        console.error(err);
+        // do nothing
+      }
+    }
+
+    return redirect('/me', { headers });
+  } catch (e) {
+    if (!(e instanceof ZodError)) {
+      console.error(e);
+      return badRequest({
+        error: 'We dont know what happened'
+      });
+    }
+
+    const errors: { [key: string]: string | undefined } = {};
+
+    for (const error of (e as ZodError).errors) {
+      errors[error.path[0]] = error.message;
+    }
+
+    const payload: ActionData = {
+      status: 'error',
+      // @ts-ignore
+      errors: errors,
+      fields: {
+        name: data.name || '',
+        email: data.email || ''
+      }
+    };
+
+    return json(payload);
   }
-
-  const userForMagicLink = await findUserByEmail(email);
-
-  if (userForMagicLink) {
-    // user exists, but they haven't clicked their magic link yet
-    // we don't want to tell them that a user exists with that email though
-    // so we'll invalidate the magic link and force them to try again.
-    loginInfoSession.clean();
-    loginInfoSession.flashError(await te('>>Error<<: Invalid magic link'));
-    return redirect('/login', {
-      headers: await loginInfoSession.getHeaders()
-    });
-  }
-
-  const headers = await loginInfoSession.getHeaders();
-
-  return json({ email }, { headers });
 };
 
 export const handle = {
   i18n: ['common', 'signup']
 };
 
-const actionIds = {
-  cancel: 'cancel',
-  signUp: 'sign up'
-};
+function defaultData(): ActionData {
+  return {
+    errors: {
+      name: '',
+      email: '',
+      confirmation: '',
+      password: ''
+    },
+    fields: { name: '', email: '' }
+  };
+}
 
 export default function SignUp() {
-  const data = useLoaderData<MemberProfile>();
-  const [action, setAction] = useState<string>('submit');
   const { t } = useTranslation('signup');
-
-  function handleSetAction() {
-    setAction('cancel')
-  }
+  const [searchParams] = useSearchParams();
+  const { errors, fields } =
+    (useActionData<ActionData>() as ActionData) || defaultData();
 
   return (
-    <main className="mx-10vw flex">
-      <div className="m-auto">
-        <Form method="post" className="w-96">
-          <ProfileFragment
-            profile={data}
-            labelEmail={t('Email')}
-            labelName={t('Name')}
-          />
-          <ButtonGroup>
-            <Button
-              className="mr-2"
-              variant="secondary"
-              onClick={handleSetAction}
-            >
-              {t('Cancel')}
-            </Button>
-            <Button>{t('Create Profile')}</Button>
-          </ButtonGroup>
-          <input type="hidden" name="actionId" value={action} />
-        </Form>
-      </div>
-    </main>
+    <Main className="flex flex-col w-full h-full p-8 max-w-lg m-auto justify-center align-middle">
+      <H2 className="mb-2 text-secondary">{t('Sign Up')}</H2>
+      <H6 variant="secondary" as="p" className="text-white mb-8">
+        {t('Sign Up Instructions')}
+      </H6>
+      <Form
+        method="post"
+        className="w-96"
+        action={`/signup${
+          searchParams.toString().length ? `?${searchParams}` : ''
+        }`}
+      >
+        <FormField label={t('Email')} error={errors?.email}>
+          <TextField name="email" defaultValue={fields?.name} />
+        </FormField>
+        <FormField label={t('Confirm Email')} error={errors?.confirmation}>
+          <TextField name="confirmation" autoComplete="off" />
+        </FormField>
+        <FormField label={t('Name')} error={errors?.name}>
+          <TextField name="name" defaultValue={fields?.name} />
+        </FormField>
+        <FormField label={t('Password')} error={errors?.password}>
+          <TextField name="password" type="password" />
+        </FormField>
+        <ButtonGroup>
+          <ButtonLink variant="secondary" to="/">
+            {t('Cancel')}
+          </ButtonLink>
+          <Button>{t('Create Profile')}</Button>
+        </ButtonGroup>
+      </Form>
+      <p className="dark:text-blueGray-500 text-gray-500 mt-8">
+        {t('Privacy Policy Presentation')} &nbsp;
+        <Link to="/privacy">{t('Privacy Policy')}</Link>
+      </p>
+    </Main>
   );
 }
