@@ -1,4 +1,9 @@
-import { useActionData, useFetcher, useLoaderData } from '@remix-run/react';
+import {
+  useActionData,
+  useFetcher,
+  useLoaderData,
+  useTransition
+} from '@remix-run/react';
 import type { ActionFunction, LinksFunction, LoaderFunction } from 'remix';
 import {
   json,
@@ -504,12 +509,12 @@ export default function OrganizerEventRoute() {
           <FormField label={t('Directions')}>
             <div className="mt-2 relative rounded-md shadow-sm">
               <textarea
-                  name="get-there"
-                  className={inputBaseClasses('p-10')}
-                  placeholder={t('How to get there')}
-                  defaultValue={event.directions || ''}
-                  rows={5}
-                  cols={50}
+                name="get-there"
+                className={inputBaseClasses('p-10')}
+                placeholder={t('How to get there')}
+                defaultValue={event.directions || ''}
+                rows={5}
+                cols={50}
               />
             </div>
           </FormField>
@@ -558,16 +563,6 @@ type FormErrors = {
   validUntil?: string;
 };
 
-function clearForm(name: React.RefObject<HTMLInputElement> | null) {
-  clearInputField(name);
-}
-
-function clearInputField(ref: React.RefObject<HTMLInputElement> | null) {
-  if (ref && ref.current) {
-    ref.current.value = '';
-  }
-}
-
 function RaceDialog(props: {
   isOpen: boolean;
   triggerModalClose: () => void;
@@ -580,16 +575,35 @@ function RaceDialog(props: {
   const fetcher = useFetcher();
   const [errors, setErrors] = useState<FormErrors>({});
   const [hour, minute] = timeOfDayToHoursMinutes(race?.startTime as number);
+
   const name = useRef<HTMLInputElement | null>(null);
+  const distance = useRef<HTMLInputElement | null>(null);
+  const elevationGain = useRef<HTMLInputElement | null>(null);
+  const elevationLoss = useRef<HTMLInputElement | null>(null);
+  const price = useRef<HTMLInputElement | null>(null);
+  const priceEarlyBird = useRef<HTMLInputElement | null>(null);
+  const raceDescription = useRef<HTMLTextAreaElement | null>(null);
 
   const close = useCallback(() => {
-    clearForm(name);
     setErrors({});
     triggerModalClose();
   }, [triggerModalClose]);
 
+  function handleSubmit() {
+    const payload = {};
+
+    if (race?.id) {
+      payload.raceId = race.id;
+    }
+
+    fetcher.submit(payload, {
+      method: 'post',
+      action: '/organizer/race/create'
+    });
+  }
+
   useEffect(() => {
-    if (fetcher.type === 'actionRedirect') {
+    if (fetcher.type === 'actionReload' && fetcher.data.ok) {
       // redirect means success, since we redirect when race was created
 
       return close();
@@ -633,8 +647,8 @@ function RaceDialog(props: {
             <H3 className="w-full md:w-112 text-left">{t('Distance Modal')}</H3>
             <Spacer size="2xs" />
 
-            <input type="hidden" name="event-id" value={eventId} />
-            <input type="hidden" name="race-id" value={race?.id} />
+            <input type="hidden" name="eventId" value={eventId} />
+            <input type="hidden" name="raceId" value={race?.id} />
             <input type="hidden" name="hash" value={hash} />
 
             <FormField label={t('Race name')} error={errors?.name}>
@@ -659,6 +673,7 @@ function RaceDialog(props: {
                 type="number"
                 className="w-44"
                 placeholder={t('Distance Placeholder')}
+                input={distance}
                 defaultValue={race?.distance}
               ></TextField>
             </FormField>
@@ -675,20 +690,22 @@ function RaceDialog(props: {
             <FormField label={t('D+')} error={errors?.elevationGain}>
               <TextField
                 id="race-elevation-gain"
-                name="elevation-gain"
+                name="elevationGain"
                 type="number"
                 className="w-44"
                 placeholder={t('D+ Placeholder')}
+                input={elevationGain}
                 defaultValue={race?.elevationGain}
               ></TextField>
             </FormField>
             <FormField label={t('D-')} error={errors?.elevationLoss}>
               <TextField
-                id="race-elevation-los"
-                name="elevation-loss"
+                id="race-elevation-loss"
+                name="elevationLoss"
                 type="number"
                 className="w-44"
                 placeholder={t('D- Placeholder')}
+                input={elevationLoss}
                 defaultValue={race?.elevationLoss as number}
               ></TextField>
             </FormField>
@@ -700,6 +717,7 @@ function RaceDialog(props: {
                 type="number"
                 className="w-44"
                 placeholder={t('Price Placeholder')}
+                input={price}
                 defaultValue={race?.price}
               ></TextField>
             </FormField>
@@ -712,10 +730,11 @@ function RaceDialog(props: {
               >
                 <TextField
                   id="race-early-bird"
-                  name="price-early-bird"
+                  name="priceEarlyBird"
                   type="number"
                   className="w-44"
                   placeholder={t('Price Early Bird Placeholder')}
+                  input={priceEarlyBird}
                   defaultValue={race?.priceEarlyBird as number}
                 ></TextField>
               </FormField>
@@ -742,6 +761,7 @@ function RaceDialog(props: {
                   className={inputBaseClasses('p-10 max-w-lg')}
                   placeholder={t('Race Description')}
                   defaultValue={race?.raceDescription || ''}
+                  ref={raceDescription}
                   rows={5}
                   cols={50}
                 />
@@ -758,7 +778,12 @@ function RaceDialog(props: {
                 {t('Cancel')}
               </Button>
 
-              <Button size="medium" className="mt-8" type="submit">
+              <Button
+                size="medium"
+                className="mt-8"
+                type="button"
+                onClick={handleSubmit}
+              >
                 {race?.id ? t('Update Distance') : t('Create Distance')}
               </Button>
             </div>
@@ -908,6 +933,22 @@ function DeleteRaceDialog(props: {
   const { isOpen, onDismiss, race, eventId } = props;
   const fetcher = useFetcher();
 
+  function handleSubmit() {
+    fetcher.submit(
+      { actionId: 'delete', raceId: race?.id as string, eventId: eventId },
+      {
+        method: 'post',
+        action: '/organizer/race/create'
+      }
+    );
+  }
+
+  useEffect(() => {
+    if (fetcher.type === 'actionReload' && fetcher.data.ok) {
+      onDismiss();
+    }
+  }, [fetcher, onDismiss]);
+
   return (
     <div
       data-reach-dialog-overlay={true}
@@ -930,19 +971,21 @@ function DeleteRaceDialog(props: {
         <Paragraph>{t('Are you sure you want to delete race?')}</Paragraph>
         <Spacer size="2xs" />
 
-        <fetcher.Form method="post" action="/organizer/race/create">
-          <input type="hidden" name="actionId" value="delete" />
-          <input type="hidden" name="race-id" value={race?.id} />
-          <input type="hidden" name="event-id" value={eventId} />
-          <div className="flex flex-wrap gap-4">
-            <Button type="button" onClick={onDismiss}>
-              {t('Ignore')}
-            </Button>
-            <Button variant="danger" size="medium" type="submit">
-              {t('Delete')}
-            </Button>
-          </div>
-        </fetcher.Form>
+        <div className="flex flex-wrap gap-4">
+          <Button type="button" onClick={onDismiss}>
+            {t('Ignore')}
+          </Button>
+          <Button
+            variant="danger"
+            size="medium"
+            type="button"
+            onClick={() => {
+              handleSubmit();
+            }}
+          >
+            {t('Delete')}
+          </Button>
+        </div>
       </div>
     </div>
   );
