@@ -582,6 +582,7 @@ function RaceDialog(props: {
   const elevationLoss = useRef<HTMLInputElement | null>(null);
   const price = useRef<HTMLInputElement | null>(null);
   const priceEarlyBird = useRef<HTMLInputElement | null>(null);
+  const validUntil = useRef<HTMLInputElement | null>(null);
   const raceDescription = useRef<HTMLTextAreaElement | null>(null);
 
   const close = useCallback(() => {
@@ -590,11 +591,21 @@ function RaceDialog(props: {
   }, [triggerModalClose]);
 
   function handleSubmit() {
-    const payload = {};
-
-    if (race?.id) {
-      payload.raceId = race.id;
-    }
+    const payload = {
+      raceId: race?.id? race.id : '',
+      name: name.current?.value,
+      distance: distance.current?.value,
+      hour: 90,
+      minute: 90,
+      elevationGain: elevationGain.current?.value,
+      elevationLoss: elevationLoss.current?.value,
+      price: price.current?.value,
+      priceEarlyBird: priceEarlyBird.current?.value,
+      date: validUntil.current?.value,
+      raceDescription: raceDescription.current?.value,
+      hash,
+      eventId
+    };
 
     fetcher.submit(payload, {
       method: 'post',
@@ -749,6 +760,7 @@ function RaceDialog(props: {
                   label={''}
                   name="date"
                   date={race?.validUntil ? new Date(race.validUntil) : null}
+                  input={validUntil}
                   className="w-full"
                 />
               </FormField>
