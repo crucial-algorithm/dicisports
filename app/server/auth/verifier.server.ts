@@ -17,5 +17,6 @@ export async function verifyEmailAddress(emailAddress: string) {
   const response = await fetch(verifierUrl.toString());
   const verifierResult: VerifierResult = await response.json();
 
-  return verifierResult;
+
+  return verifierResult.status;
 }
