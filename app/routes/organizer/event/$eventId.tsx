@@ -578,6 +578,7 @@ function RaceDialog(props: {
 
   const name = useRef<HTMLInputElement | null>(null);
   const distance = useRef<HTMLInputElement | null>(null);
+  const startTime = useRef<HTMLInputElement | null>(null);
   const elevationGain = useRef<HTMLInputElement | null>(null);
   const elevationLoss = useRef<HTMLInputElement | null>(null);
   const price = useRef<HTMLInputElement | null>(null);
@@ -591,12 +592,22 @@ function RaceDialog(props: {
   }, [triggerModalClose]);
 
   function handleSubmit() {
+    let hour: undefined | number = undefined;
+    let minute: undefined | number = undefined;
+
+    if (startTime.current?.value) {
+      const [h, m] = startTime.current.value.split(':').map(Number);
+
+      hour = h;
+      minute = m;
+    }
+
     const payload = {
-      raceId: race?.id? race.id : '',
+      raceId: race?.id ? race.id : '',
       name: name.current?.value,
       distance: distance.current?.value,
-      hour: 90,
-      minute: 90,
+      hour,
+      minute,
       elevationGain: elevationGain.current?.value,
       elevationLoss: elevationLoss.current?.value,
       price: price.current?.value,
@@ -607,6 +618,7 @@ function RaceDialog(props: {
       eventId
     };
 
+    // Payload types error
     fetcher.submit(payload, {
       method: 'post',
       action: '/organizer/race/create'
@@ -615,7 +627,7 @@ function RaceDialog(props: {
 
   useEffect(() => {
     if (fetcher.type === 'actionReload' && fetcher.data.ok) {
-      // redirect means success, since we redirect when race was created
+      // reload & ok means success, since we return json({ ok: true })
 
       return close();
     }
@@ -695,7 +707,7 @@ function RaceDialog(props: {
               className="w-80"
               error={errors?.startTime}
             >
-              <HourOfDay hour={hour} minute={minute} />
+              <HourOfDay hour={hour} minute={minute} input={startTime} />
             </FormField>
 
             <FormField label={t('D+')} error={errors?.elevationGain}>

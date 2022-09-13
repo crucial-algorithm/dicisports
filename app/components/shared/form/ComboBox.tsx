@@ -22,7 +22,8 @@ type Props = {
   lang?: Language
   defaultValue?: string | number
   placeholder: string
-} & React.ComponentProps<'select'>
+  onChange: (value: string | number ) => void
+} & Omit<React.ComponentProps<'select'>, 'onChange'>
 
 export default function ComboBox({
   name,
@@ -30,7 +31,8 @@ export default function ComboBox({
   className,
   options,
   lang,
-  placeholder
+  placeholder,
+  onChange
 }: Props) {
   const [value, setValue] = useState<Option | undefined>(undefined);
   const [theme] = useTheme();
@@ -57,6 +59,7 @@ export default function ComboBox({
 
   function handleSelectChange(o: Option) {
     setValue(o);
+    onChange(o.value);
   }
 
   function NoOptionsMessage() {
