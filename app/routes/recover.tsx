@@ -1,8 +1,8 @@
 import { useTranslation } from 'react-i18next';
 import { Form, useActionData } from '@remix-run/react';
 
-import type { ActionFunction } from 'remix';
-import { json } from 'remix';
+import type { ActionFunction, LoaderFunction } from 'remix';
+import { json, redirect } from 'remix';
 
 import { z } from 'zod';
 
@@ -13,12 +13,13 @@ import InputError from '~/components/shared/form/InputError';
 import Button, { ButtonLink } from '~/components/shared/Button';
 import ButtonGroup from '~/components/shared/ButtonGroup';
 
-
 import i18n from '~/server/i18n.server';
 
-
 import { findUserByEmail } from '~/server/db/users.server';
-import { sendRecoverPasswordToken } from '~/server/auth/session.server';
+import {
+  getUser,
+  sendRecoverPasswordToken
+} from '~/server/auth/session.server';
 import { getDomainUrl } from '~/utils/misc';
 
 export const handle = {
@@ -35,6 +36,15 @@ type ActionData = {
   },
   successMessage: string | null
 }
+
+export const loader: LoaderFunction = async ({ request }) => {
+  const user = await getUser(request);
+
+  if (user) {
+    return redirect('/');
+  }
+  return null;
+};
 
 export const action: ActionFunction = async ({ request }) => {
   const t = await i18n.getFixedT(request, ['recover-password']);
