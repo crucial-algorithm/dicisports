@@ -9,10 +9,14 @@ import {
 import type { Race } from '~/types';
 import { badRequest } from '~/utils/misc';
 import i18n from '~/server/i18n.server';
+import { requireAdminUser } from '~/server/auth/session.server';
 
 const RESOURCES_NS = 'create-event-form';
 
 export const action: ActionFunction = async ({ request, params }) => {
+  // hide while this is still in dev
+  await requireAdminUser(request);
+
   const t = await i18n.getFixedT(request, RESOURCES_NS);
 
   const raceId = params.raceId as string;

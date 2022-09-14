@@ -35,17 +35,23 @@ import { useElementState } from './hooks/useElementState';
 
 
 const LINKS = [
-  { name: 'NAVBAR >>> Events', to: '/organizer', public: false },
-  { name: 'NAVBAR >>> Meeting Point', to: '/m/groups', public: false }
+  { name: 'NAVBAR >>> Events', to: '/organizer', public: false, roles: ['ADMIN'] },
+  { name: 'NAVBAR >>> Meeting Point', to: '/m/groups', public: false, roles: [] }
 ];
 
-const MOBILE_LINKS = [{ name: 'Home', to: '/', public: true }, ...LINKS];
+const MOBILE_LINKS = [{ name: 'Home', to: '/', public: true, roles: [] }, ...LINKS];
 
 const links = (
-  list: Array<{ name: string; to: string; public: boolean }>,
+  list: Array<{ name: string; to: string; public: boolean; roles: string[] }>,
   user: User | null
 ) => {
-  return list.filter((l) => l.public || (!l.public && user));
+  return list.filter(
+    (l) =>
+      l.public ||
+      (!l.public &&
+        user &&
+        (l.roles.length === 0 || l.roles.includes(user.role)))
+  );
 };
 
 function NavLink({

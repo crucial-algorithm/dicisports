@@ -69,6 +69,7 @@ import Label from '~/components/shared/form/Label';
 import WhenListEmpty from '~/components/shared/Empty';
 import HourOfDay from '~/components/HourOfDay';
 import { Spacer } from '~/components/shared/Spacer';
+import { requireAdminUser } from '~/server/auth/session.server';
 
 type ActionData = {
   hash: number;
@@ -97,6 +98,9 @@ export const handle = {
 };
 
 export const loader: LoaderFunction = async ({ request, params }) => {
+  // hide while this is still in dev
+  await requireAdminUser(request);
+
   const sports = await findSports();
   const eventId = params.eventId as string;
   const event = eventId ? await findEvent(eventId) : null;
@@ -119,6 +123,9 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 };
 
 export const action: ActionFunction = async ({ request, params }) => {
+  // hide while this is still in dev
+  await requireAdminUser(request);
+
   const t = await i18n.getFixedT(request, RESOURCES_NS);
   const uploadHandler: UploadHandler = unstable_composeUploadHandlers(
     // our custom upload handler
