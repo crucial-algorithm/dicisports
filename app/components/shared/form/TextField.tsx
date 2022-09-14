@@ -4,14 +4,15 @@ import HTMLId from '~/utils/HTMLId';
 import InputBase from '~/components/shared/form/InputBase';
 
 type Props = {
-  name: string
-  placeholder?: string
-  defaultValue?: any
-  size?: 'regular' | 'large'
-  adornment?: React.ReactNode
-  onChange?: (value: any) => void
-  input?:  React.RefObject<HTMLInputElement>
-} & React.ComponentProps<'input'>
+  name: string;
+  placeholder?: string;
+  defaultValue?: any;
+  size?: 'regular' | 'large';
+  adornment?: React.ReactNode;
+  onChange?: (value: any) => void;
+  type?: 'text' | 'password' | 'number';
+  input?:  React.RefObject<HTMLInputElement>;
+} & React.ComponentProps<'input'>;
 
 const TextField: React.FC<Props> = ({
   name,
@@ -23,6 +24,7 @@ const TextField: React.FC<Props> = ({
   readOnly,
   disabled,
   id,
+  type = 'text',
   input
 }) => {
   id = id || HTMLId();
@@ -34,7 +36,8 @@ const TextField: React.FC<Props> = ({
         defaultValue={defaultValue}
         placeholder={placeholder}
         onChange={onChange}
-        type="text"
+        // @ts-ignore
+        type={type}
         className={className}
         readOnly={readOnly}
         disabled={disabled}

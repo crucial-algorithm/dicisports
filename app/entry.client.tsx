@@ -18,7 +18,11 @@ i18next
     // I recommend you to always disable react.useSuspense for i18next
     react: { useSuspense: false },
     ns: getInitialNamespaces(),
-    backend: { loadPath: '/locales/{{lng}}/{{ns}}.json' },
+    backend: {
+      loadPath: '/locales/{{lng}}/{{ns}}.json',
+      // TODO: auto generate in build time
+      queryStringParams: { v: '1.1' }
+    },
     detection: {
       // Here only enable htmlTag detection, we'll detect the language only
       // server-side with remix-i18next, by using the `<html lang>` attribute

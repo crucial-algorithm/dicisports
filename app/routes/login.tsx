@@ -1,14 +1,11 @@
-import { Form, useLoaderData } from '@remix-run/react';
+import { Form, Link, useActionData, useSearchParams } from '@remix-run/react';
 
-import type {
-  ActionFunction,
-  LoaderFunction } from 'remix';
+import { z, ZodError } from 'zod';
 
+import type { ActionFunction, LoaderFunction } from 'remix';
 import { json, redirect } from 'remix';
 
-import { Link, useSearchParams } from '@remix-run/react';
-
-import { FormEvent, useState } from 'react'
+import { useRef } from 'react';
 
 import { useTranslation } from 'react-i18next';
 
@@ -18,33 +15,26 @@ import Button from '~/components/shared/Button';
 import TextField from '~/components/shared/form/TextField';
 import FormField from '~/components/shared/form/FormField';
 
-
 import { getLoginInfoSession } from '~/server/auth/login.server';
-import { getUser, sendToken } from '~/server/auth/session.server';
-import { verifyEmailAddress } from '~/server/auth/verifier.server';
-import { getDomainUrl, getErrorMessage } from '~/utils/misc';
-
+import { getSession, getUser } from '~/server/auth/session.server';
+import { badRequest, getDomainUrl } from '~/utils/misc';
 
 import i18n from '~/server/i18n.server';
 import InputError from '~/components/shared/form/InputError';
 
-
 import { H2, H6 } from '~/components/shared/typography';
 
-
 import { sendWhatsAppGroupLink, subscribeUser } from '~/server/email.server';
-import { findGroup } from '~/server/db/groups.server';
+import { addGroupToFavorites, findGroup } from "~/server/db/groups.server";
 import type { LoginAction } from '~/types';
 
-function validateEmail(email: string | null): boolean {
-  if (!email) {return false;}
-  return !!email.match(/.+@.+/);
-}
+import { loginUser } from '~/server/db/users.server';
+import Main from '~/components/shared/Main';
 
 type LoaderData = {
-  email?: string
-  error?: string
-}
+  email?: string;
+  error?: string;
+};
 
 const actions = {
   login: 'login',
@@ -53,10 +43,10 @@ const actions = {
 };
 
 type QueryStringArgs = {
-  group: null | string
-  redirectTo: null | string
-  action: LoginAction
-}
+  group: null | string;
+  redirectTo: null | string;
+  action: LoginAction;
+};
 
 function queryStringArgs(searchParams: URLSearchParams): QueryStringArgs {
   const a = searchParams.get('a');
@@ -80,7 +70,9 @@ export const handle = {
 export const loader: LoaderFunction = async ({ request }) => {
   const user = await getUser(request);
 
-  if (user) {return redirect('/me');}
+  if (user) {
+    return redirect('/me');
+  }
 
   const loginSession = await getLoginInfoSession(request);
 
@@ -99,138 +91,166 @@ export const loader: LoaderFunction = async ({ request }) => {
   return json(data, { headers });
 };
 
-export const action: ActionFunction = async ({ request }) => {
-  const t = await i18n.getFixedT(request, 'profile');
-  const params = new URLSearchParams(await request.text());
-  const loginSession = await getLoginInfoSession(request);
-  const emailAddress = params.get('email');
-  const action = params.get('action') as LoginAction;
-
-  if (emailAddress) {loginSession.setEmail(emailAddress);}
-
-  if (!emailAddress || !validateEmail(emailAddress)) {
-    loginSession.flashError(t('Invalid Email'));
-    return redirect('/login', {
-      status: 400,
-      headers: await loginSession.getHeaders()
-    });
+type ActionData = {
+  fields: {
+    email: string
+  },
+  errors: {
+    email: string | null,
+    password: string | null
+    submit: string | null
   }
+}
 
-  try {
-    const verifierResult = await verifyEmailAddress(emailAddress);
-
-    if (!verifierResult.status) {
-      const errorMessage = t('Email Error', {
-        error: verifierResult.error.message
-      });
-
-      loginSession.flashError(errorMessage);
-      return redirect('/login', {
-        status: 400,
-        headers: await loginSession.getHeaders()
-      });
-    }
-  } catch (error: unknown) {
-    console.error('There was an error verifying an email address:', error);
-    // continue on... This was probably our fault...
-    // IDEA: notify me of this issue...
-  }
-
+async function sendWhatsAppLinkFlow(request: Request, params: URLSearchParams) {
+  const t = await i18n.getFixedT(request, 'login');
+  const email = params.get('email') as string;
   const domainUrl = getDomainUrl(request);
   const redirectTo = params.get('location');
   const groupId = params.get('group');
 
-  // Is this not to login but to share whatsapp group link?
-  if (action === actions.joinWhatsAppGroup) {
-    if (!groupId) {
-      loginSession.flashError(t('Join WhatsApp: Missing group'));
-      return redirect('/login', {
-        status: 400,
-        headers: await loginSession.getHeaders()
-      });
-    }
-    const group = await findGroup(groupId);
-
-    if (!group || !group.whatsapp) {
-      loginSession.flashError(
-        !group
-          ? t('Join WhatsApp: Group not found')
-          : t('Join WhatsApp: Group does not have whatsapp')
-      );
-      return redirect('/login', {
-        status: 400,
-        headers: await loginSession.getHeaders()
-      });
-    }
-
-    await sendWhatsAppGroupLink({
-      emailAddress,
-      domainUrl,
-      groupName: group.name || '',
-      whatsAppLink: group.whatsapp
-    });
-
-    await subscribeUser(emailAddress);
-
-    return redirect(
-      redirectTo
-        ? `${redirectTo}&message=${t('WhatsApp Email Sent')}`
-        : '/login'
-    );
+  function submitError(error: string, email: string) {
+    return {
+      fields: { email },
+      errors: {
+        email: '',
+        password: '',
+        submit: error
+      }
+    };
   }
 
-  try {
-    const magicLink = await sendToken({
-      emailAddress,
-      domainUrl,
-      action,
-      group: groupId
-    });
+  if (!groupId) {
+    return json(submitError(t('Join WhatsApp: Missing group'), email));
+  }
+  const group = await findGroup(groupId);
 
-    loginSession.setMagicLink(magicLink);
-    return redirect('/login', {
-      headers: await loginSession.getHeaders()
+  if (!group || !group.whatsapp) {
+    return json({
+      fields: { email },
+      errors: {
+        email: '',
+        password: '',
+        submit: !group
+          ? t('Join WhatsApp: Group not found')
+          : t('Join WhatsApp: Group does not have whatsapp')
+      }
     });
-  } catch (e: unknown) {
-    loginSession.flashError(t(getErrorMessage(e)));
-    return redirect('/login', {
-      status: 400,
-      headers: await loginSession.getHeaders()
+  }
+
+  await sendWhatsAppGroupLink({
+    emailAddress: email,
+    domainUrl,
+    groupName: group.name || '',
+    whatsAppLink: group.whatsapp
+  });
+
+  await subscribeUser(email);
+
+  return redirect(
+    redirectTo ? `${redirectTo}&message=${t('WhatsApp Email Sent')}` : '/login'
+  );
+}
+
+export const action: ActionFunction = async ({ request }) => {
+  const loginInfoSession = await getLoginInfoSession(request);
+  const t = await i18n.getFixedT(request, 'login');
+  const params = new URLSearchParams(await request.text());
+  const email = params.get('email') as string;
+  const password = params.get('password') as string;
+  const action = params.get('action') as LoginAction;
+  const { searchParams } = new URL(request.url);
+  const postLoginAction = searchParams.get('a');
+
+  // Is this not to login but to share whatsapp group link?
+  if (action === actions.joinWhatsAppGroup) {
+    return sendWhatsAppLinkFlow(request, params);
+  }
+
+  const Schema = z.object({
+    email: z.string().email(t('Invalid Email')),
+    password: z.string().min(1, t('Password min length'))
+  });
+
+  try {
+    Schema.parse({
+      email,
+      password
     });
+    const user = await loginUser({ email: email, password });
+
+    if (!user) {
+      return json({
+        errors: { email: '', password: '', submit: t('Login Failed') },
+        fields: { email }
+      });
+    }
+
+    const session = await getSession(request);
+    const headers = new Headers();
+
+    await session.signIn(user);
+    await session.getHeaders(headers);
+    loginInfoSession.clean();
+    await loginInfoSession.getHeaders(headers);
+
+    if (postLoginAction === 'favorite') {
+      try {
+        await addGroupToFavorites(user.id, searchParams.get('g') as string);
+      } catch (err) {
+        console.error(err);
+        // do nothing
+      }
+    }
+
+    return redirect('/', { headers });
+
+  } catch (e) {
+    if (!(e instanceof ZodError)) {
+      console.error(e);
+      return badRequest({
+        error: 'We dont know what happened'
+      });
+    }
+
+    const errors: { [key: string]: string | undefined } = {};
+
+    for (const error of (e as ZodError).errors) {
+      errors[error.path[0]] = error.message;
+    }
+
+    return json({ errors, fields: { email } });
   }
 };
 
-function LoginButton({
-  disabled = false,
-  label
-}: {
-  disabled: boolean
-  label: string
-}) {
-  return <Button disabled={disabled}>{label}</Button>;
+function defaultData(): ActionData {
+  return {
+    errors: {
+      email: '',
+      password: '',
+      submit: ''
+    },
+    fields: { email: '' }
+  };
 }
 
 export default function Login() {
-  const data = useLoaderData<LoaderData>();
-  const [submitted, setSubmitted] = useState(false);
-  const [email, setEmail] = useState<string | undefined>();
-  const formIsValid = email?.match(/.+@.+/);
+  const { errors, fields } =
+    (useActionData<ActionData>() as ActionData) || defaultData();
   const { t } = useTranslation('login');
   const [searchParams] = useSearchParams();
   const { action, group, redirectTo } = queryStringArgs(searchParams);
+  const password = useRef<HTMLInputElement | null>(null);
 
-  function onSubmit() {
-    setSubmitted(true);
+  function handleOnSubmit() {
+    if (password?.current?.value) {
+      password.current.value = '';
+    }
   }
 
-  function handleOnChange(event: FormEvent<HTMLFormElement>) {
-    const form = event.currentTarget;
-
-    setEmail(form.email.value);
-  }
 
   return (
-    <div className="flex flex-col w-full h-full p-8 max-w-lg m-auto justify-center align-middle">
+    <Main className="w-5/6 m-auto md:w-144">
       {action === 'ws' ? (
         <WhatsAppHeader t={t} />
       ) : action === 'favorite' ? (
@@ -242,49 +262,89 @@ export default function Login() {
         autoComplete="off"
         className="w-full"
         method="post"
-        onChange={handleOnChange}
-        onSubmit={onSubmit}
+        action={`/login${
+          searchParams.toString().length ? `?${searchParams}` : ''
+        }`}
+        onSubmit={handleOnSubmit}
       >
         <input type="hidden" value={action || ''} name="action" />
         <input type="hidden" value={group || ''} name="group" />
         <input type="hidden" value={redirectTo || ''} name="location" />
-        <FormField label={t('Email')}>
+        <FormField label={t('Email')} error={errors.email}>
           <TextField
             name="email"
             className="w-full text-sm h-14 md:text-2xl md:h-20"
-            defaultValue={email}
+            defaultValue={fields.email}
             autoComplete="off"
           />
         </FormField>
-        <LoginButton
-          disabled={!formIsValid || submitted}
-          label={t(
-            action === null ? 'Email a login link' : 'Email WhatsApp Link'
-          )}
-        />
-        {data.error ? (
-          <InputError id="error-message">{data.error}</InputError>
-        ) : data.email ? (
-          <p
-            id="success-message"
-            className="dark:text-blueGray-500 text-gray-500 text-lg mt-2"
-          >
-            <span role="img" aria-label="sparkles">
-              ✨
-            </span>{' '}
-            {t(
-              action === null
-                ? 'A magic link has been sent to you'
-                : 'WhatsApp Link Success'
-            )}
-          </p>
-        ) : null}
+        {action !== actions.joinWhatsAppGroup && (
+          <FormField label={t('Password')} error={errors.password}>
+            <TextField
+              type="password"
+              name="password"
+              className="w-full text-sm h-14 md:text-2xl md:h-20"
+              autoComplete="off"
+            />
+          </FormField>
+        )}
+        <Button>{t(action === 'ws' ? 'Email WhatsApp Link' : 'Login')}</Button>
+        {errors.submit && (
+          <InputError className="mt-4" id="error-message">
+            {errors.submit}
+          </InputError>
+        )}
       </Form>
-      <p className="dark:text-blueGray-500 text-gray-500 mt-8">
-        {t('Privacy Policy Presentation')} &nbsp;
-        <Link to="/privacy">{t('Privacy Policy')}</Link>
-      </p>
-    </div>
+
+      {action !== actions.joinWhatsAppGroup && (
+        <>
+          <CreateAccount
+            text={t('Create Account')}
+            cta={t('Create Account CTA')}
+            queryString={searchParams.toString()}
+          />
+          <RecoverPassword
+            text={t('Recover Password')}
+            cta={t('Recover CTA')}
+          />
+        </>
+      )}
+    </Main>
+  );
+}
+
+function CreateAccount({
+  text,
+  cta,
+  queryString
+}: {
+  text: string;
+  cta: string;
+  queryString: string;
+}) {
+
+  return (
+    <p className="dark:text-blueGray-500 text-gray-500 mt-8">
+      {text} &nbsp;
+      <Link to={`/signup${queryString ? `?${queryString}` : '' }`}>
+        {cta}
+      </Link>
+    </p>
+  );
+}
+
+function RecoverPassword({
+  text,
+  cta
+}: {
+  text: string;
+  cta: string
+}) {
+  return (
+    <p className="dark:text-blueGray-500 text-gray-500 mt-2">
+      {text} &nbsp;
+      <Link to="/recover">{cta}</Link>
+    </p>
   );
 }
 

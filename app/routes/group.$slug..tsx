@@ -55,6 +55,7 @@ export default function GroupDisplayRoute() {
       'Sunday'
     ][group.dayOfWeek]
   );
+
   return (
     <Main>
       <H2 className="text-sp-light-blue-900 mb-4">

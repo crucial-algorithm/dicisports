@@ -82,8 +82,6 @@ const RESOURCES_NS = 'create-event-form';
 type LoaderData = {
   sports: Array<Sport>;
   mapToken: string;
-  imageUploadEndpoint: string;
-  imageDisplayEndpoint: string;
   imageUploadPreset: string;
   event: SportEvent | null;
   perks: Array<Perk>;
@@ -105,15 +103,11 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 
   const {
     MAPBOX_TOKEN,
-    IMAGE_UPLOAD_ENDPOINT,
-    IMAGE_DISPLAY_ENDPOINT,
     CLOUDINARY_UPLOAD_PRESET
   } = Config();
 
   return json({
     mapToken: MAPBOX_TOKEN,
-    imageUploadEndpoint: IMAGE_UPLOAD_ENDPOINT,
-    imageDisplayEndpoint: IMAGE_DISPLAY_ENDPOINT,
     imageUploadPreset: CLOUDINARY_UPLOAD_PRESET,
     event,
     sports: sports.map((sport) => {
