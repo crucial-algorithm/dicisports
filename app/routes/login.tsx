@@ -250,7 +250,7 @@ export default function Login() {
 
 
   return (
-    <Main className="w-5/6 m-auto md:w-112">
+    <Main className="w-5/6 m-auto md:w-144">
       {action === 'ws' ? (
         <WhatsAppHeader t={t} />
       ) : action === 'favorite' ? (
