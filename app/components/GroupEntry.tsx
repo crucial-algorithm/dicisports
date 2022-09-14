@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import React, { useState } from 'react';
+import React, { useLayoutEffect, useRef, useState } from 'react';
 
 import { useTranslation } from 'react-i18next';
 
@@ -20,9 +20,11 @@ type Props = {
 } & React.ComponentProps<'div'>;
 
 export default function GroupEntry({ group, actions, footer, img }: Props) {
+  const targetRef = useRef();
   const { t } = useTranslation('m-groups');
   const tc = useTranslation('common').t;
   const [click, setClick] = useState<boolean>(false);
+  const [lines, setLines] = useState(0);
   const day = tc(
     [
       'Monday',
@@ -38,6 +40,24 @@ export default function GroupEntry({ group, actions, footer, img }: Props) {
   function handleReadMore() {
     click ? setClick(false) : setClick(true);
   }
+
+  function showMore(text: string) {
+    return (
+      text
+        .split(/\r\n|\r|\n/)
+        .map((str) => str.match(/.{1,20}/g).length)
+        .reduce((p, c) => c + (p || 0)) > 3
+    );
+  }
+
+  useLayoutEffect(() => {
+    if (targetRef.current) {
+      console.log({
+        width: targetRef.current.offsetWidth,
+        height: targetRef.current.offsetHeight
+      });
+    }
+  }, []);
 
   return (
     <div
@@ -86,13 +106,14 @@ export default function GroupEntry({ group, actions, footer, img }: Props) {
                 <div
                   className={clsx(
                     click
-                      ? 'break-words line-clamp-none whitespace-pre max-w-[90ch] dark:text-white text-gray-500 text-base'
-                      : 'break-words line-clamp-3 whitespace-pre max-w-[90ch] dark:text-white text-gray-500 text-base'
+                      ? 'break-words line-clamp-none whitespace-pre-wrap max-w-[90ch] dark:text-white text-gray-500 text-base'
+                      : 'break-words line-clamp-3 whitespace-pre-wrap max-w-[90ch] dark:text-white text-gray-500 text-base'
                   )}
+                  ref={targetRef}
                 >
                   {group.description}
                 </div>
-                {group.description.split(/\r\n|\r|\n/).length > 3 ? (
+                {showMore(group.description) ? (
                   <label
                     className="w-20"
                     role="button"
