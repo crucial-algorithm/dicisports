@@ -1,6 +1,11 @@
 import type { ActionFunction, LinksFunction, LoaderFunction } from 'remix';
 
-import { json, redirect, unstable_createMemoryUploadHandler, unstable_parseMultipartFormData } from 'remix';
+import {
+  json,
+  redirect,
+  unstable_createMemoryUploadHandler,
+  unstable_parseMultipartFormData
+} from 'remix';
 
 import { useActionData } from '@remix-run/react';
 
@@ -21,11 +26,9 @@ import { Dialog } from '@reach/dialog';
 import Main from '~/components/shared/Main';
 import { H2, H3, Paragraph } from '~/components/shared/typography';
 
-
 import { requireUser } from '~/server/auth/session.server';
 import { findSports } from '~/server/db/sports.server';
 import { deleteGroup, findGroup, updateGroup } from '~/server/db/groups.server';
-
 
 import Button from '~/components/shared/Button';
 import FormField from '~/components/shared/form/FormField';
@@ -43,11 +46,9 @@ import { findGroupTypes } from '~/server/db/groupTypes.server';
 import HourOfDay from '~/components/HourOfDay';
 import { findGroupsSpirit } from '~/server/db/groupsSpirit.server';
 
-
 import { MapDialog } from '~/components/shared/Map';
 import Config from '~/server/config.server';
 import UploadImage from '~/components/shared/form/UploadImage';
-
 
 import {
   badRequest,
@@ -59,25 +60,24 @@ import UploadForm from '~/components/shared/form/UploadForm';
 import mapCss from '~/styles/map.css';
 import vendorsCss from '~/styles/vendors.css';
 
-
 import i18n from '~/server/i18n.server';
 import InputError from '~/components/shared/form/InputError';
 import { Spacer } from '~/components/shared/Spacer';
 
 import { uploadImageToCloudinary } from '~/server/storage/cloudinary.server';
-
+import { inputBaseClasses } from '~/components/shared/form/InputBase';
 
 const RESOURCES_NS = 'groups-form';
 
 type LoaderData = {
-  sports: Array<Sport>
-  groupTypes: Array<GroupType>
-  groupsSpirit: Array<GroupSpirit>
-  group: Group
+  sports: Array<Sport>;
+  groupTypes: Array<GroupType>;
+  groupsSpirit: Array<GroupSpirit>;
+  group: Group;
 
-  mapToken: string
-  imageUploadPreset: string
-}
+  mapToken: string;
+  imageUploadPreset: string;
+};
 
 const actionIds = {
   delete: 'delete'
@@ -110,34 +110,32 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     return redirect('/m/groups');
   }
 
-  return json(
-    {
-      sports: await findSports(),
-      groupTypes: await findGroupTypes(),
-      groupsSpirit: await findGroupsSpirit(),
-      group,
-      groupId: params.groupId,
+  return json({
+    sports: await findSports(),
+    groupTypes: await findGroupTypes(),
+    groupsSpirit: await findGroupsSpirit(),
+    group,
+    groupId: params.groupId,
 
-      mapToken: MAPBOX_TOKEN,
-      imageUploadPreset: CLOUDINARY_UPLOAD_PRESET
-    }
-  );
+    mapToken: MAPBOX_TOKEN,
+    imageUploadPreset: CLOUDINARY_UPLOAD_PRESET
+  });
 };
 
 type ActionData = {
-  error?: string
+  error?: string;
   errors?: {
-    name?: string
-    location?: string
-    near?: string
-  }
-}
+    name?: string;
+    location?: string;
+    near?: string;
+  };
+};
 
 function processImgField(
   value: string | null | File,
   isUpdate: boolean
 ): string | null | undefined {
-  if (isUpdate && !value || value instanceof File) {
+  if ((isUpdate && !value) || value instanceof File) {
     return undefined;
   }
   return value || null;
@@ -180,16 +178,17 @@ export const action: ActionFunction = async ({ request, params }) => {
   // Check if user should be able to manipulate this group
   const group = params.groupId ? await findGroup(params.groupId) : null;
 
-  if (!group) {return badRequest({ error: t('Group not found') });}
-  if (group.createdById !== user.id)
-    {return badRequest({ error: t('Not authorized') });}
+  if (!group) {
+    return badRequest({ error: t('Group not found') });
+  }
+  if (group.createdById !== user.id) {
+    return badRequest({ error: t('Not authorized') });
+  }
 
   // from here on, the user is capable of doing whatever to the group
   if (action === actionIds.delete) {
     await deleteGroup(group.id);
-    return redirect(
-      `/m/groups?message=${t('Group deleted successfully')}`
-    );
+    return redirect(`/m/groups?message=${t('Group deleted successfully')}`);
   }
   const isUpdate = group.status !== 'auto';
   const image1 = form.get('/file/image/0') as string;
@@ -214,7 +213,8 @@ export const action: ActionFunction = async ({ request, params }) => {
     whatsapp: form.get('whatsapp') as string,
     image1: processImgField(image1, isUpdate),
     image2: processImgField(image2, isUpdate),
-    image3: processImgField(image3, isUpdate)
+    image3: processImgField(image3, isUpdate),
+    description: form.get('description') as string
   };
   const required = { invalid_type_error: t('Field required') };
   const str5CharsOrMore = z
@@ -255,13 +255,7 @@ export default function GroupRoute() {
   const { t, i18n } = useTranslation(RESOURCES_NS);
   const language = i18n.language as Language;
   const loadedData = useLoaderData<LoaderData>();
-  const {
-    mapToken,
-    sports,
-    groupTypes,
-    groupsSpirit,
-    group
-  } = loadedData;
+  const { mapToken, sports, groupTypes, groupsSpirit, group } = loadedData;
   const isUpdate = group.status !== 'auto';
   // using parse float for 0 min's to work
   const [hour, minute] = timeOfDayToHoursMinutes(group.timeOfDay);
@@ -311,10 +305,7 @@ export default function GroupRoute() {
         </div>
 
         <div className="mb-24 lg:mb-0">
-          <UploadForm
-            method="post"
-            className="w-full"
-          >
+          <UploadForm method="post" className="w-full">
             <input type="hidden" name="id" value={group?.id || ''} />
             <FormField
               label={t('Group Name')}
@@ -472,14 +463,23 @@ export default function GroupRoute() {
                 />
               </div>
             </FormField>
-            <Button
-              className="mt-8"
-              type="submit"
-              form="profile-form"
-            >
-              {isUpdate
-                ? t('Update Group')
-                : t('Create Group')}
+
+            <FormField label={t('Description')}>
+              <div className="mt-1 relative rounded-md shadow-sm">
+                <textarea
+                  name="description"
+                  maxLength={512}
+                  className={inputBaseClasses('p-10')}
+                  placeholder={t('Group description')}
+                  defaultValue={group.description || ''}
+                  rows={5}
+                  cols={50}
+                />
+              </div>
+            </FormField>
+
+            <Button className="mt-8" type="submit" form="profile-form">
+              {isUpdate ? t('Update Group') : t('Create Group')}
             </Button>
             <InputError id="global-error" className="mt-4">
               {actionData?.error}

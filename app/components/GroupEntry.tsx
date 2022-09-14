@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import React from 'react';
+import React, { useState } from 'react';
 
 import { useTranslation } from 'react-i18next';
 
@@ -12,17 +12,17 @@ import I18nText from '~/components/I18nText';
 import DisplayImg from '~/components/shared/DisplayImg';
 import { displayTimeOfDay } from '~/utils/misc';
 
-
 type Props = {
-  actions?: React.ReactNode
-  footer?: ReactNode
-  group: Group
-  img?: string
-} & React.ComponentProps<'div'>
+  actions?: React.ReactNode;
+  footer?: ReactNode;
+  group: Group;
+  img?: string;
+} & React.ComponentProps<'div'>;
 
 export default function GroupEntry({ group, actions, footer, img }: Props) {
   const { t } = useTranslation('m-groups');
   const tc = useTranslation('common').t;
+  const [click, setClick] = useState<boolean>(false);
   const day = tc(
     [
       'Monday',
@@ -34,6 +34,10 @@ export default function GroupEntry({ group, actions, footer, img }: Props) {
       'Sunday'
     ][group.dayOfWeek]
   );
+
+  function handleReadMore() {
+    click ? setClick(false) : setClick(true);
+  }
 
   return (
     <div
@@ -72,8 +76,35 @@ export default function GroupEntry({ group, actions, footer, img }: Props) {
               label={t('Purpose')}
               value={group.groupSpirit?.name || ''}
             />
-            {footer ? <div className="flex content-end">{footer}</div> : null}
           </div>
+          {group.description ? (
+            <>
+              <div className="flex flex-col align-middle mb-4">
+                <div className="dark:text-blueGray-500 text-sm font-medium mr-2">
+                  {t('Description')}
+                </div>
+                <div
+                  className={clsx(
+                    click
+                      ? 'break-words line-clamp-none whitespace-pre max-w-[90ch] dark:text-white text-gray-500 text-base'
+                      : 'break-words line-clamp-3 whitespace-pre max-w-[90ch] dark:text-white text-gray-500 text-base'
+                  )}
+                >
+                  {group.description}
+                </div>
+                {group.description.split(/\r\n|\r|\n/).length > 3 ? (
+                  <label
+                    className="w-20"
+                    role="button"
+                    onClick={handleReadMore}
+                  >
+                    {click ? t('Read Less') : t('Read More')}
+                  </label>
+                ) : null}
+              </div>
+              {footer ? <div className="flex content-end">{footer}</div> : null}
+            </>
+          ) : null}
         </div>
       </div>
       {actions ? (
@@ -87,11 +118,13 @@ function PlaceholderImg({
   group,
   img
 }: {
-  group: Group
-  className: string
-  img?: string
+  group: Group;
+  className: string;
+  img?: string;
 }) {
-  if (!img) {return null;}
+  if (!img) {
+    return null;
+  }
   return (
     <DisplayImg
       id={`product/sports/${img}`}
@@ -102,9 +135,9 @@ function PlaceholderImg({
 }
 
 type FeatureProps = {
-  value: string | TranslationObject
-  label?: string
-} & React.ComponentProps<'div'>
+  value: string | TranslationObject;
+  label?: string;
+} & React.ComponentProps<'div'>;
 
 function Feature({ value, label, children }: FeatureProps) {
   return (
