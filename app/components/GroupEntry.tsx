@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import React, { useLayoutEffect, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 
 import { useTranslation } from 'react-i18next';
 
@@ -19,8 +19,18 @@ type Props = {
   img?: string;
 } & React.ComponentProps<'div'>;
 
+const descriptionResponsiveSetup = [
+  { width: 900, max: 101 },
+  { width: 875, max: 98 },
+  { width: 800, max: 90 },
+  { width: 450, max: 45 },
+  { width: 400, max: 41 },
+  { width: 375, max: 33 },
+  { width: 0, max: 30 }
+];
+
 export default function GroupEntry({ group, actions, footer, img }: Props) {
-  const targetRef = useRef();
+  const targetRef = useRef<HTMLDivElement>();
   const { t } = useTranslation('m-groups');
   const tc = useTranslation('common').t;
   const [click, setClick] = useState<boolean>(false);
@@ -41,23 +51,30 @@ export default function GroupEntry({ group, actions, footer, img }: Props) {
     click ? setClick(false) : setClick(true);
   }
 
-  function showMore(text: string) {
-    return (
-      text
-        .split(/\r\n|\r|\n/)
-        .map((str) => str.match(/.{1,20}/g).length)
-        .reduce((p, c) => c + (p || 0)) > 3
-    );
+  function split(width: number) {
+    console.log('width', width);
+
+    return descriptionResponsiveSetup
+      .map((v) => (width > v.width ? v.max : null))
+      .filter(Boolean)
+      [0]
+    ;
   }
 
-  useLayoutEffect(() => {
+  function showMore(text: string, width: number) {
+    const regex = `.{1,${split(width)}}`;
+
+    return text
+      .split(/\r\n|\r|\n/)
+      .map((str) => (str.match(new RegExp(regex, 'g')) || []).length)
+      .reduce((p, c) => c + (p || 0));
+  }
+
+  useEffect(() => {
     if (targetRef.current) {
-      console.log({
-        width: targetRef.current.offsetWidth,
-        height: targetRef.current.offsetHeight
-      });
+      setLines(showMore(group.description, targetRef.current.offsetWidth));
     }
-  }, []);
+  }, [group.description]);
 
   return (
     <div
@@ -107,13 +124,13 @@ export default function GroupEntry({ group, actions, footer, img }: Props) {
                   className={clsx(
                     click
                       ? 'break-words line-clamp-none whitespace-pre-wrap max-w-[90ch] dark:text-white text-gray-500 text-base'
-                      : 'break-words line-clamp-3 whitespace-pre-wrap max-w-[90ch] dark:text-white text-gray-500 text-base'
+                      : 'break-words line-clamp-4 whitespace-pre-wrap max-w-[90ch] dark:text-white text-gray-500 text-base'
                   )}
                   ref={targetRef}
                 >
                   {group.description}
                 </div>
-                {showMore(group.description) ? (
+                {lines > 4 ? (
                   <label
                     className="w-20"
                     role="button"
