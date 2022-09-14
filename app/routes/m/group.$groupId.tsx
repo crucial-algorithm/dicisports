@@ -66,6 +66,8 @@ import { Spacer } from '~/components/shared/Spacer';
 
 import { uploadImageToCloudinary } from '~/server/storage/cloudinary.server';
 import { inputBaseClasses } from '~/components/shared/form/InputBase';
+import { processImgField } from '~/server/utils/misc';
+
 
 const RESOURCES_NS = 'groups-form';
 
@@ -442,7 +444,7 @@ export default function GroupRoute() {
               </Paragraph>
             </FormField>
             <FormField label={t('Group Photos')} id="group-photos">
-              <div className="w-full m-auto flex flex-row justify-begin gap-4 md:w-full md:grid-flow-col md:grid-rows-1">
+              <div className="w-full m-auto flex flex-row justify-begin gap-4 md:w-full md:grid-flow-col md:grid-rows-1 text-center">
                 <UploadImage
                   index={0}
                   label={t('Hint For Picture 1')}

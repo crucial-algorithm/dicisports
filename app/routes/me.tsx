@@ -15,16 +15,13 @@ import { useRootData } from '~/utils/use-root-data';
 
 import i18n from '~/server/i18n.server';
 
-
 import Button from '~/components/shared/Button';
 
-
 import InputError from '~/components/shared/form/InputError';
-import { H2, H3, H6 } from '~/components/shared/typography';
+import { H2, H4, H6 } from '~/components/shared/typography';
 import { getSession, requireUser } from '~/server/auth/session.server';
 import { handleFormSubmission } from '~/server/actions.server';
 import { updateUser } from '~/server/db/users.server';
-
 
 import Main from '~/components/shared/Main';
 import { Spacer } from '~/components/shared/Spacer';
@@ -35,15 +32,15 @@ const actionIds = {
 };
 
 type ActionData = {
-  status: 'success' | 'error'
+  status: 'success' | 'error';
   fields: {
-    name?: string | null
-  }
+    name?: string | null;
+  };
   errors: {
-    generalError?: string | null
-    name?: string | null
-  }
-}
+    generalError?: string | null;
+    name?: string | null;
+  };
+};
 
 export const handle = {
   i18n: ['common', 'me']
@@ -74,7 +71,9 @@ export const action: ActionFunction = async ({ request }) => {
   }
 
   function getFirstNameError(firstName: string | null) {
-    if (!firstName?.length) {return t('Required Name');}
+    if (!firstName?.length) {
+      return t('Required Name');
+    }
     return null;
   }
 
@@ -100,38 +99,36 @@ export default function Me() {
   const { t } = useTranslation('me');
 
   return (
-    <Main>
-      <div className="mb-64 mt-24 pt-6">
-        <Form method="post" className="w-full flex justify-end">
-          <input type="hidden" name="actionId" value={actionIds.logout} />
-          <Button variant="secondary">
-            <LogoutIcon className="w-4 h-4" />
-            <H6 as="span">{t('Logout')}</H6>
+    <Main className="w-5/6 m-auto md:w-112">
+      <H2>{t("Here's your profile")}</H2>
+      <H4 variant="secondary" as="p">
+        {t('Edit as you wish')}
+      </H4>
+      <InputError id="general-error">
+        {actionData?.errors.generalError}
+      </InputError>
+
+      <div className="col-span-full mt-8 lg:col-span-5 lg:mb-0">
+        <Form method="post" className="w-full md:w-96">
+          <ProfileFragment
+            labelName={t('Name')}
+            labelEmail={t('Email')}
+            profile={{ name: user?.name, email: user?.email || '' }}
+            error={actionData?.errors.name}
+          />
+          <Button className="mt-8" type="submit" form="profile-form">
+            {t('Update Profile')}
           </Button>
         </Form>
-        <Spacer size="xs" />
-        <H2>{t('Here\'s your profile')}</H2>
-        <H3 variant="secondary" as="p">
-          {t('Edit as you wish')}
-        </H3>
-        <InputError id="general-error">
-          {actionData?.errors.generalError}
-        </InputError>
-
-        <div className="col-span-full mb-24 lg:col-span-5 lg:mb-0">
-          <Form method="post" className="w-full md:w-96">
-            <ProfileFragment
-              labelName={t('Name')}
-              labelEmail={t('Email')}
-              profile={{ name: user?.name, email: user?.email || '' }}
-              error={actionData?.errors.name}
-            />
-            <Button className="mt-8" type="submit" form="profile-form">
-              {t('Update Profile')}
-            </Button>
-          </Form>
-        </div>
       </div>
+      <Spacer size="xs" className="border-b mb-8" />
+      <Form method="post">
+        <input type="hidden" name="actionId" value={actionIds.logout} />
+        <Button variant="secondary">
+          <LogoutIcon className="w-4 h-4" />
+          <H6 as="span">{t('Logout')}</H6>
+        </Button>
+      </Form>
     </Main>
   );
 }

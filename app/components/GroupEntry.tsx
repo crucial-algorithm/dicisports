@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from 'react';
 
 import { useTranslation } from 'react-i18next';
 
@@ -56,9 +56,7 @@ export default function GroupEntry({ group, actions, footer, img }: Props) {
 
     return descriptionResponsiveSetup
       .map((v) => (width > v.width ? v.max : null))
-      .filter(Boolean)
-      [0]
-    ;
+      .filter(Boolean)[0];
   }
 
   function showMore(text: string, width: number) {

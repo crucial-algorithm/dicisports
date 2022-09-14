@@ -83,7 +83,7 @@ export default function Recover() {
   };
 
   return (
-    <Main className="flex flex-col w-full h-full p-8 max-w-lg m-auto justify-center align-middle">
+    <Main className="w-5/6 m-auto md:w-144">
       <Form method="post" autoComplete="off">
         <FormField label={t('Email')} error={errors.email}>
           <TextField
@@ -94,7 +94,7 @@ export default function Recover() {
           />
         </FormField>
         <ButtonGroup>
-          <ButtonLink variant="secondary" to="/login">
+          <ButtonLink variant="secondary" to="/login" className="hidden md:inline-flex">
             {t('Cancel')}
           </ButtonLink>
           <Button>{t('Email Recover Link')}</Button>

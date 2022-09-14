@@ -10,7 +10,8 @@ type Props = {
   size?: 'regular' | 'large';
   adornment?: React.ReactNode;
   onChange?: (value: any) => void;
-  type?: 'text' | 'password';
+  type?: 'text' | 'password' | 'number';
+  input?:  React.RefObject<HTMLInputElement>;
 } & React.ComponentProps<'input'>;
 
 const TextField: React.FC<Props> = ({
@@ -23,7 +24,8 @@ const TextField: React.FC<Props> = ({
   readOnly,
   disabled,
   id,
-  type = 'text'
+  type = 'text',
+  input
 }) => {
   id = id || HTMLId();
   if (!adornment) {
@@ -39,6 +41,7 @@ const TextField: React.FC<Props> = ({
         className={className}
         readOnly={readOnly}
         disabled={disabled}
+        input={input}
       />
     );
   }
@@ -56,6 +59,7 @@ const TextField: React.FC<Props> = ({
           className={className}
           readOnly={readOnly}
           disabled={disabled}
+          input={input}
         />
         <div className="absolute inset-y-0 right-1 flex items-center">
           {adornment}

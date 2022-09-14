@@ -15,5 +15,6 @@
   "Name max length": "Máximo de 60 caracteres",
   "Emails mismatch": "Emails diferentes",
   "Fake email": "Email descartável",
-  "User Already Exists": "Email já registado"
+  "User Already Exists": "Email já registado",
+  "Unknown Error": "Não foi possível criar a conta. Tenta novamente mais tarde (se voltar a falhar, atira-nos um email)"
 }
