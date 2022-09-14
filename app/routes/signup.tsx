@@ -180,7 +180,7 @@ export default function SignUp() {
     (useActionData<ActionData>() as ActionData) || defaultData();
 
   return (
-    <Main className="w-5/6 m-auto md:w-112">
+    <Main className="w-5/6 m-auto md:w-144">
       <H2 className="mb-2 text-secondary">{t('Sign Up')}</H2>
       <H6 variant="secondary" as="p" className="text-white mb-8">
         {t('Sign Up Instructions')}

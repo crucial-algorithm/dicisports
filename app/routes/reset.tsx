@@ -92,7 +92,7 @@ export default function Reset() {
   };
 
   return (
-    <Main className="w-5/6 m-auto md:w-112">
+    <Main className="w-5/6 m-auto md:w-144">
       <Form method="post" autoComplete="off">
         <FormField label={t('Password')} error={errors.password}>
           <TextField

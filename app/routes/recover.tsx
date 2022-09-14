@@ -83,7 +83,7 @@ export default function Recover() {
   };
 
   return (
-    <Main className="w-5/6 m-auto md:w-112">
+    <Main className="w-5/6 m-auto md:w-144">
       <Form method="post" autoComplete="off">
         <FormField label={t('Email')} error={errors.email}>
           <TextField
