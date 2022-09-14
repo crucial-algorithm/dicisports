@@ -78,18 +78,23 @@ export const action: ActionFunction = async ({ request }) => {
     .refine((data) => data.email === data.confirmation, {
       message: t('Emails mismatch'),
       path: ['confirmation']
-    })
-    .refine(async (data) => !(await findUserByEmail(data.email)), {
-      message: t('User Already Exists'),
-      path: ['email']
-    })
-    .refine(async (data) => verifyEmailAddress(data.email), {
-      message: t('Fake email'),
-      path: ['email']
     });
 
   try {
     await Schema.parseAsync(data);
+    // split functional validations, so they don't override syntactic ones in schema
+    await z.object({
+      email: z.string()
+    })
+      .refine(async (data) => !(await findUserByEmail(data.email)), {
+        message: t('User Already Exists'),
+        path: ['email']
+      })
+      .refine(async (data) => verifyEmailAddress(data.email), {
+        message: t('Fake email'),
+        path: ['email']
+      }).parseAsync(data);
+
     const { email, name, password } = data as {
       email: string;
       name: string;
