@@ -22,6 +22,7 @@ import TextField from '~/components/shared/form/TextField';
 import { H2, H6 } from '~/components/shared/typography';
 import { verifyEmailAddress } from '~/server/auth/verifier.server';
 import { addGroupToFavorites } from '~/server/db/groups.server';
+import InputError from '~/components/shared/form/InputError';
 
 type ActionData = {
   fields: {
@@ -29,7 +30,7 @@ type ActionData = {
     email: string;
   };
   errors: {
-    generalError?: string;
+    submit?: string;
     name: string | null;
     email: string | null;
     confirmation: string | null;
@@ -53,7 +54,6 @@ export const action: ActionFunction = async ({ request }) => {
   const { searchParams } = new URL(request.url);
   const postSignUpAction = searchParams.get('a');
 
-
   const requestText = await request.text();
   const form = new URLSearchParams(requestText);
   const session = await getSession(request);
@@ -71,17 +71,21 @@ export const action: ActionFunction = async ({ request }) => {
         .string()
         .min(5, t('Name min length'))
         .max(60, t('Name max length')),
-      email: z
-        .string()
-        .email(t('Invalid Email'))
-        .refine(async (v) => !(await findUserByEmail(v)), t('User Already Exists'))
-        .refine(async (v) => verifyEmailAddress(v), t('Fake email')),
+      email: z.string().email(t('Invalid Email')),
       confirmation: z.string().email(t('Invalid Email')),
       password: z.string().min(6, t('Password min length'))
     })
     .refine((data) => data.email === data.confirmation, {
       message: t('Emails mismatch'),
       path: ['confirmation']
+    })
+    .refine(async (data) => !(await findUserByEmail(data.email)), {
+      message: t('User Already Exists'),
+      path: ['email']
+    })
+    .refine(async (data) => verifyEmailAddress(data.email), {
+      message: t('Fake email'),
+      path: ['email']
     });
 
   try {
@@ -114,8 +118,14 @@ export const action: ActionFunction = async ({ request }) => {
   } catch (e) {
     if (!(e instanceof ZodError)) {
       console.error(e);
-      return badRequest({
-        error: 'We dont know what happened'
+      return json({
+        errors: {
+          submit: t('Unknown Error')
+        },
+        fields: {
+          name: data.name || '',
+          email: data.email || ''
+        }
       });
     }
 
@@ -135,6 +145,8 @@ export const action: ActionFunction = async ({ request }) => {
       }
     };
 
+    console.log()
+
     return json(payload);
   }
 };
@@ -149,7 +161,8 @@ function defaultData(): ActionData {
       name: '',
       email: '',
       confirmation: '',
-      password: ''
+      password: '',
+      submit: ''
     },
     fields: { name: '', email: '' }
   };
@@ -162,14 +175,14 @@ export default function SignUp() {
     (useActionData<ActionData>() as ActionData) || defaultData();
 
   return (
-    <Main className="flex flex-col w-full h-full p-8 max-w-lg m-auto justify-center align-middle">
+    <Main className="w-5/6 m-auto md:w-112">
       <H2 className="mb-2 text-secondary">{t('Sign Up')}</H2>
       <H6 variant="secondary" as="p" className="text-white mb-8">
         {t('Sign Up Instructions')}
       </H6>
       <Form
         method="post"
-        className="w-96"
+        className="w-full"
         action={`/signup${
           searchParams.toString().length ? `?${searchParams}` : ''
         }`}
@@ -187,11 +200,16 @@ export default function SignUp() {
           <TextField name="password" type="password" />
         </FormField>
         <ButtonGroup>
-          <ButtonLink variant="secondary" to="/">
+          <ButtonLink variant="secondary" to="/" className="hidden md:inline-flex">
             {t('Cancel')}
           </ButtonLink>
           <Button>{t('Create Profile')}</Button>
         </ButtonGroup>
+        {errors.submit && (
+          <InputError className="mt-4" id="error-message">
+            {errors.submit}
+          </InputError>
+        )}
       </Form>
       <p className="dark:text-blueGray-500 text-gray-500 mt-8">
         {t('Privacy Policy Presentation')} &nbsp;
