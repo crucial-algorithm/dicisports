@@ -3,6 +3,9 @@ import Config from '~/server/config.server';
 const VERIFIER_API_KEY = Config().EMAIL_VERIFIER_TOKEN;
 
 export async function verifyEmailAddress(emailAddress: string) {
+  if (!emailAddress) {
+    return false;
+  }
   const verifierUrl = new URL(
     `https://verifier.meetchopra.com/verify/${emailAddress}`
   );

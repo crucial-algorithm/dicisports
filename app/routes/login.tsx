@@ -250,7 +250,7 @@ export default function Login() {
 
 
   return (
-    <Main className="flex flex-col w-full h-full p-8 max-w-lg m-auto justify-center align-middle">
+    <Main className="w-5/6 m-auto md:w-112">
       {action === 'ws' ? (
         <WhatsAppHeader t={t} />
       ) : action === 'favorite' ? (
