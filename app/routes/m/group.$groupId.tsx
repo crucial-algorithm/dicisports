@@ -65,6 +65,7 @@ import InputError from '~/components/shared/form/InputError';
 import { Spacer } from '~/components/shared/Spacer';
 
 import { uploadImageToCloudinary } from '~/server/storage/cloudinary.server';
+import { processImgField } from '~/server/utils/misc';
 
 
 const RESOURCES_NS = 'groups-form';
@@ -131,16 +132,6 @@ type ActionData = {
     location?: string
     near?: string
   }
-}
-
-function processImgField(
-  value: string | null | File,
-  isUpdate: boolean
-): string | null | undefined {
-  if (isUpdate && !value || value instanceof File) {
-    return undefined;
-  }
-  return value || null;
 }
 
 function parseLocation(location: string) {
@@ -451,7 +442,7 @@ export default function GroupRoute() {
               </Paragraph>
             </FormField>
             <FormField label={t('Group Photos')} id="group-photos">
-              <div className="w-full m-auto flex flex-row justify-begin gap-4 md:w-full md:grid-flow-col md:grid-rows-1">
+              <div className="w-full m-auto flex flex-row justify-begin gap-4 md:w-full md:grid-flow-col md:grid-rows-1 text-center">
                 <UploadImage
                   index={0}
                   label={t('Hint For Picture 1')}

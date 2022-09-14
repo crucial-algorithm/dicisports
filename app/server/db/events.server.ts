@@ -1,13 +1,22 @@
 import type { Event } from '@prisma/client';
-import { Status } from '@prisma/client';
+import { PrismaClient, Status } from '@prisma/client';
 
 import { db } from '~/server/db.server';
 import Id from '~/server/utils/Id.server';
+import type { CreateEventInput, Language } from '~/types';
+import {
+  createDefaultPerks,
+  createPerks,
+  enableEventPerks,
+  resetEventPerks
+} from '~/server/db/perks.server';
+
+const prisma = new PrismaClient();
 
 async function findEvents(): Promise<Array<Event>> {
   return db.event.findMany({
     where: {
-      name: { not: Status.draft }
+      status: { not: Status.auto }
     }
   });
 }
@@ -19,11 +28,14 @@ async function findEvent(id: string): Promise<Event | null> {
   });
 }
 
-async function createDraftEvent(id?: string): Promise<Event | null> {
+async function createDraftEvent(
+  language: Language,
+  id?: string
+): Promise<Event | void> {
   const eventId = id ? id : Id();
   const eventAt = new Date();
 
-  return db.event.create({
+  await db.event.create({
     data: {
       id: eventId,
       name: null,
@@ -38,6 +50,51 @@ async function createDraftEvent(id?: string): Promise<Event | null> {
       updatedAt: eventAt
     }
   });
+
+  await createDefaultPerks(eventId, language);
 }
 
-export { findEvents, findEvent, createDraftEvent };
+async function updateEvent(
+  event: CreateEventInput,
+  perks: string[],
+  newPerks: string[]
+): Promise<void> {
+  return await prisma.$transaction(async (prisma) => {
+    await prisma.event.update({
+      where: { id: event.id },
+      data: {
+        name: event.name,
+        sportId: event.sportId,
+        startAt: event.startAt,
+        endAt: event.startAt,
+        location: event.location,
+        address: event.address,
+        useExternalBooking: event.useExternalBooking,
+        externalBookingUrl: event.externalBookingUrl,
+        image1: event.image1,
+        image2: event.image2,
+        image3: event.image3,
+        image4: event.image4,
+        image5: event.image5,
+        eventDescription: event.eventDescription,
+        directions: event.directions,
+        status: Status.draft
+      }
+    });
+    await resetEventPerks(event.id, perks);
+    await enableEventPerks(perks);
+    await createPerks(
+      newPerks.filter((name) => !!name).map((p) => {
+        return {
+          id: Id(),
+          name: p,
+          isDefault: false,
+          isEnabled: true,
+          eventId: event.id
+        };
+      })
+    );
+  });
+}
+
+export { findEvents, findEvent, createDraftEvent, updateEvent };

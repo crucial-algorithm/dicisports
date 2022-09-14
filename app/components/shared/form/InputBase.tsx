@@ -1,4 +1,4 @@
-import React, { ChangeEvent, useState } from 'react'
+import React, { ChangeEvent, useState } from 'react';
 import clsx from 'clsx';
 
 export function inputBaseClasses(className?: string) {
@@ -19,15 +19,16 @@ export function inputBaseClasses(className?: string) {
 }
 
 type Props = {
-  id: string
-  name: string
-  placeholder?: string
-  defaultValue?: any
-  type?: 'text' | 'number' | 'email' | 'date' | 'hidden' | 'checkbox'
-  autoComplete?: string
-  disabled?: boolean
-  onChange?: (value: any) => void
-} & React.ComponentProps<'input'>
+  id: string;
+  name: string;
+  placeholder?: string;
+  defaultValue?: any;
+  type?: 'text' | 'number' | 'email' | 'date' | 'hidden' | 'checkbox';
+  autoComplete?: string;
+  disabled?: boolean;
+  onChange?: (value: any) => void;
+  input?: React.RefObject<HTMLInputElement>;
+} & React.ComponentProps<'input'>;
 const InputBase: React.FC<Props> = ({
   id,
   name,
@@ -38,13 +39,33 @@ const InputBase: React.FC<Props> = ({
   type = 'text',
   onChange,
   className,
-  readOnly = false
+  readOnly = false,
+  input
 }) => {
-  const [value, setValue] = useState<string>(defaultValue || '');
+  const [value, setValue] = useState<string>(defaultValue);
 
   function handleOnChange(e: ChangeEvent<HTMLInputElement>) {
     setValue(e.target.value);
     onChange && onChange(e.target.value);
+  }
+
+  // hack: when using outside ref, use a controlled component throughout the control lifecycle
+  if (input) {
+    return (
+      <input
+        type={type}
+        name={name}
+        id={id}
+        defaultValue={defaultValue}
+        placeholder={placeholder}
+        disabled={disabled}
+        onChange={disabled ? undefined : handleOnChange}
+        autoComplete={autoComplete}
+        className={inputBaseClasses(className)}
+        readOnly={readOnly}
+        ref={input}
+      />
+    );
   }
 
   return (
