@@ -7,7 +7,7 @@
 // `npx prisma studio` - open the Studio, which allows you to edit the schema.
 // `npx prisma migrate reset` - reset the migrations to the last version. This will reset the DB and run the seed script
 // `npx prisma migrate dev --name <descriptive-name>` - generate a migration file for any changes you make to the schema (this will be committed).
-// `prisma migrate dev --name <descriptive-name> --create-only`
+// `npx prisma migrate dev --name <descriptive-name> --create-only` - generate migration script... example: npx prisma migrate dev --name login_with_password --create-only
 
 generator client {
   provider        = "prisma-client-js"
@@ -30,6 +30,11 @@ model User {
   createdAt DateTime        @default(now()) @map("created_at")
   updatedAt DateTime        @updatedAt @map("updated_at")
   email     String          @unique
+  password  String?
+  salt      String?
+  lat       Float?
+  lng       Float?
+  location  String?
   name      String
   role      Role            @default(MEMBER)
   sessions  Session[]

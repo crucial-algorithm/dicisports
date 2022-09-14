@@ -9,17 +9,16 @@ import {
 } from '~/server/db/users.server';
 import {
   createSession,
-  deleteOtherUserSessions,
   deleteSession
 } from '~/server/db/sessions.server';
 import type { LoginAction } from '~/types';
 
-import { sendMagicLinkEmail } from '../email.server';
+import { sendRecoverPasswordEmail } from '../email.server';
 
 import { getLoginInfoSession } from './login.server';
 
 const sessionIdKey = '__session_id__';
-const magicLinkSearchParam = 'kodyKey';
+const magicLinkSearchParam = 'key';
 const sessionExpirationTime = Config().SESSION_EXPIRATION_TIME;
 const linkExpirationTime = 1000 * 60 * 30;
 
@@ -31,25 +30,16 @@ type MagicLinkPayload = {
   group?: string | null;
 };
 
-function getMagicLink({
+function getRecoverPasswordLink({
   emailAddress,
-  validateSessionMagicLink,
-  domainUrl,
-  action,
-  group
+  domainUrl
 }: {
   emailAddress: string;
-  validateSessionMagicLink: boolean;
   domainUrl: string;
-  action?: LoginAction;
-  group?: string | null;
 }) {
-  const payload: MagicLinkPayload = {
+  const payload = {
     emailAddress,
-    validateSessionMagicLink,
-    creationDate: new Date().toISOString(),
-    action,
-    group
+    creationDate: new Date().toISOString()
   };
 
   console.log('.... encrypting payload', payload);
@@ -74,23 +64,16 @@ const sessionStorage = createCookieSessionStorage({
   }
 });
 
-async function sendToken({
+async function sendRecoverPasswordToken({
   emailAddress,
-  domainUrl,
-  action,
-  group
+  domainUrl
 }: {
   emailAddress: string;
   domainUrl: string;
-  action?: LoginAction;
-  group?: string | null;
 }) {
-  const magicLink = getMagicLink({
+  const magicLink = getRecoverPasswordLink({
     emailAddress,
-    validateSessionMagicLink: true,
-    domainUrl,
-    action,
-    group
+    domainUrl
   });
 
   const user = await findUserByEmail(emailAddress).catch(() => {
@@ -98,7 +81,11 @@ async function sendToken({
     return null;
   });
 
-  await sendMagicLinkEmail({
+  if (!user) {
+    return null;
+  }
+
+  await sendRecoverPasswordEmail({
     emailAddress,
     magicLink,
     user,
@@ -179,22 +166,6 @@ async function getSession(request: Request) {
   };
 }
 
-async function deleteOtherSessions(request: Request) {
-  const { session } = await getSession(request);
-
-  const token = session.get(sessionIdKey) as string | undefined;
-
-  if (!token) {
-    console.warn(
-      'Trying to delete other sessions, but the request came from someone who has no sessions'
-    );
-    return;
-  }
-  const user = await findUserFromSessionId(token);
-
-  await deleteOtherUserSessions(user.id, token);
-}
-
 async function getUser(request: Request) {
   const { session } = await getSession(request);
 
@@ -212,7 +183,7 @@ async function getUser(request: Request) {
 
 async function getUserSessionFromMagicLink(request: Request) {
   const loginInfoSession = await getLoginInfoSession(request);
-  const { email, action, group } = await validateMagicLink(
+  const { email } = await validateMagicLink(
     request.url,
     loginInfoSession.getMagicLink()
   );
@@ -220,13 +191,13 @@ async function getUserSessionFromMagicLink(request: Request) {
   const user = await findUserByEmail(email);
 
   if (!user) {
-    return { session: null, action, group };
+    return { session: null, user: null };
   }
 
   const session = await getSession(request);
 
   await session.signIn(user);
-  return { session, action, group };
+  return { session, user };
 }
 
 async function requireAdminUser(request: Request): Promise<User> {
@@ -341,11 +312,9 @@ async function validateMagicLink(
 
 export {
   getSession,
-  deleteOtherSessions,
   getUserSessionFromMagicLink,
   requireUser,
   requireAdminUser,
   getUser,
-  sendToken,
-  validateMagicLink
+  sendRecoverPasswordToken
 };
