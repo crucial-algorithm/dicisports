@@ -191,6 +191,7 @@ type Group = {
   groupType?: GroupType
   sport?: Sport
   distance?: number
+  description?: string
 } & DBGroup
 
 type CreateGroupInput = {
