@@ -46,14 +46,15 @@ const descriptionResponsiveSetup = [
   { width: 312, max: 43 },
   { width: 287, max: 40 },
   { width: 247, max: 38 },
-  { width: 200, max: 30 }
+  { width: 200, max: 30 },
+  { width: 0, max: 30 }
 ];
 
 export default function GroupEntry({ group, actions, footer, img }: Props) {
   const targetRef = useRef<HTMLDivElement>();
   const { t } = useTranslation('m-groups');
   const tc = useTranslation('common').t;
-  const [click, setClick] = useState<boolean>(false);
+  const [expanded, setExpanded] = useState<boolean>(false);
   const [lines, setLines] = useState(0);
   const day = tc(
     [
@@ -68,12 +69,10 @@ export default function GroupEntry({ group, actions, footer, img }: Props) {
   );
 
   function handleReadMore() {
-    click ? setClick(false) : setClick(true);
+    expanded ? setExpanded(false) : setExpanded(true);
   }
 
   function split(width: number) {
-    console.log('width', width);
-
     return descriptionResponsiveSetup
       .map((v) => (width > v.width ? v.max : null))
       .filter(Boolean)[0];
@@ -140,7 +139,7 @@ export default function GroupEntry({ group, actions, footer, img }: Props) {
                 </div>
                 <div
                   className={clsx(
-                    click
+                    expanded
                       ? 'break-words line-clamp-none whitespace-pre-wrap max-w-[90ch] dark:text-white text-gray-500 text-base'
                       : 'break-words line-clamp-4 whitespace-pre-wrap max-w-[90ch] dark:text-white text-gray-500 text-base'
                   )}
@@ -154,7 +153,7 @@ export default function GroupEntry({ group, actions, footer, img }: Props) {
                     role="button"
                     onClick={handleReadMore}
                   >
-                    {click ? t('Read Less') : t('Read More')}
+                    {expanded ? t('Read Less') : t('Read More')}
                   </label>
                 ) : null}
               </div>
