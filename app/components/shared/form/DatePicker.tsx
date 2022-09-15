@@ -8,15 +8,13 @@ type DatePickerOptions = {
   name: string;
   label: string;
   date: Date | null | undefined;
-  onChange?: (value: string) => void | null;
   input?:  React.RefObject<HTMLInputElement>;
-} & Omit<React.ComponentProps<'input'>, 'onChange'>;
+} & React.ComponentProps<'input'>;
 
 export default function BasicDatePicker({
   name,
   label,
   date = null,
-  onChange,
   input
 }: DatePickerOptions) {
   const [value, setValue] = React.useState<string>(
@@ -28,7 +26,6 @@ export default function BasicDatePicker({
     const str: string = new Date(e.target.value).toISOString();
 
     setValue(str);
-    onChange && onChange(str);
   }
 
   return (
