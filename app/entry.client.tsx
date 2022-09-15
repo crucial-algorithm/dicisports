@@ -21,7 +21,7 @@ i18next
     backend: {
       loadPath: '/locales/{{lng}}/{{ns}}.json',
       // TODO: auto generate in build time
-      queryStringParams: { v: '1.1' }
+      queryStringParams: { v: '1.2' }
     },
     detection: {
       // Here only enable htmlTag detection, we'll detect the language only
