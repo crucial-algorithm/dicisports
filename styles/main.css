@@ -241,3 +241,7 @@ table.privacy-policy td {
     width: 20%;
     border-bottom-width: thin;
 }
+
+.events-list > a:last-child > div {
+    border: none;
+}

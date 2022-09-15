@@ -1,5 +1,5 @@
 import type { ActionFunction } from 'remix';
-import { redirect } from 'remix';
+import { json } from 'remix';
 
 import { z, ZodError } from 'zod';
 
@@ -19,17 +19,11 @@ export const action: ActionFunction = async ({ request }) => {
   const t = await i18n.getFixedT(request, RESOURCES_NS);
   const form = await request.formData();
 
-  const eventId = form.get('event-id') as string;
-  const raceId = form.get('race-id') as string;
+  const eventId = form.get('eventId') as string;
+  const raceId = form.get('raceId') as string;
   const date = form.get('date') as string;
   const hash = form.get('hash') as string;
   const action = form.get('actionId');
-
-  if (action === 'delete') {
-    await deleteRace(raceId);
-
-    return redirect(`/organizer/event/${eventId}`);
-  }
 
   const raceData: CreateRaceInput = {
     id: raceId,
@@ -39,10 +33,10 @@ export const action: ActionFunction = async ({ request }) => {
       parseInt(form.get('hour') as string, 10),
       parseInt(form.get('minute') as string, 10)
     ),
-    elevationGain: parseInt(form.get('elevation-gain') as string),
-    elevationLoss: parseInt(form.get('elevation-loss') as string) || null,
+    elevationGain: parseInt(form.get('elevationGain') as string),
+    elevationLoss: parseInt(form.get('elevationLoss') as string) || null,
     price: parseFloat(form.get('price') as string),
-    priceEarlyBird: parseFloat(form.get('price-early-bird') as string) || null,
+    priceEarlyBird: parseFloat(form.get('priceEarlyBird') as string) || null,
     validUntil: date ? new Date(date) : null,
     raceDescription: (form.get('description') as string) || null,
     eventId
@@ -94,9 +88,14 @@ export const action: ActionFunction = async ({ request }) => {
   });
 
   try {
+    if (action === 'delete') {
+      await deleteRace(raceId);
+
+      return json({ ok: true });
+    }
     RaceSchema.parse(raceData);
     raceId ? await updateRace(raceData) : await createRace(raceData);
-    return redirect(`/organizer/event/${eventId}`);
+    return json({ ok: true });
   } catch (e) {
     if (!(e instanceof ZodError)) {
       console.error(e);

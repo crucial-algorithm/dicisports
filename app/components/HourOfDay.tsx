@@ -1,18 +1,32 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 import ComboBox from '~/components/shared/form/ComboBox';
 
 export default function HourOfDay({
   hour = 8,
-  minute = 30
+  minute = 30,
+  input
 }: {
-  hour: number
-  minute: number
+  hour: number;
+  minute: number;
+  input?: React.RefObject<HTMLInputElement>;
 }) {
+  const [hourValue, setHourValue] = useState<string>('');
+  const [minuteValue, setMinuteValue] = useState<string>('');
+
+  function handleOnChangeHour(value: string | number) {
+    setHourValue(String(value));
+  }
+
+  function handleOnChangeMinute(value: string | number) {
+    setMinuteValue(String(value));
+  }
+
   return (
     <div className="w-full flex flex-row justify-between mr-4 md:flex-row md:space-x-4 md:space-y-0">
       <ComboBox
         name="hour"
+        onChange={handleOnChangeHour}
         defaultValue={hour}
         className="w-36 px-4"
         placeholder=""
@@ -45,6 +59,7 @@ export default function HourOfDay({
       />
       <ComboBox
         name="minute"
+        onChange={handleOnChangeMinute}
         defaultValue={String(minute)}
         placeholder=""
         className="w-36 px-4"
@@ -110,6 +125,12 @@ export default function HourOfDay({
           { value: '58', label: '58' },
           { value: '59', label: '59' }
         ]}
+      />
+      <input
+        type="hidden"
+        name="value"
+        value={`${hourValue}:${minuteValue}`}
+        ref={input}
       />
     </div>
   );
