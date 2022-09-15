@@ -133,16 +133,6 @@ type ActionData = {
   };
 };
 
-function processImgField(
-  value: string | null | File,
-  isUpdate: boolean
-): string | null | undefined {
-  if ((isUpdate && !value) || value instanceof File) {
-    return undefined;
-  }
-  return value || null;
-}
-
 function parseLocation(location: string) {
   const [coords, address] = location.split('|');
   const [lat, lng] = coords.split(',');

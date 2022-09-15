@@ -21,12 +21,32 @@ type Props = {
 
 const descriptionResponsiveSetup = [
   { width: 900, max: 101 },
-  { width: 875, max: 98 },
-  { width: 800, max: 90 },
-  { width: 450, max: 45 },
-  { width: 400, max: 41 },
-  { width: 375, max: 33 },
-  { width: 0, max: 30 }
+  { width: 812, max: 99 },
+  { width: 807, max: 97 },
+  { width: 785, max: 95 },
+  { width: 762, max: 92 },
+  { width: 740, max: 90 },
+  { width: 717, max: 87 },
+  { width: 695, max: 85 },
+  { width: 672, max: 83 },
+  { width: 650, max: 80 },
+  { width: 570, max: 78 },
+  { width: 560, max: 71 },
+  { width: 537, max: 69 },
+  { width: 515, max: 67 },
+  { width: 515, max: 65 },
+  { width: 492, max: 63 },
+  { width: 470, max: 60 },
+  { width: 447, max: 57 },
+  { width: 425, max: 55 },
+  { width: 402, max: 53 },
+  { width: 372, max: 51 },
+  { width: 357, max: 50 },
+  { width: 335, max: 45 },
+  { width: 312, max: 43 },
+  { width: 287, max: 40 },
+  { width: 247, max: 38 },
+  { width: 200, max: 30 }
 ];
 
 export default function GroupEntry({ group, actions, footer, img }: Props) {
