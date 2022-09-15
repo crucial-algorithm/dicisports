@@ -18,8 +18,8 @@ async function findNearestGroups(
       SELECT *, count(1) over () as records
       FROM (
                SELECT (6357.0 *
-                       acos(LEAST(cos(radians(${lat})) * cos(radians(lat)) * cos(radians(lng) - radians(${lng})) +
-                                  sin(radians(${lat})) * sin(radians(lat)), 1))) AS distance,
+                       acos(LEAST(cos(radians(${lat})) * cos(radians(g.lat)) * cos(radians(g.lng) - radians(${lng})) +
+                                  sin(radians(${lat})) * sin(radians(g.lat)), 1))) AS distance,
                       g.*,
                       u.name                                                     AS "user_name",
                       gs.name                                                    AS "group_spirit"

@@ -1,6 +1,20 @@
 {
+  "Sign Up": "Criar conta no DiciSports",
+  "Sign Up Instructions": "Cria um perfil e faz parte desta comunidade dos aficionados por desporto",
+  "Privacy Policy Presentation": "Os teus dados estão seguros connosco. Se não acreditas, lê a nossa",
+  "Privacy Policy": "política de privacidade",
   "Name": "Nome",
   "Email": "Email",
+  "Confirm Email": "Confirmar Email",
+  "Password": "Password",
   "Create Profile": "Criar Perfil",
-  "Cancel": "Cancelar"
+  "Cancel": "Cancelar",
+  "Password min length": "Mínimo de 6 caracteres",
+  "Invalid Email": "Email Inválido",
+  "Name min length": "Mínimio de 5 caracteres",
+  "Name max length": "Máximo de 60 caracteres",
+  "Emails mismatch": "Emails diferentes",
+  "Fake email": "Email descartável",
+  "User Already Exists": "Email já registado",
+  "Unknown Error": "Não foi possível criar a conta. Tenta novamente mais tarde (se voltar a falhar, atira-nos um email)"
 }

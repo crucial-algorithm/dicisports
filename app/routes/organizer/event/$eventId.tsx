@@ -74,6 +74,7 @@ import Label from '~/components/shared/form/Label';
 import WhenListEmpty from '~/components/shared/Empty';
 import HourOfDay from '~/components/HourOfDay';
 import { Spacer } from '~/components/shared/Spacer';
+import { requireAdminUser } from '~/server/auth/session.server';
 
 type ActionData = {
   hash: number;
@@ -87,8 +88,6 @@ const RESOURCES_NS = 'create-event-form';
 type LoaderData = {
   sports: Array<Sport>;
   mapToken: string;
-  imageUploadEndpoint: string;
-  imageDisplayEndpoint: string;
   imageUploadPreset: string;
   event: SportEvent | null;
   perks: Array<Perk>;
@@ -104,21 +103,20 @@ export const handle = {
 };
 
 export const loader: LoaderFunction = async ({ request, params }) => {
+  // hide while this is still in dev
+  await requireAdminUser(request);
+
   const sports = await findSports();
   const eventId = params.eventId as string;
   const event = eventId ? await findEvent(eventId) : null;
 
   const {
     MAPBOX_TOKEN,
-    IMAGE_UPLOAD_ENDPOINT,
-    IMAGE_DISPLAY_ENDPOINT,
     CLOUDINARY_UPLOAD_PRESET
   } = Config();
 
   return json({
     mapToken: MAPBOX_TOKEN,
-    imageUploadEndpoint: IMAGE_UPLOAD_ENDPOINT,
-    imageDisplayEndpoint: IMAGE_DISPLAY_ENDPOINT,
     imageUploadPreset: CLOUDINARY_UPLOAD_PRESET,
     event,
     sports: sports.map((sport) => {
@@ -130,6 +128,9 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 };
 
 export const action: ActionFunction = async ({ request, params }) => {
+  // hide while this is still in dev
+  await requireAdminUser(request);
+
   const t = await i18n.getFixedT(request, RESOURCES_NS);
   const uploadHandler: UploadHandler = unstable_composeUploadHandlers(
     // our custom upload handler
@@ -613,7 +614,7 @@ function RaceDialog(props: {
       price: price.current?.value,
       priceEarlyBird: priceEarlyBird.current?.value,
       date: validUntil.current?.value,
-      raceDescription: raceDescription.current?.value,
+      description: raceDescription.current?.value,
       hash,
       eventId
     };

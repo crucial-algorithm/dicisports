@@ -40,11 +40,10 @@ async function getLoginInfoSession(request: Request) {
     getMagicLink: () => {
       const link = session.get('magicLink') as string | undefined;
 
-      if (link) {return decrypt(link);}
+      if (link) {
+        return decrypt(link);
+      }
     },
-    setMagicLink: (magicLink: string) =>
-      session.set('magicLink', encrypt(magicLink)),
-    unsetMagicLink: () => session.unset('magicLink'),
     getMagicLinkVerified: () =>
       session.get('magicLinkVerified') as boolean | undefined,
     setMagicLinkVerified: (verified: boolean) =>

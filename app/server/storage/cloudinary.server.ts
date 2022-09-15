@@ -6,6 +6,9 @@ import { setConfig } from 'cloudinary-build-url';
 import { writeAsyncIterableToWritable } from '@remix-run/node';
 
 import Config from '~/server/config.server';
+import type { User } from '~/types';
+
+import Id from '~/server/utils/Id.server';
 
 const {
   CLOUDINARY_CLOUD_NAME,
@@ -26,11 +29,20 @@ const config = {
 
 cloudinary.config(config);
 
-async function uploadImageToCloudinary(data: AsyncIterable<Uint8Array>) {
+/**
+ *
+ * @param data
+ * @param folder   eventId or groupId
+ */
+async function uploadImageToCloudinary(
+  data: AsyncIterable<Uint8Array>,
+  folder: string | null = null
+) {
   return new Promise<UploadApiResponse>(async (resolve, reject) => {
     const uploadStream = cloudinary.uploader.upload_stream(
       {
-        upload_preset: CLOUDINARY_UPLOAD_PRESET
+        upload_preset: CLOUDINARY_UPLOAD_PRESET,
+        public_id: folder ? `${folder}/${Id()}` : Id()
       },
       (error, result) => {
         if (error) {

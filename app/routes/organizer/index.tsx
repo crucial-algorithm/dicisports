@@ -21,6 +21,7 @@ import type { Sport } from '~/types';
 import DisplayImg from '~/components/shared/DisplayImg';
 
 import { findSports } from '~/server/db/sports.server';
+import { requireAdminUser } from '~/server/auth/session.server';
 
 type LoaderData = {
   events: Array<Event>;
@@ -31,6 +32,9 @@ export const handle = {
 };
 
 export const loader: LoaderFunction = async ({ request }) => {
+  // hide while this is still in dev
+  await requireAdminUser(request);
+
   const events = await findEvents();
   const sports = await findSports();
 

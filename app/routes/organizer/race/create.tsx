@@ -1,22 +1,21 @@
 import type { ActionFunction } from 'remix';
-import { redirect, json } from 'remix';
+import { json } from 'remix';
 
 import { z, ZodError } from 'zod';
 
-import {
-  createRace,
-  updateRace,
-  deleteRace,
-  findEventRaces
-} from '~/server/db/races.server';
+import { createRace, deleteRace, updateRace } from '~/server/db/races.server';
 
 import { badRequest, hoursMinutesToTimeOfDay } from '~/utils/misc';
 import type { CreateRaceInput } from '~/types';
 import i18n from '~/server/i18n.server';
+import { requireAdminUser } from '~/server/auth/session.server';
 
 const RESOURCES_NS = 'create-event-form';
 
 export const action: ActionFunction = async ({ request }) => {
+  // hide while this is still in dev
+  await requireAdminUser(request);
+
   const t = await i18n.getFixedT(request, RESOURCES_NS);
   const form = await request.formData();
 
@@ -25,7 +24,6 @@ export const action: ActionFunction = async ({ request }) => {
   const date = form.get('date') as string;
   const hash = form.get('hash') as string;
   const action = form.get('actionId');
-  const races = await findEventRaces(eventId);
 
   const raceData: CreateRaceInput = {
     id: raceId,
