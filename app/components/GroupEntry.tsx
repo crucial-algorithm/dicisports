@@ -20,7 +20,7 @@ type Props = {
 } & React.ComponentProps<'div'>;
 
 const descriptionResponsiveSetup = [
-  { width: 900, max: 101 },
+  { width: 849, max: 101 },
   { width: 812, max: 99 },
   { width: 807, max: 97 },
   { width: 785, max: 95 },
@@ -51,11 +51,9 @@ const descriptionResponsiveSetup = [
 ];
 
 export default function GroupEntry({ group, actions, footer, img }: Props) {
-  const targetRef = useRef<HTMLDivElement>();
   const { t } = useTranslation('m-groups');
   const tc = useTranslation('common').t;
-  const [expanded, setExpanded] = useState<boolean>(false);
-  const [lines, setLines] = useState(0);
+
   const day = tc(
     [
       'Monday',
@@ -67,31 +65,6 @@ export default function GroupEntry({ group, actions, footer, img }: Props) {
       'Sunday'
     ][group.dayOfWeek]
   );
-
-  function handleReadMore() {
-    expanded ? setExpanded(false) : setExpanded(true);
-  }
-
-  function split(width: number) {
-    return descriptionResponsiveSetup
-      .map((v) => (width > v.width ? v.max : null))
-      .filter(Boolean)[0];
-  }
-
-  function showMore(text: string, width: number) {
-    const regex = `.{1,${split(width)}}`;
-
-    return text
-      .split(/\r\n|\r|\n/)
-      .map((str) => (str.match(new RegExp(regex, 'g')) || []).length)
-      .reduce((p, c) => c + (p || 0));
-  }
-
-  useEffect(() => {
-    if (targetRef.current) {
-      setLines(showMore(group.description, targetRef.current.offsetWidth));
-    }
-  }, [group.description]);
 
   return (
     <div
@@ -131,41 +104,96 @@ export default function GroupEntry({ group, actions, footer, img }: Props) {
               value={group.groupSpirit?.name || ''}
             />
           </div>
-          {group.description ? (
-            <>
-              <div className="flex flex-col align-middle mb-4">
-                <div className="dark:text-blueGray-500 text-sm font-medium mr-2">
-                  {t('Description')}
-                </div>
-                <div
-                  className={clsx(
-                    expanded
-                      ? 'break-words line-clamp-none whitespace-pre-wrap max-w-[90ch] dark:text-white text-gray-500 text-base'
-                      : 'break-words line-clamp-4 whitespace-pre-wrap max-w-[90ch] dark:text-white text-gray-500 text-base'
-                  )}
-                  ref={targetRef}
-                >
-                  {group.description}
-                </div>
-                {lines > 4 ? (
-                  <label
-                    className="w-20"
-                    role="button"
-                    onClick={handleReadMore}
-                  >
-                    {expanded ? t('Read Less') : t('Read More')}
-                  </label>
-                ) : null}
-              </div>
-              {footer ? <div className="flex content-end">{footer}</div> : null}
-            </>
-          ) : null}
+          <GroupDescription
+            text={group.description}
+            label={t('Description')}
+            less={t('Read Less')}
+            more={t('Read More')}
+          />
+          {footer && (
+            <div className="flex flex-col content-end items-end">{footer}</div>
+          )}
         </div>
       </div>
       {actions ? (
         <div className="absolute top-0 right-0 p-4 pt-6">{actions}</div>
       ) : null}
     </div>
+  );
+}
+
+function GroupDescription({
+  text,
+  label,
+  more,
+  less
+}: {
+  text: string;
+  label: string;
+  more: string;
+  less: string;
+}) {
+  const targetRef = useRef<HTMLDivElement>(null);
+  const [expanded, setExpanded] = useState<boolean>(false);
+  const [lines, setLines] = useState(0);
+
+  function handleReadMore() {
+    expanded ? setExpanded(false) : setExpanded(true);
+  }
+
+  function split(width: number) {
+    return descriptionResponsiveSetup
+      .map((v) => (width >= v.width ? v.max : null))
+      .filter(Boolean)[0];
+  }
+
+  useEffect(() => {
+    function showMore(text: string, width: number) {
+      if (!text) {
+        return 0;
+      }
+
+      console.log('more/less (cols, width)', split(width), width);
+      const regex = `.{1,${split(width)}}`;
+
+      return text
+        .split(/\r\n|\r|\n/)
+        .map((str) => (str.match(new RegExp(regex, 'g')) || []).length)
+        .reduce((p, c) => c + (p || 0));
+    }
+
+    if (targetRef.current) {
+      setLines(showMore(text, targetRef.current.offsetWidth));
+    }
+  }, [text]);
+
+  if (!text) {
+    return null;
+  }
+
+  return (
+    <>
+      <div className="flex flex-col align-middle mb-4">
+        <div className="dark:text-blueGray-500 text-sm font-medium mr-2">
+          {label}
+        </div>
+        <div
+          className={clsx(
+            expanded
+              ? 'break-words line-clamp-none whitespace-pre-wrap max-w-[90ch] dark:text-white text-gray-500 text-base'
+              : 'break-words line-clamp-4 whitespace-pre-wrap max-w-[90ch] dark:text-white text-gray-500 text-base'
+          )}
+          ref={targetRef}
+        >
+          {text}
+        </div>
+        {lines > 4 && (
+          <label className="w-20" role="button" onClick={handleReadMore}>
+            {expanded ? less : more}
+          </label>
+        )}
+      </div>
+    </>
   );
 }
 

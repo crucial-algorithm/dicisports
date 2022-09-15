@@ -65,6 +65,7 @@ type GroupInput = {
   groupType?: DBGroupType | undefined;
   sport?: DBSport | undefined | null;
   createdBy?: User;
+  description?: string;
 } & DBGroup;
 
 function dbGroupToGroup(group: GroupInput): Group {
@@ -86,6 +87,7 @@ function dbRawGroupToGroup(group: DBRawGroup): Group {
     distance: group.distance,
     id: group.id,
     name: group.name,
+    description: group.description,
     slug: group.slug,
     sportId: group.sport_id,
     groupTypeId: group.group_type_id,
@@ -115,6 +117,9 @@ function dbRawGroupToGroup(group: DBRawGroup): Group {
       name: group.user_name,
       createdAt: new Date(),
       updatedAt: new Date(),
+      lat: 0,
+      lng: 0,
+      location: '',
       email: '',
       role: Role.MEMBER
     }

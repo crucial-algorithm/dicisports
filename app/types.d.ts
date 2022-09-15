@@ -91,7 +91,7 @@ type UploadImageMeta = {
   apiKey: string
 }
 
-type User = {} & DBUser
+type User = {} & Omit<DBUser, 'password' | 'salt'>
 type Sport = {
   name: TranslationObject
 } & DBSport
@@ -161,6 +161,7 @@ type DBRawGroup = {
   distance: number
   id: string
   name: string
+  description: string;
   slug: string
   sport_id: number
   group_type_id: number
