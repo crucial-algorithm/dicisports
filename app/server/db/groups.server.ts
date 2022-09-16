@@ -33,7 +33,9 @@ async function findUserFavoriteGroups(id: string): Promise<Array<Group>> {
     }
   });
 
-  if (!user) {return [];}
+  if (!user) {
+    return [];
+  }
   const groups = await db.group.findMany({
     where: { id: { in: user?.favGroups.map((fg) => fg.groupId) } },
     include: { createdBy: true, groupSpirit: true }
@@ -48,7 +50,9 @@ async function findGroup(id: string): Promise<Group | null> {
     include: { groupType: true, groupSpirit: true, sport: true }
   });
 
-  if (!group) {return null;}
+  if (!group) {
+    return null;
+  }
   return dbGroupToGroup(group);
 }
 
@@ -63,7 +67,9 @@ async function findGroupBySlug(slug: string): Promise<Group | null> {
     }
   });
 
-  if (!group) {return null;}
+  if (!group) {
+    return null;
+  }
   return dbGroupToGroup(group);
 }
 
@@ -76,7 +82,9 @@ async function assignUniqueSlug(name: string, attempt = 0): Promise<string> {
     where: { slug }
   });
 
-  if (!group) {return slug;}
+  if (!group) {
+    return slug;
+  }
   return await assignUniqueSlug(name, ++attempt);
 }
 
@@ -145,15 +153,29 @@ async function removeGroupFromFavorites(
   });
 }
 
+async function findGroupSchedules(groupId: string) {
+  return await db.groupSchedule.findMany({
+    where: { groupId }
+  });
+}
+
+async function removeGroupSchedules(groupId: string) {
+  await db.groupSchedule.findMany({
+    where: { groupId }
+  });
+}
+
 export {
   findGroup,
   findGroups,
   findUserGroups,
   findGroupBySlug,
+  findGroupSchedules,
   updateGroup,
   createDraftGroup,
   deleteGroup,
   addGroupToFavorites,
   removeGroupFromFavorites,
+  removeGroupSchedules,
   findUserFavoriteGroups
 };

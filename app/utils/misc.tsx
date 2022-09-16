@@ -9,7 +9,7 @@ import type {
   TranslationObject
 } from '~/types';
 import ComboBox from '~/components/shared/form/ComboBox';
-
+import React, { useState } from 'react';
 
 function getDomainUrl(request: Request) {
   const host =
@@ -24,14 +24,22 @@ function getDomainUrl(request: Request) {
 }
 
 function getErrorMessage(error: unknown) {
-  if (typeof error === 'string') {return error;}
-  if (error instanceof Error) {return error.message;}
+  if (typeof error === 'string') {
+    return error;
+  }
+  if (error instanceof Error) {
+    return error.message;
+  }
   return '>>Error<<: Unknown Error';
 }
 
 function getErrorStack(error: unknown) {
-  if (typeof error === 'string') {return error;}
-  if (error instanceof Error) {return error.stack;}
+  if (typeof error === 'string') {
+    return error;
+  }
+  if (error instanceof Error) {
+    return error.stack;
+  }
   return '>>Error<<: Unknown Error';
 }
 
@@ -48,7 +56,9 @@ function assertNonNull<PossibleNullType>(
   possibleNull: PossibleNullType,
   errorMessage: string
 ): asserts possibleNull is Exclude<PossibleNullType, null | undefined> {
-  if (possibleNull == null) {throw new Error(errorMessage);}
+  if (possibleNull == null) {
+    throw new Error(errorMessage);
+  }
 }
 
 function removeTrailingSlash(s: string) {
@@ -83,17 +93,22 @@ function hoursMinutesToTimeOfDay(hours: number, minutes: number): number {
 function displayTimeOfDay(value: number): string {
   const [hours, minutes] = timeOfDayToHoursMinutes(value);
 
-  return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+  return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(
+    2,
+    '0'
+  )}`;
 }
 
 function PeekDayOfWeek(props: {
-  name: string
-  id: string
-  defaultValue: DaysOfWeek | null
-  addAll?: boolean
+  name: string;
+  id: string;
+  defaultValue?: DaysOfWeek | null;
+  addAll?: boolean;
+  input?: React.RefObject<HTMLInputElement>;
 }) {
   const { t, i18n } = useTranslation('common');
-  const { id, name, defaultValue, addAll } = props;
+  const { id, name, defaultValue, addAll, input } = props;
+  const [day, setDay] = useState<string>('');
   const options = [
     { value: '6', label: t('Sunday') },
     { value: '0', label: t('Monday') },
@@ -104,22 +119,32 @@ function PeekDayOfWeek(props: {
     { value: '5', label: t('Saturday') }
   ];
 
+  function handleChangeDay(value: string | number) {
+    setDay(String(value));
+  }
+
   return (
-    <ComboBox
-      name={name}
-      lang={i18n.language as Language}
-      id={id}
-      placeholder={addAll ? t('Any Day Of week') : ''}
-      defaultValue={
-        defaultValue || defaultValue === 0 ? String(defaultValue) : undefined
-      }
-      options={options}
-    />
+    <>
+      <ComboBox
+        name={name}
+        onChange={handleChangeDay}
+        lang={i18n.language as Language}
+        id={id}
+        placeholder={addAll ? t('Any Day Of week') : ''}
+        defaultValue={
+          defaultValue || defaultValue === 0 ? String(defaultValue) : undefined
+        }
+        options={options}
+      />
+      <input type="hidden" name="value" value={day} ref={input} />
+    </>
   );
 }
 
 function getLocalizedText(language: Language, value?: TranslationObject) {
-  if (!value) {return '';}
+  if (!value) {
+    return '';
+  }
   return value[language];
 }
 

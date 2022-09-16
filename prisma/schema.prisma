@@ -142,6 +142,7 @@ model Group {
   createdBy     User        @relation(fields: [createdById], references: [id])
   createdById   String      @map("created_by")
   updatedAt     DateTime    @updatedAt @map("updated_at")
+  schedules     GroupSchedule[]
 
   favGroups FavoriteGroup[]
   @@map("groups")
@@ -212,4 +213,14 @@ model Race {
   event             Event           @relation(fields: [eventId], references: [id])
 
   @@map("races")
+}
+
+model GroupSchedule {
+	id          String		@id @default(uuid())
+	dayOfWeek   Int         @map("day_of_week")
+  	timeOfDay   Int         @map("time_of_day")
+  	groupId		String		@map("group_id")
+    group       Group       @relation(fields: [groupId], references: [id])
+
+  	@@map("group_schedule")
 }

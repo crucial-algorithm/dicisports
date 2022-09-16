@@ -13,7 +13,7 @@ import { useTranslation } from 'react-i18next';
 
 import { Form, useLoaderData } from '@remix-run/react';
 
-import { useState } from 'react';
+import React, { useRef, useState } from 'react';
 
 import type { UploadHandler } from '@remix-run/node';
 
@@ -28,7 +28,12 @@ import { H2, H3, Paragraph } from '~/components/shared/typography';
 
 import { requireUser } from '~/server/auth/session.server';
 import { findSports } from '~/server/db/sports.server';
-import { deleteGroup, findGroup, updateGroup } from '~/server/db/groups.server';
+import {
+  deleteGroup,
+  findGroup,
+  updateGroup,
+  findGroupSchedules
+} from '~/server/db/groups.server';
 
 import Button from '~/components/shared/Button';
 import FormField from '~/components/shared/form/FormField';
@@ -39,7 +44,9 @@ import type {
   GroupSpirit,
   GroupType,
   Sport,
-  Language
+  Language,
+  GroupSchedule,
+  DaysOfWeek
 } from '~/types';
 import ComboBox from '~/components/shared/form/ComboBox';
 import { findGroupTypes } from '~/server/db/groupTypes.server';
@@ -68,13 +75,13 @@ import { uploadImageToCloudinary } from '~/server/storage/cloudinary.server';
 import { inputBaseClasses } from '~/components/shared/form/InputBase';
 import { processImgField } from '~/server/utils/misc';
 
-
 const RESOURCES_NS = 'groups-form';
 
 type LoaderData = {
   sports: Array<Sport>;
   groupTypes: Array<GroupType>;
   groupsSpirit: Array<GroupSpirit>;
+  groupSchedules: Array<GroupSchedule>;
   group: Group;
 
   mapToken: string;
@@ -106,7 +113,8 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   const user = await requireUser(request);
   const { MAPBOX_TOKEN, CLOUDINARY_UPLOAD_PRESET } = Config();
 
-  const group = params.groupId ? await findGroup(params.groupId) : null;
+  const groupId = params.groupId as string;
+  const group = groupId ? await findGroup(groupId) : null;
 
   if (!group || group.createdById !== user.id) {
     return redirect('/m/groups');
@@ -116,6 +124,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     sports: await findSports(),
     groupTypes: await findGroupTypes(),
     groupsSpirit: await findGroupsSpirit(),
+    groupSchedules: await findGroupSchedules(groupId),
     group,
     groupId: params.groupId,
 
@@ -247,10 +256,17 @@ export default function GroupRoute() {
   const { t, i18n } = useTranslation(RESOURCES_NS);
   const language = i18n.language as Language;
   const loadedData = useLoaderData<LoaderData>();
-  const { mapToken, sports, groupTypes, groupsSpirit, group } = loadedData;
+  const {
+    mapToken,
+    sports,
+    groupTypes,
+    groupsSpirit,
+    group,
+    groupSchedules: dbGroupSchedules
+  } = loadedData;
   const isUpdate = group.status !== 'auto';
+
   // using parse float for 0 min's to work
-  const [hour, minute] = timeOfDayToHoursMinutes(group.timeOfDay);
   const actionData = useActionData<ActionData>();
   const [deleteModalOpen, setDeleteModalOpen] = useState<boolean>(false);
 
@@ -402,24 +418,9 @@ export default function GroupRoute() {
                 defaultValue={group.near || ''}
               />
             </FormField>
-            <FormField
-              label={t('Day Of Week')}
-              id="group-day-of-week"
-              className="w-64"
-            >
-              <PeekDayOfWeek
-                name="dayOfWeek"
-                id="group-day-of-week"
-                defaultValue={group.dayOfWeek}
-              />
-            </FormField>
-            <FormField
-              label={t('Time Of Day')}
-              id="group-time-of-day"
-              className="w-80 md:w-48"
-            >
-              <HourOfDay hour={hour} minute={minute} />
-            </FormField>
+            <div>
+              <ScheduleDialog groupSchedules={dbGroupSchedules} groupId={group.id}/>
+            </div>
             <FormField label={t('WhatsApp Group')}>
               <TextField
                 name="whatsapp"
@@ -529,5 +530,105 @@ export default function GroupRoute() {
         </Form>
       </Dialog>
     </Main>
+  );
+}
+
+function ScheduleDialog(props: {
+  groupSchedules: GroupSchedule[];
+  groupId: string;
+}) {
+  const { t } = useTranslation(RESOURCES_NS);
+
+  type StrippedSchedule = Omit<
+    GroupSchedule,
+    'id' | 'dayOfWeek' | 'timeOfDay'
+  > & {
+    id: string | null;
+    dayOfWeek: DaysOfWeek;
+  };
+  const { groupSchedules: dbGroupSchedules, groupId } = props;
+  const [groupSchedules, setGroupSchedules] = useState<Array<GroupSchedule>>(
+    dbGroupSchedules.map((gs: GroupSchedule) => {
+      const [hour, minute] = timeOfDayToHoursMinutes(gs.timeOfDay);
+
+      return {
+        ...gs,
+        hour,
+        minute
+      };
+    })
+  );
+
+  const dayOfWeek = useRef<HTMLInputElement | null>(null);
+  const startTime = useRef<HTMLInputElement | null>(null);
+
+  function handleCreateNewSchedule() {
+    const newSchedules = [...groupSchedules];
+
+    newSchedules.push({
+      id: String(Date.now()),
+      hour: 9,
+      minute: 10,
+      timeOfDay: 10,
+      dayOfWeek: Number(dayOfWeek.current?.value) as DaysOfWeek,
+      groupId: groupId
+    });
+    setGroupSchedules(newSchedules);
+
+    if (dayOfWeek.current) {
+      dayOfWeek.current.value = '';
+    }
+  }
+
+  function handleRemove(e: React.MouseEvent<HTMLLabelElement>) {
+    const newSchedules = [...groupSchedules];
+
+    // @ts-ignore
+    const position = newSchedules.findIndex((a) => a.id === e.target.id);
+
+    newSchedules.splice(position, 1);
+    setGroupSchedules(newSchedules);
+  }
+
+  return (
+    <div id="groupSchedule">
+      {groupSchedules.map((gs: GroupSchedule) => (
+        <div className="flex flex-row" key={gs.id}>
+          <FormField
+            label={t('Day Of Week')}
+            id="group-day-of-week"
+            className="w-64"
+          >
+            <PeekDayOfWeek
+              name="dayOfWeek"
+              id="group-day-of-week"
+              defaultValue={gs.dayOfWeek as DaysOfWeek}
+            />
+            <label
+              role="button"
+              className="dark:text-white text-gray-500 text-text-secondary"
+              id={gs.id as string}
+              onClick={handleRemove}
+            >
+              {t('Remove')}
+            </label>
+          </FormField>
+          <FormField
+            label={t('Time Of Day')}
+            id="group-time-of-day"
+            className="w-80 md:w-48"
+          >
+            <HourOfDay hour={gs.hour as number} minute={gs.minute as number} />
+          </FormField>
+        </div>
+      ))}
+      <label
+        role="button"
+        onClick={handleCreateNewSchedule}
+        className="dark:text-white text-gray-500 text-secondary"
+      >
+        {t('Add new')}
+      </label>
+    </div>
   );
 }

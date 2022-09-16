@@ -7,7 +7,8 @@ import type {
   Document as DBDocument,
   Event as DBEvent,
   Perk as DBPerk,
-  Race as DBRace
+  Race as DBRace,
+  GroupSchedule as DBGroupSchedule
 } from '@prisma/client';
 
 type NonNullProperties<Type> = {
@@ -195,6 +196,15 @@ type Group = {
   description?: string
 } & DBGroup
 
+type GroupSchedule = {
+  id?: string
+  dayOfWeek: number
+  timeOfDay: number
+  hour?: number
+  minute?: number
+  groupId: string
+} & DBGroupSchedule
+
 type CreateGroupInput = {
   id?: string
   name: string
@@ -244,6 +254,7 @@ export {
   CreateGroupInput,
   GroupType,
   GroupSpirit,
+  GroupSchedule,
   Sport,
   Document,
   Event,
