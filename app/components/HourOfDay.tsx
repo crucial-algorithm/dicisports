@@ -5,21 +5,29 @@ import ComboBox from '~/components/shared/form/ComboBox';
 export default function HourOfDay({
   hour = 8,
   minute = 30,
-  input
+  input,
+  onChange
 }: {
   hour: number;
   minute: number;
   input?: React.RefObject<HTMLInputElement>;
+  onChange?: (value: string | number) => void;
 }) {
   const [hourValue, setHourValue] = useState<string>('');
   const [minuteValue, setMinuteValue] = useState<string>('');
 
   function handleOnChangeHour(value: string | number) {
     setHourValue(String(value));
+    if (onChange) {
+      onChange(value);
+    }
   }
 
   function handleOnChangeMinute(value: string | number) {
     setMinuteValue(String(value));
+    if (onChange) {
+      onChange(value);
+    }
   }
 
   return (

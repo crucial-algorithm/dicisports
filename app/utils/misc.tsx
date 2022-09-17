@@ -105,9 +105,10 @@ function PeekDayOfWeek(props: {
   defaultValue?: DaysOfWeek | null;
   addAll?: boolean;
   input?: React.RefObject<HTMLInputElement>;
+  onChange?: (value: string | number) => void;
 }) {
   const { t, i18n } = useTranslation('common');
-  const { id, name, defaultValue, addAll, input } = props;
+  const { id, name, defaultValue, addAll, input, onChange } = props;
   const [day, setDay] = useState<string>('');
   const options = [
     { value: '6', label: t('Sunday') },
@@ -121,6 +122,10 @@ function PeekDayOfWeek(props: {
 
   function handleChangeDay(value: string | number) {
     setDay(String(value));
+
+    if (onChange) {
+      onChange(value);
+    }
   }
 
   return (

@@ -196,6 +196,9 @@ export const action: ActionFunction = async ({ request, params }) => {
   const image2 = form.get('/file/image/1') as string;
   const image3 = form.get('/file/image/2') as string;
   const location = parseLocation(form.get('location') as string);
+  const schedules = form.getAll('groupSchedule');
+
+  console.log('schedules --->', schedules);
   const data = {
     id: form.get('id') as string,
     name: form.get('name') as string,
@@ -419,7 +422,10 @@ export default function GroupRoute() {
               />
             </FormField>
             <div>
-              <ScheduleDialog groupSchedules={dbGroupSchedules} groupId={group.id}/>
+              <ScheduleDialog
+                groupSchedules={dbGroupSchedules}
+                groupId={group.id}
+              />
             </div>
             <FormField label={t('WhatsApp Group')}>
               <TextField
@@ -562,6 +568,28 @@ function ScheduleDialog(props: {
   const dayOfWeek = useRef<HTMLInputElement | null>(null);
   const startTime = useRef<HTMLInputElement | null>(null);
 
+  const [hour, setHour] = useState('');
+  const [minute, setMinute] = useState('');
+  const [day, setDay] = useState('');
+
+  function handleOnChangeHour(value: string | number) {
+    setHour(String(value));
+
+    console.log('hour --->', value);
+  }
+
+  function handleOnChangeMinute(value: string | number) {
+    setMinute(String(value));
+
+    console.log('minute --->', value);
+  }
+
+  function handleOnChangeDay(value: string | number) {
+    setDay(String(value));
+
+    console.log('day --->', value);
+  }
+
   function handleCreateNewSchedule() {
     const newSchedules = [...groupSchedules];
 
@@ -603,6 +631,7 @@ function ScheduleDialog(props: {
               name="dayOfWeek"
               id="group-day-of-week"
               defaultValue={gs.dayOfWeek as DaysOfWeek}
+              onChange={handleOnChangeDay}
             />
             <label
               role="button"
@@ -618,7 +647,11 @@ function ScheduleDialog(props: {
             id="group-time-of-day"
             className="w-80 md:w-48"
           >
-            <HourOfDay hour={gs.hour as number} minute={gs.minute as number} />
+            <HourOfDay
+              hour={gs.hour as number}
+              minute={gs.minute as number}
+              onChange={handleOnChangeHour}
+            />
           </FormField>
         </div>
       ))}
@@ -629,6 +662,11 @@ function ScheduleDialog(props: {
       >
         {t('Add new')}
       </label>
+      <input
+        type="hidden"
+        name="groupSchedule"
+        value={`${day}:${hour}:${minute}`}
+      />
     </div>
   );
 }
