@@ -5,7 +5,9 @@ import type {
   GroupType as DBGroupType,
   Sport as DBSport,
   Document as DBDocument,
-  Event as DBEvent
+  Event as DBEvent,
+  Perk as DBPerk,
+  Race as DBRace
 } from '@prisma/client';
 
 type NonNullProperties<Type> = {
@@ -89,7 +91,7 @@ type UploadImageMeta = {
   apiKey: string
 }
 
-type User = {} & DBUser
+type User = {} & Omit<DBUser, 'password' | 'salt'>
 type Sport = {
   name: TranslationObject
 } & DBSport
@@ -97,7 +99,60 @@ type Document = {} & DBDocument
 type GroupType = {
   name: TranslationObject
 } & DBGroupType
+
+
 type Event = {} & DBEvent
+
+type CreateEventInput = {
+  id: string
+  name: string
+  sportId: number
+  startAt: Date | string
+  location: string
+  address: string
+  useExternalBooking: boolean
+  externalBookingUrl: string | null
+  eventDescription: string | null
+  directions: string | null
+  image1?: string | null
+  image2?: string | null
+  image3?: string | null
+  image4?: string | null
+  image5?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+type Perk = {} & DBPerk
+
+type CreatePerksInput = {
+  id?: string
+  name: string
+  createdAt?: Date | string
+  isDefault: boolean
+  isEnabled: boolean
+  eventId: string
+}
+
+type Race = {} & DBRace
+
+type CreateRaceInput = {
+  id: string
+  name: string
+  distance: number
+  createdAt?: Date
+  updatedAt?: Date
+  startTime: number
+  elevationGain: number
+  elevationLoss?: number | null
+  price: number
+  priceEarlyBird?: number | null
+  validUntil?: Date | null
+  raceDescription?: string | null
+  displayOrder?: number | null
+  eventId: string
+}
+
 type GroupSpirit = {
   name: TranslationObject
 } & DBGroupSpirit
@@ -106,6 +161,7 @@ type DBRawGroup = {
   distance: number
   id: string
   name: string
+  description: string;
   slug: string
   sport_id: number
   group_type_id: number
@@ -136,6 +192,7 @@ type Group = {
   groupType?: GroupType
   sport?: Sport
   distance?: number
+  description?: string
 } & DBGroup
 
 type CreateGroupInput = {
@@ -190,6 +247,11 @@ export {
   Sport,
   Document,
   Event,
+  Perk,
+  Race,
+  CreateEventInput,
+  CreatePerksInput,
+  CreateRaceInput,
   DBRawGroup,
   LoginAction
 };

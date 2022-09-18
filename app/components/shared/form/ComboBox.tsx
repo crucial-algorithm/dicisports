@@ -22,7 +22,8 @@ type Props = {
   lang?: Language
   defaultValue?: string | number
   placeholder: string
-} & React.ComponentProps<'select'>
+  onChange?: (value: string | number ) => void
+} & Omit<React.ComponentProps<'select'>, 'onChange'>
 
 export default function ComboBox({
   name,
@@ -30,7 +31,8 @@ export default function ComboBox({
   className,
   options,
   lang,
-  placeholder
+  placeholder,
+  onChange
 }: Props) {
   const [value, setValue] = useState<Option | undefined>(undefined);
   const [theme] = useTheme();
@@ -57,6 +59,7 @@ export default function ComboBox({
 
   function handleSelectChange(o: Option) {
     setValue(o);
+    onChange && onChange(o.value);
   }
 
   function NoOptionsMessage() {
@@ -68,7 +71,7 @@ export default function ComboBox({
       <input type="hidden" name={name} value={value?.value || ''} />
       <Select
         aria-label=""
-        className={inputBaseClasses(className)}
+        className={inputBaseClasses('py-2.5')}
         value={value}
         isClearable={false}
         isSearchable={true}
@@ -94,6 +97,7 @@ export default function ComboBox({
           },
           input: (base) => {
             return {
+              padding: 10,
               ...base,
               color: 'var(--color-blueGray-500)',
               outline: 'none'
@@ -116,12 +120,11 @@ export default function ComboBox({
               color: inDarkMode
                 ? 'var(--color-blueGray-500)'
                 : 'var(--color-gray-500)',
-              backgroundColor:
-                !isFocused
-                  ? undefined
-                  : inDarkMode
-                    ? 'var(--color-gray-600)'
-                    : 'var(--color-gray-200)'
+              backgroundColor: !isFocused
+                ? undefined
+                : inDarkMode
+                ? 'var(--color-gray-600)'
+                : 'var(--color-gray-200)'
             };
           },
           singleValue: (base) => {

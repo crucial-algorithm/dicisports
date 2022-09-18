@@ -19,8 +19,8 @@ export const handle = {
 };
 
 type LoaderData = {
-  group: Group
-}
+  group: Group;
+};
 
 export const loader: LoaderFunction = async ({ request, params }) => {
   const slug = params.slug as string;
@@ -77,6 +77,11 @@ export default function GroupDisplayRoute() {
         {group.image3 ? (
           <DisplayImg id={group.image3} transformations={transformations} />
         ) : null}
+      </div>
+
+      <div className="max-w-full text-lg text-secondary mt-2">
+        {t('Description')}
+        <div>{group.description}</div>
       </div>
 
       <Paragraph className="mt-8">

@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 import { useTranslation } from 'react-i18next';
 
@@ -12,17 +12,17 @@ import I18nText from '~/components/I18nText';
 import DisplayImg from '~/components/shared/DisplayImg';
 import { displayTimeOfDay } from '~/utils/misc';
 
-
 type Props = {
-  actions?: React.ReactNode
-  footer?: ReactNode
-  group: Group
-  img?: string
-} & React.ComponentProps<'div'>
+  actions?: React.ReactNode;
+  footer?: ReactNode;
+  group: Group;
+  img?: string;
+} & React.ComponentProps<'div'>;
 
 export default function GroupEntry({ group, actions, footer, img }: Props) {
   const { t } = useTranslation('m-groups');
   const tc = useTranslation('common').t;
+
   const day = tc(
     [
       'Monday',
@@ -72,8 +72,16 @@ export default function GroupEntry({ group, actions, footer, img }: Props) {
               label={t('Purpose')}
               value={group.groupSpirit?.name || ''}
             />
-            {footer ? <div className="flex content-end">{footer}</div> : null}
           </div>
+          <GroupDescription
+            text={group.description}
+            label={t('Description')}
+            less={t('Read Less')}
+            more={t('Read More')}
+          />
+          {footer && (
+            <div className="flex flex-col content-end items-end">{footer}</div>
+          )}
         </div>
       </div>
       {actions ? (
@@ -83,15 +91,88 @@ export default function GroupEntry({ group, actions, footer, img }: Props) {
   );
 }
 
+function GroupDescription({
+  text,
+  label,
+  more,
+  less
+}: {
+  text: string;
+  label: string;
+  more: string;
+  less: string;
+}) {
+  const innerDiv = useRef<HTMLDivElement>(null);
+  const outerDiv = useRef<HTMLDivElement>(null);
+  const [expanded, setExpanded] = useState<boolean>(false);
+  const [heightMetaData, setHeightMetaData] = useState<{
+    isTextLonger: boolean;
+    computed: boolean;
+  }>({ isTextLonger: true, computed: false });
+
+  function handleReadMore() {
+    expanded ? setExpanded(false) : setExpanded(true);
+  }
+
+  useEffect(() => {
+    if (innerDiv.current) {
+      setHeightMetaData({
+        computed: true,
+        isTextLonger: innerDiv.current.offsetHeight > 76
+      });
+    }
+  }, [text]);
+
+  if (!text) {
+    return null;
+  }
+
+  return (
+    <>
+      <div className="flex flex-col align-middle mb-4">
+        <div className="dark:text-blueGray-500 text-sm font-medium mr-2">
+          {label}
+        </div>
+        <div
+          className={clsx({
+            'max-h-[76px] overflow-hidden': !expanded
+          })}
+          ref={outerDiv}
+        >
+          <div
+            ref={innerDiv}
+            className={clsx(
+              'whitespace-pre-wrap max-w-[90ch] dark:text-white text-gray-500 text-base',
+              {
+                'break-words line-clamp-3':
+                  heightMetaData.computed && heightMetaData.isTextLonger && !expanded
+              }
+            )}
+          >
+            {text}
+          </div>
+        </div>
+        {heightMetaData.isTextLonger && (
+          <label className="w-20" role="button" onClick={handleReadMore}>
+            {expanded ? less : more}
+          </label>
+        )}
+      </div>
+    </>
+  );
+}
+
 function PlaceholderImg({
   group,
   img
 }: {
-  group: Group
-  className: string
-  img?: string
+  group: Group;
+  className: string;
+  img?: string;
 }) {
-  if (!img) {return null;}
+  if (!img) {
+    return null;
+  }
   return (
     <DisplayImg
       id={`product/sports/${img}`}
@@ -102,9 +183,9 @@ function PlaceholderImg({
 }
 
 type FeatureProps = {
-  value: string | TranslationObject
-  label?: string
-} & React.ComponentProps<'div'>
+  value: string | TranslationObject;
+  label?: string;
+} & React.ComponentProps<'div'>;
 
 function Feature({ value, label, children }: FeatureProps) {
   return (

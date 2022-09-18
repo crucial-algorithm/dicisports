@@ -3,5 +3,6 @@
   "Location": "Localização",
   "Date": "Data",
   "Edit": "Editar",
-  "Create": "Criar"
+  "Create": "Criar evento",
+  "Events Empty": "Clica em \"Criar Evento\" para criar o teu primeiro evento."
 }

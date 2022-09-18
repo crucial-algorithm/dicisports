@@ -40,12 +40,9 @@ export default function PickBookingSystem({
   return (
     <fieldset>
       <div>
-        <legend className="text-base font-medium text-gray-900">
+        <legend className="dark:text-blueGray-500 text-gray-600 text-sm">
           {t('How Is Booking Going To Be Managed')}
         </legend>
-        <p className="text-sm text-gray-500">
-          These are delivered via SMS to your mobile phone.
-        </p>
       </div>
       <div className="mt-4 space-y-4">
         <div className="flex items-center">

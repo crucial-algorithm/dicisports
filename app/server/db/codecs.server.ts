@@ -3,10 +3,10 @@ import type {
   GroupType as DBGroupType,
   GroupSpirit as DBGroupSpirit,
   Sport as DBSport,
-  Status } from '@prisma/client';
-import {
-  Role
+  Perk as DBPerk,
+  Status
 } from '@prisma/client';
+import { Role } from '@prisma/client';
 
 import type {
   DaysOfWeek,
@@ -16,6 +16,7 @@ import type {
   TranslationObject,
   User,
   Sport,
+  Perk,
   DBRawGroup
 } from '~/types';
 
@@ -29,6 +30,12 @@ function dbSportToSport(sport: DBSport): Sport {
     name: name as TranslationObject,
     picture
   };
+}
+
+function dbPerkToPerk(perk: DBPerk): Perk {
+  const { id, name, createdAt, isDefault, isEnabled, eventId, displayOrder } = perk;
+
+  return { id, name, createdAt: new Date(createdAt), isDefault, isEnabled, eventId, displayOrder };
 }
 
 function dbGroupSpiritToGroupSpirit(group: DBGroupSpirit): GroupSpirit {
@@ -54,11 +61,12 @@ function dbGroupTypeToGroupType(group: DBGroupType): GroupType {
 }
 
 type GroupInput = {
-  groupSpirit?: DBGroupSpirit | undefined
-  groupType?: DBGroupType | undefined
-  sport?: DBSport | undefined | null
-  createdBy?: User
-} & DBGroup
+  groupSpirit?: DBGroupSpirit | undefined;
+  groupType?: DBGroupType | undefined;
+  sport?: DBSport | undefined | null;
+  createdBy?: User;
+  description?: string;
+} & DBGroup;
 
 function dbGroupToGroup(group: GroupInput): Group {
   return {
@@ -79,6 +87,7 @@ function dbRawGroupToGroup(group: DBRawGroup): Group {
     distance: group.distance,
     id: group.id,
     name: group.name,
+    description: group.description,
     slug: group.slug,
     sportId: group.sport_id,
     groupTypeId: group.group_type_id,
@@ -108,6 +117,9 @@ function dbRawGroupToGroup(group: DBRawGroup): Group {
       name: group.user_name,
       createdAt: new Date(),
       updatedAt: new Date(),
+      lat: 0,
+      lng: 0,
+      location: '',
       email: '',
       role: Role.MEMBER
     }
@@ -119,5 +131,6 @@ export {
   dbGroupSpiritToGroupSpirit,
   dbGroupTypeToGroupType,
   dbGroupToGroup,
+  dbPerkToPerk,
   dbRawGroupToGroup
 };

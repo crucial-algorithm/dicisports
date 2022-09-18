@@ -11,7 +11,7 @@
 
 generator client {
   provider        = "prisma-client-js"
-  previewFeatures = ["fullTextSearch"]
+  previewFeatures = ["fullTextSearch", "interactiveTransactions"]
 }
 
 datasource db {
@@ -85,10 +85,19 @@ model Event {
   address            String?
   useExternalBooking Boolean    @default(false) @map("use_external_booking")
   externalBookingUrl String?    @map("external_booking_url")
+  eventDescription   String?    @map("event_description")
   status             Status     @default(auto)
+  image1             String?
+  image2             String?
+  image3             String?
+  image4             String?
+  image5             String?
+  directions         String?
   createdAt          DateTime   @default(now()) @map("created_at")
   updatedAt          DateTime   @updatedAt @map("updated_at")
   documents          Document[]
+  perks              Perk[]
+  races              Race[]
 
   @@map("events")
 }
@@ -127,6 +136,7 @@ model Group {
   image1        String?
   image2        String?
   image3        String?
+  description   String?
   status        Status      @default(auto)
   createdAt     DateTime    @default(now()) @map("created_at")
   createdBy     User        @relation(fields: [createdById], references: [id])
@@ -167,4 +177,39 @@ model FavoriteGroup {
 
   @@unique([userId, groupId])
   @@map("favorite_groups")
+}
+
+model Perk {
+  id            String          @id @default(uuid())
+  name          String
+  createdAt     DateTime        @default(now()) @map("created_at")
+
+  isDefault     Boolean         @default(false) @map("is_default")
+  isEnabled     Boolean         @default(false) @map("is_enabled")
+  displayOrder  Int             @default(autoincrement()) @map("display_order")
+  eventId       String          @map("event_id")
+  event         Event           @relation(fields: [eventId], references: [id])
+
+  @@map("perks")
+}
+
+model Race {
+  id                String          @id @default(uuid())
+  name              String
+  distance          Float
+  createdAt         DateTime        @default(now()) @map("created_at")
+  updatedAt         DateTime        @updatedAt @map("updated_at")
+  startTime         Int             @map("start_time")
+  elevationGain     Int             @map("elevation_gain")
+  elevationLoss     Int?            @map("elevation_loss")
+  price             Float
+  priceEarlyBird    Float?          @map("price_early_bird")
+  validUntil        DateTime?       @map("valid_until")
+  raceDescription   String?         @map("race_description")
+  displayOrder      Int             @default(autoincrement()) @map("display_order")
+  status            Status          @default(auto)
+  eventId           String          @map("event_id")
+  event             Event           @relation(fields: [eventId], references: [id])
+
+  @@map("races")
 }

@@ -29,16 +29,14 @@ const FormField: React.FC<Props> = ({
     <div className={clsx('mb-8', className)}>
       <div className="flex gap-2 items-baseline justify-between mb-2">
         <Label htmlFor={inputId}>{label}</Label>
-        {error ? (
-          <InputError id={errorId}>{error}</InputError>
-        ) : description ? (
+        {description ? (
           <div id={descriptionId} className="text-primary text-lg">
             {description}
           </div>
         ) : null}
       </div>
-
       {children}
+      {error ? <InputError className="mt-2" id={errorId}>{error}</InputError> : null }
     </div>
   );
 };

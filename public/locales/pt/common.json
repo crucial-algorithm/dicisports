@@ -1,5 +1,6 @@
 {
   "NAVBAR >>> Meeting Point": "Os meus grupos",
+  "NAVBAR >>> Events": "Os meus eventos",
   "Home": "Inicio",
   "Switch to light mode": "Alterar para light mode",
   "Switch to dark mode": "Alterar para dark mode",
@@ -14,6 +15,7 @@
   "Any Day Of week": "Todos",
 
   "map": "Mapa",
+  "Cancel": "Cancelar",
   "Pick Location In Map Title": "Selecione a localização no mapa",
   "Drag Map to Choose a Location Hint": "Arraste o mapa até à localização pretendida",
   "Pick Location Button": "Escolher local",
