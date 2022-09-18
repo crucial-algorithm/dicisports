@@ -13,8 +13,8 @@
   "Failed to find Your Location Title": "Não foi possível determinar a tua localização.",
   "Failed to find Your Location Hint": "Verifica as definições de partilha de localização com o DiciSports e tenta de novo.",
   "Failed to find Your Location Close": "Ok",
-  "Order by proximity": "Ordenar por proximidade",
-  "Order by recency": "Ordenar por mais recente",
+  "Order by proximity": "Mais próximos 1º",
+  "Order by recency": "Mais recentes 1º",
 
   "Filters": "Filtros",
   "Sport": "Modalidade",

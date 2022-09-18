@@ -297,7 +297,11 @@ export default function Index() {
   const [isLocationFailedWarningOpened, setLocationFailedWarningOpen] =
     useState<boolean>(false);
   const [orderBy, setOrderBy] = useState<SortMethod>(
-    userLocation ? SortMethod.proximity : SortMethod.recency
+    filters.orderBy
+      ? filters.orderBy
+      : userLocation
+      ? SortMethod.proximity
+      : SortMethod.recency
   );
   const searchForm = useRef<HTMLFormElement | null>(null);
 
@@ -549,7 +553,7 @@ export default function Index() {
               location={`${location.pathname}${location.search}`}
               isLoggedIn={user !== null}
               userLocation={userLocation}
-              showLocation={!!userLocation && orderBy === SortMethod.proximity}
+              showLocation={orderBy === SortMethod.proximity}
             />
           ))}
         </>
