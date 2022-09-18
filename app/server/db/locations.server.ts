@@ -17,16 +17,16 @@ async function findGroups(
   const s = (a: number[] | null): number[] => (a ? a : []);
   const [b, e] = s(timeOfDay);
   const [myLat, myLng] = userLocation || [lat, lng];
-  const orderBy = orderByProximity && !isNaN(Number(myLat)) ? 2 : 'gs.created_at DESC';
+  const orderBy = orderByProximity && !isNaN(Number(myLat)) ? 'distance' : 'created_at DESC';
   const query = `
       SELECT *, count(1) over () as records
       FROM (
-               SELECT (6357.0 *
+               SELECT floor((6357.0 *
                        acos(LEAST(cos(radians(${lat})) * cos(radians(g.lat)) * cos(radians(g.lng) - radians(${lng})) +
-                                  sin(radians(${lat})) * sin(radians(g.lat)), 1))) AS distance_to_searched_location,
-                      (6357.0 *
+                                  sin(radians(${lat})) * sin(radians(g.lat)), 1)))) AS distance_to_searched_location,
+                      floor((6357.0 *
                        acos(LEAST(cos(radians(${myLat})) * cos(radians(g.lat)) * cos(radians(g.lng) - radians(${myLng})) +
-                                  sin(radians(${myLat})) * sin(radians(g.lat)), 1))) AS distance,
+                                  sin(radians(${myLat})) * sin(radians(g.lat)), 1)))) AS distance,
                       g.*,
                       u.name                                                     AS "user_name",
                       gs.name                                                    AS "group_spirit"
@@ -41,12 +41,11 @@ async function findGroups(
                    ${n(sport, `AND g.sport_id = ${sport}`)}
                    ${n(dayOfWeek, `AND g.day_of_week = ${dayOfWeek}`)}
                    ${n(timeOfDay, `AND g.time_of_day BETWEEN ${b} AND ${e}`)}
-               ORDER BY ${orderBy}
-           ) grps
+           ) grps ORDER BY ${orderBy}
       LIMIT ${chunkSize} OFFSET ${position * chunkSize}
   `;
 
-  //console.log('----->', query);
+  // console.log('----->', query);
   const results: Array<DBRawGroup> = await db.$queryRawUnsafe(query);
   const mapped = results.map(dbRawGroupToGroup);
   const total = results.length === 0 ? 0 : results[0].records;

@@ -139,7 +139,6 @@ export const loader: LoaderFunction = async ({ request, params, context }) => {
     const locationSession = await getLocationSession(request);
     const [lat, lng] = locationSession.getLocation() || [];
 
-    console.log('*****>', data.orderBy);
     result = await search(
       data.dayParts,
       data.spirit,
@@ -379,11 +378,12 @@ export default function Index() {
           }
         );
 
-        // como evitar que esta acção cancele o submit anterior?
-        searchForm.current?.submit();
-        // isto é necessário após o submit do form?!?!
         setUserLocation([latitude, longitude]);
-        console.log('aki');
+
+        // this is likely to cause issues... submitting the form can potentially
+        // cancel the previous request before successfully completing, thus
+        // causing the location not to be set
+        searchForm.current?.submit();
       },
       (err) => {
         setSearchingLocation(false);
@@ -492,7 +492,7 @@ export default function Index() {
         ) : null}
 
         {searchPerformed && (
-          <div className="pb-12 flex flex-col justify-center">
+          <div className="flex flex-col justify-center">
             {groups.length === 0 ? (
               <div className="w-full flex justify-center mt-8">
                 <CallToActionToCreateGroup
@@ -506,6 +506,7 @@ export default function Index() {
                 <div className="flex align-middle justify-center">
                   <CallToActionToCreateGroup label={t('Create your group')} />
                 </div>
+                <Spacer size="2xs" />
                 <div className="flex justify-end">
                   <input type="hidden" name="order" value={orderBy} />
                   <button
@@ -526,7 +527,6 @@ export default function Index() {
       </Form>
       {searchPerformed && (
         <>
-          <Spacer size="3xs" />
           {groups.map((group) => (
             <GroupResult
               group={group}
