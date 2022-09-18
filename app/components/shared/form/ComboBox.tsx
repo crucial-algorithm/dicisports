@@ -22,7 +22,7 @@ type Props = {
   lang?: Language
   defaultValue?: string | number
   placeholder: string
-  onChange: (value: string | number ) => void
+  onChange?: (value: string | number ) => void
 } & Omit<React.ComponentProps<'select'>, 'onChange'>
 
 export default function ComboBox({
@@ -59,7 +59,7 @@ export default function ComboBox({
 
   function handleSelectChange(o: Option) {
     setValue(o);
-    onChange(o.value);
+    onChange && onChange(o.value);
   }
 
   function NoOptionsMessage() {

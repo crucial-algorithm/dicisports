@@ -1,5 +1,6 @@
 import * as React from 'react';
 import type { LinksFunction, LoaderFunction } from 'remix';
+import { json } from 'remix';
 import {
   Links,
   LiveReload,
@@ -8,6 +9,7 @@ import {
   Scripts,
   ScrollRestoration,
   useCatch,
+  useLoaderData,
   useTransition
 } from '@remix-run/react';
 import { useTranslation } from 'react-i18next';
@@ -16,13 +18,9 @@ import type { User } from '@prisma/client';
 
 import { useSpinDelay } from 'spin-delay';
 
-import { useLoaderData } from '@remix-run/react';
-
 import clsx from 'clsx';
 
 import { setConfig } from 'cloudinary-build-url';
-
-import { json } from 'remix';
 
 import { useChangeLanguage } from 'remix-i18next';
 
@@ -36,23 +34,22 @@ import { getClientSession } from '~/server/auth/client.server';
 import { pathedRoutes } from '~/other-routes.server';
 import { NotificationMessage } from '~/components/shared/NotificationMessage';
 
-
 import type { Theme } from '~/utils/theme-provider';
 import { ThemeProvider, useTheme } from '~/utils/theme-provider';
 import { getThemeSession } from '~/server/theme.server';
 
-
 import { Navbar } from '~/components/NavBar';
-
 
 import TransitionIndicator from '~/components/shared/TransitionIndicator';
 
 import Config from '~/server/config.server';
 
+import { LocationProvider } from '~/utils/LocationProvider';
+import { getLocationSession } from '~/routes/action/set-my-location';
+
 import vendorsCss from './styles/vendors.css';
 import mainCss from './styles/main.css';
 import tailwind from './styles/tailwind.css';
-
 
 export const links: LinksFunction = () => {
   return [
@@ -99,7 +96,8 @@ export type LoaderData = {
     session: {
       email: string | undefined
       magicLinkVerified: boolean | undefined
-      theme: Theme | null
+      theme: Theme | null,
+      location: [number, number] | null
     }
   }
 }
@@ -120,6 +118,7 @@ export const loader: LoaderFunction = async ({ request }) => {
   const themeSession = await getThemeSession(request);
   const clientSession = await getClientSession(request);
   const loginInfoSession = await getLoginInfoSession(request);
+  const locationSession = await getLocationSession(request);
 
   const user = await time({
     name: 'getUser in root loader',
@@ -139,7 +138,8 @@ export const loader: LoaderFunction = async ({ request }) => {
       session: {
         email: loginInfoSession.getEmail(),
         magicLinkVerified: loginInfoSession.getMagicLinkVerified(),
-        theme: themeSession.getTheme()
+        theme: themeSession.getTheme(),
+        location: locationSession.getLocation()
       }
     }
   };
@@ -280,11 +280,13 @@ function Html({
 export default function App() {
   // set locale statically
   const locale = 'pt';
-  const data = useLoaderData<LoaderData>();
+  const data = useLoaderData<LoaderData>() as LoaderData;
 
   return (
     <ThemeProvider specifiedTheme={data.requestInfo.session.theme}>
-      <Html lang={locale} />
+      <LocationProvider userLocation={data.requestInfo.session.location}>
+        <Html lang={locale} />
+      </LocationProvider>
     </ThemeProvider>
   );
 }

@@ -2,24 +2,31 @@ import { db } from '~/server/db.server';
 import type { DBRawGroup, Group, GroupFilters } from '~/types';
 import { dbRawGroupToGroup } from '~/server/db/codecs.server';
 
-async function findNearestGroups(
-  lat: number,
-  lng: number,
+async function findGroups(
+  lat: number | null,
+  lng: number | null,
   filters: GroupFilters,
   chunkSize = 40,
-  position = 0
+  position = 0,
+  userLocation: [number, number] | null,
+  orderByProximity: boolean
 ): Promise<{ total: number; results: Group[] }> {
   const { spirit, sport, dayOfWeek, timeOfDay } = filters;
   const n = (a: any | null, b: string) =>
     a === null || (Array.isArray(a) && a.length === 0) ? '' : b;
   const s = (a: number[] | null): number[] => (a ? a : []);
   const [b, e] = s(timeOfDay);
+  const [myLat, myLng] = userLocation || [lat, lng];
+  const orderBy = orderByProximity && !isNaN(Number(myLat)) ? 2 : 'gs.created_at DESC';
   const query = `
       SELECT *, count(1) over () as records
       FROM (
                SELECT (6357.0 *
                        acos(LEAST(cos(radians(${lat})) * cos(radians(g.lat)) * cos(radians(g.lng) - radians(${lng})) +
-                                  sin(radians(${lat})) * sin(radians(g.lat)), 1))) AS distance,
+                                  sin(radians(${lat})) * sin(radians(g.lat)), 1))) AS distance_to_searched_location,
+                      (6357.0 *
+                       acos(LEAST(cos(radians(${myLat})) * cos(radians(g.lat)) * cos(radians(g.lng) - radians(${myLng})) +
+                                  sin(radians(${myLat})) * sin(radians(g.lat)), 1))) AS distance,
                       g.*,
                       u.name                                                     AS "user_name",
                       gs.name                                                    AS "group_spirit"
@@ -27,15 +34,19 @@ async function findNearestGroups(
                         INNER JOIN users u ON g.created_by = u.id
                         INNER JOIN groups_spirit gs on g.group_spirit_id = gs.id
                WHERE status = 'published'
+                 AND (6357.0 *
+                      acos(LEAST(cos(radians(${lat})) * cos(radians(g.lat)) * cos(radians(g.lng) - radians(${lng})) +
+                                 sin(radians(${lat})) * sin(radians(g.lat)), 1))) < ${isNaN(Number(lat)) ? 30 : 1000000000}
                    ${n(spirit, `AND gs.id IN (${s(spirit).join(', ')})`)}
                    ${n(sport, `AND g.sport_id = ${sport}`)}
                    ${n(dayOfWeek, `AND g.day_of_week = ${dayOfWeek}`)}
                    ${n(timeOfDay, `AND g.time_of_day BETWEEN ${b} AND ${e}`)}
-               ORDER BY 1
-           ) x
+               ORDER BY ${orderBy}
+           ) grps
       LIMIT ${chunkSize} OFFSET ${position * chunkSize}
   `;
-  //console.log('----->', query)
+
+  //console.log('----->', query);
   const results: Array<DBRawGroup> = await db.$queryRawUnsafe(query);
   const mapped = results.map(dbRawGroupToGroup);
   const total = results.length === 0 ? 0 : results[0].records;
@@ -43,4 +54,4 @@ async function findNearestGroups(
   return { results: mapped, total };
 }
 
-export { findNearestGroups };
+export { findGroups };
