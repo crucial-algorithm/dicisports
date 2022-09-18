@@ -70,7 +70,6 @@ import { useRootData } from '~/utils/use-root-data';
 import { getLocationSession } from '~/routes/action/set-my-location';
 import { useUserLocation } from '~/utils/LocationProvider';
 
-
 type FilterParams = {
   actionId: keyof typeof actions | null;
   coords: string | null;
@@ -80,24 +79,24 @@ type FilterParams = {
   page: number | null;
   sport: number | null;
   dayOfWeek: number | null;
-  orderBy: SortMethod
+  orderBy: SortMethod;
 };
 
 type LoaderData = {
-  sports: Sport[]
-  groupsSpirit: GroupSpirit[]
-  result: ActionData
-  favorites: Group[]
-  mapToken: string
-}
+  sports: Sport[];
+  groupsSpirit: GroupSpirit[];
+  result: ActionData;
+  favorites: Group[];
+  mapToken: string;
+};
 
 type ActionData = {
-  results: Group[]
-  filters: null | GroupFilters
-  total: number
-  page?: number
-  reset: boolean
-}
+  results: Group[];
+  filters: null | GroupFilters;
+  total: number;
+  page?: number;
+  reset: boolean;
+};
 
 const actions = {
   filter: 'filter',
@@ -156,15 +155,13 @@ export const loader: LoaderFunction = async ({ request, params, context }) => {
 
   const { MAPBOX_TOKEN } = Config();
 
-  return json(
-    {
-      sports: await findSports(),
-      groupsSpirit: await findGroupsSpirit(),
-      favorites,
-      result,
-      mapToken: MAPBOX_TOKEN
-    }
-  );
+  return json({
+    sports: await findSports(),
+    groupsSpirit: await findGroupsSpirit(),
+    favorites,
+    result,
+    mapToken: MAPBOX_TOKEN
+  });
 };
 
 function parseQueryString(url: string): FilterParams {
@@ -187,16 +184,20 @@ function parseQueryString(url: string): FilterParams {
     sport,
     dayOfWeek,
     dayParts: dayParts,
-    orderBy: orderBy as SortMethod || SortMethod.recency,
+    orderBy: (orderBy as SortMethod) || SortMethod.recency,
     spirit: spirit.map((v) => parseInt(v))
   };
 }
 
 function numberOrNull(value: string | null) {
-  if (value === null) {return null;}
+  if (value === null) {
+    return null;
+  }
   const n = parseInt(value, 10);
 
-  if (isNaN(n)) {return null;}
+  if (isNaN(n)) {
+    return null;
+  }
   return n;
 }
 
@@ -260,10 +261,11 @@ async function search(
   );
 
   return {
-    results: results.map((g) => {
+    results: results.map((g, index) => {
       return {
         ...g,
-        distance: Math.round(g.distance || 0) // save some bandwidth
+        position: index,
+        distance: Math.floor(g.distance || 0) // save some bandwidth
       };
     }),
     total,
@@ -283,7 +285,7 @@ export default function Index() {
   const [selection, setSelection] = useState<DiciLocation | undefined>();
   const data = result;
   const [page, setPage] = useState<number>(data?.page || 0);
-  const [groups, setGroups] = useState<Array<Group>>([]);
+  const [groups, setGroups] = useState<Array<Group & { position: number }>>([]);
   const [filtersModalOpen, setFiltersModalOpen] = useState<boolean>(false);
   const [searchPerformed, setSearchPerformed] = useState<boolean>(false);
   const [address, setAddress] = useState<string>('');
@@ -292,7 +294,8 @@ export default function Index() {
   const [userLocation, setUserLocation] = useUserLocation();
   const locationFetcher = useFetcher();
   const [searchingLocation, setSearchingLocation] = useState<boolean>(false);
-  const [isLocationFailedWarningOpened, setLocationFailedWarningOpen] = useState<boolean>(false);
+  const [isLocationFailedWarningOpened, setLocationFailedWarningOpen] =
+    useState<boolean>(false);
   const [orderBy, setOrderBy] = useState<SortMethod>(
     userLocation ? SortMethod.proximity : SortMethod.recency
   );
@@ -311,11 +314,15 @@ export default function Index() {
 
     const { reset, results } = result as ActionData;
 
-    if (reset) {setPage(0);}
-    if (!results) {return;}
+    if (reset) {
+      setPage(0);
+    }
+    if (!results) {
+      return;
+    }
     const list = reset ? [] : [...groups];
 
-    results.map((r) => list.push(r));
+    results.map((r, index) => list.push({ ...r, position: index }));
     setGroups(list);
     const url = new URL(window.location.href);
 
@@ -530,7 +537,7 @@ export default function Index() {
           {groups.map((group) => (
             <GroupResult
               group={group}
-              key={group.id}
+              key={`${group.id}-${group.position}`}
               isUserFavorite={
                 favorites.find((g: Group) => g.id === group.id) !== undefined
               }
@@ -583,8 +590,8 @@ function CallToActionToCreateGroup({
   label,
   className
 }: {
-  label: string
-  className?: string
+  label: string;
+  className?: string;
 }) {
   return (
     <Form method="post" action="/m/group/add">
@@ -614,17 +621,17 @@ function GroupResult({
   userLocation,
   showLocation
 }: {
-  group: Group
-  img?: string
-  isUserFavorite: boolean
-  favAddedMessage: string
-  favRemovedMessage: string
-  copiedToClipMessage: string
-  address: string
-  location: string
-  isLoggedIn: boolean
-  userLocation: [number, number] | null
-  showLocation: boolean
+  group: Group;
+  img?: string;
+  isUserFavorite: boolean;
+  favAddedMessage: string;
+  favRemovedMessage: string;
+  copiedToClipMessage: string;
+  address: string;
+  location: string;
+  isLoggedIn: boolean;
+  userLocation: [number, number] | null;
+  showLocation: boolean;
 }) {
   const favorite = useFetcher();
   const ref = useRef();
@@ -646,7 +653,9 @@ function GroupResult({
 
   useEffect(() => {
     if (favorite.type === 'done' && favorite.data.ok) {
-      if (ref.current) {(ref.current as HTMLFormElement).reset();}
+      if (ref.current) {
+        (ref.current as HTMLFormElement).reset();
+      }
       setMessage(
         favorite.data.action === 'add' ? favAddedMessage : favRemovedMessage
       );
@@ -711,7 +720,9 @@ function GroupResult({
         }
         footer={
           <div className="font-medium text-gray-500 dark:text-white flex items-center justify-center">
-            {(userLocation && showLocation) && <span>{Math.ceil(group.distance || 0)} km</span>}
+            {userLocation && showLocation && (
+              <span>{Math.ceil(group.distance || 0)} km</span>
+            )}
           </div>
         }
       />
@@ -724,11 +735,13 @@ function SportsGrid({
   lang,
   t
 }: {
-  sports: Sport[]
-  lang: Language
-  t: TFunction
+  sports: Sport[];
+  lang: Language;
+  t: TFunction;
 }) {
-  if (!sports) {return null;}
+  if (!sports) {
+    return null;
+  }
   const width = 'w-full md:w-56 lg:w-56 xl:w-56';
 
   return (
@@ -776,11 +789,11 @@ function SportsGrid({
  * @constructor
  */
 function FiltersDialog(props: {
-  isOpen: boolean
-  sports: Sport[]
-  groupsSpirit: GroupSpirit[]
-  triggerModalClose: () => void
-  filters: FilterParams | null
+  isOpen: boolean;
+  sports: Sport[];
+  groupsSpirit: GroupSpirit[];
+  triggerModalClose: () => void;
+  filters: FilterParams | null;
 }) {
   const { t, i18n } = useTranslation('home');
   const { isOpen, sports, groupsSpirit, triggerModalClose, filters } = props;
@@ -919,17 +932,19 @@ function FiltersDialog(props: {
 }
 
 function DisplayFilters(props: {
-  filters: FilterParams
-  sports: Sport[]
-  spirits: GroupSpirit[]
-  t: TFunction
-  tc: TFunction
+  filters: FilterParams;
+  sports: Sport[];
+  spirits: GroupSpirit[];
+  t: TFunction;
+  tc: TFunction;
 }) {
   const { i18n } = useTranslation();
   const language = i18n.language;
   const { filters, sports, spirits, t, tc } = props;
 
-  if (!filters) {return null;}
+  if (!filters) {
+    return null;
+  }
   const { spirit, sport, dayOfWeek, dayParts } = filters;
   const label: string[] = [];
 
@@ -955,21 +970,27 @@ function DisplayFilters(props: {
       t('Or')
     );
 
-    if (label.length === 1) {label[0] = `${label[0]}, ${parts}`;}
-    else {label.push(parts);}
+    if (label.length === 1) {
+      label[0] = `${label[0]}, ${parts}`;
+    } else {
+      label.push(parts);
+    }
   }
 
-  if (sport) {label.push(mapIdToName(sport, sports, language as Language));}
+  if (sport) {
+    label.push(mapIdToName(sport, sports, language as Language));
+  }
 
-  if (spirit && spirit.length > 0 && spirit.length !== 5)
-    {label.push(
+  if (spirit && spirit.length > 0 && spirit.length !== 5) {
+    label.push(
       t('Filter Spirit', {
         sport: semanticOr(
           spirit.map((s) => mapIdToName(s, spirits, language as Language)),
           t('Or')
         )
       })
-    );}
+    );
+  }
 
   return (
     <div className="flex mx-2 items-center dark:text-white text-blueGray-500 text-sm">
@@ -984,7 +1005,9 @@ function DisplayFilters(props: {
  * @param or
  */
 function semanticOr(list: string[], or: string) {
-  if (list.length === 1) {return list[0];}
+  if (list.length === 1) {
+    return list[0];
+  }
   return `${list.slice(0, -1).join(', ')} ${or} ${list.slice(-1)}`;
 }
 
