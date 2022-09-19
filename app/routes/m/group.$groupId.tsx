@@ -28,12 +28,7 @@ import { H2, H3, Paragraph } from '~/components/shared/typography';
 
 import { requireUser } from '~/server/auth/session.server';
 import { findSports } from '~/server/db/sports.server';
-import {
-  deleteGroup,
-  findGroup,
-  updateGroup,
-  findGroupSchedules
-} from '~/server/db/groups.server';
+import { deleteGroup, findGroup, updateGroup } from '~/server/db/groups.server';
 
 import Button from '~/components/shared/Button';
 import FormField from '~/components/shared/form/FormField';
@@ -74,6 +69,7 @@ import { Spacer } from '~/components/shared/Spacer';
 import { uploadImageToCloudinary } from '~/server/storage/cloudinary.server';
 import { inputBaseClasses } from '~/components/shared/form/InputBase';
 import { processImgField } from '~/server/utils/misc';
+import { tSConstructSignatureDeclaration } from '@babel/types';
 
 const RESOURCES_NS = 'groups-form';
 
@@ -194,9 +190,7 @@ export const action: ActionFunction = async ({ request, params }) => {
   const image2 = form.get('/file/image/1') as string;
   const image3 = form.get('/file/image/2') as string;
   const location = parseLocation(form.get('location') as string);
-  const schedules = form.getAll('groupSchedule');
 
-  console.log('schedules --->', schedules);
   const data = {
     id: form.get('id') as string,
     name: form.get('name') as string,
@@ -218,6 +212,15 @@ export const action: ActionFunction = async ({ request, params }) => {
     image3: processImgField(image3, isUpdate),
     description: form.get('description') as string
   };
+
+  const schedules: { day: number; hour: number; minute: number }[] = (
+    form.getAll('groupSchedule') as string[]
+  ).map((s) => {
+    const [day, hour, minute] = s.split(':').map(Number);
+
+    return { day, hour, minute };
+  });
+
   const required = { invalid_type_error: t('Field required') };
   const str5CharsOrMore = z
     .string(required)
@@ -230,7 +233,7 @@ export const action: ActionFunction = async ({ request, params }) => {
 
   try {
     GroupSchema.parse(data);
-    await updateGroup(data);
+    await updateGroup(data, schedules);
     return redirect(
       `/m/groups?message=${t(
         isUpdate ? 'Group updated successfully' : 'Group created successfully'
@@ -267,13 +270,7 @@ export default function GroupRoute() {
   const { t, i18n } = useTranslation(RESOURCES_NS);
   const language = i18n.language as Language;
   const loadedData = useLoaderData<LoaderData>();
-  const {
-    mapToken,
-    sports,
-    groupTypes,
-    groupsSpirit,
-    group
-  } = loadedData;
+  const { mapToken, sports, groupTypes, groupsSpirit, group } = loadedData;
   const isUpdate = group.status !== 'auto';
 
   // using parse float for 0 min's to work
@@ -332,7 +329,13 @@ export default function GroupRoute() {
   }
 
   function handleRemoveSchedule(id: string) {
-    // TODO!!
+    const newSchedules = [...schedules];
+
+    // @ts-ignore
+    const position = newSchedules.findIndex((a) => a.id === id);
+
+    newSchedules.splice(position, 1);
+    setSchedules(newSchedules);
   }
 
   return (
@@ -462,6 +465,8 @@ export default function GroupRoute() {
                   minute={schedule.minute}
                   day={schedule.dayOfWeek as DaysOfWeek}
                   onRemove={handleRemoveSchedule}
+                  id={schedule.id}
+                  key={schedule.id}
                 />
               ))}
               <label
@@ -589,6 +594,8 @@ function Schedule(props: {
   day: DaysOfWeek;
   minute: number;
   onRemove: (id: string) => void;
+  id: string;
+  errors: { hour: string | null; day: string | null };
 }) {
   const { t } = useTranslation(RESOURCES_NS);
 
@@ -606,13 +613,18 @@ function Schedule(props: {
     setTime(v);
   }
 
+  function handleRemove() {
+    props.onRemove(props.id);
+  }
+
   return (
-    <div id="groupSchedule">
+    <div>
       <div className="flex flex-row">
         <FormField
           label={t('Day Of Week')}
           id="group-day-of-week"
           className="w-64"
+          error={props.errors?.day}
         >
           <PeekDayOfWeek
             name="dayOfWeek"
@@ -623,6 +635,7 @@ function Schedule(props: {
           <label
             role="button"
             className="dark:text-white text-gray-500 text-text-secondary"
+            onClick={handleRemove}
           >
             {t('Remove')}
           </label>
@@ -631,6 +644,7 @@ function Schedule(props: {
           label={t('Time Of Day')}
           id="group-time-of-day"
           className="w-80 md:w-48"
+          error={props.errors?.hour}
         >
           <HourOfDay
             hour={time.hour}

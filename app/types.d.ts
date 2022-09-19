@@ -205,6 +205,13 @@ type GroupSchedule = {
   groupId: string
 } & DBGroupSchedule
 
+type CreateScheduleInput = {
+  id?: string
+  dayOfWeek: number
+  timeOfDay: number
+  groupId: string
+}
+
 type CreateGroupInput = {
   id?: string
   name: string
@@ -255,6 +262,7 @@ export {
   GroupType,
   GroupSpirit,
   GroupSchedule,
+  CreateScheduleInput,
   Sport,
   Document,
   Event,

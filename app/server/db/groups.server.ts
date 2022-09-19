@@ -1,10 +1,12 @@
-import { Status } from '@prisma/client';
+import {PrismaClient, Status} from '@prisma/client';
 
-import type { CreateGroupInput, Group } from '~/types';
+import type {CreateGroupInput, CreateScheduleInput, Group, GroupSchedule} from '~/types';
 import { db } from '~/server/db.server';
 import { dbGroupToGroup } from '~/server/db/codecs.server';
 import Id from '~/server/utils/Id.server';
-import { generateSlug } from '~/utils/misc';
+import { generateSlug, hoursMinutesToTimeOfDay } from '~/utils/misc';
+
+const prisma = new PrismaClient();
 
 async function findGroups(): Promise<Array<Group>> {
   const groups = await db.group.findMany();
@@ -47,7 +49,12 @@ async function findUserFavoriteGroups(id: string): Promise<Array<Group>> {
 async function findGroup(id: string): Promise<Group | null> {
   const group = await db.group.findUnique({
     where: { id },
-    include: { groupType: true, groupSpirit: true, sport: true, schedules: true }
+    include: {
+      groupType: true,
+      groupSpirit: true,
+      sport: true,
+      schedules: true
+    }
   });
 
   if (!group) {
@@ -88,15 +95,30 @@ async function assignUniqueSlug(name: string, attempt = 0): Promise<string> {
   return await assignUniqueSlug(name, ++attempt);
 }
 
-async function updateGroup(group: CreateGroupInput): Promise<void> {
+async function updateGroup(
+  group: CreateGroupInput,
+  schedules: {day: number, hour: number, minute: number}[]
+): Promise<void> {
   const groupInDb = await findGroup(group.id as string);
 
   if (!groupInDb || groupInDb.slug === null) {
     group.slug = await assignUniqueSlug(group.name);
   }
-  await db.group.update({
-    where: { id: group.id },
-    data: { ...group, status: Status.published }
+  return await prisma.$transaction(async (prisma) => {
+    await prisma.group.update({
+      where: { id: group.id },
+      data: { ...group, status: Status.published }
+    });
+
+    await removeSchedules(group.id as string);
+    await createSchedules(schedules.map((s) => {
+      return {
+        id: Id(),
+        dayOfWeek: s.day,
+        timeOfDay: hoursMinutesToTimeOfDay(s.hour, s.minute),
+        groupId: group.id as string
+      };
+    }));
   });
 }
 
@@ -153,14 +175,20 @@ async function removeGroupFromFavorites(
   });
 }
 
-async function findGroupSchedules(groupId: string) {
+async function findSchedules(groupId: string) {
   return await db.groupSchedule.findMany({
     where: { groupId }
   });
 }
 
-async function removeGroupSchedules(groupId: string) {
-  await db.groupSchedule.findMany({
+async function createSchedules(schedules: CreateScheduleInput[]) {
+  await db.groupSchedule.createMany({
+    data: schedules
+  });
+}
+
+async function removeSchedules(groupId: string) {
+  await db.groupSchedule.deleteMany({
     where: { groupId }
   });
 }
@@ -170,12 +198,12 @@ export {
   findGroups,
   findUserGroups,
   findGroupBySlug,
-  findGroupSchedules,
+  findSchedules,
   updateGroup,
   createDraftGroup,
   deleteGroup,
   addGroupToFavorites,
   removeGroupFromFavorites,
-  removeGroupSchedules,
+  removeSchedules,
   findUserFavoriteGroups
 };
