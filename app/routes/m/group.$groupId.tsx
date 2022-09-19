@@ -69,7 +69,6 @@ import { Spacer } from '~/components/shared/Spacer';
 import { uploadImageToCloudinary } from '~/server/storage/cloudinary.server';
 import { inputBaseClasses } from '~/components/shared/form/InputBase';
 import { processImgField } from '~/server/utils/misc';
-import { tSConstructSignatureDeclaration } from '@babel/types';
 
 const RESOURCES_NS = 'groups-form';
 
@@ -133,6 +132,8 @@ type ActionData = {
     name?: string;
     location?: string;
     near?: string;
+    schedules?: string;
+    submit?: string;
   };
 };
 
@@ -224,9 +225,18 @@ export const action: ActionFunction = async ({ request, params }) => {
   };
 
   const scheduleSchema = z.object({
-    hour: z.number().min(0).max(23),
-    min: z.number().min(0).max(59),
-    day: z.number().min(0).max(6)
+    hour: z
+      .number()
+      .nonnegative({ message: t('Negative Number') })
+      .lte(23, { message: t('Nonexistent Hour') }),
+    minute: z
+      .number()
+      .nonnegative({ message: t('Negative Number') })
+      .lte(59, { message: t('Nonexistent Minute') }),
+    day: z
+      .number()
+      .nonnegative({ message: t('Negative Number') })
+      .lte(6, { message: t('Nonexistent Day') })
   });
 
   let foundErrorsInSchedules = false;
@@ -244,7 +254,6 @@ export const action: ActionFunction = async ({ request, params }) => {
     return { day, hour, minute, errors };
   });
 
-
   const required = { invalid_type_error: t('Field required') };
   const str5CharsOrMore = z
     .string(required)
@@ -260,7 +269,7 @@ export const action: ActionFunction = async ({ request, params }) => {
       path: ['submit']
     })
     .refine(() => foundErrorsInSchedules, {
-      message: 'adicionar mensagem traduzida',
+      message: t('Schedule Error'),
       path: ['submit']
     });
 
@@ -284,6 +293,8 @@ export const action: ActionFunction = async ({ request, params }) => {
     for (const error of (excp as ZodError).errors) {
       errors[error.path[0]] = error.message;
     }
+
+    errors.schedules = schedules.map((s) => s.errors || {});
 
     return badRequest({ error: undefined, errors });
   }
@@ -381,6 +392,7 @@ export default function GroupRoute() {
     setSchedules(newSchedules);
   }
 
+  console.log(actionData);
   return (
     <Main>
       <div className="mb-64 mt-24 pt-6">
@@ -502,7 +514,7 @@ export default function GroupRoute() {
               />
             </FormField>
             <div>
-              {schedules.map((schedule) => (
+              {schedules.map((schedule, index) => (
                 <Schedule
                   hour={schedule.hour}
                   minute={schedule.minute}
@@ -510,7 +522,7 @@ export default function GroupRoute() {
                   onRemove={handleRemoveSchedule}
                   id={schedule.id}
                   key={schedule.id}
-                  errors={schedule.errors}
+                  errors={actionData?.errors?.schedules[index]}
                 />
               ))}
               <label
@@ -577,6 +589,11 @@ export default function GroupRoute() {
             <InputError id="global-error" className="mt-4">
               {actionData?.error}
             </InputError>
+            {actionData?.errors?.submit && (
+                <InputError className="mt-4" id="error-message">
+                  {actionData?.errors?.submit}
+                </InputError>
+            )}
           </UploadForm>
           {isUpdate ? (
             <Form
@@ -643,6 +660,7 @@ function Schedule(props: {
 }) {
   const { t } = useTranslation(RESOURCES_NS);
 
+  console.log(props.errors);
   const [time, setTime] = useState<{ hour: number; minute: number }>({
     hour: props.hour,
     minute: props.minute
@@ -700,7 +718,7 @@ function Schedule(props: {
       <input
         type="hidden"
         name="groupSchedule"
-        value={`${day}:${time.hour}:${time.minute}`}
+        value={`${-1}:${-1}:${-1}`}
       />
     </div>
   );

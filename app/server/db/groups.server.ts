@@ -1,6 +1,11 @@
-import {PrismaClient, Status} from '@prisma/client';
+import { PrismaClient, Status } from '@prisma/client';
 
-import type {CreateGroupInput, CreateScheduleInput, Group, GroupSchedule} from '~/types';
+import type {
+  CreateGroupInput,
+  CreateScheduleInput,
+  Group,
+  GroupSchedule
+} from '~/types';
 import { db } from '~/server/db.server';
 import { dbGroupToGroup } from '~/server/db/codecs.server';
 import Id from '~/server/utils/Id.server';
@@ -19,7 +24,8 @@ async function findUserGroups(userId: string): Promise<Array<Group>> {
     where: { createdById: userId, status: Status.published },
     include: {
       groupSpirit: true,
-      createdBy: true
+      createdBy: true,
+      schedules: true
     },
     orderBy: { name: 'asc' }
   });
@@ -97,7 +103,7 @@ async function assignUniqueSlug(name: string, attempt = 0): Promise<string> {
 
 async function updateGroup(
   group: CreateGroupInput,
-  schedules: {day: number, hour: number, minute: number}[]
+  schedules: { day: number; hour: number; minute: number }[]
 ): Promise<void> {
   const groupInDb = await findGroup(group.id as string);
 
@@ -111,14 +117,16 @@ async function updateGroup(
     });
 
     await removeSchedules(group.id as string);
-    await createSchedules(schedules.map((s) => {
-      return {
-        id: Id(),
-        dayOfWeek: s.day,
-        timeOfDay: hoursMinutesToTimeOfDay(s.hour, s.minute),
-        groupId: group.id as string
-      };
-    }));
+    await createSchedules(
+      schedules.map((s) => {
+        return {
+          id: Id(),
+          dayOfWeek: s.day,
+          timeOfDay: hoursMinutesToTimeOfDay(s.hour, s.minute),
+          groupId: group.id as string
+        };
+      })
+    );
   });
 }
 
