@@ -17,7 +17,7 @@ async function findGroups(
   const s = (a: number[] | null): number[] => (a ? a : []);
   const [b, e] = s(timeOfDay);
   const [myLat, myLng] = userLocation || [lat, lng];
-  const orderBy = orderByProximity && !isNaN(Number(myLat)) ? 'distance' : 'created_at DESC';
+  const orderBy = orderByProximity && userLocation !== null ? 'distance' : 'created_at DESC';
   const query = `
       SELECT *, count(1) over () as records
       FROM (
@@ -36,7 +36,7 @@ async function findGroups(
                WHERE status = 'published'
                  AND (6357.0 *
                       acos(LEAST(cos(radians(${lat})) * cos(radians(g.lat)) * cos(radians(g.lng) - radians(${lng})) +
-                                 sin(radians(${lat})) * sin(radians(g.lat)), 1))) < ${isNaN(Number(lat)) ? 30 : 1000000000}
+                                 sin(radians(${lat})) * sin(radians(g.lat)), 1))) < ${lat === null ? 1000000000 : 30 }
                    ${n(spirit, `AND gs.id IN (${s(spirit).join(', ')})`)}
                    ${n(sport, `AND g.sport_id = ${sport}`)}
                    ${n(dayOfWeek, `AND g.day_of_week = ${dayOfWeek}`)}
@@ -50,8 +50,6 @@ async function findGroups(
   const total = results.length === 0 ? 0 : results[0].records;
 
   console.log('----->', query);
-  console.log('-----------', mapped);
-  console.log('-----------');
   return { results: mapped, total };
 }
 
