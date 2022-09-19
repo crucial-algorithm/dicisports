@@ -1,5 +1,4 @@
 import type { ActionFunction, LinksFunction, LoaderFunction } from 'remix';
-
 import {
   json,
   redirect,
@@ -7,21 +6,20 @@ import {
   unstable_parseMultipartFormData
 } from 'remix';
 
-import { useActionData } from '@remix-run/react';
+import { Form, useActionData, useLoaderData } from '@remix-run/react';
 
 import { useTranslation } from 'react-i18next';
 
-import { Form, useLoaderData } from '@remix-run/react';
-
-import React, { useRef, useState } from 'react';
+import React, { useState } from 'react';
 
 import type { UploadHandler } from '@remix-run/node';
-
 import { unstable_composeUploadHandlers } from '@remix-run/node';
 
 import { z, ZodError } from 'zod';
 
 import { Dialog } from '@reach/dialog';
+
+import { XCircleIcon } from '@heroicons/react/outline';
 
 import Main from '~/components/shared/Main';
 import { H2, H3, Paragraph } from '~/components/shared/typography';
@@ -34,14 +32,14 @@ import Button from '~/components/shared/Button';
 import FormField from '~/components/shared/form/FormField';
 import TextField from '~/components/shared/form/TextField';
 import type {
+  DaysOfWeek,
   DiciLocation,
   Group,
+  GroupSchedule,
   GroupSpirit,
   GroupType,
-  Sport,
   Language,
-  GroupSchedule,
-  DaysOfWeek
+  Sport
 } from '~/types';
 import ComboBox from '~/components/shared/form/ComboBox';
 import { findGroupTypes } from '~/server/db/groupTypes.server';
@@ -523,15 +521,16 @@ export default function GroupRoute() {
                   id={schedule.id}
                   key={schedule.id}
                   errors={actionData?.errors?.schedules[index]}
+                  position={index}
                 />
               ))}
-              <label
-                role="button"
-                className="dark:text-white text-gray-500 text-secondary"
+              <button
+                type="button"
+                className="background-transparent text-orange-600 dark:text-blueGray-500 font-medium mb-8"
                 onClick={handleCreateNewSchedule}
               >
                 {t('Add new')}
-              </label>
+              </button>
             </div>
             <FormField label={t('WhatsApp Group')}>
               <TextField
@@ -590,9 +589,9 @@ export default function GroupRoute() {
               {actionData?.error}
             </InputError>
             {actionData?.errors?.submit && (
-                <InputError className="mt-4" id="error-message">
-                  {actionData?.errors?.submit}
-                </InputError>
+              <InputError className="mt-4" id="error-message">
+                {actionData?.errors?.submit}
+              </InputError>
             )}
           </UploadForm>
           {isUpdate ? (
@@ -657,10 +656,10 @@ function Schedule(props: {
   onRemove: (id: string) => void;
   id: string;
   errors: { hour: string | null; minute: string | null; day: string | null };
+  position: number;
 }) {
   const { t } = useTranslation(RESOURCES_NS);
 
-  console.log(props.errors);
   const [time, setTime] = useState<{ hour: number; minute: number }>({
     hour: props.hour,
     minute: props.minute
@@ -681,11 +680,11 @@ function Schedule(props: {
 
   return (
     <div>
-      <div className="flex flex-row">
+      <div className="flex flex-wrap mb-4 md:flex flex-row mb-4">
         <FormField
           label={t('Day Of Week')}
           id="group-day-of-week"
-          className="w-64"
+          className="w-64 mt-0 mb-0 mr-2"
           error={props.errors?.day}
         >
           <PeekDayOfWeek
@@ -694,18 +693,11 @@ function Schedule(props: {
             defaultValue={props.day}
             onChange={handleDayChanged}
           />
-          <label
-            role="button"
-            className="dark:text-white text-gray-500 text-text-secondary"
-            onClick={handleRemove}
-          >
-            {t('Remove')}
-          </label>
         </FormField>
         <FormField
           label={t('Time Of Day')}
           id="group-time-of-day"
-          className="w-80 md:w-48"
+          className="w-80 md:w-48 mt-0 mb-0"
           error={props.errors?.hour || props.errors?.minute}
         >
           <HourOfDay
@@ -714,6 +706,16 @@ function Schedule(props: {
             onChange={handleHourChanged}
           />
         </FormField>
+        {props.position > 0 && (
+          <Button
+            size="tiny"
+            type="button"
+            onClick={handleRemove}
+            className="w-[50px] h-[50px] flex align-middle justify-center bg-transparent"
+          >
+            <XCircleIcon className="h-6 w-6 m-0 inline-block" />
+          </Button>
+        )}
       </div>
       <input
         type="hidden"

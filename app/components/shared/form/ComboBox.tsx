@@ -1,9 +1,8 @@
 import * as React from 'react';
-import { useId } from '@reach/auto-id';
+import { useEffect, useState } from 'react';
 
 import Select from 'react-select';
-
-import { useEffect, useState } from 'react';
+import clsx from 'clsx';
 
 import { inputBaseClasses } from '~/components/shared/form/InputBase';
 import type { Language, TranslationObject } from '~/types';
@@ -12,18 +11,18 @@ import { getLocalizedText } from '~/utils/misc';
 import { useTheme } from '~/utils/theme-provider';
 
 export type Option = {
-  value: string | number
-  label: string | TranslationObject
-  extra?: object
-}
+  value: string | number;
+  label: string | TranslationObject;
+  extra?: object;
+};
 
 type Props = {
-  options: Array<Option>
-  lang?: Language
-  defaultValue?: string | number
-  placeholder: string
-  onChange?: (value: string | number ) => void
-} & Omit<React.ComponentProps<'select'>, 'onChange'>
+  options: Array<Option>;
+  lang?: Language;
+  defaultValue?: string | number;
+  placeholder: string;
+  onChange?: (value: string | number) => void;
+} & Omit<React.ComponentProps<'select'>, 'onChange'>;
 
 export default function ComboBox({
   name,
@@ -53,7 +52,9 @@ export default function ComboBox({
   }
 
   useEffect(() => {
-    if (!defaultValue) {return;}
+    if (!defaultValue) {
+      return;
+    }
     setValue(pickOption(defaultValue));
   }, [defaultValue]);
 
@@ -73,7 +74,7 @@ export default function ComboBox({
       <input type="hidden" name={name} value={value?.value || ''} />
       <Select
         aria-label=""
-        className={inputBaseClasses('py-2.5')}
+        className={clsx(inputBaseClasses('py-2.5'), className)}
         value={value}
         isClearable={false}
         isSearchable={true}
