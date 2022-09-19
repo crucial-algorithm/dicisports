@@ -268,7 +268,7 @@ export const action: ActionFunction = async ({ request, params }) => {
       message: t('At least one'),
       path: ['submit']
     })
-    .refine(() => foundErrorsInSchedules, {
+    .refine(() => !foundErrorsInSchedules, {
       message: t('Schedule Error'),
       path: ['submit']
     });
@@ -294,6 +294,7 @@ export const action: ActionFunction = async ({ request, params }) => {
       errors[error.path[0]] = error.message;
     }
 
+    // @ts-ignore
     errors.schedules = schedules.map((s) => s.errors || {});
 
     return badRequest({ error: undefined, errors });

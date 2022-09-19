@@ -46,6 +46,5 @@
   "Schedule Error": "Erro no horário",
   "Nonexistent Hour": "Essa hora não existe",
   "Nonexistent Minute": "Esse minuto não existe",
-  "Nonexistent Day": "Esse dia não existe",
-  "Negative Number": "Insira um número positivo"
+  "Nonexistent Day": "Esse dia não existe"
 }
