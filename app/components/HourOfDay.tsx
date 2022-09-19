@@ -11,22 +11,22 @@ export default function HourOfDay({
   hour: number;
   minute: number;
   input?: React.RefObject<HTMLInputElement>;
-  onChange?: (value: string | number) => void;
+  onChange?: (v: { hour: number, minute: number }) => void;
 }) {
-  const [hourValue, setHourValue] = useState<string>('');
-  const [minuteValue, setMinuteValue] = useState<string>('');
+  const [hourValue, setHourValue] = useState<number>(hour);
+  const [minuteValue, setMinuteValue] = useState<number>(minute);
 
   function handleOnChangeHour(value: string | number) {
-    setHourValue(String(value));
+    setHourValue(Number(value));
     if (onChange) {
-      onChange(value);
+      onChange({ hour: Number(value), minute: minuteValue });
     }
   }
 
   function handleOnChangeMinute(value: string | number) {
-    setMinuteValue(String(value));
+    setMinuteValue(Number(value));
     if (onChange) {
-      onChange(value);
+      onChange({ hour: hourValue, minute: Number(value) });
     }
   }
 

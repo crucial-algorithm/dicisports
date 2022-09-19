@@ -81,7 +81,6 @@ type LoaderData = {
   sports: Array<Sport>;
   groupTypes: Array<GroupType>;
   groupsSpirit: Array<GroupSpirit>;
-  groupSchedules: Array<GroupSchedule>;
   group: Group;
 
   mapToken: string;
@@ -124,7 +123,6 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     sports: await findSports(),
     groupTypes: await findGroupTypes(),
     groupsSpirit: await findGroupsSpirit(),
-    groupSchedules: await findGroupSchedules(groupId),
     group,
     groupId: params.groupId,
 
@@ -255,6 +253,16 @@ export const action: ActionFunction = async ({ request, params }) => {
   }
 };
 
+function emptySchedule() {
+  return {
+    id: String(Date.now()),
+    hour: 9,
+    minute: 0,
+    timeOfDay: 900,
+    dayOfWeek: 6
+  };
+}
+
 export default function GroupRoute() {
   const { t, i18n } = useTranslation(RESOURCES_NS);
   const language = i18n.language as Language;
@@ -264,8 +272,7 @@ export default function GroupRoute() {
     sports,
     groupTypes,
     groupsSpirit,
-    group,
-    groupSchedules: dbGroupSchedules
+    group
   } = loadedData;
   const isUpdate = group.status !== 'auto';
 
@@ -284,6 +291,22 @@ export default function GroupRoute() {
       : null
   );
 
+  const [schedules, setSchedules] = useState<
+    Array<Omit<GroupSchedule, 'groupId'> & { hour: number; minute: number }>
+  >(
+    (group.schedules.length ? group.schedules : [emptySchedule()]).map(
+      (gs: GroupSchedule) => {
+        const [hour, minute] = timeOfDayToHoursMinutes(gs.timeOfDay);
+
+        return {
+          ...gs,
+          hour,
+          minute
+        };
+      }
+    )
+  );
+
   function handleShowMap() {
     setShowLocationPicker(true);
   }
@@ -299,6 +322,17 @@ export default function GroupRoute() {
 
   function handleDiscardDelete() {
     setDeleteModalOpen(false);
+  }
+
+  function handleCreateNewSchedule() {
+    const newSchedules = [...schedules];
+
+    newSchedules.push(emptySchedule());
+    setSchedules(newSchedules);
+  }
+
+  function handleRemoveSchedule(id: string) {
+    // TODO!!
   }
 
   return (
@@ -422,10 +456,21 @@ export default function GroupRoute() {
               />
             </FormField>
             <div>
-              <ScheduleDialog
-                groupSchedules={dbGroupSchedules}
-                groupId={group.id}
-              />
+              {schedules.map((schedule) => (
+                <Schedule
+                  hour={schedule.hour}
+                  minute={schedule.minute}
+                  day={schedule.dayOfWeek as DaysOfWeek}
+                  onRemove={handleRemoveSchedule}
+                />
+              ))}
+              <label
+                role="button"
+                className="dark:text-white text-gray-500 text-secondary"
+                onClick={handleCreateNewSchedule}
+              >
+                {t('Add new')}
+              </label>
             </div>
             <FormField label={t('WhatsApp Group')}>
               <TextField
@@ -539,133 +584,65 @@ export default function GroupRoute() {
   );
 }
 
-function ScheduleDialog(props: {
-  groupSchedules: GroupSchedule[];
-  groupId: string;
+function Schedule(props: {
+  hour: number;
+  day: DaysOfWeek;
+  minute: number;
+  onRemove: (id: string) => void;
 }) {
   const { t } = useTranslation(RESOURCES_NS);
 
-  type StrippedSchedule = Omit<
-    GroupSchedule,
-    'id' | 'dayOfWeek' | 'timeOfDay'
-  > & {
-    id: string | null;
-    dayOfWeek: DaysOfWeek;
-  };
-  const { groupSchedules: dbGroupSchedules, groupId } = props;
-  const [groupSchedules, setGroupSchedules] = useState<Array<GroupSchedule>>(
-    dbGroupSchedules.map((gs: GroupSchedule) => {
-      const [hour, minute] = timeOfDayToHoursMinutes(gs.timeOfDay);
+  const [time, setTime] = useState<{ hour: number; minute: number }>({
+    hour: props.hour,
+    minute: props.minute
+  });
+  const [day, setDay] = useState(props.day);
 
-      return {
-        ...gs,
-        hour,
-        minute
-      };
-    })
-  );
-
-  const dayOfWeek = useRef<HTMLInputElement | null>(null);
-  const startTime = useRef<HTMLInputElement | null>(null);
-
-  const [hour, setHour] = useState('');
-  const [minute, setMinute] = useState('');
-  const [day, setDay] = useState('');
-
-  function handleOnChangeHour(value: string | number) {
-    setHour(String(value));
-
-    console.log('hour --->', value);
+  function handleDayChanged(value: string | number) {
+    setDay(Number(value) as DaysOfWeek);
   }
 
-  function handleOnChangeMinute(value: string | number) {
-    setMinute(String(value));
-
-    console.log('minute --->', value);
-  }
-
-  function handleOnChangeDay(value: string | number) {
-    setDay(String(value));
-
-    console.log('day --->', value);
-  }
-
-  function handleCreateNewSchedule() {
-    const newSchedules = [...groupSchedules];
-
-    newSchedules.push({
-      id: String(Date.now()),
-      hour: 9,
-      minute: 10,
-      timeOfDay: 10,
-      dayOfWeek: Number(dayOfWeek.current?.value) as DaysOfWeek,
-      groupId: groupId
-    });
-    setGroupSchedules(newSchedules);
-
-    if (dayOfWeek.current) {
-      dayOfWeek.current.value = '';
-    }
-  }
-
-  function handleRemove(e: React.MouseEvent<HTMLLabelElement>) {
-    const newSchedules = [...groupSchedules];
-
-    // @ts-ignore
-    const position = newSchedules.findIndex((a) => a.id === e.target.id);
-
-    newSchedules.splice(position, 1);
-    setGroupSchedules(newSchedules);
+  function handleHourChanged(v: { hour: number; minute: number }) {
+    setTime(v);
   }
 
   return (
     <div id="groupSchedule">
-      {groupSchedules.map((gs: GroupSchedule) => (
-        <div className="flex flex-row" key={gs.id}>
-          <FormField
-            label={t('Day Of Week')}
+      <div className="flex flex-row">
+        <FormField
+          label={t('Day Of Week')}
+          id="group-day-of-week"
+          className="w-64"
+        >
+          <PeekDayOfWeek
+            name="dayOfWeek"
             id="group-day-of-week"
-            className="w-64"
+            defaultValue={props.day}
+            onChange={handleDayChanged}
+          />
+          <label
+            role="button"
+            className="dark:text-white text-gray-500 text-text-secondary"
           >
-            <PeekDayOfWeek
-              name="dayOfWeek"
-              id="group-day-of-week"
-              defaultValue={gs.dayOfWeek as DaysOfWeek}
-              onChange={handleOnChangeDay}
-            />
-            <label
-              role="button"
-              className="dark:text-white text-gray-500 text-text-secondary"
-              id={gs.id as string}
-              onClick={handleRemove}
-            >
-              {t('Remove')}
-            </label>
-          </FormField>
-          <FormField
-            label={t('Time Of Day')}
-            id="group-time-of-day"
-            className="w-80 md:w-48"
-          >
-            <HourOfDay
-              hour={gs.hour as number}
-              minute={gs.minute as number}
-              onChange={handleOnChangeHour}
-            />
-          </FormField>
-        </div>
-      ))}
-      <label
-        role="button"
-        onClick={handleCreateNewSchedule}
-        className="dark:text-white text-gray-500 text-secondary"
-      >
-        {t('Add new')}
-      </label>
+            {t('Remove')}
+          </label>
+        </FormField>
+        <FormField
+          label={t('Time Of Day')}
+          id="group-time-of-day"
+          className="w-80 md:w-48"
+        >
+          <HourOfDay
+            hour={time.hour}
+            minute={time.minute}
+            onChange={handleHourChanged}
+          />
+        </FormField>
+      </div>
       <input
         type="hidden"
         name="groupSchedule"
-        value={`${day}:${hour}:${minute}`}
+        value={`${day}:${time.hour}:${time.minute}`}
       />
     </div>
   );

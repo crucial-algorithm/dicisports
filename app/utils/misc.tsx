@@ -1,3 +1,5 @@
+import React, { useState } from 'react';
+
 import { json } from 'remix';
 
 import { useTranslation } from 'react-i18next';
@@ -9,7 +11,6 @@ import type {
   TranslationObject
 } from '~/types';
 import ComboBox from '~/components/shared/form/ComboBox';
-import React, { useState } from 'react';
 
 function getDomainUrl(request: Request) {
   const host =

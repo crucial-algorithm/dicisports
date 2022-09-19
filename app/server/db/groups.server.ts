@@ -47,7 +47,7 @@ async function findUserFavoriteGroups(id: string): Promise<Array<Group>> {
 async function findGroup(id: string): Promise<Group | null> {
   const group = await db.group.findUnique({
     where: { id },
-    include: { groupType: true, groupSpirit: true, sport: true }
+    include: { groupType: true, groupSpirit: true, sport: true, schedules: true }
   });
 
   if (!group) {
