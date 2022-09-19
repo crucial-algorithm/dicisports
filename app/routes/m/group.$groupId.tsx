@@ -147,6 +147,16 @@ function parseLocation(location: string) {
   };
 }
 
+function fetchZodErrors(e: ZodError) {
+  const errors: { [key: string]: string | undefined } = {};
+
+  for (const error of (e as ZodError).errors) {
+    errors[error.path[0]] = error.message;
+  }
+
+  return errors;
+}
+
 export const action: ActionFunction = async ({ request, params }) => {
   const t = await i18n.getFixedT(request, RESOURCES_NS);
   const user = await requireUser(request);
@@ -213,23 +223,46 @@ export const action: ActionFunction = async ({ request, params }) => {
     description: form.get('description') as string
   };
 
+  const scheduleSchema = z.object({
+    hour: z.number().min(0).max(23),
+    min: z.number().min(0).max(59),
+    day: z.number().min(0).max(6)
+  });
+
+  let foundErrorsInSchedules = false;
   const schedules: { day: number; hour: number; minute: number }[] = (
     form.getAll('groupSchedule') as string[]
   ).map((s) => {
     const [day, hour, minute] = s.split(':').map(Number);
 
-    return { day, hour, minute };
+    const validation = scheduleSchema.safeParse({ day, hour, minute });
+    const errors = validation.success ? null : fetchZodErrors(validation.error);
+
+    if (errors !== null) {
+      foundErrorsInSchedules = true;
+    }
+    return { day, hour, minute, errors };
   });
+
 
   const required = { invalid_type_error: t('Field required') };
   const str5CharsOrMore = z
     .string(required)
     .min(5, { message: t('Name 5 chars or more') });
-  const GroupSchema = z.object({
-    name: str5CharsOrMore,
-    location: z.string(required),
-    near: str5CharsOrMore
-  });
+  const GroupSchema = z
+    .object({
+      name: str5CharsOrMore,
+      location: z.string(required),
+      near: str5CharsOrMore
+    })
+    .refine(() => schedules.length > 0, {
+      message: 'pelo menos 1 schedule',
+      path: ['submit']
+    })
+    .refine(() => foundErrorsInSchedules, {
+      message: 'adicionar mensagem traduzida',
+      path: ['submit']
+    });
 
   try {
     GroupSchema.parse(data);
@@ -289,7 +322,17 @@ export default function GroupRoute() {
   );
 
   const [schedules, setSchedules] = useState<
-    Array<Omit<GroupSchedule, 'groupId'> & { hour: number; minute: number }>
+    Array<
+      Omit<GroupSchedule, 'groupId'> & {
+        hour: number;
+        minute: number;
+        errors?: {
+          hour: string | null;
+          minute: string | null;
+          day: string | null;
+        };
+      }
+    >
   >(
     (group.schedules.length ? group.schedules : [emptySchedule()]).map(
       (gs: GroupSchedule) => {
@@ -467,6 +510,7 @@ export default function GroupRoute() {
                   onRemove={handleRemoveSchedule}
                   id={schedule.id}
                   key={schedule.id}
+                  errors={schedule.errors}
                 />
               ))}
               <label
@@ -595,7 +639,7 @@ function Schedule(props: {
   minute: number;
   onRemove: (id: string) => void;
   id: string;
-  errors: { hour: string | null; day: string | null };
+  errors: { hour: string | null; minute: string | null; day: string | null };
 }) {
   const { t } = useTranslation(RESOURCES_NS);
 
@@ -644,7 +688,7 @@ function Schedule(props: {
           label={t('Time Of Day')}
           id="group-time-of-day"
           className="w-80 md:w-48"
-          error={props.errors?.hour}
+          error={props.errors?.hour || props.errors?.minute}
         >
           <HourOfDay
             hour={time.hour}
