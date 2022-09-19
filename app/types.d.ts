@@ -184,6 +184,7 @@ type DBRawGroup = {
   user_name: string
   group_spirit: TranslationObject
   records: number
+  schedules: string[]
 }
 
 type Group = {
@@ -194,6 +195,7 @@ type Group = {
   sport?: Sport
   distance?: number
   description?: string
+  schedules?: GroupSchedule[]
 } & DBGroup
 
 type GroupSchedule = {

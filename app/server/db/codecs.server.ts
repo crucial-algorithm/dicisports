@@ -122,7 +122,12 @@ function dbRawGroupToGroup(group: DBRawGroup): Group {
       location: '',
       email: '',
       role: Role.MEMBER
-    }
+    },
+    schedules: group.schedules.map((s) => {
+      const [id, day, hour] = s.split(':').map(String);
+
+      return { timeOfDay: Number(hour), dayOfWeek: Number(day), groupId: group.id, id };
+    })
   };
 }
 

@@ -22,18 +22,36 @@ type Props = {
 export default function GroupEntry({ group, actions, footer, img }: Props) {
   const { t } = useTranslation('m-groups');
   const tc = useTranslation('common').t;
+  
+  function translateDay(day: number) {
+    return tc(
+        [
+          'Sunday',
+          'Tuesday',
+          'Wednesday',
+          'Thursday',
+          'Friday',
+          'Saturday',
+          'Monday'
+        ][day]
+    );
+  }
 
-  const day = tc(
-    [
-      'Monday',
-      'Tuesday',
-      'Wednesday',
-      'Thursday',
-      'Friday',
-      'Saturday',
-      'Sunday'
-    ][group.dayOfWeek]
-  );
+  const schedule = group?.schedules
+    ?.map((s) => {
+      return {
+        ...s,
+        dayOfWeek: s.dayOfWeek === 6 ? 0 : s.dayOfWeek === 0 ? 6 : s.dayOfWeek
+      };
+    })
+    .sort((a, b) => a.dayOfWeek - b.dayOfWeek)
+    .map(
+      ({ dayOfWeek, timeOfDay }) =>
+        `${translateDay(dayOfWeek)}, ${displayTimeOfDay(timeOfDay)}`
+    )
+    .join(' | ');
+
+  console.log(schedule);
 
   return (
     <div
@@ -48,11 +66,8 @@ export default function GroupEntry({ group, actions, footer, img }: Props) {
       <GroupImage group={group} img={img} />
       <div className="w-full h-full p-2 lg:pl-6">
         <div className="flex flex-col">
-          <span className={clsx('mb-4 text-base font-medium')}>
-            {`${day}, ${displayTimeOfDay(group.timeOfDay)}`}
-          </span>
           <span className={clsx('mb-4 text-lg font-extrabold dark:text-white')}>
-            {group.name}
+            {group.name}, <small className="lowercase">{schedule}</small>
           </span>
           <Feature
             label={t('Who')}
