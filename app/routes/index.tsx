@@ -1,11 +1,16 @@
-import * as React from 'react';
 import type { SyntheticEvent } from 'react';
+import * as React from 'react';
 import { useEffect, useRef, useState } from 'react';
 import type { LoaderFunction } from 'remix';
-import { Link, useFetcher, useLocation } from '@remix-run/react';
+import { json } from 'remix';
+import {
+  Form,
+  Link,
+  useFetcher,
+  useLoaderData,
+  useLocation
+} from '@remix-run/react';
 import { useTranslation } from 'react-i18next';
-
-import { Form, useLoaderData } from '@remix-run/react';
 
 import {
   AdjustmentsIcon,
@@ -14,9 +19,7 @@ import {
   ShareIcon
 } from '@heroicons/react/solid';
 
-import { XCircleIcon } from '@heroicons/react/outline';
-
-import { HeartIcon } from '@heroicons/react/outline';
+import { HeartIcon, XCircleIcon } from '@heroicons/react/outline';
 
 import clsx from 'clsx';
 
@@ -24,7 +27,7 @@ import type { TFunction } from 'i18next';
 
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 
-import { json } from 'remix';
+import { Dialog } from '@reach/dialog';
 
 import Main from '~/components/shared/Main';
 import { Spacer } from '~/components/shared/Spacer';
@@ -38,15 +41,13 @@ import type {
   Language,
   Sport
 } from '~/types';
-import { findNearestGroups } from '~/server/db/locations.server';
+import { findGroups } from '~/server/db/locations.server';
 import GroupEntry from '~/components/GroupEntry';
-
 
 import SearchLocations from '~/components/SearchLocations';
 import ButtonGroup from '~/components/shared/ButtonGroup';
 
-
-import { H3 } from '~/components/shared/typography';
+import { H3, Paragraph } from '~/components/shared/typography';
 import FormField from '~/components/shared/form/FormField';
 import CheckBox from '~/components/shared/form/CheckBox';
 import { findGroupsSpirit } from '~/server/db/groupsSpirit.server';
@@ -54,9 +55,7 @@ import { findSports } from '~/server/db/sports.server';
 import type { Option } from '~/components/shared/form/ComboBox';
 import ComboBox from '~/components/shared/form/ComboBox';
 
-
 import { getLocalizedText, PeekDayOfWeek } from '~/utils/misc';
-
 
 import HomeLogo from '~/components/shared/HomeLogo';
 import DisplayImg from '~/components/shared/DisplayImg';
@@ -64,46 +63,47 @@ import { findUserFavoriteGroups } from '~/server/db/groups.server';
 import { getUser } from '~/server/auth/session.server';
 import { Notification } from '~/components/shared/NotificationMessage';
 
-
 import Config from '~/server/config.server';
-import MyLocationIcon from '~/components/shared/MyLocationIcon';
 import TransitionIndicator from '~/components/shared/TransitionIndicator';
 import WhatsApp from '~/components/shared/icons/WhatsApp';
 import { useRootData } from '~/utils/use-root-data';
-
+import { getLocationSession } from '~/routes/action/set-my-location';
+import { useUserLocation } from '~/utils/LocationProvider';
 
 type FilterParams = {
-  actionId: keyof typeof actions | null
-  coords: string | null
-  search: string | null
-  spirit: number[] | null
-  dayParts: string[] | null
-  page: number | null
-  sport: number | null
-  dayOfWeek: number | null
-}
+  actionId: keyof typeof actions | null;
+  coords: string | null;
+  search: string | null;
+  spirit: number[] | null;
+  dayParts: string[] | null;
+  page: number | null;
+  sport: number | null;
+  dayOfWeek: number | null;
+  orderBy: SortMethod;
+};
 
 type LoaderData = {
-  sports: Sport[]
-  groupsSpirit: GroupSpirit[]
-  result: ActionData
-  favorites: Group[]
-  mapToken: string
-}
+  sports: Sport[];
+  groupsSpirit: GroupSpirit[];
+  result: ActionData;
+  favorites: Group[];
+  mapToken: string;
+};
 
 type ActionData = {
-  results: Group[]
-  filters: null | GroupFilters
-  total: number
-  page?: number
-  reset: boolean
-}
+  results: Group[];
+  filters: null | GroupFilters;
+  total: number;
+  page?: number;
+  reset: boolean;
+};
 
 const actions = {
   filter: 'filter',
   search: 'search',
   more: 'more',
-  pickSport: 'pickSport'
+  pickSport: 'pickSport',
+  sort: 'sort'
 };
 
 const dayParts = {
@@ -112,13 +112,14 @@ const dayParts = {
   evening: 'Evening'
 };
 
-const countryCoords = {
-  PT: [40.2287547, -8.4512937]
-};
-
 export const handle = {
   i18n: ['common', 'home', 'm-groups']
 };
+
+enum SortMethod {
+  recency = 'recent',
+  proximity = 'proximity'
+}
 
 export const loader: LoaderFunction = async ({ request, params, context }) => {
   const data = parseQueryString(request.url);
@@ -129,29 +130,38 @@ export const loader: LoaderFunction = async ({ request, params, context }) => {
   let result: ActionData | null = null;
   const page = data.page || 0;
 
-  if (data.actionId === actions.search || data.actionId === actions.more) {
+  if (
+    data.actionId === actions.search ||
+    data.actionId === actions.more ||
+    data.actionId === actions.sort
+  ) {
+    const locationSession = await getLocationSession(request);
+    const [lat, lng] = locationSession.getLocation() || [];
+
     result = await search(
       data.dayParts,
       data.spirit,
       data.sport,
-      data.coords,
+      data.coords
+        ? (data.coords.split(',').map(Number) as [number, number])
+        : null,
       data.dayOfWeek || -1,
       data.actionId === actions.more ? page + 1 : page,
-      data.actionId !== actions.more
+      data.actionId !== actions.more,
+      !isNaN(Number(lat)) ? [Number(lat), Number(lng)] : null,
+      data.orderBy === SortMethod.proximity
     );
   }
 
   const { MAPBOX_TOKEN } = Config();
 
-  return json(
-    {
-      sports: await findSports(),
-      groupsSpirit: await findGroupsSpirit(),
-      favorites,
-      result,
-      mapToken: MAPBOX_TOKEN
-    }
-  );
+  return json({
+    sports: await findSports(),
+    groupsSpirit: await findGroupsSpirit(),
+    favorites,
+    result,
+    mapToken: MAPBOX_TOKEN
+  });
 };
 
 function parseQueryString(url: string): FilterParams {
@@ -164,6 +174,7 @@ function parseQueryString(url: string): FilterParams {
   const dayOfWeek = numberOrNull(searchParams.get('dow'));
   const dayParts = searchParams.getAll('daypart');
   const spirit = searchParams.getAll('spirit');
+  const orderBy = searchParams.get('order');
 
   return {
     actionId,
@@ -173,15 +184,20 @@ function parseQueryString(url: string): FilterParams {
     sport,
     dayOfWeek,
     dayParts: dayParts,
+    orderBy: (orderBy as SortMethod) || SortMethod.recency,
     spirit: spirit.map((v) => parseInt(v))
   };
 }
 
 function numberOrNull(value: string | null) {
-  if (value === null) {return null;}
+  if (value === null) {
+    return null;
+  }
   const n = parseInt(value, 10);
 
-  if (isNaN(n)) {return null;}
+  if (isNaN(n)) {
+    return null;
+  }
   return n;
 }
 
@@ -217,12 +233,14 @@ async function search(
   dayParts: string[] | null,
   spirit: number[] | null,
   sport: number | null,
-  coords: string | null,
+  searchedLocation: [number, number] | null,
   dayOfWeek: number,
   page: number,
-  reset: boolean = true
+  reset: boolean = true,
+  userLocation: [number, number] | null,
+  orderByProximity: boolean
 ): Promise<ActionData> {
-  const [lat, lng] = coords ? coords.split(',') : countryCoords.PT;
+  const [lat, lng] = searchedLocation ? searchedLocation : [null, null];
   const filters = {
     spirit: spirit || null,
     sport: !sport || sport === -1 ? null : sport,
@@ -232,19 +250,22 @@ async function search(
         ? null
         : reduceDayParts(dayParts.map(dayPartToTimeInterval))
   };
-  const { total, results } = await findNearestGroups(
-    typeof lat === 'string' ? parseFloat(lat) : lat,
-    typeof lng === 'string' ? parseFloat(lng) : lng,
+  const { total, results } = await findGroups(
+    lat,
+    lng,
     filters,
     10,
-    page
+    page,
+    userLocation,
+    orderByProximity
   );
 
   return {
-    results: results.map((g) => {
+    results: results.map((g, index) => {
       return {
         ...g,
-        distance: Math.round(g.distance || 0) // save some bandwidth
+        position: index,
+        distance: Math.floor(g.distance || 0) // save some bandwidth
       };
     }),
     total,
@@ -264,13 +285,25 @@ export default function Index() {
   const [selection, setSelection] = useState<DiciLocation | undefined>();
   const data = result;
   const [page, setPage] = useState<number>(data?.page || 0);
-  const [groups, setGroups] = useState<Array<Group>>([]);
+  const [groups, setGroups] = useState<Array<Group & { position: number }>>([]);
   const [filtersModalOpen, setFiltersModalOpen] = useState<boolean>(false);
   const [searchPerformed, setSearchPerformed] = useState<boolean>(false);
-  const [areCoordsSet, setAreCoordsSet] = useState<boolean>(true);
   const [address, setAddress] = useState<string>('');
   const location = useLocation();
   const filters = parseQueryString(`https://a.com/${location.search}`);
+  const [userLocation, setUserLocation] = useUserLocation();
+  const locationFetcher = useFetcher();
+  const [searchingLocation, setSearchingLocation] = useState<boolean>(false);
+  const [isLocationFailedWarningOpened, setLocationFailedWarningOpen] =
+    useState<boolean>(false);
+  const [orderBy, setOrderBy] = useState<SortMethod>(
+    filters.orderBy
+      ? filters.orderBy
+      : userLocation
+      ? SortMethod.proximity
+      : SortMethod.recency
+  );
+  const searchForm = useRef<HTMLFormElement | null>(null);
 
   useEffect(() => {
     if (!result) {
@@ -285,16 +318,19 @@ export default function Index() {
 
     const { reset, results } = result as ActionData;
 
-    if (reset) {setPage(0);}
-    if (!results) {return;}
+    if (reset) {
+      setPage(0);
+    }
+    if (!results) {
+      return;
+    }
     const list = reset ? [] : [...groups];
 
-    results.map((r) => list.push(r));
+    results.map((r, index) => list.push({ ...r, position: index }));
     setGroups(list);
     const url = new URL(window.location.href);
 
     setAddress(url.origin);
-    setAreCoordsSet(url.searchParams.get('coords') !== null);
 
     // when people go back, remove search performed, to make sure the
     // grid of sports appears again
@@ -302,7 +338,7 @@ export default function Index() {
     return () => {
       window.onpopstate = null;
     };
-  }, [result, location, areCoordsSet]);
+  }, [result, location]);
 
   const showMoreResults = !!data && data.results.length < data.total;
 
@@ -333,8 +369,60 @@ export default function Index() {
     setSearchPerformed(false);
   }
 
+  function handleCloseLocationFailedWarning() {
+    setLocationFailedWarningOpen(false);
+  }
+
+  function handleSetUsersLocation() {
+    setSearchingLocation(true);
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setSearchingLocation(false);
+        const { latitude, longitude } = position.coords;
+
+        locationFetcher.submit(
+          { latitude: String(latitude), longitude: String(longitude) },
+          {
+            method: 'post',
+            action: '/action/set-my-location'
+          }
+        );
+
+        setUserLocation([latitude, longitude]);
+
+        // this is likely to cause issues... submitting the form can potentially
+        // cancel the previous request before successfully completing, thus
+        // causing the location not to be set
+        searchForm.current?.submit();
+      },
+      (err) => {
+        setSearchingLocation(false);
+        setLocationFailedWarningOpen(true);
+        console.log(err);
+      }
+    );
+  }
+
+  function handleOrderBy(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
+    if (!userLocation) {
+      e.preventDefault();
+      e.stopPropagation();
+      handleSetUsersLocation();
+    }
+    setOrderBy(
+      orderBy === SortMethod.proximity
+        ? SortMethod.recency
+        : SortMethod.proximity
+    );
+  }
+
   return (
     <Main className="dark:text-blueGray-500 relative mb-8">
+      <TransitionIndicator
+        visible={searchingLocation}
+        action={t('Searching Location')}
+      />
       <Form method="get" onSubmit={handleOnSubmit}>
         <input
           type="hidden"
@@ -413,45 +501,63 @@ export default function Index() {
             </div>
           </>
         ) : null}
-      </Form>
-      {searchPerformed ? (
-        <div className="pb-12 flex flex-col justify-center">
-          {groups.length === 0 ? (
-            <div className="w-full flex justify-center mt-8">
-              <CallToActionToCreateGroup
-                className="text-xl"
-                label={t('No Groups Found - Create yours')}
-              />
-            </div>
-          ) : (
-            <>
-              <Spacer size="3xs" />
-              <div className="flex align-middle justify-center">
-                <CallToActionToCreateGroup label={t('Create your group')} />
-              </div>
-              <Spacer size="3xs" />
-              {groups.map((group) => (
-                <GroupResult
-                  group={group}
-                  key={group.id}
-                  isUserFavorite={
-                    favorites.find((g: Group) => g.id === group.id) !== undefined
-                  }
-                  img={sports.find((s: Sport) => s.id === group.sportId)?.picture}
-                  favAddedMessage={t('Favorite Added')}
-                  favRemovedMessage={t('Favorite Removed')}
-                  copiedToClipMessage={t('Copied to Clipboard')}
-                  searchingLocationMessage={t('Searching Location')}
-                  address={address}
-                  areCoordsSet={areCoordsSet}
-                  location={`${location.pathname}${location.search}`}
-                  isLoggedIn={user !== null}
+
+        {searchPerformed && (
+          <div className="flex flex-col justify-center">
+            {groups.length === 0 ? (
+              <div className="w-full flex justify-center mt-8">
+                <CallToActionToCreateGroup
+                  className="text-xl"
+                  label={t('No Groups Found - Create yours')}
                 />
-              ))}
-            </>
-          )}
-        </div>
-      ) : null}
+              </div>
+            ) : (
+              <>
+                <Spacer size="3xs" />
+                <div className="flex align-middle justify-center">
+                  <CallToActionToCreateGroup label={t('Create your group')} />
+                </div>
+                <Spacer size="2xs" />
+                <div className="flex justify-end">
+                  <input type="hidden" name="order" value={orderBy} />
+                  <button
+                    className="background-transparent text-orange-600 dark:text-blueGray-500 font-medium"
+                    name="actionId"
+                    value={actions.sort}
+                    onClick={handleOrderBy}
+                  >
+                    {orderBy === SortMethod.proximity
+                      ? t('Order by recency')
+                      : t('Order by proximity')}
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        )}
+      </Form>
+      {searchPerformed && (
+        <>
+          {groups.map((group) => (
+            <GroupResult
+              group={group}
+              key={`${group.id}-${group.position}`}
+              isUserFavorite={
+                favorites.find((g: Group) => g.id === group.id) !== undefined
+              }
+              img={sports.find((s: Sport) => s.id === group.sportId)?.picture}
+              favAddedMessage={t('Favorite Added')}
+              favRemovedMessage={t('Favorite Removed')}
+              copiedToClipMessage={t('Copied to Clipboard')}
+              address={address}
+              location={`${location.pathname}${location.search}`}
+              isLoggedIn={user !== null}
+              userLocation={userLocation}
+              showLocation={orderBy === SortMethod.proximity}
+            />
+          ))}
+        </>
+      )}
 
       {!searchPerformed ? (
         <>
@@ -459,6 +565,27 @@ export default function Index() {
           <SportsGrid sports={sports} lang={lang} t={t} />
         </>
       ) : null}
+
+      <Dialog
+        onDismiss={handleCloseLocationFailedWarning}
+        isOpen={isLocationFailedWarningOpened}
+        aria-label="Delete your account"
+        className="w-11/12 dark:bg-gray-900 border-2 border-black dark:border-white rounded-lg lg:px-24 lg:py-14 lg:max-w-screen-lg"
+      >
+        <H3 className="mb-4">{t('Failed to find Your Location Title')}</H3>
+        <Paragraph>{t('Failed to find Your Location Hint')}</Paragraph>
+        <Spacer size="2xs" />
+        <div className="flex flex-wrap gap-4 justify-end">
+          <Button
+            variant="danger"
+            size="medium"
+            type="button"
+            onClick={handleCloseLocationFailedWarning}
+          >
+            {t('Failed to find Your Location Close')}
+          </Button>
+        </div>
+      </Dialog>
     </Main>
   );
 }
@@ -467,8 +594,8 @@ function CallToActionToCreateGroup({
   label,
   className
 }: {
-  label: string
-  className?: string
+  label: string;
+  className?: string;
 }) {
   return (
     <Form method="post" action="/m/group/add">
@@ -492,28 +619,27 @@ function GroupResult({
   favAddedMessage,
   favRemovedMessage,
   copiedToClipMessage,
-  searchingLocationMessage,
   address,
-  areCoordsSet,
   location,
-  isLoggedIn
+  isLoggedIn,
+  userLocation,
+  showLocation
 }: {
-  group: Group
-  img?: string
-  isUserFavorite: boolean
-  favAddedMessage: string
-  favRemovedMessage: string
-  copiedToClipMessage: string
-  searchingLocationMessage: string
-  address: string
-  areCoordsSet: boolean
-  location: string
-  isLoggedIn: boolean
+  group: Group;
+  img?: string;
+  isUserFavorite: boolean;
+  favAddedMessage: string;
+  favRemovedMessage: string;
+  copiedToClipMessage: string;
+  address: string;
+  location: string;
+  isLoggedIn: boolean;
+  userLocation: [number, number] | null;
+  showLocation: boolean;
 }) {
   const favorite = useFetcher();
   const ref = useRef();
   const [message, setMessage] = useState<string>(favAddedMessage);
-  const [searchingLocation, setSearchingLocation] = useState<boolean>(false);
   let showFavoriteAddedNotification: any = null;
   let showCopiedToClipboardNotification: any = null;
 
@@ -529,23 +655,11 @@ function GroupResult({
     showCopiedToClipboardNotification();
   }
 
-  function getUsersLocation() {
-    setSearchingLocation(true);
-    navigator.geolocation.getCurrentPosition((position) => {
-      setSearchingLocation(false);
-      const { latitude, longitude } = position.coords;
-      const url = new URL(window.location.href);
-
-      url.searchParams.set('coords', `${latitude},${longitude}`);
-      setTimeout(() => {
-        window.location.replace(url.toString());
-      }, 1000);
-    });
-  }
-
   useEffect(() => {
     if (favorite.type === 'done' && favorite.data.ok) {
-      if (ref.current) {(ref.current as HTMLFormElement).reset();}
+      if (ref.current) {
+        (ref.current as HTMLFormElement).reset();
+      }
       setMessage(
         favorite.data.action === 'add' ? favAddedMessage : favRemovedMessage
       );
@@ -570,11 +684,11 @@ function GroupResult({
         img={img}
         actions={
           <ButtonGroup density="compact">
-            {group.whatsapp ? (
+            {group.whatsapp && (
               <ButtonLink size="tiny" type="button" to={whatsAppLink}>
                 <WhatsApp className="h-6 w-6 m-0 inline-block fill-white dark:fill-black" />
               </ButtonLink>
-            ) : null}
+            )}
             {/* @ts-ignore */}
             <CopyToClipboard
               text={`${address}/group/${group.slug}`}
@@ -610,21 +724,11 @@ function GroupResult({
         }
         footer={
           <div className="font-medium text-gray-500 dark:text-white flex items-center justify-center">
-            {!areCoordsSet ? (
-              <button onClick={getUsersLocation}>
-                <MyLocationIcon
-                  className="font-medium w-6 mr-1 text-orange"
-                  color="var(--color-gray-500)"
-                />
-              </button>
-            ) : null}
-            <span>{Math.ceil(group.distance || 0)} km</span>
+            {userLocation && showLocation && (
+              <span>{Math.ceil(group.distance || 0)} km</span>
+            )}
           </div>
         }
-      />
-      <TransitionIndicator
-        visible={searchingLocation}
-        action={searchingLocationMessage}
       />
     </>
   );
@@ -635,11 +739,13 @@ function SportsGrid({
   lang,
   t
 }: {
-  sports: Sport[]
-  lang: Language
-  t: TFunction
+  sports: Sport[];
+  lang: Language;
+  t: TFunction;
 }) {
-  if (!sports) {return null;}
+  if (!sports) {
+    return null;
+  }
   const width = 'w-full md:w-56 lg:w-56 xl:w-56';
 
   return (
@@ -687,11 +793,11 @@ function SportsGrid({
  * @constructor
  */
 function FiltersDialog(props: {
-  isOpen: boolean
-  sports: Sport[]
-  groupsSpirit: GroupSpirit[]
-  triggerModalClose: () => void
-  filters: FilterParams | null
+  isOpen: boolean;
+  sports: Sport[];
+  groupsSpirit: GroupSpirit[];
+  triggerModalClose: () => void;
+  filters: FilterParams | null;
 }) {
   const { t, i18n } = useTranslation('home');
   const { isOpen, sports, groupsSpirit, triggerModalClose, filters } = props;
@@ -830,17 +936,19 @@ function FiltersDialog(props: {
 }
 
 function DisplayFilters(props: {
-  filters: FilterParams
-  sports: Sport[]
-  spirits: GroupSpirit[]
-  t: TFunction
-  tc: TFunction
+  filters: FilterParams;
+  sports: Sport[];
+  spirits: GroupSpirit[];
+  t: TFunction;
+  tc: TFunction;
 }) {
   const { i18n } = useTranslation();
   const language = i18n.language;
   const { filters, sports, spirits, t, tc } = props;
 
-  if (!filters) {return null;}
+  if (!filters) {
+    return null;
+  }
   const { spirit, sport, dayOfWeek, dayParts } = filters;
   const label: string[] = [];
 
@@ -866,21 +974,27 @@ function DisplayFilters(props: {
       t('Or')
     );
 
-    if (label.length === 1) {label[0] = `${label[0]}, ${parts}`;}
-    else {label.push(parts);}
+    if (label.length === 1) {
+      label[0] = `${label[0]}, ${parts}`;
+    } else {
+      label.push(parts);
+    }
   }
 
-  if (sport) {label.push(mapIdToName(sport, sports, language as Language));}
+  if (sport) {
+    label.push(mapIdToName(sport, sports, language as Language));
+  }
 
-  if (spirit && spirit.length > 0 && spirit.length !== 5)
-    {label.push(
+  if (spirit && spirit.length > 0 && spirit.length !== 5) {
+    label.push(
       t('Filter Spirit', {
         sport: semanticOr(
           spirit.map((s) => mapIdToName(s, spirits, language as Language)),
           t('Or')
         )
       })
-    );}
+    );
+  }
 
   return (
     <div className="flex mx-2 items-center dark:text-white text-blueGray-500 text-sm">
@@ -890,12 +1004,14 @@ function DisplayFilters(props: {
 }
 
 /**
- * Create a human readable phrase from a list of strings
+ * Create a human-readable phrase from a list of strings
  * @param list
  * @param or
  */
 function semanticOr(list: string[], or: string) {
-  if (list.length === 1) {return list[0];}
+  if (list.length === 1) {
+    return list[0];
+  }
   return `${list.slice(0, -1).join(', ')} ${or} ${list.slice(-1)}`;
 }
 

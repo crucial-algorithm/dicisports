@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { useState } from 'react';
 import mapboxgl from 'mapbox-gl';
+import MapboxGeocoder from '@mapbox/mapbox-gl-geocoder';
 import { Dialog } from '@reach/dialog';
 import { LocationMarkerIcon } from '@heroicons/react/solid';
 
@@ -84,7 +85,18 @@ function Map({
         },
         trackUserLocation: true,
         showUserHeading: true
-      })
+      }), 'bottom-right'
+    );
+
+    // Add the control to the map.
+    map.addControl(
+      new MapboxGeocoder({
+
+        accessToken: token,
+        zoom: 15,
+        mapboxgl,
+        reverseGeocode: false
+      }), 'top-left'
     );
 
     // save the map object to React.useState

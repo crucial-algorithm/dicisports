@@ -227,15 +227,15 @@ export const action: ActionFunction = async ({ request, params }) => {
   const scheduleSchema = z.object({
     hour: z
       .number()
-      .nonnegative({ message: t('Negative Number') })
+      .nonnegative({ message: t('Nonexistent Hour') })
       .lte(23, { message: t('Nonexistent Hour') }),
     minute: z
       .number()
-      .nonnegative({ message: t('Negative Number') })
+      .nonnegative({ message: t('Nonexistent Minute') })
       .lte(59, { message: t('Nonexistent Minute') }),
     day: z
       .number()
-      .nonnegative({ message: t('Negative Number') })
+      .nonnegative({ message: t('Nonexistent Day') })
       .lte(6, { message: t('Nonexistent Day') })
   });
 
@@ -265,7 +265,7 @@ export const action: ActionFunction = async ({ request, params }) => {
       near: str5CharsOrMore
     })
     .refine(() => schedules.length > 0, {
-      message: 'pelo menos 1 schedule',
+      message: t('At least one'),
       path: ['submit']
     })
     .refine(() => foundErrorsInSchedules, {
@@ -392,7 +392,6 @@ export default function GroupRoute() {
     setSchedules(newSchedules);
   }
 
-  console.log(actionData);
   return (
     <Main>
       <div className="mb-64 mt-24 pt-6">
@@ -718,7 +717,7 @@ function Schedule(props: {
       <input
         type="hidden"
         name="groupSchedule"
-        value={`${-1}:${-1}:${-1}`}
+        value={`${day}:${time.hour}:${time.minute}`}
       />
     </div>
   );
