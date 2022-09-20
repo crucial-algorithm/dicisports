@@ -75,6 +75,7 @@ import WhenListEmpty from '~/components/shared/Empty';
 import HourOfDay from '~/components/HourOfDay';
 import { Spacer } from '~/components/shared/Spacer';
 import { requireAdminUser } from '~/server/auth/session.server';
+import ButtonGroup from '~/components/shared/ButtonGroup';
 
 type ActionData = {
   hash: number;
@@ -248,15 +249,9 @@ export default function OrganizerEventRoute() {
         }
       : null
   );
-  const [showFilesDialog, setSowFilesDialog] = useState<{
-    show: boolean;
-    race?: Race;
-  }>({
-    show: false
-  });
+  const [showFilesDialog, setSowFilesDialog] = useState<boolean>(false);
   const inputEl = useRef(null);
 
-  console.log('-->', event.documents);
   // Hack: while remix doesn't handle dates properly
   hackyEventRevival(event);
 
@@ -300,11 +295,11 @@ export default function OrganizerEventRoute() {
   }
 
   function handleCloseFilesDialog() {
-    setSowFilesDialog({ show: false });
+    setSowFilesDialog(false);
   }
 
   function handleOpenFilesDialog() {
-    setSowFilesDialog({ show: true });
+    setSowFilesDialog(true);
   }
 
   useEffect(() => {
@@ -546,27 +541,7 @@ export default function OrganizerEventRoute() {
                 {t('Upload Files')}
               </Button>
             </Label>
-            {event.documents.map((d: any) => (
-              <div
-                key={d.id}
-                className="relative flex mb-4 justify-between items-center flex-col md:flex-row border-b p-4 last:border-none border-gray-300 dark:border-gray-300"
-              >
-                <div className={clsx('text-lg font-extrabold dark:text-white')}>
-                  {/*TODO: change to d.label, using key just to see how it displays*/}
-                  {d.key}
-                </div>
-                <div>
-                  {/*TODO: add move up and down and delete( add status to table ) functions and add displayOrder to documents*/}
-                  <Button className="ml-14" type="button" variant="danger">
-                    <XCircleIcon className="md:h-6 w-6 m-0 inline-block"></XCircleIcon>
-                  </Button>
-
-                  <Button className="ml-6" type="button">
-                    <PencilAltIcon className="md:h-6 w-6 m-0 inline-block" />
-                  </Button>
-                </div>
-              </div>
-            ))}
+            <FilesList files={event.documents} />
           </div>
 
           <ButtonLink
@@ -593,7 +568,7 @@ export default function OrganizerEventRoute() {
       />
 
       <UploadFileDialog
-        isOpen={showFilesDialog.show}
+        isOpen={showFilesDialog}
         onDismiss={handleCloseFilesDialog}
       />
 
@@ -1070,12 +1045,8 @@ function DeleteRaceDialog(props: {
   );
 }
 
-function UploadFileDialog(props: {
-  isOpen: boolean;
-  onDismiss: () => void;
-  race?: Race;
-}) {
-  const { isOpen, onDismiss, race } = props;
+function UploadFileDialog(props: { isOpen: boolean; onDismiss: () => void }) {
+  const { isOpen, onDismiss } = props;
   const { t } = useTranslation(RESOURCES_NS);
   const fetcher = useFetcher();
 
@@ -1098,19 +1069,58 @@ function UploadFileDialog(props: {
         )}
       >
         <div className="relative">
+          {/*TODO: add action to fetcher.form*/}
           <fetcher.Form>
             <H3 className="w-full md:w-112 text-left">{t('Upload Files')}</H3>
             <Spacer size="2xs" />
 
             <FormField label={t('Name')}>
-              <TextField name="name" placeholder={t('File Name')} className="max-w-md"/>
+              <TextField
+                name="name"
+                placeholder={t('File Name')}
+                className="max-w-md"
+              />
             </FormField>
-            <Button type="button" onClick={onDismiss}>
-              {t('Cancel')}
-            </Button>
+            <ButtonGroup>
+              <Button type="button" variant="secondary" onClick={onDismiss}>
+                {t('Cancel')}
+              </Button>
+              <Button type="button">{t('Upload Files')}</Button>
+            </ButtonGroup>
           </fetcher.Form>
         </div>
       </div>
     </div>
+  );
+}
+
+function FilesList(props: { files: Document[] }) {
+  const { files } = props;
+  const fetcher = useFetcher();
+
+  return (
+    <fetcher.Form>
+      {files.map((d: Document) => (
+        <div
+          key={d.id}
+          className="relative flex mb-4 justify-between items-center flex-col md:flex-row border-b p-4 last:border-none border-gray-300 dark:border-gray-300"
+        >
+          <div className={clsx('text-lg font-extrabold dark:text-white')}>
+            {/*TODO: change to d.label, using key just to see how it displays*/}
+            {d.key}
+          </div>
+          <div>
+            {/*TODO: add move up and down and delete( add status to table ) functions and add displayOrder to documents*/}
+            <Button className="ml-14" type="button" variant="danger">
+              <XCircleIcon className="md:h-6 w-6 m-0 inline-block"></XCircleIcon>
+            </Button>
+
+            <Button className="ml-6" type="button">
+              <PencilAltIcon className="md:h-6 w-6 m-0 inline-block" />
+            </Button>
+          </div>
+        </div>
+      ))}
+    </fetcher.Form>
   );
 }
