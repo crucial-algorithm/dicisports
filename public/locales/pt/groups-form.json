@@ -37,5 +37,14 @@
   "We dont know what happened": "Não sabemos o que aconteceu... tente novamente e se não conseguir terminar a operação, entre em contacto connosco",
 
   "Group updated successfully": "Grupo atualizado",
-  "Group created successfully": "Parabéns... o novo grupo está disponível"
+  "Group created successfully": "Parabéns... o novo grupo está disponível",
+
+  "Add new": "Adicionar um novo horario",
+  "Remove": "Remover",
+
+  "At least one": "Adicione pelo menos um horário",
+  "Schedule Error": "Erro no horário",
+  "Nonexistent Hour": "Essa hora não existe",
+  "Nonexistent Minute": "Esse minuto não existe",
+  "Nonexistent Day": "Esse dia não existe"
 }

@@ -1,5 +1,4 @@
 import type { ActionFunction, LinksFunction, LoaderFunction } from 'remix';
-
 import {
   json,
   redirect,
@@ -7,21 +6,22 @@ import {
   unstable_parseMultipartFormData
 } from 'remix';
 
-import { useActionData } from '@remix-run/react';
+import clsx from 'clsx';
+
+import { Form, useActionData, useLoaderData } from '@remix-run/react';
 
 import { useTranslation } from 'react-i18next';
 
-import { Form, useLoaderData } from '@remix-run/react';
-
-import { useState } from 'react';
+import React, { useState } from 'react';
 
 import type { UploadHandler } from '@remix-run/node';
-
 import { unstable_composeUploadHandlers } from '@remix-run/node';
 
 import { z, ZodError } from 'zod';
 
 import { Dialog } from '@reach/dialog';
+
+import { TrashIcon } from '@heroicons/react/outline';
 
 import Main from '~/components/shared/Main';
 import { H2, H3, Paragraph } from '~/components/shared/typography';
@@ -34,12 +34,14 @@ import Button from '~/components/shared/Button';
 import FormField from '~/components/shared/form/FormField';
 import TextField from '~/components/shared/form/TextField';
 import type {
+  DaysOfWeek,
   DiciLocation,
   Group,
+  GroupSchedule,
   GroupSpirit,
   GroupType,
-  Sport,
-  Language
+  Language,
+  Sport
 } from '~/types';
 import ComboBox from '~/components/shared/form/ComboBox';
 import { findGroupTypes } from '~/server/db/groupTypes.server';
@@ -67,7 +69,6 @@ import { Spacer } from '~/components/shared/Spacer';
 import { uploadImageToCloudinary } from '~/server/storage/cloudinary.server';
 import { inputBaseClasses } from '~/components/shared/form/InputBase';
 import { processImgField } from '~/server/utils/misc';
-
 
 const RESOURCES_NS = 'groups-form';
 
@@ -106,7 +107,8 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   const user = await requireUser(request);
   const { MAPBOX_TOKEN, CLOUDINARY_UPLOAD_PRESET } = Config();
 
-  const group = params.groupId ? await findGroup(params.groupId) : null;
+  const groupId = params.groupId as string;
+  const group = groupId ? await findGroup(groupId) : null;
 
   if (!group || group.createdById !== user.id) {
     return redirect('/m/groups');
@@ -130,6 +132,8 @@ type ActionData = {
     name?: string;
     location?: string;
     near?: string;
+    schedules?: string;
+    submit?: string;
   };
 };
 
@@ -142,6 +146,16 @@ function parseLocation(location: string) {
     lng: parseFloat(lng),
     address
   };
+}
+
+function fetchZodErrors(e: ZodError) {
+  const errors: { [key: string]: string | undefined } = {};
+
+  for (const error of (e as ZodError).errors) {
+    errors[error.path[0]] = error.message;
+  }
+
+  return errors;
 }
 
 export const action: ActionFunction = async ({ request, params }) => {
@@ -187,6 +201,7 @@ export const action: ActionFunction = async ({ request, params }) => {
   const image2 = form.get('/file/image/1') as string;
   const image3 = form.get('/file/image/2') as string;
   const location = parseLocation(form.get('location') as string);
+
   const data = {
     id: form.get('id') as string,
     name: form.get('name') as string,
@@ -208,19 +223,59 @@ export const action: ActionFunction = async ({ request, params }) => {
     image3: processImgField(image3, isUpdate),
     description: form.get('description') as string
   };
+
+  const scheduleSchema = z.object({
+    hour: z
+      .number()
+      .nonnegative({ message: t('Nonexistent Hour') })
+      .lte(23, { message: t('Nonexistent Hour') }),
+    minute: z
+      .number()
+      .nonnegative({ message: t('Nonexistent Minute') })
+      .lte(59, { message: t('Nonexistent Minute') }),
+    day: z
+      .number()
+      .nonnegative({ message: t('Nonexistent Day') })
+      .lte(6, { message: t('Nonexistent Day') })
+  });
+
+  let foundErrorsInSchedules = false;
+  const schedules: { day: number; hour: number; minute: number }[] = (
+    form.getAll('groupSchedule') as string[]
+  ).map((s) => {
+    const [day, hour, minute] = s.split(':').map(Number);
+
+    const validation = scheduleSchema.safeParse({ day, hour, minute });
+    const errors = validation.success ? null : fetchZodErrors(validation.error);
+
+    if (errors !== null) {
+      foundErrorsInSchedules = true;
+    }
+    return { day, hour, minute, errors };
+  });
+
   const required = { invalid_type_error: t('Field required') };
   const str5CharsOrMore = z
     .string(required)
     .min(5, { message: t('Name 5 chars or more') });
-  const GroupSchema = z.object({
-    name: str5CharsOrMore,
-    location: z.string(required),
-    near: str5CharsOrMore
-  });
+  const GroupSchema = z
+    .object({
+      name: str5CharsOrMore,
+      location: z.string(required),
+      near: str5CharsOrMore
+    })
+    .refine(() => schedules.length > 0, {
+      message: t('At least one'),
+      path: ['submit']
+    })
+    .refine(() => !foundErrorsInSchedules, {
+      message: t('Schedule Error'),
+      path: ['submit']
+    });
 
   try {
     GroupSchema.parse(data);
-    await updateGroup(data);
+    await updateGroup(data, schedules);
     return redirect(
       `/m/groups?message=${t(
         isUpdate ? 'Group updated successfully' : 'Group created successfully'
@@ -239,9 +294,22 @@ export const action: ActionFunction = async ({ request, params }) => {
       errors[error.path[0]] = error.message;
     }
 
+    // @ts-ignore
+    errors.schedules = schedules.map((s) => s.errors || {});
+
     return badRequest({ error: undefined, errors });
   }
 };
+
+function emptySchedule() {
+  return {
+    id: String(Date.now()),
+    hour: 9,
+    minute: 0,
+    timeOfDay: 900,
+    dayOfWeek: 6
+  };
+}
 
 export default function GroupRoute() {
   const { t, i18n } = useTranslation(RESOURCES_NS);
@@ -249,8 +317,8 @@ export default function GroupRoute() {
   const loadedData = useLoaderData<LoaderData>();
   const { mapToken, sports, groupTypes, groupsSpirit, group } = loadedData;
   const isUpdate = group.status !== 'auto';
+
   // using parse float for 0 min's to work
-  const [hour, minute] = timeOfDayToHoursMinutes(group.timeOfDay);
   const actionData = useActionData<ActionData>();
   const [deleteModalOpen, setDeleteModalOpen] = useState<boolean>(false);
 
@@ -263,6 +331,32 @@ export default function GroupRoute() {
           shortAddress: group.location
         }
       : null
+  );
+
+  const [schedules, setSchedules] = useState<
+    Array<
+      Omit<GroupSchedule, 'groupId'> & {
+        hour: number;
+        minute: number;
+        errors?: {
+          hour: string | null;
+          minute: string | null;
+          day: string | null;
+        };
+      }
+    >
+  >(
+    (group.schedules.length ? group.schedules : [emptySchedule()]).map(
+      (gs: GroupSchedule) => {
+        const [hour, minute] = timeOfDayToHoursMinutes(gs.timeOfDay);
+
+        return {
+          ...gs,
+          hour,
+          minute
+        };
+      }
+    )
   );
 
   function handleShowMap() {
@@ -280,6 +374,23 @@ export default function GroupRoute() {
 
   function handleDiscardDelete() {
     setDeleteModalOpen(false);
+  }
+
+  function handleCreateNewSchedule() {
+    const newSchedules = [...schedules];
+
+    newSchedules.push(emptySchedule());
+    setSchedules(newSchedules);
+  }
+
+  function handleRemoveSchedule(id: string) {
+    const newSchedules = [...schedules];
+
+    // @ts-ignore
+    const position = newSchedules.findIndex((a) => a.id === id);
+
+    newSchedules.splice(position, 1);
+    setSchedules(newSchedules);
   }
 
   return (
@@ -402,24 +513,27 @@ export default function GroupRoute() {
                 defaultValue={group.near || ''}
               />
             </FormField>
-            <FormField
-              label={t('Day Of Week')}
-              id="group-day-of-week"
-              className="w-64"
-            >
-              <PeekDayOfWeek
-                name="dayOfWeek"
-                id="group-day-of-week"
-                defaultValue={group.dayOfWeek}
-              />
-            </FormField>
-            <FormField
-              label={t('Time Of Day')}
-              id="group-time-of-day"
-              className="w-80 md:w-48"
-            >
-              <HourOfDay hour={hour} minute={minute} />
-            </FormField>
+            <div>
+              {schedules.map((schedule, index) => (
+                <Schedule
+                  hour={schedule.hour}
+                  minute={schedule.minute}
+                  day={schedule.dayOfWeek as DaysOfWeek}
+                  onRemove={handleRemoveSchedule}
+                  id={schedule.id}
+                  key={schedule.id}
+                  errors={actionData?.errors?.schedules[index]}
+                  position={index}
+                />
+              ))}
+              <button
+                type="button"
+                className="background-transparent text-orange-600 dark:text-blueGray-500 font-medium mb-8"
+                onClick={handleCreateNewSchedule}
+              >
+                {t('Add new')}
+              </button>
+            </div>
             <FormField label={t('WhatsApp Group')}>
               <TextField
                 name="whatsapp"
@@ -476,6 +590,11 @@ export default function GroupRoute() {
             <InputError id="global-error" className="mt-4">
               {actionData?.error}
             </InputError>
+            {actionData?.errors?.submit && (
+              <InputError className="mt-4" id="error-message">
+                {actionData?.errors?.submit}
+              </InputError>
+            )}
           </UploadForm>
           {isUpdate ? (
             <Form
@@ -529,5 +648,93 @@ export default function GroupRoute() {
         </Form>
       </Dialog>
     </Main>
+  );
+}
+
+function Schedule(props: {
+  hour: number;
+  day: DaysOfWeek;
+  minute: number;
+  onRemove: (id: string) => void;
+  id: string;
+  errors: { hour: string | null; minute: string | null; day: string | null };
+  position: number;
+}) {
+  const { t } = useTranslation(RESOURCES_NS);
+
+  const [time, setTime] = useState<{ hour: number; minute: number }>({
+    hour: props.hour,
+    minute: props.minute
+  });
+  const [day, setDay] = useState(props.day);
+
+  function handleDayChanged(value: string | number) {
+    setDay(Number(value) as DaysOfWeek);
+  }
+
+  function handleHourChanged(v: { hour: number; minute: number }) {
+    setTime(v);
+  }
+
+  function handleRemove() {
+    props.onRemove(props.id);
+  }
+
+  function RemoveButton({ position }: { position: 'middle' | 'end' }) {
+    return (
+      <button
+        type="button"
+        onClick={handleRemove}
+        className={clsx(
+          'flex items-center justify-center mt-8 w-[60px] h-[60px]',
+          'text-orange-600 dark:text-blueGray-500 px-4',
+          {
+            'inline md:hidden': position === 'middle',
+            'hidden md:inline': position === 'end'
+          }
+        )}
+      >
+        <TrashIcon className="h-8 w-8 m-0 inline-block" />
+      </button>
+    );
+  }
+
+  return (
+    <>
+      <div className="flex flex-wrap mb-4 md:flex flex-row mb-4 items-center">
+        <FormField
+          label={t('Day Of Week')}
+          id="group-day-of-week"
+          className="w-52 mt-0 mb-0 mr-2 md:w-56"
+          error={props.errors?.day}
+        >
+          <PeekDayOfWeek
+            name="dayOfWeek"
+            id="group-day-of-week"
+            defaultValue={props.day}
+            onChange={handleDayChanged}
+          />
+        </FormField>
+        {props.position > 0 && <RemoveButton position="middle" />}
+        <FormField
+          label={t('Time Of Day')}
+          id="group-time-of-day"
+          className="mt-0 mb-0"
+          error={props.errors?.hour || props.errors?.minute}
+        >
+          <HourOfDay
+            hour={time.hour}
+            minute={time.minute}
+            onChange={handleHourChanged}
+          />
+        </FormField>
+        {props.position > 0 && <RemoveButton position="end" />}
+      </div>
+      <input
+        type="hidden"
+        name="groupSchedule"
+        value={`${day}:${time.hour}:${time.minute}`}
+      />
+    </>
   );
 }
