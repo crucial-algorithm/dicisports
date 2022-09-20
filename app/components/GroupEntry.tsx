@@ -22,7 +22,7 @@ type Props = {
 export default function GroupEntry({ group, actions, footer, img }: Props) {
   const { t } = useTranslation('m-groups');
   const tc = useTranslation('common').t;
-  
+
   function translateDay(day: number) {
     return tc(
         [
@@ -51,8 +51,6 @@ export default function GroupEntry({ group, actions, footer, img }: Props) {
     )
     .join(' | ');
 
-  console.log(schedule);
-
   return (
     <div
       className={clsx(
@@ -66,9 +64,10 @@ export default function GroupEntry({ group, actions, footer, img }: Props) {
       <GroupImage group={group} img={img} />
       <div className="w-full h-full p-2 lg:pl-6">
         <div className="flex flex-col">
-          <span className={clsx('mb-4 text-lg font-extrabold dark:text-white')}>
-            {group.name}, <small className="lowercase">{schedule}</small>
+          <span className="text-lg font-extrabold dark:text-white">
+            {group.name}
           </span>
+          <span className="mb-4 dark:text-white font-bold capitalize">{schedule}</span>
           <Feature
             label={t('Who')}
             value={group.createdBy?.name || group.createdById}
@@ -95,13 +94,13 @@ export default function GroupEntry({ group, actions, footer, img }: Props) {
             more={t('Read More')}
           />
           {footer && (
-            <div className="flex flex-col content-end items-end">{footer}</div>
+            <div className="absolute bottom-4 right-4 font-medium">{footer}</div>
           )}
         </div>
       </div>
-      {actions ? (
-        <div className="absolute top-0 right-0 p-4 pt-6">{actions}</div>
-      ) : null}
+      {actions && (
+        <div className="absolute top-0 right-0 p-2 pt-6">{actions}</div>
+      )}
     </div>
   );
 }

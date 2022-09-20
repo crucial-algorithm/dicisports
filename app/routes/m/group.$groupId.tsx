@@ -6,6 +6,8 @@ import {
   unstable_parseMultipartFormData
 } from 'remix';
 
+import clsx from 'clsx';
+
 import { Form, useActionData, useLoaderData } from '@remix-run/react';
 
 import { useTranslation } from 'react-i18next';
@@ -19,7 +21,7 @@ import { z, ZodError } from 'zod';
 
 import { Dialog } from '@reach/dialog';
 
-import { XCircleIcon } from '@heroicons/react/outline';
+import { TrashIcon } from '@heroicons/react/outline';
 
 import Main from '~/components/shared/Main';
 import { H2, H3, Paragraph } from '~/components/shared/typography';
@@ -678,13 +680,32 @@ function Schedule(props: {
     props.onRemove(props.id);
   }
 
+  function RemoveButton({ position }: { position: 'middle' | 'end' }) {
+    return (
+      <button
+        type="button"
+        onClick={handleRemove}
+        className={clsx(
+          'flex items-center justify-center mt-8 w-[60px] h-[60px]',
+          'text-orange-600 dark:text-blueGray-500 px-4',
+          {
+            'inline md:hidden': position === 'middle',
+            'hidden md:inline': position === 'end'
+          }
+        )}
+      >
+        <TrashIcon className="h-8 w-8 m-0 inline-block" />
+      </button>
+    );
+  }
+
   return (
-    <div>
-      <div className="flex flex-wrap mb-4 md:flex flex-row mb-4">
+    <>
+      <div className="flex flex-wrap mb-4 md:flex flex-row mb-4 items-center">
         <FormField
           label={t('Day Of Week')}
           id="group-day-of-week"
-          className="w-64 mt-0 mb-0 mr-2"
+          className="w-52 mt-0 mb-0 mr-2 md:w-56"
           error={props.errors?.day}
         >
           <PeekDayOfWeek
@@ -694,10 +715,11 @@ function Schedule(props: {
             onChange={handleDayChanged}
           />
         </FormField>
+        {props.position > 0 && <RemoveButton position="middle" />}
         <FormField
           label={t('Time Of Day')}
           id="group-time-of-day"
-          className="w-80 md:w-48 mt-0 mb-0"
+          className="mt-0 mb-0"
           error={props.errors?.hour || props.errors?.minute}
         >
           <HourOfDay
@@ -706,22 +728,13 @@ function Schedule(props: {
             onChange={handleHourChanged}
           />
         </FormField>
-        {props.position > 0 && (
-          <Button
-            size="tiny"
-            type="button"
-            onClick={handleRemove}
-            className="w-[50px] h-[50px] flex align-middle justify-center bg-transparent"
-          >
-            <XCircleIcon className="h-6 w-6 m-0 inline-block" />
-          </Button>
-        )}
+        {props.position > 0 && <RemoveButton position="end" />}
       </div>
       <input
         type="hidden"
         name="groupSchedule"
         value={`${day}:${time.hour}:${time.minute}`}
       />
-    </div>
+    </>
   );
 }
