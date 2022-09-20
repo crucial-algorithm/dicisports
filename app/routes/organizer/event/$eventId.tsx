@@ -1098,29 +1098,64 @@ function FilesList(props: { files: Document[] }) {
   const { files } = props;
   const fetcher = useFetcher();
 
+  function handleMoveUp(d: Document) {
+    fetcher.submit({}, { method: 'post', action: `organizer/${d.id}/move-up` });
+  }
+
+  //TODO: finish function
+  function handleMoveDown(d: Document) {
+    fetcher.submit(
+      {},
+      { method: 'post', action: `organizer/${d.id}/move-down` }
+    );
+  }
+
   return (
     <fetcher.Form>
-      {files.map((d: Document) => (
-        <div
-          key={d.id}
-          className="relative flex mb-4 justify-between items-center flex-col md:flex-row border-b p-4 last:border-none border-gray-300 dark:border-gray-300"
-        >
-          <div className={clsx('text-lg font-extrabold dark:text-white')}>
-            {/*TODO: change to d.label, using key just to see how it displays*/}
-            {d.key}
-          </div>
-          <div>
-            {/*TODO: add move up and down and delete( add status to table ) functions and add displayOrder to documents*/}
-            <Button className="ml-14" type="button" variant="danger">
-              <XCircleIcon className="md:h-6 w-6 m-0 inline-block"></XCircleIcon>
-            </Button>
+      {files
+        .sort((a: Document, b: Document) => a.position - b.position)
+        .map((d: Document, index) => (
+          <div
+            key={d.id}
+            className="relative flex mb-4 justify-between items-center flex-col md:flex-row border-b p-4 last:border-none border-gray-300 dark:border-gray-300"
+          >
+            <div className={clsx('text-lg font-extrabold dark:text-white')}>
+              {/*TODO: change to d.label, using key just to see how it displays*/}
+              {d.key}
+            </div>
+            <div>
+              {index === 0 ? null : (
+                <Button
+                  className="ml-6"
+                  type="button"
+                  onClick={() => {
+                    handleMoveUp(d);
+                  }}
+                >
+                  <ArrowUpIcon className="md:h-6 w-6 m-0 inline-block" />
+                </Button>
+              )}
+              {index === files.length - 1 ? null : (
+                <Button
+                  className="ml-6"
+                  type="button"
+                  onClick={() => {
+                    handleMoveDown(d);
+                  }}
+                >
+                  <ArrowDownIcon className="md:h-6 w-6 m-0 inline-block" />
+                </Button>
+              )}
+              <Button className="ml-14" type="button" variant="danger">
+                <XCircleIcon className="md:h-6 w-6 m-0 inline-block"></XCircleIcon>
+              </Button>
 
-            <Button className="ml-6" type="button">
-              <PencilAltIcon className="md:h-6 w-6 m-0 inline-block" />
-            </Button>
+              <Button className="ml-6" type="button">
+                <PencilAltIcon className="md:h-6 w-6 m-0 inline-block" />
+              </Button>
+            </div>
           </div>
-        </div>
-      ))}
+        ))}
     </fetcher.Form>
   );
 }
