@@ -48,6 +48,9 @@
   "Race Description": "(Opcional)",
   "Start At": "Hora de partida",
   "Valid Until": "Early bird até",
+  "Files": "Ficheiros",
+  "Upload Files": "Adicionar Ficheiro",
+  "File Name": "Regras",
 
   "Field required": "Campo obrigatório",
   "Must Be Number": "Insira um número positivo",

@@ -110,10 +110,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   const eventId = params.eventId as string;
   const event = eventId ? await findEvent(eventId) : null;
 
-  const {
-    MAPBOX_TOKEN,
-    CLOUDINARY_UPLOAD_PRESET
-  } = Config();
+  const { MAPBOX_TOKEN, CLOUDINARY_UPLOAD_PRESET } = Config();
 
   return json({
     mapToken: MAPBOX_TOKEN,
@@ -251,8 +248,15 @@ export default function OrganizerEventRoute() {
         }
       : null
   );
+  const [showFilesDialog, setSowFilesDialog] = useState<{
+    show: boolean;
+    race?: Race;
+  }>({
+    show: false
+  });
   const inputEl = useRef(null);
 
+  console.log('-->', event.documents);
   // Hack: while remix doesn't handle dates properly
   hackyEventRevival(event);
 
@@ -293,6 +297,14 @@ export default function OrganizerEventRoute() {
     if (inputEl.current) {
       (inputEl.current as HTMLInputElement).value = '';
     }
+  }
+
+  function handleCloseFilesDialog() {
+    setSowFilesDialog({ show: false });
+  }
+
+  function handleOpenFilesDialog() {
+    setSowFilesDialog({ show: true });
   }
 
   useEffect(() => {
@@ -520,6 +532,43 @@ export default function OrganizerEventRoute() {
             </div>
           </FormField>
 
+          {/*TODO: make filesList component*/}
+          <div id="races" className="mb-12">
+            <Label
+              htmlFor="races"
+              className={clsx(
+                'mb-5 flex justify-between items-center flex-row'
+              )}
+            >
+              {t('Files')}
+
+              <Button type="button" onClick={handleOpenFilesDialog}>
+                {t('Upload Files')}
+              </Button>
+            </Label>
+            {event.documents.map((d: any) => (
+              <div
+                key={d.id}
+                className="relative flex mb-4 justify-between items-center flex-col md:flex-row border-b p-4 last:border-none border-gray-300 dark:border-gray-300"
+              >
+                <div className={clsx('text-lg font-extrabold dark:text-white')}>
+                  {/*TODO: change to d.label, using key just to see how it displays*/}
+                  {d.key}
+                </div>
+                <div>
+                  {/*TODO: add move up and down and delete( add status to table ) functions and add displayOrder to documents*/}
+                  <Button className="ml-14" type="button" variant="danger">
+                    <XCircleIcon className="md:h-6 w-6 m-0 inline-block"></XCircleIcon>
+                  </Button>
+
+                  <Button className="ml-6" type="button">
+                    <PencilAltIcon className="md:h-6 w-6 m-0 inline-block" />
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+
           <ButtonLink
             className="mt-8"
             type="button"
@@ -541,6 +590,11 @@ export default function OrganizerEventRoute() {
         eventId={event.id}
         race={showRacesDialog.race}
         hash={showRacesDialog.hash}
+      />
+
+      <UploadFileDialog
+        isOpen={showFilesDialog.show}
+        onDismiss={handleCloseFilesDialog}
       />
 
       <MapDialog
@@ -1010,6 +1064,51 @@ function DeleteRaceDialog(props: {
           >
             {t('Delete')}
           </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function UploadFileDialog(props: {
+  isOpen: boolean;
+  onDismiss: () => void;
+  race?: Race;
+}) {
+  const { isOpen, onDismiss, race } = props;
+  const { t } = useTranslation(RESOURCES_NS);
+  const fetcher = useFetcher();
+
+  return (
+    <div
+      data-reach-dialog-overlay={true}
+      className={clsx({
+        'hidden ': !isOpen,
+        'z-50 flex h-screen': isOpen
+      })}
+    >
+      <div
+        aria-modal={true}
+        className={clsx(
+          'w-11/12 dark:bg-gray-900 border-2 border-black dark:border-white rounded-lg lg:px-24 lg:py-14 lg:max-w-screen-lg',
+          {
+            'hidden ': !isOpen,
+            'm-auto': isOpen
+          }
+        )}
+      >
+        <div className="relative">
+          <fetcher.Form>
+            <H3 className="w-full md:w-112 text-left">{t('Upload Files')}</H3>
+            <Spacer size="2xs" />
+
+            <FormField label={t('Name')}>
+              <TextField name="name" placeholder={t('File Name')} className="max-w-md"/>
+            </FormField>
+            <Button type="button" onClick={onDismiss}>
+              {t('Cancel')}
+            </Button>
+          </fetcher.Form>
         </div>
       </div>
     </div>
