@@ -249,7 +249,13 @@ export default function OrganizerEventRoute() {
         }
       : null
   );
-  const [showFilesDialog, setSowFilesDialog] = useState<boolean>(false);
+  const [showFilesDialog, setSowFilesDialog] = useState<{
+    show: boolean;
+    hash: number;
+  }>({
+    show: false,
+    hash: 0
+  });
   const inputEl = useRef(null);
 
   // Hack: while remix doesn't handle dates properly
@@ -295,11 +301,11 @@ export default function OrganizerEventRoute() {
   }
 
   function handleCloseFilesDialog() {
-    setSowFilesDialog(false);
+    setSowFilesDialog({ show: false, hash: 0 });
   }
 
   function handleOpenFilesDialog() {
-    setSowFilesDialog(true);
+    setSowFilesDialog({ show: true, hash: Date.now() });
   }
 
   useEffect(() => {
@@ -527,7 +533,6 @@ export default function OrganizerEventRoute() {
             </div>
           </FormField>
 
-          {/*TODO: make filesList component*/}
           <div id="races" className="mb-12">
             <Label
               htmlFor="races"
@@ -568,9 +573,10 @@ export default function OrganizerEventRoute() {
       />
 
       <UploadFileDialog
-        isOpen={showFilesDialog}
+        isOpen={showFilesDialog.show}
         onDismiss={handleCloseFilesDialog}
         eventId={event.id}
+        hash={showFilesDialog.hash}
       />
 
       <MapDialog
@@ -1051,8 +1057,9 @@ function UploadFileDialog(props: {
   onDismiss: () => void;
   document?: Document;
   eventId: string;
+  hash: number;
 }) {
-  const { isOpen, onDismiss, eventId, document } = props;
+  const { isOpen, onDismiss, eventId, document, hash } = props;
   const { t } = useTranslation(RESOURCES_NS);
   const fetcher = useFetcher();
   const name = useRef<HTMLInputElement>(null);
@@ -1062,7 +1069,7 @@ function UploadFileDialog(props: {
       {
         name: name.current?.value as string,
         eventId,
-        documentId: document?.id as string
+        documentId: document?.id ? document.id : ''
       },
       { method: 'post', action: 'organizer/document/create' }
     );
@@ -1092,7 +1099,7 @@ function UploadFileDialog(props: {
           }
         )}
       >
-        <div className="relative">
+        <div className="relative" key={hash}>
           <fetcher.Form>
             <H3 className="w-full md:w-112 text-left">
               {document?.id ? t('Update File') : t('Upload File')}
@@ -1129,7 +1136,8 @@ function FilesList(props: { files: Document[]; eventId: string }) {
   const [showFilesDialog, setSowFilesDialog] = useState<{
     show: boolean;
     document?: Document;
-  }>({ show: false });
+    hash: number;
+  }>({ show: false, hash: 0 });
 
   function handleMoveUp(d: Document) {
     fetcher.submit({}, { method: 'post', action: `organizer/${d.id}/move-up` });
@@ -1143,11 +1151,11 @@ function FilesList(props: { files: Document[]; eventId: string }) {
   }
 
   function handleUpdateDocument(d: Document) {
-    setSowFilesDialog({ show: true, document: d });
+    setSowFilesDialog({ show: true, document: d, hash: Date.now() });
   }
 
   function handleCloseFilesDialog() {
-    setSowFilesDialog({ show: false });
+    setSowFilesDialog({ show: false, hash: 0 });
   }
 
   return (
@@ -1208,6 +1216,7 @@ function FilesList(props: { files: Document[]; eventId: string }) {
         document={showFilesDialog.document}
         onDismiss={handleCloseFilesDialog}
         eventId={eventId}
+        hash={showFilesDialog.hash}
       />
     </>
   );

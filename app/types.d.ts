@@ -97,6 +97,13 @@ type Sport = {
   name: TranslationObject
 } & DBSport
 type Document = {} & DBDocument
+type CreateDocumentInput = {
+  id: string
+  label: string
+  key: string
+  eventId: string
+}
+
 type GroupType = {
   name: TranslationObject
 } & DBGroupType
@@ -273,6 +280,7 @@ export {
   CreateEventInput,
   CreatePerksInput,
   CreateRaceInput,
+  CreateDocumentInput,
   DBRawGroup,
   LoginAction
 };

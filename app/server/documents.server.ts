@@ -1,5 +1,5 @@
 import { db } from '~/server/db.server';
-import type { Document } from '~/types';
+import type { CreateDocumentInput, Document } from '~/types';
 import Id from '~/server/utils/Id.server';
 
 async function findDocument(id: string): Promise<Document | null> {
@@ -16,29 +16,27 @@ async function findDocuments(eventId: string): Promise<Document[] | void> {
 }
 
 async function createDocument(
-  name: string,
-  eventId: string
+  document: CreateDocumentInput
 ): Promise<Document | void> {
   const documentId = Id();
   const documentAt = new Date();
 
-  //TODO: change hard coded "key" value
   await db.document.create({
     data: {
       id: documentId,
-      label: name,
-      key: 'delete',
+      label: document.label,
+      key: document.key,
       createdAt: documentAt,
       updatedAt: documentAt,
-      eventId
+      eventId: document.eventId
     }
   });
 }
 
-async function updateDocument(name: string, documentId: string): Promise<void> {
+async function updateDocument(document: CreateDocumentInput): Promise<void> {
   await db.document.update({
-    where: { id: documentId },
-    data: { label: name }
+    where: { id: document.id },
+    data: { label: document.label }
   });
 }
 
