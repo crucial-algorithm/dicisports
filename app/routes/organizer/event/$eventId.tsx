@@ -538,10 +538,10 @@ export default function OrganizerEventRoute() {
               {t('Files')}
 
               <Button type="button" onClick={handleOpenFilesDialog}>
-                {t('Upload Files')}
+                {t('Upload File')}
               </Button>
             </Label>
-            <FilesList files={event.documents} />
+            <FilesList files={event.documents} eventId={event.id} />
           </div>
 
           <ButtonLink
@@ -570,6 +570,7 @@ export default function OrganizerEventRoute() {
       <UploadFileDialog
         isOpen={showFilesDialog}
         onDismiss={handleCloseFilesDialog}
+        eventId={event.id}
       />
 
       <MapDialog
@@ -1045,10 +1046,33 @@ function DeleteRaceDialog(props: {
   );
 }
 
-function UploadFileDialog(props: { isOpen: boolean; onDismiss: () => void }) {
-  const { isOpen, onDismiss } = props;
+function UploadFileDialog(props: {
+  isOpen: boolean;
+  onDismiss: () => void;
+  document?: Document;
+  eventId: string;
+}) {
+  const { isOpen, onDismiss, eventId, document } = props;
   const { t } = useTranslation(RESOURCES_NS);
   const fetcher = useFetcher();
+  const name = useRef<HTMLInputElement>(null);
+
+  function handleSubmit() {
+    fetcher.submit(
+      {
+        name: name.current?.value as string,
+        eventId,
+        documentId: document?.id as string
+      },
+      { method: 'post', action: 'organizer/document/create' }
+    );
+  }
+
+  useEffect(() => {
+    if (fetcher.type === 'actionReload' && fetcher.data.ok) {
+      onDismiss();
+    }
+  }, [fetcher, onDismiss]);
 
   return (
     <div
@@ -1069,23 +1093,28 @@ function UploadFileDialog(props: { isOpen: boolean; onDismiss: () => void }) {
         )}
       >
         <div className="relative">
-          {/*TODO: add action to fetcher.form*/}
           <fetcher.Form>
-            <H3 className="w-full md:w-112 text-left">{t('Upload Files')}</H3>
+            <H3 className="w-full md:w-112 text-left">
+              {document?.id ? t('Update File') : t('Upload File')}
+            </H3>
             <Spacer size="2xs" />
 
             <FormField label={t('Name')}>
               <TextField
                 name="name"
                 placeholder={t('File Name')}
+                defaultValue={document?.label ? document.label : ''}
                 className="max-w-md"
+                input={name}
               />
             </FormField>
             <ButtonGroup>
               <Button type="button" variant="secondary" onClick={onDismiss}>
                 {t('Cancel')}
               </Button>
-              <Button type="button">{t('Upload Files')}</Button>
+              <Button type="button" onClick={handleSubmit}>
+                {document?.id ? t('Update File') : t('Upload File')}
+              </Button>
             </ButtonGroup>
           </fetcher.Form>
         </div>
@@ -1094,9 +1123,13 @@ function UploadFileDialog(props: { isOpen: boolean; onDismiss: () => void }) {
   );
 }
 
-function FilesList(props: { files: Document[] }) {
-  const { files } = props;
+function FilesList(props: { files: Document[]; eventId: string }) {
+  const { files, eventId } = props;
   const fetcher = useFetcher();
+  const [showFilesDialog, setSowFilesDialog] = useState<{
+    show: boolean;
+    document?: Document;
+  }>({ show: false });
 
   function handleMoveUp(d: Document) {
     fetcher.submit({}, { method: 'post', action: `organizer/${d.id}/move-up` });
@@ -1109,8 +1142,16 @@ function FilesList(props: { files: Document[] }) {
     );
   }
 
+  function handleUpdateDocument(d: Document) {
+    setSowFilesDialog({ show: true, document: d });
+  }
+
+  function handleCloseFilesDialog() {
+    setSowFilesDialog({ show: false });
+  }
+
   return (
-    <fetcher.Form>
+    <>
       {files
         .sort((a: Document, b: Document) => a.position - b.position)
         .map((d: Document, index) => (
@@ -1149,12 +1190,25 @@ function FilesList(props: { files: Document[] }) {
                 <XCircleIcon className="md:h-6 w-6 m-0 inline-block"></XCircleIcon>
               </Button>
 
-              <Button className="ml-6" type="button">
+              <Button
+                className="ml-6"
+                type="button"
+                onClick={() => {
+                  handleUpdateDocument(d);
+                }}
+              >
                 <PencilAltIcon className="md:h-6 w-6 m-0 inline-block" />
               </Button>
             </div>
           </div>
         ))}
-    </fetcher.Form>
+
+      <UploadFileDialog
+        isOpen={showFilesDialog.show}
+        document={showFilesDialog.document}
+        onDismiss={handleCloseFilesDialog}
+        eventId={eventId}
+      />
+    </>
   );
 }

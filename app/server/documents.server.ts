@@ -1,5 +1,6 @@
 import { db } from '~/server/db.server';
 import type { Document } from '~/types';
+import Id from '~/server/utils/Id.server';
 
 async function findDocument(id: string): Promise<Document | null> {
   return await db.document.findUnique({
@@ -11,6 +12,33 @@ async function findDocuments(eventId: string): Promise<Document[] | void> {
   return await db.document.findMany({
     where: { eventId },
     orderBy: { position: 'asc' }
+  });
+}
+
+async function createDocument(
+  name: string,
+  eventId: string
+): Promise<Document | void> {
+  const documentId = Id();
+  const documentAt = new Date();
+
+  //TODO: change hard coded "key" value
+  await db.document.create({
+    data: {
+      id: documentId,
+      label: name,
+      key: 'delete',
+      createdAt: documentAt,
+      updatedAt: documentAt,
+      eventId
+    }
+  });
+}
+
+async function updateDocument(name: string, documentId: string): Promise<void> {
+  await db.document.update({
+    where: { id: documentId },
+    data: { label: name }
   });
 }
 
@@ -52,4 +80,11 @@ async function updateDisplayOrderDown(
   });
 }
 
-export { findDocument, findDocuments, updateDisplayOrderUp, updateDisplayOrderDown };
+export {
+  findDocument,
+  findDocuments,
+  updateDocument,
+  updateDisplayOrderUp,
+  updateDisplayOrderDown,
+  createDocument
+};
