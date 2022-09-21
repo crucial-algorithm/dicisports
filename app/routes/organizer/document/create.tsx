@@ -20,6 +20,7 @@ export const action: ActionFunction = async ({ request }) => {
   const name = form.get('name') as string;
   const eventId = form.get('eventId') as string;
   const documentId = form.get('documentId') as string;
+  const hash = form.get('hash') as string;
 
   //TODO: change "key" value
   const documentData: CreateDocumentInput = {
@@ -54,6 +55,6 @@ export const action: ActionFunction = async ({ request }) => {
       errors[error.path[0]] = error.message;
     }
 
-    return badRequest({ errors });
+    return badRequest({ errors, hash: parseInt(hash) });
   }
 };

@@ -300,12 +300,12 @@ export default function OrganizerEventRoute() {
     }
   }
 
-  function handleCloseFilesDialog() {
-    setSowFilesDialog({ show: false, hash: 0 });
-  }
-
   function handleOpenFilesDialog() {
     setSowFilesDialog({ show: true, hash: Date.now() });
+  }
+
+  function handleCloseFilesDialog() {
+    setSowFilesDialog({ show: false, hash: 0 });
   }
 
   useEffect(() => {
@@ -598,6 +598,7 @@ type FormErrors = {
   price?: string;
   priceEarlyBird?: string;
   validUntil?: string;
+  label?: string;
 };
 
 function RaceDialog(props: {
@@ -1062,14 +1063,21 @@ function UploadFileDialog(props: {
   const { isOpen, onDismiss, eventId, document, hash } = props;
   const { t } = useTranslation(RESOURCES_NS);
   const fetcher = useFetcher();
+  const [errors, setErrors] = useState<FormErrors>({});
   const name = useRef<HTMLInputElement>(null);
+
+  const close = useCallback(() => {
+    setErrors({});
+    onDismiss();
+  }, [onDismiss]);
 
   function handleSubmit() {
     fetcher.submit(
       {
         name: name.current?.value as string,
         eventId,
-        documentId: document?.id ? document.id : ''
+        documentId: document?.id ? document.id : '',
+        hash: String(hash)
       },
       { method: 'post', action: 'organizer/document/create' }
     );
@@ -1077,9 +1085,17 @@ function UploadFileDialog(props: {
 
   useEffect(() => {
     if (fetcher.type === 'actionReload' && fetcher.data.ok) {
-      onDismiss();
+      return close();
     }
-  }, [fetcher, onDismiss]);
+
+    if (
+      fetcher.type === 'done' &&
+      fetcher.data?.errors &&
+      fetcher.data?.hash === hash
+    ) {
+      return setErrors(fetcher.data.errors as FormErrors);
+    }
+  }, [close, fetcher, hash]);
 
   return (
     <div
@@ -1106,7 +1122,7 @@ function UploadFileDialog(props: {
             </H3>
             <Spacer size="2xs" />
 
-            <FormField label={t('Name')}>
+            <FormField label={t('Name')} error={errors?.label}>
               <TextField
                 name="name"
                 placeholder={t('File Name')}
@@ -1116,7 +1132,7 @@ function UploadFileDialog(props: {
               />
             </FormField>
             <ButtonGroup>
-              <Button type="button" variant="secondary" onClick={onDismiss}>
+              <Button type="button" variant="secondary" onClick={close}>
                 {t('Cancel')}
               </Button>
               <Button type="button" onClick={handleSubmit}>
@@ -1168,8 +1184,7 @@ function FilesList(props: { files: Document[]; eventId: string }) {
             className="relative flex mb-4 justify-between items-center flex-col md:flex-row border-b p-4 last:border-none border-gray-300 dark:border-gray-300"
           >
             <div className={clsx('text-lg font-extrabold dark:text-white')}>
-              {/*TODO: change to d.label, using key just to see how it displays*/}
-              {d.key}
+              {d.label}
             </div>
             <div>
               {index === 0 ? null : (
