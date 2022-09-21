@@ -33,4 +33,23 @@ async function updateDisplayOrderUp(
   });
 }
 
-export { findDocument, findDocuments, updateDisplayOrderUp };
+async function updateDisplayOrderDown(
+  current: Document,
+  next: Document
+): Promise<void> {
+  await db.document.update({
+    where: { id: current.id },
+    data: {
+      position: next.position
+    }
+  });
+
+  await db.document.update({
+    where: { id: next.id },
+    data: {
+      position: current.position
+    }
+  });
+}
+
+export { findDocument, findDocuments, updateDisplayOrderUp, updateDisplayOrderDown };

@@ -1102,7 +1102,6 @@ function FilesList(props: { files: Document[] }) {
     fetcher.submit({}, { method: 'post', action: `organizer/${d.id}/move-up` });
   }
 
-  //TODO: finish function
   function handleMoveDown(d: Document) {
     fetcher.submit(
       {},
