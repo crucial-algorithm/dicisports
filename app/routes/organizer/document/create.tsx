@@ -4,7 +4,7 @@ import { json } from 'remix';
 import { z, ZodError } from 'zod';
 
 import { requireAdminUser } from '~/server/auth/session.server';
-import { createDocument, updateDocument } from '~/server/documents.server';
+import { createDocument, updateDocument, deleteDocument } from '~/server/documents.server';
 import i18n from '~/server/i18n.server';
 import type { CreateDocumentInput } from '~/types';
 import { badRequest } from '~/utils/misc';
@@ -21,6 +21,7 @@ export const action: ActionFunction = async ({ request }) => {
   const eventId = form.get('eventId') as string;
   const documentId = form.get('documentId') as string;
   const hash = form.get('hash') as string;
+  const actionId = form.get('actionId') as string;
 
   //TODO: change "key" value
   const documentData: CreateDocumentInput = {
@@ -35,6 +36,11 @@ export const action: ActionFunction = async ({ request }) => {
   });
 
   try {
+    if (actionId === 'delete') {
+      await deleteDocument(documentId);
+
+      return json({ ok: true });
+    }
     DocumentSchema.parse(documentData);
     documentId
       ? await updateDocument(documentData)

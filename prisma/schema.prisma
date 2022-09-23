@@ -111,6 +111,7 @@ model Document {
   eventId   String   @map("event_id")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
+  status    Status   @default(auto)
 
   @@map("documents")
 }

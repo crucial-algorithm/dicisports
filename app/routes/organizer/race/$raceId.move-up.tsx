@@ -26,6 +26,7 @@ export const action: ActionFunction = async ({ request, params }) => {
     return badRequest({ error: t('No Race') });
   }
 
+  console.log(current);
   const eventId = current.eventId as string;
   const races: Array<Race> = (await findEventRaces(eventId)) as Race[];
 

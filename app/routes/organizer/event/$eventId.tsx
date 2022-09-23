@@ -249,7 +249,7 @@ export default function OrganizerEventRoute() {
         }
       : null
   );
-  const [showFilesDialog, setSowFilesDialog] = useState<{
+  const [showDocumentsDialog, setSowDocumentsDialog] = useState<{
     show: boolean;
     hash: number;
   }>({
@@ -300,12 +300,12 @@ export default function OrganizerEventRoute() {
     }
   }
 
-  function handleOpenFilesDialog() {
-    setSowFilesDialog({ show: true, hash: Date.now() });
+  function handleOpenDocumentsDialog() {
+    setSowDocumentsDialog({ show: true, hash: Date.now() });
   }
 
-  function handleCloseFilesDialog() {
-    setSowFilesDialog({ show: false, hash: 0 });
+  function handleCloseDocumentsDialog() {
+    setSowDocumentsDialog({ show: false, hash: 0 });
   }
 
   useEffect(() => {
@@ -540,13 +540,13 @@ export default function OrganizerEventRoute() {
                 'mb-5 flex justify-between items-center flex-row'
               )}
             >
-              {t('Files')}
+              {t('Documents')}
 
-              <Button type="button" onClick={handleOpenFilesDialog}>
-                {t('Upload File')}
+              <Button type="button" onClick={handleOpenDocumentsDialog}>
+                {t('Upload Document')}
               </Button>
             </Label>
-            <FilesList files={event.documents} eventId={event.id} />
+            <DocumentsList documents={event.documents} eventId={event.id} />
           </div>
 
           <ButtonLink
@@ -572,11 +572,11 @@ export default function OrganizerEventRoute() {
         hash={showRacesDialog.hash}
       />
 
-      <UploadFileDialog
-        isOpen={showFilesDialog.show}
-        onDismiss={handleCloseFilesDialog}
+      <UploadDocumentDialog
+        isOpen={showDocumentsDialog.show}
+        onDismiss={handleCloseDocumentsDialog}
         eventId={event.id}
-        hash={showFilesDialog.hash}
+        hash={showDocumentsDialog.hash}
       />
 
       <MapDialog
@@ -875,7 +875,7 @@ function RacesList(props: { races: Race[]; eventId: string }) {
       {},
       {
         method: 'post',
-        action: `/organizer/${r.id}/move-up`
+        action: `/organizer/race/${r.id}/move-up`
       }
     );
   }
@@ -885,7 +885,7 @@ function RacesList(props: { races: Race[]; eventId: string }) {
       {},
       {
         method: 'post',
-        action: `/organizer/${r.id}/move-down`
+        action: `/organizer/race/${r.id}/move-down`
       }
     );
   }
@@ -1053,7 +1053,7 @@ function DeleteRaceDialog(props: {
   );
 }
 
-function UploadFileDialog(props: {
+function UploadDocumentDialog(props: {
   isOpen: boolean;
   onDismiss: () => void;
   document?: Document;
@@ -1118,14 +1118,14 @@ function UploadFileDialog(props: {
         <div className="relative" key={hash}>
           <fetcher.Form>
             <H3 className="w-full md:w-112 text-left">
-              {document?.id ? t('Update File') : t('Upload File')}
+              {document?.id ? t('Update Document') : t('Upload Document')}
             </H3>
             <Spacer size="2xs" />
 
             <FormField label={t('Name')} error={errors?.label}>
               <TextField
                 name="name"
-                placeholder={t('File Name')}
+                placeholder={t('Document Name')}
                 defaultValue={document?.label ? document.label : ''}
                 className="max-w-md"
                 input={name}
@@ -1136,7 +1136,7 @@ function UploadFileDialog(props: {
                 {t('Cancel')}
               </Button>
               <Button type="button" onClick={handleSubmit}>
-                {document?.id ? t('Update File') : t('Upload File')}
+                {document?.id ? t('Update Document') : t('Upload Document')}
               </Button>
             </ButtonGroup>
           </fetcher.Form>
@@ -1146,37 +1146,49 @@ function UploadFileDialog(props: {
   );
 }
 
-function FilesList(props: { files: Document[]; eventId: string }) {
-  const { files, eventId } = props;
+function DocumentsList(props: { documents: Document[]; eventId: string }) {
+  const { documents, eventId } = props;
   const fetcher = useFetcher();
-  const [showFilesDialog, setSowFilesDialog] = useState<{
+  const [showDocumentsDialog, setSowDocumentsDialog] = useState<{
     show: boolean;
     document?: Document;
     hash: number;
   }>({ show: false, hash: 0 });
+  const [showDeleteDocumentDialog, setShowDeleteDocumentDialog] = useState<{
+    show: boolean;
+    document?: Document;
+  }>({ show: false });
 
   function handleMoveUp(d: Document) {
-    fetcher.submit({}, { method: 'post', action: `organizer/${d.id}/move-up` });
+    fetcher.submit({}, { method: 'post', action: `organizer/document/${d.id}/move-up` });
   }
 
   function handleMoveDown(d: Document) {
     fetcher.submit(
       {},
-      { method: 'post', action: `organizer/${d.id}/move-down` }
+      { method: 'post', action: `organizer/document/${d.id}/move-down` }
     );
   }
 
   function handleUpdateDocument(d: Document) {
-    setSowFilesDialog({ show: true, document: d, hash: Date.now() });
+    setSowDocumentsDialog({ show: true, document: d, hash: Date.now() });
   }
 
-  function handleCloseFilesDialog() {
-    setSowFilesDialog({ show: false, hash: 0 });
+  function handleCloseDocumentsDialog() {
+    setSowDocumentsDialog({ show: false, hash: 0 });
+  }
+
+  function handleOpenDeleteDocumentDialog(d: Document) {
+    setShowDeleteDocumentDialog({ show: true, document: d });
+  }
+
+  function handleCloseDeleteDocumentDialog() {
+    setShowDeleteDocumentDialog({ show: false });
   }
 
   return (
     <>
-      {files
+      {documents
         .sort((a: Document, b: Document) => a.position - b.position)
         .map((d: Document, index) => (
           <div
@@ -1198,7 +1210,7 @@ function FilesList(props: { files: Document[]; eventId: string }) {
                   <ArrowUpIcon className="md:h-6 w-6 m-0 inline-block" />
                 </Button>
               )}
-              {index === files.length - 1 ? null : (
+              {index === documents.length - 1 ? null : (
                 <Button
                   className="ml-6"
                   type="button"
@@ -1209,7 +1221,14 @@ function FilesList(props: { files: Document[]; eventId: string }) {
                   <ArrowDownIcon className="md:h-6 w-6 m-0 inline-block" />
                 </Button>
               )}
-              <Button className="ml-14" type="button" variant="danger">
+              <Button
+                className="ml-14"
+                type="button"
+                variant="danger"
+                onClick={() => {
+                  handleOpenDeleteDocumentDialog(d);
+                }}
+              >
                 <XCircleIcon className="md:h-6 w-6 m-0 inline-block"></XCircleIcon>
               </Button>
 
@@ -1226,13 +1245,87 @@ function FilesList(props: { files: Document[]; eventId: string }) {
           </div>
         ))}
 
-      <UploadFileDialog
-        isOpen={showFilesDialog.show}
-        document={showFilesDialog.document}
-        onDismiss={handleCloseFilesDialog}
+      <UploadDocumentDialog
+        isOpen={showDocumentsDialog.show}
+        document={showDocumentsDialog.document}
+        onDismiss={handleCloseDocumentsDialog}
         eventId={eventId}
-        hash={showFilesDialog.hash}
+        hash={showDocumentsDialog.hash}
+      />
+
+      <DeleteDocumentDialog
+        isOpen={showDeleteDocumentDialog.show}
+        onDismiss={handleCloseDeleteDocumentDialog}
+        document={showDeleteDocumentDialog.document as Document}
       />
     </>
+  );
+}
+
+function DeleteDocumentDialog(props: {
+  document: Document;
+  isOpen: boolean;
+  onDismiss: () => void;
+}) {
+  const { t } = useTranslation(RESOURCES_NS);
+
+  const { document, isOpen, onDismiss } = props;
+  const fetcher = useFetcher();
+
+  function handleSubmit() {
+    fetcher.submit(
+      { actionId: 'delete', documentId: document.id },
+      {
+        method: 'post',
+        action: 'organizer/document/create'
+      }
+    );
+  }
+
+  useEffect(() => {
+    if (fetcher.type === 'actionReload' && fetcher.data.ok) {
+      return onDismiss();
+    }
+  });
+
+  return (
+    <div
+      data-reach-dialog-overlay={true}
+      className={clsx({
+        'hidden ': !isOpen,
+        'z-50 flex h-screen': isOpen
+      })}
+    >
+      <div
+        aria-modal={true}
+        className={clsx(
+          'w-11/12 dark:bg-gray-900 border-2 border-black dark:border-white rounded-lg lg:px-24 lg:py-14 lg:max-w-screen-lg',
+          {
+            'hidden ': !isOpen,
+            'm-auto': isOpen
+          }
+        )}
+      >
+        <H3>{t('Delete Document X', { name: document?.label })}</H3>
+        <Paragraph>{t('Are you sure you want to delete document?')}</Paragraph>
+        <Spacer size="2xs" />
+
+        <div className="flex flex-wrap gap-4">
+          <Button type="button" onClick={onDismiss}>
+            {t('Ignore')}
+          </Button>
+          <Button
+            variant="danger"
+            size="medium"
+            type="button"
+            onClick={() => {
+              handleSubmit();
+            }}
+          >
+            {t('Delete Document')}
+          </Button>
+        </div>
+      </div>
+    </div>
   );
 }

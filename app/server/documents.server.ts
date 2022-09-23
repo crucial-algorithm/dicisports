@@ -10,7 +10,7 @@ async function findDocument(id: string): Promise<Document | null> {
 
 async function findDocuments(eventId: string): Promise<Document[] | void> {
   return await db.document.findMany({
-    where: { eventId },
+    where: { eventId, status: { not: 'deleted' } },
     orderBy: { position: 'asc' }
   });
 }
@@ -34,9 +34,11 @@ async function createDocument(
 }
 
 async function updateDocument(document: CreateDocumentInput): Promise<void> {
+  const updatedAt = new Date();
+
   await db.document.update({
     where: { id: document.id },
-    data: { label: document.label }
+    data: { label: document.label, updatedAt }
   });
 }
 
@@ -78,11 +80,21 @@ async function updateDisplayOrderDown(
   });
 }
 
+async function deleteDocument(documentId: string): Promise<void> {
+  await db.document.update({
+    where: { id: documentId },
+    data: {
+     status: 'deleted'
+    }
+  });
+}
+
 export {
   findDocument,
   findDocuments,
   updateDocument,
   updateDisplayOrderUp,
   updateDisplayOrderDown,
-  createDocument
+  createDocument,
+  deleteDocument
 };
