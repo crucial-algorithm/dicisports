@@ -22,4 +22,4 @@ function processImgField(
 export {
     parseLocation,
     processImgField
-}
+};

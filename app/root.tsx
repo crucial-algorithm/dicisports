@@ -1,5 +1,5 @@
 import * as React from 'react';
-import type { LinksFunction, LoaderFunction } from 'remix';
+import type { LinksFunction, LoaderFunction, MetaFunction } from 'remix';
 import { json } from 'remix';
 import {
   Links,
@@ -47,6 +47,8 @@ import Config from '~/server/config.server';
 import { LocationProvider } from '~/utils/LocationProvider';
 import { getLocationSession } from '~/routes/action/set-my-location';
 
+import { getOpenGraphMeta } from '~/utils/seo';
+
 import vendorsCss from './styles/vendors.css';
 import mainCss from './styles/main.css';
 import tailwind from './styles/tailwind.css';
@@ -82,25 +84,25 @@ export const links: LinksFunction = () => {
   ];
 };
 
-export const handle: KCDHandle & { id: string, i18n: string[] } = {
+export const handle: KCDHandle & { id: string; i18n: string[] } = {
   id: 'root',
   i18n: ['common', 'home']
 };
 
 export type LoaderData = {
-  user: User | null
-  ENV: { CLOUDINARY_CLOUD_NAME: string }
+  user: User | null;
+  ENV: { CLOUDINARY_CLOUD_NAME: string };
   requestInfo: {
-    origin: string
-    path: string
+    origin: string;
+    path: string;
     session: {
-      email: string | undefined
-      magicLinkVerified: boolean | undefined
-      theme: Theme | null,
-      location: [number, number] | null
-    }
-  }
-}
+      email: string | undefined;
+      magicLinkVerified: boolean | undefined;
+      theme: Theme | null;
+      location: [number, number] | null;
+    };
+  };
+};
 
 export const loader: LoaderFunction = async ({ request }) => {
   // because this is called for every route, we'll do an early return for anything
@@ -190,10 +192,18 @@ function PageLoadingMessage() {
   });
 
   React.useEffect(() => {
-    if (firstRender) {return;}
-    if (transition.state === 'idle') {return;}
-    if (transition.state === 'loading') {setWords(LOADER_WORDS);}
-    if (transition.state === 'submitting') {setWords(ACTION_WORDS);}
+    if (firstRender) {
+      return;
+    }
+    if (transition.state === 'idle') {
+      return;
+    }
+    if (transition.state === 'loading') {
+      setWords(LOADER_WORDS);
+    }
+    if (transition.state === 'submitting') {
+      setWords(ACTION_WORDS);
+    }
 
     const interval = setInterval(() => {
       setWords(([first, ...rest]) => [...rest, first] as Array<string>);
@@ -203,8 +213,12 @@ function PageLoadingMessage() {
   }, [pendingPath, transition.state]);
 
   React.useEffect(() => {
-    if (firstRender) {return;}
-    if (transition.state === 'idle') {return;}
+    if (firstRender) {
+      return;
+    }
+    if (transition.state === 'idle') {
+      return;
+    }
     setPendingPath(transition.location.pathname);
   }, [transition]);
 
@@ -223,12 +237,26 @@ function PageLoadingMessage() {
   );
 }
 
+export const meta: MetaFunction = ({ data }) => {
+  const requestInfo = (data as LoaderData | undefined)?.requestInfo;
+
+  return {
+    viewport: 'width=device-width,initial-scale=1,viewport-fit=cover',
+    'theme-color': requestInfo?.session.theme === 'dark' ? '#1F2028' : '#FFF',
+    ...getOpenGraphMeta({
+      url: requestInfo?.origin,
+      keywords:
+        'grupos btt, grupos ciclismo, grupos bicicleta, grupos ebike, grupos atletismo, grupos corrida, grupos trail, grupos gravel, grupos enduro, grupos e-bike, grupos ebike'
+    })
+  };
+};
+
 function Html({
   title = 'DiciSports',
   lang
 }: {
-  title?: string
-  lang: string
+  title?: string;
+  lang: string;
 }) {
   const [theme] = useTheme();
   const { i18n } = useTranslation();
@@ -298,8 +326,8 @@ export function ErrorBoundary({ error }: { error: Error }) {
       <p>{error.message}</p>
       <hr />
       <p>
-        Hey, developer, you should replace this with what you want your
-        users to see.
+        Hey, developer, you should replace this with what you want your users to
+        see.
       </p>
     </div>
   );

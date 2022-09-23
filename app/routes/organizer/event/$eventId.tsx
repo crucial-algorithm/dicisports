@@ -1,8 +1,7 @@
 import {
   useActionData,
   useFetcher,
-  useLoaderData,
-  useTransition
+  useLoaderData
 } from '@remix-run/react';
 import type { ActionFunction, LinksFunction, LoaderFunction } from 'remix';
 import {
