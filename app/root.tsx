@@ -47,10 +47,11 @@ import Config from '~/server/config.server';
 import { LocationProvider } from '~/utils/LocationProvider';
 import { getLocationSession } from '~/routes/action/set-my-location';
 
+import { getOpenGraphMeta } from '~/utils/seo';
+
 import vendorsCss from './styles/vendors.css';
 import mainCss from './styles/main.css';
 import tailwind from './styles/tailwind.css';
-import { getOpenGraphMeta } from '~/utils/seo';
 
 export const links: LinksFunction = () => {
   return [
@@ -243,6 +244,7 @@ export const meta: MetaFunction = ({ data }) => {
     viewport: 'width=device-width,initial-scale=1,viewport-fit=cover',
     'theme-color': requestInfo?.session.theme === 'dark' ? '#1F2028' : '#FFF',
     ...getOpenGraphMeta({
+      url: requestInfo?.origin,
       keywords:
         'grupos btt, grupos ciclismo, grupos bicicleta, grupos ebike, grupos atletismo, grupos corrida, grupos trail, grupos gravel, grupos enduro, grupos e-bike, grupos ebike'
     })

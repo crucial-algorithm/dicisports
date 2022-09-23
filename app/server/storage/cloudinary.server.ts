@@ -6,7 +6,6 @@ import { setConfig } from 'cloudinary-build-url';
 import { writeAsyncIterableToWritable } from '@remix-run/node';
 
 import Config from '~/server/config.server';
-import type { User } from '~/types';
 
 import Id from '~/server/utils/Id.server';
 

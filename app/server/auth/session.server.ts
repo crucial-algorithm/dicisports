@@ -7,10 +7,7 @@ import {
   findUserByEmail,
   findUserFromSessionId
 } from '~/server/db/users.server';
-import {
-  createSession,
-  deleteSession
-} from '~/server/db/sessions.server';
+import { createSession, deleteSession } from '~/server/db/sessions.server';
 import type { LoginAction } from '~/types';
 
 import { sendRecoverPasswordEmail } from '../email.server';
@@ -282,18 +279,18 @@ async function validateMagicLink(
 
   if (validateSessionMagicLink) {
     // check https://github.com/crucial-algorithm/dici-pilot/issues/12
-    //    if (!sessionLinkCode) {
-    //      console.error(
-    //        'Must validate session magic link but no session link provided'
-    //      );
-    //      throw invalidLinkError;
-    //    }
-    //    if (linkCode !== sessionLinkCode) {
-    //      console.error('Magic link does not match sessionMagicLink');
-    //      throw new Error(
-    //        '>>Error<<: You must open the magic link on the same device it was created'
-    //      );
-    //    }
+    if (!sessionLinkCode) {
+      console.error(
+        'Must validate session magic link but no session link provided'
+      );
+      throw invalidLinkError;
+    }
+    if (linkCode !== sessionLinkCode) {
+      console.error('Magic link does not match sessionMagicLink');
+      throw new Error(
+        '>>Error<<: You must open the magic link on the same device it was created'
+      );
+    }
   }
 
   if (typeof linkCreationDateString !== 'string') {
