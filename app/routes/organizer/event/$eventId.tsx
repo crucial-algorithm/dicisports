@@ -546,7 +546,14 @@ export default function OrganizerEventRoute() {
                 {t('Upload Document')}
               </Button>
             </Label>
-            <DocumentsList documents={event.documents} eventId={event.id} />
+            <div>
+              <DocumentsList documents={event.documents} eventId={event.id} />
+            </div>
+            <WhenListEmpty list={event.documents}>
+              <H6 className="text-center p-12" variant="secondary" as="p">
+                {t('No Documents')}
+              </H6>
+            </WhenListEmpty>
           </div>
 
           <ButtonLink
