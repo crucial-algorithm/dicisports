@@ -1,49 +1,49 @@
-import type fs from 'fs';
+import type Readable from 'stream';
 
-import {
-  S3Client,
-  PutObjectCommand,
-  GetObjectCommand
-} from '@aws-sdk/client-s3';
+import { GetObjectCommand, S3Client } from '@aws-sdk/client-s3';
 
-import streamToPromise from 'stream-to-promise';
+import { Upload } from '@aws-sdk/lib-storage';
 
 import Config from '../config.server';
 
-const { ACCESS_KEY, SECRET_KEY, BUCKET } = Config();
+const { AWS_ACCESS_KEY, AWS_SECRET_KEY, AWS_BUCKET } = Config();
 
-const S3_BUCKET = BUCKET;
+const S3_BUCKET = AWS_BUCKET;
+
+
+console.log('-->', AWS_ACCESS_KEY, AWS_SECRET_KEY, AWS_BUCKET);
 
 const s3Client = new S3Client({
+  region: 'eu-west-3',
   credentials: {
-    accessKeyId: ACCESS_KEY,
-    secretAccessKey: SECRET_KEY
+    accessKeyId: AWS_ACCESS_KEY,
+    secretAccessKey: AWS_SECRET_KEY
   }
 });
 
-const getS3Key = (prefix, filename) => {
+const getS3Key = (prefix: string, filename: string) => {
   return `${prefix}/${filename}`;
 };
 
 const streamContentToS3 = async (
-  stream: fs.ReadStream,
+  stream: Readable,
   prefix: string,
-  filename: string,
-  contentType: string
-) => {
+  filename: string
+): Promise<string> =>  {
   const key = getS3Key(prefix, filename);
 
-  const buffer = await streamToPromise(stream);
+  await new Upload({
+    client: s3Client,
+    leavePartsOnError: false,
+    params: {
+      Bucket: S3_BUCKET,
+      Key: key,
+      // @ts-ignore
+      Body: stream
+    }
+  }).done();
 
-  const options = {
-    Bucket: S3_BUCKET,
-    Body: buffer,
-    Key: key,
-    ContentType: contentType,
-    ContentDisposition: `inline; filename=${filename};`
-  };
-
-  return s3Client.send(new PutObjectCommand(options));
+  return key;
 };
 
 const downloadFromS3 = async (
@@ -60,7 +60,9 @@ const downloadFromS3 = async (
 
   const fileStream = await s3Client.send(new GetObjectCommand(options));
 
-  fileStream.Body.pipe(res);
+  console.log(fileStream);
+
+//  fileStream?.Body?.pipe(res);
 };
 
 export { streamContentToS3, downloadFromS3 };

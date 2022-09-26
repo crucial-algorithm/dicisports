@@ -1125,6 +1125,7 @@ function UploadDocumentDialog(props: {
   const fetcher = useFetcher();
   const [errors, setErrors] = useState<FormErrors>({});
   const name = useRef<HTMLInputElement>(null);
+  const file = useRef<HTMLInputElement>(null);
 
   const close = useCallback(() => {
     setErrors({});
@@ -1134,12 +1135,14 @@ function UploadDocumentDialog(props: {
   function handleSubmit() {
     fetcher.submit(
       {
-        name: name.current?.value as string,
+        name: name.current?.value || '',
         eventId,
         documentId: document?.id ? document.id : '',
+        // @ts-ignore
+        file: file.current?.files[0] || '',
         hash: String(hash)
       },
-      { method: 'post', action: 'organizer/document/create' }
+      { method: 'post', action: 'organizer/document/create', encType: 'multipart/form-data' }
     );
   }
 
@@ -1190,6 +1193,9 @@ function UploadDocumentDialog(props: {
                 className="max-w-md"
                 input={name}
               />
+            </FormField>
+            <FormField label={t('Name')} error={errors?.label}>
+              <input type="file" name="/file/misc" ref={file} />
             </FormField>
             <ButtonGroup>
               <Button type="button" variant="secondary" onClick={close}>

@@ -14,9 +14,9 @@ export type ConfigServer = {
   MAILGUN_SENDING_KEY: string | undefined
   CONVERT_KIT_FORM: string
   CONVERT_KIT_API_KEY: string
-  ACCESS_KEY: string
-  SECRET_KEY: string
-  BUCKET: string
+  AWS_ACCESS_KEY: string
+  AWS_SECRET_KEY: string
+  AWS_BUCKET: string
 }
 
 let config: ConfigServer | null = null;
@@ -43,9 +43,9 @@ export default function Config(): ConfigServer {
 
     CONVERT_KIT_FORM: extractVar('CONVERT_KIT_FORM'),
     CONVERT_KIT_API_KEY: extractVar('CONVERT_KIT_API_KEY'),
-    ACCESS_KEY: extractVar('ACCESS_KEY'),
-    SECRET_KEY: extractVar('SECRET_KEY'),
-    BUCKET: extractVar('BUCKET')
+    AWS_ACCESS_KEY: extractVar('AWS_ACCESS_KEY'),
+    AWS_SECRET_KEY: extractVar('AWS_SECRET_KEY'),
+    AWS_BUCKET: extractVar('AWS_BUCKET')
   };
 
   return config;

@@ -1,13 +1,29 @@
+import { Readable } from 'stream';
+
 import type { ActionFunction } from 'remix';
-import { json } from 'remix';
+import {
+  json,
+  unstable_createMemoryUploadHandler,
+  unstable_parseMultipartFormData
+} from 'remix';
+
+
+import type { UploadHandler } from '@remix-run/node';
+import { unstable_composeUploadHandlers } from '@remix-run/node';
 
 import { z, ZodError } from 'zod';
 
 import { requireAdminUser } from '~/server/auth/session.server';
-import { createDocument, updateDocument, deleteDocument } from '~/server/documents.server';
+import {
+  createDocument,
+  deleteDocument,
+  updateDocument
+} from '~/server/documents.server';
 import i18n from '~/server/i18n.server';
 import type { CreateDocumentInput } from '~/types';
 import { badRequest } from '~/utils/misc';
+import { streamContentToS3 } from '~/server/utils/s3';
+
 
 const RESOURCES_NS = 'create-event-form';
 
@@ -15,13 +31,32 @@ export const action: ActionFunction = async ({ request }) => {
   await requireAdminUser(request);
 
   const t = await i18n.getFixedT(request, RESOURCES_NS);
-  const form = await request.formData();
+
+  const uploadHandler: UploadHandler = unstable_composeUploadHandlers(
+    // our custom upload handler
+    async ({ name, contentType, data, filename }) => {
+      if (name !== 'file') {
+        return undefined;
+      }
+
+      return await streamContentToS3(
+        Readable.from(data),
+        'static', // TODO: set eventId
+        filename || 'noname'
+      );
+    },
+    // fallback to memory for everything else
+    unstable_createMemoryUploadHandler()
+  );
+
+  const form = await unstable_parseMultipartFormData(request, uploadHandler);
 
   const name = form.get('name') as string;
   const eventId = form.get('eventId') as string;
   const documentId = form.get('documentId') as string;
   const hash = form.get('hash') as string;
   const actionId = form.get('actionId') as string;
+  const file = form.get('file');
 
   //TODO: change "key" value
   const documentData: CreateDocumentInput = {
