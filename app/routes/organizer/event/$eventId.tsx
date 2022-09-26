@@ -1,9 +1,4 @@
-import {
-  useActionData,
-  useFetcher,
-  useLoaderData,
-  useTransition
-} from '@remix-run/react';
+import { useActionData, useFetcher, useLoaderData } from '@remix-run/react';
 import type { ActionFunction, LinksFunction, LoaderFunction } from 'remix';
 import {
   json,
@@ -13,6 +8,8 @@ import {
 
 import * as React from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
+
+import { z, ZodError } from 'zod';
 
 import mapBoxGlCss from 'mapbox-gl/dist/mapbox-gl.css';
 
@@ -81,6 +78,11 @@ type ActionData = {
   hash: number;
   errors?: {
     name?: string;
+    startAt?: string;
+    address?: string;
+    externalBookingUrl?: string;
+    eventDescription?: string;
+    directions?: string;
   };
 };
 
@@ -151,7 +153,6 @@ export const action: ActionFunction = async ({ request, params }) => {
   }
 
   const form = await unstable_parseMultipartFormData(request, uploadHandler);
-  const x = 1;
 
   const isUpdate = event.status !== 'auto';
   const date = form.get('date') as string;
@@ -172,7 +173,7 @@ export const action: ActionFunction = async ({ request, params }) => {
     useExternalBooking: form.get('booking') === 'external',
     externalBookingUrl: (form.get('booking-url') as string) || null,
     eventDescription: (form.get('description') as string) || null,
-    directions: (form.get('get-there') as string) || null,
+    directions: form.get('get-there') as string,
     image1: processImgField(image1, isUpdate),
     image2: processImgField(image2, isUpdate),
     image3: processImgField(image3, isUpdate),
@@ -183,12 +184,55 @@ export const action: ActionFunction = async ({ request, params }) => {
   const perks: string[] = form.getAll('perks') as string[];
   const newPerks: string[] = form.getAll('new-perk-input') as string[];
 
-  await updateEvent(data, perks, newPerks);
-  // eslint-disable-next-line no-console
-  if (x === 1) {
-    return badRequest({
-      formError: 'Form not submitted correctly.'
-    });
+  //TODO: change errors
+  const EventSchema = z.object({
+    name: z
+      .string({ required_error: t('Field Required') })
+      .min(5, { message: t('Min 5 chars') }),
+    sportId: z
+      .number()
+      .nonnegative({ message: t('Nonexistent Sport') })
+      .lte(7, { message: t('Nonexistent Sport') }),
+    startAt: z.date().min(new Date(), { message: t('Future Date') }),
+    address: z.string({ required_error: t('Field required') }),
+    useExternalBooking: z.boolean({
+      invalid_type_error: t('Invalid Type')
+    }),
+    externalBookingUrl: z
+      .string({ invalid_type_error: t('Invalid Type') })
+      .url()
+      .min(5, { message: t('Min 5 chars') })
+      .nullable(),
+    eventDescription: z
+      .string({ invalid_type_error: t('Invalid Type') })
+      .min(10, { message: t('Min 10 chars') })
+      .nullable(),
+    directions: z
+      .string({
+        invalid_type_error: t('Invalid Type')
+      })
+      .min(10, { message: t('Min 10 chars') })
+  });
+
+  try {
+    EventSchema.parse(data);
+    await updateEvent(data, perks, newPerks);
+  } catch (e) {
+    if (!(e instanceof ZodError)) {
+      console.error(e);
+      return badRequest({
+        error: 'We dont know what happened'
+      });
+    }
+    console.log(e);
+
+    const errors: { [key: string]: string | undefined } = {};
+
+    for (const error of (e as ZodError).errors) {
+      errors[error.path[0]] = error.message;
+    }
+
+    return badRequest({ errors });
   }
 };
 
@@ -362,7 +406,7 @@ export default function OrganizerEventRoute() {
               label={''}
               id="event-date"
               className="basis-1/3 lg:basis-1/5"
-              error={actionData?.errors?.name}
+              error={actionData?.errors?.startAt}
             >
               <BasicDatePicker
                 label={t('Date')}
@@ -375,7 +419,7 @@ export default function OrganizerEventRoute() {
               label={t('Location')}
               id="event-location"
               className="basis-1/2 lg:basis-1/3"
-              error={actionData?.errors?.location}
+              error={actionData?.errors?.address}
             >
               <TextField
                 name="discard-location"
@@ -405,7 +449,10 @@ export default function OrganizerEventRoute() {
             </FormField>
           </div>
 
-          <FormField label={t('Link to External Booking URL')}>
+          <FormField
+            label={t('Link to External Booking URL')}
+            error={actionData?.errors?.externalBookingUrl}
+          >
             <PickBookingSystem
               name="booking"
               t={t}
@@ -448,7 +495,10 @@ export default function OrganizerEventRoute() {
             </div>
           </FormField>
 
-          <FormField label={t('Description')}>
+          <FormField
+            label={t('Description')}
+            error={actionData?.errors?.eventDescription}
+          >
             <div className="mt-1 relative rounded-md shadow-sm">
               <textarea
                 name="description"
@@ -520,7 +570,10 @@ export default function OrganizerEventRoute() {
             </WhenListEmpty>
           </div>
 
-          <FormField label={t('Directions')}>
+          <FormField
+            label={t('Directions')}
+            error={actionData?.errors?.directions}
+          >
             <div className="mt-2 relative rounded-md shadow-sm">
               <textarea
                 name="get-there"
@@ -1167,7 +1220,10 @@ function DocumentsList(props: { documents: Document[]; eventId: string }) {
   }>({ show: false });
 
   function handleMoveUp(d: Document) {
-    fetcher.submit({}, { method: 'post', action: `organizer/document/${d.id}/move-up` });
+    fetcher.submit(
+      {},
+      { method: 'post', action: `organizer/document/${d.id}/move-up` }
+    );
   }
 
   function handleMoveDown(d: Document) {
