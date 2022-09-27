@@ -761,11 +761,7 @@ function RaceDialog(props: {
         )}
       >
         <div className="relative" key={hash}>
-          <fetcher.Form
-            method="post"
-            action="/organizer/race/create"
-            className="px-6 py-2 flex flex-col lg:px-24 lg:py-14"
-          >
+          <div className="px-6 py-2 flex flex-col lg:px-24 lg:py-14">
             <H3 className="w-full md:w-112 text-left">{t('Distance Modal')}</H3>
             <Spacer size="2xs" />
 
@@ -910,7 +906,7 @@ function RaceDialog(props: {
                 {race?.id ? t('Update Distance') : t('Create Distance')}
               </Button>
             </div>
-          </fetcher.Form>
+          </div>
         </div>
       </div>
     </div>
@@ -1190,33 +1186,31 @@ function UploadDocumentDialog(props: {
         )}
       >
         <div className="relative" key={hash}>
-          <fetcher.Form>
-            <H3 className="w-full md:w-112 text-left">
-              {document?.id ? t('Update Document') : t('Upload Document')}
-            </H3>
-            <Spacer size="2xs" />
+          <H3 className="w-full md:w-112 text-left">
+            {document?.id ? t('Update Document') : t('Upload Document')}
+          </H3>
+          <Spacer size="2xs" />
 
-            <FormField label={t('Name')} error={errors?.label}>
-              <TextField
-                name="name"
-                placeholder={t('Document Name')}
-                defaultValue={document?.label ? document.label : ''}
-                className="max-w-md"
-                input={name}
-              />
-            </FormField>
-            <FormField label={t('Name')} error={errors?.label}>
-              <input type="file" name="/file/misc" ref={file} />
-            </FormField>
-            <ButtonGroup>
-              <Button type="button" variant="secondary" onClick={close}>
-                {t('Cancel')}
-              </Button>
-              <Button type="button" onClick={handleSubmit}>
-                {document?.id ? t('Update Document') : t('Upload Document')}
-              </Button>
-            </ButtonGroup>
-          </fetcher.Form>
+          <FormField label={t('Name')} error={errors?.label}>
+            <TextField
+              name="name"
+              placeholder={t('Document Name')}
+              defaultValue={document?.label ? document.label : ''}
+              className="max-w-md"
+              input={name}
+            />
+          </FormField>
+          <FormField label={t('Name')} error={errors?.label}>
+            <input type="file" name="/file/misc" ref={file} />
+          </FormField>
+          <ButtonGroup>
+            <Button type="button" variant="secondary" onClick={close}>
+              {t('Cancel')}
+            </Button>
+            <Button type="button" onClick={handleSubmit}>
+              {document?.id ? t('Update Document') : t('Upload Document')}
+            </Button>
+          </ButtonGroup>
         </div>
       </div>
     </div>
@@ -1239,14 +1233,20 @@ function DocumentsList(props: { documents: Document[]; eventId: string }) {
   function handleMoveUp(e: React.MouseEvent) {
     fetcher.submit(
       {},
-      { method: 'post', action: `organizer/document/${e.currentTarget.id}/move-up` }
+      {
+        method: 'post',
+        action: `organizer/document/${e.currentTarget.id}/move-up`
+      }
     );
   }
 
   function handleMoveDown(e: React.MouseEvent) {
     fetcher.submit(
       {},
-      { method: 'post', action: `organizer/document/${e.currentTarget.id}/move-down` }
+      {
+        method: 'post',
+        action: `organizer/document/${e.currentTarget.id}/move-down`
+      }
     );
   }
 
