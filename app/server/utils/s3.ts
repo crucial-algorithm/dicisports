@@ -6,18 +6,15 @@ import { Upload } from '@aws-sdk/lib-storage';
 
 import Config from '../config.server';
 
-const { AWS_ACCESS_KEY, AWS_SECRET_KEY, AWS_BUCKET } = Config();
+const { AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_S3_BUCKET, AWS_REGION } =
+  Config();
 
-const S3_BUCKET = AWS_BUCKET;
-
-
-console.log('-->', AWS_ACCESS_KEY, AWS_SECRET_KEY, AWS_BUCKET);
 
 const s3Client = new S3Client({
-  region: 'eu-west-3',
+  region: AWS_REGION,
   credentials: {
-    accessKeyId: AWS_ACCESS_KEY,
-    secretAccessKey: AWS_SECRET_KEY
+    accessKeyId: AWS_ACCESS_KEY_ID,
+    secretAccessKey: AWS_SECRET_ACCESS_KEY
   }
 });
 
@@ -25,7 +22,7 @@ const getS3Key = (prefix: string, filename: string) => {
   return `${prefix}/${filename}`;
 };
 
-const streamContentToS3 = async (
+const uploadToS3 = async (
   stream: Readable,
   prefix: string,
   filename: string
@@ -36,7 +33,7 @@ const streamContentToS3 = async (
     client: s3Client,
     leavePartsOnError: false,
     params: {
-      Bucket: S3_BUCKET,
+      Bucket: AWS_S3_BUCKET,
       Key: key,
       // @ts-ignore
       Body: stream
@@ -46,15 +43,11 @@ const streamContentToS3 = async (
   return key;
 };
 
-const downloadFromS3 = async (
-  prefix: string,
-  filename: string,
-  res: Response
-) => {
+const downloadFromS3 = async (prefix: string, filename: string) => {
   const key = getS3Key(prefix, filename);
 
   const options = {
-    Bucket: S3_BUCKET,
+    Bucket: AWS_S3_BUCKET,
     Key: key
   };
 
@@ -62,7 +55,8 @@ const downloadFromS3 = async (
 
   console.log(fileStream);
 
-//  fileStream?.Body?.pipe(res);
+  // @ts-ignore
+  return new Response(fileStream?.Body);
 };
 
-export { streamContentToS3, downloadFromS3 };
+export { uploadToS3, downloadFromS3 };

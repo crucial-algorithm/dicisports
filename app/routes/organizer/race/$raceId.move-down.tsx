@@ -20,19 +20,19 @@ export const action: ActionFunction = async ({ request, params }) => {
   const t = await i18n.getFixedT(request, RESOURCES_NS);
 
   const raceId = params.raceId as string;
-  const current = await findRace(raceId);
+  const race = await findRace(raceId);
 
-  if (!current) {
+  if (!race) {
     return badRequest({ error: t('No Race') });
   }
 
-  const eventId = current.eventId;
+  const eventId = race.eventId;
   const races: Array<Race> = (await findEventRaces(eventId)) as Race[];
 
   const position = races.findIndex((r) => r.id === raceId);
   const next = races[position + 1];
 
-  await updateDisplayOrderDown(current, next);
+  await updateDisplayOrderDown(race, next);
 
   return json({});
 };

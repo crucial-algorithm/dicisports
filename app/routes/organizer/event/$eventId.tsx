@@ -717,6 +717,7 @@ function RaceDialog(props: {
     };
 
     // Payload types error
+    // @ts-ignore
     fetcher.submit(payload, {
       method: 'post',
       action: '/organizer/race/create'

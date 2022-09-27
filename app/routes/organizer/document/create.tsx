@@ -22,7 +22,7 @@ import {
 import i18n from '~/server/i18n.server';
 import type { CreateDocumentInput } from '~/types';
 import { badRequest } from '~/utils/misc';
-import { streamContentToS3 } from '~/server/utils/s3';
+import { uploadToS3 } from '~/server/utils/s3';
 
 
 const RESOURCES_NS = 'create-event-form';
@@ -39,7 +39,7 @@ export const action: ActionFunction = async ({ request }) => {
         return undefined;
       }
 
-      return await streamContentToS3(
+      return await uploadToS3(
         Readable.from(data),
         'static', // TODO: set eventId
         filename || 'noname'
