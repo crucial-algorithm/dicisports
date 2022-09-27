@@ -48,7 +48,7 @@ async function createDraftEvent(
       id: eventId,
       name: null,
       sportId: 1,
-      startAt: null,
+      startAt: eventAt,
       endAt: null,
       location: null,
       address: null,

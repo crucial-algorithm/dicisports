@@ -19,8 +19,8 @@ import { unstable_composeUploadHandlers } from '@remix-run/node';
 import { useTranslation } from 'react-i18next';
 
 import {
-  ArrowDownIcon,
-  ArrowUpIcon,
+  ChevronDownIcon,
+  ChevronUpIcon,
   LocationMarkerIcon,
   PencilAltIcon,
   TrashIcon
@@ -63,7 +63,11 @@ import { uploadImageToCloudinary } from '~/server/storage/cloudinary.server';
 import ComboBox from '~/components/shared/form/ComboBox';
 import { parseLocation, processImgField } from '~/server/utils/misc';
 import i18n from '~/server/i18n.server';
-import { badRequest, timeOfDayToHoursMinutes } from '~/utils/misc';
+import {
+  badRequest,
+  hoursMinutesToTimeOfDay,
+  timeOfDayToHoursMinutes
+} from '~/utils/misc';
 
 import { findEventPerks } from '~/server/db/perks.server';
 import { findEventRaces } from '~/server/db/races.server';
@@ -205,13 +209,13 @@ export const action: ActionFunction = async ({ request, params }) => {
       .nullable(),
     eventDescription: z
       .string({ invalid_type_error: t('Invalid Type') })
-      .min(10, { message: t('Min 10 chars') })
+      .min(1, { message: t('Min 1 chars') })
       .nullable(),
     directions: z
       .string({
         invalid_type_error: t('Invalid Type')
       })
-      .min(10, { message: t('Min 10 chars') })
+      .min(1, { message: t('Min 1 chars') })
   });
 
   try {
@@ -672,7 +676,9 @@ function RaceDialog(props: {
   const { isOpen, triggerModalClose, eventId, race, hash } = props;
   const fetcher = useFetcher();
   const [errors, setErrors] = useState<FormErrors>({});
-  const [hour, minute] = timeOfDayToHoursMinutes(race?.startTime as number);
+  const [hour, minute] = timeOfDayToHoursMinutes(
+    race?.startTime ? race.startTime : hoursMinutesToTimeOfDay(8, 30)
+  );
 
   const name = useRef<HTMLInputElement | null>(null);
   const distance = useRef<HTMLInputElement | null>(null);
@@ -996,7 +1002,7 @@ function RacesList(props: { races: Race[]; eventId: string }) {
                   id={r.id}
                   onClick={handleMoveUp}
                 >
-                  <ArrowUpIcon className="md:h-6 w-6 m-0 inline-block" />
+                  <ChevronUpIcon className="md:h-6 w-6 m-0 inline-block" />
                 </Button>
               )}
               {/*eslint-disable-next-line react/jsx-no-bind*/}
@@ -1007,7 +1013,7 @@ function RacesList(props: { races: Race[]; eventId: string }) {
                   onClick={handleMoveDown}
                   id={r.id}
                 >
-                  <ArrowDownIcon className="md:h-6 w-6 m-0 inline-block" />
+                  <ChevronDownIcon className="md:h-6 w-6 m-0 inline-block" />
                 </Button>
               )}
 
@@ -1200,7 +1206,7 @@ function UploadDocumentDialog(props: {
               input={name}
             />
           </FormField>
-          <FormField label={t('Name')} error={errors?.label}>
+          <FormField label={t('Document')} error={errors?.label}>
             <input type="file" name="/file/misc" ref={file} />
           </FormField>
           <ButtonGroup>
@@ -1298,7 +1304,7 @@ function DocumentsList(props: { documents: Document[]; eventId: string }) {
                   id={d.id}
                   onClick={handleMoveUp}
                 >
-                  <ArrowUpIcon className="md:h-6 w-6 m-0 inline-block" />
+                  <ChevronUpIcon className="md:h-6 w-6 m-0 inline-block" />
                 </Button>
               )}
               {index === documents.length - 1 ? null : (
@@ -1308,7 +1314,7 @@ function DocumentsList(props: { documents: Document[]; eventId: string }) {
                   id={d.id}
                   onClick={handleMoveDown}
                 >
-                  <ArrowDownIcon className="md:h-6 w-6 m-0 inline-block" />
+                  <ChevronDownIcon className="md:h-6 w-6 m-0 inline-block" />
                 </Button>
               )}
               <button

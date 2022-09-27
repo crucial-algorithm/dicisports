@@ -45,7 +45,7 @@ export const action: ActionFunction = async ({ request }) => {
   const required = { invalid_type_error: t('Field required') };
   const str5CharsOrMore = z
     .string(required)
-    .min(5, { message: t('Min 5 chars') });
+    .min(1, { message: t('Min 1 chars') });
   const RaceSchema = z.object({
     name: str5CharsOrMore,
     distance: z
