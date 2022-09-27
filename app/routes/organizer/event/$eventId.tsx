@@ -931,36 +931,49 @@ function RacesList(props: { races: Race[]; eventId: string }) {
     race?: Race;
   }>({ show: false });
 
-  function handleMoveUp(r: Race) {
+  function handleMoveUp(e: React.MouseEvent) {
     fetcher.submit(
       {},
       {
         method: 'post',
-        action: `/organizer/race/${r.id}/move-up`
+        action: `/organizer/race/${e.currentTarget.id}/move-up`
       }
     );
   }
 
-  function handleMoveDown(r: Race) {
+  function handleMoveDown(e: React.MouseEvent) {
     fetcher.submit(
       {},
       {
         method: 'post',
-        action: `/organizer/race/${r.id}/move-down`
+        action: `/organizer/race/${e.currentTarget.id}/move-down`
       }
     );
   }
 
-  function handleDeleteRace(r: Race) {
-    setDeleteModalOpen({ show: true, race: r });
+  function handleDeleteRace(e: React.MouseEvent) {
+    const race = races.find((r) => r.id === e.currentTarget.id);
+
+    if (!race) {
+      // should never happen
+      return;
+    }
+    setDeleteModalOpen({ show: true, race });
   }
 
   function handleDeleteRaceClose() {
     setDeleteModalOpen({ show: false });
   }
 
-  function handleUpdateRace(r: Race) {
-    setShowRacesDialog({ show: true, race: r, hash: Date.now() });
+  function handleUpdateRace(e: React.MouseEvent) {
+    const race = races.find((r) => r.id === e.currentTarget.id);
+
+    if (!race) {
+      // should never happen
+      return;
+    }
+
+    setShowRacesDialog({ show: true, race, hash: Date.now() });
   }
 
   function handleCloseRace() {
@@ -984,9 +997,8 @@ function RacesList(props: { races: Race[]; eventId: string }) {
                 <Button
                   className="ml-6"
                   type="button"
-                  onClick={() => {
-                    handleMoveUp(r);
-                  }}
+                  id={r.id}
+                  onClick={handleMoveUp}
                 >
                   <ArrowUpIcon className="md:h-6 w-6 m-0 inline-block" />
                 </Button>
@@ -996,9 +1008,8 @@ function RacesList(props: { races: Race[]; eventId: string }) {
                 <Button
                   className="ml-6"
                   type="button"
-                  onClick={() => {
-                    handleMoveDown(r);
-                  }}
+                  onClick={handleMoveDown}
+                  id={r.id}
                 >
                   <ArrowDownIcon className="md:h-6 w-6 m-0 inline-block" />
                 </Button>
@@ -1007,9 +1018,8 @@ function RacesList(props: { races: Race[]; eventId: string }) {
               <button
                 className="group relative inline-flex ml-14 dark:text-blueGray-500"
                 type="button"
-                onClick={() => {
-                  handleDeleteRace(r);
-                }}
+                id={r.id}
+                onClick={handleDeleteRace}
               >
                 <TrashIcon className="md:h-6 w-6 m-0 inline-block"></TrashIcon>
               </button>
@@ -1017,9 +1027,8 @@ function RacesList(props: { races: Race[]; eventId: string }) {
               <Button
                 className="ml-6"
                 type="button"
-                onClick={() => {
-                  handleUpdateRace(r);
-                }}
+                id={r.id}
+                onClick={handleUpdateRace}
               >
                 <PencilAltIcon className="md:h-6 w-6 m-0 inline-block" />
               </Button>
@@ -1101,9 +1110,7 @@ function DeleteRaceDialog(props: {
             variant="danger"
             size="medium"
             type="button"
-            onClick={() => {
-              handleSubmit();
-            }}
+            onClick={handleSubmit}
           >
             {t('Delete')}
           </Button>
@@ -1229,30 +1236,42 @@ function DocumentsList(props: { documents: Document[]; eventId: string }) {
     document?: Document;
   }>({ show: false });
 
-  function handleMoveUp(d: Document) {
+  function handleMoveUp(e: React.MouseEvent) {
     fetcher.submit(
       {},
-      { method: 'post', action: `organizer/document/${d.id}/move-up` }
+      { method: 'post', action: `organizer/document/${e.currentTarget.id}/move-up` }
     );
   }
 
-  function handleMoveDown(d: Document) {
+  function handleMoveDown(e: React.MouseEvent) {
     fetcher.submit(
       {},
-      { method: 'post', action: `organizer/document/${d.id}/move-down` }
+      { method: 'post', action: `organizer/document/${e.currentTarget.id}/move-down` }
     );
   }
 
-  function handleUpdateDocument(d: Document) {
-    setSowDocumentsDialog({ show: true, document: d, hash: Date.now() });
+  function handleUpdateDocument(e: React.MouseEvent) {
+    const document = documents.find((d) => d.id === e.currentTarget.id);
+
+    if (!document) {
+      return;
+    }
+
+    setSowDocumentsDialog({ show: true, document, hash: Date.now() });
   }
 
   function handleCloseDocumentsDialog() {
     setSowDocumentsDialog({ show: false, hash: 0 });
   }
 
-  function handleOpenDeleteDocumentDialog(d: Document) {
-    setShowDeleteDocumentDialog({ show: true, document: d });
+  function handleOpenDeleteDocumentDialog(e: React.MouseEvent) {
+    const document = documents.find((d) => d.id === e.currentTarget.id);
+
+    if (!document) {
+      return;
+    }
+
+    setShowDeleteDocumentDialog({ show: true, document });
   }
 
   function handleCloseDeleteDocumentDialog() {
@@ -1276,9 +1295,8 @@ function DocumentsList(props: { documents: Document[]; eventId: string }) {
                 <Button
                   className="ml-6"
                   type="button"
-                  onClick={() => {
-                    handleMoveUp(d);
-                  }}
+                  id={d.id}
+                  onClick={handleMoveUp}
                 >
                   <ArrowUpIcon className="md:h-6 w-6 m-0 inline-block" />
                 </Button>
@@ -1287,9 +1305,8 @@ function DocumentsList(props: { documents: Document[]; eventId: string }) {
                 <Button
                   className="ml-6"
                   type="button"
-                  onClick={() => {
-                    handleMoveDown(d);
-                  }}
+                  id={d.id}
+                  onClick={handleMoveDown}
                 >
                   <ArrowDownIcon className="md:h-6 w-6 m-0 inline-block" />
                 </Button>
@@ -1297,9 +1314,8 @@ function DocumentsList(props: { documents: Document[]; eventId: string }) {
               <button
                 className="group relative inline-flex ml-14 dark:text-blueGray-500"
                 type="button"
-                onClick={() => {
-                  handleOpenDeleteDocumentDialog(d);
-                }}
+                id={d.id}
+                onClick={handleOpenDeleteDocumentDialog}
               >
                 <TrashIcon className="md:h-6 w-6 m-0 inline-block"></TrashIcon>
               </button>
@@ -1307,9 +1323,8 @@ function DocumentsList(props: { documents: Document[]; eventId: string }) {
               <Button
                 className="ml-6"
                 type="button"
-                onClick={() => {
-                  handleUpdateDocument(d);
-                }}
+                id={d.id}
+                onClick={handleUpdateDocument}
               >
                 <PencilAltIcon className="md:h-6 w-6 m-0 inline-block" />
               </Button>
@@ -1390,9 +1405,7 @@ function DeleteDocumentDialog(props: {
             variant="danger"
             size="medium"
             type="button"
-            onClick={() => {
-              handleSubmit();
-            }}
+            onClick={handleSubmit}
           >
             {t('Delete Document')}
           </Button>

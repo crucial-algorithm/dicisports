@@ -3,8 +3,7 @@ import { PrismaClient, Status } from '@prisma/client';
 import type {
   CreateGroupInput,
   CreateScheduleInput,
-  Group,
-  GroupSchedule
+  Group
 } from '~/types';
 import { db } from '~/server/db.server';
 import { dbGroupToGroup } from '~/server/db/codecs.server';

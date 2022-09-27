@@ -1,10 +1,11 @@
-import { ActionFunction, json } from 'remix';
+import type { ActionFunction } from 'remix';
+import { json } from 'remix';
 
 import { requireAdminUser } from '~/server/auth/session.server';
 import { badRequest } from '~/utils/misc';
 import i18n from '~/server/i18n.server';
 
-import { Document } from '~/types';
+import type { Document } from '~/types';
 import {
   findDocument,
   findDocuments,

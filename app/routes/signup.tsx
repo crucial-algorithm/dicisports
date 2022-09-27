@@ -10,7 +10,6 @@ import { useTranslation } from 'react-i18next';
 
 import { getSession, getUser } from '~/server/auth/session.server';
 import { getLoginInfoSession } from '~/server/auth/login.server';
-import { badRequest } from '~/utils/misc';
 import i18n from '~/server/i18n.server';
 import { createUser, findUserByEmail } from '~/server/db/users.server';
 import Button, { ButtonLink } from '~/components/shared/Button';
@@ -149,8 +148,6 @@ export const action: ActionFunction = async ({ request }) => {
         email: data.email || ''
       }
     };
-
-    console.log()
 
     return json(payload);
   }

@@ -1,4 +1,5 @@
-import React, { ChangeEvent, useState } from 'react';
+import type { ChangeEvent } from 'react';
+import React, { useState } from 'react';
 import clsx from 'clsx';
 
 export function inputBaseClasses(className?: string) {

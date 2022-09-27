@@ -2,7 +2,7 @@ import { createCookieSessionStorage } from 'remix';
 
 import Config from '~/server/config.server';
 
-import { decrypt, encrypt } from '../utils/encryption.server';
+import { decrypt } from '../utils/encryption.server';
 
 const linkExpirationTime = 1000 * 60 * 30;
 
