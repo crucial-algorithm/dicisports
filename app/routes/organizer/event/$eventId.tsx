@@ -23,7 +23,7 @@ import {
   ArrowUpIcon,
   LocationMarkerIcon,
   PencilAltIcon,
-  XCircleIcon
+  TrashIcon
 } from '@heroicons/react/outline';
 
 import clsx from 'clsx';
@@ -1004,16 +1004,15 @@ function RacesList(props: { races: Race[]; eventId: string }) {
                 </Button>
               )}
 
-              <Button
-                className="ml-14"
+              <button
+                className="group relative inline-flex ml-14 dark:text-blueGray-500"
                 type="button"
-                variant="danger"
                 onClick={() => {
                   handleDeleteRace(r);
                 }}
               >
-                <XCircleIcon className="md:h-6 w-6 m-0 inline-block"></XCircleIcon>
-              </Button>
+                <TrashIcon className="md:h-6 w-6 m-0 inline-block"></TrashIcon>
+              </button>
 
               <Button
                 className="ml-6"
@@ -1143,7 +1142,11 @@ function UploadDocumentDialog(props: {
         file: file.current?.files[0] || '',
         hash: String(hash)
       },
-      { method: 'post', action: 'organizer/document/create', encType: 'multipart/form-data' }
+      {
+        method: 'post',
+        action: 'organizer/document/create',
+        encType: 'multipart/form-data'
+      }
     );
   }
 
@@ -1172,7 +1175,7 @@ function UploadDocumentDialog(props: {
       <div
         aria-modal={true}
         className={clsx(
-          'w-11/12 dark:bg-gray-900 border-2 border-black dark:border-white rounded-lg lg:px-24 lg:py-14 lg:max-w-screen-lg',
+          'w-11/12 px-24 py-14 dark:bg-gray-900 border-2 border-black dark:border-white rounded-lg lg:max-w-screen-lg',
           {
             'hidden ': !isOpen,
             'm-auto': isOpen
@@ -1291,16 +1294,15 @@ function DocumentsList(props: { documents: Document[]; eventId: string }) {
                   <ArrowDownIcon className="md:h-6 w-6 m-0 inline-block" />
                 </Button>
               )}
-              <Button
-                className="ml-14"
+              <button
+                className="group relative inline-flex ml-14 dark:text-blueGray-500"
                 type="button"
-                variant="danger"
                 onClick={() => {
                   handleOpenDeleteDocumentDialog(d);
                 }}
               >
-                <XCircleIcon className="md:h-6 w-6 m-0 inline-block"></XCircleIcon>
-              </Button>
+                <TrashIcon className="md:h-6 w-6 m-0 inline-block"></TrashIcon>
+              </button>
 
               <Button
                 className="ml-6"
