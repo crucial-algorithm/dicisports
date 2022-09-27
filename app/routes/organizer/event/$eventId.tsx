@@ -726,7 +726,7 @@ function RaceDialog(props: {
     // @ts-ignore
     fetcher.submit(payload, {
       method: 'post',
-      action: '/organizer/race/create'
+      action: '/organizer/race/manage'
     });
   }
 
@@ -994,21 +994,13 @@ function RacesList(props: { races: Race[]; eventId: string }) {
             <div className="flex flex-row items-center">
               <div className="flex flex-col mr-3 dark:text-blueGray-500">
                 {index === 0 ? null : (
-                  <button
-                    type="button"
-                    id={r.id}
-                    onClick={handleMoveUp}
-                  >
+                  <button type="button" id={r.id} onClick={handleMoveUp}>
                     <ChevronUpIcon className="mh-6 w-6 m-0 inline-block" />
                   </button>
                 )}
                 {/*eslint-disable-next-line react/jsx-no-bind*/}
                 {index === races.length - 1 ? null : (
-                  <button
-                    type="button"
-                    onClick={handleMoveDown}
-                    id={r.id}
-                  >
+                  <button type="button" onClick={handleMoveDown} id={r.id}>
                     <ChevronDownIcon className="md:h-6 w-6 m-0 inline-block" />
                   </button>
                 )}
@@ -1072,7 +1064,7 @@ function DeleteRaceDialog(props: {
       { actionId: 'delete', raceId: race?.id as string, eventId: eventId },
       {
         method: 'post',
-        action: '/organizer/race/create'
+        action: '/organizer/race/manage'
       }
     );
   }
@@ -1146,7 +1138,6 @@ function UploadDocumentDialog(props: {
     fetcher.submit(
       {
         name: name.current?.value || '',
-        eventId,
         documentId: document?.id ? document.id : '',
         // @ts-ignore
         file: file.current?.files[0] || '',
@@ -1154,7 +1145,7 @@ function UploadDocumentDialog(props: {
       },
       {
         method: 'post',
-        action: 'organizer/document/create',
+        action: `organizer/document/${eventId}/manage`,
         encType: 'multipart/form-data'
       }
     );
@@ -1297,20 +1288,12 @@ function DocumentsList(props: { documents: Document[]; eventId: string }) {
             <div className="flex flex-row items-center">
               <div className="flex flex-col mr-3 dark:text-blueGray-500">
                 {index === 0 ? null : (
-                  <button
-                    type="button"
-                    id={d.id}
-                    onClick={handleMoveUp}
-                  >
+                  <button type="button" id={d.id} onClick={handleMoveUp}>
                     <ChevronUpIcon className="md:h-6 w-6 m-0 inline-block" />
                   </button>
                 )}
                 {index === documents.length - 1 ? null : (
-                  <button
-                    type="button"
-                    id={d.id}
-                    onClick={handleMoveDown}
-                  >
+                  <button type="button" id={d.id} onClick={handleMoveDown}>
                     <ChevronDownIcon className="md:h-6 w-6 m-0 inline-block" />
                   </button>
                 )}
@@ -1353,6 +1336,7 @@ function DocumentsList(props: { documents: Document[]; eventId: string }) {
         isOpen={showDeleteDocumentDialog.show}
         onDismiss={handleCloseDeleteDocumentDialog}
         document={showDeleteDocumentDialog.document as Document}
+        eventId={eventId}
       />
     </>
   );
@@ -1362,10 +1346,11 @@ function DeleteDocumentDialog(props: {
   document: Document;
   isOpen: boolean;
   onDismiss: () => void;
+  eventId: string;
 }) {
   const { t } = useTranslation(RESOURCES_NS);
 
-  const { document, isOpen, onDismiss } = props;
+  const { document, isOpen, onDismiss, eventId } = props;
   const fetcher = useFetcher();
 
   function handleSubmit() {
@@ -1373,7 +1358,8 @@ function DeleteDocumentDialog(props: {
       { actionId: 'delete', documentId: document.id },
       {
         method: 'post',
-        action: 'organizer/document/create'
+        action: `organizer/document/${eventId}/manage`,
+        encType: 'multipart/form-data'
       }
     );
   }

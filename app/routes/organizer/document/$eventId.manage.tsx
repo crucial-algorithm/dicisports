@@ -27,7 +27,7 @@ import { uploadToS3 } from '~/server/utils/s3';
 
 const RESOURCES_NS = 'create-event-form';
 
-export const action: ActionFunction = async ({ request }) => {
+export const action: ActionFunction = async ({ request, params }) => {
   await requireAdminUser(request);
 
   const t = await i18n.getFixedT(request, RESOURCES_NS);
@@ -38,10 +38,11 @@ export const action: ActionFunction = async ({ request }) => {
       if (name !== 'file') {
         return undefined;
       }
+      const eventId = params.eventId as string;
 
       return await uploadToS3(
         Readable.from(data),
-        'static', // TODO: set eventId
+        eventId,
         filename || 'noname'
       );
     },
@@ -52,20 +53,20 @@ export const action: ActionFunction = async ({ request }) => {
   const form = await unstable_parseMultipartFormData(request, uploadHandler);
 
   const name = form.get('name') as string;
-  const eventId = form.get('eventId') as string;
+  const eventId = params.eventId as string;
   const documentId = form.get('documentId') as string;
   const hash = form.get('hash') as string;
   const actionId = form.get('actionId') as string;
   const file = form.get('file');
 
-  //TODO: change "key" value
   const documentData: CreateDocumentInput = {
     id: documentId,
     label: name,
-    key: 'delete',
+    key: file as string,
     eventId
   };
 
+  console.log(documentData);
   const DocumentSchema = z.object({
     label: z.string().min(5, { message: t('Min 5 chars') })
   });
