@@ -989,34 +989,35 @@ function RacesList(props: { races: Race[]; eventId: string }) {
         .map((r: Race, index) => (
           <div
             key={r.id}
-            className="relative flex mb-4 justify-between items-center flex-col md:flex-row border-b p-4 last:border-none border-gray-300 dark:border-gray-300"
+            className="relative flex mb-4 justify-between items-center flex-row border-b p-4 last:border-none border-gray-300 dark:border-gray-300"
           >
-            <div className={clsx('text-lg font-extrabold dark:text-white')}>
-              {r.name}
+            <div className="flex flex-row items-center">
+              <div className="flex flex-col mr-3 dark:text-blueGray-500">
+                {index === 0 ? null : (
+                  <button
+                    type="button"
+                    id={r.id}
+                    onClick={handleMoveUp}
+                  >
+                    <ChevronUpIcon className="mh-6 w-6 m-0 inline-block" />
+                  </button>
+                )}
+                {/*eslint-disable-next-line react/jsx-no-bind*/}
+                {index === races.length - 1 ? null : (
+                  <button
+                    type="button"
+                    onClick={handleMoveDown}
+                    id={r.id}
+                  >
+                    <ChevronDownIcon className="md:h-6 w-6 m-0 inline-block" />
+                  </button>
+                )}
+              </div>
+              <div className={clsx('text-lg font-extrabold dark:text-white')}>
+                {r.name}
+              </div>
             </div>
             <div>
-              {index === 0 ? null : (
-                <Button
-                  className="ml-6"
-                  type="button"
-                  id={r.id}
-                  onClick={handleMoveUp}
-                >
-                  <ChevronUpIcon className="md:h-6 w-6 m-0 inline-block" />
-                </Button>
-              )}
-              {/*eslint-disable-next-line react/jsx-no-bind*/}
-              {index === races.length - 1 ? null : (
-                <Button
-                  className="ml-6"
-                  type="button"
-                  onClick={handleMoveDown}
-                  id={r.id}
-                >
-                  <ChevronDownIcon className="md:h-6 w-6 m-0 inline-block" />
-                </Button>
-              )}
-
               <button
                 className="group relative inline-flex ml-14 dark:text-blueGray-500"
                 type="button"
@@ -1291,32 +1292,34 @@ function DocumentsList(props: { documents: Document[]; eventId: string }) {
         .map((d: Document, index) => (
           <div
             key={d.id}
-            className="relative flex mb-4 justify-between items-center flex-col md:flex-row border-b p-4 last:border-none border-gray-300 dark:border-gray-300"
+            className="relative flex mb-4 justify-between items-center flex-row border-b p-4 last:border-none border-gray-300 dark:border-gray-300"
           >
-            <div className={clsx('text-lg font-extrabold dark:text-white')}>
-              {d.label}
+            <div className="flex flex-row items-center">
+              <div className="flex flex-col mr-3 dark:text-blueGray-500">
+                {index === 0 ? null : (
+                  <button
+                    type="button"
+                    id={d.id}
+                    onClick={handleMoveUp}
+                  >
+                    <ChevronUpIcon className="md:h-6 w-6 m-0 inline-block" />
+                  </button>
+                )}
+                {index === documents.length - 1 ? null : (
+                  <button
+                    type="button"
+                    id={d.id}
+                    onClick={handleMoveDown}
+                  >
+                    <ChevronDownIcon className="md:h-6 w-6 m-0 inline-block" />
+                  </button>
+                )}
+              </div>
+              <div className={clsx('text-lg font-extrabold dark:text-white')}>
+                {d.label}
+              </div>
             </div>
             <div>
-              {index === 0 ? null : (
-                <Button
-                  className="ml-6"
-                  type="button"
-                  id={d.id}
-                  onClick={handleMoveUp}
-                >
-                  <ChevronUpIcon className="md:h-6 w-6 m-0 inline-block" />
-                </Button>
-              )}
-              {index === documents.length - 1 ? null : (
-                <Button
-                  className="ml-6"
-                  type="button"
-                  id={d.id}
-                  onClick={handleMoveDown}
-                >
-                  <ChevronDownIcon className="md:h-6 w-6 m-0 inline-block" />
-                </Button>
-              )}
               <button
                 className="group relative inline-flex ml-14 dark:text-blueGray-500"
                 type="button"
