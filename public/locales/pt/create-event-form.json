@@ -66,6 +66,8 @@
   "Positive Number": "Insira um número positivo",
   "Nonexistent Sport": "Desporto inválido",
   "Invalid Type": "Tipo inválido",
+  "Document Dropzone": "Arraste o ficheiro ou clique para fazer upload",
+  "Uploaded Documents": "Documentos adicionados",
 
   "Delete": "Apagar Distância",
   "Delete Document": "Apagar documento",
