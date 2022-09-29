@@ -7,7 +7,6 @@ import {
   unstable_parseMultipartFormData
 } from 'remix';
 
-
 import type { UploadHandler } from '@remix-run/node';
 import { unstable_composeUploadHandlers } from '@remix-run/node';
 
@@ -23,7 +22,7 @@ import i18n from '~/server/i18n.server';
 import type { CreateDocumentInput } from '~/types';
 import { badRequest } from '~/utils/misc';
 import { uploadToS3 } from '~/server/utils/s3';
-
+import Id from '~/server/utils/Id.server';
 
 const RESOURCES_NS = 'create-event-form';
 
@@ -39,11 +38,13 @@ export const action: ActionFunction = async ({ request, params }) => {
         return undefined;
       }
       const eventId = params.eventId as string;
+      const path = require('path');
+      const fileExtension = path.parse(filename as string).ext;
 
       return await uploadToS3(
         Readable.from(data),
         eventId,
-        filename || 'noname'
+        Id() + fileExtension
       );
     },
     // fallback to memory for everything else
@@ -66,7 +67,6 @@ export const action: ActionFunction = async ({ request, params }) => {
     eventId
   };
 
-  console.log(documentData);
   const DocumentSchema = z.object({
     label: z.string().min(5, { message: t('Min 5 chars') })
   });

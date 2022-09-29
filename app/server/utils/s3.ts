@@ -43,9 +43,7 @@ const uploadToS3 = async (
   return key;
 };
 
-const downloadFromS3 = async (prefix: string, filename: string) => {
-  const key = getS3Key(prefix, filename);
-
+const downloadFromS3 = async (key: string) => {
   const options = {
     Bucket: AWS_S3_BUCKET,
     Key: key

@@ -1,4 +1,8 @@
-import { useActionData, useFetcher, useLoaderData } from '@remix-run/react';
+import {
+  useActionData,
+  useFetcher,
+  useLoaderData
+} from '@remix-run/react';
 import type { ActionFunction, LinksFunction, LoaderFunction } from 'remix';
 import {
   json,
@@ -1127,14 +1131,14 @@ function UploadDocumentDialog(props: {
   const { t } = useTranslation(RESOURCES_NS);
   const fetcher = useFetcher();
   const [errors, setErrors] = useState<FormErrors>({});
-  const [uploaded, setUploaded] = useState<string | null>(null);
+  const [uploadedDocument, setUploadedDocument] = useState<string | null>(null);
   const name = useRef<HTMLInputElement>(null);
   // const file = useRef<HTMLInputElement>(null);
 
   const close = useCallback(() => {
     setErrors({});
     onDismiss();
-    setUploaded(null);
+    setUploadedDocument(null);
   }, [onDismiss]);
 
   function handleSubmit() {
@@ -1179,7 +1183,7 @@ function UploadDocumentDialog(props: {
 
       // @ts-ignore
       inputEl.current.files = new FileListItems([file]);
-      setUploaded(file.name);
+      setUploadedDocument(file.name);
     }
   });
   const inputProps = getInputProps();
@@ -1234,35 +1238,36 @@ function UploadDocumentDialog(props: {
             />
           </FormField>
           {!document && (
-              <FormField label={t('Document')}>
-                {/*<input type="file" name="/file/misc" ref={file} />*/}
-                <section
-                    className={clsx(
-                        'h-40 bg-gray-100 text-black placeholder-gray-500 text-lg font-medium',
-                        'dark:disabled:text-blueGray-500 dark:text-white dark:bg-gray-800',
-                        'object-cover object-left-top overflow-hidden',
-                        'flex content-center justify-center'
-                    )}
+            <FormField label={t('Document')}>
+              <section
+                className={clsx(
+                  'h-40 bg-gray-100 text-black placeholder-gray-500 text-lg font-medium',
+                  'dark:disabled:text-blueGray-500 dark:text-white dark:bg-gray-800',
+                  'object-cover object-left-top overflow-hidden',
+                  'flex content-center justify-center'
+                )}
+              >
+                <div
+                  {...getRootProps({
+                    className: 'h-80 w-full overflow-hidden'
+                  })}
                 >
-                  <div
-                      {...getRootProps({ className: 'h-80 w-full overflow-hidden' })}
-                  >
-                    <input {...inputProps} name="/file/misc/" ref={inputEl} />
-                    <p className="h-40 w-full flex items-center justify-center">
-                      {t('Document Dropzone')}
-                    </p>
-                  </div>
-                </section>
-              </FormField>
+                  <input {...inputProps} name="/file/misc/" ref={inputEl} />
+                  <p className="h-40 w-full flex items-center justify-center">
+                    {t('Document Dropzone')}
+                  </p>
+                </div>
+              </section>
+            </FormField>
           )}
-          {uploaded && (
+          {uploadedDocument && (
             <FormField label={t('Uploaded Documents')}>
               <div
                 className={clsx(
                   'text-md font-extrabold dark:text-white mt-4 ml-4'
                 )}
               >
-                {uploaded}
+                {uploadedDocument}
               </div>
             </FormField>
           )}
@@ -1368,8 +1373,19 @@ function DocumentsList(props: { documents: Document[]; eventId: string }) {
               </div>
             </div>
             <div>
-              <button
+              <a
+                href={`/organizer/document/${d.id}`}
+                target="_blank"
+                rel="noreferrer"
                 className="group relative inline-flex ml-14 dark:text-blueGray-500"
+              >
+                {/*coulnd't find import of icon*/}
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                </svg>
+              </a>
+              <button
+                className="group relative inline-flex ml-6 dark:text-blueGray-500"
                 type="button"
                 id={d.id}
                 onClick={handleOpenDeleteDocumentDialog}
