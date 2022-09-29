@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { Form, useActionData } from '@remix-run/react';
 
-import type { ActionFunction, LoaderFunction } from 'remix';
+import type { ActionFunction, LoaderFunction, MetaFunction } from 'remix';
 import { json, redirect } from 'remix';
 
 import { z } from 'zod';
@@ -21,6 +21,7 @@ import {
   sendRecoverPasswordToken
 } from '~/server/auth/session.server';
 import { getDomainUrl } from '~/utils/misc';
+import { CanonicalMeta } from '~/utils/seo';
 
 export const handle = {
   i18n: ['recover-password']
@@ -36,6 +37,8 @@ type ActionData = {
   },
   successMessage: string | null
 }
+
+export const meta: MetaFunction = CanonicalMeta;
 
 export const loader: LoaderFunction = async ({ request }) => {
   const user = await getUser(request);

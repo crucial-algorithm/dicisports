@@ -1,5 +1,11 @@
+import type { MetaFunction } from 'remix';
+
 import PrivacyPolicyPT from '~/markdown/privacy.md';
 import Main from '~/components/shared/Main';
+
+import { CanonicalMeta } from '~/utils/seo';
+
+export const meta: MetaFunction = CanonicalMeta;
 
 export default function Privacy() {
   return (

@@ -2,7 +2,7 @@ import { Form, Link, useActionData, useSearchParams } from '@remix-run/react';
 
 import { z, ZodError } from 'zod';
 
-import type { ActionFunction, LoaderFunction } from 'remix';
+import type { ActionFunction, LoaderFunction, MetaFunction } from 'remix';
 import { json, redirect } from 'remix';
 
 import { useRef } from 'react';
@@ -30,6 +30,7 @@ import type { LoginAction } from '~/types';
 
 import { loginUser } from '~/server/db/users.server';
 import Main from '~/components/shared/Main';
+import { CanonicalMeta } from '~/utils/seo';
 
 type LoaderData = {
   email?: string;
@@ -66,6 +67,8 @@ function queryStringArgs(searchParams: URLSearchParams): QueryStringArgs {
 export const handle = {
   i18n: ['common', 'login']
 };
+
+export const meta: MetaFunction = CanonicalMeta;
 
 export const loader: LoaderFunction = async ({ request }) => {
   const user = await getUser(request);

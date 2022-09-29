@@ -74,7 +74,7 @@ async function findGroups(
   const mapped = results.map(dbRawGroupToGroup);
   const total = results.length === 0 ? 0 : results[0].records;
 
-  console.log('----->', query);
+  // console.log('----->', query);
   return { results: mapped, total };
 }
 
