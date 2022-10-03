@@ -104,7 +104,7 @@ model Event {
 
 model Document {
   id        String   @id @default(uuid())
-  key       String
+  path      String
   position  Int      @default(autoincrement())
   label     String?
   event     Event    @relation(fields: [eventId], references: [id])

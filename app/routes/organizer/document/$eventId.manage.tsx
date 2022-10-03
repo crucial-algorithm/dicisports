@@ -63,7 +63,7 @@ export const action: ActionFunction = async ({ request, params }) => {
   const documentData: CreateDocumentInput = {
     id: documentId,
     label: name,
-    key: file as string,
+    path: file as string,
     eventId
   };
 

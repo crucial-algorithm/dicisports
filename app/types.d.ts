@@ -100,7 +100,7 @@ type Document = {} & DBDocument
 type CreateDocumentInput = {
   id: string
   label: string
-  key: string
+  path: string
   eventId: string
 }
 

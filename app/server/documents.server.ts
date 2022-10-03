@@ -25,7 +25,7 @@ async function createDocument(
     data: {
       id: documentId,
       label: document.label,
-      key: document.key,
+      path: document.path,
       createdAt: documentAt,
       updatedAt: documentAt,
       eventId: document.eventId

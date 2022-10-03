@@ -15,5 +15,5 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     return null;
   }
 
-  return downloadFromS3(document.key);
+  return downloadFromS3(document.path);
 };
