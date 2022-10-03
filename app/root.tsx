@@ -24,7 +24,7 @@ import { setConfig } from 'cloudinary-build-url';
 
 import { useChangeLanguage } from 'remix-i18next';
 
-import type { KCDHandle } from '~/types';
+import type { KCDHandle, Sport } from '~/types';
 import type { Timings } from '~/server/metrics.server';
 import { getServerTimeHeader, time } from '~/server/metrics.server';
 import { getSession } from '~/server/auth/session.server';
@@ -46,6 +46,8 @@ import Config from '~/server/config.server';
 
 import { LocationProvider } from '~/utils/LocationProvider';
 import { getLocationSession } from '~/routes/action/set-my-location';
+
+import { findSports } from '~/server/db/sports.server';
 
 import vendorsCss from './styles/vendors.css';
 import mainCss from './styles/main.css';
@@ -82,25 +84,26 @@ export const links: LinksFunction = () => {
   ];
 };
 
-export const handle: KCDHandle & { id: string, i18n: string[] } = {
+export const handle: KCDHandle & { id: string; i18n: string[] } = {
   id: 'root',
   i18n: ['common', 'home']
 };
 
-export type LoaderData = {
-  user: User | null
-  ENV: { CLOUDINARY_CLOUD_NAME: string }
+export type RootLoaderData = {
+  user: User | null;
+  ENV: { CLOUDINARY_CLOUD_NAME: string };
   requestInfo: {
-    origin: string
-    path: string
+    origin: string;
+    path: string;
     session: {
-      email: string | undefined
-      magicLinkVerified: boolean | undefined
-      theme: Theme | null,
-      location: [number, number] | null
-    }
-  }
-}
+      email: string | undefined;
+      magicLinkVerified: boolean | undefined;
+      theme: Theme | null;
+      location: [number, number] | null;
+    };
+  };
+  sports: Array<Sport>
+};
 
 export const loader: LoaderFunction = async ({ request }) => {
   // because this is called for every route, we'll do an early return for anything
@@ -119,6 +122,7 @@ export const loader: LoaderFunction = async ({ request }) => {
   const clientSession = await getClientSession(request);
   const loginInfoSession = await getLoginInfoSession(request);
   const locationSession = await getLocationSession(request);
+  const sports = await findSports();
 
   const user = await time({
     name: 'getUser in root loader',
@@ -127,7 +131,7 @@ export const loader: LoaderFunction = async ({ request }) => {
     fn: getUser
   });
 
-  const data: LoaderData = {
+  const data: RootLoaderData = {
     user,
     ENV: {
       CLOUDINARY_CLOUD_NAME: Config().CLOUDINARY_CLOUD_NAME
@@ -141,7 +145,8 @@ export const loader: LoaderFunction = async ({ request }) => {
         theme: themeSession.getTheme(),
         location: locationSession.getLocation()
       }
-    }
+    },
+    sports
   };
 
   const headers = new Headers();
@@ -190,10 +195,18 @@ function PageLoadingMessage() {
   });
 
   React.useEffect(() => {
-    if (firstRender) {return;}
-    if (transition.state === 'idle') {return;}
-    if (transition.state === 'loading') {setWords(LOADER_WORDS);}
-    if (transition.state === 'submitting') {setWords(ACTION_WORDS);}
+    if (firstRender) {
+      return;
+    }
+    if (transition.state === 'idle') {
+      return;
+    }
+    if (transition.state === 'loading') {
+      setWords(LOADER_WORDS);
+    }
+    if (transition.state === 'submitting') {
+      setWords(ACTION_WORDS);
+    }
 
     const interval = setInterval(() => {
       setWords(([first, ...rest]) => [...rest, first] as Array<string>);
@@ -203,8 +216,12 @@ function PageLoadingMessage() {
   }, [pendingPath, transition.state]);
 
   React.useEffect(() => {
-    if (firstRender) {return;}
-    if (transition.state === 'idle') {return;}
+    if (firstRender) {
+      return;
+    }
+    if (transition.state === 'idle') {
+      return;
+    }
     setPendingPath(transition.location.pathname);
   }, [transition]);
 
@@ -224,15 +241,13 @@ function PageLoadingMessage() {
 }
 
 function Html({
-  title = 'DiciSports',
   lang
 }: {
-  title?: string
-  lang: string
+  lang: string;
 }) {
   const [theme] = useTheme();
   const { i18n } = useTranslation();
-  const data = useLoaderData<LoaderData>();
+  const data = useLoaderData<RootLoaderData>();
   const analyticsUrl = 'https://plausible.io/js/plausible.js';
 
   useChangeLanguage(lang);
@@ -255,7 +270,6 @@ function Html({
 
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width,initial-scale=1" />
-        <title>{title}</title>
         <Meta />
         <Links />
       </head>
@@ -280,7 +294,7 @@ function Html({
 export default function App() {
   // set locale statically
   const locale = 'pt';
-  const data = useLoaderData<LoaderData>() as LoaderData;
+  const data = useLoaderData<RootLoaderData>() as RootLoaderData;
 
   return (
     <ThemeProvider specifiedTheme={data.requestInfo.session.theme}>
@@ -298,8 +312,8 @@ export function ErrorBoundary({ error }: { error: Error }) {
       <p>{error.message}</p>
       <hr />
       <p>
-        Hey, developer, you should replace this with what you want your
-        users to see.
+        Hey, developer, you should replace this with what you want your users to
+        see.
       </p>
     </div>
   );

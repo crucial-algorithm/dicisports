@@ -1,12 +1,12 @@
 // this is needed by things the root needs, so to avoid circular deps we have to
 // put it in its own file which is silly I know...
 
-import type { LoaderData } from '~/root';
+import type { RootLoaderData } from '~/root';
 import { handle } from '~/root';
 
 import { useMatchLoaderData } from './providers';
 
-export const useRootData = () => useMatchLoaderData<LoaderData>(handle.id);
+export const useRootData = () => useMatchLoaderData<RootLoaderData>(handle.id);
 
 export function useUser() {
   const { user } = useRootData();

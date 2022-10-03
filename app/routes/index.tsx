@@ -1,7 +1,7 @@
 import type { SyntheticEvent } from 'react';
 import * as React from 'react';
 import { useEffect, useRef, useState } from 'react';
-import type { LoaderFunction } from 'remix';
+import type { LoaderFunction, MetaFunction } from 'remix';
 import { json } from 'remix';
 import {
   Form,
@@ -69,6 +69,7 @@ import WhatsApp from '~/components/shared/icons/WhatsApp';
 import { useRootData } from '~/utils/use-root-data';
 import { getLocationSession } from '~/routes/action/set-my-location';
 import { useUserLocation } from '~/utils/LocationProvider';
+import { CanonicalMeta } from '~/utils/seo';
 
 type FilterParams = {
   actionId: keyof typeof actions | null;
@@ -120,6 +121,8 @@ enum SortMethod {
   recency = 'recent',
   proximity = 'proximity'
 }
+
+export const meta: MetaFunction = CanonicalMeta;
 
 export const loader: LoaderFunction = async ({ request, params, context }) => {
   const data = parseQueryString(request.url);
@@ -967,7 +970,7 @@ function DisplayFilters(props: {
       )
     );
   }
-  // if all dayparts are picked, just ignore to save space
+  // if all day parts are picked, just ignore to save space
   if (dayParts && dayParts.length > 0 && dayParts.length !== 3) {
     const parts = semanticOr(
       dayParts.map((v) => t(v)),
@@ -981,10 +984,6 @@ function DisplayFilters(props: {
     }
   }
 
-  if (sport) {
-    label.push(mapIdToName(sport, sports, language as Language));
-  }
-
   if (spirit && spirit.length > 0 && spirit.length !== 5) {
     label.push(
       t('Filter Spirit', {
@@ -996,8 +995,15 @@ function DisplayFilters(props: {
     );
   }
 
+  // using h1 for sports based on SEO recommendations from ahrefs
   return (
     <div className="flex mx-2 items-center dark:text-white text-blueGray-500 text-sm">
+      {sport && (
+        <h1 className="font-bold">
+          {mapIdToName(sport, sports, language as Language)}{' '}
+        </h1>
+      )}
+      {sport && label.length > 0 && <>&nbsp;|&nbsp;</>}
       {label.join(' | ')}
     </div>
   );

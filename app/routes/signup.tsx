@@ -1,5 +1,5 @@
 import { Form, Link, useActionData, useSearchParams } from '@remix-run/react';
-import type { ActionFunction, LoaderFunction } from 'remix';
+import type { ActionFunction, LoaderFunction, MetaFunction } from 'remix';
 import { json, redirect } from 'remix';
 
 import { z, ZodError } from 'zod';
@@ -22,6 +22,7 @@ import { H2, H6 } from '~/components/shared/typography';
 import { verifyEmailAddress } from '~/server/auth/verifier.server';
 import { addGroupToFavorites } from '~/server/db/groups.server';
 import InputError from '~/components/shared/form/InputError';
+import { CanonicalMeta } from '~/utils/seo';
 
 type ActionData = {
   fields: {
@@ -36,6 +37,8 @@ type ActionData = {
     password: string | null;
   };
 };
+
+export const meta: MetaFunction = CanonicalMeta;
 
 export const loader: LoaderFunction = async ({ request }) => {
   const user = await getUser(request);
