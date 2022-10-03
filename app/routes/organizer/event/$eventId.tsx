@@ -189,7 +189,6 @@ export const action: ActionFunction = async ({ request, params }) => {
   const perks: string[] = form.getAll('perks') as string[];
   const newPerks: string[] = form.getAll('new-perk-input') as string[];
 
-  //TODO: change errors
   const EventSchema = z.object({
     name: z
       .string({ required_error: t('Field Required') })
@@ -1374,7 +1373,7 @@ function DocumentsList(props: { documents: Document[]; eventId: string }) {
                 rel="noreferrer"
                 className="group relative inline-flex ml-14 dark:text-blueGray-500"
               >
-                {/*coulnd't find import of icon*/}
+                {/*couldn't find import of icon*/}
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
