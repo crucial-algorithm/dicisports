@@ -2,7 +2,6 @@ import type { ActionFunction } from 'remix';
 import { json } from 'remix';
 
 import { requireAdminUser } from '~/server/auth/session.server';
-import { badRequest } from '~/utils/misc';
 import i18n from '~/server/i18n.server';
 
 import type { Document } from '~/types';
@@ -22,7 +21,9 @@ export const action: ActionFunction = async ({ request, params }) => {
   const current = await findDocument(documentId);
 
   if (!current) {
-    return badRequest({ error: t('No Document') });
+    throw new Response(t('No Document'), {
+      status: 404
+    });
   }
 
   const eventId = current.eventId as string;

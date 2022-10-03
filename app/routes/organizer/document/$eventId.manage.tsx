@@ -77,6 +77,8 @@ export const action: ActionFunction = async ({ request, params }) => {
 
       return json({ ok: true });
     }
+
+    //If actionId is null or !== 'delete' check if there is a document and update or create
     DocumentSchema.parse(documentData);
     documentId
       ? await updateDocument(documentData)
@@ -89,7 +91,6 @@ export const action: ActionFunction = async ({ request, params }) => {
         error: 'We dont know what happened'
       });
     }
-    console.log(e);
 
     const errors: { [key: string]: string | undefined } = {};
 

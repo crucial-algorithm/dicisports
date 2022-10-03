@@ -9,7 +9,6 @@ import {
   findDocuments,
   updateDisplayOrderDown
 } from '~/server/documents.server';
-import { badRequest } from '~/utils/misc';
 
 export const action: ActionFunction = async ({ request, params }) => {
   await requireAdminUser(request);
@@ -20,7 +19,9 @@ export const action: ActionFunction = async ({ request, params }) => {
   const current = await findDocument(documentId);
 
   if (!current) {
-    return badRequest({ message: t('No Document') });
+    throw new Response(t('No Document'), {
+      status: 404
+    });
   }
 
   const eventId = current.eventId;

@@ -1,6 +1,10 @@
+import { PrismaClient } from '@prisma/client';
+
 import { db } from '~/server/db.server';
 import type { CreateDocumentInput, Document } from '~/types';
 import Id from '~/server/utils/Id.server';
+
+const prisma = new PrismaClient();
 
 async function findDocument(id: string): Promise<Document | null> {
   return await db.document.findUnique({
@@ -46,18 +50,20 @@ async function updateDisplayOrderUp(
   current: Document,
   previous: Document
 ): Promise<void> {
-  await db.document.update({
-    where: { id: current.id },
-    data: {
-      position: previous.position
-    }
-  });
+  return await prisma.$transaction(async (prisma) => {
+    await prisma.document.update({
+      where: { id: current.id },
+      data: {
+        position: previous.position
+      }
+    });
 
-  await db.document.update({
-    where: { id: previous.id },
-    data: {
-      position: current.position
-    }
+    await prisma.document.update({
+      where: { id: previous.id },
+      data: {
+        position: current.position
+      }
+    });
   });
 }
 
@@ -65,18 +71,20 @@ async function updateDisplayOrderDown(
   current: Document,
   next: Document
 ): Promise<void> {
-  await db.document.update({
-    where: { id: current.id },
-    data: {
-      position: next.position
-    }
-  });
+  return await prisma.$transaction(async (prisma) => {
+    await prisma.document.update({
+      where: { id: current.id },
+      data: {
+        position: next.position
+      }
+    });
 
-  await db.document.update({
-    where: { id: next.id },
-    data: {
-      position: current.position
-    }
+    await prisma.document.update({
+      where: { id: next.id },
+      data: {
+        position: current.position
+      }
+    });
   });
 }
 
@@ -84,7 +92,7 @@ async function deleteDocument(documentId: string): Promise<void> {
   await db.document.update({
     where: { id: documentId },
     data: {
-     status: 'deleted'
+      status: 'deleted'
     }
   });
 }

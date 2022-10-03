@@ -3,8 +3,8 @@ import React, { useState } from 'react';
 import ComboBox from '~/components/shared/form/ComboBox';
 
 export default function HourOfDay({
-  hour,
-  minute,
+  hour = 8,
+  minute = 30,
   input,
   onChange
 }: {

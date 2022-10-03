@@ -103,7 +103,6 @@ export const action: ActionFunction = async ({ request }) => {
         error: 'We dont know what happened'
       });
     }
-    console.log(e);
 
     const errors: { [key: string]: string | undefined } = {};
 
