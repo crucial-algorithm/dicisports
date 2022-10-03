@@ -1,7 +1,10 @@
+import { PrismaClient } from '@prisma/client';
+
 import { db } from '~/server/db.server';
 import Id from '~/server/utils/Id.server';
-
 import type { CreateRaceInput, Race } from '~/types';
+
+const prisma = new PrismaClient();
 
 async function createRace(race: CreateRaceInput): Promise<Race | void> {
   const raceId = Id();
@@ -64,18 +67,20 @@ async function updateDisplayOrderUp(
   current: Race,
   previous: Race
 ): Promise<void> {
-  await db.race.update({
-    where: { id: current.id },
-    data: {
-      displayOrder: previous.displayOrder
-    }
-  });
+  return await prisma.$transaction(async (prisma) => {
+    await prisma.race.update({
+      where: { id: current.id },
+      data: {
+        displayOrder: previous.displayOrder
+      }
+    });
 
-  await db.race.update({
-    where: { id: previous.id },
-    data: {
-      displayOrder: current.displayOrder
-    }
+    await prisma.race.update({
+      where: { id: previous.id },
+      data: {
+        displayOrder: current.displayOrder
+      }
+    });
   });
 }
 
@@ -83,18 +88,20 @@ async function updateDisplayOrderDown(
   current: Race,
   next: Race
 ): Promise<void> {
-  await db.race.update({
-    where: { id: current.id },
-    data: {
-      displayOrder: next.displayOrder
-    }
-  });
+  return await prisma.$transaction(async (prisma) => {
+    await prisma.race.update({
+      where: { id: current.id },
+      data: {
+        displayOrder: next.displayOrder
+      }
+    });
 
-  await db.race.update({
-    where: { id: next.id },
-    data: {
-      displayOrder: current.displayOrder
-    }
+    await prisma.race.update({
+      where: { id: next.id },
+      data: {
+        displayOrder: current.displayOrder
+      }
+    });
   });
 }
 

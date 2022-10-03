@@ -75,9 +75,9 @@ export default function GroupEntry({ group, actions, footer, img }: Props) {
           <Feature label={t('Where')} value={group.near || ''}>
             &nbsp;
             <a
-              rel="noreferrer"
               href={`https://www.google.com/maps/search/?api=1&query=${group.lat}%2C${group.lng}`}
               target="_blank"
+              rel="noreferrer"
             >
               ({t('View in Map')})
             </a>

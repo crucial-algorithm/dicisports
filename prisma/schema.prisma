@@ -104,13 +104,14 @@ model Event {
 
 model Document {
   id        String   @id @default(uuid())
-  key       String
-  position  Int
+  path      String
+  position  Int      @default(autoincrement())
   label     String?
   event     Event    @relation(fields: [eventId], references: [id])
   eventId   String   @map("event_id")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
+  status    Status   @default(auto)
 
   @@map("documents")
 }

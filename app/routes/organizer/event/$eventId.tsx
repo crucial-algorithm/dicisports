@@ -1,8 +1,4 @@
-import {
-  useActionData,
-  useFetcher,
-  useLoaderData
-} from '@remix-run/react';
+import { useActionData, useFetcher, useLoaderData } from '@remix-run/react';
 import type { ActionFunction, LinksFunction, LoaderFunction } from 'remix';
 import {
   json,
@@ -13,6 +9,8 @@ import {
 import * as React from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import { z, ZodError } from 'zod';
+
 import mapBoxGlCss from 'mapbox-gl/dist/mapbox-gl.css';
 
 import type { UploadHandler } from '@remix-run/node';
@@ -21,14 +19,15 @@ import { unstable_composeUploadHandlers } from '@remix-run/node';
 import { useTranslation } from 'react-i18next';
 
 import {
-  ArrowDownIcon,
-  ArrowUpIcon,
+  ChevronDownIcon,
+  ChevronUpIcon,
   LocationMarkerIcon,
   PencilAltIcon,
-  XCircleIcon
+  TrashIcon
 } from '@heroicons/react/outline';
 
 import clsx from 'clsx';
+import { useDropzone } from 'react-dropzone';
 
 import BasicDatePicker from '~/components/shared/form/DatePicker';
 import PickBookingSystem from '~/components/PickBookingSystem';
@@ -65,7 +64,11 @@ import { uploadImageToCloudinary } from '~/server/storage/cloudinary.server';
 import ComboBox from '~/components/shared/form/ComboBox';
 import { parseLocation, processImgField } from '~/server/utils/misc';
 import i18n from '~/server/i18n.server';
-import { badRequest, timeOfDayToHoursMinutes } from '~/utils/misc';
+import {
+  badRequest,
+  hoursMinutesToTimeOfDay,
+  timeOfDayToHoursMinutes
+} from '~/utils/misc';
 
 import { findEventPerks } from '~/server/db/perks.server';
 import { findEventRaces } from '~/server/db/races.server';
@@ -74,11 +77,17 @@ import WhenListEmpty from '~/components/shared/Empty';
 import HourOfDay from '~/components/HourOfDay';
 import { Spacer } from '~/components/shared/Spacer';
 import { requireAdminUser } from '~/server/auth/session.server';
+import ButtonGroup from '~/components/shared/ButtonGroup';
 
 type ActionData = {
   hash: number;
   errors?: {
     name?: string;
+    startAt?: string;
+    address?: string;
+    externalBookingUrl?: string;
+    eventDescription?: string;
+    directions?: string;
   };
 };
 
@@ -109,10 +118,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   const eventId = params.eventId as string;
   const event = eventId ? await findEvent(eventId) : null;
 
-  const {
-    MAPBOX_TOKEN,
-    CLOUDINARY_UPLOAD_PRESET
-  } = Config();
+  const { MAPBOX_TOKEN, CLOUDINARY_UPLOAD_PRESET } = Config();
 
   return json({
     mapToken: MAPBOX_TOKEN,
@@ -152,7 +158,6 @@ export const action: ActionFunction = async ({ request, params }) => {
   }
 
   const form = await unstable_parseMultipartFormData(request, uploadHandler);
-  const x = 1;
 
   const isUpdate = event.status !== 'auto';
   const date = form.get('date') as string;
@@ -173,7 +178,7 @@ export const action: ActionFunction = async ({ request, params }) => {
     useExternalBooking: form.get('booking') === 'external',
     externalBookingUrl: (form.get('booking-url') as string) || null,
     eventDescription: (form.get('description') as string) || null,
-    directions: (form.get('get-there') as string) || null,
+    directions: form.get('get-there') as string,
     image1: processImgField(image1, isUpdate),
     image2: processImgField(image2, isUpdate),
     image3: processImgField(image3, isUpdate),
@@ -184,12 +189,53 @@ export const action: ActionFunction = async ({ request, params }) => {
   const perks: string[] = form.getAll('perks') as string[];
   const newPerks: string[] = form.getAll('new-perk-input') as string[];
 
-  await updateEvent(data, perks, newPerks);
-  // eslint-disable-next-line no-console
-  if (x === 1) {
-    return badRequest({
-      formError: 'Form not submitted correctly.'
-    });
+  const EventSchema = z.object({
+    name: z
+      .string({ required_error: t('Field Required') })
+      .min(5, { message: t('Min 5 chars') }),
+    sportId: z
+      .number()
+      .nonnegative({ message: t('Nonexistent Sport') })
+      .lte(7, { message: t('Nonexistent Sport') }),
+    startAt: z.date().min(new Date(), { message: t('Future Date') }),
+    address: z.string({ required_error: t('Field required') }),
+    useExternalBooking: z.boolean({
+      invalid_type_error: t('Invalid Type')
+    }),
+    externalBookingUrl: z
+      .string({ invalid_type_error: t('Invalid Type') })
+      .url()
+      .min(5, { message: t('Min 5 chars') })
+      .nullable(),
+    eventDescription: z
+      .string({ invalid_type_error: t('Invalid Type') })
+      .min(1, { message: t('Min 1 chars') })
+      .nullable(),
+    directions: z
+      .string({
+        invalid_type_error: t('Invalid Type')
+      })
+      .min(1, { message: t('Min 1 chars') })
+  });
+
+  try {
+    EventSchema.parse(data);
+    await updateEvent(data, perks, newPerks);
+  } catch (e) {
+    if (!(e instanceof ZodError)) {
+      console.error(e);
+      return badRequest({
+        error: 'We dont know what happened'
+      });
+    }
+
+    const errors: { [key: string]: string | undefined } = {};
+
+    for (const error of (e as ZodError).errors) {
+      errors[error.path[0]] = error.message;
+    }
+
+    return badRequest({ errors });
   }
 };
 
@@ -250,6 +296,13 @@ export default function OrganizerEventRoute() {
         }
       : null
   );
+  const [showDocumentsDialog, setSowDocumentsDialog] = useState<{
+    show: boolean;
+    hash: number;
+  }>({
+    show: false,
+    hash: 0
+  });
   const inputEl = useRef(null);
 
   // Hack: while remix doesn't handle dates properly
@@ -292,6 +345,14 @@ export default function OrganizerEventRoute() {
     if (inputEl.current) {
       (inputEl.current as HTMLInputElement).value = '';
     }
+  }
+
+  function handleOpenDocumentsDialog() {
+    setSowDocumentsDialog({ show: true, hash: Date.now() });
+  }
+
+  function handleCloseDocumentsDialog() {
+    setSowDocumentsDialog({ show: false, hash: 0 });
   }
 
   useEffect(() => {
@@ -348,7 +409,7 @@ export default function OrganizerEventRoute() {
               label={''}
               id="event-date"
               className="basis-1/3 lg:basis-1/5"
-              error={actionData?.errors?.name}
+              error={actionData?.errors?.startAt}
             >
               <BasicDatePicker
                 label={t('Date')}
@@ -361,7 +422,7 @@ export default function OrganizerEventRoute() {
               label={t('Location')}
               id="event-location"
               className="basis-1/2 lg:basis-1/3"
-              error={actionData?.errors?.location}
+              error={actionData?.errors?.address}
             >
               <TextField
                 name="discard-location"
@@ -391,7 +452,10 @@ export default function OrganizerEventRoute() {
             </FormField>
           </div>
 
-          <FormField label={t('Link to External Booking URL')}>
+          <FormField
+            label={t('Link to External Booking URL')}
+            error={actionData?.errors?.externalBookingUrl}
+          >
             <PickBookingSystem
               name="booking"
               t={t}
@@ -434,7 +498,10 @@ export default function OrganizerEventRoute() {
             </div>
           </FormField>
 
-          <FormField label={t('Description')}>
+          <FormField
+            label={t('Description')}
+            error={actionData?.errors?.eventDescription}
+          >
             <div className="mt-1 relative rounded-md shadow-sm">
               <textarea
                 name="description"
@@ -506,7 +573,10 @@ export default function OrganizerEventRoute() {
             </WhenListEmpty>
           </div>
 
-          <FormField label={t('Directions')}>
+          <FormField
+            label={t('Directions')}
+            error={actionData?.errors?.directions}
+          >
             <div className="mt-2 relative rounded-md shadow-sm">
               <textarea
                 name="get-there"
@@ -518,6 +588,29 @@ export default function OrganizerEventRoute() {
               />
             </div>
           </FormField>
+
+          <div id="races" className="mb-12">
+            <Label
+              htmlFor="races"
+              className={clsx(
+                'mb-5 flex justify-between items-center flex-row'
+              )}
+            >
+              {t('Documents')}
+
+              <Button type="button" onClick={handleOpenDocumentsDialog}>
+                {t('Upload Document')}
+              </Button>
+            </Label>
+            <div>
+              <DocumentsList documents={event.documents} eventId={event.id} />
+            </div>
+            <WhenListEmpty list={event.documents}>
+              <H6 className="text-center p-12" variant="secondary" as="p">
+                {t('No Documents')}
+              </H6>
+            </WhenListEmpty>
+          </div>
 
           <ButtonLink
             className="mt-8"
@@ -542,6 +635,13 @@ export default function OrganizerEventRoute() {
         hash={showRacesDialog.hash}
       />
 
+      <UploadDocumentDialog
+        isOpen={showDocumentsDialog.show}
+        onDismiss={handleCloseDocumentsDialog}
+        eventId={event.id}
+        hash={showDocumentsDialog.hash}
+      />
+
       <MapDialog
         token={mapToken}
         defaultValue={location}
@@ -561,6 +661,7 @@ type FormErrors = {
   price?: string;
   priceEarlyBird?: string;
   validUntil?: string;
+  label?: string;
 };
 
 function RaceDialog(props: {
@@ -574,7 +675,9 @@ function RaceDialog(props: {
   const { isOpen, triggerModalClose, eventId, race, hash } = props;
   const fetcher = useFetcher();
   const [errors, setErrors] = useState<FormErrors>({});
-  const [hour, minute] = timeOfDayToHoursMinutes(race?.startTime as number);
+  const [hour, minute] = timeOfDayToHoursMinutes(
+    race?.startTime ? race.startTime : hoursMinutesToTimeOfDay(9, 0)
+  );
 
   const name = useRef<HTMLInputElement | null>(null);
   const distance = useRef<HTMLInputElement | null>(null);
@@ -619,9 +722,10 @@ function RaceDialog(props: {
     };
 
     // Payload types error
+    // @ts-ignore
     fetcher.submit(payload, {
       method: 'post',
-      action: '/organizer/race/create'
+      action: '/organizer/race/manage'
     });
   }
 
@@ -662,11 +766,7 @@ function RaceDialog(props: {
         )}
       >
         <div className="relative" key={hash}>
-          <fetcher.Form
-            method="post"
-            action="/organizer/race/create"
-            className="px-6 py-2 flex flex-col lg:px-24 lg:py-14"
-          >
+          <div className="px-6 py-2 flex flex-col lg:px-24 lg:py-14">
             <H3 className="w-full md:w-112 text-left">{t('Distance Modal')}</H3>
             <Spacer size="2xs" />
 
@@ -811,7 +911,7 @@ function RaceDialog(props: {
                 {race?.id ? t('Update Distance') : t('Create Distance')}
               </Button>
             </div>
-          </fetcher.Form>
+          </div>
         </div>
       </div>
     </div>
@@ -832,36 +932,49 @@ function RacesList(props: { races: Race[]; eventId: string }) {
     race?: Race;
   }>({ show: false });
 
-  function handleMoveUp(r: Race) {
+  function handleMoveUp(e: React.MouseEvent) {
     fetcher.submit(
       {},
       {
         method: 'post',
-        action: `/organizer/${r.id}/move-up`
+        action: `/organizer/race/${e.currentTarget.id}/move-up`
       }
     );
   }
 
-  function handleMoveDown(r: Race) {
+  function handleMoveDown(e: React.MouseEvent) {
     fetcher.submit(
       {},
       {
         method: 'post',
-        action: `/organizer/${r.id}/move-down`
+        action: `/organizer/race/${e.currentTarget.id}/move-down`
       }
     );
   }
 
-  function handleDeleteRace(r: Race) {
-    setDeleteModalOpen({ show: true, race: r });
+  function handleDeleteRace(e: React.MouseEvent) {
+    const race = races.find((r) => r.id === e.currentTarget.id);
+
+    if (!race) {
+      // should never happen
+      return;
+    }
+    setDeleteModalOpen({ show: true, race });
   }
 
   function handleDeleteRaceClose() {
     setDeleteModalOpen({ show: false });
   }
 
-  function handleUpdateRace(r: Race) {
-    setShowRacesDialog({ show: true, race: r, hash: Date.now() });
+  function handleUpdateRace(e: React.MouseEvent) {
+    const race = races.find((r) => r.id === e.currentTarget.id);
+
+    if (!race) {
+      // should never happen
+      return;
+    }
+
+    setShowRacesDialog({ show: true, race, hash: Date.now() });
   }
 
   function handleCloseRace() {
@@ -875,53 +988,41 @@ function RacesList(props: { races: Race[]; eventId: string }) {
         .map((r: Race, index) => (
           <div
             key={r.id}
-            className="relative flex mb-4 justify-between items-center flex-col md:flex-row border-b p-4 last:border-none border-gray-300 dark:border-gray-300"
+            className="relative flex mb-4 justify-between items-center flex-row border-b p-4 last:border-none border-gray-300 dark:border-gray-300"
           >
-            <div className={clsx('text-lg font-extrabold dark:text-white')}>
-              {r.name}
+            <div className="flex flex-row items-center">
+              <div className="flex flex-col mr-3 dark:text-blueGray-500">
+                {index === 0 ? null : (
+                  <button type="button" id={r.id} onClick={handleMoveUp}>
+                    <ChevronUpIcon className="mh-6 w-6 m-0 inline-block" />
+                  </button>
+                )}
+                {/*eslint-disable-next-line react/jsx-no-bind*/}
+                {index === races.length - 1 ? null : (
+                  <button type="button" onClick={handleMoveDown} id={r.id}>
+                    <ChevronDownIcon className="md:h-6 w-6 m-0 inline-block" />
+                  </button>
+                )}
+              </div>
+              <div className={clsx('text-lg font-extrabold dark:text-white')}>
+                {r.name}
+              </div>
             </div>
             <div>
-              {index === 0 ? null : (
-                <Button
-                  className="ml-6"
-                  type="button"
-                  onClick={() => {
-                    handleMoveUp(r);
-                  }}
-                >
-                  <ArrowUpIcon className="md:h-6 w-6 m-0 inline-block" />
-                </Button>
-              )}
-              {/*eslint-disable-next-line react/jsx-no-bind*/}
-              {index === races.length - 1 ? null : (
-                <Button
-                  className="ml-6"
-                  type="button"
-                  onClick={() => {
-                    handleMoveDown(r);
-                  }}
-                >
-                  <ArrowDownIcon className="md:h-6 w-6 m-0 inline-block" />
-                </Button>
-              )}
-
-              <Button
-                className="ml-14"
+              <button
+                className="group relative inline-flex ml-14 dark:text-blueGray-500"
                 type="button"
-                variant="danger"
-                onClick={() => {
-                  handleDeleteRace(r);
-                }}
+                id={r.id}
+                onClick={handleDeleteRace}
               >
-                <XCircleIcon className="md:h-6 w-6 m-0 inline-block"></XCircleIcon>
-              </Button>
+                <TrashIcon className="md:h-6 w-6 m-0 inline-block"></TrashIcon>
+              </button>
 
               <Button
                 className="ml-6"
                 type="button"
-                onClick={() => {
-                  handleUpdateRace(r);
-                }}
+                id={r.id}
+                onClick={handleUpdateRace}
               >
                 <PencilAltIcon className="md:h-6 w-6 m-0 inline-block" />
               </Button>
@@ -962,7 +1063,7 @@ function DeleteRaceDialog(props: {
       { actionId: 'delete', raceId: race?.id as string, eventId: eventId },
       {
         method: 'post',
-        action: '/organizer/race/create'
+        action: '/organizer/race/manage'
       }
     );
   }
@@ -1003,11 +1104,391 @@ function DeleteRaceDialog(props: {
             variant="danger"
             size="medium"
             type="button"
-            onClick={() => {
-              handleSubmit();
-            }}
+            onClick={handleSubmit}
           >
             {t('Delete')}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function UploadDocumentDialog(props: {
+  isOpen: boolean;
+  onDismiss: () => void;
+  document?: Document;
+  eventId: string;
+  hash: number;
+}) {
+  const { isOpen, onDismiss, eventId, document, hash } = props;
+  const { t } = useTranslation(RESOURCES_NS);
+  const fetcher = useFetcher();
+  const [errors, setErrors] = useState<FormErrors>({});
+  const [uploadedDocument, setUploadedDocument] = useState<string | null>(null);
+  const name = useRef<HTMLInputElement>(null);
+  // const file = useRef<HTMLInputElement>(null);
+
+  const close = useCallback(() => {
+    setErrors({});
+    onDismiss();
+    setUploadedDocument(null);
+  }, [onDismiss]);
+
+  function handleSubmit() {
+    fetcher.submit(
+      {
+        name: name.current?.value || '',
+        documentId: document?.id ? document.id : '',
+        // @ts-ignore
+        file: inputEl.current?.files[0] || '',
+        hash: String(hash)
+      },
+      {
+        method: 'post',
+        action: `organizer/document/${eventId}/manage`,
+        encType: 'multipart/form-data'
+      }
+    );
+  }
+
+  function FileListItems(files: File[]) {
+    const dt = new ClipboardEvent('').clipboardData || new DataTransfer();
+
+    for (let i = 0, len = files.length; i < len; i++) {
+      dt.items.add(files[i]);
+    }
+
+    return dt.files;
+  }
+
+  const { getRootProps, getInputProps } = useDropzone({
+    multiple: false,
+    accept: 'text/*, .pdf',
+    onDrop: (accepted) => {
+      if (accepted.length === 0) {
+        return;
+      }
+      const file: File = accepted[0] as File;
+
+      if (!inputEl || !inputEl.current) {
+        return;
+      }
+
+      // @ts-ignore
+      inputEl.current.files = new FileListItems([file]);
+      setUploadedDocument(file.name);
+    }
+  });
+  const inputProps = getInputProps();
+  // @ts-ignore
+  const inputEl = inputProps.ref;
+
+  useEffect(() => {
+    if (fetcher.type === 'actionReload' && fetcher.data.ok) {
+      return close();
+    }
+
+    if (
+      fetcher.type === 'done' &&
+      fetcher.data?.errors &&
+      fetcher.data?.hash === hash
+    ) {
+      return setErrors(fetcher.data.errors as FormErrors);
+    }
+  }, [close, fetcher, hash]);
+
+  return (
+    <div
+      data-reach-dialog-overlay={true}
+      className={clsx({
+        'hidden ': !isOpen,
+        'z-50 flex h-screen': isOpen
+      })}
+    >
+      <div
+        aria-modal={true}
+        className={clsx(
+          'w-11/12 px-24 py-14 dark:bg-gray-900 border-2 border-black dark:border-white rounded-lg lg:max-w-screen-lg',
+          {
+            'hidden ': !isOpen,
+            'm-auto': isOpen
+          }
+        )}
+      >
+        <div className="relative" key={hash}>
+          <H3 className="w-full md:w-112 text-left">
+            {document?.id ? t('Update Document') : t('Upload Document')}
+          </H3>
+          <Spacer size="2xs" />
+
+          <FormField label={t('Name')} error={errors?.label}>
+            <TextField
+              name="name"
+              placeholder={t('Document Name')}
+              defaultValue={document?.label ? document.label : ''}
+              className="max-w-md"
+              input={name}
+            />
+          </FormField>
+          {!document && (
+            <FormField label={t('Document')}>
+              <section
+                className={clsx(
+                  'h-40 bg-gray-100 text-black placeholder-gray-500 text-lg font-medium',
+                  'dark:disabled:text-blueGray-500 dark:text-white dark:bg-gray-800',
+                  'object-cover object-left-top overflow-hidden',
+                  'flex content-center justify-center'
+                )}
+              >
+                <div
+                  {...getRootProps({
+                    className: 'h-80 w-full overflow-hidden'
+                  })}
+                >
+                  <input {...inputProps} name="/file/misc/" ref={inputEl} />
+                  <p className="h-40 w-full flex items-center justify-center">
+                    {t('Document Dropzone')}
+                  </p>
+                </div>
+              </section>
+            </FormField>
+          )}
+          {uploadedDocument && (
+            <FormField label={t('Uploaded Documents')}>
+              <div
+                className={clsx(
+                  'text-md font-extrabold dark:text-white mt-4 ml-4'
+                )}
+              >
+                {uploadedDocument}
+              </div>
+            </FormField>
+          )}
+          <ButtonGroup>
+            <Button type="button" variant="secondary" onClick={close}>
+              {t('Cancel')}
+            </Button>
+            <Button type="button" onClick={handleSubmit}>
+              {document?.id ? t('Update Document') : t('Upload Document')}
+            </Button>
+          </ButtonGroup>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function DocumentsList(props: { documents: Document[]; eventId: string }) {
+  const { documents, eventId } = props;
+  const fetcher = useFetcher();
+  const [showDocumentsDialog, setSowDocumentsDialog] = useState<{
+    show: boolean;
+    document?: Document;
+    hash: number;
+  }>({ show: false, hash: 0 });
+  const [showDeleteDocumentDialog, setShowDeleteDocumentDialog] = useState<{
+    show: boolean;
+    document?: Document;
+  }>({ show: false });
+
+  function handleMoveUp(e: React.MouseEvent) {
+    fetcher.submit(
+      {},
+      {
+        method: 'post',
+        action: `organizer/document/${e.currentTarget.id}/move-up`
+      }
+    );
+  }
+
+  function handleMoveDown(e: React.MouseEvent) {
+    fetcher.submit(
+      {},
+      {
+        method: 'post',
+        action: `organizer/document/${e.currentTarget.id}/move-down`
+      }
+    );
+  }
+
+  function handleUpdateDocument(e: React.MouseEvent) {
+    const document = documents.find((d) => d.id === e.currentTarget.id);
+
+    if (!document) {
+      return;
+    }
+
+    setSowDocumentsDialog({ show: true, document, hash: Date.now() });
+  }
+
+  function handleCloseDocumentsDialog() {
+    setSowDocumentsDialog({ show: false, hash: 0 });
+  }
+
+  function handleOpenDeleteDocumentDialog(e: React.MouseEvent) {
+    const document = documents.find((d) => d.id === e.currentTarget.id);
+
+    if (!document) {
+      return;
+    }
+
+    setShowDeleteDocumentDialog({ show: true, document });
+  }
+
+  function handleCloseDeleteDocumentDialog() {
+    setShowDeleteDocumentDialog({ show: false });
+  }
+
+  return (
+    <>
+      {documents
+        .sort((a: Document, b: Document) => a.position - b.position)
+        .map((d: Document, index) => (
+          <div
+            key={d.id}
+            className="relative flex mb-4 justify-between items-center flex-row border-b p-4 last:border-none border-gray-300 dark:border-gray-300"
+          >
+            <div className="flex flex-row items-center">
+              <div className="flex flex-col mr-3 dark:text-blueGray-500">
+                {index === 0 ? null : (
+                  <button type="button" id={d.id} onClick={handleMoveUp}>
+                    <ChevronUpIcon className="md:h-6 w-6 m-0 inline-block" />
+                  </button>
+                )}
+                {index === documents.length - 1 ? null : (
+                  <button type="button" id={d.id} onClick={handleMoveDown}>
+                    <ChevronDownIcon className="md:h-6 w-6 m-0 inline-block" />
+                  </button>
+                )}
+              </div>
+              <div className={clsx('text-lg font-extrabold dark:text-white')}>
+                {d.label}
+              </div>
+            </div>
+            <div>
+              <a
+                href={`/organizer/document/${d.id}`}
+                target="_blank"
+                rel="noreferrer"
+                className="group relative inline-flex ml-14 dark:text-blueGray-500"
+              >
+                {/*couldn't find import of icon*/}
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="currentColor"
+                  className="w-6 h-6"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"
+                  />
+                </svg>
+              </a>
+              <button
+                className="group relative inline-flex ml-6 dark:text-blueGray-500"
+                type="button"
+                id={d.id}
+                onClick={handleOpenDeleteDocumentDialog}
+              >
+                <TrashIcon className="md:h-6 w-6 m-0 inline-block"></TrashIcon>
+              </button>
+
+              <Button
+                className="ml-6"
+                type="button"
+                id={d.id}
+                onClick={handleUpdateDocument}
+              >
+                <PencilAltIcon className="md:h-6 w-6 m-0 inline-block" />
+              </Button>
+            </div>
+          </div>
+        ))}
+
+      <UploadDocumentDialog
+        isOpen={showDocumentsDialog.show}
+        document={showDocumentsDialog.document}
+        onDismiss={handleCloseDocumentsDialog}
+        eventId={eventId}
+        hash={showDocumentsDialog.hash}
+      />
+
+      <DeleteDocumentDialog
+        isOpen={showDeleteDocumentDialog.show}
+        onDismiss={handleCloseDeleteDocumentDialog}
+        document={showDeleteDocumentDialog.document as Document}
+        eventId={eventId}
+      />
+    </>
+  );
+}
+
+function DeleteDocumentDialog(props: {
+  document: Document;
+  isOpen: boolean;
+  onDismiss: () => void;
+  eventId: string;
+}) {
+  const { t } = useTranslation(RESOURCES_NS);
+
+  const { document, isOpen, onDismiss, eventId } = props;
+  const fetcher = useFetcher();
+
+  function handleSubmit() {
+    fetcher.submit(
+      { actionId: 'delete', documentId: document.id },
+      {
+        method: 'post',
+        action: `organizer/document/${eventId}/manage`,
+        encType: 'multipart/form-data'
+      }
+    );
+  }
+
+  useEffect(() => {
+    if (fetcher.type === 'actionReload' && fetcher.data.ok) {
+      return onDismiss();
+    }
+  });
+
+  return (
+    <div
+      data-reach-dialog-overlay={true}
+      className={clsx({
+        'hidden ': !isOpen,
+        'z-50 flex h-screen': isOpen
+      })}
+    >
+      <div
+        aria-modal={true}
+        className={clsx(
+          'w-11/12 dark:bg-gray-900 border-2 border-black dark:border-white rounded-lg lg:px-24 lg:py-14 lg:max-w-screen-lg',
+          {
+            'hidden ': !isOpen,
+            'm-auto': isOpen
+          }
+        )}
+      >
+        <H3>{t('Delete Document X', { name: document?.label })}</H3>
+        <Paragraph>{t('Are you sure you want to delete document?')}</Paragraph>
+        <Spacer size="2xs" />
+
+        <div className="flex flex-wrap gap-4">
+          <Button type="button" onClick={onDismiss}>
+            {t('Ignore')}
+          </Button>
+          <Button
+            variant="danger"
+            size="medium"
+            type="button"
+            onClick={handleSubmit}
+          >
+            {t('Delete Document')}
           </Button>
         </div>
       </div>
