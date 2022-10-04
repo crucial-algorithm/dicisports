@@ -94,7 +94,6 @@ export const action: ActionFunction = async ({ params, request }) => {
     eventId
   };
 
-  console.log(raceData);
   const required = { invalid_type_error: t('Field required') };
   const str5CharsOrMore = z
     .string(required)
