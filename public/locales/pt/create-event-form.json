@@ -54,7 +54,7 @@
   "Upload Document": "Adicionar Documento",
   "Update Document": "Editar Documento",
   "Document Name": "Regras",
-  "GPX": "GPX",
+  "GPX": "Percurso GPX",
 
   "Field required": "Campo obrigatório",
   "Must Be Number": "Insira um número positivo",
@@ -70,7 +70,7 @@
   "Document Dropzone": "Arraste o ficheiro ou clique para fazer upload",
   "Uploaded Documents": "Documentos adicionados",
   "GPX Dropzone": "Arraste o ficheiro ou clique para fazer upload",
-  "Uploaded GPX": "GPX adicionados",
+  "Uploaded GPX": "Ficheiro adicionado",
   "No Document": "Nenhum documento encontrado",
   "No Race": "Nenhuma distância encontrada",
   "Download GPX File": "Ficheiro GPX",

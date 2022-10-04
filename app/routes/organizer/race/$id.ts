@@ -22,5 +22,12 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     });
   }
 
-  return downloadFromS3(race.track as string);
+  const body = downloadFromS3(race.track as string);
+
+  //@ts-ignore
+  return new Response(body, {
+    headers: {
+     'content-disposition' : `attachement; filename="${race.name}.gpx"`
+    }
+  });
 };

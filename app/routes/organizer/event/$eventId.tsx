@@ -753,7 +753,7 @@ function RaceDialog(props: {
 
   const { getRootProps, getInputProps } = useDropzone({
     multiple: false,
-    accept: 'text/*, .pdf',
+    accept: '.gpx',
     onDrop: (accepted) => {
       if (accepted.length === 0) {
         return;
@@ -992,6 +992,7 @@ function RaceDialog(props: {
                       target="_blank"
                       rel="noreferrer"
                       className="group relative inline-flex ml-14 dark:text-blueGray-500"
+                      download
                     >
                       {/*couldn't find import of icon*/}
                       <svg
