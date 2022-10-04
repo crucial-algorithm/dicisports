@@ -24,7 +24,15 @@ async function findEvents(): Promise<Array<Event>> {
 async function findEvent(id: string): Promise<Event | null> {
   return db.event.findUnique({
     where: { id },
-    include: { documents: true }
+    include: {
+      documents: {
+        where: {
+          status: {
+            not: 'deleted'
+          }
+        }
+      }
+    }
   });
 }
 
@@ -40,7 +48,7 @@ async function createDraftEvent(
       id: eventId,
       name: null,
       sportId: 1,
-      startAt: null,
+      startAt: eventAt,
       endAt: null,
       location: null,
       address: null,
@@ -84,15 +92,17 @@ async function updateEvent(
     await resetEventPerks(event.id, perks);
     await enableEventPerks(perks);
     await createPerks(
-      newPerks.filter((name) => !!name).map((p) => {
-        return {
-          id: Id(),
-          name: p,
-          isDefault: false,
-          isEnabled: true,
-          eventId: event.id
-        };
-      })
+      newPerks
+        .filter((name) => !!name)
+        .map((p) => {
+          return {
+            id: Id(),
+            name: p,
+            isDefault: false,
+            isEnabled: true,
+            eventId: event.id
+          };
+        })
     );
   });
 }

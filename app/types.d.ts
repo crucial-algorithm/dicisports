@@ -97,6 +97,13 @@ type Sport = {
   name: TranslationObject
 } & DBSport
 type Document = {} & DBDocument
+type CreateDocumentInput = {
+  id: string
+  label: string
+  path: string
+  eventId: string
+}
+
 type GroupType = {
   name: TranslationObject
 } & DBGroupType
@@ -112,9 +119,9 @@ type CreateEventInput = {
   location: string
   address: string
   useExternalBooking: boolean
-  externalBookingUrl: string | null
-  eventDescription: string | null
-  directions: string | null
+  externalBookingUrl?: string | null
+  eventDescription?: string | null
+  directions: string
   image1?: string | null
   image2?: string | null
   image3?: string | null
@@ -273,6 +280,7 @@ export {
   CreateEventInput,
   CreatePerksInput,
   CreateRaceInput,
+  CreateDocumentInput,
   DBRawGroup,
   LoginAction
 };

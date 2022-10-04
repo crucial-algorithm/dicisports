@@ -1,5 +1,5 @@
 import * as React from 'react';
-import type { LinksFunction, LoaderFunction, MetaFunction } from 'remix';
+import type { LinksFunction, LoaderFunction } from 'remix';
 import { json } from 'remix';
 import {
   Links,

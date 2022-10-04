@@ -4,7 +4,7 @@ import type { LinkProps } from '@remix-run/react';
 import { Link } from '@remix-run/react';
 
 type Props = {
-  onClick?: () => void
+  onClick?: (e: React.MouseEvent) => void
   ref?: React.MutableRefObject<null>
   type?: 'button' | 'reset' | 'submit'
   size?: 'medium' | 'large' | 'small' | 'tiny'
@@ -51,7 +51,8 @@ const Button: React.FC<Props> = ({
   size = 'medium',
   variant = 'primary',
   name,
-  value
+  value,
+  id
 }) => {
   if (variant === 'adornment')
     {return (
@@ -72,6 +73,7 @@ const Button: React.FC<Props> = ({
       disabled={disabled}
       name={name}
       value={value}
+      id={id}
     >
       <ButtonInner variant={variant} size={size}>
         {children}
