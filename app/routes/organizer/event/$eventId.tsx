@@ -965,76 +965,65 @@ function RaceDialog(props: {
               </FormField>
             )}
             {uploadedGPX && (
-              <FormField label={t('Uploaded GPX')}>
-                <div
-                  className={clsx(
-                    'text-md font-extrabold dark:text-white mt-4 ml-4'
-                  )}
-                >
-                  {uploadedGPX}
-                </div>
-              </FormField>
+              <div
+                className={clsx(
+                  'text-md font-extrabold dark:text-white mt-4 ml-4'
+                )}
+              >
+                {uploadedGPX}
+              </div>
             )}
 
             {race?.track && !deletedGPX && (
-              <FormField label={t('Uploaded GPX')}>
-                <div className="relative flex mb-4 justify-between items-center flex-row p-4">
-                  <div className="flex flex-row items-center">
-                    <div
-                      className={clsx('text-lg font-extrabold dark:text-white')}
-                    >
-                      {t('Download GPX File')}
-                    </div>
-                  </div>
-                  <div>
-                    <a
-                      href={`/organizer/race/${race?.id}`}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="group relative inline-flex ml-14 dark:text-blueGray-500"
-                      download
-                    >
-                      {/*couldn't find import of icon*/}
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        strokeWidth={1.5}
-                        stroke="currentColor"
-                        className="w-6 h-6"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"
-                        />
-                      </svg>
-                    </a>
-                    <button
-                      className="group relative inline-flex ml-6 dark:text-blueGray-500"
-                      type="button"
-                      onClick={handleDeleteGPX}
-                    >
-                      <TrashIcon className="md:h-6 w-6 m-0 inline-block"></TrashIcon>
-                    </button>
+              <div className="relative flex mb-4 justify-between items-center flex-row p-4">
+                <div className="flex flex-row items-center">
+                  <div
+                    className={clsx('text-lg font-extrabold dark:text-white')}
+                  >
+                    {t('Download GPX File')}
                   </div>
                 </div>
-              </FormField>
+                <div>
+                  <a
+                    href={`/organizer/race/${race?.id}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="group relative inline-flex ml-14 dark:text-blueGray-500"
+                    download
+                  >
+                    {/*couldn't find import of icon*/}
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth={1.5}
+                      stroke="currentColor"
+                      className="w-6 h-6"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"
+                      />
+                    </svg>
+                  </a>
+                  <button
+                    className="group relative inline-flex ml-6 dark:text-blueGray-500"
+                    type="button"
+                    onClick={handleDeleteGPX}
+                  >
+                    <TrashIcon className="md:h-6 w-6 m-0 inline-block"></TrashIcon>
+                  </button>
+                </div>
+              </div>
             )}
 
             <ButtonGroup className="w-full md:w-112 flex flex-wrap gap-4 justify-begin mt-8">
-              <Button
-                variant="secondary"
-                type="button"
-                onClick={close}
-              >
+              <Button variant="secondary" type="button" onClick={close}>
                 {t('Cancel')}
               </Button>
 
-              <Button
-                type="button"
-                onClick={handleSubmit}
-              >
+              <Button type="button" onClick={handleSubmit}>
                 {race?.id ? t('Update Distance') : t('Create Distance')}
               </Button>
             </ButtonGroup>
@@ -1381,17 +1370,15 @@ function UploadDocumentDialog(props: {
             </FormField>
           )}
           {uploadedDocument && (
-            <FormField label={t('Uploaded Documents')}>
-              <div
-                className={clsx(
-                  'text-md font-extrabold dark:text-white mt-4 ml-4'
-                )}
-              >
-                {uploadedDocument}
-              </div>
-            </FormField>
+            <div
+              className={clsx(
+                'text-md font-extrabold dark:text-white mt-4 ml-4'
+              )}
+            >
+              {uploadedDocument}
+            </div>
           )}
-          <ButtonGroup>
+          <ButtonGroup className="mt-8">
             <Button type="button" variant="secondary" onClick={close}>
               {t('Cancel')}
             </Button>
