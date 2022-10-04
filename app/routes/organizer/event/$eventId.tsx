@@ -1010,7 +1010,7 @@ function RaceDialog(props: {
                       </svg>
                     </a>
                     <button
-                      className="group relative inline-flex ml-14 dark:text-blueGray-500"
+                      className="group relative inline-flex ml-6 dark:text-blueGray-500"
                       type="button"
                       onClick={handleDeleteGPX}
                     >
