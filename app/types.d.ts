@@ -108,6 +108,13 @@ type GroupType = {
   name: TranslationObject
 } & DBGroupType
 
+type GroupInput = {
+  groupSpirit?: DBGroupSpirit | undefined;
+  groupType?: DBGroupType | undefined;
+  sport?: DBSport | undefined | null;
+  createdBy?: User | DBUser;
+  description: string | null;
+} & DBGroup;
 
 type Event = {} & DBEvent
 
@@ -201,7 +208,7 @@ type Group = {
   groupType?: GroupType
   sport?: Sport
   distance?: number
-  description?: string
+  description: string | null
   schedules?: GroupSchedule[]
 } & DBGroup
 
@@ -267,6 +274,7 @@ export {
   // entities
   User,
   Group,
+  GroupInput,
   CreateGroupInput,
   GroupType,
   GroupSpirit,
