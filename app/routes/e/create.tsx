@@ -21,5 +21,5 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     // TODO: redirect somewhere
   }
 
-  return redirect(`/organizer/event/${eventId}`);
+  return redirect(`/e/${eventId}`);
 };

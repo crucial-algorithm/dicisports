@@ -35,8 +35,8 @@ import { useElementState } from './hooks/useElementState';
 
 
 const LINKS = [
-  { name: 'NAVBAR >>> Events', to: '/organizer', public: false, roles: ['ADMIN'] },
-  { name: 'NAVBAR >>> Meeting Point', to: '/m/groups', public: false, roles: [] }
+  { name: 'NAVBAR >>> Events', to: '/e', public: false, roles: ['ADMIN'] },
+  { name: 'NAVBAR >>> Meeting Point', to: '/g/groups', public: false, roles: [] }
 ];
 
 const MOBILE_LINKS = [{ name: 'Home', to: '/', public: true, roles: [] }, ...LINKS];

@@ -58,14 +58,14 @@ export default function OrganizerIndexRoute() {
         <div className="col-span-full mb-12 lg:mb-12">
           <div className="flex flex-col-reverse items-start justify-between lg:flex-row lg:items-center">
             <div />
-            <ButtonLink variant="secondary" to={'/organizer/event/create'}>
+            <ButtonLink variant="secondary" to={'/e/create'}>
               <H6 as="span">{t('Create')}</H6>
             </ButtonLink>
           </div>
         </div>
         <div className="events-list">
           {events.map((event: Event) => (
-            <Link to={`/organizer/event/${event.id}`} key={event.id}>
+            <Link to={`/e/${event.id}`} key={event.id}>
               <div
                 className={clsx(
                   'relative flex mb-12',

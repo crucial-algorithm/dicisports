@@ -725,7 +725,7 @@ function RaceDialog(props: {
     // @ts-ignore
     fetcher.submit(payload, {
       method: 'post',
-      action: '/organizer/race/manage'
+      action: '/e/race/manage'
     });
   }
 
@@ -937,7 +937,7 @@ function RacesList(props: { races: Race[]; eventId: string }) {
       {},
       {
         method: 'post',
-        action: `/organizer/race/${e.currentTarget.id}/move-up`
+        action: `/e/race/${e.currentTarget.id}/move-up`
       }
     );
   }
@@ -947,7 +947,7 @@ function RacesList(props: { races: Race[]; eventId: string }) {
       {},
       {
         method: 'post',
-        action: `/organizer/race/${e.currentTarget.id}/move-down`
+        action: `/e/race/${e.currentTarget.id}/move-down`
       }
     );
   }
@@ -1063,7 +1063,7 @@ function DeleteRaceDialog(props: {
       { actionId: 'delete', raceId: race?.id as string, eventId: eventId },
       {
         method: 'post',
-        action: '/organizer/race/manage'
+        action: '/e/race/manage'
       }
     );
   }
@@ -1146,7 +1146,7 @@ function UploadDocumentDialog(props: {
       },
       {
         method: 'post',
-        action: `organizer/document/${eventId}/manage`,
+        action: `e/document/${eventId}/manage`,
         encType: 'multipart/form-data'
       }
     );
@@ -1297,7 +1297,7 @@ function DocumentsList(props: { documents: Document[]; eventId: string }) {
       {},
       {
         method: 'post',
-        action: `organizer/document/${e.currentTarget.id}/move-up`
+        action: `e/document/${e.currentTarget.id}/move-up`
       }
     );
   }
@@ -1307,7 +1307,7 @@ function DocumentsList(props: { documents: Document[]; eventId: string }) {
       {},
       {
         method: 'post',
-        action: `organizer/document/${e.currentTarget.id}/move-down`
+        action: `e/document/${e.currentTarget.id}/move-down`
       }
     );
   }
@@ -1368,7 +1368,7 @@ function DocumentsList(props: { documents: Document[]; eventId: string }) {
             </div>
             <div>
               <a
-                href={`/organizer/document/${d.id}`}
+                href={`/e/document/${d.id}`}
                 target="_blank"
                 rel="noreferrer"
                 className="group relative inline-flex ml-14 dark:text-blueGray-500"
@@ -1444,7 +1444,7 @@ function DeleteDocumentDialog(props: {
       { actionId: 'delete', documentId: document.id },
       {
         method: 'post',
-        action: `organizer/document/${eventId}/manage`,
+        action: `e/document/${eventId}/manage`,
         encType: 'multipart/form-data'
       }
     );
