@@ -6,11 +6,11 @@ import type { CreateRaceInput, Race } from '~/types';
 
 const prisma = new PrismaClient();
 
-async function createRace(race: CreateRaceInput): Promise<Race | void> {
-  const raceId = Id();
+async function createRace(race: CreateRaceInput): Promise<Race> {
+  const raceId = race.id || Id();
   const raceAt = new Date();
 
-  await db.race.create({
+  const r = await db.race.create({
     data: {
       id: raceId,
       name: race.name,
@@ -24,9 +24,13 @@ async function createRace(race: CreateRaceInput): Promise<Race | void> {
       priceEarlyBird: race.priceEarlyBird,
       validUntil: race.validUntil,
       raceDescription: race.raceDescription,
+      track: race.track,
       eventId: race.eventId
     }
   });
+
+  console.log(r);
+  return r;
 }
 
 async function findEventRaces(eventId: string): Promise<Race[] | void> {
@@ -42,24 +46,36 @@ async function findRace(raceId: string): Promise<Race | null> {
   });
 }
 
-async function updateRace(race: CreateRaceInput): Promise<void> {
+async function updateRace(race: CreateRaceInput, clearTrack = false): Promise<void> {
   const raceAt = new Date();
 
+  const update = {
+    name: race.name,
+    distance: race.distance,
+    updatedAt: raceAt,
+    startTime: race.startTime,
+    elevationGain: race.elevationGain,
+    elevationLoss: race.elevationLoss,
+    price: race.price,
+    priceEarlyBird: race.priceEarlyBird,
+    validUntil: race.validUntil,
+    raceDescription: race.raceDescription,
+    displayOrder: race.displayOrder as number
+  };
+
+  if (clearTrack) {
+    //@ts-ignore
+    update.track = null;
+  }
+
+  if (race.track !== null) {
+    //@ts-ignore
+    update.track = race.track;
+  }
+
   await db.race.update({
-    where: { id: race.id },
-    data: {
-      name: race.name,
-      distance: race.distance,
-      updatedAt: raceAt,
-      startTime: race.startTime,
-      elevationGain: race.elevationGain,
-      elevationLoss: race.elevationLoss,
-      price: race.price,
-      priceEarlyBird: race.priceEarlyBird,
-      validUntil: race.validUntil,
-      raceDescription: race.raceDescription,
-      displayOrder: race.displayOrder as number
-    }
+    where: { id: race.id as string },
+    data: update
   });
 }
 

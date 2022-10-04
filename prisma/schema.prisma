@@ -210,6 +210,7 @@ model Race {
   raceDescription   String?         @map("race_description")
   displayOrder      Int             @default(autoincrement()) @map("display_order")
   status            Status          @default(auto)
+  track             String?
   eventId           String          @map("event_id")
   event             Event           @relation(fields: [eventId], references: [id])
 

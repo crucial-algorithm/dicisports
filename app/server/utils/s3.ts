@@ -54,7 +54,7 @@ const downloadFromS3 = async (key: string) => {
   console.log(fileStream);
 
   // @ts-ignore
-  return new Response(fileStream?.Body);
+  return fileStream?.Body;
 };
 
 export { uploadToS3, downloadFromS3 };
