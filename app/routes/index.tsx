@@ -601,7 +601,7 @@ function CallToActionToCreateGroup({
   className?: string;
 }) {
   return (
-    <Form method="post" action="/g/group/add">
+    <Form method="post" action="/g/add">
       <input type="hidden" name="actionId" value="create" />
       <button
         className={clsx(
@@ -705,7 +705,7 @@ function GroupResult({
               // @ts-ignore
               ref={ref}
               method="post"
-              action={`/g/group/fav/${group.id}`}
+              action={`/g/fav/${group.id}`}
             >
               {isUserFavorite ? (
                 <Button size="tiny" name="action" value="remove">

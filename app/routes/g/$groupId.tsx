@@ -111,7 +111,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   const group = groupId ? await findGroup(groupId) : null;
 
   if (!group || group.createdById !== user.id) {
-    return redirect('/g/groups');
+    return redirect('/g/');
   }
 
   return json({
@@ -202,7 +202,7 @@ export const action: ActionFunction = async ({ request, params }) => {
   // from here on, the user is capable of doing whatever to the group
   if (action === actionIds.delete) {
     await deleteGroup(group.id);
-    return redirect(`/g/groups?message=${t('Group deleted successfully')}`);
+    return redirect(`/g/?message=${t('Group deleted successfully')}`);
   }
   const isUpdate = group.status !== 'auto';
   const image1 = form.get('/file/image/0') as string;
@@ -285,7 +285,7 @@ export const action: ActionFunction = async ({ request, params }) => {
     GroupSchema.parse(data);
     await updateGroup(data, schedules);
     return redirect(
-      `/g/groups?message=${t(
+      `/g/?message=${t(
         isUpdate ? 'Group updated successfully' : 'Group created successfully'
       )}`
     );

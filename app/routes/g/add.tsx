@@ -15,5 +15,5 @@ export const action: ActionFunction = async ({ request }) => {
     console.log(err);
     // TODO: redirect somewhere
   }
-  return redirect(`/g/group/${id}`);
+  return redirect(`/g/${id}`);
 };

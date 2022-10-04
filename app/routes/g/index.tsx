@@ -62,7 +62,7 @@ export const action: ActionFunction = async ({ request }) => {
 
   if (!groupId) {return json({});}
   await removeGroupFromFavorites(user.id, groupId);
-  return redirect(`/g/groups?message=${t('Favorite Removed')}`);
+  return redirect(`/g/?message=${t('Favorite Removed')}`);
 };
 
 export default function Groups() {
@@ -74,7 +74,7 @@ export default function Groups() {
       <div className="col-span-full mb-12 lg:mb-12">
         <div className="flex flex-col-reverse items-start justify-between lg:flex-row lg:items-center">
           <div />
-          <Form method="post" action="/g/group/add">
+          <Form method="post" action="/g/add">
             <input type="hidden" name="actionId" value={actionIds.create} />
             <Button variant="secondary">
               <H6 as="span">{t('Create')}</H6>
@@ -92,7 +92,7 @@ export default function Groups() {
             img={sports.find((s: Sport) => s.id === group.sportId)?.picture}
             actions={
               <ButtonGroup>
-                <ButtonLink size="small" to={`/g/group/${group.id}`}>
+                <ButtonLink size="small" to={`/g/${group.id}`}>
                   <PencilAltIcon className="h-6 w-6 m-0 inline-block" />
                 </ButtonLink>
               </ButtonGroup>
