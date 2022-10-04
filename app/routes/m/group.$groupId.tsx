@@ -178,7 +178,15 @@ export const action: ActionFunction = async ({ request, params }) => {
     unstable_createMemoryUploadHandler()
   );
 
-  const form = await unstable_parseMultipartFormData(request, uploadHandler);
+  let form: FormData;
+
+  try {
+    form = await unstable_parseMultipartFormData(request, uploadHandler);
+  } catch (e) {
+    // delete can't be processed with multipart form data 🤷‍♂️
+    form = await request.formData();
+  }
+
   const action = form.get('actionId') as string;
 
   // Check if user should be able to manipulate this group
