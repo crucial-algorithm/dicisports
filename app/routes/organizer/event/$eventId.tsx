@@ -1136,7 +1136,7 @@ function RacesList(props: { races: Race[]; eventId: string }) {
             </div>
             <div>
               <button
-                className="group relative inline-flex ml-14 dark:text-blueGray-500"
+                className="group relative inline-flex ml-6 dark:text-blueGray-500"
                 type="button"
                 id={r.id}
                 onClick={handleDeleteRace}
