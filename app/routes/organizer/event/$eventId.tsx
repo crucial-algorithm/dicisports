@@ -178,7 +178,7 @@ export const action: ActionFunction = async ({ request, params }) => {
     useExternalBooking: form.get('booking') === 'external',
     externalBookingUrl: (form.get('booking-url') as string) || null,
     eventDescription: (form.get('description') as string) || null,
-    directions: form.get('get-there') as string,
+    directions: (form.get('get-there') as string) || null,
     image1: processImgField(image1, isUpdate),
     image2: processImgField(image2, isUpdate),
     image3: processImgField(image3, isUpdate),
@@ -210,17 +210,14 @@ export const action: ActionFunction = async ({ request, params }) => {
     eventDescription: z
       .string({ invalid_type_error: t('Invalid Type') })
       .min(1, { message: t('Min 1 chars') })
-      .nullable(),
-    directions: z
-      .string({
-        invalid_type_error: t('Invalid Type')
-      })
-      .min(1, { message: t('Min 1 chars') })
+      .nullable()
   });
 
   try {
     EventSchema.parse(data);
     await updateEvent(data, perks, newPerks);
+    //TODO: change return
+    return json({});
   } catch (e) {
     if (!(e instanceof ZodError)) {
       console.error(e);
@@ -675,6 +672,8 @@ function RaceDialog(props: {
   const { isOpen, triggerModalClose, eventId, race, hash } = props;
   const fetcher = useFetcher();
   const [errors, setErrors] = useState<FormErrors>({});
+  const [uploadedGPX, setUploadedGPX] = useState<string | null>(null);
+  const [deletedGPX, setDeletedGPX] = useState<boolean>(false);
   const [hour, minute] = timeOfDayToHoursMinutes(
     race?.startTime ? race.startTime : hoursMinutesToTimeOfDay(9, 0)
   );
@@ -692,6 +691,8 @@ function RaceDialog(props: {
   const close = useCallback(() => {
     setErrors({});
     triggerModalClose();
+    setUploadedGPX(null);
+    setDeletedGPX(false);
   }, [triggerModalClose]);
 
   function handleSubmit() {
@@ -717,16 +718,64 @@ function RaceDialog(props: {
       priceEarlyBird: priceEarlyBird.current?.value,
       date: validUntil.current?.value,
       description: raceDescription.current?.value,
-      hash,
-      eventId
+      deletedGPX,
+      hash
     };
+
+    if (inputEl.current?.files[0]) {
+      if (race && race.id) {
+        // @ts-ignore
+        payload[`file/${race.id}`] = inputEl.current?.files[0];
+      } else {
+        // @ts-ignore
+        payload.file = inputEl.current?.files[0];
+      }
+    }
 
     // Payload types error
     // @ts-ignore
     fetcher.submit(payload, {
       method: 'post',
-      action: '/organizer/race/manage'
+      action: `/organizer/race/${eventId}/manage`,
+      encType: 'multipart/form-data'
     });
+  }
+
+  function FileListItems(files: File[]) {
+    const dt = new ClipboardEvent('').clipboardData || new DataTransfer();
+
+    for (let i = 0, len = files.length; i < len; i++) {
+      dt.items.add(files[i]);
+    }
+
+    return dt.files;
+  }
+
+  const { getRootProps, getInputProps } = useDropzone({
+    multiple: false,
+    accept: 'text/*, .pdf',
+    onDrop: (accepted) => {
+      if (accepted.length === 0) {
+        return;
+      }
+      const file: File = accepted[0] as File;
+
+      if (!inputEl || !inputEl.current) {
+        return;
+      }
+
+      // @ts-ignore
+      inputEl.current.files = new FileListItems([file]);
+      setUploadedGPX(file.name);
+    }
+  });
+  const inputProps = getInputProps();
+  // @ts-ignore
+  const inputEl = inputProps.ref;
+
+  function handleDeleteGPX() {
+    setDeletedGPX(true);
+    setUploadedGPX(null);
   }
 
   useEffect(() => {
@@ -892,9 +941,88 @@ function RaceDialog(props: {
               </div>
             </FormField>
 
-            <div className="w-full md:w-112 flex flex-wrap gap-4 justify-begin">
+            {(!race?.track || deletedGPX) && (
+              <FormField label={t('GPX')}>
+                <section
+                  className={clsx(
+                    'h-40 bg-gray-100 text-black placeholder-gray-500 text-lg font-medium',
+                    'dark:disabled:text-blueGray-500 dark:text-white dark:bg-gray-800',
+                    'object-cover object-left-top overflow-hidden',
+                    'flex content-center justify-center'
+                  )}
+                >
+                  <div
+                    {...getRootProps({
+                      className: 'h-80 w-full overflow-hidden'
+                    })}
+                  >
+                    <input {...inputProps} name="" ref={inputEl} />
+                    <p className="h-40 w-full flex items-center justify-center">
+                      {t('GPX Dropzone')}
+                    </p>
+                  </div>
+                </section>
+              </FormField>
+            )}
+            {uploadedGPX && (
+              <FormField label={t('Uploaded GPX')}>
+                <div
+                  className={clsx(
+                    'text-md font-extrabold dark:text-white mt-4 ml-4'
+                  )}
+                >
+                  {uploadedGPX}
+                </div>
+              </FormField>
+            )}
+
+            {race?.track && !deletedGPX && (
+              <FormField label={t('Uploaded GPX')}>
+                <div className="relative flex mb-4 justify-between items-center flex-row p-4">
+                  <div className="flex flex-row items-center">
+                    <div
+                      className={clsx('text-lg font-extrabold dark:text-white')}
+                    >
+                      {t('Download GPX File')}
+                    </div>
+                  </div>
+                  <div>
+                    <a
+                      href={`/organizer/race/${race?.id}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="group relative inline-flex ml-14 dark:text-blueGray-500"
+                    >
+                      {/*couldn't find import of icon*/}
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth={1.5}
+                        stroke="currentColor"
+                        className="w-6 h-6"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"
+                        />
+                      </svg>
+                    </a>
+                    <button
+                      className="group relative inline-flex ml-14 dark:text-blueGray-500"
+                      type="button"
+                      onClick={handleDeleteGPX}
+                    >
+                      <TrashIcon className="md:h-6 w-6 m-0 inline-block"></TrashIcon>
+                    </button>
+                  </div>
+                </div>
+              </FormField>
+            )}
+
+            <ButtonGroup className="w-full md:w-112 flex flex-wrap gap-4 justify-begin mt-8">
               <Button
-                className="mt-8"
                 variant="secondary"
                 type="button"
                 onClick={close}
@@ -903,14 +1031,12 @@ function RaceDialog(props: {
               </Button>
 
               <Button
-                size="medium"
-                className="mt-8"
                 type="button"
                 onClick={handleSubmit}
               >
                 {race?.id ? t('Update Distance') : t('Create Distance')}
               </Button>
-            </div>
+            </ButtonGroup>
           </div>
         </div>
       </div>
@@ -1060,10 +1186,10 @@ function DeleteRaceDialog(props: {
 
   function handleSubmit() {
     fetcher.submit(
-      { actionId: 'delete', raceId: race?.id as string, eventId: eventId },
+      { actionId: 'delete', raceId: race?.id as string },
       {
         method: 'post',
-        action: '/organizer/race/manage'
+        action: `/organizer/race/${eventId}/manage`
       }
     );
   }
@@ -1127,7 +1253,6 @@ function UploadDocumentDialog(props: {
   const [errors, setErrors] = useState<FormErrors>({});
   const [uploadedDocument, setUploadedDocument] = useState<string | null>(null);
   const name = useRef<HTMLInputElement>(null);
-  // const file = useRef<HTMLInputElement>(null);
 
   const close = useCallback(() => {
     setErrors({});

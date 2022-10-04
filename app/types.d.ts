@@ -121,7 +121,7 @@ type CreateEventInput = {
   useExternalBooking: boolean
   externalBookingUrl?: string | null
   eventDescription?: string | null
-  directions: string
+  directions: string | null
   image1?: string | null
   image2?: string | null
   image3?: string | null
@@ -145,7 +145,7 @@ type CreatePerksInput = {
 type Race = {} & DBRace
 
 type CreateRaceInput = {
-  id: string
+  id: string | null
   name: string
   distance: number
   createdAt?: Date
@@ -159,6 +159,7 @@ type CreateRaceInput = {
   raceDescription?: string | null
   displayOrder?: number | null
   eventId: string
+  track: string | null
 }
 
 type GroupSpirit = {
