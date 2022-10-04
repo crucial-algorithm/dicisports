@@ -1,3 +1,4 @@
+import type { Prisma } from '@prisma/client';
 import { PrismaClient, Status } from '@prisma/client';
 
 import type {
@@ -104,18 +105,19 @@ async function updateGroup(
   group: CreateGroupInput,
   schedules: { day: number; hour: number; minute: number }[]
 ): Promise<void> {
-  const groupInDb = await findGroup(group.id as string);
+  return await prisma.$transaction(async (tx) => {
+    const groupInDb = await findGroup(group.id as string);
 
-  if (!groupInDb || groupInDb.slug === null) {
-    group.slug = await assignUniqueSlug(group.name);
-  }
-  return await prisma.$transaction(async (prisma) => {
-    await prisma.group.update({
+    if (!groupInDb || groupInDb.slug === null) {
+      group.slug = await assignUniqueSlug(group.name);
+    }
+
+    await tx.group.update({
       where: { id: group.id },
       data: { ...group, status: Status.published }
     });
 
-    await removeSchedules(group.id as string);
+    await removeSchedules(group.id as string, tx);
     await createSchedules(
       schedules.map((s) => {
         return {
@@ -124,7 +126,7 @@ async function updateGroup(
           timeOfDay: hoursMinutesToTimeOfDay(s.hour, s.minute),
           groupId: group.id as string
         };
-      })
+      }), tx
     );
   });
 }
@@ -188,14 +190,14 @@ async function findSchedules(groupId: string) {
   });
 }
 
-async function createSchedules(schedules: CreateScheduleInput[]) {
-  await db.groupSchedule.createMany({
+async function createSchedules(schedules: CreateScheduleInput[], tx?:  Prisma.TransactionClient) {
+  return (tx || db).groupSchedule.createMany({
     data: schedules
   });
 }
 
-async function removeSchedules(groupId: string) {
-  await db.groupSchedule.deleteMany({
+async function removeSchedules(groupId: string, tx?: Prisma.TransactionClient) {
+  return (tx || db).groupSchedule.deleteMany({
     where: { groupId }
   });
 }
