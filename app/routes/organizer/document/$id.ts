@@ -22,7 +22,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     });
   }
 
-  const body = downloadFromS3(document.path);
+  const body = await downloadFromS3(document.path);
 
   //@ts-ignore
   return new Response(body, {
