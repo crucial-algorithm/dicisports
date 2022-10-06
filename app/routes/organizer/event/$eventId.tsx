@@ -1143,23 +1143,23 @@ function RacesList(props: { races: Race[]; eventId: string }) {
                 <PencilAltIcon className="md:h-6 w-6 m-0 inline-block" />
               </Button>
             </div>
+
+            <RaceDialog
+              isOpen={showRacesDialog.show}
+              triggerModalClose={handleCloseRace}
+              eventId={eventId}
+              race={showRacesDialog.race}
+              hash={showRacesDialog.hash}
+            />
+
+            <DeleteRaceDialog
+              isOpen={deleteModalOpen.show}
+              onDismiss={handleDeleteRaceClose}
+              race={deleteModalOpen.race}
+              eventId={eventId}
+            />
           </div>
         ))}
-
-      <RaceDialog
-        isOpen={showRacesDialog.show}
-        triggerModalClose={handleCloseRace}
-        eventId={eventId}
-        race={showRacesDialog.race}
-        hash={showRacesDialog.hash}
-      />
-
-      <DeleteRaceDialog
-        isOpen={deleteModalOpen.show}
-        onDismiss={handleDeleteRaceClose}
-        race={deleteModalOpen.race}
-        eventId={eventId}
-      />
     </>
   );
 }
@@ -1520,23 +1520,23 @@ function DocumentsList(props: { documents: Document[]; eventId: string }) {
                 <PencilAltIcon className="md:h-6 w-6 m-0 inline-block" />
               </Button>
             </div>
+
+            <UploadDocumentDialog
+                isOpen={showDocumentsDialog.show}
+                document={showDocumentsDialog.document}
+                onDismiss={handleCloseDocumentsDialog}
+                eventId={eventId}
+                hash={showDocumentsDialog.hash}
+            />
+
+            <DeleteDocumentDialog
+                isOpen={showDeleteDocumentDialog.show}
+                onDismiss={handleCloseDeleteDocumentDialog}
+                document={showDeleteDocumentDialog.document as Document}
+                eventId={eventId}
+            />
           </div>
         ))}
-
-      <UploadDocumentDialog
-        isOpen={showDocumentsDialog.show}
-        document={showDocumentsDialog.document}
-        onDismiss={handleCloseDocumentsDialog}
-        eventId={eventId}
-        hash={showDocumentsDialog.hash}
-      />
-
-      <DeleteDocumentDialog
-        isOpen={showDeleteDocumentDialog.show}
-        onDismiss={handleCloseDeleteDocumentDialog}
-        document={showDeleteDocumentDialog.document as Document}
-        eventId={eventId}
-      />
     </>
   );
 }
