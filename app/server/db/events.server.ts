@@ -89,8 +89,8 @@ async function updateEvent(
         status: Status.draft
       }
     });
-    await resetEventPerks(event.id, perks);
-    await enableEventPerks(perks);
+    await resetEventPerks(event.id, perks, prisma);
+    await enableEventPerks(perks, prisma);
     await createPerks(
       newPerks
         .filter((name) => !!name)
@@ -102,7 +102,7 @@ async function updateEvent(
             isEnabled: true,
             eventId: event.id
           };
-        })
+        }), prisma
     );
   });
 }

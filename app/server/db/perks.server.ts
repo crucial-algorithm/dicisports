@@ -1,10 +1,14 @@
+import type { Prisma } from '@prisma/client';
+
 import { db } from '~/server/db.server';
+
 import Id from '~/server/utils/Id.server';
 import { dbPerkToPerk } from '~/server/db/codecs.server';
 
 import type { CreatePerksInput, Language, Perk } from '~/types';
 
 import json from './perks.json';
+
 
 async function findEventPerks(eventId: string): Promise<Array<Perk>> {
   const perks = await db.perk.findMany({
@@ -22,9 +26,10 @@ async function findPerk(id: string): Promise<Perk | null> {
 
 async function resetEventPerks(
   eventId: string,
-  perks: string[]
+  perks: string[],
+  tx?: Prisma.TransactionClient
 ): Promise<void> {
-  await db.perk.deleteMany({
+  await (tx || db).perk.deleteMany({
     where: {
       id: { notIn: perks },
       eventId: eventId,
@@ -32,7 +37,7 @@ async function resetEventPerks(
     }
   });
 
-  await db.perk.updateMany({
+  await (tx || db).perk.updateMany({
     where: {
       eventId: eventId
     },
@@ -42,7 +47,10 @@ async function resetEventPerks(
   });
 }
 
-async function createDefaultPerks(eventId: string, language: Language): Promise<Perk | void> {
+async function createDefaultPerks(
+  eventId: string,
+  language: Language
+): Promise<Perk | void> {
   const perks: CreatePerksInput[] = [];
 
   for (const perk of json) {
@@ -80,14 +88,20 @@ async function createPerk(perk: CreatePerksInput): Promise<Perk | void> {
   });
 }
 
-async function createPerks(perks: CreatePerksInput[]): Promise<Perk | void> {
-  await db.perk.createMany({
+async function createPerks(
+  perks: CreatePerksInput[],
+  tx?: Prisma.TransactionClient
+): Promise<Perk | void> {
+  await (tx || db).perk.createMany({
     data: perks
   });
 }
 
-async function enableEventPerks(perks: string[]): Promise<void> {
-  await db.perk.updateMany({
+async function enableEventPerks(
+  perks: string[],
+  tx?: Prisma.TransactionClient
+): Promise<void> {
+  await (tx || db).perk.updateMany({
     where: { id: { in: perks } },
     data: {
       isEnabled: true
