@@ -1179,7 +1179,8 @@ function DeleteRaceDialog(props: {
       { actionId: 'delete', raceId: race?.id as string },
       {
         method: 'post',
-        action: `/organizer/race/${eventId}/manage`
+        action: `/organizer/race/${eventId}/manage`,
+        encType: 'multipart/form-data'
       }
     );
   }
