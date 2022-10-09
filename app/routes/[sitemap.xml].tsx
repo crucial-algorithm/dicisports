@@ -15,7 +15,7 @@ const STATIC_ROUTES: SitemapEntry[] = [
 ];
 
 export const loader: LoaderFunction = async ({ request }) => {
-  const domainUrl = getDomainUrl(request);
+  const domainUrl = getDomainUrl(request).replace('www.', '');
   const sports = await findSports();
   const groups = await findGroups();
 
