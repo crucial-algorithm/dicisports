@@ -25,7 +25,7 @@ type Await<Type> = Type extends Promise<infer Value> ? Await<Value> : Type
 
 /** Kent C Dodds types copied when recreating login */
 
-type KCDSitemapEntry = {
+type SitemapEntry = {
   route: string
   lastmod?: string
   changefreq?:
@@ -47,8 +47,8 @@ type KCDHandle = {
   getSitemapEntries?: (
     request: Request
   ) =>
-    | Promise<Array<KCDSitemapEntry | null> | null>
-    | Array<KCDSitemapEntry | null>
+    | Promise<Array<SitemapEntry | null> | null>
+    | Array<SitemapEntry | null>
     | null
 }
 
@@ -264,7 +264,7 @@ export {
   NonNullProperties,
   MemberProfile,
   Await,
-  KCDSitemapEntry,
+  SitemapEntry,
   KCDHandle,
   Language,
   TranslationObject,
