@@ -1,23 +1,22 @@
 import type {
-  Group as DBGroup,
-  GroupType as DBGroupType,
   GroupSpirit as DBGroupSpirit,
-  Sport as DBSport,
+  GroupType as DBGroupType,
   Perk as DBPerk,
+  Sport as DBSport,
   Status
 } from '@prisma/client';
 import { Role } from '@prisma/client';
 
 import type {
   DaysOfWeek,
+  DBRawGroup,
   Group,
   GroupSpirit,
   GroupType,
-  TranslationObject,
-  User,
-  Sport,
   Perk,
-  DBRawGroup
+  Sport,
+  TranslationObject,
+  GroupInput
 } from '~/types';
 
 function dbSportToSport(sport: DBSport): Sport {
@@ -59,14 +58,6 @@ function dbGroupTypeToGroupType(group: DBGroupType): GroupType {
     name: name as TranslationObject
   };
 }
-
-type GroupInput = {
-  groupSpirit?: DBGroupSpirit | undefined;
-  groupType?: DBGroupType | undefined;
-  sport?: DBSport | undefined | null;
-  createdBy?: User;
-  description?: string;
-} & DBGroup;
 
 function dbGroupToGroup(group: GroupInput): Group {
   return {

@@ -25,7 +25,7 @@ type Await<Type> = Type extends Promise<infer Value> ? Await<Value> : Type
 
 /** Kent C Dodds types copied when recreating login */
 
-type KCDSitemapEntry = {
+type SitemapEntry = {
   route: string
   lastmod?: string
   changefreq?:
@@ -47,8 +47,8 @@ type KCDHandle = {
   getSitemapEntries?: (
     request: Request
   ) =>
-    | Promise<Array<KCDSitemapEntry | null> | null>
-    | Array<KCDSitemapEntry | null>
+    | Promise<Array<SitemapEntry | null> | null>
+    | Array<SitemapEntry | null>
     | null
 }
 
@@ -108,6 +108,13 @@ type GroupType = {
   name: TranslationObject
 } & DBGroupType
 
+type GroupInput = {
+  groupSpirit?: DBGroupSpirit | undefined;
+  groupType?: DBGroupType | undefined;
+  sport?: DBSport | undefined | null;
+  createdBy?: User | DBUser;
+  description: string | null;
+} & DBGroup;
 
 type Event = {} & DBEvent
 
@@ -121,7 +128,7 @@ type CreateEventInput = {
   useExternalBooking: boolean
   externalBookingUrl?: string | null
   eventDescription?: string | null
-  directions: string
+  directions: string | null
   image1?: string | null
   image2?: string | null
   image3?: string | null
@@ -145,7 +152,7 @@ type CreatePerksInput = {
 type Race = {} & DBRace
 
 type CreateRaceInput = {
-  id: string
+  id: string | null
   name: string
   distance: number
   createdAt?: Date
@@ -159,6 +166,7 @@ type CreateRaceInput = {
   raceDescription?: string | null
   displayOrder?: number | null
   eventId: string
+  track: string | null
 }
 
 type GroupSpirit = {
@@ -201,7 +209,7 @@ type Group = {
   groupType?: GroupType
   sport?: Sport
   distance?: number
-  description?: string
+  description: string | null
   schedules?: GroupSchedule[]
 } & DBGroup
 
@@ -256,7 +264,7 @@ export {
   NonNullProperties,
   MemberProfile,
   Await,
-  KCDSitemapEntry,
+  SitemapEntry,
   KCDHandle,
   Language,
   TranslationObject,
@@ -267,6 +275,7 @@ export {
   // entities
   User,
   Group,
+  GroupInput,
   CreateGroupInput,
   GroupType,
   GroupSpirit,

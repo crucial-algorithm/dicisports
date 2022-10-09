@@ -31,7 +31,6 @@ import { getSession } from '~/server/auth/session.server';
 import { getLoginInfoSession } from '~/server/auth/login.server';
 import { getDomainUrl } from '~/utils/misc';
 import { getClientSession } from '~/server/auth/client.server';
-import { pathedRoutes } from '~/other-routes.server';
 import { NotificationMessage } from '~/components/shared/NotificationMessage';
 
 import type { Theme } from '~/utils/theme-provider';
@@ -106,12 +105,6 @@ export type RootLoaderData = {
 };
 
 export const loader: LoaderFunction = async ({ request }) => {
-  // because this is called for every route, we'll do an early return for anything
-  // that has a other route setup. The response will be handled there.
-  if (pathedRoutes[new URL(request.url).pathname]) {
-    return new Response();
-  }
-
   function getUser() {
     return session.getUser();
   }

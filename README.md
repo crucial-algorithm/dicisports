@@ -31,6 +31,7 @@ Now you'll need to pick a host to deploy it to.
 ### Deploying changes to the database
 
 ```sh
+npx prisma migrate reset
 npx prisma migrate dev --name <something-meaningful-that-will-be-assigned-to-folder-name> --create-only
 ```
 
