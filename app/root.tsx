@@ -131,7 +131,9 @@ export const loader: LoaderFunction = async ({ request }) => {
       CLOUDINARY_CLOUD_NAME: Config().CLOUDINARY_CLOUD_NAME
     },
     requestInfo: {
-      canonicalUrl: request.url.replace('www.', ''),
+      canonicalUrl: request.url
+        .replace('www.', '')
+        .replace('http://', 'https://'),
       origin: getDomainUrl(request),
       path: new URL(request.url).pathname,
       session: {
