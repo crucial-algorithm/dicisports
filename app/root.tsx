@@ -92,6 +92,7 @@ export type RootLoaderData = {
   user: User | null;
   ENV: { CLOUDINARY_CLOUD_NAME: string };
   requestInfo: {
+    canonicalUrl: string;
     origin: string;
     path: string;
     session: {
@@ -130,6 +131,9 @@ export const loader: LoaderFunction = async ({ request }) => {
       CLOUDINARY_CLOUD_NAME: Config().CLOUDINARY_CLOUD_NAME
     },
     requestInfo: {
+      canonicalUrl: request.url
+        .replace('www.', '')
+        .replace('http://', 'https://'),
       origin: getDomainUrl(request),
       path: new URL(request.url).pathname,
       session: {
@@ -240,7 +244,7 @@ function Html({
 }) {
   const [theme] = useTheme();
   const { i18n } = useTranslation();
-  const data = useLoaderData<RootLoaderData>();
+  const data = useLoaderData<RootLoaderData>() as RootLoaderData;
   const analyticsUrl = 'https://plausible.io/js/plausible.js';
 
   useChangeLanguage(lang);
@@ -258,7 +262,10 @@ function Html({
     >
       <head>
         {process.env.NODE_ENV === 'production' && (
-          <script defer data-domain="dicisports.com" src={analyticsUrl} />
+          <>
+            <script defer data-domain="dicisports.com" src={analyticsUrl} />
+            <link rel="canonical" href={data.requestInfo.canonicalUrl} />
+          </>
         )}
 
         <meta charSet="utf-8" />

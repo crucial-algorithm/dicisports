@@ -1,5 +1,5 @@
 import React from 'react';
-import type { LoaderFunction } from 'remix';
+import type { LoaderFunction, MetaFunction } from 'remix';
 import { json, redirect } from 'remix';
 import { useTranslation } from 'react-i18next';
 import type { TransformerOption } from '@cld-apis/types';
@@ -13,6 +13,9 @@ import Main from '~/components/shared/Main';
 
 import DisplayImg from '~/components/shared/DisplayImg';
 import { displayTimeOfDay } from '~/utils/misc';
+import { getOpenGraphMeta } from '~/utils/seo';
+import type { RootLoaderData } from '~/root';
+import I18nText from '~/components/I18nText';
 
 export const handle = {
   i18n: ['m-groups', 'common']
@@ -20,6 +23,25 @@ export const handle = {
 
 type LoaderData = {
   group: Group;
+};
+
+export const meta: MetaFunction = ({ data, params, location, parentsData }) => {
+  const root: RootLoaderData = parentsData.root as RootLoaderData;
+  const { group } = data as { group: Group };
+  const description = group.description?.slice(0, 160);
+  const url = `${root.requestInfo.origin}${root.requestInfo.path}${root.requestInfo.path === '/' ? location.search : ''}`;
+  const name = group.sport ? I18nText({ text: group.sport.name }) : group.name;
+
+  return {
+    viewport: 'width=device-width,initial-scale=1,viewport-fit=cover',
+    ...getOpenGraphMeta({
+      title: `Dicisports - ${group.name}`,
+      url,
+      description,
+      keywords:
+        `grupo ${name}`
+    })
+  };
 };
 
 export const loader: LoaderFunction = async ({ request, params }) => {
@@ -69,13 +91,13 @@ export default function GroupDisplayRoute() {
 
       <div className="w-full m-auto flex flex-row justify-begin gap-4 md:w-full md:grid-flow-col md:grid-rows-1">
         {group.image1 ? (
-          <DisplayImg id={group.image1} transformations={transformations} />
+          <DisplayImg id={group.image1} transformations={transformations} alt={t('Alt For Picture 1')} />
         ) : null}
         {group.image2 ? (
-          <DisplayImg id={group.image2} transformations={transformations} />
+          <DisplayImg id={group.image2} transformations={transformations} alt={t('Alt For Picture 2')} />
         ) : null}
         {group.image3 ? (
-          <DisplayImg id={group.image3} transformations={transformations} />
+          <DisplayImg id={group.image3} transformations={transformations} alt={t('Alt For Picture 3')} />
         ) : null}
       </div>
 
