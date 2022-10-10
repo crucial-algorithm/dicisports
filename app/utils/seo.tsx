@@ -25,7 +25,17 @@ function getOpenGraphMeta({
     'og:title': title,
     'og:description': description,
     'og:image': image,
-    'og:locale': 'pt_PT'
+    'og:locale': 'pt_PT',
+    'twitter:card': image ? 'summary_large_image' : 'summary',
+    'twitter:title': title,
+    'twitter:description': description,
+    'twitter:image': image,
+    'twitter:alt': title,
+    'twitter:url': url,
+    'twitter:domain': url
+      .replace('https://', '')
+      .replace('http://', '')
+      .replace(/\/$/, '')
   };
 }
 

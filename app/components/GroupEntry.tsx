@@ -64,10 +64,15 @@ export default function GroupEntry({ group, actions, footer, img }: Props) {
       <GroupImage group={group} img={img} />
       <div className="w-full h-full p-2 lg:pl-6">
         <div className="flex flex-col">
-          <span className="text-lg font-extrabold dark:text-white">
+          <a
+            href={`/group/${group.slug}`}
+            className="text-lg font-extrabold dark:text-white cursor-default"
+          >
             {group.name}
+          </a>
+          <span className="mb-4 dark:text-white font-bold capitalize">
+            {schedule}
           </span>
-          <span className="mb-4 dark:text-white font-bold capitalize">{schedule}</span>
           <Feature
             label={t('Who')}
             value={group.createdBy?.name || group.createdById}
@@ -95,7 +100,9 @@ export default function GroupEntry({ group, actions, footer, img }: Props) {
             more={t('Read More')}
           />
           {footer && (
-            <div className="absolute bottom-4 right-4 font-medium">{footer}</div>
+            <div className="absolute bottom-4 right-4 font-medium">
+              {footer}
+            </div>
           )}
         </div>
       </div>
@@ -112,7 +119,7 @@ function GroupDescription({
   more,
   less
 }: {
-  text: string;
+  text: string | null;
   label: string;
   more: string;
   less: string;
