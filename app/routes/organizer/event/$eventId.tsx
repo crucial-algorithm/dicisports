@@ -1381,7 +1381,7 @@ function UploadDocumentDialog(props: {
             />
           </FormField>
           {!document && (
-            <FormField label={t('Document')}>
+            <FormField label={t('Document')} error={errors?.path}>
               <section
                 className={clsx(
                   'h-40 bg-gray-100 text-black placeholder-gray-500 text-lg font-medium',
