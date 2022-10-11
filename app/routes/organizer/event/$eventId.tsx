@@ -461,36 +461,36 @@ export default function OrganizerEventRoute() {
             />
           </FormField>
           <FormField label={t('Event Photos')} id="event-photos">
-            <div className="w-full m-auto flex flex-row justify-begin gap-4 md:w-full md:grid-flow-col md:grid-rows-1 text-center">
+            <div className="w-full m-auto flex flex-col md:flex-row justify-begin gap-4 w-full md:grid-flow-col md:grid-rows-1 text-center">
               <UploadImage
                 index={0}
                 label={t('Hint For Picture 1')}
                 defaultValue={event.image1}
-                className="w-1/3"
+                className="md:w-1/3"
               />
               <UploadImage
                 index={1}
                 label={t('Hint For Picture 2')}
                 defaultValue={event.image2}
-                className="w-1/3"
+                className="md:w-1/3"
               />
               <UploadImage
                 index={2}
                 label={t('Hint For Picture 3')}
                 defaultValue={event.image3}
-                className="w-1/3"
+                className="md:w-1/3"
               />
               <UploadImage
                 index={3}
                 label={t('Hint For Picture 4')}
                 defaultValue={event.image4}
-                className="w-1/3"
+                className="md:w-1/3"
               />
               <UploadImage
                 index={4}
                 label={t('Hint For Picture 5')}
                 defaultValue={event.image4}
-                className="w-1/3"
+                className="md:w-1/3"
               />
             </div>
           </FormField>
