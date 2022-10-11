@@ -1099,67 +1099,68 @@ function RacesList(props: { races: Race[]; eventId: string }) {
 
   return (
     <>
-      {races
-        .sort((a: Race, b: Race) => a.displayOrder - b.displayOrder)
-        .map((r: Race, index) => (
-          <div
-            key={r.id}
-            className="relative flex mb-4 justify-between items-center flex-row border-b p-4 last:border-none border-gray-300 dark:border-gray-300"
-          >
-            <div className="flex flex-row items-center">
-              <div className="flex flex-col mr-3 dark:text-blueGray-500">
-                {index === 0 ? null : (
-                  <button type="button" id={r.id} onClick={handleMoveUp}>
-                    <ChevronUpIcon className="mh-6 w-6 m-0 inline-block" />
-                  </button>
-                )}
-                {/*eslint-disable-next-line react/jsx-no-bind*/}
-                {index === races.length - 1 ? null : (
-                  <button type="button" onClick={handleMoveDown} id={r.id}>
-                    <ChevronDownIcon className="md:h-6 w-6 m-0 inline-block" />
-                  </button>
-                )}
+      <div>
+        {races
+          .sort((a: Race, b: Race) => a.displayOrder - b.displayOrder)
+          .map((r: Race, index) => (
+            <div
+              key={r.id}
+              className="relative flex mb-4 justify-between items-center flex-row border-b p-4 last:border-none border-gray-300 dark:border-gray-300"
+            >
+              <div className="flex flex-row items-center">
+                <div className="flex flex-col mr-3 dark:text-blueGray-500">
+                  {index === 0 ? null : (
+                    <button type="button" id={r.id} onClick={handleMoveUp}>
+                      <ChevronUpIcon className="mh-6 w-6 m-0 inline-block" />
+                    </button>
+                  )}
+                  {/*eslint-disable-next-line react/jsx-no-bind*/}
+                  {index === races.length - 1 ? null : (
+                    <button type="button" onClick={handleMoveDown} id={r.id}>
+                      <ChevronDownIcon className="md:h-6 w-6 m-0 inline-block" />
+                    </button>
+                  )}
+                </div>
+                <div className={clsx('text-lg font-extrabold dark:text-white')}>
+                  {r.name}
+                </div>
               </div>
-              <div className={clsx('text-lg font-extrabold dark:text-white')}>
-                {r.name}
+              <div>
+                <button
+                  className="group relative inline-flex ml-6 dark:text-blueGray-500"
+                  type="button"
+                  id={r.id}
+                  onClick={handleDeleteRace}
+                >
+                  <TrashIcon className="md:h-6 w-6 m-0 inline-block"></TrashIcon>
+                </button>
+
+                <Button
+                  className="ml-6"
+                  type="button"
+                  id={r.id}
+                  onClick={handleUpdateRace}
+                >
+                  <PencilAltIcon className="md:h-6 w-6 m-0 inline-block" />
+                </Button>
               </div>
             </div>
-            <div>
-              <button
-                className="group relative inline-flex ml-6 dark:text-blueGray-500"
-                type="button"
-                id={r.id}
-                onClick={handleDeleteRace}
-              >
-                <TrashIcon className="md:h-6 w-6 m-0 inline-block"></TrashIcon>
-              </button>
+          ))}
+      </div>
+      <RaceDialog
+        isOpen={showRacesDialog.show}
+        triggerModalClose={handleCloseRace}
+        eventId={eventId}
+        race={showRacesDialog.race}
+        hash={showRacesDialog.hash}
+      />
 
-              <Button
-                className="ml-6"
-                type="button"
-                id={r.id}
-                onClick={handleUpdateRace}
-              >
-                <PencilAltIcon className="md:h-6 w-6 m-0 inline-block" />
-              </Button>
-            </div>
-
-            <RaceDialog
-              isOpen={showRacesDialog.show}
-              triggerModalClose={handleCloseRace}
-              eventId={eventId}
-              race={showRacesDialog.race}
-              hash={showRacesDialog.hash}
-            />
-
-            <DeleteRaceDialog
-              isOpen={deleteModalOpen.show}
-              onDismiss={handleDeleteRaceClose}
-              race={deleteModalOpen.race}
-              eventId={eventId}
-            />
-          </div>
-        ))}
+      <DeleteRaceDialog
+        isOpen={deleteModalOpen.show}
+        onDismiss={handleDeleteRaceClose}
+        race={deleteModalOpen.race}
+        eventId={eventId}
+      />
     </>
   );
 }
@@ -1456,88 +1457,89 @@ function DocumentsList(props: { documents: Document[]; eventId: string }) {
 
   return (
     <>
-      {documents
-        .sort((a: Document, b: Document) => a.position - b.position)
-        .map((d: Document, index) => (
-          <div
-            key={d.id}
-            className="relative flex mb-4 justify-between items-center flex-row border-b p-4 last:border-none border-gray-300 dark:border-gray-300"
-          >
-            <div className="flex flex-row items-center">
-              <div className="flex flex-col mr-3 dark:text-blueGray-500">
-                {index === 0 ? null : (
-                  <button type="button" id={d.id} onClick={handleMoveUp}>
-                    <ChevronUpIcon className="md:h-6 w-6 m-0 inline-block" />
-                  </button>
-                )}
-                {index === documents.length - 1 ? null : (
-                  <button type="button" id={d.id} onClick={handleMoveDown}>
-                    <ChevronDownIcon className="md:h-6 w-6 m-0 inline-block" />
-                  </button>
-                )}
+      <div>
+        {documents
+          .sort((a: Document, b: Document) => a.position - b.position)
+          .map((d: Document, index) => (
+            <div
+              key={d.id}
+              className="relative flex mb-4 justify-between items-center flex-row border-b p-4 last:border-none border-gray-300 dark:border-gray-300"
+            >
+              <div className="flex flex-row items-center">
+                <div className="flex flex-col mr-3 dark:text-blueGray-500">
+                  {index === 0 ? null : (
+                    <button type="button" id={d.id} onClick={handleMoveUp}>
+                      <ChevronUpIcon className="md:h-6 w-6 m-0 inline-block" />
+                    </button>
+                  )}
+                  {index === documents.length - 1 ? null : (
+                    <button type="button" id={d.id} onClick={handleMoveDown}>
+                      <ChevronDownIcon className="md:h-6 w-6 m-0 inline-block" />
+                    </button>
+                  )}
+                </div>
+                <div className={clsx('text-lg font-extrabold dark:text-white')}>
+                  {d.label}
+                </div>
               </div>
-              <div className={clsx('text-lg font-extrabold dark:text-white')}>
-                {d.label}
-              </div>
-            </div>
-            <div>
-              <a
-                href={`/organizer/document/${d.id}`}
-                target="_blank"
-                rel="noreferrer"
-                className="group relative inline-flex ml-14 dark:text-blueGray-500"
-              >
-                {/*couldn't find import of icon*/}
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth={1.5}
-                  stroke="currentColor"
-                  className="w-6 h-6"
+              <div>
+                <a
+                  href={`/organizer/document/${d.id}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="group relative inline-flex ml-14 dark:text-blueGray-500"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"
-                  />
-                </svg>
-              </a>
-              <button
-                className="group relative inline-flex ml-6 dark:text-blueGray-500"
-                type="button"
-                id={d.id}
-                onClick={handleOpenDeleteDocumentDialog}
-              >
-                <TrashIcon className="md:h-6 w-6 m-0 inline-block"></TrashIcon>
-              </button>
+                  {/*couldn't find import of icon*/}
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={1.5}
+                    stroke="currentColor"
+                    className="w-6 h-6"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"
+                    />
+                  </svg>
+                </a>
+                <button
+                  className="group relative inline-flex ml-6 dark:text-blueGray-500"
+                  type="button"
+                  id={d.id}
+                  onClick={handleOpenDeleteDocumentDialog}
+                >
+                  <TrashIcon className="md:h-6 w-6 m-0 inline-block"></TrashIcon>
+                </button>
 
-              <Button
-                className="ml-6"
-                type="button"
-                id={d.id}
-                onClick={handleUpdateDocument}
-              >
-                <PencilAltIcon className="md:h-6 w-6 m-0 inline-block" />
-              </Button>
+                <Button
+                  className="ml-6"
+                  type="button"
+                  id={d.id}
+                  onClick={handleUpdateDocument}
+                >
+                  <PencilAltIcon className="md:h-6 w-6 m-0 inline-block" />
+                </Button>
+              </div>
             </div>
+          ))}
+      </div>
+      <UploadDocumentDialog
+        isOpen={showDocumentsDialog.show}
+        document={showDocumentsDialog.document}
+        onDismiss={handleCloseDocumentsDialog}
+        eventId={eventId}
+        hash={showDocumentsDialog.hash}
+      />
 
-            <UploadDocumentDialog
-                isOpen={showDocumentsDialog.show}
-                document={showDocumentsDialog.document}
-                onDismiss={handleCloseDocumentsDialog}
-                eventId={eventId}
-                hash={showDocumentsDialog.hash}
-            />
-
-            <DeleteDocumentDialog
-                isOpen={showDeleteDocumentDialog.show}
-                onDismiss={handleCloseDeleteDocumentDialog}
-                document={showDeleteDocumentDialog.document as Document}
-                eventId={eventId}
-            />
-          </div>
-        ))}
+      <DeleteDocumentDialog
+        isOpen={showDeleteDocumentDialog.show}
+        onDismiss={handleCloseDeleteDocumentDialog}
+        document={showDeleteDocumentDialog.document as Document}
+        eventId={eventId}
+      />
     </>
   );
 }
