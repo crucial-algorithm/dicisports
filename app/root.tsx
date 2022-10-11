@@ -31,7 +31,6 @@ import { getSession } from '~/server/auth/session.server';
 import { getLoginInfoSession } from '~/server/auth/login.server';
 import { getDomainUrl } from '~/utils/misc';
 import { getClientSession } from '~/server/auth/client.server';
-import { pathedRoutes } from '~/other-routes.server';
 import { NotificationMessage } from '~/components/shared/NotificationMessage';
 
 import type { Theme } from '~/utils/theme-provider';
@@ -93,6 +92,7 @@ export type RootLoaderData = {
   user: User | null;
   ENV: { CLOUDINARY_CLOUD_NAME: string };
   requestInfo: {
+    canonicalUrl: string;
     origin: string;
     path: string;
     session: {
@@ -106,12 +106,6 @@ export type RootLoaderData = {
 };
 
 export const loader: LoaderFunction = async ({ request }) => {
-  // because this is called for every route, we'll do an early return for anything
-  // that has a other route setup. The response will be handled there.
-  if (pathedRoutes[new URL(request.url).pathname]) {
-    return new Response();
-  }
-
   function getUser() {
     return session.getUser();
   }
@@ -137,6 +131,9 @@ export const loader: LoaderFunction = async ({ request }) => {
       CLOUDINARY_CLOUD_NAME: Config().CLOUDINARY_CLOUD_NAME
     },
     requestInfo: {
+      canonicalUrl: request.url
+        .replace('www.', '')
+        .replace('http://', 'https://'),
       origin: getDomainUrl(request),
       path: new URL(request.url).pathname,
       session: {
@@ -247,7 +244,7 @@ function Html({
 }) {
   const [theme] = useTheme();
   const { i18n } = useTranslation();
-  const data = useLoaderData<RootLoaderData>();
+  const data = useLoaderData<RootLoaderData>() as RootLoaderData;
   const analyticsUrl = 'https://plausible.io/js/plausible.js';
 
   useChangeLanguage(lang);
@@ -265,7 +262,10 @@ function Html({
     >
       <head>
         {process.env.NODE_ENV === 'production' && (
-          <script defer data-domain="dicisports.com" src={analyticsUrl} />
+          <>
+            <script defer data-domain="dicisports.com" src={analyticsUrl} />
+            <link rel="canonical" href={data.requestInfo.canonicalUrl} />
+          </>
         )}
 
         <meta charSet="utf-8" />

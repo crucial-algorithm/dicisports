@@ -14,7 +14,11 @@ import { generateSlug, hoursMinutesToTimeOfDay } from '~/utils/misc';
 const prisma = new PrismaClient();
 
 async function findGroups(): Promise<Array<Group>> {
-  const groups = await db.group.findMany();
+  const groups = await db.group.findMany({
+    where: {
+      status: Status.published
+    }
+  });
 
   return groups.map(dbGroupToGroup);
 }
