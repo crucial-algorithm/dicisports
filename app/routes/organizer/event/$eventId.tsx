@@ -681,6 +681,7 @@ type FormErrors = {
   priceEarlyBird?: string;
   validUntil?: string;
   label?: string;
+  path?: string;
 };
 
 function RaceDialog(props: {
@@ -1280,20 +1281,22 @@ function UploadDocumentDialog(props: {
   }, [onDismiss]);
 
   function handleSubmit() {
-    fetcher.submit(
-      {
-        name: name.current?.value || '',
-        documentId: document?.id ? document.id : '',
-        // @ts-ignore
-        file: inputEl.current?.files[0] || '',
-        hash: String(hash)
-      },
-      {
-        method: 'post',
-        action: `organizer/document/${eventId}/manage`,
-        encType: 'multipart/form-data'
-      }
-    );
+    const payload = {
+      name: name.current?.value || '',
+      documentId: document?.id ? document.id : '',
+      hash: String(hash)
+    };
+
+    if (!document?.id) {
+      // @ts-ignore
+      payload['file'] = inputEl.current?.files[0];
+    }
+
+    fetcher.submit(payload, {
+      method: 'post',
+      action: `organizer/document/${eventId}/manage`,
+      encType: 'multipart/form-data'
+    });
   }
 
   function FileListItems(files: File[]) {

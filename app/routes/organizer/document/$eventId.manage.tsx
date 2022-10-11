@@ -37,6 +37,11 @@ export const action: ActionFunction = async ({ request, params }) => {
       if (name !== 'file') {
         return undefined;
       }
+
+      if (filename === undefined) {
+        return undefined;
+      }
+
       const eventId = params.eventId as string;
       const path = require('path');
       const fileExtension = path.parse(filename as string).ext;
@@ -58,17 +63,37 @@ export const action: ActionFunction = async ({ request, params }) => {
   const documentId = form.get('documentId') as string;
   const hash = form.get('hash') as string;
   const actionId = form.get('actionId') as string;
-  const file = form.get('file');
+  const file =
+    form.get('file') === 'undefined' || form.get('file') === null
+      ? undefined
+      : form.get('file');
 
+  const isInsert = !documentId;
   const documentData: CreateDocumentInput = {
     id: documentId,
     label: name,
-    path: file as string,
+    // @ts-ignore
+    path: file,
     eventId
   };
 
   const DocumentSchema = z.object({
-    label: z.string().min(5, { message: t('Min 5 chars') })
+    label: z.string().min(5, { message: t('Min 5 chars') }),
+    path: z
+      .string()
+      .optional()
+      .refine(
+        () => {
+          if (!isInsert) {
+            return true;
+          }
+
+          return documentData.path !== undefined;
+        },
+        {
+          message: t('Select a document')
+        }
+      )
   });
 
   try {
@@ -80,9 +105,9 @@ export const action: ActionFunction = async ({ request, params }) => {
 
     //If actionId is null or !== 'delete' check if there is a document and update or create
     DocumentSchema.parse(documentData);
-    documentId
-      ? await updateDocument(documentData)
-      : await createDocument(documentData);
+    isInsert
+      ? await createDocument(documentData)
+      : await updateDocument(documentData);
     return json({ ok: true });
   } catch (e) {
     if (!(e instanceof ZodError)) {
