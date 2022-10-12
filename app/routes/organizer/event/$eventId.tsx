@@ -1536,7 +1536,7 @@ function DocumentsList(props: { documents: Document[]; eventId: string }) {
                 target="_blank"
                 rel="noreferrer"
               >
-                <ArrowDownTrayIcon className="md:h-6 w-6 m-0 inline-block" />
+                <ArrowDownTrayIcon className="md:h-6 w-6 m-0 inline-block text-black dark:text-blueGray-500" />
               </a>
               <button
                 type="button"
