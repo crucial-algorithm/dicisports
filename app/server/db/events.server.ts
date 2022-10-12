@@ -37,6 +37,7 @@ async function findEvent(id: string): Promise<Event | null> {
 }
 
 async function createDraftEvent(
+  createdById: string,
   language: Language,
   id?: string
 ): Promise<Event | void> {
@@ -54,6 +55,7 @@ async function createDraftEvent(
       address: null,
       useExternalBooking: false,
       externalBookingUrl: null,
+      createdById,
       createdAt: eventAt,
       updatedAt: eventAt
     }
