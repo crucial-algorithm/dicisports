@@ -21,7 +21,7 @@ import { z, ZodError } from 'zod';
 
 import { Dialog } from '@reach/dialog';
 
-import { TrashIcon } from '@heroicons/react/outline';
+import { TrashIcon } from '@heroicons/react/24/outline';
 
 import Main from '~/components/shared/Main';
 import { H2, H3, Paragraph } from '~/components/shared/typography';

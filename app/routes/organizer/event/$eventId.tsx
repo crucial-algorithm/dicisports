@@ -21,10 +21,11 @@ import { useTranslation } from 'react-i18next';
 import {
   ChevronDownIcon,
   ChevronUpIcon,
-  LocationMarkerIcon,
+  MapPinIcon,
   PlusIcon,
-  TrashIcon
-} from '@heroicons/react/outline';
+  TrashIcon,
+  ArrowDownTrayIcon
+} from '@heroicons/react/24/outline';
 
 import clsx from 'clsx';
 import { useDropzone } from 'react-dropzone';
@@ -433,7 +434,7 @@ export default function OrganizerEventRoute() {
                     type="button"
                     onClick={handleShowMap}
                   >
-                    <LocationMarkerIcon className="h-6 w-6 m-0 inline-block" />
+                    <MapPinIcon className="h-6 w-6 m-0 inline-block" />
                   </Button>
                 }
               />
@@ -1535,21 +1536,7 @@ function DocumentsList(props: { documents: Document[]; eventId: string }) {
                 target="_blank"
                 rel="noreferrer"
               >
-                {/*couldn't find import of icon*/}
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth={1.5}
-                  stroke="currentColor"
-                  className="w-[24px] h-[24px] dark:text-blueGray-500"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"
-                  />
-                </svg>
+                <ArrowDownTrayIcon className="md:h-6 w-6 m-0 inline-block" />
               </a>
               <button
                 type="button"
@@ -1557,7 +1544,7 @@ function DocumentsList(props: { documents: Document[]; eventId: string }) {
                 onClick={handleOpenDeleteDocumentDialog}
                 className="ml-3 w-[24px] h-[24px] dark:text-blueGray-500"
               >
-                <TrashIcon className="md:h-6 w-6 m-0 inline-block"></TrashIcon>
+                <TrashIcon className="md:h-6 w-6 m-0 inline-block" />
               </button>
             </div>
           ))}

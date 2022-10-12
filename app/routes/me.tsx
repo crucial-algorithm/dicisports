@@ -6,7 +6,7 @@ import { useActionData } from '@remix-run/react';
 
 import { Form } from '@remix-run/react';
 
-import { LogoutIcon } from '@heroicons/react/solid';
+import { ArrowRightOnRectangleIcon } from '@heroicons/react/24/solid';
 
 import { useTranslation } from 'react-i18next';
 
@@ -125,7 +125,7 @@ export default function Me() {
       <Form method="post">
         <input type="hidden" name="actionId" value={actionIds.logout} />
         <Button variant="secondary">
-          <LogoutIcon className="w-4 h-4" />
+          <ArrowRightOnRectangleIcon className="w-4 h-4" />
           <H6 as="span">{t('Logout')}</H6>
         </Button>
       </Form>
