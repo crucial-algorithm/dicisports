@@ -1143,7 +1143,6 @@ function RacesList(props: { races: Race[]; eventId: string }) {
                     <ChevronUpIcon className="mh-6 w-6 m-0 inline-block" />
                   </button>
                 )}
-                {/*eslint-disable-next-line react/jsx-no-bind*/}
                 {index === races.length - 1 ? null : (
                   <button
                     type="button"
