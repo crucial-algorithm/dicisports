@@ -52,8 +52,10 @@
   "Documents": "Documentos",
   "Document": "Documento",
   "Upload Document": "Adicionar Documento",
+  "Upload Document Button": "Adicionar",
   "Update Document": "Editar Documento",
-  "Document Name": "Regras",
+  "Update Document Button": "Editar",
+  "Document Name": "Regulamento",
   "GPX": "Percurso GPX",
 
   "Field required": "Campo obrigatório",
@@ -74,7 +76,7 @@
   "No Document": "Nenhum documento encontrado",
   "No Race": "Nenhuma distância encontrada",
   "Download GPX File": "Ficheiro GPX",
-
+  "Select a document": "Selecione um documento",
 
   "Delete": "Apagar Distância",
   "Delete Document": "Apagar documento",

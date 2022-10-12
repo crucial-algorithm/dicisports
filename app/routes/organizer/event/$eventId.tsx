@@ -21,10 +21,11 @@ import { useTranslation } from 'react-i18next';
 import {
   ChevronDownIcon,
   ChevronUpIcon,
-  LocationMarkerIcon,
-  PencilAltIcon,
-  TrashIcon
-} from '@heroicons/react/outline';
+  MapPinIcon,
+  PlusIcon,
+  TrashIcon,
+  ArrowDownTrayIcon
+} from '@heroicons/react/24/outline';
 
 import clsx from 'clsx';
 import { useDropzone } from 'react-dropzone';
@@ -139,7 +140,7 @@ export const action: ActionFunction = async ({ request, params }) => {
   const t = await i18n.getFixedT(request, RESOURCES_NS);
   const uploadHandler: UploadHandler = unstable_composeUploadHandlers(
     // our custom upload handler
-    async ({ name, contentType, data, filename }) => {
+    async ({ name, data, filename }) => {
       if (!name.startsWith('/file/image') || !filename) {
         return undefined;
       }
@@ -384,7 +385,7 @@ export default function OrganizerEventRoute() {
               defaultValue={event.name || ''}
             />
           </FormField>
-          <div className="flex flex-row flex-wrap space-x-4">
+          <div className="flex flex-col flex-wrap md:flex-row md:space-x-4">
             <FormField
               label={t('Sport')}
               id="event-sport"
@@ -433,7 +434,7 @@ export default function OrganizerEventRoute() {
                     type="button"
                     onClick={handleShowMap}
                   >
-                    <LocationMarkerIcon className="h-6 w-6 m-0 inline-block" />
+                    <MapPinIcon className="h-6 w-6 m-0 inline-block" />
                   </Button>
                 }
               />
@@ -461,36 +462,36 @@ export default function OrganizerEventRoute() {
             />
           </FormField>
           <FormField label={t('Event Photos')} id="event-photos">
-            <div className="w-full m-auto flex flex-row justify-begin gap-4 md:w-full md:grid-flow-col md:grid-rows-1 text-center">
+            <div className="w-full m-auto flex flex-col md:flex-row justify-begin gap-4 w-full md:grid-flow-col md:grid-rows-1 text-center">
               <UploadImage
                 index={0}
                 label={t('Hint For Picture 1')}
                 defaultValue={event.image1}
-                className="w-1/3"
+                className="md:w-1/3"
               />
               <UploadImage
                 index={1}
                 label={t('Hint For Picture 2')}
                 defaultValue={event.image2}
-                className="w-1/3"
+                className="md:w-1/3"
               />
               <UploadImage
                 index={2}
                 label={t('Hint For Picture 3')}
                 defaultValue={event.image3}
-                className="w-1/3"
+                className="md:w-1/3"
               />
               <UploadImage
                 index={3}
                 label={t('Hint For Picture 4')}
                 defaultValue={event.image4}
-                className="w-1/3"
+                className="md:w-1/3"
               />
               <UploadImage
                 index={4}
                 label={t('Hint For Picture 5')}
                 defaultValue={event.image4}
-                className="w-1/3"
+                className="md:w-1/3"
               />
             </div>
           </FormField>
@@ -512,7 +513,7 @@ export default function OrganizerEventRoute() {
           </FormField>
 
           <FormField label={t('Perks')}>
-            <div className="grid grid-rows-6 grid-flow-col gap-y-px mb-2">
+            <div className="grid grid-rows-8 md:grid-rows-6 md:grid-flow-col gap-y-4 md:gap-y-2 mb-2">
               {perks
                 .sort((a, b) => a.displayOrder - b.displayOrder)
                 .map((p: any) => (
@@ -541,7 +542,7 @@ export default function OrganizerEventRoute() {
                   type="text"
                   placeholder={t('Type to create new')}
                   onBlur={handleOnCreatePerk}
-                  className="ml-2 rounded-lg focus-ring text-sm md:text-sm bg-gray-100 text-black placeholder-gray-500 font-medium box-border w-41 dark:disabled:bg-gray-700 dark:text-white dark:bg-gray-800 disabled:text-gray-700 border-0 sm:col-span-4"
+                  className="rounded-lg focus-ring text-sm w-60 md:text-sm bg-gray-100 text-black placeholder-gray-500 font-medium box-border dark:disabled:bg-gray-700 dark:text-white dark:bg-gray-800 disabled:text-gray-700 border-0 sm:col-span-4"
                 />
               </div>
             </div>
@@ -556,8 +557,21 @@ export default function OrganizerEventRoute() {
             >
               {t('Distances')}
 
-              <Button type="button" onClick={handleCreateRace}>
+              <Button
+                className="hidden lg:flex"
+                type="button"
+                onClick={handleCreateRace}
+              >
                 {t('Create Distance')}
+              </Button>
+
+              <Button
+                type="button"
+                onClick={handleCreateRace}
+                size="small"
+                className="flex lg:hidden"
+              >
+                <PlusIcon className="md:h-6 w-6 m-0 inline-block"></PlusIcon>
               </Button>
             </Label>
             <div>
@@ -595,8 +609,20 @@ export default function OrganizerEventRoute() {
             >
               {t('Documents')}
 
-              <Button type="button" onClick={handleOpenDocumentsDialog}>
+              <Button
+                className="hidden lg:flex"
+                type="button"
+                onClick={handleOpenDocumentsDialog}
+              >
                 {t('Upload Document')}
+              </Button>
+              <Button
+                type="button"
+                onClick={handleOpenDocumentsDialog}
+                size="small"
+                className="flex lg:hidden"
+              >
+                <PlusIcon className="md:h-6 w-6 m-0 inline-block"></PlusIcon>
               </Button>
             </Label>
             <div>
@@ -609,18 +635,15 @@ export default function OrganizerEventRoute() {
             </WhenListEmpty>
           </div>
 
-          <ButtonLink
-            className="mt-8"
-            type="button"
-            variant="secondary"
-            to={'/organizer'}
-          >
-            {t('Cancel')}
-          </ButtonLink>
+          <ButtonGroup className="mt-8">
+            <ButtonLink type="button" variant="secondary" to={'/organizer'}>
+              {t('Cancel')}
+            </ButtonLink>
 
-          <Button className="mt-8 ml-8" type="submit" variant="primary">
-            {event.status === 'auto' ? t('Create Button') : t('Save Button')}
-          </Button>
+            <Button type="submit" variant="primary">
+              {event.status === 'auto' ? t('Create Button') : t('Save Button')}
+            </Button>
+          </ButtonGroup>
         </UploadForm>
       </div>
 
@@ -659,6 +682,7 @@ type FormErrors = {
   priceEarlyBird?: string;
   validUntil?: string;
   label?: string;
+  path?: string;
 };
 
 function RaceDialog(props: {
@@ -806,8 +830,9 @@ function RaceDialog(props: {
         aria-modal={true}
         aria-label={t('Distance Modal')}
         className={clsx(
-          'w-5/6',
-          'bg-white dark:bg-gray-900 border-2 border-black dark:border-white rounded-lg font-extrabold',
+          'lg:w-5/6 w-full',
+          'bg-white dark:bg-gray-900 font-extrabold',
+          'lg:border-2 lg:border-black dark:lg:border-white lg:rounded-lg',
           {
             'hidden ': !isOpen,
             'm-auto': isOpen
@@ -1105,45 +1130,47 @@ function RacesList(props: { races: Race[]; eventId: string }) {
           .map((r: Race, index) => (
             <div
               key={r.id}
-              className="relative flex mb-4 justify-between items-center flex-row border-b p-4 last:border-none border-gray-300 dark:border-gray-300"
+              className="relative flex mb-4 justify-between items-center flex-row flex-wrap border-b p-4 last:border-none border-gray-300 dark:border-gray-300"
             >
-              <div className="flex flex-row items-center">
-                <div className="flex flex-col mr-3 dark:text-blueGray-500">
-                  {index === 0 ? null : (
-                    <button type="button" id={r.id} onClick={handleMoveUp}>
-                      <ChevronUpIcon className="mh-6 w-6 m-0 inline-block" />
-                    </button>
-                  )}
-                  {/*eslint-disable-next-line react/jsx-no-bind*/}
-                  {index === races.length - 1 ? null : (
-                    <button type="button" onClick={handleMoveDown} id={r.id}>
-                      <ChevronDownIcon className="md:h-6 w-6 m-0 inline-block" />
-                    </button>
-                  )}
-                </div>
-                <div className={clsx('text-lg font-extrabold dark:text-white')}>
-                  {r.name}
-                </div>
+              <div className="flex flex-col items-center dark:text-blueGray-500">
+                {index === 0 ? null : (
+                  <button
+                    type="button"
+                    id={r.id}
+                    onClick={handleMoveUp}
+                    className="w-[24px] h-[24px]"
+                  >
+                    <ChevronUpIcon className="mh-6 w-6 m-0 inline-block" />
+                  </button>
+                )}
+                {index === races.length - 1 ? null : (
+                  <button
+                    type="button"
+                    id={r.id}
+                    onClick={handleMoveDown}
+                    className="w-[24px] h-[24px]"
+                  >
+                    <ChevronDownIcon className="md:h-6 w-6 m-0 inline-block" />
+                  </button>
+                )}
               </div>
-              <div>
-                <button
-                  className="group relative inline-flex ml-6 dark:text-blueGray-500"
-                  type="button"
-                  id={r.id}
-                  onClick={handleDeleteRace}
-                >
-                  <TrashIcon className="md:h-6 w-6 m-0 inline-block"></TrashIcon>
-                </button>
 
-                <Button
-                  className="ml-6"
-                  type="button"
-                  id={r.id}
-                  onClick={handleUpdateRace}
-                >
-                  <PencilAltIcon className="md:h-6 w-6 m-0 inline-block" />
-                </Button>
+              <div
+                className="text-lg font-extrabold pl-3 dark:text-white w-[calc(100%-(24px+24px))]"
+                id={r.id}
+                onClick={handleUpdateRace}
+              >
+                {r.name}
               </div>
+
+              <button
+                type="button"
+                id={r.id}
+                onClick={handleDeleteRace}
+                className="w-[24px] h-[24px] dark:text-blueGray-500"
+              >
+                <TrashIcon className="md:h-6 w-6 m-0 inline-block"></TrashIcon>
+              </button>
             </div>
           ))}
       </div>
@@ -1203,7 +1230,8 @@ function DeleteRaceDialog(props: {
       <div
         aria-modal={true}
         className={clsx(
-          'w-11/12 dark:bg-gray-900 border-2 border-black dark:border-white rounded-lg lg:px-24 lg:py-14 lg:max-w-screen-lg',
+          'w-10/12 md:w-11/12 dark:bg-gray-900 border-2 border-black dark:border-white rounded-lg px-8 py-10 lg:px-24 lg:py-14 lg:max-w-screen-lg',
+          'w-10/12 md:w-11/12 dark:bg-gray-900 border-2 border-black dark:border-white rounded-lg lg:px-24 lg:py-14 lg:max-w-screen-lg',
           {
             'hidden ': !isOpen,
             'm-auto': isOpen
@@ -1214,7 +1242,7 @@ function DeleteRaceDialog(props: {
         <Paragraph>{t('Are you sure you want to delete race?')}</Paragraph>
         <Spacer size="2xs" />
 
-        <div className="flex flex-wrap gap-4">
+        <ButtonGroup>
           <Button type="button" onClick={onDismiss}>
             {t('Ignore')}
           </Button>
@@ -1226,7 +1254,7 @@ function DeleteRaceDialog(props: {
           >
             {t('Delete')}
           </Button>
-        </div>
+        </ButtonGroup>
       </div>
     </div>
   );
@@ -1253,20 +1281,22 @@ function UploadDocumentDialog(props: {
   }, [onDismiss]);
 
   function handleSubmit() {
-    fetcher.submit(
-      {
-        name: name.current?.value || '',
-        documentId: document?.id ? document.id : '',
-        // @ts-ignore
-        file: inputEl.current?.files[0] || '',
-        hash: String(hash)
-      },
-      {
-        method: 'post',
-        action: `organizer/document/${eventId}/manage`,
-        encType: 'multipart/form-data'
-      }
-    );
+    const payload = {
+      name: name.current?.value || '',
+      documentId: document?.id ? document.id : '',
+      hash: String(hash)
+    };
+
+    if (!document?.id) {
+      // @ts-ignore
+      payload['file'] = inputEl.current?.files[0];
+    }
+
+    fetcher.submit(payload, {
+      method: 'post',
+      action: `organizer/document/${eventId}/manage`,
+      encType: 'multipart/form-data'
+    });
   }
 
   function FileListItems(files: File[]) {
@@ -1326,7 +1356,9 @@ function UploadDocumentDialog(props: {
       <div
         aria-modal={true}
         className={clsx(
-          'w-11/12 px-24 py-14 dark:bg-gray-900 border-2 border-black dark:border-white rounded-lg lg:max-w-screen-lg',
+          'h-full w-full lg:h-auto lg:w-11/12 px-8 py-8 md:px-24 md:py-14 ' +
+            'dark:bg-gray-900  lg:max-w-screen-lg',
+          'lg:border-2 lg:border-black dark:lg:border-white lg:rounded-lg lg:max-w-screen-lg',
           {
             'hidden ': !isOpen,
             'm-auto': isOpen
@@ -1349,7 +1381,7 @@ function UploadDocumentDialog(props: {
             />
           </FormField>
           {!document && (
-            <FormField label={t('Document')}>
+            <FormField label={t('Document')} error={errors?.path}>
               <section
                 className={clsx(
                   'h-40 bg-gray-100 text-black placeholder-gray-500 text-lg font-medium',
@@ -1374,18 +1406,20 @@ function UploadDocumentDialog(props: {
           {uploadedDocument && (
             <div
               className={clsx(
-                'text-md font-extrabold dark:text-white mt-4 ml-4'
+                'text-md font-extrabold dark:text-white my-4 ml-4'
               )}
             >
               {uploadedDocument}
             </div>
           )}
-          <ButtonGroup className="mt-8">
+          <ButtonGroup className="fixed w-5/6 m-auto bottom-2 lg:static lg:m-0">
             <Button type="button" variant="secondary" onClick={close}>
               {t('Cancel')}
             </Button>
             <Button type="button" onClick={handleSubmit}>
-              {document?.id ? t('Update Document') : t('Upload Document')}
+              {document?.id
+                ? t('Update Document Button')
+                : t('Upload Document Button')}
             </Button>
           </ButtonGroup>
         </div>
@@ -1465,64 +1499,52 @@ function DocumentsList(props: { documents: Document[]; eventId: string }) {
               key={d.id}
               className="relative flex mb-4 justify-between items-center flex-row border-b p-4 last:border-none border-gray-300 dark:border-gray-300"
             >
-              <div className="flex flex-row items-center">
-                <div className="flex flex-col mr-3 dark:text-blueGray-500">
-                  {index === 0 ? null : (
-                    <button type="button" id={d.id} onClick={handleMoveUp}>
-                      <ChevronUpIcon className="md:h-6 w-6 m-0 inline-block" />
-                    </button>
-                  )}
-                  {index === documents.length - 1 ? null : (
-                    <button type="button" id={d.id} onClick={handleMoveDown}>
-                      <ChevronDownIcon className="md:h-6 w-6 m-0 inline-block" />
-                    </button>
-                  )}
-                </div>
-                <div className={clsx('text-lg font-extrabold dark:text-white')}>
-                  {d.label}
-                </div>
-              </div>
-              <div>
-                <a
-                  href={`/organizer/document/${d.id}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="group relative inline-flex ml-14 dark:text-blueGray-500"
-                >
-                  {/*couldn't find import of icon*/}
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth={1.5}
-                    stroke="currentColor"
-                    className="w-6 h-6"
+              <div className="flex flex-col items-center dark:text-blueGray-500">
+                {index === 0 ? null : (
+                  <button
+                    type="button"
+                    id={d.id}
+                    onClick={handleMoveUp}
+                    className="w-[24px] h-[24px]"
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"
-                    />
-                  </svg>
-                </a>
-                <button
-                  className="group relative inline-flex ml-6 dark:text-blueGray-500"
-                  type="button"
-                  id={d.id}
-                  onClick={handleOpenDeleteDocumentDialog}
-                >
-                  <TrashIcon className="md:h-6 w-6 m-0 inline-block"></TrashIcon>
-                </button>
-
-                <Button
-                  className="ml-6"
-                  type="button"
-                  id={d.id}
-                  onClick={handleUpdateDocument}
-                >
-                  <PencilAltIcon className="md:h-6 w-6 m-0 inline-block" />
-                </Button>
+                    <ChevronUpIcon className="md:h-6 w-6 m-0 inline-block" />
+                  </button>
+                )}
+                {index === documents.length - 1 ? null : (
+                  <button
+                    type="button"
+                    id={d.id}
+                    onClick={handleMoveDown}
+                    className="w-[24px] h-[24px]"
+                  >
+                    <ChevronDownIcon className="md:h-6 w-6 m-0 inline-block" />
+                  </button>
+                )}
               </div>
+
+              <div
+                className="text-lg text-left font-extrabold pl-3 dark:text-white w-[calc(100%-(24px+24px+24px))]"
+                id={d.id}
+                onClick={handleUpdateDocument}
+              >
+                {d.label}
+              </div>
+
+              <a
+                href={`/organizer/document/${d.id}`}
+                target="_blank"
+                rel="noreferrer"
+              >
+                <ArrowDownTrayIcon className="md:h-6 w-6 m-0 inline-block text-black dark:text-blueGray-500" />
+              </a>
+              <button
+                type="button"
+                id={d.id}
+                onClick={handleOpenDeleteDocumentDialog}
+                className="ml-3 w-[24px] h-[24px] dark:text-blueGray-500"
+              >
+                <TrashIcon className="md:h-6 w-6 m-0 inline-block" />
+              </button>
             </div>
           ))}
       </div>
@@ -1583,7 +1605,7 @@ function DeleteDocumentDialog(props: {
       <div
         aria-modal={true}
         className={clsx(
-          'w-11/12 dark:bg-gray-900 border-2 border-black dark:border-white rounded-lg lg:px-24 lg:py-14 lg:max-w-screen-lg',
+          'w-11/12 dark:bg-gray-900 border-2 border-black dark:border-white rounded-lg px-8 py-10 lg:px-24 lg:py-14 lg:max-w-screen-lg',
           {
             'hidden ': !isOpen,
             'm-auto': isOpen
@@ -1594,7 +1616,7 @@ function DeleteDocumentDialog(props: {
         <Paragraph>{t('Are you sure you want to delete document?')}</Paragraph>
         <Spacer size="2xs" />
 
-        <div className="flex flex-wrap gap-4">
+        <ButtonGroup>
           <Button type="button" onClick={onDismiss}>
             {t('Ignore')}
           </Button>
@@ -1606,7 +1628,7 @@ function DeleteDocumentDialog(props: {
           >
             {t('Delete Document')}
           </Button>
-        </div>
+        </ButtonGroup>
       </div>
     </div>
   );
