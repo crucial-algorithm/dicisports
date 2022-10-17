@@ -19,23 +19,26 @@ import { createRace, deleteRace, updateRace } from '~/server/db/races.server';
 import { badRequest, hoursMinutesToTimeOfDay } from '~/utils/misc';
 import type { CreateRaceInput } from '~/types';
 import i18n from '~/server/i18n.server';
-import { requireAdminUser } from '~/server/auth/session.server';
+import { requireAdminUser, requireUser } from '~/server/auth/session.server';
 
 import { uploadToS3 } from '~/server/utils/s3';
 
 import Id from '~/server/utils/Id.server';
+
+import { findEvent } from '~/server/db/events.server';
 
 const RESOURCES_NS = 'create-event-form';
 
 export const action: ActionFunction = async ({ params, request }) => {
   // hide while this is still in dev
   await requireAdminUser(request);
+  const user = await requireUser(request);
 
   const t = await i18n.getFixedT(request, RESOURCES_NS);
 
   const uploadHandler: UploadHandler = unstable_composeUploadHandlers(
     // our custom upload handler
-    async ({ name, contentType, data, filename }) => {
+    async ({ name, data, filename }) => {
       if (!name.startsWith('file')) {
         return undefined;
       }
@@ -68,6 +71,14 @@ export const action: ActionFunction = async ({ params, request }) => {
   const uploadResult = form.get(raceId ? `file/${raceId}` : 'file') as string;
   let track: string | null = null;
   let trackAssignedId: string | null = null;
+  const event = await findEvent(eventId);
+
+  if (!event) {
+    return badRequest({ error: t('Event not found') });
+  }
+  if (event.createdById !== user.id) {
+    return badRequest({ error: t('Not authorized') });
+  }
 
   if (uploadResult) {
     const [path, id] = uploadResult.split('|');
@@ -146,7 +157,9 @@ export const action: ActionFunction = async ({ params, request }) => {
       return json({ ok: true });
     }
     RaceSchema.parse(raceData);
-    raceId ? await updateRace(raceData, deletedGPX === 'true') : await createRace(raceData);
+    raceId
+      ? await updateRace(raceData, deletedGPX === 'true')
+      : await createRace(raceData);
     return json({ ok: true });
   } catch (e) {
     if (!(e instanceof ZodError)) {

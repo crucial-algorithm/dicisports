@@ -1,7 +1,7 @@
 import type { ActionFunction } from 'remix';
 import { json } from 'remix';
 
-import { requireAdminUser } from '~/server/auth/session.server';
+import { requireAdminUser, requireUser } from '~/server/auth/session.server';
 import i18n from '~/server/i18n.server';
 
 import type { Document } from '~/types';
@@ -10,11 +10,14 @@ import {
   findDocuments,
   updateDisplayOrderUp
 } from '~/server/documents.server';
+import { findEvent } from '~/server/db/events.server';
+import { badRequest } from '~/utils/misc';
 
 const RESOURCES_NS = 'create-event-form';
 
 export const action: ActionFunction = async ({ request, params }) => {
   await requireAdminUser(request);
+  const user = await requireUser(request);
 
   const t = await i18n.getFixedT(request, RESOURCES_NS);
   const documentId = params.documentId as string;
@@ -27,6 +30,15 @@ export const action: ActionFunction = async ({ request, params }) => {
   }
 
   const eventId = current.eventId as string;
+  const event = await findEvent(eventId);
+
+  if (!event) {
+    return badRequest({ error: t('Event not found') });
+  }
+  if (event.createdById !== user.id) {
+    return badRequest({ error: t('Not authorized') });
+  }
+
   const documents: Array<Document> = (await findDocuments(
     eventId
   )) as Document[];

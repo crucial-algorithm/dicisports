@@ -161,7 +161,10 @@ export const action: ActionFunction = async ({ request, params }) => {
 
   const event = params.eventId ? await findEvent(params.eventId) : null;
 
-  if (!event || event.createdById !== user.id) {
+  if (!event) {
+    return badRequest({ error: t('Event not found') });
+  }
+  if (event.createdById !== user.id) {
     return badRequest({ error: t('Not authorized') });
   }
 
