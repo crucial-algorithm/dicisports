@@ -355,7 +355,7 @@ export default function OrganizerEventRoute() {
     show: false,
     hash: 0
   });
-  const [actionId, setActionId] = useState<string>('');
+  const [actionId, setActionId] = useState<string | null>(null);
   const inputEl = useRef(null);
   const isPublished = event.status === Status.published;
 
@@ -441,7 +441,7 @@ export default function OrganizerEventRoute() {
                 </Button>
               ))}
 
-              <input type="hidden" name="actionId" value={actionId} />
+              <input type="hidden" name="actionId" value={actionId || ''} />
             </div>
           </div>
           <FormField
