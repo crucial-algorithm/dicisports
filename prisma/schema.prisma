@@ -78,6 +78,7 @@ enum Status {
 model Event {
   id                 String     @id @default(uuid())
   name               String?
+  slug               String?    @unique
   sport              Sport?     @relation(fields: [sportId], references: [id])
   sportId            Int?       @map("sport_id")
   startAt            DateTime?  @map("start_at")

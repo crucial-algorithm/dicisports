@@ -33,7 +33,7 @@ async function createRace(race: CreateRaceInput): Promise<Race> {
   return r;
 }
 
-async function findEventRaces(eventId: string): Promise<Race[] | void> {
+async function findEventRaces(eventId: string): Promise<Race[] | null> {
   return await db.race.findMany({
     where: { eventId: eventId, status: { not: 'deleted' } },
     orderBy: { displayOrder: 'asc' }
