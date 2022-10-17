@@ -12,7 +12,7 @@ import { unstable_composeUploadHandlers } from '@remix-run/node';
 
 import { z, ZodError } from 'zod';
 
-import { requireAdminUser } from '~/server/auth/session.server';
+import { requireAdminUser, requireUser } from '~/server/auth/session.server';
 import {
   createDocument,
   deleteDocument,
@@ -23,17 +23,20 @@ import type { CreateDocumentInput } from '~/types';
 import { badRequest } from '~/utils/misc';
 import { uploadToS3 } from '~/server/utils/s3';
 import Id from '~/server/utils/Id.server';
+import { findEvent } from '~/server/db/events.server';
+import { NotFound, Unauthorized } from '~/server/utils/misc';
 
 const RESOURCES_NS = 'create-event-form';
 
 export const action: ActionFunction = async ({ request, params }) => {
   await requireAdminUser(request);
+  const user = await requireUser(request);
 
   const t = await i18n.getFixedT(request, RESOURCES_NS);
 
   const uploadHandler: UploadHandler = unstable_composeUploadHandlers(
     // our custom upload handler
-    async ({ name, contentType, data, filename }) => {
+    async ({ name, data, filename }) => {
       if (name !== 'file') {
         return undefined;
       }
@@ -76,6 +79,15 @@ export const action: ActionFunction = async ({ request, params }) => {
     path: file,
     eventId
   };
+
+  const event = await findEvent(eventId);
+
+  if (!event) {
+    throw NotFound(t('Event not found'));
+  }
+  if (event.createdById !== user.id) {
+    throw Unauthorized(t('Not authorized'));
+  }
 
   const DocumentSchema = z.object({
     label: z.string().min(5, { message: t('Min 5 chars') }),

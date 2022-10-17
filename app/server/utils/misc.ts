@@ -19,4 +19,12 @@ function processImgField(
   return value || null;
 }
 
-export { parseLocation, processImgField };
+function Unauthorized(message: string) {
+  return new Response(message, { status: 401 });
+}
+
+function NotFound(message: string) {
+  return new Response(message, { status: 404 });
+}
+
+export { parseLocation, processImgField, Unauthorized, NotFound };

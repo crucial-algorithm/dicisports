@@ -19,7 +19,7 @@
   "Hint For Picture 5": "Banquete",
   "Create Button": "Criar Evento",
   "Save Button": "Guardar Evento",
-  "Event not found": "Estranho... não encontramos o evento que pretende actualizar!",
+  "Event not found": "Esse evento não existe",
   "Event description": "A edição deste ano será a melhor de sempre...",
   "How to get there": "Como chegar lá... Onde estacionar...",
   "Directions": "Como chegar",
@@ -57,6 +57,8 @@
   "Update Document Button": "Editar",
   "Document Name": "Regulamento",
   "GPX": "Percurso GPX",
+  "Download GPX File": "Ficheiro GPX",
+  "Select a document": "Selecione um documento",
 
   "Field required": "Campo obrigatório",
   "Must Be Number": "Insira um número positivo",
@@ -75,8 +77,7 @@
   "Uploaded GPX": "Ficheiro adicionado",
   "No Document": "Nenhum documento encontrado",
   "No Race": "Nenhuma distância encontrada",
-  "Download GPX File": "Ficheiro GPX",
-  "Select a document": "Selecione um documento",
+  "Not authorized": "Não autorizado",
 
   "Delete": "Apagar Distância",
   "Delete Document": "Apagar documento",
