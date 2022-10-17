@@ -76,7 +76,7 @@ export default function Groups() {
           <div />
           <Form method="post" action="/m/group/add">
             <input type="hidden" name="actionId" value={actionIds.create} />
-            <Button variant="secondary">
+            <Button variant="secondary" name="create-group">
               <H6 as="span">{t('Create')}</H6>
             </Button>
           </Form>

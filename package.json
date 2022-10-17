@@ -14,7 +14,8 @@
     "start": "remix-serve build",
     "lint": "npm run lint:eslint",
     "lint:eslint": "eslint ./ --ext .tsx --ext .ts",
-    "deploy:staging": "flyctl --app dicistg deploy ."
+    "deploy:staging": "flyctl --app dicistg deploy .",
+    "clear:db": "node --require esbuild-register prisma/clear.ts"
   },
   "prisma": {
     "seed": "node --require esbuild-register prisma/seed.ts"
@@ -77,11 +78,13 @@
     "@types/react-dom": "17.0.9",
     "autoprefixer": "^10.4.2",
     "concurrently": "^7.0.0",
+    "cypress": "10.10.0",
     "dotenv": "10.0.0",
     "esbuild-register": "3.2.1",
     "eslint": "8.5.0",
     "eslint-config-prettier": "8.3.0",
     "eslint-import-resolver-typescript": "3.3.0",
+    "eslint-plugin-cypress": "2.12.1",
     "eslint-plugin-import": "2.26.0",
     "eslint-plugin-prettier": "4.0.0",
     "postcss": "^8.4.5",

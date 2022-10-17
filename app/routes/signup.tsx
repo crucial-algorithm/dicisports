@@ -208,7 +208,7 @@ export default function SignUp() {
           <ButtonLink variant="secondary" to="/" className="hidden md:inline-flex">
             {t('Cancel')}
           </ButtonLink>
-          <Button>{t('Create Profile')}</Button>
+          <Button name="create">{t('Create Profile')}</Button>
         </ButtonGroup>
         {errors.submit && (
           <InputError className="mt-4" id="error-message">
