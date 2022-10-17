@@ -349,7 +349,7 @@ export default function OrganizerEventRoute() {
     show: false,
     hash: 0
   });
-  const [eventStatus, setEventStatus] = useState<string>('');
+  const [actionId, setActionId] = useState<string>('');
   const inputEl = useRef(null);
   const isPublished = event.status === Status.published;
 
@@ -404,16 +404,16 @@ export default function OrganizerEventRoute() {
   }
 
   function handlePublish() {
-    setEventStatus(actionIds.publish);
+    setActionId(actionIds.publish);
   }
 
   function handleUnpublish() {
-    setEventStatus(actionIds.unpublish);
+    setActionId(actionIds.unpublish);
   }
 
   useEffect(() => {
     setRaces(dbRaces);
-    setEventStatus('');
+    setActionId('');
   }, [dbRaces]);
 
   return (
@@ -435,7 +435,7 @@ export default function OrganizerEventRoute() {
                 </Button>
               ))}
 
-              <input type="hidden" name="actionId" value={eventStatus} />
+              <input type="hidden" name="actionId" value={actionId} />
             </div>
           </div>
           <FormField
