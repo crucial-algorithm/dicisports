@@ -1,4 +1,8 @@
-import { useActionData, useFetcher, useLoaderData } from '@remix-run/react';
+import {
+  useActionData,
+  useFetcher,
+  useLoaderData
+} from '@remix-run/react';
 import type { ActionFunction, LinksFunction, LoaderFunction } from 'remix';
 import {
   json,
@@ -30,6 +34,7 @@ import {
 
 import clsx from 'clsx';
 import { useDropzone } from 'react-dropzone';
+import { Status } from '@prisma/client';
 
 import BasicDatePicker from '~/components/shared/form/DatePicker';
 import PickBookingSystem from '~/components/PickBookingSystem';
@@ -55,7 +60,12 @@ import Button, { ButtonLink } from '~/components/shared/Button';
 import { inputBaseClasses } from '~/components/shared/form/InputBase';
 import Config from '~/server/config.server';
 import { findSports } from '~/server/db/sports.server';
-import { findEvent, updateEvent } from '~/server/db/events.server';
+import {
+  findEvent,
+  publishEvent,
+  updateEvent,
+  unpublishEvent
+} from '~/server/db/events.server';
 import Main from '~/components/shared/Main';
 import FormField from '~/components/shared/form/FormField';
 import { H2, H3, H6, Paragraph } from '~/components/shared/typography';
@@ -64,7 +74,12 @@ import UploadForm from '~/components/shared/form/UploadForm';
 
 import { uploadImageToCloudinary } from '~/server/storage/cloudinary.server';
 import ComboBox from '~/components/shared/form/ComboBox';
-import {NotFound, parseLocation, processImgField, Unauthorized} from '~/server/utils/misc';
+import {
+  NotFound,
+  parseLocation,
+  processImgField,
+  Unauthorized
+} from '~/server/utils/misc';
 import i18n from '~/server/i18n.server';
 import {
   badRequest,
@@ -80,6 +95,7 @@ import HourOfDay from '~/components/HourOfDay';
 import { Spacer } from '~/components/shared/Spacer';
 import { requireAdminUser, requireUser } from '~/server/auth/session.server';
 import ButtonGroup from '~/components/shared/ButtonGroup';
+import InputError from '~/components/shared/form/InputError';
 
 type ActionData = {
   hash: number;
@@ -90,7 +106,13 @@ type ActionData = {
     externalBookingUrl?: string;
     eventDescription?: string;
     directions?: string;
+    submit?: string;
   };
+};
+
+const actionIds = {
+  publish: 'publish',
+  unpublish: 'unpublish'
 };
 
 const RESOURCES_NS = 'create-event-form';
@@ -178,6 +200,8 @@ export const action: ActionFunction = async ({ request, params }) => {
   const image4 = form.get('/file/image/3') as string;
   const image5 = form.get('/file/image/4') as string;
   const location = parseLocation(form.get('location') as string);
+  const actionId = form.get('actionId') as string;
+  const races: Race[] = (await findEventRaces(event.id)) || [];
 
   const data: CreateEventInput = {
     id: params.eventId as string,
@@ -200,34 +224,70 @@ export const action: ActionFunction = async ({ request, params }) => {
   const perks: string[] = form.getAll('perks') as string[];
   const newPerks: string[] = form.getAll('new-perk-input') as string[];
 
-  const EventSchema = z.object({
-    name: z
-      .string({ required_error: t('Field Required') })
-      .min(5, { message: t('Min 5 chars') }),
-    sportId: z
-      .number()
-      .nonnegative({ message: t('Nonexistent Sport') })
-      .lte(7, { message: t('Nonexistent Sport') }),
-    startAt: z.date().min(new Date(), { message: t('Future Date') }),
-    address: z.string({ required_error: t('Field required') }),
-    useExternalBooking: z.boolean({
-      invalid_type_error: t('Invalid Type')
-    }),
-    externalBookingUrl: z
-      .string({ invalid_type_error: t('Invalid Type') })
-      .url()
-      .min(5, { message: t('Min 5 chars') })
-      .nullable(),
-    eventDescription: z
-      .string({ invalid_type_error: t('Invalid Type') })
-      .min(1, { message: t('Min 1 chars') })
-      .nullable()
-  });
+  console.log('status --->', event.status);
+  console.log(
+    'condition --->',
+    (event.status === Status.unpublished && races.length > 0) ||
+      event.status !== Status.unpublished
+  );
+  const EventSchema = z
+    .object({
+      name: z
+        .string({ required_error: t('Field Required') })
+        .min(5, { message: t('Min 5 chars') }),
+      sportId: z
+        .number()
+        .nonnegative({ message: t('Nonexistent Sport') })
+        .lte(7, { message: t('Nonexistent Sport') }),
+      startAt: z.date().min(new Date(), { message: t('Future Date') }),
+      address: z.string({ required_error: t('Field required') }),
+      useExternalBooking: z.boolean({
+        invalid_type_error: t('Invalid Type')
+      }),
+      externalBookingUrl: z
+        .string({ invalid_type_error: t('Invalid Type') })
+        .url()
+        .min(5, { message: t('Min 5 chars') })
+        .nullable(),
+      eventDescription: z
+        .string({ invalid_type_error: t('Invalid Type') })
+        .min(1, { message: t('Min 1 chars') })
+        .nullable()
+    })
+    .refine(
+      () =>
+        (event.status === Status.draft && races.length > 0) ||
+        event.status !== Status.draft,
+      {
+        message: t('At least 1 race'),
+        path: ['submit']
+      }
+    );
 
   try {
     EventSchema.parse(data);
+
+    if (event.status !== Status.published) {
+      await updateEvent(data, perks, newPerks);
+
+      if (actionId === actionIds.publish) {
+        await publishEvent(event.id as string);
+
+        return redirect(`/organizer?message=${t('Event Published')}`);
+      }
+
+      //Otherwise it means it is an update to the event
+      return json({});
+    }
+
     await updateEvent(data, perks, newPerks);
-    //TODO: change return
+
+    if (actionId === actionIds.unpublish) {
+      await unpublishEvent(event.id as string);
+
+      return redirect(`/organizer?message=${t('Event Unpublished')}`);
+    }
+
     return json({});
   } catch (e) {
     if (!(e instanceof ZodError)) {
@@ -311,7 +371,9 @@ export default function OrganizerEventRoute() {
     show: false,
     hash: 0
   });
+  const [eventStatus, setEventStatus] = useState<string>('');
   const inputEl = useRef(null);
+  const isPublished = event.status === Status.published;
 
   // Hack: while remix doesn't handle dates properly
   hackyEventRevival(event);
@@ -363,25 +425,42 @@ export default function OrganizerEventRoute() {
     setSowDocumentsDialog({ show: false, hash: 0 });
   }
 
+  function handlePublish() {
+    setEventStatus(actionIds.publish);
+  }
+
+  function handleUnpublish() {
+    setEventStatus(actionIds.unpublish);
+  }
+
+  console.log(eventStatus);
+  console.log('event -->', event.status);
   useEffect(() => {
     setRaces(dbRaces);
+    setEventStatus('');
   }, [dbRaces]);
 
   return (
     <Main>
-      <div className="mb-12 lg:mb-20">
-        <div className="flex flex-col-reverse items-start justify-between lg:flex-row lg:items-center">
-          <div>
-            <H2>{t('Create Event')}</H2>
-            <H3 variant="secondary" as="p">
-              {t('Let Others know')}
-            </H3>
-          </div>
-        </div>
-      </div>
-
       <div className="mb-24">
         <UploadForm method="post" className="w-full">
+          <div className="mb-12 lg:mb-20">
+            <div className="flex flex-col-reverse items-start justify-between lg:flex-row lg:items-center">
+              <div>
+                <H2>{t('Create Event')}</H2>
+              </div>
+              {!isPublished ? (
+                <Button onClick={handlePublish} type="submit" size="medium">
+                  {t('Publish Button')}
+                </Button>
+              ) : (
+                <Button onClick={handleUnpublish} type="submit" size="medium">
+                  {t('Unpublish Button')}
+                </Button>
+              )}
+              <input type="hidden" name="actionId" value={eventStatus} />
+            </div>
+          </div>
           <FormField
             label={t('Name')}
             id="event-name"
@@ -395,11 +474,11 @@ export default function OrganizerEventRoute() {
               defaultValue={event.name || ''}
             />
           </FormField>
-          <div className="flex flex-col flex-wrap md:flex-row md:space-x-4">
+          <div className="flex flex-col flex-wrap md:flex-row lg:space-x-4">
             <FormField
               label={t('Sport')}
               id="event-sport"
-              className="basis-1/3 lg:basis-1/4"
+              className="md:basis-1/2 lg:basis-1/4"
             >
               <ComboBox
                 name="sport"
@@ -416,7 +495,7 @@ export default function OrganizerEventRoute() {
             <FormField
               label={''}
               id="event-date"
-              className="basis-1/3 lg:basis-1/5"
+              className="md:basis-1/2 md:pl-4 lg:pl-0 lg:basis-1/5"
               error={actionData?.errors?.startAt}
             >
               <BasicDatePicker
@@ -429,7 +508,7 @@ export default function OrganizerEventRoute() {
             <FormField
               label={t('Location')}
               id="event-location"
-              className="basis-1/2 lg:basis-1/3"
+              className="md:w-full lg:basis-1/3"
               error={actionData?.errors?.address}
             >
               <TextField
@@ -592,6 +671,11 @@ export default function OrganizerEventRoute() {
                 {t('No Races')}
               </H6>
             </WhenListEmpty>
+            {actionData?.errors?.submit ? (
+              <InputError className="mt-8" id="error-message">
+                {actionData?.errors?.submit}
+              </InputError>
+            ) : null}
           </div>
 
           <FormField
@@ -645,6 +729,7 @@ export default function OrganizerEventRoute() {
             </WhenListEmpty>
           </div>
 
+          <input type="hidden" name="actionId" value={actionIds.publish} />
           <ButtonGroup className="mt-8">
             <ButtonLink type="button" variant="secondary" to={'/organizer'}>
               {t('Cancel')}

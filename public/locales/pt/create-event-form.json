@@ -19,6 +19,8 @@
   "Hint For Picture 5": "Banquete",
   "Create Button": "Criar Evento",
   "Save Button": "Guardar Evento",
+  "Publish Button": "Publicar",
+  "Unpublish Button": "Despublicar",
   "Event not found": "Esse evento não existe",
   "Event description": "A edição deste ano será a melhor de sempre...",
   "How to get there": "Como chegar lá... Onde estacionar...",
@@ -59,6 +61,8 @@
   "GPX": "Percurso GPX",
   "Download GPX File": "Ficheiro GPX",
   "Select a document": "Selecione um documento",
+  "Event Published": "Evento publicado com sucesso",
+  "Event Unpublished": "Evento despublicado com sucesso",
 
   "Field required": "Campo obrigatório",
   "Must Be Number": "Insira um número positivo",
@@ -78,6 +82,7 @@
   "No Document": "Nenhum documento encontrado",
   "No Race": "Nenhuma distância encontrada",
   "Not authorized": "Não autorizado",
+  "At least 1 race": "Insira pelo menos uma distância",
 
   "Delete": "Apagar Distância",
   "Delete Document": "Apagar documento",

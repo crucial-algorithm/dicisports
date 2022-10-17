@@ -104,9 +104,28 @@ async function updateEvent(
             isEnabled: true,
             eventId: event.id
           };
-        }), prisma
+        }),
+      prisma
     );
   });
 }
 
-export { findEvents, findEvent, createDraftEvent, updateEvent };
+async function publishEvent(eventId: string): Promise<void> {
+  await db.event.update({
+    where: { id: eventId },
+    data: {
+      status: Status.published
+    }
+  });
+}
+
+async function unpublishEvent(eventId: string): Promise<void> {
+  await db.event.update({
+    where: { id: eventId },
+    data: {
+      status: Status.draft
+    }
+  });
+}
+
+export { findEvents, findEvent, createDraftEvent, updateEvent, publishEvent, unpublishEvent };

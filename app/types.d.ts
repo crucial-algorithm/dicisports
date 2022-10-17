@@ -8,7 +8,8 @@ import type {
   Event as DBEvent,
   Perk as DBPerk,
   Race as DBRace,
-  GroupSchedule as DBGroupSchedule
+  GroupSchedule as DBGroupSchedule,
+  Status
 } from '@prisma/client';
 
 type NonNullProperties<Type> = {
@@ -136,6 +137,7 @@ type CreateEventInput = {
   image5?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  status?: Status
 }
 
 type Perk = {} & DBPerk
