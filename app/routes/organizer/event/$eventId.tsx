@@ -1,8 +1,4 @@
-import {
-  useActionData,
-  useFetcher,
-  useLoaderData
-} from '@remix-run/react';
+import { useActionData, useFetcher, useLoaderData } from '@remix-run/react';
 import type { ActionFunction, LinksFunction, LoaderFunction } from 'remix';
 import {
   json,
@@ -224,12 +220,6 @@ export const action: ActionFunction = async ({ request, params }) => {
   const perks: string[] = form.getAll('perks') as string[];
   const newPerks: string[] = form.getAll('new-perk-input') as string[];
 
-  console.log('status --->', event.status);
-  console.log(
-    'condition --->',
-    (event.status === Status.unpublished && races.length > 0) ||
-      event.status !== Status.unpublished
-  );
   const EventSchema = z
     .object({
       name: z
@@ -256,8 +246,8 @@ export const action: ActionFunction = async ({ request, params }) => {
     })
     .refine(
       () =>
-        (event.status === Status.draft && races.length > 0) ||
-        event.status !== Status.draft,
+        (actionId === actionIds.publish && races.length > 0) ||
+        actionId !== actionIds.publish,
       {
         message: t('At least 1 race'),
         path: ['submit']
@@ -266,26 +256,14 @@ export const action: ActionFunction = async ({ request, params }) => {
 
   try {
     EventSchema.parse(data);
-
-    if (event.status !== Status.published) {
-      await updateEvent(data, perks, newPerks);
-
-      if (actionId === actionIds.publish) {
-        await publishEvent(event.id as string);
-
-        return redirect(`/organizer?message=${t('Event Published')}`);
-      }
-
-      //Otherwise it means it is an update to the event
-      return json({});
-    }
-
     await updateEvent(data, perks, newPerks);
+
+    if (actionId === actionIds.publish) {
+      await publishEvent(event.id as string);
+    }
 
     if (actionId === actionIds.unpublish) {
       await unpublishEvent(event.id as string);
-
-      return redirect(`/organizer?message=${t('Event Unpublished')}`);
     }
 
     return json({});
@@ -433,8 +411,6 @@ export default function OrganizerEventRoute() {
     setEventStatus(actionIds.unpublish);
   }
 
-  console.log(eventStatus);
-  console.log('event -->', event.status);
   useEffect(() => {
     setRaces(dbRaces);
     setEventStatus('');
@@ -449,15 +425,16 @@ export default function OrganizerEventRoute() {
               <div>
                 <H2>{t('Create Event')}</H2>
               </div>
-              {!isPublished ? (
-                <Button onClick={handlePublish} type="submit" size="medium">
-                  {t('Publish Button')}
-                </Button>
-              ) : (
+              {event.status !== Status.auto && (isPublished ? (
                 <Button onClick={handleUnpublish} type="submit" size="medium">
                   {t('Unpublish Button')}
                 </Button>
-              )}
+              ) : (
+                <Button onClick={handlePublish} type="submit" size="medium">
+                  {t('Publish Button')}
+                </Button>
+              ))}
+
               <input type="hidden" name="actionId" value={eventStatus} />
             </div>
           </div>
@@ -729,7 +706,6 @@ export default function OrganizerEventRoute() {
             </WhenListEmpty>
           </div>
 
-          <input type="hidden" name="actionId" value={actionIds.publish} />
           <ButtonGroup className="mt-8">
             <ButtonLink type="button" variant="secondary" to={'/organizer'}>
               {t('Cancel')}
