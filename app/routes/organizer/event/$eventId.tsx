@@ -198,6 +198,11 @@ export const action: ActionFunction = async ({ request, params }) => {
   const location = parseLocation(form.get('location') as string);
   const actionId = form.get('actionId') as string;
   const races: Race[] = (await findEventRaces(event.id)) || [];
+  let eventStatus = event.status;
+
+  if (eventStatus === Status.auto) {
+    eventStatus = Status.draft;
+  }
 
   const data: CreateEventInput = {
     id: params.eventId as string,
@@ -214,7 +219,8 @@ export const action: ActionFunction = async ({ request, params }) => {
     image2: processImgField(image2, isUpdate),
     image3: processImgField(image3, isUpdate),
     image4: processImgField(image4, isUpdate),
-    image5: processImgField(image5, isUpdate)
+    image5: processImgField(image5, isUpdate),
+    status: eventStatus
   };
 
   const perks: string[] = form.getAll('perks') as string[];

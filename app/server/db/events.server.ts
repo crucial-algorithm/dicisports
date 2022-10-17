@@ -89,7 +89,7 @@ async function updateEvent(
         image5: event.image5,
         eventDescription: event.eventDescription,
         directions: event.directions,
-        status: Status.draft
+        status: event.status
       }
     });
     await resetEventPerks(event.id, perks, prisma);
