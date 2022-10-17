@@ -7,7 +7,7 @@ import { findDocument } from '~/server/documents.server';
 import i18n from '~/server/i18n.server';
 
 import { findEvent } from '~/server/db/events.server';
-import { badRequest } from '~/utils/misc';
+import { NotFound, Unauthorized } from '~/server/utils/misc';
 
 const RESOURCES_NS = 'create-event-form';
 
@@ -22,18 +22,16 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   const document = await findDocument(documentId);
 
   if (!document) {
-    throw new Response(t('No Document'), {
-      status: 404
-    });
+    throw NotFound(t('No Document'));
   }
 
   const event = await findEvent(document.eventId);
 
   if (!event) {
-    return badRequest({ error: t('Event not found') });
+    throw NotFound(t('Event not found'));
   }
   if (event.status !== Status.published && event.createdById !== user.id) {
-    return badRequest({ error: t('Not authorized') });
+    throw Unauthorized(t('Not authorized'));
   }
 
   const body = await downloadFromS3(document.path);

@@ -7,10 +7,10 @@ import {
   updateDisplayOrderUp
 } from '~/server/db/races.server';
 import type { Race } from '~/types';
-import { badRequest } from '~/utils/misc';
 import i18n from '~/server/i18n.server';
 import { requireAdminUser, requireUser } from '~/server/auth/session.server';
 import { findEvent } from '~/server/db/events.server';
+import { NotFound, Unauthorized } from '~/server/utils/misc';
 
 const RESOURCES_NS = 'create-event-form';
 
@@ -25,17 +25,17 @@ export const action: ActionFunction = async ({ request, params }) => {
   const current = await findRace(raceId);
 
   if (!current) {
-    return badRequest({ error: t('No Race') });
+    throw NotFound(t('Event not found'));
   }
 
   const eventId = current.eventId as string;
   const event = await findEvent(eventId);
 
   if (!event) {
-    return badRequest({ error: t('Event not found') });
+    throw NotFound(t('Event not found'));
   }
   if (event.createdById !== user.id) {
-    return badRequest({ error: t('Not authorized') });
+    throw Unauthorized(t('Not authorized'));
   }
 
   const races: Array<Race> = (await findEventRaces(eventId)) as Race[];

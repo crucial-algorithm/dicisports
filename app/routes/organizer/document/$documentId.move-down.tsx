@@ -10,7 +10,7 @@ import {
   updateDisplayOrderDown
 } from '~/server/documents.server';
 import { findEvent } from '~/server/db/events.server';
-import { badRequest } from '~/utils/misc';
+import { NotFound, Unauthorized } from '~/server/utils/misc';
 
 export const action: ActionFunction = async ({ request, params }) => {
   await requireAdminUser(request);
@@ -22,19 +22,17 @@ export const action: ActionFunction = async ({ request, params }) => {
   const current = await findDocument(documentId);
 
   if (!current) {
-    throw new Response(t('No Document'), {
-      status: 404
-    });
+    throw NotFound(t('No Document'));
   }
 
   const eventId = current.eventId;
   const event = await findEvent(eventId);
 
   if (!event) {
-    return badRequest({ error: t('Event not found') });
+    throw NotFound(t('Event not found'));
   }
   if (event.createdById !== user.id) {
-    return badRequest({ error: t('Not authorized') });
+    throw Unauthorized(t('Not authorized'));
   }
 
   const documents: Array<Document> = (await findDocuments(

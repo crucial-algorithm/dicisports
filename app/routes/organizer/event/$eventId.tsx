@@ -64,7 +64,7 @@ import UploadForm from '~/components/shared/form/UploadForm';
 
 import { uploadImageToCloudinary } from '~/server/storage/cloudinary.server';
 import ComboBox from '~/components/shared/form/ComboBox';
-import { parseLocation, processImgField } from '~/server/utils/misc';
+import {NotFound, parseLocation, processImgField, Unauthorized} from '~/server/utils/misc';
 import i18n from '~/server/i18n.server';
 import {
   badRequest,
@@ -162,10 +162,10 @@ export const action: ActionFunction = async ({ request, params }) => {
   const event = params.eventId ? await findEvent(params.eventId) : null;
 
   if (!event) {
-    return badRequest({ error: t('Event not found') });
+    throw NotFound(t('Event not found'));
   }
   if (event.createdById !== user.id) {
-    return badRequest({ error: t('Not authorized') });
+    throw Unauthorized(t('Not authorized'));
   }
 
   const form = await unstable_parseMultipartFormData(request, uploadHandler);

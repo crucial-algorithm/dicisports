@@ -24,6 +24,7 @@ import { badRequest } from '~/utils/misc';
 import { uploadToS3 } from '~/server/utils/s3';
 import Id from '~/server/utils/Id.server';
 import { findEvent } from '~/server/db/events.server';
+import { NotFound, Unauthorized } from '~/server/utils/misc';
 
 const RESOURCES_NS = 'create-event-form';
 
@@ -82,10 +83,10 @@ export const action: ActionFunction = async ({ request, params }) => {
   const event = await findEvent(eventId);
 
   if (!event) {
-    return badRequest({ error: t('Event not found') });
+    throw NotFound(t('Event not found'));
   }
   if (event.createdById !== user.id) {
-    return badRequest({ error: t('Not authorized') });
+    throw Unauthorized(t('Not authorized'));
   }
 
   const DocumentSchema = z.object({
