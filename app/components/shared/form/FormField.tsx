@@ -10,6 +10,7 @@ type Props = {
   label: string
   error?: string | null
   description?: React.ReactNode
+  e2e?: string
 } & React.ComponentProps<'div'>
 
 const FormField: React.FC<Props> = ({
@@ -18,7 +19,8 @@ const FormField: React.FC<Props> = ({
   className,
   error,
   description,
-  children
+  children,
+  e2e
 }) => {
   const prefix = useId();
   const inputId = id ?? `${prefix}-${label}`;
@@ -26,7 +28,7 @@ const FormField: React.FC<Props> = ({
   const descriptionId = `${inputId}-description`;
 
   return (
-    <div className={clsx('mb-8', className)}>
+    <div className={clsx('mb-8', className)} data-e2e={e2e}>
       <div className="flex gap-2 items-baseline justify-between mb-2">
         <Label htmlFor={inputId}>{label}</Label>
         {description ? (

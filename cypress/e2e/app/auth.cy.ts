@@ -37,6 +37,45 @@ describe('Authentication / Authorization', () => {
         .should('exist');
     });
 
+    it('should login user', () => {
+      cy.visit('/login')
+
+        .get('[name=email]')
+        .type('regular@gmail.com', { delay: 1 })
+
+        .get('[name=password]')
+        .type('Password1', { delay: 1 })
+
+        .get('button[name=login]')
+        .click()
+
+        .url()
+        .should('eq', `${Cypress.config().baseUrl}/`);
+    });
+  });
+
+  context('When user authenticated', () => {
+    beforeEach(() => cy.login());
+
+    it('should redirect to profile when accessing login', () => {
+      cy
+        .visit('/login')
+        .url()
+        .should('eq', `${Cypress.config().baseUrl}/me`)
+        ;
+    });
+
+    it('should be able to access it\'s profile', () => {
+      cy
+        .visit('/me')
+        .url()
+        .should('eq', `${Cypress.config().baseUrl}/me`)
+      ;
+    });
+
+  });
+
+  context('When user wants to signup', () => {
     it('should allow to create a new user', () => {
       cy.visit('/signup')
 
@@ -62,34 +101,80 @@ describe('Authentication / Authorization', () => {
         .should('eq', `${Cypress.config().baseUrl}/me`);
     });
 
-    it.only('should login user', () => {
-      cy.visit('/login')
+    it('should require all fields', () => {
+      cy.visit('/signup')
 
-        .get('[name=email]')
-        .type('regular@gmail.com', { delay: 1 })
+        .url()
+        .should('eq', `${Cypress.config().baseUrl}/signup`)
 
-        .get('[name=password]')
-        .type('Password1', { delay: 1 })
-
-        .get('button[name=login]')
+        .get('button[name=create]')
         .click()
 
+        .get('div[data-e2e=email]>p[role=alert]')
+        .should('exist')
+
+        .get('div[data-e2e=confirmation]>p[role=alert]')
+        .should('exist')
+
+        .get('div[data-e2e=name]>p[role=alert]')
+        .should('exist')
+
+        .get('div[data-e2e=password]>p[role=alert]')
+        .should('exist')
+      ;
+    });
+
+    it('should fail if user already exists', () => {
+      cy.visit('/signup')
+
         .url()
-        .should('eq', `${Cypress.config().baseUrl}/`);
+        .should('eq', `${Cypress.config().baseUrl}/signup`)
+
+        .get('input[name=email]')
+        .type('regular@gmail.com')
+
+        .get('input[name=confirmation]')
+        .type('regular@gmail.com')
+
+        .get('input[name=name]')
+        .type('Projeto Pedal')
+
+        .get('input[name=password]')
+        .type('pp@password1')
+
+        .get('button[name=create]')
+        .click()
+
+        .get('div[data-e2e=email]>p[role=alert]')
+        .should('exist');
+    });
+
+    it('should fail if emails don\t match', () => {
+      cy.visit('/signup')
+
+        .url()
+        .should('eq', `${Cypress.config().baseUrl}/signup`)
+
+        .get('input[name=email]')
+        .type('a-email@gmail.com')
+
+        .get('input[name=confirmation]')
+        .type('other-email@gmail.com')
+
+        .get('input[name=name]')
+        .type('Projeto Pedal')
+
+        .get('input[name=password]')
+        .type('pp@password1')
+
+        .get('button[name=create]')
+        .click()
+
+        .get('div[data-e2e=confirmation]>p[role=alert]')
+        .should('exist');
     });
   });
 
-  context('When user authenticated', () => {
-
-    it('should redirect to profile when accessing login', () => {
-      cy
-        .login()
-        .visit('/login')
-        .url()
-        .should('eq', `${Cypress.config().baseUrl}/me`)
-        ;
-    });
-  });
 });
 
 export {};
