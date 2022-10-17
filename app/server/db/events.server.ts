@@ -10,6 +10,7 @@ import {
   enableEventPerks,
   resetEventPerks
 } from '~/server/db/perks.server';
+import { generateSlug } from '~/utils/misc';
 
 const prisma = new PrismaClient();
 
@@ -110,10 +111,23 @@ async function updateEvent(
   });
 }
 
-async function publishEvent(eventId: string): Promise<void> {
+async function publishEvent(eventId: string, name: string): Promise<void> {
+  const event = await findEvent(eventId);
+
+  if (!event) {
+    return;
+  }
+
+  let slug = event.slug;
+
+  if (slug === null) {
+    slug = await assignUniqueSlug(name);
+  }
+
   await db.event.update({
     where: { id: eventId },
     data: {
+      slug,
       status: Status.published
     }
   });
@@ -128,4 +142,26 @@ async function unpublishEvent(eventId: string): Promise<void> {
   });
 }
 
-export { findEvents, findEvent, createDraftEvent, updateEvent, publishEvent, unpublishEvent };
+async function assignUniqueSlug(name: string, attempt = 0): Promise<string> {
+  const prefix = `${Math.floor(Math.random() * 1000)}-`;
+  const slug = `${attempt ? prefix : ''}${generateSlug(name)}`;
+
+  console.log(`attempt nbr ${attempt}, slug = ${slug}`);
+  const event = await db.event.findUnique({
+    where: { slug }
+  });
+
+  if (!event) {
+    return slug;
+  }
+  return await assignUniqueSlug(name, ++attempt);
+}
+
+export {
+  findEvents,
+  findEvent,
+  createDraftEvent,
+  updateEvent,
+  publishEvent,
+  unpublishEvent
+};

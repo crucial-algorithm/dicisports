@@ -259,7 +259,7 @@ export const action: ActionFunction = async ({ request, params }) => {
     await updateEvent(data, perks, newPerks);
 
     if (actionId === actionIds.publish) {
-      await publishEvent(event.id as string);
+      await publishEvent(event.id as string, data.name);
     }
 
     if (actionId === actionIds.unpublish) {

@@ -122,6 +122,7 @@ type Event = {} & DBEvent
 type CreateEventInput = {
   id: string
   name: string
+  slug?: string
   sportId: number
   startAt: Date | string
   location: string
