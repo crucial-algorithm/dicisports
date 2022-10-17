@@ -15,7 +15,7 @@
     "lint": "npm run lint:eslint",
     "lint:eslint": "eslint ./ --ext .tsx --ext .ts",
     "deploy:staging": "flyctl --app dicistg deploy .",
-    "clear:db": "node --require esbuild-register prisma/clear.ts"
+    "test:open": "npx cypress open"
   },
   "prisma": {
     "seed": "node --require esbuild-register prisma/seed.ts"
