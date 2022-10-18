@@ -4,7 +4,11 @@ import { useFetcher, useLoaderData } from '@remix-run/react';
 
 import { Status } from '@prisma/client';
 import { HeartIcon } from '@heroicons/react/24/outline';
-import { ShareIcon, HeartIcon as Favorite } from '@heroicons/react/24/solid';
+import { HeartIcon as Favorite, ShareIcon } from '@heroicons/react/24/solid';
+import * as React from 'react';
+import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import CopyToClipboard from 'react-copy-to-clipboard';
 
 import {
   findEventBySlug,
@@ -18,6 +22,7 @@ import Button from '~/components/shared/Button';
 import { getUser } from '~/server/auth/session.server';
 import { NotFound, Unauthorized } from '~/server/utils/misc';
 import i18n from '~/server/i18n.server';
+import { Notification } from '~/components/shared/NotificationMessage';
 
 type LoaderData = {
   event: Event;
@@ -61,7 +66,6 @@ export const loader: LoaderFunction = async ({ params, request }) => {
     });
   }
 
-  console.log('isUserFavorite --->', isUserFavorite);
   return json({
     event,
     isUserFavorite
@@ -71,6 +75,48 @@ export const loader: LoaderFunction = async ({ params, request }) => {
 export default function EventDisplayRoute() {
   const favorite = useFetcher();
   const { event, isUserFavorite } = useLoaderData<LoaderData>();
+  const { t } = useTranslation('home');
+
+  const favoriteAddedMessage = t('Favorite Added');
+  const favoriteRemovedMessage = t('Favorite Removed');
+  const copiedToClipMessage = t('Copied to Clipboard');
+
+  const [message, setMessage] = useState<string>(favoriteAddedMessage);
+  const [address, setAddress] = useState<string>('');
+  let showFavoriteAddedNotification: any = null;
+  let showCopiedToClipboardNotification: any = null;
+
+  function handlerSetShowNotificationFunction(callback: () => void) {
+    showFavoriteAddedNotification = callback;
+  }
+
+  function handlerSetShowNotificationCopyToClipboard(callback: () => void) {
+    showCopiedToClipboardNotification = callback;
+  }
+
+  function handlerClickToCopy() {
+    showCopiedToClipboardNotification();
+  }
+
+  useEffect(() => {
+    if (favorite.type === 'actionReload' && favorite.data.ok) {
+      setMessage(
+        favorite.data.action === actions.add
+          ? favoriteAddedMessage
+          : favoriteRemovedMessage
+      );
+      showFavoriteAddedNotification();
+    }
+
+    const url = new URL(window.location.href);
+
+    setAddress(url.origin);
+  }, [
+    favorite,
+    showFavoriteAddedNotification,
+    favoriteAddedMessage,
+    favoriteRemovedMessage
+  ]);
 
   return (
     <Main>
@@ -93,9 +139,20 @@ export default function EventDisplayRoute() {
               </Button>
             )}
           </favorite.Form>
-          <Button size="tiny">
-            <ShareIcon className="h-6 w-6 m-0 inline-block" />
-          </Button>
+          <CopyToClipboard
+            text={`${address}/group/${event.slug}`}
+            onCopy={handlerClickToCopy}
+          >
+            <Button size="tiny">
+              <ShareIcon className="h-6 w-6 m-0 inline-block" />
+            </Button>
+          </CopyToClipboard>
+          <Notification show={handlerSetShowNotificationFunction}>
+            {message}
+          </Notification>
+          <Notification show={handlerSetShowNotificationCopyToClipboard}>
+            {copiedToClipMessage}
+          </Notification>
         </ButtonGroup>
       </div>
     </Main>

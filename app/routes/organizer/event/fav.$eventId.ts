@@ -19,7 +19,6 @@ export const action: ActionFunction = async ({ request, params }) => {
   const form = await request.formData();
   const action = form.get('action') as string | 'add';
 
-  console.log('action -->', action);
   try {
     if (action === 'add') {
       await addEventToFavorites(user.id, event.id);
