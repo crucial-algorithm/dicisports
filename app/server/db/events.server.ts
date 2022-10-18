@@ -163,6 +163,44 @@ async function findEventBySlug(slug: string): Promise<Event | null> {
   });
 }
 
+async function findUserFavoriteEvents(id: string): Promise<Array<Event>> {
+  const user = await db.user.findUnique({
+    where: { id },
+    include: {
+      favEvents: true
+    }
+  });
+
+  if (!user) {
+    return [];
+  }
+
+  return await db.event.findMany({
+    where: { id: { in: user.favEvents.map((fe) => fe.eventId) } }
+  });
+}
+
+async function addEventToFavorites(
+  userId: string,
+  eventId: string
+): Promise<void> {
+  await db.favoriteEvent.create({
+    data: {
+      userId,
+      eventId
+    }
+  });
+}
+
+async function removeEventFromFavorites(
+  userId: string,
+  eventId: string
+): Promise<void> {
+  await db.favoriteEvent.delete({
+    where: { userId_eventId: { userId, eventId } }
+  });
+}
+
 export {
   findEvents,
   findEvent,
@@ -170,5 +208,8 @@ export {
   updateEvent,
   publishEvent,
   unpublishEvent,
-  findEventBySlug
+  findEventBySlug,
+  addEventToFavorites,
+  removeEventFromFavorites,
+  findUserFavoriteEvents
 };
