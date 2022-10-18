@@ -157,11 +157,18 @@ async function assignUniqueSlug(name: string, attempt = 0): Promise<string> {
   return await assignUniqueSlug(name, ++attempt);
 }
 
+async function findEventBySlug(slug: string): Promise<Event | null> {
+  return await db.event.findUnique({
+    where: { slug }
+  });
+}
+
 export {
   findEvents,
   findEvent,
   createDraftEvent,
   updateEvent,
   publishEvent,
-  unpublishEvent
+  unpublishEvent,
+  findEventBySlug
 };

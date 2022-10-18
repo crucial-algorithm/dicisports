@@ -427,7 +427,7 @@ export default function OrganizerEventRoute() {
       <div className="mb-24">
         <UploadForm method="post" className="w-full">
           <div className="mb-12 lg:mb-20">
-            <div className="flex flex-col-reverse items-start justify-between lg:flex-row lg:items-center">
+            <div className="flex flex-row items-start justify-between items-center">
               <div>
                 <H2>{t('Create Event')}</H2>
               </div>
