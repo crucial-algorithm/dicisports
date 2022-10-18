@@ -2,6 +2,9 @@ declare global {
   namespace Cypress {
     interface Chainable {
       login(): Chainable<void>
+      pickOptionFromSelect(name: string, position: number): Chainable<void>
+      pickLocationInMap(triggerOpenMapButtonName: string): Chainable<void>
+      wasImageLoaded(selector: string): Chainable<void>
     }
   }
 }
@@ -13,6 +16,54 @@ function login() {
   );
 }
 
+function pickOptionFromSelect(name: string, position: number) {
+  cy.get(`#select-${name}`)
+    .click()
+
+    .get(`[class*="-menu"] [class*="-option"]:nth-child(${position})`)
+    .click();
+}
+
+function pickLocationInMap(triggerOpenMapButtonName: string) {
+  cy.intercept('GET', 'https://api.mapbox.com/geocoding/v5/mapbox.places/F*')
+    .as('mapBoxSearchResult')
+    .intercept(
+      'GET',
+      'https://api.mapbox.com/geocoding/v5/mapbox.places/-8.64*'
+    )
+    .as('mapBoxFindAddressFromCoords')
+
+    // open modal
+    .get(`button[name=${triggerOpenMapButtonName}]`)
+    .click()
+
+    // search location
+    .get('input.mapboxgl-ctrl-geocoder--input')
+    .type('Fátima, Santarém, Portugal')
+    .wait('@mapBoxSearchResult')
+
+    // get 1st suggestion
+    .get('.mapboxgl-ctrl-geocoder.mapboxgl-ctrl a')
+    .first()
+    .click()
+
+    .wait('@mapBoxFindAddressFromCoords', { timeout: 8000 })
+    .get('button[name=pick-location]')
+    .click();
+}
+
+function wasImageLoaded(selector: string) {
+  cy.get(selector)
+    .should('be.visible')
+    .and('have.prop', 'naturalWidth')
+    .should('be.greaterThan', 0);
+}
+
+
 Cypress.Commands.add('login', login);
+Cypress.Commands.add('pickOptionFromSelect', pickOptionFromSelect);
+Cypress.Commands.add('pickLocationInMap', pickLocationInMap);
+Cypress.Commands.add('wasImageLoaded', wasImageLoaded);
+
 
 export {};

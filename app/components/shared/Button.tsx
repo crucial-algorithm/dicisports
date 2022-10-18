@@ -24,10 +24,12 @@ function AdornmentButton({
   children,
   onClick,
   className,
-  type
+  type,
+  name
 }: {} & React.ComponentProps<'button'>) {
   return (
     <button
+      name={name}
       onClick={onClick}
       type={type}
       className={clsx(
@@ -56,7 +58,7 @@ const Button: React.FC<Props> = ({
 }) => {
   if (variant === 'adornment')
     {return (
-      <AdornmentButton className={className} onClick={onClick} type={type}>
+      <AdornmentButton name={name} className={className} onClick={onClick} type={type}>
         {children}
       </AdornmentButton>
     );}

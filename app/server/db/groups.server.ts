@@ -80,7 +80,8 @@ async function findGroupBySlug(slug: string): Promise<Group | null> {
       groupType: true,
       groupSpirit: true,
       sport: true,
-      createdBy: true
+      createdBy: true,
+      schedules: true
     }
   });
 

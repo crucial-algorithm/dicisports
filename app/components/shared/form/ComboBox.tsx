@@ -74,6 +74,7 @@ export default function ComboBox({
       <input type="hidden" name={name} value={value?.value || ''} />
       <Select
         aria-label=""
+        id={`select-${name}`}
         className={clsx(inputBaseClasses('py-2.5'), className)}
         value={value}
         isClearable={false}

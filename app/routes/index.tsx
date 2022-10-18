@@ -758,7 +758,7 @@ function SportsGrid({
         .map((s) => (
           <Link to={`?actionId=${actions.search}&sport=${s.id}`} key={s.id}>
             <DisplayImg
-              id={`product/sports/${s.picture}`}
+              imageId={`product/sports/${s.picture}`}
               key={s.id}
               alt={getLocalizedText(lang, s.name)}
               dontMessWithImgSize={true}
@@ -775,7 +775,7 @@ function SportsGrid({
           key={i}
         >
           <DisplayImg
-            id={'product/sports/add-sport_xe6eok'}
+            imageId={'product/sports/add-sport_xe6eok'}
             key={i}
             alt={t('Add Sport')}
             className={width}

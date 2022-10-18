@@ -110,16 +110,16 @@ describe('Authentication / Authorization', () => {
         .get('button[name=create]')
         .click()
 
-        .get('div[data-e2e=email]>p[role=alert]')
+        .get('div[data-cy=email]>p[role=alert]')
         .should('exist')
 
-        .get('div[data-e2e=confirmation]>p[role=alert]')
+        .get('div[data-cy=confirmation]>p[role=alert]')
         .should('exist')
 
-        .get('div[data-e2e=name]>p[role=alert]')
+        .get('div[data-cy=name]>p[role=alert]')
         .should('exist')
 
-        .get('div[data-e2e=password]>p[role=alert]')
+        .get('div[data-cy=password]>p[role=alert]')
         .should('exist')
       ;
     });
@@ -145,7 +145,7 @@ describe('Authentication / Authorization', () => {
         .get('button[name=create]')
         .click()
 
-        .get('div[data-e2e=email]>p[role=alert]')
+        .get('div[data-cy=email]>p[role=alert]')
         .should('exist');
     });
 
@@ -170,7 +170,7 @@ describe('Authentication / Authorization', () => {
         .get('button[name=create]')
         .click()
 
-        .get('div[data-e2e=confirmation]>p[role=alert]')
+        .get('div[data-cy=confirmation]>p[role=alert]')
         .should('exist');
     });
   });

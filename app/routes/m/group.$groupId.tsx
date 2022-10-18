@@ -489,6 +489,7 @@ export default function GroupRoute() {
                 disabled={true}
                 adornment={
                   <Button
+                    name="open-map"
                     className="mr-2"
                     variant="adornment"
                     type="button"
@@ -535,6 +536,7 @@ export default function GroupRoute() {
                 />
               ))}
               <button
+                name="add-new-schedule"
                 type="button"
                 className="background-transparent text-orange-600 dark:text-blueGray-500 font-medium mb-8"
                 onClick={handleCreateNewSchedule}
@@ -592,7 +594,7 @@ export default function GroupRoute() {
               </div>
             </FormField>
 
-            <Button className="mt-8" type="submit" form="profile-form">
+            <Button name="save-group" className="mt-8" type="submit" form="profile-form">
               {isUpdate ? t('Update Group') : t('Create Group')}
             </Button>
             <InputError id="global-error" className="mt-4">
@@ -691,6 +693,7 @@ function Schedule(props: {
   function RemoveButton({ position }: { position: 'middle' | 'end' }) {
     return (
       <button
+        name="remove-schedule"
         type="button"
         onClick={handleRemove}
         className={clsx(

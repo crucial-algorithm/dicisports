@@ -66,38 +66,61 @@ export default function GroupDisplayRoute() {
       height: 400
     }
   };
-  const day = tc(
-    [
-      'Monday',
-      'Tuesday',
-      'Wednesday',
-      'Thursday',
-      'Friday',
-      'Saturday',
-      'Sunday'
-    ][group.dayOfWeek]
-  );
+
+  function translateDay(day: number) {
+    return tc(
+      [
+        'Monday',
+        'Tuesday',
+        'Wednesday',
+        'Thursday',
+        'Friday',
+        'Saturday',
+        'Sunday'
+      ][day]
+    );
+  }
+
+  const schedule = group?.schedules
+    ?.sort((a, b) => a.dayOfWeek - b.dayOfWeek)
+    .map(
+      ({ dayOfWeek, timeOfDay }) =>
+        `${translateDay(dayOfWeek)}, ${displayTimeOfDay(timeOfDay)}`
+    )
+    .join(' | ');
 
   return (
     <Main>
       <H2 className="text-sp-light-blue-900 mb-4">
         <b>{group.name}</b>
         <small>
-          {t('Single Group Title Organizer')} {group.createdBy?.name},
-          <span className="lowercase"> {day}</span> {t('Single Group Title At')}{' '}
-          {displayTimeOfDay(group.timeOfDay)}
+          {t('Single Group Title Organizer')} {group.createdBy?.name}
+          <p className="text-sm" data-cy="schedule">{schedule}</p>
         </small>
       </H2>
 
       <div className="w-full m-auto flex flex-row justify-begin gap-4 md:w-full md:grid-flow-col md:grid-rows-1">
         {group.image1 ? (
-          <DisplayImg id={group.image1} transformations={transformations} alt={t('Alt For Picture 1')} />
+          <DisplayImg
+            imageId={group.image1}
+            transformations={transformations}
+            alt={t('Alt For Picture 1')}
+            dataCy="image1"
+          />
         ) : null}
         {group.image2 ? (
-          <DisplayImg id={group.image2} transformations={transformations} alt={t('Alt For Picture 2')} />
+          <DisplayImg
+            imageId={group.image2}
+            transformations={transformations}
+            alt={t('Alt For Picture 2')}
+          />
         ) : null}
         {group.image3 ? (
-          <DisplayImg id={group.image3} transformations={transformations} alt={t('Alt For Picture 3')} />
+          <DisplayImg
+            imageId={group.image3}
+            transformations={transformations}
+            alt={t('Alt For Picture 3')}
+          />
         ) : null}
       </div>
 

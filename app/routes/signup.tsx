@@ -192,16 +192,16 @@ export default function SignUp() {
           searchParams.toString().length ? `?${searchParams}` : ''
         }`}
       >
-        <FormField label={t('Email')} error={errors?.email} e2e="email">
+        <FormField label={t('Email')} error={errors?.email} dataCy="email">
           <TextField name="email" defaultValue={fields?.name} />
         </FormField>
-        <FormField label={t('Confirm Email')} error={errors?.confirmation} e2e="confirmation">
+        <FormField label={t('Confirm Email')} error={errors?.confirmation} dataCy="confirmation">
           <TextField name="confirmation" autoComplete="off" />
         </FormField>
-        <FormField label={t('Name')} error={errors?.name} e2e="name">
+        <FormField label={t('Name')} error={errors?.name} dataCy="name">
           <TextField name="name" defaultValue={fields?.name} />
         </FormField>
-        <FormField label={t('Password')} error={errors?.password} e2e="password">
+        <FormField label={t('Password')} error={errors?.password} dataCy="password">
           <TextField name="password" type="password" />
         </FormField>
         <ButtonGroup>
