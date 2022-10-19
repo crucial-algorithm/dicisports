@@ -1,16 +1,43 @@
-describe('Groups Maintenance', () => {
+describe('Groups', () => {
   beforeEach(() => {
     cy.task('db:reset');
   });
 
-  context('When user is authenticated', () => {
-    beforeEach(() => cy.login());
-
+  context('General', () => {
     it('should load groups', () => {
-      cy.visit('/m/groups')
+      cy.login()
+        .visit('/m/groups')
         .get('button[name=create-group]')
         .should('exist');
     });
+
+    it('should favorite group', () => {
+      // TODO
+    });
+
+    it('should favorite a group unauthenticated', () => {
+      // TODO
+    });
+
+    it('should remove group from favorites', () => {
+      // TODO
+    });
+
+
+  });
+
+  context('Security', () => {
+    it('should not access /m/groups when not authenticated', () => {
+      // TODO
+    });
+
+    it('should not allow a user from editing another user group', () => {
+      // TODO
+    });
+  });
+
+  context('Maintenance', () => {
+    beforeEach(() => cy.login());
 
     it('should create a group', () => {
       cy
@@ -58,6 +85,13 @@ describe('Groups Maintenance', () => {
         .get('p[data-cy=schedule]')
         .contains('Terça-Feira, 10:30 | Domingo, 09:00')
       ;
+    });
+
+    it('should update group', () => {
+      // TODO
+    });
+    it('should delete group', () => {
+      // TODO
     });
 
   });
