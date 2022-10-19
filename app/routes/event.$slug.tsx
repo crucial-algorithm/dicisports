@@ -3,7 +3,12 @@ import { json, redirect } from 'remix';
 import { useFetcher, useLoaderData } from '@remix-run/react';
 
 import { Status } from '@prisma/client';
-import { HeartIcon } from '@heroicons/react/24/outline';
+import {
+  CalendarDaysIcon,
+  CurrencyEuroIcon,
+  HeartIcon,
+  MapPinIcon
+} from '@heroicons/react/24/outline';
 import { HeartIcon as Favorite, ShareIcon } from '@heroicons/react/24/solid';
 import * as React from 'react';
 import { useEffect, useState } from 'react';
@@ -17,7 +22,7 @@ import {
 } from '~/server/db/events.server';
 
 import Main from '~/components/shared/Main';
-import { H2 } from '~/components/shared/typography';
+import { H2, H3, H6 } from '~/components/shared/typography';
 import ButtonGroup from '~/components/shared/ButtonGroup';
 import Button from '~/components/shared/Button';
 import { getUser } from '~/server/auth/session.server';
@@ -25,10 +30,15 @@ import { NotFound, Unauthorized } from '~/server/utils/misc';
 import i18n from '~/server/i18n.server';
 import { Notification } from '~/components/shared/NotificationMessage';
 import DisplayImg from '~/components/shared/DisplayImg';
+import type { Event } from '~/types';
+import { findEventRaces } from '~/server/db/races.server';
+import DisplayDate from '~/components/shared/DIsplayDate';
 
 type LoaderData = {
   event: Event;
   isUserFavorite: boolean;
+  minPrice: number;
+  maxPrice: number;
 };
 
 const actions = {
@@ -41,6 +51,8 @@ export const loader: LoaderFunction = async ({ params, request }) => {
   const slug = params.slug as string;
   const t = await i18n.getFixedT(request, 'create-event-form');
   let isUserFavorite = false;
+  let minPrice = 0;
+  let maxPrice = 0;
 
   if (!slug) {
     redirect('/');
@@ -68,15 +80,29 @@ export const loader: LoaderFunction = async ({ params, request }) => {
     });
   }
 
+  const races = await findEventRaces(event.id);
+
+  if (races) {
+    const sortedRaces = races
+      .sort((a, b) => a.price - b.price)
+      .map((a) => a.price);
+
+    minPrice = sortedRaces[0];
+    maxPrice = sortedRaces[races.length - 1];
+  }
+
   return json({
     event,
-    isUserFavorite
+    isUserFavorite,
+    minPrice,
+    maxPrice
   });
 };
 
 export default function EventDisplayRoute() {
   const favorite = useFetcher();
-  const { event, isUserFavorite } = useLoaderData<LoaderData>();
+  const { event, isUserFavorite, minPrice, maxPrice } =
+    useLoaderData<LoaderData>();
   const { t } = useTranslation('home');
 
   const favoriteAddedMessage = t('Favorite Added');
@@ -87,8 +113,20 @@ export default function EventDisplayRoute() {
   const [address, setAddress] = useState<string>('');
   let showFavoriteAddedNotification: any = null;
   let showCopiedToClipboardNotification: any = null;
-  const { image1, image2, image3 } = event;
-  const images: string[] = [image1, image2, image3].filter(Boolean) as string[];
+
+  const images: string[] = [
+    event.image1,
+    event.image2,
+    event.image3,
+    event.image4,
+    event.image5
+  ].filter(Boolean) as string[];
+
+  let price = `${minPrice}€ - ${maxPrice}€`;
+
+  if (minPrice === maxPrice) {
+    price = `${minPrice}€`;
+  }
 
   function handlerSetShowNotificationFunction(callback: () => void) {
     showFavoriteAddedNotification = callback;
@@ -129,7 +167,7 @@ export default function EventDisplayRoute() {
   return (
     <Main>
       <div className="flex flex-row justify-between h-[40px] mb-4">
-        <H2 className="text-sp-light-blue-900 mb-4 w-[calc(100%-(40px+40px+4px))]">
+        <H2 className="text-sp-light-blue-900 mb-4 w-[calc(100%-(40px+4px))]">
           <b className="break-words">{event.name}</b>
         </H2>
         <ButtonGroup density="compact">
@@ -142,7 +180,7 @@ export default function EventDisplayRoute() {
                 size="tiny"
                 name="action"
                 value={actions.remove}
-                className="w-[40px] h-[40px]"
+                className="w-[40px] h-[40px] ml-4"
               >
                 <Favorite className="h-6 w-6 m-0 inline-block" />
               </Button>
@@ -151,7 +189,7 @@ export default function EventDisplayRoute() {
                 size="tiny"
                 name="action"
                 value={actions.add}
-                className="w-[40px] h-[40px]"
+                className="w-[40px] h-[40px] ml-4"
               >
                 <HeartIcon className="h-6 w-6 m-0 inline-block" />
               </Button>
@@ -161,7 +199,7 @@ export default function EventDisplayRoute() {
             text={`${address}/group/${event.slug}`}
             onCopy={handlerClickToCopy}
           >
-            <Button size="tiny">
+            <Button size="tiny" className="w-[40px] h-[40px] ml-4">
               <ShareIcon className="h-6 w-6 m-0 inline-block" />
             </Button>
           </CopyToClipboard>
@@ -182,7 +220,6 @@ export default function EventDisplayRoute() {
             id={event.image1}
             dontMessWithImgSize={true}
             className="w-full md:w-[400px] md:h-[400px]"
-            alt={t('Alt For Picture 1')}
           />
         ) : null}
         {event.image2 ? (
@@ -190,7 +227,6 @@ export default function EventDisplayRoute() {
             id={event.image2}
             dontMessWithImgSize={true}
             className="w-full md:w-[400px] md:h-[400px]"
-            alt={t('Alt For Picture 2')}
           />
         ) : null}
         {event.image3 ? (
@@ -198,7 +234,6 @@ export default function EventDisplayRoute() {
             id={event.image3}
             dontMessWithImgSize={true}
             className="w-full md:w-[400px] md:h-[400px]"
-            alt={t('Alt For Picture 3')}
           />
         ) : null}
         {event.image4 ? (
@@ -206,7 +241,6 @@ export default function EventDisplayRoute() {
             id={event.image4}
             dontMessWithImgSize={true}
             className="w-full md:w-[400px] md:h-[400px]"
-            alt={t('Alt For Picture 4')}
           />
         ) : null}
         {event.image5 ? (
@@ -214,7 +248,6 @@ export default function EventDisplayRoute() {
             id={event.image5}
             dontMessWithImgSize={true}
             className="w-full md:w-[400px] md:h-[400px]"
-            alt={t('Alt For Picture 5')}
           />
         ) : null}
       </div>
@@ -236,6 +269,30 @@ export default function EventDisplayRoute() {
             />
           ))}
         </Carousel>
+      </div>
+
+      <div className="flex flex-col mt-4 md:flex-row md:justify-between md:mt-8">
+        <div className="flex flex-row items-center">
+          <CalendarDaysIcon className="h-6 w-6 m-0 inline-block text-primary" />
+          <H6 className="ml-4 md:ml-2">
+            <DisplayDate date={new Date(event.startAt)} />
+          </H6>
+        </div>
+        <div className="flex flex-row items-center">
+          <CurrencyEuroIcon className="h-6 w-6 m-0 inline-block text-primary" />
+          <H6 className="ml-4 md:ml-2">{price}</H6>
+        </div>
+        <div className="flex flex-row items-center">
+          <MapPinIcon className="h-6 w-6 m-0 inline-block text-primary" />
+          <H6 className="ml-4 md:ml-2">{event.address}</H6>
+        </div>
+      </div>
+
+      <div className="mt-8">
+        <H3>{t('About')}</H3>
+        <div className="dark:text-blueGray-500 text-sm font-medium mr-2">
+          {event.eventDescription}
+        </div>
       </div>
     </Main>
   );
