@@ -22,23 +22,24 @@ import {
 } from '~/server/db/events.server';
 
 import Main from '~/components/shared/Main';
-import { H2, H3, H6 } from '~/components/shared/typography';
-import ButtonGroup from '~/components/shared/ButtonGroup';
+import { H2, H3, H4, H5, H6 } from '~/components/shared/typography';
 import Button from '~/components/shared/Button';
 import { getUser } from '~/server/auth/session.server';
 import { NotFound, Unauthorized } from '~/server/utils/misc';
 import i18n from '~/server/i18n.server';
 import { Notification } from '~/components/shared/NotificationMessage';
 import DisplayImg from '~/components/shared/DisplayImg';
-import type { Event } from '~/types';
+import type { Event, Race } from '~/types';
 import { findEventRaces } from '~/server/db/races.server';
 import DisplayDate from '~/components/shared/DIsplayDate';
+import { timeOfDayToHoursMinutes } from '~/utils/misc';
 
 type LoaderData = {
   event: Event;
   isUserFavorite: boolean;
   minPrice: number;
   maxPrice: number;
+  races: Race[];
 };
 
 const actions = {
@@ -95,13 +96,14 @@ export const loader: LoaderFunction = async ({ params, request }) => {
     event,
     isUserFavorite,
     minPrice,
-    maxPrice
+    maxPrice,
+    races
   });
 };
 
 export default function EventDisplayRoute() {
   const favorite = useFetcher();
-  const { event, isUserFavorite, minPrice, maxPrice } =
+  const { event, isUserFavorite, minPrice, maxPrice, races } =
     useLoaderData<LoaderData>();
   const { t } = useTranslation('home');
 
@@ -166,134 +168,129 @@ export default function EventDisplayRoute() {
 
   return (
     <Main>
-      <div className="flex flex-row justify-between h-[40px] mb-4">
-        <H2 className="text-sp-light-blue-900 mb-4 w-[calc(100%-(40px+4px))]">
-          <b className="break-words">{event.name}</b>
-        </H2>
-        <ButtonGroup density="compact">
-          <favorite.Form
-            method="post"
-            action={`/organizer/event/fav/${event.id}`}
-          >
-            {isUserFavorite ? (
-              <Button
-                size="tiny"
-                name="action"
-                value={actions.remove}
-                className="w-[40px] h-[40px] ml-4"
-              >
-                <Favorite className="h-6 w-6 m-0 inline-block" />
+      <div className="flex flex-col md:flex-row mt-4">
+        <div className="w-full md:w-144">
+          <Carousel statusFormatter={cleanStatus}>
+            {images.map((image, idx) => (
+              <DisplayImg
+                key={idx}
+                id={image}
+                className="w-[500px]"
+                transformations={{
+                  resize: {
+                    type: 'fill',
+                    width: 400,
+                    height: 400
+                  }
+                }}
+              />
+            ))}
+          </Carousel>
+        </div>
+
+        <div className="flex flex-auto flex-col mt-4 ml-4">
+          <div className="flex flex-row justify-end mb-2">
+            <favorite.Form
+              method="post"
+              action={`/organizer/event/fav/${event.id}`}
+            >
+              {isUserFavorite ? (
+                <Button
+                  size="tiny"
+                  name="action"
+                  value={actions.remove}
+                  className="w-[40px] h-[40px] ml-4"
+                >
+                  <Favorite className="h-6 w-6 m-0 inline-block" />
+                </Button>
+              ) : (
+                <Button
+                  size="tiny"
+                  name="action"
+                  value={actions.add}
+                  className="w-[40px] h-[40px] ml-4"
+                >
+                  <HeartIcon className="h-6 w-6 m-0 inline-block" />
+                </Button>
+              )}
+            </favorite.Form>
+            <CopyToClipboard
+              text={`${address}/group/${event.slug}`}
+              onCopy={handlerClickToCopy}
+            >
+              <Button size="tiny" className="w-[40px] h-[40px] ml-2">
+                <ShareIcon className="h-6 w-6 m-0 inline-block" />
               </Button>
-            ) : (
-              <Button
-                size="tiny"
-                name="action"
-                value={actions.add}
-                className="w-[40px] h-[40px] ml-4"
-              >
-                <HeartIcon className="h-6 w-6 m-0 inline-block" />
-              </Button>
-            )}
-          </favorite.Form>
-          <CopyToClipboard
-            text={`${address}/group/${event.slug}`}
-            onCopy={handlerClickToCopy}
-          >
-            <Button size="tiny" className="w-[40px] h-[40px] ml-4">
-              <ShareIcon className="h-6 w-6 m-0 inline-block" />
-            </Button>
-          </CopyToClipboard>
-          <Notification show={handlerSetShowNotificationFunction}>
-            {message}
-          </Notification>
-          <Notification show={handlerSetShowNotificationCopyToClipboard}>
-            {copiedToClipMessage}
-          </Notification>
-        </ButtonGroup>
-      </div>
-
-      {/*When the size of the screen is < 640px we display a carousel of images*/}
-      {/*To do that we use md:hidden and on the carousel w-full*/}
-      <div className="hidden m-auto md:flex-wrap md:flex flex-row justify-begin gap-4 md:grid-flow-col md:grid-rows-1">
-        {event.image1 ? (
-          <DisplayImg
-            id={event.image1}
-            dontMessWithImgSize={true}
-            className="w-full md:w-[400px] md:h-[400px]"
-          />
-        ) : null}
-        {event.image2 ? (
-          <DisplayImg
-            id={event.image2}
-            dontMessWithImgSize={true}
-            className="w-full md:w-[400px] md:h-[400px]"
-          />
-        ) : null}
-        {event.image3 ? (
-          <DisplayImg
-            id={event.image3}
-            dontMessWithImgSize={true}
-            className="w-full md:w-[400px] md:h-[400px]"
-          />
-        ) : null}
-        {event.image4 ? (
-          <DisplayImg
-            id={event.image4}
-            dontMessWithImgSize={true}
-            className="w-full md:w-[400px] md:h-[400px]"
-          />
-        ) : null}
-        {event.image5 ? (
-          <DisplayImg
-            id={event.image5}
-            dontMessWithImgSize={true}
-            className="w-full md:w-[400px] md:h-[400px]"
-          />
-        ) : null}
-      </div>
-
-      <div className="w-full mt-16 md:hidden">
-        <Carousel statusFormatter={cleanStatus}>
-          {images.map((image, idx) => (
-            <DisplayImg
-              key={idx}
-              id={image}
-              className="w-[500px]"
-              transformations={{
-                resize: {
-                  type: 'fill',
-                  width: 400,
-                  height: 400
-                }
-              }}
-            />
-          ))}
-        </Carousel>
-      </div>
-
-      <div className="flex flex-col mt-4 md:flex-row md:justify-between md:mt-8">
-        <div className="flex flex-row items-center">
-          <CalendarDaysIcon className="h-6 w-6 m-0 inline-block text-primary" />
-          <H6 className="ml-4 md:ml-2">
-            <DisplayDate date={new Date(event.startAt)} />
-          </H6>
-        </div>
-        <div className="flex flex-row items-center">
-          <CurrencyEuroIcon className="h-6 w-6 m-0 inline-block text-primary" />
-          <H6 className="ml-4 md:ml-2">{price}</H6>
-        </div>
-        <div className="flex flex-row items-center">
-          <MapPinIcon className="h-6 w-6 m-0 inline-block text-primary" />
-          <H6 className="ml-4 md:ml-2">{event.address}</H6>
+            </CopyToClipboard>
+            <Notification show={handlerSetShowNotificationFunction}>
+              {message}
+            </Notification>
+            <Notification show={handlerSetShowNotificationCopyToClipboard}>
+              {copiedToClipMessage}
+            </Notification>
+          </div>
+          <H2 className="text-sp-light-blue-900 mb-4 w-full">
+            <b className="break-words">{event.name}</b>
+          </H2>
+          <div className="flex flex-row items-center">
+            <CalendarDaysIcon className="h-6 w-6 m-0 inline-block text-primary" />
+            <H6 className="ml-4 md:ml-2">
+              <DisplayDate date={new Date(event.startAt)} />
+            </H6>
+          </div>
+          <div className="flex flex-row items-center">
+            <CurrencyEuroIcon className="h-6 w-6 m-0 inline-block text-primary" />
+            <H6 className="ml-4 md:ml-2">{price}</H6>
+          </div>
+          <div className="flex flex-row items-center">
+            <MapPinIcon className="h-6 w-6 m-0 inline-block text-primary" />
+            <H6 className="ml-4 md:ml-2">{event.address}</H6>
+          </div>
         </div>
       </div>
 
-      <div className="mt-8">
+      <div className="my-8">
         <H3>{t('About')}</H3>
         <div className="dark:text-blueGray-500 text-sm font-medium mr-2">
           {event.eventDescription}
         </div>
       </div>
+
+      <H3>{t('Races')}</H3>
+      <div className="flex flex-col mt-2 scroll-mx-2 md:flex-row">
+        {races.map((race: Race) => (
+          <DisplayRaces race={race} key={race.id} />
+        ))}
+      </div>
     </Main>
+  );
+}
+
+function DisplayRaces(props: { race: Race }) {
+  const { race } = props;
+  const { t } = useTranslation('home');
+  const [hour, minute] = timeOfDayToHoursMinutes(race.startTime);
+
+  return (
+    <div className="w-full flex flex-col gap-y-2 mb-4 md:mr-4 text-center items-center border border-white rounded-2xl outline-offset-1">
+      <div className="mt-4">
+        <H4>{race.name}</H4>
+      </div>
+      <div className="mt-4">
+        <H4>{t('Race Distance')}</H4>
+        <H5 className="text-blueGray-500">{`${race.distance} km`}</H5>
+      </div>
+      <div className="mt-4">
+        <H4>{t('Race Start Time')}</H4>
+        <H5 className="dark:text-blueGray-500">{`${hour}:${minute}`}</H5>
+      </div>
+      <div className="my-4">
+        <H4>{t('Race Price')}</H4>
+        <H5 className="dark:text-blueGray-500">{`€${race.price}`}</H5>
+      </div>
+      <div className="mb-4">
+        <Button>{t('Book')}</Button>
+      </div>
+    </div>
   );
 }
