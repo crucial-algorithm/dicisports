@@ -8,7 +8,7 @@
     "dev": "concurrently \"npm run dev:css\" \"node -r dotenv/config node_modules/.bin/remix dev\"",
     "build:css": "npm run generate:css && npm run deploy:css",
     "dev:css": "npm run generate:css && npm run deploy:css -- --watch",
-    "generate:css": "tailwindcss -o ./styles/tailwind.css",
+    "generate:css": "tailwindcss -o styles/tailwind.css",
     "deploy:css": "postcss styles/**/*.css --base styles --dir app/styles",
     "postinstall": "remix setup node",
     "start": "remix-serve build",
