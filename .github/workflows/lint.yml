@@ -1,4 +1,4 @@
-name: Automated Tests and Linting
+name: Linting
 
 on: [ push ]
 
