@@ -43,8 +43,11 @@ jobs:
       - name: Deploy CSS
         run: npm run deploy:css
 
-      - name: Start Dicisports Instance
-        run: npm run dev &
+      - name: Cypress e2e tests
+        uses: cypress-io/github-action@v4.2.0
+        with:
+          browser: chrome
+          start: npm run dev
         env:
           DATABASE_URL: ${{secrets.E2E_DATABASE_URL}}
 
@@ -68,8 +71,3 @@ jobs:
           AWS_REGION: ${{secrets.AWS_REGION}}
           AWS_ACCESS_KEY_ID: ${{secrets.AWS_ACCESS_KEY_ID}}
           AWS_SECRET_ACCESS_KEY: ${{secrets.AWS_SECRET_ACCESS_KEY}}
-
-      - name: Cypress e2e tests
-        uses: cypress-io/github-action@v4.2.0
-        with:
-          browser: chrome
