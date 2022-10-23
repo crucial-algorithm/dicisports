@@ -34,6 +34,11 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Debug - EACCES
+        run: |
+          ls -l styles/
+          ls -l app/styles/
+
       - name: Generate CSS dependencies
         run:  npm run generate:css
 
