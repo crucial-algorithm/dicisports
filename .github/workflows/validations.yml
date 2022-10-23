@@ -35,7 +35,7 @@ jobs:
         run: npm ci
 
       - name: Debug - EACCES
-        run: chmod 777 app/styles/
+        run: chmod -R 777 .
 
       - name: Generate CSS dependencies
         run:  npm run generate:css
