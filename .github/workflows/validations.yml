@@ -35,9 +35,7 @@ jobs:
         run: npm ci
 
       - name: Debug - EACCES
-        run: |
-          ls -l styles/
-          ls -l app/styles/
+        run: cat styles/tailwind.css
 
       - name: Generate CSS dependencies
         run:  npm run generate:css
