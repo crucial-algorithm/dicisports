@@ -34,7 +34,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Debug - EACCES
+      - name: Review db permissions
         run: chmod -R 777 .
 
       - name: Generate CSS dependencies
@@ -42,6 +42,11 @@ jobs:
 
       - name: Deploy CSS
         run: npm run deploy:css
+
+      - name: Prepare database
+        run: |
+          npx prisma db push
+          npx prisma db seed
 
       - name: Cypress e2e tests
         uses: cypress-io/github-action@v4.2.0
