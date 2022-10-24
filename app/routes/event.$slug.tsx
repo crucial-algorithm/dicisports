@@ -259,7 +259,7 @@ export default function EventDisplayRoute() {
       </div>
 
       <H3 id="races">{t('Races')}</H3>
-      <div className="flex flex-col mt-2 scroll-mx-2 md:flex-row md:overflow-x-scroll md:flex-nowrap">
+      <div className="flex flex-col mt-2 scroll-mx-2 md:flex-row md:flex-nowrap md:overflow-x-scroll pb-10 hide-scroll-bar hide-">
         {races
           .sort((a: Race, b: Race) => a.displayOrder - b.displayOrder)
           .map((race: Race) => (
@@ -323,67 +323,72 @@ function DisplayRace(props: { race: Race }) {
   }
 
   return (
-    <div className=" flex flex-col gap-y-2 mb-4 mr-2 md:mr-4 text-center items-center border border-white rounded-2xl outline-offset-1 w-[340px]">
-      <div className="mt-4">
-        <H4>{race.name}</H4>
-      </div>
-      <div className="mt-4">
-        <H4>{t('Race Distance')}</H4>
-        <H5 className="dark:text-blueGray-500">{`${race.distance} km`}</H5>
-      </div>
-      <div className="mt-4">
-        <H4>{t('Race Start Time')}</H4>
-        <H5 className="dark:text-blueGray-500">{raceTime}</H5>
-      </div>
-      <div className={clsx('mt-4', expanded ? 'mb-0' : 'mb-2')}>
-        <H4>{t('Race Price')}</H4>
-        <H5 className="dark:text-blueGray-500">{`€${race.price}`}</H5>
-      </div>
-      {expanded && (
-        <>
-          {race.raceDescription && (
-            <div className="mt-4">
-              <H4>{t('Description')}</H4>
-              <div className="dark:text-blueGray-500 text-base font-medium mr-2 mt-2 whitespace-pre-line px-4">
-                {race.raceDescription}
-              </div>
-            </div>
-          )}
-          <div className="mt-4">
-            <H4>{t('Elevation Gain')}</H4>
-            <div className="dark:text-blueGray-500 text-base font-medium mr-2 mt-2">
-              {`${race.elevationGain}m`}
-            </div>
-          </div>
-          {race.elevationLoss && (
-            <div className="mt-4">
-              <H4>{t('Elevation Loss')}</H4>
-              <div className="dark:text-blueGray-500 text-base font-medium mr-2 mt-2">
-                {`${race.elevationLoss}m`}
-              </div>
-            </div>
-          )}
-          {race.track && (
-            <Link
-              to={`/organizer/race/${race.id}`}
-              target="_blank"
-              rel="noreferrer"
-              download
-            >
-              <H4 className="my-4 dark:text-blueGray-500">{t('GPX')}</H4>
-            </Link>
-          )}
-        </>
-      )}
-      <label
-        className="dark:text-blueGray-500 text-sm font-medium"
-        role="button"
-        onClick={handleSeeMore}
+    <div className="flex flex-col">
+      <div
+        className="gap-y-2 mb-4 mr-2 md:mr-4 text-center items-center border border-white rounded-2xl outline-offset-1 w-[340px]
+        md:overflow-hidden shadow-md shadow-black hover:shadow-xl transition-shadow duration-300 ease-in-out"
       >
-        {expanded ? t('See Less') : t('See More')}
-      </label>
-      <div className="mb-4">
-        <Button>{t('Book')}</Button>
+        <div className="mt-4">
+          <H4>{race.name}</H4>
+        </div>
+        <div className="mt-4">
+          <H4>{t('Race Distance')}</H4>
+          <H5 className="dark:text-blueGray-500">{`${race.distance} km`}</H5>
+        </div>
+        <div className="mt-4">
+          <H4>{t('Race Start Time')}</H4>
+          <H5 className="dark:text-blueGray-500">{raceTime}</H5>
+        </div>
+        <div className={clsx('mt-4', expanded ? 'mb-0' : 'mb-2')}>
+          <H4>{t('Race Price')}</H4>
+          <H5 className="dark:text-blueGray-500">{`€${race.price}`}</H5>
+        </div>
+        {expanded && (
+          <>
+            {race.raceDescription && (
+              <div className="mt-4">
+                <H4>{t('Description')}</H4>
+                <div className="dark:text-blueGray-500 text-base font-medium mr-2 mt-2 whitespace-pre-line px-4">
+                  {race.raceDescription}
+                </div>
+              </div>
+            )}
+            <div className="mt-4">
+              <H4>{t('Elevation Gain')}</H4>
+              <div className="dark:text-blueGray-500 text-base font-medium mr-2 mt-2">
+                {`${race.elevationGain}m`}
+              </div>
+            </div>
+            {race.elevationLoss && (
+              <div className="mt-4">
+                <H4>{t('Elevation Loss')}</H4>
+                <div className="dark:text-blueGray-500 text-base font-medium mr-2 mt-2">
+                  {`${race.elevationLoss}m`}
+                </div>
+              </div>
+            )}
+            {race.track && (
+              <Link
+                to={`/organizer/race/${race.id}`}
+                target="_blank"
+                rel="noreferrer"
+                download
+              >
+                <H4 className="my-4 dark:text-blueGray-500">{t('GPX')}</H4>
+              </Link>
+            )}
+          </>
+        )}
+        <label
+          className="dark:text-blueGray-500 text-sm font-medium"
+          role="button"
+          onClick={handleSeeMore}
+        >
+          {expanded ? t('See Less') : t('See More')}
+        </label>
+        <div className="mb-4">
+          <Button>{t('Book')}</Button>
+        </div>
       </div>
     </div>
   );
@@ -395,7 +400,7 @@ function DisplayDocument(props: { document: Document }) {
   const fileExtension = path.split('.');
 
   return (
-    <div className="flex items-center border border-white rounded-2xl h-16 p-4 mr-2 mb-2">
+    <div className="flex items-center border border-white rounded-2xl h-16 p-4 mr-2 mb-2 shadow-md shadow-black hover:shadow-xl transition-shadow duration-300 ease-in-out">
       <a
         href={`/organizer/document/${document.id}`}
         target="_blank"
