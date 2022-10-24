@@ -52,23 +52,23 @@ jobs:
         env:
           DATABASE_URL: ${{secrets.E2E_DATABASE_URL}}
 
-          MAPBOX_TOKEN: ${{secrets.MAPBOX_TOKEN}}
+          MAPBOX_TOKEN: ${{secrets.E2E_MAPBOX_TOKEN}}
 
-          CLOUDINARY_CLOUD_NAME: ${{secrets.CLOUDINARY_CLOUD_NAME}}
-          CLOUDINARY_API_KEY: ${{secrets.CLOUDINARY_API_KEY}}
-          CLOUDINARY_API_SECRET: ${{secrets.CLOUDINARY_API_SECRET}}
-          CLOUDINARY_UPLOAD_PRESET: ${{secrets.CLOUDINARY_UPLOAD_PRESET}}
+          CLOUDINARY_CLOUD_NAME: ${{secrets.E2E_CLOUDINARY_CLOUD_NAME}}
+          CLOUDINARY_API_KEY: ${{secrets.E2E_CLOUDINARY_API_KEY}}
+          CLOUDINARY_API_SECRET: ${{secrets.E2E_CLOUDINARY_API_SECRET}}
+          CLOUDINARY_UPLOAD_PRESET: ${{secrets.E2E_CLOUDINARY_UPLOAD_PRESET}}
 
-          SESSION_SECRET: ${{secrets.SESSION_SECRET}}
-          MAGIC_LINK_SECRET: ${{secrets.MAGIC_LINK_SECRET}}
+          SESSION_SECRET: ${{secrets.E2E_SESSION_SECRET}}
+          MAGIC_LINK_SECRET: ${{secrets.E2E_MAGIC_LINK_SECRET}}
 
-          EMAIL_VERIFIER_TOKEN: ${{secrets.EMAIL_VERIFIER_TOKEN}}
-          MAILGUN_SENDING_KEY: ${{secrets.MAILGUN_SENDING_KEY}}
+          EMAIL_VERIFIER_TOKEN: ${{secrets.E2E_EMAIL_VERIFIER_TOKEN}}
+          MAILGUN_SENDING_KEY: ${{secrets.E2E_MAILGUN_SENDING_KEY}}
 
-          CONVERT_KIT_FORM: ${{secrets.CONVERT_KIT_FORM}}
-          CONVERT_KIT_API_KEY: ${{secrets.CONVERT_KIT_API_KEY}}
+          CONVERT_KIT_FORM: ${{secrets.E2E_CONVERT_KIT_FORM}}
+          CONVERT_KIT_API_KEY: ${{secrets.E2E_CONVERT_KIT_API_KEY}}
 
-          AWS_S3_BUCKET: ${{secrets.AWS_S3_BUCKET}}
-          AWS_REGION: ${{secrets.AWS_REGION}}
-          AWS_ACCESS_KEY_ID: ${{secrets.AWS_ACCESS_KEY_ID}}
-          AWS_SECRET_ACCESS_KEY: ${{secrets.AWS_SECRET_ACCESS_KEY}}
+          AWS_S3_BUCKET: ${{secrets.E2E_AWS_S3_BUCKET}}
+          AWS_REGION: ${{secrets.E2E_AWS_REGION}}
+          AWS_ACCESS_KEY_ID: ${{secrets.E2E_AWS_ACCESS_KEY_ID}}
+          AWS_SECRET_ACCESS_KEY: ${{secrets.E2E_AWS_SECRET_ACCESS_KEY}}
