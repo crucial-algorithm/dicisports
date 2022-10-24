@@ -4,20 +4,20 @@
   "description": "",
   "license": "",
   "scripts": {
-    "build": "npm run build:css && npx remix build",
+    "build": "npm run build:css && remix build",
     "dev": "concurrently \"npm run dev:css\" \"node -r dotenv/config node_modules/.bin/remix dev\"",
     "build:css": "npm run generate:css && npm run deploy:css",
     "dev:css": "npm run generate:css && npm run deploy:css -- --watch",
     "generate:css": "tailwindcss -o app/styles/tailwind.css",
     "deploy:css": "postcss styles/**/*.css --base styles --dir app/styles",
-    "postinstall": "npx remix setup node",
+    "postinstall": "remix setup node",
     "start": "remix-serve build",
     "lint": "npm run lint:eslint",
     "lint:eslint": "eslint ./ --ext .tsx --ext .ts",
     "deploy:staging": "flyctl --app dicistg deploy .",
     "test:open": "npx cypress open",
     "test:run": "npx cypress run",
-    "ci:build": "npx prisma migrate reset --force && npx prisma generate && prisma db seed && npm run build"
+    "ci:build": "npx prisma migrate reset --force && npx && prisma db seed && npm run build:css"
   },
   "prisma": {
     "seed": "node --require esbuild-register prisma/seed.ts"
