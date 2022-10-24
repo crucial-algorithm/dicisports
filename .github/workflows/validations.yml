@@ -41,6 +41,7 @@ jobs:
         uses: cypress-io/github-action@v4.2.0
         with:
           browser: chrome
+          record: false
           build: npm run ci:build
           start: npm run start
         env:
