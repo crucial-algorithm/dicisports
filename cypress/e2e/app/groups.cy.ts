@@ -74,7 +74,7 @@ describe('Groups', () => {
         .intercept('GET', '/m/groups?message=*').as('createGroup')
         .get('button[name=save-group]').click()
 
-        .wait('@createGroup', { timeout: 60000 })
+        .wait('@createGroup', { timeout: 12000 })
 
         // validate that form was properly created
         .get('div[data-cy="group-entry"]')

@@ -42,12 +42,12 @@ function pickLocationInMap(triggerOpenMapButtonName: string) {
     .type('Fátima, Santarém, Portugal')
     .wait('@mapBoxSearchResult')
 
-    // get 1st suggestion
-    .get('.mapboxgl-ctrl-geocoder.mapboxgl-ctrl a')
+    // get 1st suggestion - it looks like @mapBoxSearchResult might not be the right request to intercept
+    .get('ul.suggestions > li > a')
     .first()
     .click()
 
-    .wait('@mapBoxFindAddressFromCoords', { timeout: 8000 })
+    .wait('@mapBoxFindAddressFromCoords', { timeout: 10000 })
     .get('button[name=pick-location]')
     .click();
 }
