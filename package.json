@@ -17,7 +17,7 @@
     "deploy:staging": "flyctl --app dicistg deploy .",
     "test:open": "npx cypress open",
     "test:run": "npx cypress run",
-    "ci:build": "prisma migrate reset --force && prisma db seed && npm run build"
+    "ci:build": "npm run build:css && npx prisma migrate reset --force && prisma db seed"
   },
   "prisma": {
     "seed": "node --require esbuild-register prisma/seed.ts"
