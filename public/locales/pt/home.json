@@ -41,7 +41,7 @@
 
   "About": "Sobre",
   "Races": "Distâncias",
-  "Races Anchor": "Verficar Distâncias",
+  "Races Anchor": "Inscrever",
   "Race Distance": "Distância",
   "Race Start Time": "Hora de início",
   "Race Price": "Preço",
@@ -49,5 +49,11 @@
   "Book": "Inscrever",
   "From": "Desde",
   "How to get there": "Como chegar",
-  "Documents": "Documentos"
+  "Documents": "Documentos",
+  "See More": "ver mais",
+  "See Less": "ver menos",
+  "Description": "Descrição",
+  "GPX": "Ficheiro GPX",
+  "Elevation Gain": "Ganho de elevação",
+  "Elevation Loss": "Perda de elevação"
 }

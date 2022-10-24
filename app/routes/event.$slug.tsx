@@ -1,10 +1,9 @@
 import type { LoaderFunction } from 'remix';
 import { json, redirect } from 'remix';
-import { useFetcher, useLoaderData } from '@remix-run/react';
+import { Link, useFetcher, useLoaderData } from '@remix-run/react';
 
 import { Status } from '@prisma/client';
 import {
-  ArrowDownTrayIcon,
   CalendarDaysIcon,
   HeartIcon,
   MapPinIcon
@@ -15,6 +14,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import CopyToClipboard from 'react-copy-to-clipboard';
 import { Carousel } from 'react-responsive-carousel';
+import clsx from 'clsx';
 
 import {
   findEventBySlug,
@@ -29,7 +29,7 @@ import { NotFound, Unauthorized } from '~/server/utils/misc';
 import i18n from '~/server/i18n.server';
 import { Notification } from '~/components/shared/NotificationMessage';
 import DisplayImg from '~/components/shared/DisplayImg';
-import type { Event, Perk, Race, Document } from '~/types';
+import type { Document, Event, Perk, Race } from '~/types';
 import { findEventRaces } from '~/server/db/races.server';
 import DisplayDate from '~/components/shared/DIsplayDate';
 import { displayTimeOfDay } from '~/utils/misc';
@@ -260,9 +260,11 @@ export default function EventDisplayRoute() {
 
       <H3 id="races">{t('Races')}</H3>
       <div className="flex flex-col mt-2 scroll-mx-2 md:flex-row md:overflow-x-scroll md:flex-nowrap">
-        {races.map((race: Race) => (
-          <DisplayRaces race={race} key={race.id} />
-        ))}
+        {races
+          .sort((a: Race, b: Race) => a.displayOrder - b.displayOrder)
+          .map((race: Race) => (
+            <DisplayRace race={race} key={race.id} />
+          ))}
       </div>
 
       <div className="my-8">
@@ -298,23 +300,30 @@ export default function EventDisplayRoute() {
         </div>
       )}
 
-      <div className="my-8">
-        <H3>{t('Documents')}</H3>
-        {event.documents.map((document: Document) => (
-          <DisplayDocument document={document} key={document.id} />
-        ))}
+      <H3>{t('Documents')}</H3>
+      <div className="flex flex-row flex-wrap mb-8 mt-2">
+        {event.documents
+          .sort((a: Document, b: Document) => a.position - b.position)
+          .map((document: Document) => (
+            <DisplayDocument document={document} key={document.id} />
+          ))}
       </div>
     </Main>
   );
 }
 
-function DisplayRaces(props: { race: Race }) {
+function DisplayRace(props: { race: Race }) {
   const { race } = props;
   const { t } = useTranslation('home');
   const raceTime = displayTimeOfDay(race.startTime);
+  const [expanded, setExpanded] = useState<boolean>(false);
+
+  function handleSeeMore() {
+    expanded ? setExpanded(false) : setExpanded(true);
+  }
 
   return (
-    <div className=" flex flex-col gap-y-2 mb-4 mr-2 md:mr-4 text-center items-center border border-white rounded-2xl outline-offset-1 w-[340px] h-[402px]">
+    <div className=" flex flex-col gap-y-2 mb-4 mr-2 md:mr-4 text-center items-center border border-white rounded-2xl outline-offset-1 w-[340px]">
       <div className="mt-4">
         <H4>{race.name}</H4>
       </div>
@@ -326,10 +335,53 @@ function DisplayRaces(props: { race: Race }) {
         <H4>{t('Race Start Time')}</H4>
         <H5 className="dark:text-blueGray-500">{raceTime}</H5>
       </div>
-      <div className="my-4">
+      <div className={clsx('mt-4', expanded ? 'mb-0' : 'mb-2')}>
         <H4>{t('Race Price')}</H4>
         <H5 className="dark:text-blueGray-500">{`€${race.price}`}</H5>
       </div>
+      {expanded && (
+        <>
+          {race.raceDescription && (
+            <div className="mt-4">
+              <H4>{t('Description')}</H4>
+              <div className="dark:text-blueGray-500 text-base font-medium mr-2 mt-2 whitespace-pre-line px-4">
+                {race.raceDescription}
+              </div>
+            </div>
+          )}
+          <div className="mt-4">
+            <H4>{t('Elevation Gain')}</H4>
+            <div className="dark:text-blueGray-500 text-base font-medium mr-2 mt-2">
+              {`${race.elevationGain}m`}
+            </div>
+          </div>
+          {race.elevationLoss && (
+            <div className="mt-4">
+              <H4>{t('Elevation Loss')}</H4>
+              <div className="dark:text-blueGray-500 text-base font-medium mr-2 mt-2">
+                {`${race.elevationLoss}m`}
+              </div>
+            </div>
+          )}
+          {race.track && (
+            <Link
+              to={`/organizer/race/${race.id}`}
+              target="_blank"
+              rel="noreferrer"
+              download
+            >
+              <H4 className="my-4 dark:text-blueGray-500">{t('GPX')}</H4>
+            </Link>
+          )}
+        </>
+      )}
+      <label
+        className="dark:text-blueGray-500 text-sm font-medium"
+        role="button"
+        onClick={handleSeeMore}
+      >
+        {expanded ? t('See Less') : t('See More')}
+      </label>
       <div className="mb-4">
         <Button>{t('Book')}</Button>
       </div>
@@ -339,19 +391,20 @@ function DisplayRaces(props: { race: Race }) {
 
 function DisplayDocument(props: { document: Document }) {
   const { document } = props;
+  const path = document.path;
+  const fileExtension = path.split('.');
 
   return (
-    <div className="relative flex mb-4 justify-between items-center flex-row border-b p-4 last:border-none border-gray-300 dark:border-gray-300">
-      <div className="text-lg text-left font-extrabold pl-3 dark:text-white w-[calc(100%-(24px+24px+24px))]">
-        {document.label}
-      </div>
-
+    <div className="flex items-center border border-white rounded-2xl h-16 p-4 mr-2 mb-2">
       <a
         href={`/organizer/document/${document.id}`}
         target="_blank"
         rel="noreferrer"
+        className="text-white"
       >
-        <ArrowDownTrayIcon className="md:h-6 w-6 m-0 inline-block text-black dark:text-blueGray-500" />
+        {fileExtension[fileExtension.length - 1].toUpperCase() +
+          ' ' +
+          document.label}
       </a>
     </div>
   );
