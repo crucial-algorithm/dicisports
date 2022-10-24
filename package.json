@@ -10,7 +10,7 @@
     "dev:css": "npm run generate:css && npm run deploy:css -- --watch",
     "generate:css": "tailwindcss -o app/styles/tailwind.css",
     "deploy:css": "postcss styles/**/*.css --base styles --dir app/styles",
-    "postinstall": "remix setup node",
+    "postinstall": "npx remix setup node",
     "start": "remix-serve build",
     "lint": "npm run lint:eslint",
     "lint:eslint": "eslint ./ --ext .tsx --ext .ts",
