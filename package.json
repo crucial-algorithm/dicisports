@@ -8,7 +8,7 @@
     "dev": "concurrently \"npm run dev:css\" \"node -r dotenv/config node_modules/.bin/remix dev\"",
     "build:css": "npm run generate:css && npm run deploy:css",
     "dev:css": "npm run generate:css && npm run deploy:css -- --watch",
-    "generate:css": "npx tailwindcss -o app/styles/tailwind.css",
+    "generate:css": "tailwindcss -o app/styles/tailwind.css",
     "deploy:css": "postcss styles/**/*.css --base styles --dir app/styles",
     "postinstall": "remix setup node",
     "start": "remix-serve build",
@@ -16,7 +16,8 @@
     "lint:eslint": "eslint ./ --ext .tsx --ext .ts",
     "deploy:staging": "flyctl --app dicistg deploy .",
     "test:open": "npx cypress open",
-    "test:run": "npx cypress run"
+    "test:run": "npx cypress run",
+    "ci:db": "npx prisma migrate reset && prisma db seed"
   },
   "prisma": {
     "seed": "node --require esbuild-register prisma/seed.ts"
