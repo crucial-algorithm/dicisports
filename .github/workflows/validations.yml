@@ -43,8 +43,9 @@ jobs:
           browser: chrome
           record: false
           build: npm run ci:build
-          start: npm run dev
+          start: npm run start
         env:
+          NODE_ENV: production
           DATABASE_URL: ${{secrets.E2E_DATABASE_URL}}
 
           MAPBOX_TOKEN: ${{secrets.E2E_MAPBOX_TOKEN}}
