@@ -159,7 +159,17 @@ async function assignUniqueSlug(name: string, attempt = 0): Promise<string> {
 
 async function findEventBySlug(slug: string): Promise<Event | null> {
   return await db.event.findUnique({
-    where: { slug }
+    where: { slug },
+    include: {
+      documents: {
+        where: {
+          status: {
+            not: 'deleted'
+          }
+        },
+        orderBy: { position: 'asc' }
+      }
+    }
   });
 }
 

@@ -4,6 +4,7 @@ import { useFetcher, useLoaderData } from '@remix-run/react';
 
 import { Status } from '@prisma/client';
 import {
+  ArrowDownTrayIcon,
   CalendarDaysIcon,
   HeartIcon,
   MapPinIcon
@@ -28,7 +29,7 @@ import { NotFound, Unauthorized } from '~/server/utils/misc';
 import i18n from '~/server/i18n.server';
 import { Notification } from '~/components/shared/NotificationMessage';
 import DisplayImg from '~/components/shared/DisplayImg';
-import type { Event, Perk, Race } from '~/types';
+import type { Event, Perk, Race, Document } from '~/types';
 import { findEventRaces } from '~/server/db/races.server';
 import DisplayDate from '~/components/shared/DIsplayDate';
 import { displayTimeOfDay } from '~/utils/misc';
@@ -287,6 +288,22 @@ export default function EventDisplayRoute() {
             ))}
         </div>
       </div>
+
+      {event.directions && (
+        <div className="my-8">
+          <H3>{t('How to get there')}</H3>
+          <div className="dark:text-blueGray-500 text-base font-medium mr-2 mt-2 whitespace-pre-line">
+            {event.directions}
+          </div>
+        </div>
+      )}
+
+      <div className="my-8">
+        <H3>{t('Documents')}</H3>
+        {event.documents.map((document: Document) => (
+          <DisplayDocument document={document} key={document.id} />
+        ))}
+      </div>
     </Main>
   );
 }
@@ -316,6 +333,26 @@ function DisplayRaces(props: { race: Race }) {
       <div className="mb-4">
         <Button>{t('Book')}</Button>
       </div>
+    </div>
+  );
+}
+
+function DisplayDocument(props: { document: Document }) {
+  const { document } = props;
+
+  return (
+    <div className="relative flex mb-4 justify-between items-center flex-row border-b p-4 last:border-none border-gray-300 dark:border-gray-300">
+      <div className="text-lg text-left font-extrabold pl-3 dark:text-white w-[calc(100%-(24px+24px+24px))]">
+        {document.label}
+      </div>
+
+      <a
+        href={`/organizer/document/${document.id}`}
+        target="_blank"
+        rel="noreferrer"
+      >
+        <ArrowDownTrayIcon className="md:h-6 w-6 m-0 inline-block text-black dark:text-blueGray-500" />
+      </a>
     </div>
   );
 }
