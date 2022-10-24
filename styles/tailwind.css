@@ -51,3 +51,7 @@
     @apply dark:text-black text-white;
   }
 }
+
+.hide-scroll-bar::-webkit-scrollbar {
+  display: none;
+}

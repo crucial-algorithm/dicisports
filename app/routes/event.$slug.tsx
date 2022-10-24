@@ -126,6 +126,7 @@ export default function EventDisplayRoute() {
     event.image4,
     event.image5
   ].filter(Boolean) as string[];
+  const [lat, lng] = event.location.split(',');
 
   function handlerSetShowNotificationFunction(callback: () => void) {
     showFavoriteAddedNotification = callback;
@@ -187,6 +188,9 @@ export default function EventDisplayRoute() {
 
         <div className="flex flex-auto flex-col mt-4 ml-4">
           <div className="flex flex-row justify-end mb-2">
+            <H2 className="text-sp-light-blue-900 mb-8 w-[calc(100%-(40px+40px+8px))]">
+              <b className="break-words w-full">{event.name}</b>
+            </H2>
             <favorite.Form
               method="post"
               action={`/organizer/event/fav/${event.id}`}
@@ -196,7 +200,7 @@ export default function EventDisplayRoute() {
                   size="tiny"
                   name="action"
                   value={actions.remove}
-                  className="w-[40px] h-[40px] ml-4"
+                  className="w-[40px] h-[40px]"
                 >
                   <Favorite className="h-6 w-6 m-0 inline-block" />
                 </Button>
@@ -205,7 +209,7 @@ export default function EventDisplayRoute() {
                   size="tiny"
                   name="action"
                   value={actions.add}
-                  className="w-[40px] h-[40px] ml-4"
+                  className="w-[40px] h-[40px]"
                 >
                   <HeartIcon className="h-6 w-6 m-0 inline-block" />
                 </Button>
@@ -226,10 +230,7 @@ export default function EventDisplayRoute() {
               {copiedToClipMessage}
             </Notification>
           </div>
-          <H2 className="text-sp-light-blue-900 mb-8 w-full">
-            <b className="break-words">{event.name}</b>
-          </H2>
-          <div className="flex flex-row items-center">
+          <div className="flex flex-row items-center mb-2">
             <CalendarDaysIcon className="h-6 w-6 m-0 inline-block text-primary" />
             <H6 className="ml-4 md:ml-2">
               <DisplayDate date={new Date(event.startAt)} />
@@ -237,7 +238,13 @@ export default function EventDisplayRoute() {
           </div>
           <div className="flex flex-row items-center">
             <MapPinIcon className="h-6 w-6 m-0 inline-block text-primary" />
-            <H6 className="ml-4 md:ml-2">{event.address}</H6>
+            <a
+              href={`https://www.google.com/maps/search/?api=1&query=${lat}%2C${lng}`}
+              target="_blank"
+              rel="noreferrer"
+            >
+              <H6 className="ml-4 mr-2 md:ml-2">{event.address}</H6>
+            </a>
           </div>
           <div className="flex flex-row justify-between items-center mt-16">
             <div className="flex flex-col justify-start">
@@ -259,7 +266,7 @@ export default function EventDisplayRoute() {
       </div>
 
       <H3 id="races">{t('Races')}</H3>
-      <div className="flex flex-col mt-2 scroll-mx-2 md:flex-row md:flex-nowrap md:overflow-x-scroll pb-10 hide-scroll-bar hide-">
+      <div className="flex flex-col mt-2 scroll-mx-2 md:flex-row md:flex-nowrap md:overflow-x-auto pb-10 hide-scroll-bar">
         {races
           .sort((a: Race, b: Race) => a.displayOrder - b.displayOrder)
           .map((race: Race) => (
@@ -324,10 +331,7 @@ function DisplayRace(props: { race: Race }) {
 
   return (
     <div className="flex flex-col">
-      <div
-        className="gap-y-2 mb-4 mr-2 md:mr-4 text-center items-center border border-white rounded-2xl outline-offset-1 w-[340px]
-        md:overflow-hidden shadow-md shadow-black hover:shadow-xl transition-shadow duration-300 ease-in-out"
-      >
+      <div className="gap-y-2 mb-4 mr-2 md:mr-4 text-center items-center border border-white rounded-2xl outline-offset-1 w-[340px] md:overflow-hidden">
         <div className="mt-4">
           <H4>{race.name}</H4>
         </div>
@@ -356,14 +360,14 @@ function DisplayRace(props: { race: Race }) {
             <div className="mt-4">
               <H4>{t('Elevation Gain')}</H4>
               <div className="dark:text-blueGray-500 text-base font-medium mr-2 mt-2">
-                {`${race.elevationGain}m`}
+                {`${race.elevationGain} m`}
               </div>
             </div>
             {race.elevationLoss && (
               <div className="mt-4">
                 <H4>{t('Elevation Loss')}</H4>
                 <div className="dark:text-blueGray-500 text-base font-medium mr-2 mt-2">
-                  {`${race.elevationLoss}m`}
+                  {`${race.elevationLoss} m`}
                 </div>
               </div>
             )}
@@ -379,14 +383,12 @@ function DisplayRace(props: { race: Race }) {
             )}
           </>
         )}
-        <label
-          className="dark:text-blueGray-500 text-sm font-medium"
-          role="button"
-          onClick={handleSeeMore}
-        >
-          {expanded ? t('See Less') : t('See More')}
-        </label>
-        <div className="mb-4">
+        <div className="dark:text-blueGray-500 text-sm font-medium mt-4">
+          <label role="button" onClick={handleSeeMore}>
+            {expanded ? t('See Less') : t('See More')}
+          </label>
+        </div>
+        <div className="my-4">
           <Button>{t('Book')}</Button>
         </div>
       </div>
@@ -400,16 +402,17 @@ function DisplayDocument(props: { document: Document }) {
   const fileExtension = path.split('.');
 
   return (
-    <div className="flex items-center border border-white rounded-2xl h-16 p-4 mr-2 mb-2 shadow-md shadow-black hover:shadow-xl transition-shadow duration-300 ease-in-out">
+    <div className="flex items-center border border-white rounded-2xl h-16 p-4 mr-2 mb-2">
+      <div className="text-white font-medium border-2 border-secondary bg-primary rounded-full p-2 mr-2">
+        {fileExtension[fileExtension.length - 1].toUpperCase()}
+      </div>
       <a
         href={`/organizer/document/${document.id}`}
         target="_blank"
         rel="noreferrer"
         className="text-white"
       >
-        {fileExtension[fileExtension.length - 1].toUpperCase() +
-          ' ' +
-          document.label}
+        {document.label}
       </a>
     </div>
   );

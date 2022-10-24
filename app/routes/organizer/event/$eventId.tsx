@@ -1388,7 +1388,7 @@ function UploadDocumentDialog(props: {
 
   const { getRootProps, getInputProps } = useDropzone({
     multiple: false,
-    accept: 'text/*, .pdf',
+    accept: '.pdf, .gpx',
     onDrop: (accepted) => {
       if (accepted.length === 0) {
         return;
