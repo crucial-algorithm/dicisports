@@ -5,7 +5,6 @@ import { useFetcher, useLoaderData } from '@remix-run/react';
 import { Status } from '@prisma/client';
 import {
   CalendarDaysIcon,
-  CurrencyEuroIcon,
   HeartIcon,
   MapPinIcon
 } from '@heroicons/react/24/outline';
@@ -23,16 +22,17 @@ import {
 
 import Main from '~/components/shared/Main';
 import { H2, H3, H4, H5, H6 } from '~/components/shared/typography';
-import Button from '~/components/shared/Button';
+import Button, { ButtonLink } from '~/components/shared/Button';
 import { getUser } from '~/server/auth/session.server';
 import { NotFound, Unauthorized } from '~/server/utils/misc';
 import i18n from '~/server/i18n.server';
 import { Notification } from '~/components/shared/NotificationMessage';
 import DisplayImg from '~/components/shared/DisplayImg';
-import type { Event, Race } from '~/types';
+import type { Event, Perk, Race } from '~/types';
 import { findEventRaces } from '~/server/db/races.server';
 import DisplayDate from '~/components/shared/DIsplayDate';
-import { timeOfDayToHoursMinutes } from '~/utils/misc';
+import { displayTimeOfDay } from '~/utils/misc';
+import { findEventPerks } from '~/server/db/perks.server';
 
 type LoaderData = {
   event: Event;
@@ -53,7 +53,6 @@ export const loader: LoaderFunction = async ({ params, request }) => {
   const t = await i18n.getFixedT(request, 'create-event-form');
   let isUserFavorite = false;
   let minPrice = 0;
-  let maxPrice = 0;
 
   if (!slug) {
     redirect('/');
@@ -81,29 +80,32 @@ export const loader: LoaderFunction = async ({ params, request }) => {
     });
   }
 
-  const races = await findEventRaces(event.id);
+  const eventId = event.id as string;
+  const races = await findEventRaces(eventId);
 
-  if (races) {
-    const sortedRaces = races
-      .sort((a, b) => a.price - b.price)
-      .map((a) => a.price);
-
-    minPrice = sortedRaces[0];
-    maxPrice = sortedRaces[races.length - 1];
+  if (!races) {
+    //TODO: shouldn't happen, but throw new error, maybe redirect if user === creator
+    throw NotFound(t('Event not found'));
   }
+
+  const sortedRaces = races
+    .sort((a, b) => a.price - b.price)
+    .map((a) => a.price);
+
+  minPrice = sortedRaces[0];
 
   return json({
     event,
     isUserFavorite,
     minPrice,
-    maxPrice,
-    races
+    races,
+    perks: await findEventPerks(eventId)
   });
 };
 
 export default function EventDisplayRoute() {
   const favorite = useFetcher();
-  const { event, isUserFavorite, minPrice, maxPrice, races } =
+  const { event, isUserFavorite, minPrice, races, perks } =
     useLoaderData<LoaderData>();
   const { t } = useTranslation('home');
 
@@ -123,12 +125,6 @@ export default function EventDisplayRoute() {
     event.image4,
     event.image5
   ].filter(Boolean) as string[];
-
-  let price = `${minPrice}€ - ${maxPrice}€`;
-
-  if (minPrice === maxPrice) {
-    price = `${minPrice}€`;
-  }
 
   function handlerSetShowNotificationFunction(callback: () => void) {
     showFavoriteAddedNotification = callback;
@@ -229,7 +225,7 @@ export default function EventDisplayRoute() {
               {copiedToClipMessage}
             </Notification>
           </div>
-          <H2 className="text-sp-light-blue-900 mb-4 w-full">
+          <H2 className="text-sp-light-blue-900 mb-8 w-full">
             <b className="break-words">{event.name}</b>
           </H2>
           <div className="flex flex-row items-center">
@@ -239,28 +235,57 @@ export default function EventDisplayRoute() {
             </H6>
           </div>
           <div className="flex flex-row items-center">
-            <CurrencyEuroIcon className="h-6 w-6 m-0 inline-block text-primary" />
-            <H6 className="ml-4 md:ml-2">{price}</H6>
-          </div>
-          <div className="flex flex-row items-center">
             <MapPinIcon className="h-6 w-6 m-0 inline-block text-primary" />
             <H6 className="ml-4 md:ml-2">{event.address}</H6>
+          </div>
+          <div className="flex flex-row justify-between items-center mt-16">
+            <div className="flex flex-col justify-start">
+              <H6 className="md:ml-2">{t('From')}</H6>
+              <H2 className="text-sp-light-blue-900 w-full md:ml-2">
+                <b className="break-words">{`${minPrice}€`}</b>
+              </H2>
+            </div>
+            <ButtonLink to="#races">{t('Races Anchor')}</ButtonLink>
           </div>
         </div>
       </div>
 
       <div className="my-8">
         <H3>{t('About')}</H3>
-        <div className="dark:text-blueGray-500 text-sm font-medium mr-2">
+        <div className="dark:text-blueGray-500 text-base font-medium mr-2 mt-2 whitespace-pre-line">
           {event.eventDescription}
         </div>
       </div>
 
-      <H3>{t('Races')}</H3>
-      <div className="flex flex-col mt-2 scroll-mx-2 md:flex-row">
+      <H3 id="races">{t('Races')}</H3>
+      <div className="flex flex-col mt-2 scroll-mx-2 md:flex-row md:overflow-x-scroll md:flex-nowrap">
         {races.map((race: Race) => (
           <DisplayRaces race={race} key={race.id} />
         ))}
+      </div>
+
+      <div className="my-8">
+        <H3>{t('Perks')}</H3>
+        <div className="grid grid-rows-8 md:grid-rows-6 md:grid-flow-col gap-y-4 md:gap-y-2 my-2">
+          {perks
+            .sort((a: Perk, b: Perk) => a.displayOrder - b.displayOrder)
+            .map((p: any) => (
+              <div key={p.id} className="flex items-center mb-1">
+                <input
+                  disabled
+                  type="checkbox"
+                  defaultChecked={p.isEnabled}
+                  className="w-4 h-4 text-indigo-500 bg-gray-100 rounded border-gray-300 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600"
+                />
+                <label
+                  htmlFor={p.id}
+                  className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300"
+                >
+                  {p.name}
+                </label>
+              </div>
+            ))}
+        </div>
       </div>
     </Main>
   );
@@ -269,20 +294,20 @@ export default function EventDisplayRoute() {
 function DisplayRaces(props: { race: Race }) {
   const { race } = props;
   const { t } = useTranslation('home');
-  const [hour, minute] = timeOfDayToHoursMinutes(race.startTime);
+  const raceTime = displayTimeOfDay(race.startTime);
 
   return (
-    <div className="w-full flex flex-col gap-y-2 mb-4 md:mr-4 text-center items-center border border-white rounded-2xl outline-offset-1">
+    <div className=" flex flex-col gap-y-2 mb-4 mr-2 md:mr-4 text-center items-center border border-white rounded-2xl outline-offset-1 w-[340px] h-[402px]">
       <div className="mt-4">
         <H4>{race.name}</H4>
       </div>
       <div className="mt-4">
         <H4>{t('Race Distance')}</H4>
-        <H5 className="text-blueGray-500">{`${race.distance} km`}</H5>
+        <H5 className="dark:text-blueGray-500">{`${race.distance} km`}</H5>
       </div>
       <div className="mt-4">
         <H4>{t('Race Start Time')}</H4>
-        <H5 className="dark:text-blueGray-500">{`${hour}:${minute}`}</H5>
+        <H5 className="dark:text-blueGray-500">{raceTime}</H5>
       </div>
       <div className="my-4">
         <H4>{t('Race Price')}</H4>
