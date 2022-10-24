@@ -37,19 +37,14 @@ jobs:
       - name: Reset permissions
         run: chmod -R 777 .
 
-      - name: Generate CSS dependencies
-        run:  npm run generate:css
-
-      - name: Deploy CSS
-        run: npm run deploy:css
-
       - name: Cypress e2e tests
         uses: cypress-io/github-action@v4.2.0
         with:
           browser: chrome
-          build: npm run ci:db
-          start: npm run dev
+          build: npm run ci:build
+          start: npm run start
         env:
+          NODE_ENV: production
           DATABASE_URL: ${{secrets.E2E_DATABASE_URL}}
 
           MAPBOX_TOKEN: ${{secrets.E2E_MAPBOX_TOKEN}}
