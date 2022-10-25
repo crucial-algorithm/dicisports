@@ -115,7 +115,7 @@ function PlaceholderImg({
   }
   return (
     <DisplayImg
-      id={`product/sports/${img}`}
+      imageId={`product/sports/${img}`}
       alt={event.name || ''}
       variant="List"
     />
@@ -140,7 +140,7 @@ function RaceImage({ event, img }: { event: Event; img?: string }) {
         />
       ) : (
         <DisplayImg
-          id={image1 || image2 || image3 || ''}
+          imageId={image1 || image2 || image3 || ''}
           transformations={{
             resize: {
               type: 'fill',

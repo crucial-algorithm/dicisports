@@ -56,5 +56,7 @@
   "GPX": "Ficheiro GPX",
   "Elevation Gain": "Ganho de elevação",
   "Elevation Loss": "Perda de elevação",
-  "No Races": "Nenhuma corrida encontrada"
+  "No Races": "Nenhuma corrida encontrada",
+  "Event not public": "O evento que estás à procura não está disponível.",
+  "Event not public action": "Clica para volta à pesquisa"
 }

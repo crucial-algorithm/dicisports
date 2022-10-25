@@ -25,7 +25,7 @@ import Main from '~/components/shared/Main';
 import { H2, H3, H4, H5, H6 } from '~/components/shared/typography';
 import Button, { ButtonLink } from '~/components/shared/Button';
 import { getUser } from '~/server/auth/session.server';
-import { NotFound, Unauthorized } from '~/server/utils/misc';
+import { NotFound } from '~/server/utils/misc';
 import i18n from '~/server/i18n.server';
 import { Notification } from '~/components/shared/NotificationMessage';
 import DisplayImg from '~/components/shared/DisplayImg';
@@ -64,10 +64,6 @@ export const loader: LoaderFunction = async ({ params, request }) => {
 
   if (!event) {
     throw NotFound(t('Event not found'));
-  }
-
-  if (event.status !== Status.published) {
-    throw Unauthorized(t('Not authorized'));
   }
 
   if (user) {
@@ -162,6 +158,15 @@ export default function EventDisplayRoute() {
     favoriteRemovedMessage
   ]);
 
+  if (event.status !== Status.published) {
+    return (
+      <Main>
+        <p data-cy="event-not-found">{t('Event not public')}</p>
+        <a href="/">{t('Event not public action')}</a>
+      </Main>
+    );
+  }
+
   return (
     <Main>
       <div className="flex flex-col md:flex-row mt-4">
@@ -170,7 +175,7 @@ export default function EventDisplayRoute() {
             {images.map((image, idx) => (
               <DisplayImg
                 key={idx}
-                id={image}
+                imageId={image}
                 className="w-[500px]"
                 transformations={{
                   resize: {
