@@ -34,6 +34,7 @@ import { findEventRaces } from '~/server/db/races.server';
 import DisplayDate from '~/components/shared/DIsplayDate';
 import { displayTimeOfDay } from '~/utils/misc';
 import { findEventPerks } from '~/server/db/perks.server';
+import WhenListEmpty from '~/components/shared/Empty';
 
 type LoaderData = {
   event: Event;
@@ -84,16 +85,13 @@ export const loader: LoaderFunction = async ({ params, request }) => {
   const eventId = event.id as string;
   const races = await findEventRaces(eventId);
 
-  if (!races) {
-    //TODO: shouldn't happen, but throw new error, maybe redirect if user === creator
-    throw NotFound(t('Event not found'));
+  if (races) {
+    const sortedRaces = races
+      .sort((a, b) => a.price - b.price)
+      .map((a) => a.price);
+
+    minPrice = sortedRaces[0];
   }
-
-  const sortedRaces = races
-    .sort((a, b) => a.price - b.price)
-    .map((a) => a.price);
-
-  minPrice = sortedRaces[0];
 
   return json({
     event,
@@ -272,6 +270,11 @@ export default function EventDisplayRoute() {
           .map((race: Race) => (
             <DisplayRace race={race} key={race.id} />
           ))}
+        <WhenListEmpty list={races}>
+          <H6 className="text-center p-12" variant="secondary" as="p">
+            {t('No Races')}
+          </H6>
+        </WhenListEmpty>
       </div>
 
       <div className="my-8">

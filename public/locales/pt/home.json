@@ -55,5 +55,6 @@
   "Description": "Descrição",
   "GPX": "Ficheiro GPX",
   "Elevation Gain": "Ganho de elevação",
-  "Elevation Loss": "Perda de elevação"
+  "Elevation Loss": "Perda de elevação",
+  "No Races": "Nenhuma corrida encontrada"
 }
