@@ -1,0 +1,66 @@
+[
+  {
+    "id": "1",
+    "name": "Saco de brinde",
+    "isDefault": true,
+    "isEnabled": false,
+    "displayOrder": 1,
+    "eventId": "MY4bvgxDbMtGv8rbYe5d"
+  },
+  {
+    "id": "2",
+    "name": "Bebedouros",
+    "isDefault": true,
+    "isEnabled": true,
+    "displayOrder": 2,
+    "eventId": "MY4bvgxDbMtGv8rbYe5d"
+  },
+  {
+    "id": "3",
+    "name": "Chuveiros",
+    "isDefault": true,
+    "isEnabled": true,
+    "displayOrder": 3,
+    "eventId": "MY4bvgxDbMtGv8rbYe5d"
+  },
+  {
+    "id": "4",
+    "name": "T-shirts do evento",
+    "isDefault": true,
+    "isEnabled": false,
+    "displayOrder": 4,
+    "eventId": "MY4bvgxDbMtGv8rbYe5d"
+  },
+  {
+    "id": "5",
+    "name": "Medalhas",
+    "isDefault": true,
+    "isEnabled": false,
+    "displayOrder": 5,
+    "eventId": "MY4bvgxDbMtGv8rbYe5d"
+  },
+  {
+    "id": "6",
+    "name": "Resultados cronometrados",
+    "isDefault": true,
+    "isEnabled": true,
+    "displayOrder": 6,
+    "eventId": "MY4bvgxDbMtGv8rbYe5d"
+  },
+  {
+    "id": "7",
+    "name": "Fotos do evento",
+    "isDefault": true,
+    "isEnabled": false,
+    "displayOrder": 7,
+    "eventId": "MY4bvgxDbMtGv8rbYe5d"
+  },
+  {
+    "id": "8",
+    "name": "Música ao vivo",
+    "isDefault": true,
+    "isEnabled": false,
+    "displayOrder": 8,
+    "eventId": "MY4bvgxDbMtGv8rbYe5d"
+  }
+]

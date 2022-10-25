@@ -1,7 +1,8 @@
-import { PrismaClient, Status, Role } from '@prisma/client';
+import { PrismaClient, Role, Status } from '@prisma/client';
 
-import usersSeed from './data/users.json';
+import perksSeed from './data/perks.json';
 import groupsSeed from './data/groups.json';
+import usersSeed from './data/users.json';
 
 const db = new PrismaClient();
 
@@ -32,6 +33,8 @@ async function seed() {
   await persist('groups', groups(), db.group);
   await persist('events', events(), db.event);
   await persist('documents', documents(), db.document);
+  await persist('races', races(), db.race);
+  await persist('perks', perks(), db.perk);
   await persist('sessions', sessions(), db.session);
 }
 
@@ -145,9 +148,10 @@ function events() {
       address: 'Ferreira do Zêzere',
       useExternalBooking: false,
       externalBookingUrl: null,
-      status: Status.auto,
+      status: Status.draft,
       createdAt: new Date('2021-12-31T08:00:00Z'),
-      updatedAt: new Date('2021-12-31T08:00:00Z')
+      updatedAt: new Date('2021-12-31T08:00:00Z'),
+      createdById: '3beca472138d6d234d3f'
     },
     {
       id: 'TgKZi8NQKNoJQGArd3zc',
@@ -160,9 +164,30 @@ function events() {
       useExternalBooking: true,
       externalBookingUrl:
         'https://stopandgo.com.pt/events/viii-trilho-dos-reis',
-      status: Status.auto,
+      status: Status.published,
       createdAt: new Date('2021-12-31T08:00:00Z'),
-      updatedAt: new Date('2021-12-31T08:00:00Z')
+      updatedAt: new Date('2021-12-31T08:00:00Z'),
+      createdById: '3beca472138d6d234d3f'
+    },
+    {
+      id: 'MY4bvgxDbMtGv8rbYe5d',
+      name: 'Love Tiles Douro Granfondo 2023',
+      sportId: 3,
+      startAt: new Date('2022-10-30T10:00:00Z'),
+      endAt: new Date('2022-11-30T15:00:00Z'),
+      location: '41.7352772,-7.4712548',
+      address: 'Chaves',
+      useExternalBooking: false,
+      status: Status.published,
+      createdAt: new Date('2021-12-31T08:00:00Z'),
+      updatedAt: new Date('2021-12-31T08:00:00Z'),
+      directions: 'Carro: Saida pela A3 direção a Braga',
+      eventDescription:
+        'O Peso da Régua será ponto de partida e de reencontro, depois de serem atravessados os concelhos de Lamego, Armamar, ' +
+        'Tabuaço, Penedono, Foz Coa e São João da Pesqueira.',
+      createdById: '3beca472138d6d234d3f',
+      image1: 'users/NtGwBBJeHdR6X6XHZPJ3',
+      slug: 'love-tiles-douro-granfondo-2023'
     }
   ];
 }
@@ -170,16 +195,39 @@ function events() {
 function documents() {
   return [
     {
-      id: 'iMJfFDJkQK3FWW8C5YW8',
+      id: 'MY4bvgxDbMtGv8rbYe5d',
       path: 'seed/MqmdXHau8JAjpfbCKJAW.png',
       position: 1,
       label: 'regulamento',
-      eventId: 'bQmGXYkbhJetjk6mniMt',
+      eventId: 'MY4bvgxDbMtGv8rbYe5d',
       createdAt: new Date('2021-12-31T08:00:00Z'),
       updatedAt: new Date('2021-12-31T08:00:00Z'),
       status: Status.auto
     }
   ];
+}
+
+function races() {
+  return [
+    {
+      id: 'xaXaCzs2t7D8DpRNnffM',
+      name: '5Km run',
+      distance: 5,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      startTime: 900,
+      elevationGain: 10,
+      price: 10,
+      eventId: 'MY4bvgxDbMtGv8rbYe5d'
+    }
+  ];
+}
+
+function perks() {
+  return perksSeed.map((p) => ({
+    ...p,
+    createdAt: new Date()
+  }));
 }
 
 // Generated using the following SQL statement:
@@ -210,7 +258,8 @@ function users() {
     updatedAt: new Date('2022-02-19 10:56:59.959'),
     email: 'admin@gmail.com',
     name: 'Admin user',
-    password: '17e99f51fac24b10b371fdd7cfb67e7e05dbd10e02524a23fb55df2abb752d9c6b9e739fbcd93bf6c5b52c172027a56e0c9327b480e0278e483dcf5d76221988',
+    password:
+      '17e99f51fac24b10b371fdd7cfb67e7e05dbd10e02524a23fb55df2abb752d9c6b9e739fbcd93bf6c5b52c172027a56e0c9327b480e0278e483dcf5d76221988',
     salt: '016323d021965061791b4a14afa918f1',
     // @ts-ignore
     role: Role.ADMIN
@@ -222,7 +271,8 @@ function users() {
     updatedAt: new Date('2022-02-19 10:56:59.959'),
     email: 'regular@gmail.com',
     name: 'Regular user',
-    password: '17e99f51fac24b10b371fdd7cfb67e7e05dbd10e02524a23fb55df2abb752d9c6b9e739fbcd93bf6c5b52c172027a56e0c9327b480e0278e483dcf5d76221988',
+    password:
+      '17e99f51fac24b10b371fdd7cfb67e7e05dbd10e02524a23fb55df2abb752d9c6b9e739fbcd93bf6c5b52c172027a56e0c9327b480e0278e483dcf5d76221988',
     salt: '016323d021965061791b4a14afa918f1',
     // @ts-ignore
     role: Role.ADMIN

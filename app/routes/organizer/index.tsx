@@ -1,4 +1,4 @@
-import { Link, useLoaderData } from '@remix-run/react';
+import { Form, Link, useLoaderData } from '@remix-run/react';
 import type { LinksFunction, LoaderFunction } from 'remix';
 import { json } from 'remix';
 import { useTranslation } from 'react-i18next';
@@ -10,7 +10,7 @@ import clsx from 'clsx';
 
 import { H4, H5, H6 } from '~/components/shared/typography';
 
-import { ButtonLink } from '~/components/shared/Button';
+import Button from '~/components/shared/Button';
 
 import Main from '~/components/shared/Main';
 
@@ -56,11 +56,12 @@ export default function OrganizerIndexRoute() {
     <Main>
       <div className="dark:text-blueGray-500">
         <div className="col-span-full mb-12 lg:mb-12">
-          <div className="flex flex-col-reverse items-start justify-between lg:flex-row lg:items-center">
-            <div />
-            <ButtonLink variant="secondary" to={'/organizer/event/create'}>
-              <H6 as="span">{t('Create')}</H6>
-            </ButtonLink>
+          <div className="flex flex-col-reverse justify-end lg:flex-row lg:items-center">
+            <Form method="post" action="/organizer/event/create">
+              <Button variant="secondary" name="create-event">
+                <H6 as="span">{t('Create')}</H6>
+              </Button>
+            </Form>
           </div>
         </div>
         <div className="events-list">

@@ -1,4 +1,4 @@
-import type { LoaderFunction } from 'remix';
+import type { ActionFunction } from 'remix';
 import { redirect } from 'remix';
 
 import Id from '~/server/utils/Id.server';
@@ -7,7 +7,7 @@ import i18n from '~/server/i18n.server';
 import type { Language } from '~/types';
 import { requireAdminUser, requireUser } from '~/server/auth/session.server';
 
-export const loader: LoaderFunction = async ({ request }) => {
+export const action: ActionFunction = async ({ request }) => {
   // hide while this is still in dev
   await requireAdminUser(request);
   const user = await requireUser(request);

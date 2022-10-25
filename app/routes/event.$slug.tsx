@@ -175,6 +175,7 @@ export default function EventDisplayRoute() {
             {images.map((image, idx) => (
               <DisplayImg
                 key={idx}
+                dataCy="images"
                 imageId={image}
                 className="w-[500px]"
                 transformations={{
@@ -192,7 +193,7 @@ export default function EventDisplayRoute() {
         <div className="flex flex-auto flex-col mt-4 ml-4">
           <div className="flex flex-row justify-end mb-2">
             <H2 className="text-sp-light-blue-900 mb-8 w-[calc(100%-(40px+40px+8px))]">
-              <b className="break-words w-full">{event.name}</b>
+              <b data-cy="name" className="break-words w-full">{event.name}</b>
             </H2>
             <favorite.Form
               method="post"
@@ -222,7 +223,7 @@ export default function EventDisplayRoute() {
               text={`${address}/group/${event.slug}`}
               onCopy={handlerClickToCopy}
             >
-              <Button size="tiny" className="w-[40px] h-[40px] ml-2">
+              <Button size="tiny" className="w-[40px] h-[40px] ml-2" name="share">
                 <ShareIcon className="h-6 w-6 m-0 inline-block" />
               </Button>
             </CopyToClipboard>
@@ -235,7 +236,7 @@ export default function EventDisplayRoute() {
           </div>
           <div className="flex flex-row items-center mb-2">
             <CalendarDaysIcon className="h-6 w-6 m-0 inline-block text-primary" />
-            <H6 className="ml-4 md:ml-2">
+            <H6 data-cy="date" className="ml-4 md:ml-2">
               <DisplayDate date={new Date(event.startAt)} />
             </H6>
           </div>
@@ -246,30 +247,30 @@ export default function EventDisplayRoute() {
               target="_blank"
               rel="noreferrer"
             >
-              <H6 className="ml-4 mr-2 md:ml-2">{event.address}</H6>
+              <H6 className="ml-4 mr-2 md:ml-2" data-cy="location">{event.address}</H6>
             </a>
           </div>
           <div className="flex flex-row justify-between items-center mt-16">
             <div className="flex flex-col justify-start">
-              <H6 className="md:ml-2">{t('From')}</H6>
-              <H2 className="text-sp-light-blue-900 w-full md:ml-2">
+              <H6 data-cy="price-from" className="md:ml-2">{t('From')}</H6>
+              <H2 data-cy="price" className="text-sp-light-blue-900 w-full md:ml-2">
                 <b className="break-words">{`${minPrice}€`}</b>
               </H2>
             </div>
-            <ButtonLink to="#races">{t('Races Anchor')}</ButtonLink>
+            <ButtonLink data-cy="races-button" to="#races">{t('Races Anchor')}</ButtonLink>
           </div>
         </div>
       </div>
 
       <div className="my-8">
-        <H3>{t('About')}</H3>
-        <div className="dark:text-blueGray-500 text-base font-medium mr-2 mt-2 whitespace-pre-line">
+        <H3 data-cy="about">{t('About')}</H3>
+        <div className="dark:text-blueGray-500 text-base font-medium mr-2 mt-2 whitespace-pre-line" data-cy="description">
           {event.eventDescription}
         </div>
       </div>
 
-      <H3 id="races">{t('Races')}</H3>
-      <div className="flex flex-col mt-2 scroll-mx-2 items-center md:items-start md:flex-row md:flex-nowrap md:overflow-x-auto pb-10 hide-scroll-bar">
+      <H3 id="races" data-cy="races">{t('Races')}</H3>
+      <div data-cy="races-list" className="flex flex-col mt-2 scroll-mx-2 items-center md:items-start md:flex-row md:flex-nowrap md:overflow-x-auto pb-10 hide-scroll-bar">
         {races
           .sort((a: Race, b: Race) => a.displayOrder - b.displayOrder)
           .map((race: Race) => (
@@ -283,8 +284,8 @@ export default function EventDisplayRoute() {
       </div>
 
       <div className="my-8">
-        <H3>{t('Perks')}</H3>
-        <div className="grid grid-rows-8 md:grid-rows-6 md:grid-flow-col gap-y-4 md:gap-y-2 my-2">
+        <H3 data-cy="perks">{t('Perks')}</H3>
+        <div data-cy="perks-list" className="grid grid-rows-8 md:grid-rows-6 md:grid-flow-col gap-y-4 md:gap-y-2 my-2">
           {perks
             .sort((a: Perk, b: Perk) => a.displayOrder - b.displayOrder)
             .map((p: any) => (
@@ -308,15 +309,15 @@ export default function EventDisplayRoute() {
 
       {event.directions && (
         <div className="my-8">
-          <H3>{t('How to get there')}</H3>
-          <div className="dark:text-blueGray-500 text-base font-medium mr-2 mt-2 whitespace-pre-line">
+          <H3 data-cy="directions-title">{t('How to get there')}</H3>
+          <div data-cy="directions" className="dark:text-blueGray-500 text-base font-medium mr-2 mt-2 whitespace-pre-line">
             {event.directions}
           </div>
         </div>
       )}
 
-      <H3>{t('Documents')}</H3>
-      <div className="flex flex-row flex-wrap mb-8 mt-2">
+      <H3 data-cy="documents">{t('Documents')}</H3>
+      <div data-cy="documents-list" className="flex flex-row flex-wrap mb-8 mt-2">
         {event.documents
           .sort((a: Document, b: Document) => a.position - b.position)
           .map((document: Document) => (
