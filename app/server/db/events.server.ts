@@ -29,7 +29,7 @@ async function findEvent(id: string): Promise<Event | null> {
       documents: {
         where: {
           status: {
-            not: 'deleted'
+            not: Status.deleted
           }
         }
       }

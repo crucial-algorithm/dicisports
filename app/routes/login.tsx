@@ -291,7 +291,7 @@ export default function Login() {
             />
           </FormField>
         )}
-        <Button>{t(action === 'ws' ? 'Email WhatsApp Link' : 'Login')}</Button>
+        <Button name="login">{t(action === 'ws' ? 'Email WhatsApp Link' : 'Login')}</Button>
         {errors.submit && (
           <InputError className="mt-4" id="error-message">
             {errors.submit}

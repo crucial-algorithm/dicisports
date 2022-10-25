@@ -80,11 +80,12 @@ async function findGroupBySlug(slug: string): Promise<Group | null> {
       groupType: true,
       groupSpirit: true,
       sport: true,
-      createdBy: true
+      createdBy: true,
+      schedules: true
     }
   });
 
-  if (!group) {
+  if (!group || group.status === Status.deleted) {
     return null;
   }
   return dbGroupToGroup(group);

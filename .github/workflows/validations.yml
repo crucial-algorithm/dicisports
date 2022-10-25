@@ -1,0 +1,100 @@
+name: Code validation
+on: push
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [16.x]
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node-version }}
+      - uses: actions/cache@v3
+        with:
+          path: '**/node_modules'
+          key: ${{ runner.os }}-modules-${{ hashFiles('**/package-lock.json') }}
+      - name: Install dependencies
+        run: npm ci
+      - name: Generate CSS dependencies
+        run: |
+          npm run generate:css 
+          npm run deploy:css
+      - name: Run Lint
+        run: npm run lint
+
+  e2e:
+    runs-on: ubuntu-latest
+    needs: [lint]
+    container: cypress/browsers:node16.14.0-chrome99-ff97
+
+    services:
+      postgres:
+        image: postgres:13
+        env:
+          POSTGRES_USER: dici
+          POSTGRES_PASSWORD: sports
+          POSTGRES_DB: dicisports
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v3
+
+      - name: Install dependencies
+        run: npm ci
+
+      # not sure why, but we can't write to files without updating permissions
+      - name: Reset permissions
+        run: chmod -R 777 .
+
+      - name: Cypress e2e tests
+        uses: cypress-io/github-action@v4.2.0
+        with:
+          browser: chrome
+          record: false
+          build: npm run ci:build
+          start: npm run dev
+        env:
+          DATABASE_URL: ${{secrets.E2E_DATABASE_URL}}
+
+          MAPBOX_TOKEN: ${{secrets.E2E_MAPBOX_TOKEN}}
+
+          CLOUDINARY_CLOUD_NAME: ${{secrets.E2E_CLOUDINARY_CLOUD_NAME}}
+          CLOUDINARY_API_KEY: ${{secrets.E2E_CLOUDINARY_API_KEY}}
+          CLOUDINARY_API_SECRET: ${{secrets.E2E_CLOUDINARY_API_SECRET}}
+          CLOUDINARY_UPLOAD_PRESET: ${{secrets.E2E_CLOUDINARY_UPLOAD_PRESET}}
+
+          SESSION_SECRET: ${{secrets.E2E_SESSION_SECRET}}
+          MAGIC_LINK_SECRET: ${{secrets.E2E_MAGIC_LINK_SECRET}}
+
+          EMAIL_VERIFIER_TOKEN: ${{secrets.E2E_EMAIL_VERIFIER_TOKEN}}
+          MAILGUN_SENDING_KEY: ${{secrets.E2E_MAILGUN_SENDING_KEY}}
+
+          CONVERT_KIT_FORM: ${{secrets.E2E_CONVERT_KIT_FORM}}
+          CONVERT_KIT_API_KEY: ${{secrets.E2E_CONVERT_KIT_API_KEY}}
+
+          AWS_S3_BUCKET: ${{secrets.E2E_AWS_S3_BUCKET}}
+          AWS_REGION: ${{secrets.E2E_AWS_REGION}}
+          AWS_ACCESS_KEY_ID: ${{secrets.E2E_AWS_ACCESS_KEY_ID}}
+          AWS_SECRET_ACCESS_KEY: ${{secrets.E2E_AWS_SECRET_ACCESS_KEY}}
+
+      - uses: actions/upload-artifact@v2
+        if: failure()
+        with:
+          name: cypress-screenshots
+          path: cypress/screenshots
+
+      - uses: actions/upload-artifact@v2
+        if: always()
+        with:
+          name: cypress-videos
+          path: cypress/videos
