@@ -13,9 +13,8 @@ Address or Closes trello task #trello-url-for-task
 <!-- Please make sure you have addressed the following before opening a new Pull Request -->
 
 - [ ] Create any needed e2e tests :man_scientist:
-- [ ] Run lint commands and clean up any errors :rocket:
-  - `npm run lint` from root folder
-- [ ] Run test command and clean any errors :rocket:
-    - `npm run test:run` from root folder 
+- [ ] Create any needed database migrations and ensure no data is dropped (DELETE FROM..., DROP TABLE...) :man_scientist:
+- [ ] Check that lint executed correctly or clean up any errors :rocket:
+- [ ] Check that e2e tests executed correctly and clean any errors :rocket:
 - [ ] Assign PR to yourself and select reviewers
 - [ ] Add `Status: Work in progress` :label: *if applicable*
