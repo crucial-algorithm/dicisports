@@ -192,23 +192,23 @@ export default function SignUp() {
           searchParams.toString().length ? `?${searchParams}` : ''
         }`}
       >
-        <FormField label={t('Email')} error={errors?.email}>
+        <FormField label={t('Email')} error={errors?.email} dataCy="email">
           <TextField name="email" defaultValue={fields?.name} />
         </FormField>
-        <FormField label={t('Confirm Email')} error={errors?.confirmation}>
+        <FormField label={t('Confirm Email')} error={errors?.confirmation} dataCy="confirmation">
           <TextField name="confirmation" autoComplete="off" />
         </FormField>
-        <FormField label={t('Name')} error={errors?.name}>
+        <FormField label={t('Name')} error={errors?.name} dataCy="name">
           <TextField name="name" defaultValue={fields?.name} />
         </FormField>
-        <FormField label={t('Password')} error={errors?.password}>
+        <FormField label={t('Password')} error={errors?.password} dataCy="password">
           <TextField name="password" type="password" />
         </FormField>
         <ButtonGroup>
           <ButtonLink variant="secondary" to="/" className="hidden md:inline-flex">
             {t('Cancel')}
           </ButtonLink>
-          <Button>{t('Create Profile')}</Button>
+          <Button name="create">{t('Create Profile')}</Button>
         </ButtonGroup>
         {errors.submit && (
           <InputError className="mt-4" id="error-message">

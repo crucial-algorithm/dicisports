@@ -268,7 +268,9 @@ function MapDialog({
         <Button variant="secondary" onClick={handleClose}>
           {t('Cancel')}
         </Button>
-        <Button onClick={handleClose}>{t('Pick Location Button')}</Button>
+        <Button name="pick-location" onClick={handleClose}>
+          {t('Pick Location Button')}
+        </Button>
       </div>
     </Dialog>
   );

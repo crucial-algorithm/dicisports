@@ -32,9 +32,24 @@ async function seed() {
   await persist('groups', groups(), db.group);
   await persist('events', events(), db.event);
   await persist('documents', documents(), db.document);
+  await persist('sessions', sessions(), db.session);
 }
 
-seed().then();
+async function clear() {
+  await db.document.deleteMany();
+  await db.race.deleteMany();
+  await db.perk.deleteMany();
+  await db.event.deleteMany();
+  await db.groupSchedule.deleteMany();
+  await db.favoriteGroup.deleteMany();
+  await db.group.deleteMany();
+  await db.user.deleteMany();
+  await db.groupSpirit.deleteMany();
+  await db.groupType.deleteMany();
+  await db.sport.deleteMany();
+}
+
+clear().then(() => seed().then());
 
 function sports() {
   return [
@@ -156,68 +171,13 @@ function documents() {
   return [
     {
       id: 'iMJfFDJkQK3FWW8C5YW8',
+      path: 'seed/MqmdXHau8JAjpfbCKJAW.png',
       position: 1,
-      key: 'seed/MqmdXHau8JAjpfbCKJAW.png',
+      label: 'regulamento',
       eventId: 'bQmGXYkbhJetjk6mniMt',
       createdAt: new Date('2021-12-31T08:00:00Z'),
-      updatedAt: new Date('2021-12-31T08:00:00Z')
-    },
-    {
-      id: 'SbW72nZ5RbsXY6B9Ncts',
-      position: 2,
-      key: 'seed/LAJwAEY62EPjRjkKXSSu.png',
-      eventId: 'bQmGXYkbhJetjk6mniMt',
-      createdAt: new Date('2021-12-31T08:00:00Z'),
-      updatedAt: new Date('2021-12-31T08:00:00Z')
-    },
-    {
-      id: 'WPigAvEJZT9L66uuzp9a',
-      position: 3,
-      key: 'seed/hWLixbGygbkadiPdhDof.png',
-      eventId: 'bQmGXYkbhJetjk6mniMt',
-      createdAt: new Date('2021-12-31T08:00:00Z'),
-      updatedAt: new Date('2021-12-31T08:00:00Z')
-    },
-    {
-      id: 'NjENPYBRoBb6kmcBFS5d',
-      position: 4,
-      key: 'seed/sq7gTo6c68G4Nj9eadup.png',
-      eventId: 'bQmGXYkbhJetjk6mniMt',
-      createdAt: new Date('2021-12-31T08:00:00Z'),
-      updatedAt: new Date('2021-12-31T08:00:00Z')
-    },
-
-    {
-      id: 'whW47SRRxxGSyip3uLqW',
-      position: 1,
-      key: 'seed/MqmdXHau8JAjpfbCKJAW.png',
-      eventId: 'TgKZi8NQKNoJQGArd3zc',
-      createdAt: new Date('2021-12-31T08:00:00Z'),
-      updatedAt: new Date('2021-12-31T08:00:00Z')
-    },
-    {
-      id: 'B25oJq3xthr8cM8GKqiW',
-      position: 2,
-      key: 'seed/LAJwAEY62EPjRjkKXSSu.png',
-      eventId: 'TgKZi8NQKNoJQGArd3zc',
-      createdAt: new Date('2021-12-31T08:00:00Z'),
-      updatedAt: new Date('2021-12-31T08:00:00Z')
-    },
-    {
-      id: '29AotH3sCcYWJph6Ftrx',
-      position: 3,
-      key: 'seed/hWLixbGygbkadiPdhDof.png',
-      eventId: 'TgKZi8NQKNoJQGArd3zc',
-      createdAt: new Date('2021-12-31T08:00:00Z'),
-      updatedAt: new Date('2021-12-31T08:00:00Z')
-    },
-    {
-      id: 'wdXiF63vAwvB46r6R3MR',
-      position: 4,
-      key: 'seed/sq7gTo6c68G4Nj9eadup.png',
-      eventId: 'TgKZi8NQKNoJQGArd3zc',
-      createdAt: new Date('2021-12-31T08:00:00Z'),
-      updatedAt: new Date('2021-12-31T08:00:00Z')
+      updatedAt: new Date('2021-12-31T08:00:00Z'),
+      status: Status.auto
     }
   ];
 }
@@ -248,11 +208,38 @@ function users() {
     id: '3beca472138d6d234d3f',
     createdAt: new Date('2022-02-19 10:56:59.959'),
     updatedAt: new Date('2022-02-19 10:56:59.959'),
-    email: 'u@gmail.com',
-    name: 'Bike Brothers',
-    role: Role.MEMBER
+    email: 'admin@gmail.com',
+    name: 'Admin user',
+    password: '17e99f51fac24b10b371fdd7cfb67e7e05dbd10e02524a23fb55df2abb752d9c6b9e739fbcd93bf6c5b52c172027a56e0c9327b480e0278e483dcf5d76221988',
+    salt: '016323d021965061791b4a14afa918f1',
+    // @ts-ignore
+    role: Role.ADMIN
   });
+
+  users.push({
+    id: 'nTQ8idPqTY8PmhzbsN4u',
+    createdAt: new Date('2022-02-19 10:56:59.959'),
+    updatedAt: new Date('2022-02-19 10:56:59.959'),
+    email: 'regular@gmail.com',
+    name: 'Regular user',
+    password: '17e99f51fac24b10b371fdd7cfb67e7e05dbd10e02524a23fb55df2abb752d9c6b9e739fbcd93bf6c5b52c172027a56e0c9327b480e0278e483dcf5d76221988',
+    salt: '016323d021965061791b4a14afa918f1',
+    // @ts-ignore
+    role: Role.ADMIN
+  });
+
   return users;
+}
+
+function sessions() {
+  return [
+    {
+      id: 'c4e1b568-0e30-466d-8ff0-e10f212e3c5f',
+      userId: 'nTQ8idPqTY8PmhzbsN4u',
+      createdAt: new Date(),
+      expirationDate: new Date('2100-10-16 19:29:16.667')
+    }
+  ];
 }
 
 // Generated using the following SQL statement:
@@ -315,7 +302,7 @@ function groups() {
     createdAt: new Date('2021-06-01T08:00:00Z'),
     updatedAt: new Date('2021-06-01T08:00:00Z'),
     status: Status.published,
-    createdById: '3beca472138d6d234d3f'
+    createdById: 'nTQ8idPqTY8PmhzbsN4u'
   });
 
   groups.push({
@@ -338,7 +325,7 @@ function groups() {
     createdAt: new Date('2021-06-01T08:00:00Z'),
     updatedAt: new Date('2021-06-01T08:00:00Z'),
     status: Status.published,
-    createdById: '3beca472138d6d234d3f'
+    createdById: 'nTQ8idPqTY8PmhzbsN4u'
   });
   return groups;
 }
