@@ -266,7 +266,7 @@ export default function EventDisplayRoute() {
       </div>
 
       <H3 id="races">{t('Races')}</H3>
-      <div className="flex flex-col mt-2 scroll-mx-2 md:flex-row md:flex-nowrap md:overflow-x-auto pb-10 hide-scroll-bar">
+      <div className="flex flex-col mt-2 scroll-mx-2 items-center md:flex-row md:flex-nowrap md:overflow-x-auto pb-10 hide-scroll-bar">
         {races
           .sort((a: Race, b: Race) => a.displayOrder - b.displayOrder)
           .map((race: Race) => (
