@@ -266,7 +266,7 @@ export default function EventDisplayRoute() {
       </div>
 
       <H3 id="races">{t('Races')}</H3>
-      <div className="flex flex-col mt-2 scroll-mx-2 items-center md:flex-row md:flex-nowrap md:overflow-x-auto pb-10 hide-scroll-bar">
+      <div className="flex flex-col mt-2 scroll-mx-2 items-center md:items-start md:flex-row md:flex-nowrap md:overflow-x-auto pb-10 hide-scroll-bar">
         {races
           .sort((a: Race, b: Race) => a.displayOrder - b.displayOrder)
           .map((race: Race) => (
@@ -331,7 +331,7 @@ function DisplayRace(props: { race: Race }) {
 
   return (
     <div className="flex flex-col">
-      <div className="gap-y-2 mb-4 mr-2 md:mr-4 text-center items-center border border-white rounded-2xl outline-offset-1 w-[340px] md:overflow-hidden">
+      <div className="gap-y-2 mb-4 mr-2 md:mr-4 text-center items-center border border-black dark:border-white rounded-2xl outline-offset-1 w-[340px] md:overflow-hidden">
         <div className="mt-4">
           <H4>{race.name}</H4>
         </div>
@@ -402,15 +402,15 @@ function DisplayDocument(props: { document: Document }) {
   const fileExtension = path.split('.');
 
   return (
-    <div className="flex items-center border border-white rounded-2xl h-16 p-4 mr-2 mb-2">
-      <div className="text-white font-medium border-2 border-secondary bg-primary rounded-full p-2 mr-2">
+    <div className="flex items-center border border-black dark:border-white rounded-2xl h-16 p-4 mr-2 mb-2">
+      <div className="dark:text-white font-medium border-2 border-secondary bg-primary rounded-full p-2 mr-2">
         {fileExtension[fileExtension.length - 1].toUpperCase()}
       </div>
       <a
         href={`/organizer/document/${document.id}`}
         target="_blank"
         rel="noreferrer"
-        className="text-white"
+        className="text-black dark:text-white"
       >
         {document.label}
       </a>
