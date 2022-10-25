@@ -302,7 +302,7 @@ function groups() {
     createdAt: new Date('2021-06-01T08:00:00Z'),
     updatedAt: new Date('2021-06-01T08:00:00Z'),
     status: Status.published,
-    createdById: '3beca472138d6d234d3f'
+    createdById: 'nTQ8idPqTY8PmhzbsN4u'
   });
 
   groups.push({
@@ -325,7 +325,7 @@ function groups() {
     createdAt: new Date('2021-06-01T08:00:00Z'),
     updatedAt: new Date('2021-06-01T08:00:00Z'),
     status: Status.published,
-    createdById: '3beca472138d6d234d3f'
+    createdById: 'nTQ8idPqTY8PmhzbsN4u'
   });
   return groups;
 }

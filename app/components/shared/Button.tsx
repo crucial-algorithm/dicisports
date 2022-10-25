@@ -56,12 +56,18 @@ const Button: React.FC<Props> = ({
   value,
   id
 }) => {
-  if (variant === 'adornment')
-    {return (
-      <AdornmentButton name={name} className={className} onClick={onClick} type={type}>
+  if (variant === 'adornment') {
+    return (
+      <AdornmentButton
+        name={name}
+        className={className}
+        onClick={onClick}
+        type={type}
+      >
         {children}
       </AdornmentButton>
-    );}
+    );
+  }
   return (
     <button
       type={type}

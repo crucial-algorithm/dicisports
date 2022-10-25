@@ -28,6 +28,11 @@ type LoaderData = {
 export const meta: MetaFunction = ({ data, params, location, parentsData }) => {
   const root: RootLoaderData = parentsData.root as RootLoaderData;
   const { group } = data as { group: Group };
+
+  if (!group) {
+    return {};
+  }
+
   const description = group.description?.slice(0, 160);
   const url = `${root.requestInfo.origin}${root.requestInfo.path}${root.requestInfo.path === '/' ? location.search : ''}`;
   const name = group.sport ? I18nText({ text: group.sport.name }) : group.name;
@@ -66,6 +71,15 @@ export default function GroupDisplayRoute() {
       height: 400
     }
   };
+
+  if (!group) {
+    return (
+      <Main>
+        <p data-cy="group-not-found">{t('Group not found')}</p>
+        <a href="/">{t('Group not found action')}</a>
+      </Main>
+    );
+  }
 
   function translateDay(day: number) {
     return tc(
@@ -126,7 +140,7 @@ export default function GroupDisplayRoute() {
 
       <div className="max-w-full text-lg text-secondary mt-2">
         {t('Description')}
-        <div>{group.description}</div>
+        <div data-cy="description">{group.description}</div>
       </div>
 
       <Paragraph className="mt-8">

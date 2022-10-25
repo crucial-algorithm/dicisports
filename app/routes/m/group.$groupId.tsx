@@ -606,13 +606,14 @@ export default function GroupRoute() {
               </InputError>
             )}
           </UploadForm>
-          {isUpdate ? (
+          {isUpdate && (
             <Form
               method="post"
               className="mt-24 border-t border-gray-300 dark:border-gray-300 pt-6"
             >
               <input type="hidden" name="actionId" value={actionIds.delete} />
               <Button
+                name="delete"
                 variant="danger"
                 type="button"
                 onClick={handleShowDeleteWarning}
@@ -620,7 +621,7 @@ export default function GroupRoute() {
                 {t('Delete Group')}
               </Button>
             </Form>
-          ) : null}
+          )}
         </div>
       </div>
 
@@ -635,6 +636,7 @@ export default function GroupRoute() {
         onDismiss={handleDiscardDelete}
         isOpen={deleteModalOpen}
         aria-label="Delete your account"
+        data-cy="delete-dialog"
         className="w-11/12 dark:bg-gray-900 border-2 border-black dark:border-white rounded-lg lg:px-24 lg:py-14 lg:max-w-screen-lg"
       >
         <H3>{t('Delete Group X', { name: group?.name })}</H3>
@@ -651,7 +653,7 @@ export default function GroupRoute() {
             <Button type="button" onClick={handleDiscardDelete}>
               {t("No, I don't want to delete")}
             </Button>
-            <Button variant="danger" size="medium" type="submit">
+            <Button variant="danger" size="medium" type="submit" name="confirm-delete">
               {t('Delete Group')}
             </Button>
           </div>

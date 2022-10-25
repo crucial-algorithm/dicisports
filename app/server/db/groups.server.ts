@@ -85,7 +85,7 @@ async function findGroupBySlug(slug: string): Promise<Group | null> {
     }
   });
 
-  if (!group) {
+  if (!group || group.status === Status.deleted) {
     return null;
   }
   return dbGroupToGroup(group);

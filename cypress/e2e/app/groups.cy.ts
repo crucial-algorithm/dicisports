@@ -88,10 +88,34 @@ describe('Groups', () => {
     });
 
     it('should update group', () => {
-      // TODO
+      const description = 'Grupo organizado pela bikebrothers';
+
+      cy.visit('/m/group/FkoxmH5db6RXqBpExion')
+        .get('textarea')
+        .type(description)
+        .intercept('GET', '/m/groups?message=*').as('createGroup')
+        .get('button[name=save-group]').click()
+        .wait('@createGroup')
+        .visit('/group/bike-brothers-domingueira')
+        .get('[data-cy=description]')
+        .contains(description);
     });
-    it('should delete group', () => {
-      // TODO
+    it.only('should delete group', () => {
+      // eslint-disable-next-line cypress/no-unnecessary-waiting
+      cy.visit('/m/group/FkoxmH5db6RXqBpExion')
+        // without wait, click on delete doesn't work consistently (trying 500)
+        .wait(500)
+        .get('button[name=delete]').click()
+
+        .get('[data-cy=delete-dialog]')
+
+        .intercept('GET', '/m/groups?message=*').as('deleteGroup')
+        .get('button[name=confirm-delete]').click()
+
+        .wait('@deleteGroup')
+
+        .visit('/group/bike-brothers-domingueira')
+        .get('p[data-cy=group-not-found]');
     });
 
   });
