@@ -1,11 +1,13 @@
 declare global {
   namespace Cypress {
     interface Chainable {
-      login(): Chainable<void>
-      logout(): Chainable<void>
-      pickOptionFromSelect(name: string, position: number): Chainable<void>
-      pickLocationInMap(triggerOpenMapButtonName: string): Chainable<void>
-      wasImageLoaded(selector: string): Chainable<void>
+      login(): Chainable<void>;
+
+      pickOptionFromSelect(name: string, position: number): Chainable<void>;
+
+      pickLocationInMap(triggerOpenMapButtonName: string): Chainable<void>;
+
+      wasImageLoaded(selector: string): Chainable<void>;
     }
   }
 }
@@ -15,10 +17,6 @@ function login() {
     'ds_root_session',
     'eyJfX3Nlc3Npb25faWRfXyI6ImM0ZTFiNTY4LTBlMzAtNDY2ZC04ZmYwLWUxMGYyMTJlM2M1ZiJ9.JjNS%2B5DEc7mf3OkCnGLesD5pPb0NFMVYMU0imAzvxKU'
   );
-}
-
-function logout() {
-  cy.clearCookie('ds_root_session');
 }
 
 function pickOptionFromSelect(name: string, position: number) {
@@ -64,12 +62,9 @@ function wasImageLoaded(selector: string) {
     .should('be.greaterThan', 0);
 }
 
-
 Cypress.Commands.add('login', login);
-Cypress.Commands.add('logout', logout);
 Cypress.Commands.add('pickOptionFromSelect', pickOptionFromSelect);
 Cypress.Commands.add('pickLocationInMap', pickLocationInMap);
 Cypress.Commands.add('wasImageLoaded', wasImageLoaded);
-
 
 export {};

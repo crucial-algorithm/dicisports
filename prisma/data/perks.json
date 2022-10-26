@@ -62,5 +62,21 @@
     "isEnabled": false,
     "displayOrder": 8,
     "eventId": "MY4bvgxDbMtGv8rbYe5d"
+  },
+  {
+    "id": "9",
+    "name": "Material para teste",
+    "isDefault": false,
+    "isEnabled": true,
+    "displayOrder": 9,
+    "eventId": "MY4bvgxDbMtGv8rbYe5d"
+  },
+  {
+    "id": "10",
+    "name": "Lanche de oferta",
+    "isDefault": false,
+    "isEnabled": false,
+    "displayOrder": 10,
+    "eventId": "MY4bvgxDbMtGv8rbYe5d"
   }
 ]

@@ -151,7 +151,8 @@ function events() {
       status: Status.draft,
       createdAt: new Date('2021-12-31T08:00:00Z'),
       updatedAt: new Date('2021-12-31T08:00:00Z'),
-      createdById: '3beca472138d6d234d3f'
+      slug: 'trail-do-zezere',
+      createdById: 'nTQ8idPqTY8PmhzbsN4u'
     },
     {
       id: 'TgKZi8NQKNoJQGArd3zc',
@@ -167,7 +168,7 @@ function events() {
       status: Status.published,
       createdAt: new Date('2021-12-31T08:00:00Z'),
       updatedAt: new Date('2021-12-31T08:00:00Z'),
-      createdById: '3beca472138d6d234d3f'
+      createdById: 'nTQ8idPqTY8PmhzbsN4u'
     },
     {
       id: 'MY4bvgxDbMtGv8rbYe5d',
@@ -185,7 +186,7 @@ function events() {
       eventDescription:
         'O Peso da Régua será ponto de partida e de reencontro, depois de serem atravessados os concelhos de Lamego, Armamar, ' +
         'Tabuaço, Penedono, Foz Coa e São João da Pesqueira.',
-      createdById: '3beca472138d6d234d3f',
+      createdById: 'nTQ8idPqTY8PmhzbsN4u',
       image1: 'users/NtGwBBJeHdR6X6XHZPJ3',
       slug: 'love-tiles-douro-granfondo-2023'
     }
@@ -196,9 +197,9 @@ function documents() {
   return [
     {
       id: 'MY4bvgxDbMtGv8rbYe5d',
-      path: 'seed/MqmdXHau8JAjpfbCKJAW.png',
+      path: 'uvp7YxqzgH7W27y982bw/yRDcarz2jYYAEydMdF6i.pdf',
       position: 1,
-      label: 'regulamento',
+      label: 'Regulamento',
       eventId: 'MY4bvgxDbMtGv8rbYe5d',
       createdAt: new Date('2021-12-31T08:00:00Z'),
       updatedAt: new Date('2021-12-31T08:00:00Z'),
@@ -211,12 +212,38 @@ function races() {
   return [
     {
       id: 'xaXaCzs2t7D8DpRNnffM',
-      name: '5Km run',
-      distance: 5,
+      name: 'Granfondo',
+      distance: 154,
       createdAt: new Date(),
       updatedAt: new Date(),
       startTime: 900,
-      elevationGain: 10,
+      elevationGain: 2274,
+      elevationLoss: 576,
+      price: 25,
+      track: 'TgKZi8NQKNoJQGArd3zc/QZRbNnAgu8dKExesBsSY.gpx',
+      raceDescription: 'O Granfondo tem 154km de distância e irá testar as vossas capacidades.' +
+          'Estão prontos para o desafio ?',
+      eventId: 'MY4bvgxDbMtGv8rbYe5d'
+    },
+    {
+      id: 'AhowRdNWCBQWSuivSt7s',
+      name: 'Mediofondo',
+      distance: 102,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      startTime: 830,
+      elevationGain: 1804,
+      price: 15,
+      eventId: 'MY4bvgxDbMtGv8rbYe5d'
+    },
+    {
+      id: 'AhowRdNWCBQWSuivSt7h',
+      name: 'Minifondo',
+      distance: 57,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      startTime: 830,
+      elevationGain: 800,
       price: 10,
       eventId: 'MY4bvgxDbMtGv8rbYe5d'
     }

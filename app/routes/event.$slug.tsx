@@ -22,10 +22,9 @@ import {
 } from '~/server/db/events.server';
 
 import Main from '~/components/shared/Main';
-import { H2, H3, H4, H5, H6 } from '~/components/shared/typography';
+import { H2, H3, H4, H5, H6, Paragraph } from '~/components/shared/typography';
 import Button, { ButtonLink } from '~/components/shared/Button';
 import { getUser } from '~/server/auth/session.server';
-import { NotFound } from '~/server/utils/misc';
 import i18n from '~/server/i18n.server';
 import { Notification } from '~/components/shared/NotificationMessage';
 import DisplayImg from '~/components/shared/DisplayImg';
@@ -62,11 +61,11 @@ export const loader: LoaderFunction = async ({ params, request }) => {
 
   const event = await findEventBySlug(slug);
 
-  if (!event) {
-    throw NotFound(t('Event not found'));
-  }
+  // if (!event) {
+  //   return redirect(`/?message=${t('Event not found')}`);
+  // }
 
-  if (user) {
+  if (user && event) {
     const userFavoriteEvents = await findUserFavoriteEvents(user?.id);
 
     userFavoriteEvents.map((a) => {
@@ -78,7 +77,7 @@ export const loader: LoaderFunction = async ({ params, request }) => {
     });
   }
 
-  const eventId = event.id as string;
+  const eventId = event?.id as string;
   const races = await findEventRaces(eventId);
 
   if (races) {
@@ -102,7 +101,7 @@ export default function EventDisplayRoute() {
   const favorite = useFetcher();
   const { event, isUserFavorite, minPrice, races, perks } =
     useLoaderData<LoaderData>();
-  const { t } = useTranslation('home');
+  const { t } = useTranslation('organizer');
 
   const favoriteAddedMessage = t('Favorite Added');
   const favoriteRemovedMessage = t('Favorite Removed');
@@ -112,15 +111,6 @@ export default function EventDisplayRoute() {
   const [address, setAddress] = useState<string>('');
   let showFavoriteAddedNotification: any = null;
   let showCopiedToClipboardNotification: any = null;
-
-  const images: string[] = [
-    event.image1,
-    event.image2,
-    event.image3,
-    event.image4,
-    event.image5
-  ].filter(Boolean) as string[];
-  const [lat, lng] = event.location.split(',');
 
   function handlerSetShowNotificationFunction(callback: () => void) {
     showFavoriteAddedNotification = callback;
@@ -158,14 +148,34 @@ export default function EventDisplayRoute() {
     favoriteRemovedMessage
   ]);
 
+  if (!event) {
+    return (
+      <Main>
+        <Paragraph data-cy="event-not-found">{t('Event not found')}</Paragraph>
+        <a href="/">{t('Event not found action')}</a>
+      </Main>
+    );
+  }
+
   if (event.status !== Status.published) {
     return (
       <Main>
-        <p data-cy="event-not-found">{t('Event not public')}</p>
+        <p data-cy="event-not-public" className="dark:text-blueGray-500">
+          {t('Event not public')}
+        </p>
         <a href="/">{t('Event not public action')}</a>
       </Main>
     );
   }
+
+  const images: string[] = [
+    event.image1,
+    event.image2,
+    event.image3,
+    event.image4,
+    event.image5
+  ].filter(Boolean) as string[];
+  const [lat, lng] = event.location.split(',');
 
   return (
     <Main>
@@ -193,7 +203,9 @@ export default function EventDisplayRoute() {
         <div className="flex flex-auto flex-col mt-4 ml-4">
           <div className="flex flex-row justify-end mb-2">
             <H2 className="text-sp-light-blue-900 mb-8 w-[calc(100%-(40px+40px+8px))]">
-              <b data-cy="name" className="break-words w-full">{event.name}</b>
+              <b data-cy="name" className="break-words w-full">
+                {event.name}
+              </b>
             </H2>
             <favorite.Form
               method="post"
@@ -223,7 +235,11 @@ export default function EventDisplayRoute() {
               text={`${address}/group/${event.slug}`}
               onCopy={handlerClickToCopy}
             >
-              <Button size="tiny" className="w-[40px] h-[40px] ml-2" name="share">
+              <Button
+                size="tiny"
+                className="w-[40px] h-[40px] ml-2"
+                name="share"
+              >
                 <ShareIcon className="h-6 w-6 m-0 inline-block" />
               </Button>
             </CopyToClipboard>
@@ -246,31 +262,47 @@ export default function EventDisplayRoute() {
               href={`https://www.google.com/maps/search/?api=1&query=${lat}%2C${lng}`}
               target="_blank"
               rel="noreferrer"
+              data-cy="location-link"
             >
-              <H6 className="ml-4 mr-2 md:ml-2" data-cy="location">{event.address}</H6>
+              <H6 className="ml-4 mr-2 md:ml-2" data-cy="location">
+                {event.address}
+              </H6>
             </a>
           </div>
           <div className="flex flex-row justify-between items-center mt-16">
             <div className="flex flex-col justify-start">
-              <H6 data-cy="price-from" className="md:ml-2">{t('From')}</H6>
-              <H2 data-cy="price" className="text-sp-light-blue-900 w-full md:ml-2">
+              <H6 data-cy="price-from" className="md:ml-2">
+                {t('From')}
+              </H6>
+              <H2
+                data-cy="price"
+                className="text-sp-light-blue-900 w-full md:ml-2"
+              >
                 <b className="break-words">{`${minPrice}€`}</b>
               </H2>
             </div>
-            <ButtonLink data-cy="races-button" to="#races">{t('Races Anchor')}</ButtonLink>
+            <ButtonLink data-cy="races-button" to="#races">
+              {t('Races Anchor')}
+            </ButtonLink>
           </div>
         </div>
       </div>
 
       <div className="my-8">
         <H3 data-cy="about">{t('About')}</H3>
-        <div className="dark:text-blueGray-500 text-base font-medium mr-2 mt-2 whitespace-pre-line" data-cy="description">
+        <div
+          className="dark:text-blueGray-500 text-base font-medium mr-2 mt-2 whitespace-pre-line"
+          data-cy="description"
+        >
           {event.eventDescription}
         </div>
       </div>
 
-      <H3 id="races" data-cy="races">{t('Races')}</H3>
-      <div data-cy="races-list" className="flex flex-col mt-2 scroll-mx-2 items-center md:items-start md:flex-row md:flex-nowrap md:overflow-x-auto pb-10 hide-scroll-bar">
+      <H3 id="races">{t('Races')}</H3>
+      <div
+        data-cy="races-list"
+        className="flex flex-col mt-2 scroll-mx-2 items-center md:items-start md:flex-row md:flex-nowrap md:overflow-x-auto pb-10 hide-scroll-bar"
+      >
         {races
           .sort((a: Race, b: Race) => a.displayOrder - b.displayOrder)
           .map((race: Race) => (
@@ -284,17 +316,18 @@ export default function EventDisplayRoute() {
       </div>
 
       <div className="my-8">
-        <H3 data-cy="perks">{t('Perks')}</H3>
-        <div data-cy="perks-list" className="grid grid-rows-8 md:grid-rows-6 md:grid-flow-col gap-y-4 md:gap-y-2 my-2">
+        <H3>{t('Perks')}</H3>
+        <div className="grid grid-rows-8 md:grid-rows-6 md:grid-flow-col gap-y-4 md:gap-y-2 my-2">
           {perks
             .sort((a: Perk, b: Perk) => a.displayOrder - b.displayOrder)
-            .map((p: any) => (
-              <div key={p.id} className="flex items-center mb-1">
+            .map((p: any, idx: number) => (
+              <div key={p.id} className="flex items-center mb-1" data-cy="perk">
                 <input
                   disabled
                   type="checkbox"
                   defaultChecked={p.isEnabled}
                   className="w-4 h-4 text-indigo-500 bg-gray-100 rounded border-gray-300 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600"
+                  name={`perk-checkbox${idx}`}
                 />
                 <label
                   htmlFor={p.id}
@@ -310,14 +343,20 @@ export default function EventDisplayRoute() {
       {event.directions && (
         <div className="my-8">
           <H3 data-cy="directions-title">{t('How to get there')}</H3>
-          <div data-cy="directions" className="dark:text-blueGray-500 text-base font-medium mr-2 mt-2 whitespace-pre-line">
+          <div
+            data-cy="directions"
+            className="dark:text-blueGray-500 text-base font-medium mr-2 mt-2 whitespace-pre-line"
+          >
             {event.directions}
           </div>
         </div>
       )}
 
       <H3 data-cy="documents">{t('Documents')}</H3>
-      <div data-cy="documents-list" className="flex flex-row flex-wrap mb-8 mt-2">
+      <div
+        data-cy="documents-list"
+        className="flex flex-row flex-wrap mb-8 mt-2"
+      >
         {event.documents
           .sort((a: Document, b: Document) => a.position - b.position)
           .map((document: Document) => (
@@ -339,43 +378,63 @@ function DisplayRace(props: { race: Race }) {
   }
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col" data-cy="race">
       <div className="gap-y-2 mb-4 mr-2 md:mr-4 text-center items-center border border-black dark:border-white rounded-2xl outline-offset-1 w-[340px] md:overflow-hidden">
         <div className="mt-4">
-          <H4>{race.name}</H4>
+          <H4 data-cy={`race-name${race.id}`}>{race.name}</H4>
         </div>
         <div className="mt-4">
           <H4>{t('Race Distance')}</H4>
-          <H5 className="dark:text-blueGray-500">{`${race.distance} km`}</H5>
+          <H5
+            className="dark:text-blueGray-500"
+            data-cy={`race-distance${race.id}`}
+          >{`${race.distance} km`}</H5>
         </div>
         <div className="mt-4">
           <H4>{t('Race Start Time')}</H4>
-          <H5 className="dark:text-blueGray-500">{raceTime}</H5>
+          <H5
+            className="dark:text-blueGray-500"
+            data-cy={`race-time${race.id}`}
+          >
+            {raceTime}
+          </H5>
         </div>
         <div className={clsx('mt-4', expanded ? 'mb-0' : 'mb-2')}>
           <H4>{t('Race Price')}</H4>
-          <H5 className="dark:text-blueGray-500">{`€${race.price}`}</H5>
+          <H5
+            className="dark:text-blueGray-500"
+            data-cy={`race-price${race.id}`}
+          >{`€${race.price}`}</H5>
         </div>
         {expanded && (
           <>
             {race.raceDescription && (
               <div className="mt-4">
                 <H4>{t('Description')}</H4>
-                <div className="dark:text-blueGray-500 text-base font-medium mr-2 mt-2 whitespace-pre-line px-4">
+                <div
+                  className="dark:text-blueGray-500 text-base font-medium mr-2 mt-2 whitespace-pre-line px-4"
+                  data-cy={`race-description${race.id}`}
+                >
                   {race.raceDescription}
                 </div>
               </div>
             )}
             <div className="mt-4">
               <H4>{t('Elevation Gain')}</H4>
-              <div className="dark:text-blueGray-500 text-base font-medium mr-2 mt-2">
+              <div
+                className="dark:text-blueGray-500 text-base font-medium mr-2 mt-2"
+                data-cy={`elevation-gain${race.id}`}
+              >
                 {`${race.elevationGain} m`}
               </div>
             </div>
             {race.elevationLoss && (
               <div className="mt-4">
                 <H4>{t('Elevation Loss')}</H4>
-                <div className="dark:text-blueGray-500 text-base font-medium mr-2 mt-2">
+                <div
+                  className="dark:text-blueGray-500 text-base font-medium mr-2 mt-2"
+                  data-cy={`elevation-loss${race.id}`}
+                >
                   {`${race.elevationLoss} m`}
                 </div>
               </div>
@@ -385,6 +444,7 @@ function DisplayRace(props: { race: Race }) {
                 to={`/organizer/race/${race.id}`}
                 target="_blank"
                 rel="noreferrer"
+                data-cy={`gpx${race.id}`}
                 download
               >
                 <H4 className="my-4 dark:text-blueGray-500">{t('GPX')}</H4>
@@ -393,12 +453,16 @@ function DisplayRace(props: { race: Race }) {
           </>
         )}
         <div className="dark:text-blueGray-500 text-sm font-medium mt-4">
-          <label role="button" onClick={handleSeeMore}>
+          <label
+            role="button"
+            onClick={handleSeeMore}
+            data-cy={`see-more${race.id}`}
+          >
             {expanded ? t('See Less') : t('See More')}
           </label>
         </div>
         <div className="my-4">
-          <Button>{t('Book')}</Button>
+          <Button name="book">{t('Book')}</Button>
         </div>
       </div>
     </div>
@@ -412,7 +476,10 @@ function DisplayDocument(props: { document: Document }) {
 
   return (
     <div className="flex items-center border border-black dark:border-white rounded-2xl h-16 p-4 mr-2 mb-2">
-      <div className="dark:text-white font-medium border-2 border-secondary bg-primary rounded-full p-2 mr-2">
+      <div
+        className="dark:text-white font-medium border-2 border-secondary bg-primary rounded-full p-2 mr-2"
+        data-cy="document-extension"
+      >
         {fileExtension[fileExtension.length - 1].toUpperCase()}
       </div>
       <a
@@ -420,6 +487,7 @@ function DisplayDocument(props: { document: Document }) {
         target="_blank"
         rel="noreferrer"
         className="text-black dark:text-white"
+        data-cy="document-label"
       >
         {document.label}
       </a>
