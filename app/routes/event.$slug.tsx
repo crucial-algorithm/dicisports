@@ -51,7 +51,6 @@ const actions = {
 export const loader: LoaderFunction = async ({ params, request }) => {
   const user = await getUser(request);
   const slug = params.slug as string;
-  const t = await i18n.getFixedT(request, 'create-event-form');
   let isUserFavorite = false;
   let minPrice = 0;
 
@@ -60,10 +59,6 @@ export const loader: LoaderFunction = async ({ params, request }) => {
   }
 
   const event = await findEventBySlug(slug);
-
-  // if (!event) {
-  //   return redirect(`/?message=${t('Event not found')}`);
-  // }
 
   if (user && event) {
     const userFavoriteEvents = await findUserFavoriteEvents(user?.id);
