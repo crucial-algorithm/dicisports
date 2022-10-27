@@ -25,7 +25,6 @@ import Main from '~/components/shared/Main';
 import { H2, H3, H4, H5, H6, Paragraph } from '~/components/shared/typography';
 import Button, { ButtonLink } from '~/components/shared/Button';
 import { getUser } from '~/server/auth/session.server';
-import i18n from '~/server/i18n.server';
 import { Notification } from '~/components/shared/NotificationMessage';
 import DisplayImg from '~/components/shared/DisplayImg';
 import type { Document, Event, Perk, Race } from '~/types';
@@ -102,6 +101,7 @@ export default function EventDisplayRoute() {
   const favoriteRemovedMessage = t('Favorite Removed');
   const copiedToClipMessage = t('Copied to Clipboard');
 
+  const [isFavorite, setIsFavorite] = useState<boolean>(isUserFavorite);
   const [message, setMessage] = useState<string>(favoriteAddedMessage);
   const [address, setAddress] = useState<string>('');
   let showFavoriteAddedNotification: any = null;
@@ -130,6 +130,7 @@ export default function EventDisplayRoute() {
           ? favoriteAddedMessage
           : favoriteRemovedMessage
       );
+      setIsFavorite(favorite.data.action === actions.add);
       showFavoriteAddedNotification();
     }
 
@@ -206,7 +207,7 @@ export default function EventDisplayRoute() {
               method="post"
               action={`/organizer/event/fav/${event.id}`}
             >
-              {isUserFavorite ? (
+              {isFavorite ? (
                 <Button
                   size="tiny"
                   name="action"
@@ -266,7 +267,7 @@ export default function EventDisplayRoute() {
           </div>
           <div className="flex flex-row justify-between items-center mt-16">
             <div className="flex flex-col justify-start">
-              <H6 data-cy="price-from" className="md:ml-2">
+              <H6 className="md:ml-2">
                 {t('From')}
               </H6>
               <H2
@@ -276,7 +277,7 @@ export default function EventDisplayRoute() {
                 <b className="break-words">{`${minPrice}€`}</b>
               </H2>
             </div>
-            <ButtonLink data-cy="races-button" to="#races">
+            <ButtonLink to="#races">
               {t('Races Anchor')}
             </ButtonLink>
           </div>
@@ -284,7 +285,7 @@ export default function EventDisplayRoute() {
       </div>
 
       <div className="my-8">
-        <H3 data-cy="about">{t('About')}</H3>
+        <H3>{t('About')}</H3>
         <div
           className="dark:text-blueGray-500 text-base font-medium mr-2 mt-2 whitespace-pre-line"
           data-cy="description"
@@ -293,7 +294,7 @@ export default function EventDisplayRoute() {
         </div>
       </div>
 
-      <H3 id="races">{t('Races')}</H3>
+      <H3>{t('Races')}</H3>
       <div
         data-cy="races-list"
         className="flex flex-col mt-2 scroll-mx-2 items-center md:items-start md:flex-row md:flex-nowrap md:overflow-x-auto pb-10 hide-scroll-bar"
@@ -337,7 +338,7 @@ export default function EventDisplayRoute() {
 
       {event.directions && (
         <div className="my-8">
-          <H3 data-cy="directions-title">{t('How to get there')}</H3>
+          <H3>{t('How to get there')}</H3>
           <div
             data-cy="directions"
             className="dark:text-blueGray-500 text-base font-medium mr-2 mt-2 whitespace-pre-line"
@@ -347,7 +348,7 @@ export default function EventDisplayRoute() {
         </div>
       )}
 
-      <H3 data-cy="documents">{t('Documents')}</H3>
+      <H3>{t('Documents')}</H3>
       <div
         data-cy="documents-list"
         className="flex flex-row flex-wrap mb-8 mt-2"
@@ -364,7 +365,7 @@ export default function EventDisplayRoute() {
 
 function DisplayRace(props: { race: Race }) {
   const { race } = props;
-  const { t } = useTranslation('home');
+  const { t } = useTranslation('organizer');
   const raceTime = displayTimeOfDay(race.startTime);
   const [expanded, setExpanded] = useState<boolean>(false);
 
