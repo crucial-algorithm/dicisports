@@ -22,8 +22,6 @@ describe('Groups', () => {
     it('should remove group from favorites', () => {
       // TODO
     });
-
-
   });
 
   context('Security', () => {
@@ -100,12 +98,13 @@ describe('Groups', () => {
         .get('[data-cy=description]')
         .contains(description);
     });
-    it.only('should delete group', () => {
+
+    it('should delete group', () => {
       // eslint-disable-next-line cypress/no-unnecessary-waiting
       cy.visit('/m/group/FkoxmH5db6RXqBpExion')
-        // without wait, click on delete doesn't work consistently (trying 500)
-        .wait(500)
-        .get('button[name=delete]').click()
+        .waitForHTMLHydration()
+        .get('button[name=delete]')
+        .click()
 
         .get('[data-cy=delete-dialog]')
 
@@ -117,7 +116,6 @@ describe('Groups', () => {
         .visit('/group/bike-brothers-domingueira')
         .get('p[data-cy=group-not-found]');
     });
-
   });
 });
 

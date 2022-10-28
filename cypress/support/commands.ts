@@ -1,10 +1,15 @@
 declare global {
   namespace Cypress {
     interface Chainable {
-      login(): Chainable<void>
-      pickOptionFromSelect(name: string, position: number): Chainable<void>
-      pickLocationInMap(triggerOpenMapButtonName: string): Chainable<void>
-      wasImageLoaded(selector: string): Chainable<void>
+      login(): Chainable<void>;
+
+      pickOptionFromSelect(name: string, position: number): Chainable<void>;
+
+      pickLocationInMap(triggerOpenMapButtonName: string): Chainable<void>;
+
+      wasImageLoaded(selector: string): Chainable<void>;
+
+      waitForHTMLHydration(): Chainable<void>;
     }
   }
 }
@@ -59,11 +64,29 @@ function wasImageLoaded(selector: string) {
     .should('be.greaterThan', 0);
 }
 
+function waitForHTMLHydration() {
+  cy.window().then((win) => {
+    return new Promise<void>((resolve, reject) => {
+      const id = setInterval(() => {
+        const resource = win.performance
+          .getEntriesByType('resource')
+          .find((rs) => /(.*)\/entry.client-(.*)\.js/.test(rs.name));
+
+        if (!resource) {
+          return;
+        }
+
+        clearInterval(id);
+        resolve();
+      }, 10);
+    });
+  });
+}
 
 Cypress.Commands.add('login', login);
 Cypress.Commands.add('pickOptionFromSelect', pickOptionFromSelect);
 Cypress.Commands.add('pickLocationInMap', pickLocationInMap);
 Cypress.Commands.add('wasImageLoaded', wasImageLoaded);
-
+Cypress.Commands.add('waitForHTMLHydration', waitForHTMLHydration);
 
 export {};
