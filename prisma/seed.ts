@@ -195,7 +195,7 @@ function documents() {
 //
 //
 function users() {
-  const users = usersSeed.map((u) => {
+  return usersSeed.map((u) => {
     return {
       ...u,
       createdAt: new Date(u.createdAt),
@@ -203,32 +203,6 @@ function users() {
       role: Role.MEMBER
     };
   });
-
-  users.push({
-    id: '3beca472138d6d234d3f',
-    createdAt: new Date('2022-02-19 10:56:59.959'),
-    updatedAt: new Date('2022-02-19 10:56:59.959'),
-    email: 'admin@gmail.com',
-    name: 'Admin user',
-    password: '17e99f51fac24b10b371fdd7cfb67e7e05dbd10e02524a23fb55df2abb752d9c6b9e739fbcd93bf6c5b52c172027a56e0c9327b480e0278e483dcf5d76221988',
-    salt: '016323d021965061791b4a14afa918f1',
-    // @ts-ignore
-    role: Role.ADMIN
-  });
-
-  users.push({
-    id: 'nTQ8idPqTY8PmhzbsN4u',
-    createdAt: new Date('2022-02-19 10:56:59.959'),
-    updatedAt: new Date('2022-02-19 10:56:59.959'),
-    email: 'regular@gmail.com',
-    name: 'Regular user',
-    password: '17e99f51fac24b10b371fdd7cfb67e7e05dbd10e02524a23fb55df2abb752d9c6b9e739fbcd93bf6c5b52c172027a56e0c9327b480e0278e483dcf5d76221988',
-    salt: '016323d021965061791b4a14afa918f1',
-    // @ts-ignore
-    role: Role.ADMIN
-  });
-
-  return users;
 }
 
 function sessions() {
@@ -274,58 +248,11 @@ function sessions() {
 //
 //
 function groups() {
-  const groups = groupsSeed.map((g) => {
+  return groupsSeed.map((g) => {
     return {
       ...g,
       createdAt: new Date(g.createdAt),
       updatedAt: new Date(g.updatedAt)
     };
   });
-
-  groups.push({
-    id: 'FkoxmH5db6RXqBpExion',
-    name: 'Bike Brothers Domingueira',
-    slug: 'bike-brothers-domingueira',
-    sportId: 3,
-    groupTypeId: 1,
-    groupSpiritId: 2,
-    location: 'R Cónego Dr Manuel Faria',
-    lat: 41.5513986,
-    lng: -8.434844,
-    near: 'Loja da Bike Brothers',
-    dayOfWeek: 6,
-    timeOfDay: 900,
-    whatsapp: null,
-    image1: null,
-    image2: null,
-    image3: null,
-    createdAt: new Date('2021-06-01T08:00:00Z'),
-    updatedAt: new Date('2021-06-01T08:00:00Z'),
-    status: Status.published,
-    createdById: 'nTQ8idPqTY8PmhzbsN4u'
-  });
-
-  groups.push({
-    id: 'GkoxmH5db6RXqBpExion',
-    name: 'Bike Brothers BTT ao Sábado',
-    slug: 'bike-brothers-btt-ao-sabado',
-    sportId: 4,
-    groupTypeId: 1,
-    groupSpiritId: 2,
-    location: 'R Cónego Dr Manuel Faria',
-    lat: 41.5513986,
-    lng: -8.434844,
-    near: 'Loja da Bike Brothers',
-    dayOfWeek: 5,
-    timeOfDay: 900,
-    whatsapp: null,
-    image1: null,
-    image2: null,
-    image3: null,
-    createdAt: new Date('2021-06-01T08:00:00Z'),
-    updatedAt: new Date('2021-06-01T08:00:00Z'),
-    status: Status.published,
-    createdById: 'nTQ8idPqTY8PmhzbsN4u'
-  });
-  return groups;
 }

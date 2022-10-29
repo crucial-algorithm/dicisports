@@ -101,8 +101,7 @@ describe('Groups', () => {
 
     it('should delete group', () => {
       // eslint-disable-next-line cypress/no-unnecessary-waiting
-      cy.visit('/m/group/FkoxmH5db6RXqBpExion')
-        .waitForHTMLHydration()
+      cy.visitAndWaitForHydration('/m/group/FkoxmH5db6RXqBpExion')
         .get('button[name=delete]')
         .click()
 

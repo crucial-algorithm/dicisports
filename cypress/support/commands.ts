@@ -1,3 +1,6 @@
+import VisitOptions = Cypress.VisitOptions;
+import AUTWindow = Cypress.AUTWindow;
+
 declare global {
   namespace Cypress {
     interface Chainable {
@@ -9,7 +12,7 @@ declare global {
 
       wasImageLoaded(selector: string): Chainable<void>;
 
-      waitForHTMLHydration(): Chainable<void>;
+      visitAndWaitForHydration(url: string, options?: Partial<VisitOptions>): Chainable<AUTWindow>;
     }
   }
 }
@@ -64,9 +67,9 @@ function wasImageLoaded(selector: string) {
     .should('be.greaterThan', 0);
 }
 
-function waitForHTMLHydration() {
-  cy.window().then((win) => {
-    return new Promise<void>((resolve, reject) => {
+function visitAndWaitForHydration(url: string, options?: Partial<VisitOptions>) {
+  cy.visit(url, options).window().then((win) => {
+    return new Promise<AUTWindow>((resolve, reject) => {
       const id = setInterval(() => {
         const resource = win.performance
           .getEntriesByType('resource')
@@ -77,7 +80,7 @@ function waitForHTMLHydration() {
         }
 
         clearInterval(id);
-        resolve();
+        setTimeout(() => resolve(win), 0);
       }, 10);
     });
   });
@@ -87,6 +90,6 @@ Cypress.Commands.add('login', login);
 Cypress.Commands.add('pickOptionFromSelect', pickOptionFromSelect);
 Cypress.Commands.add('pickLocationInMap', pickLocationInMap);
 Cypress.Commands.add('wasImageLoaded', wasImageLoaded);
-Cypress.Commands.add('waitForHTMLHydration', waitForHTMLHydration);
+Cypress.Commands.add('visitAndWaitForHydration', visitAndWaitForHydration);
 
 export {};
