@@ -51,6 +51,7 @@ export const loader: LoaderFunction = async ({ params, request }) => {
   let isUserFavorite = false;
   let isPublished = false;
 
+  console.log(user);
   if (!slug) {
     redirect('/');
   }

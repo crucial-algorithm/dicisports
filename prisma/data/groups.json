@@ -1,5 +1,49 @@
 [
   {
+    "id": "FkoxmH5db6RXqBpExion",
+    "name": "Bike Brothers Domingueira",
+    "slug": "bike-brothers-domingueira",
+    "sportId": 3,
+    "groupTypeId": 1,
+    "groupSpiritId": 2,
+    "location": "R Cónego Dr Manuel Faria",
+    "lat": 41.5513986,
+    "lng": -8.434844,
+    "near": "Loja da Bike Brothers",
+    "dayOfWeek": 6,
+    "timeOfDay": 900,
+    "whatsapp": null,
+    "image1": null,
+    "image2": null,
+    "image3": null,
+    "createdAt": "2021-06-01T08:00:00Z",
+    "updatedAt": "2021-06-01T08:00:00Z",
+    "status": "published",
+    "createdById": "nTQ8idPqTY8PmhzbsN4u"
+  },
+  {
+    "id": "GkoxmH5db6RXqBpExion",
+    "name": "Bike Brothers BTT ao Sábado",
+    "slug": "bike-brothers-btt-ao-sabado",
+    "sportId": 4,
+    "groupTypeId": 1,
+    "groupSpiritId": 2,
+    "location": "R Cónego Dr Manuel Faria",
+    "lat": 41.5513986,
+    "lng": -8.434844,
+    "near": "Loja da Bike Brothers",
+    "dayOfWeek": 5,
+    "timeOfDay": 900,
+    "whatsapp": null,
+    "image1": null,
+    "image2": null,
+    "image3": null,
+    "createdAt": "2021-06-01T08:00:00Z",
+    "updatedAt": "2021-06-01T08:00:00Z",
+    "status": "published",
+    "createdById": "nTQ8idPqTY8PmhzbsN4u"
+  },
+  {
     "id": "eaaf16cc63285c840ad1",
     "name": "Borgas em Abrantes",
     "sportId": 2,
@@ -6751,7 +6795,7 @@
     "createdById": "069f6ada1ea40b879653",
     "updatedAt": "2021-12-31T08:00:00Z",
     "createdAt": "2021-12-31T08:00:00Z",
-    "slug": "associaco-recreativa-trofa"
+    "slug": "768-associaco-recreativa-trofa"
   },
   {
     "id": "03aa3f10c484f9bb4d58",
@@ -6773,7 +6817,7 @@
     "createdById": "ec6a22f0bb3110bc7adb",
     "updatedAt": "2021-12-31T08:00:00Z",
     "createdAt": "2021-12-31T08:00:00Z",
-    "slug": "associaco-recreativa-trofa"
+    "slug": "465-associaco-recreativa-trofa"
   },
   {
     "id": "e076fb17782e62e2a143",

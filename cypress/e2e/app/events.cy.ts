@@ -16,7 +16,7 @@ describe('Event', () => {
         'O Granfondo tem 154km de distância e irá testar as vossas capacidades. Estão prontos para o desafio ?';
 
       cy.login()
-        .visit('/event/love-tiles-douro-granfondo-2023')
+        .visitAndWaitForHydration('/event/love-tiles-douro-granfondo-2023')
         .get('[data-cy=image0]')
         .should('be.visible')
 
