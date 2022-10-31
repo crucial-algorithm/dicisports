@@ -1,6 +1,6 @@
 [
   {
-    "id": "1",
+    "id": "aaa",
     "name": "Saco de brinde",
     "isDefault": true,
     "isEnabled": false,
@@ -8,7 +8,7 @@
     "eventId": "MY4bvgxDbMtGv8rbYe5d"
   },
   {
-    "id": "2",
+    "id": "bbb",
     "name": "Bebedouros",
     "isDefault": true,
     "isEnabled": true,
@@ -16,7 +16,7 @@
     "eventId": "MY4bvgxDbMtGv8rbYe5d"
   },
   {
-    "id": "3",
+    "id": "ccc",
     "name": "Chuveiros",
     "isDefault": true,
     "isEnabled": true,
@@ -24,7 +24,7 @@
     "eventId": "MY4bvgxDbMtGv8rbYe5d"
   },
   {
-    "id": "4",
+    "id": "ddd",
     "name": "T-shirts do evento",
     "isDefault": true,
     "isEnabled": false,
@@ -32,7 +32,7 @@
     "eventId": "MY4bvgxDbMtGv8rbYe5d"
   },
   {
-    "id": "5",
+    "id": "eee",
     "name": "Medalhas",
     "isDefault": true,
     "isEnabled": false,
@@ -40,7 +40,7 @@
     "eventId": "MY4bvgxDbMtGv8rbYe5d"
   },
   {
-    "id": "6",
+    "id": "fff",
     "name": "Resultados cronometrados",
     "isDefault": true,
     "isEnabled": true,
@@ -48,7 +48,7 @@
     "eventId": "MY4bvgxDbMtGv8rbYe5d"
   },
   {
-    "id": "7",
+    "id": "ggg",
     "name": "Fotos do evento",
     "isDefault": true,
     "isEnabled": false,
@@ -56,7 +56,7 @@
     "eventId": "MY4bvgxDbMtGv8rbYe5d"
   },
   {
-    "id": "8",
+    "id": "hhh",
     "name": "Música ao vivo",
     "isDefault": true,
     "isEnabled": false,
@@ -64,7 +64,7 @@
     "eventId": "MY4bvgxDbMtGv8rbYe5d"
   },
   {
-    "id": "9",
+    "id": "iii",
     "name": "Material para teste",
     "isDefault": false,
     "isEnabled": true,
@@ -72,7 +72,7 @@
     "eventId": "MY4bvgxDbMtGv8rbYe5d"
   },
   {
-    "id": "10",
+    "id": "jjj",
     "name": "Lanche de oferta",
     "isDefault": false,
     "isEnabled": false,

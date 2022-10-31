@@ -3,6 +3,7 @@ import { PrismaClient, Role, Status } from '@prisma/client';
 import perksSeed from './data/perks.json';
 import groupsSeed from './data/groups.json';
 import usersSeed from './data/users.json';
+import racesSeed from './data/races.json';
 
 const db = new PrismaClient();
 
@@ -42,6 +43,7 @@ async function clear() {
   await db.document.deleteMany();
   await db.race.deleteMany();
   await db.perk.deleteMany();
+  await db.favoriteEvent.deleteMany();
   await db.event.deleteMany();
   await db.groupSchedule.deleteMany();
   await db.favoriteGroup.deleteMany();
@@ -209,45 +211,11 @@ function documents() {
 }
 
 function races() {
-  return [
-    {
-      id: 'xaXaCzs2t7D8DpRNnffM',
-      name: 'Granfondo',
-      distance: 154,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      startTime: 900,
-      elevationGain: 2274,
-      elevationLoss: 576,
-      price: 25,
-      track: 'TgKZi8NQKNoJQGArd3zc/QZRbNnAgu8dKExesBsSY.gpx',
-      raceDescription: 'O Granfondo tem 154km de distância e irá testar as vossas capacidades.' +
-          'Estão prontos para o desafio ?',
-      eventId: 'MY4bvgxDbMtGv8rbYe5d'
-    },
-    {
-      id: 'AhowRdNWCBQWSuivSt7s',
-      name: 'Mediofondo',
-      distance: 102,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      startTime: 830,
-      elevationGain: 1804,
-      price: 15,
-      eventId: 'MY4bvgxDbMtGv8rbYe5d'
-    },
-    {
-      id: 'AhowRdNWCBQWSuivSt7h',
-      name: 'Minifondo',
-      distance: 57,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      startTime: 830,
-      elevationGain: 800,
-      price: 10,
-      eventId: 'MY4bvgxDbMtGv8rbYe5d'
-    }
-  ];
+  return racesSeed.map((r) => ({
+    ...r,
+    createdAt: new Date(),
+    updatedAt: new Date()
+  }));
 }
 
 function perks() {

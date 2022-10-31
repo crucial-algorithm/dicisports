@@ -1,6 +1,7 @@
 describe('Event', () => {
   before(() => {
     cy.task('db:reset');
+    cy.task('clearDownloadFolder');
   });
 
   context('Public', () => {
@@ -12,12 +13,12 @@ describe('Event', () => {
       const locationLink =
         'https://www.google.com/maps/search/?api=1&query=41.7352772%2C-7.4712548';
       const granfondo =
-        'O Granfondo tem 154km de distância e irá testar as vossas capacidades.' +
-        'Estão prontos para o desafio ?';
+        'O Granfondo tem 154km de distância e irá testar as vossas capacidades. Estão prontos para o desafio ?';
 
       cy.login()
         .visit('/event/love-tiles-douro-granfondo-2023')
-        .wasImageLoaded('img[data-cy=images]')
+        .get('[data-cy=image0]')
+        .should('be.visible')
 
         .get('[data-cy=name]')
         .contains(name)
@@ -44,16 +45,16 @@ describe('Event', () => {
         .get('[data-cy=perk]')
         .should('have.length', 10)
 
-        .get('[name=perk-checkbox1]')
+        .get('[name=perk-checkbox-bbb]')
         .should('be.checked')
 
-        .get('[name=perk-checkbox2]')
+        .get('[name=perk-checkbox-ccc]')
         .should('be.checked')
 
-        .get('[name=perk-checkbox5]')
+        .get('[name=perk-checkbox-fff]')
         .should('be.checked')
 
-        .get('[name=perk-checkbox8]')
+        .get('[name=perk-checkbox-iii]')
         .should('be.checked')
 
         .get('[data-cy=directions]')
@@ -86,7 +87,7 @@ describe('Event', () => {
       cy.login()
         .visit('/event/trail-do-zezere')
 
-        .get('p[data-cy=event-not-public]');
+        .get('p[data-cy=event-not-found]');
     });
 
     it('Should show error message when accessing an non existing event', () => {
@@ -99,7 +100,7 @@ describe('Event', () => {
 });
 
 function verifyRace(
-  index: string,
+  raceId: string,
   name: string,
   distance: number,
   time: string,
@@ -110,40 +111,44 @@ function verifyRace(
   gpx?: string
 ) {
   // eslint-disable-next-line cypress/no-unnecessary-waiting
-  cy.get(`[data-cy=race-name${index}]`)
+  cy.get(`[data-cy=race-name-${raceId}]`)
     .contains(name)
 
-    .get(`[data-cy=race-distance${index}]`)
+    .get(`[data-cy=race-distance-${raceId}]`)
     .contains(`${distance} km`)
 
-    .get(`[data-cy=race-time${index}]`)
+    .get(`[data-cy=race-time-${raceId}]`)
     .contains(time)
 
-    .get(`[data-cy=race-price${index}]`)
+    .get(`[data-cy=race-price-${raceId}]`)
     .contains(`€${price}`)
 
     .wait(500)
 
-    .get(`label[data-cy=see-more${index}]`)
+    .get(`label[data-cy=see-more-${raceId}]`)
     .first()
     .click()
 
-    .get(`div[data-cy=elevation-gain${index}]`)
+    .get(`div[data-cy=elevation-gain-${raceId}]`)
     .contains(`${elevationGain} m`);
 
   if (elevationLoss) {
-    cy.get(`div[data-cy=elevation-loss${index}]`).contains(
+    cy.get(`div[data-cy=elevation-loss-${raceId}]`).contains(
       `${elevationLoss} m`
     );
   }
 
   if (description) {
-    cy.get(`[data-cy=race-description${index}]`).contains(description);
+    cy.get(`[data-cy=race-description-${raceId}]`).contains(description);
   }
 
   if (gpx) {
-    cy.get(`[data-cy=gpx${index}]`)
+    cy.get(`[data-cy=gpx-${raceId}]`)
       .should('have.attr', 'href')
       .and('include', gpx);
+
+    cy.get(`[data-cy=gpx-${raceId}]`)
+      .click()
+      .readFile('./cypress/downloads/Granfondo.gpx');
   }
 }

@@ -18,7 +18,7 @@ import clsx from 'clsx';
 
 import {
   findEventBySlug,
-  findUserFavoriteEvents
+  isEventUserFavorite
 } from '~/server/db/events.server';
 
 import Main from '~/components/shared/Main';
@@ -37,8 +37,6 @@ import WhenListEmpty from '~/components/shared/Empty';
 type LoaderData = {
   event: Event;
   isUserFavorite: boolean;
-  minPrice: number;
-  maxPrice: number;
   races: Race[];
 };
 
@@ -51,7 +49,7 @@ export const loader: LoaderFunction = async ({ params, request }) => {
   const user = await getUser(request);
   const slug = params.slug as string;
   let isUserFavorite = false;
-  let minPrice = 0;
+  let isPublished = false;
 
   if (!slug) {
     redirect('/');
@@ -59,33 +57,20 @@ export const loader: LoaderFunction = async ({ params, request }) => {
 
   const event = await findEventBySlug(slug);
 
+  if (event?.status === Status.published) {
+    isPublished = true;
+  }
+
   if (user && event) {
-    const userFavoriteEvents = await findUserFavoriteEvents(user?.id);
-
-    userFavoriteEvents.map((a) => {
-      if (a.id === event.id) {
-        isUserFavorite = true;
-      }
-
-      return isUserFavorite;
-    });
+    isUserFavorite = !!(await isEventUserFavorite(user.id, event.id));
   }
 
   const eventId = event?.id as string;
   const races = await findEventRaces(eventId);
 
-  if (races) {
-    const sortedRaces = races
-      .sort((a, b) => a.price - b.price)
-      .map((a) => a.price);
-
-    minPrice = sortedRaces[0];
-  }
-
   return json({
-    event,
+    event: isPublished ? event : null,
     isUserFavorite,
-    minPrice,
     races,
     perks: await findEventPerks(eventId)
   });
@@ -93,9 +78,8 @@ export const loader: LoaderFunction = async ({ params, request }) => {
 
 export default function EventDisplayRoute() {
   const favorite = useFetcher();
-  const { event, isUserFavorite, minPrice, races, perks } =
-    useLoaderData<LoaderData>();
-  const { t } = useTranslation('organizer');
+  const { event, isUserFavorite, races, perks } = useLoaderData<LoaderData>();
+  const { t } = useTranslation('event');
 
   const favoriteAddedMessage = t('Favorite Added');
   const favoriteRemovedMessage = t('Favorite Removed');
@@ -106,6 +90,7 @@ export default function EventDisplayRoute() {
   const [address, setAddress] = useState<string>('');
   let showFavoriteAddedNotification: any = null;
   let showCopiedToClipboardNotification: any = null;
+  let minPrice = 0;
 
   function handlerSetShowNotificationFunction(callback: () => void) {
     showFavoriteAddedNotification = callback;
@@ -153,15 +138,12 @@ export default function EventDisplayRoute() {
     );
   }
 
-  if (event.status !== Status.published) {
-    return (
-      <Main>
-        <p data-cy="event-not-public" className="dark:text-blueGray-500">
-          {t('Event not public')}
-        </p>
-        <a href="/">{t('Event not public action')}</a>
-      </Main>
-    );
+  if (races) {
+    const sortedRaces = races
+      .sort((a: Race, b: Race) => a.price - b.price)
+      .map((a: Race) => a.price);
+
+    minPrice = sortedRaces[0];
   }
 
   const images: string[] = [
@@ -177,23 +159,38 @@ export default function EventDisplayRoute() {
     <Main>
       <div className="flex flex-col md:flex-row mt-4">
         <div className="w-full md:w-144">
-          <Carousel statusFormatter={cleanStatus}>
-            {images.map((image, idx) => (
-              <DisplayImg
-                key={idx}
-                dataCy="images"
-                imageId={image}
-                className="w-[500px]"
-                transformations={{
-                  resize: {
-                    type: 'fill',
-                    width: 400,
-                    height: 400
-                  }
-                }}
-              />
-            ))}
-          </Carousel>
+          {images.length > 1 ? (
+            <Carousel statusFormatter={cleanStatus}>
+              {images.map((image, idx) => (
+                <DisplayImg
+                  key={idx}
+                  dataCy={`image${idx}`}
+                  imageId={image}
+                  className="w-[500px]"
+                  transformations={{
+                    resize: {
+                      type: 'fill',
+                      width: 400,
+                      height: 400
+                    }
+                  }}
+                />
+              ))}
+            </Carousel>
+          ) : (
+            <DisplayImg
+              dataCy="image0"
+              imageId={images[0]}
+              className="w-[500px]"
+              transformations={{
+                resize: {
+                  type: 'fill',
+                  width: 400,
+                  height: 400
+                }
+              }}
+            />
+          )}
         </div>
 
         <div className="flex flex-auto flex-col mt-4 ml-4">
@@ -267,9 +264,7 @@ export default function EventDisplayRoute() {
           </div>
           <div className="flex flex-row justify-between items-center mt-16">
             <div className="flex flex-col justify-start">
-              <H6 className="md:ml-2">
-                {t('From')}
-              </H6>
+              <H6 className="md:ml-2">{t('From')}</H6>
               <H2
                 data-cy="price"
                 className="text-sp-light-blue-900 w-full md:ml-2"
@@ -277,9 +272,7 @@ export default function EventDisplayRoute() {
                 <b className="break-words">{`${minPrice}€`}</b>
               </H2>
             </div>
-            <ButtonLink to="#races">
-              {t('Races Anchor')}
-            </ButtonLink>
+            <ButtonLink to="#races">{t('Races Anchor')}</ButtonLink>
           </div>
         </div>
       </div>
@@ -316,14 +309,14 @@ export default function EventDisplayRoute() {
         <div className="grid grid-rows-8 md:grid-rows-6 md:grid-flow-col gap-y-4 md:gap-y-2 my-2">
           {perks
             .sort((a: Perk, b: Perk) => a.displayOrder - b.displayOrder)
-            .map((p: any, idx: number) => (
+            .map((p: Perk) => (
               <div key={p.id} className="flex items-center mb-1" data-cy="perk">
                 <input
                   disabled
                   type="checkbox"
                   defaultChecked={p.isEnabled}
                   className="w-4 h-4 text-indigo-500 bg-gray-100 rounded border-gray-300 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600"
-                  name={`perk-checkbox${idx}`}
+                  name={`perk-checkbox-${p.id}`}
                 />
                 <label
                   htmlFor={p.id}
@@ -365,7 +358,7 @@ export default function EventDisplayRoute() {
 
 function DisplayRace(props: { race: Race }) {
   const { race } = props;
-  const { t } = useTranslation('organizer');
+  const { t } = useTranslation('event');
   const raceTime = displayTimeOfDay(race.startTime);
   const [expanded, setExpanded] = useState<boolean>(false);
 
@@ -377,20 +370,20 @@ function DisplayRace(props: { race: Race }) {
     <div className="flex flex-col" data-cy="race">
       <div className="gap-y-2 mb-4 mr-2 md:mr-4 text-center items-center border border-black dark:border-white rounded-2xl outline-offset-1 w-[340px] md:overflow-hidden">
         <div className="mt-4">
-          <H4 data-cy={`race-name${race.id}`}>{race.name}</H4>
+          <H4 data-cy={`race-name-${race.id}`}>{race.name}</H4>
         </div>
         <div className="mt-4">
           <H4>{t('Race Distance')}</H4>
           <H5
             className="dark:text-blueGray-500"
-            data-cy={`race-distance${race.id}`}
+            data-cy={`race-distance-${race.id}`}
           >{`${race.distance} km`}</H5>
         </div>
         <div className="mt-4">
           <H4>{t('Race Start Time')}</H4>
           <H5
             className="dark:text-blueGray-500"
-            data-cy={`race-time${race.id}`}
+            data-cy={`race-time-${race.id}`}
           >
             {raceTime}
           </H5>
@@ -399,7 +392,7 @@ function DisplayRace(props: { race: Race }) {
           <H4>{t('Race Price')}</H4>
           <H5
             className="dark:text-blueGray-500"
-            data-cy={`race-price${race.id}`}
+            data-cy={`race-price-${race.id}`}
           >{`€${race.price}`}</H5>
         </div>
         {expanded && (
@@ -409,7 +402,7 @@ function DisplayRace(props: { race: Race }) {
                 <H4>{t('Description')}</H4>
                 <div
                   className="dark:text-blueGray-500 text-base font-medium mr-2 mt-2 whitespace-pre-line px-4"
-                  data-cy={`race-description${race.id}`}
+                  data-cy={`race-description-${race.id}`}
                 >
                   {race.raceDescription}
                 </div>
@@ -419,7 +412,7 @@ function DisplayRace(props: { race: Race }) {
               <H4>{t('Elevation Gain')}</H4>
               <div
                 className="dark:text-blueGray-500 text-base font-medium mr-2 mt-2"
-                data-cy={`elevation-gain${race.id}`}
+                data-cy={`elevation-gain-${race.id}`}
               >
                 {`${race.elevationGain} m`}
               </div>
@@ -429,7 +422,7 @@ function DisplayRace(props: { race: Race }) {
                 <H4>{t('Elevation Loss')}</H4>
                 <div
                   className="dark:text-blueGray-500 text-base font-medium mr-2 mt-2"
-                  data-cy={`elevation-loss${race.id}`}
+                  data-cy={`elevation-loss-${race.id}`}
                 >
                   {`${race.elevationLoss} m`}
                 </div>
@@ -440,7 +433,7 @@ function DisplayRace(props: { race: Race }) {
                 to={`/organizer/race/${race.id}`}
                 target="_blank"
                 rel="noreferrer"
-                data-cy={`gpx${race.id}`}
+                data-cy={`gpx-${race.id}`}
                 download
               >
                 <H4 className="my-4 dark:text-blueGray-500">{t('GPX')}</H4>
@@ -452,7 +445,7 @@ function DisplayRace(props: { race: Race }) {
           <label
             role="button"
             onClick={handleSeeMore}
-            data-cy={`see-more${race.id}`}
+            data-cy={`see-more-${race.id}`}
           >
             {expanded ? t('See Less') : t('See More')}
           </label>
