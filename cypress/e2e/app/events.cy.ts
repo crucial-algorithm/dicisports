@@ -5,7 +5,7 @@ describe('Event', () => {
   });
 
   context('Public', () => {
-    it('Should display event', () => {
+    it.only('Should display event', () => {
       const name = 'Love Tiles Douro Granfondo 2023';
       const description =
         'O Peso da Régua será ponto de partida e de reencontro, depois de serem atravessados os concelhos de Lamego, Armamar, ' +
@@ -15,7 +15,7 @@ describe('Event', () => {
       const granfondo =
         'O Granfondo tem 154km de distância e irá testar as vossas capacidades. Estão prontos para o desafio ?';
 
-      cy.login()
+      cy.loginAdmin()
         .visitAndWaitForHydration('/event/love-tiles-douro-granfondo-2023')
         .get('[data-cy=image0]')
         .should('be.visible')
@@ -84,17 +84,11 @@ describe('Event', () => {
     });
 
     it('Should show an handled message when accessing an unpublished event', () => {
-      cy.login()
-        .visit('/event/trail-do-zezere')
-
-        .get('p[data-cy=event-not-found]');
+      cy.visit('/event/trail-do-zezere').get('p[data-cy=event-not-found]');
     });
 
     it('Should show error message when accessing an non existing event', () => {
-      cy.login()
-        .visit('/event/asidjas')
-
-        .get('p[data-cy=event-not-found');
+      cy.visit('/event/asidjas').get('p[data-cy=event-not-found');
     });
   });
 });
@@ -110,7 +104,6 @@ function verifyRace(
   description?: string,
   gpx?: string
 ) {
-  // eslint-disable-next-line cypress/no-unnecessary-waiting
   cy.get(`[data-cy=race-name-${raceId}]`)
     .contains(name)
 
@@ -122,8 +115,6 @@ function verifyRace(
 
     .get(`[data-cy=race-price-${raceId}]`)
     .contains(`€${price}`)
-
-    .wait(500)
 
     .get(`label[data-cy=see-more-${raceId}]`)
     .first()

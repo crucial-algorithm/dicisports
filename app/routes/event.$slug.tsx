@@ -10,15 +10,16 @@ import {
 } from '@heroicons/react/24/outline';
 import { HeartIcon as Favorite, ShareIcon } from '@heroicons/react/24/solid';
 import * as React from 'react';
-import { useEffect, useState } from 'react';
+import { Component, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import CopyToClipboard from 'react-copy-to-clipboard';
 import { Carousel } from 'react-responsive-carousel';
 import clsx from 'clsx';
+import handleViewport from 'react-in-viewport';
 
 import {
   findEventBySlug,
-  isEventUserFavorite
+  findUserFavoriteEvent
 } from '~/server/db/events.server';
 
 import Main from '~/components/shared/Main';
@@ -51,7 +52,6 @@ export const loader: LoaderFunction = async ({ params, request }) => {
   let isUserFavorite = false;
   let isPublished = false;
 
-  console.log(user);
   if (!slug) {
     redirect('/');
   }
@@ -63,7 +63,7 @@ export const loader: LoaderFunction = async ({ params, request }) => {
   }
 
   if (user && event) {
-    isUserFavorite = !!(await isEventUserFavorite(user.id, event.id));
+    isUserFavorite = !!(await findUserFavoriteEvent(user.id, event.id));
   }
 
   const eventId = event?.id as string;
@@ -92,72 +92,16 @@ export default function EventDisplayRoute() {
   let showFavoriteAddedNotification: any = null;
   let showCopiedToClipboardNotification: any = null;
   let minPrice = 0;
+  const [visiblePriceTag, setVisiblePriceTag] = useState<boolean>(true);
 
-  function handlerSetShowNotificationFunction(callback: () => void) {
-    showFavoriteAddedNotification = callback;
-  }
-
-  function handlerSetShowNotificationCopyToClipboard(callback: () => void) {
-    showCopiedToClipboardNotification = callback;
-  }
-
-  function handlerClickToCopy() {
-    showCopiedToClipboardNotification();
-  }
-
-  function cleanStatus() {
-    return '';
-  }
-
-  useEffect(() => {
-    if (favorite.type === 'actionReload' && favorite.data.ok) {
-      setMessage(
-        favorite.data.action === actions.add
-          ? favoriteAddedMessage
-          : favoriteRemovedMessage
-      );
-      setIsFavorite(favorite.data.action === actions.add);
-      showFavoriteAddedNotification();
+  class Price extends Component {
+    render() {
+      return <PriceTag />;
     }
+  }
 
-    const url = new URL(window.location.href);
-
-    setAddress(url.origin);
-  }, [
-    favorite,
-    showFavoriteAddedNotification,
-    favoriteAddedMessage,
-    favoriteRemovedMessage
-  ]);
-
-  if (!event) {
+  function PriceTag() {
     return (
-      <Main>
-        <Paragraph data-cy="event-not-found">{t('Event not found')}</Paragraph>
-        <a href="/">{t('Event not found action')}</a>
-      </Main>
-    );
-  }
-
-  if (races) {
-    const sortedRaces = races
-      .sort((a: Race, b: Race) => a.price - b.price)
-      .map((a: Race) => a.price);
-
-    minPrice = sortedRaces[0];
-  }
-
-  const images: string[] = [
-    event.image1,
-    event.image2,
-    event.image3,
-    event.image4,
-    event.image5
-  ].filter(Boolean) as string[];
-  const [lat, lng] = event.location.split(',');
-
-  return (
-    <Main>
       <div className="flex flex-col md:flex-row mt-4">
         <div className="w-full md:w-144">
           {images.length > 1 ? (
@@ -263,7 +207,7 @@ export default function EventDisplayRoute() {
               </H6>
             </a>
           </div>
-          <div className="flex flex-row justify-between items-center mt-16">
+          <div className="flex flex-row justify-between items-center mt-16 top-4 sticky dark:bg-gray-900 bg-white">
             <div className="flex flex-col justify-start">
               <H6 className="md:ml-2">{t('From')}</H6>
               <H2
@@ -273,87 +217,202 @@ export default function EventDisplayRoute() {
                 <b className="break-words">{`${minPrice}€`}</b>
               </H2>
             </div>
-            <ButtonLink to="#races">{t('Races Anchor')}</ButtonLink>
+            <ButtonLink to="#races-list">{t('Races Anchor')}</ButtonLink>
           </div>
         </div>
       </div>
+    );
+  }
 
-      <div className="my-8">
-        <H3>{t('About')}</H3>
-        <div
-          className="dark:text-blueGray-500 text-base font-medium mr-2 mt-2 whitespace-pre-line"
-          data-cy="description"
-        >
-          {event.eventDescription}
+  function StickyPriceTag() {
+    return (
+      <div className="flex flex-row justify-between items-center mt-16 top-0 p-4 sticky dark:bg-gray-900 bg-white dark:border-gray-500 drop-shadow-md z-10">
+        <H3 data-cy="price" className="text-sp-light-blue-900 w-full md:ml-2">
+          <b className="break-words">{event.name}</b>
+        </H3>
+        <div className="flex flex-col md:flex-row items-center">
+          <div className="flex flex-col md:justify-start">
+            <H6 className="md:ml-2">{t('From')}</H6>
+            <H2
+              data-cy="price"
+              className="text-sp-light-blue-900 w-full md:ml-2"
+            >
+              <b className="break-words">{`${minPrice}€`}</b>
+            </H2>
+          </div>
+          <ButtonLink className="md:ml-16" to="#races-list">
+            {t('Races Anchor')}
+          </ButtonLink>
         </div>
       </div>
+    );
+  }
 
-      <H3>{t('Races')}</H3>
-      <div
-        data-cy="races-list"
-        className="flex flex-col mt-2 scroll-mx-2 items-center md:items-start md:flex-row md:flex-nowrap md:overflow-x-auto pb-10 hide-scroll-bar"
-      >
-        {races
-          .sort((a: Race, b: Race) => a.displayOrder - b.displayOrder)
-          .map((race: Race) => (
-            <DisplayRace race={race} key={race.id} />
-          ))}
-        <WhenListEmpty list={races}>
-          <H6 className="text-center p-12" variant="secondary" as="p">
-            {t('No Races')}
-          </H6>
-        </WhenListEmpty>
-      </div>
+  const EventHeader = handleViewport(Price);
 
-      <div className="my-8">
-        <H3>{t('Perks')}</H3>
-        <div className="grid grid-rows-8 md:grid-rows-6 md:grid-flow-col gap-y-4 md:gap-y-2 my-2">
-          {perks
-            .sort((a: Perk, b: Perk) => a.displayOrder - b.displayOrder)
-            .map((p: Perk) => (
-              <div key={p.id} className="flex items-center mb-1" data-cy="perk">
-                <input
-                  disabled
-                  type="checkbox"
-                  defaultChecked={p.isEnabled}
-                  className="w-4 h-4 text-indigo-500 bg-gray-100 rounded border-gray-300 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600"
-                  name={`perk-checkbox-${p.id}`}
-                />
-                <label
-                  htmlFor={p.id}
-                  className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300"
+  console.log('visible -->', visiblePriceTag);
+
+  function handlerSetShowNotificationFunction(callback: () => void) {
+    showFavoriteAddedNotification = callback;
+  }
+
+  function handlerSetShowNotificationCopyToClipboard(callback: () => void) {
+    showCopiedToClipboardNotification = callback;
+  }
+
+  function handlerClickToCopy() {
+    showCopiedToClipboardNotification();
+  }
+
+  function cleanStatus() {
+    return '';
+  }
+
+  function handleEventHeaderLeaveViewport() {
+    setVisiblePriceTag(false);
+  }
+
+  function handleEventHeaderInViewport() {
+    setVisiblePriceTag(true);
+  }
+
+  useEffect(() => {
+    if (favorite.type === 'actionReload' && favorite.data.ok) {
+      setMessage(
+        favorite.data.action === actions.add
+          ? favoriteAddedMessage
+          : favoriteRemovedMessage
+      );
+      setIsFavorite(favorite.data.action === actions.add);
+      showFavoriteAddedNotification();
+    }
+
+    const url = new URL(window.location.href);
+
+    setAddress(url.origin);
+  }, [
+    favorite,
+    showFavoriteAddedNotification,
+    favoriteAddedMessage,
+    favoriteRemovedMessage
+  ]);
+
+  if (!event) {
+    return (
+      <Main>
+        <Paragraph data-cy="event-not-found">{t('Event not found')}</Paragraph>
+        <a href="/">{t('Event not found action')}</a>
+      </Main>
+    );
+  }
+
+  if (races) {
+    const sortedRaces = races
+      .sort((a: Race, b: Race) => a.price - b.price)
+      .map((a: Race) => a.price);
+
+    minPrice = sortedRaces[0];
+  }
+
+  const images: string[] = [
+    event.image1,
+    event.image2,
+    event.image3,
+    event.image4,
+    event.image5
+  ].filter(Boolean) as string[];
+  const [lat, lng] = event.location.split(',');
+
+  return (
+    <>
+      {!visiblePriceTag && <StickyPriceTag />}
+
+      <Main>
+        <EventHeader
+          onEnterViewport={handleEventHeaderInViewport}
+          onLeaveViewport={handleEventHeaderLeaveViewport}
+        />
+        <div className="my-8">
+          <H3>{t('About')}</H3>
+          <div
+            className="dark:text-blueGray-500 text-base font-medium mr-2 mt-2 whitespace-pre-line"
+            data-cy="description"
+          >
+            {event.eventDescription}
+          </div>
+        </div>
+
+        <H3 id="races-list">{t('Races')}</H3>
+        <div
+          data-cy="races-list"
+          className="flex flex-col mt-2 scroll-mx-2 items-center md:items-start md:flex-row md:flex-nowrap md:overflow-x-auto pb-10 hide-scroll-bar"
+        >
+          {races
+            .sort((a: Race, b: Race) => a.displayOrder - b.displayOrder)
+            .map((race: Race) => (
+              <DisplayRace race={race} key={race.id} />
+            ))}
+          <WhenListEmpty list={races}>
+            <H6 className="text-center p-12" variant="secondary" as="p">
+              {t('No Races')}
+            </H6>
+          </WhenListEmpty>
+        </div>
+
+        <div className="my-8">
+          <H3>{t('Perks')}</H3>
+          <div className="grid grid-rows-8 md:grid-rows-6 md:grid-flow-col gap-y-4 md:gap-y-2 my-2">
+            {perks
+              .sort((a: Perk, b: Perk) => a.displayOrder - b.displayOrder)
+              .map((p: Perk) => (
+                <div
+                  key={p.id}
+                  className="flex items-center mb-1"
+                  data-cy="perk"
                 >
-                  {p.name}
-                </label>
-              </div>
+                  <input
+                    disabled
+                    type="checkbox"
+                    defaultChecked={p.isEnabled}
+                    className="w-4 h-4 text-indigo-500 bg-gray-100 rounded border-gray-300 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600"
+                    name={`perk-checkbox-${p.id}`}
+                  />
+                  <label
+                    htmlFor={p.id}
+                    className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300"
+                  >
+                    {p.name}
+                  </label>
+                </div>
+              ))}
+          </div>
+        </div>
+
+        {event.directions && (
+          <div className="my-8">
+            <H3>{t('How to get there')}</H3>
+            <div
+              data-cy="directions"
+              className="dark:text-blueGray-500 text-base font-medium mr-2 mt-2 whitespace-pre-line"
+            >
+              {event.directions}
+            </div>
+          </div>
+        )}
+
+        <H3>{t('Documents')}</H3>
+        <div
+          data-cy="documents-list"
+          className="flex flex-row flex-wrap mb-8 mt-2"
+        >
+          {event.documents
+            .sort((a: Document, b: Document) => a.position - b.position)
+            .map((document: Document) => (
+              <DisplayDocument document={document} key={document.id} />
             ))}
         </div>
-      </div>
-
-      {event.directions && (
-        <div className="my-8">
-          <H3>{t('How to get there')}</H3>
-          <div
-            data-cy="directions"
-            className="dark:text-blueGray-500 text-base font-medium mr-2 mt-2 whitespace-pre-line"
-          >
-            {event.directions}
-          </div>
-        </div>
-      )}
-
-      <H3>{t('Documents')}</H3>
-      <div
-        data-cy="documents-list"
-        className="flex flex-row flex-wrap mb-8 mt-2"
-      >
-        {event.documents
-          .sort((a: Document, b: Document) => a.position - b.position)
-          .map((document: Document) => (
-            <DisplayDocument document={document} key={document.id} />
-          ))}
-      </div>
-    </Main>
+      </Main>
+    </>
   );
 }
 

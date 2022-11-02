@@ -211,7 +211,7 @@ async function removeEventFromFavorites(
   });
 }
 
-async function isEventUserFavorite(
+async function findUserFavoriteEvent(
   userId: string,
   eventId: string
 ): Promise<FavoriteEvent | null> {
@@ -231,5 +231,5 @@ export {
   addEventToFavorites,
   removeEventFromFavorites,
   findUserFavoriteEvents,
-  isEventUserFavorite
+  findUserFavoriteEvent
 };

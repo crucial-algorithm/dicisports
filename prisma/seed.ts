@@ -254,6 +254,12 @@ function sessions() {
       userId: 'nTQ8idPqTY8PmhzbsN4u',
       createdAt: new Date(),
       expirationDate: new Date('2100-10-16 19:29:16.667')
+    },
+    {
+      id: '297efeb8-39cf-4b74-9311-c082339de55a',
+      userId: '3beca472138d6d234d3f',
+      createdAt: new Date(),
+      expirationDate: new Date('2100-10-16 19:29:16.667')
     }
   ];
 }

@@ -6,6 +6,8 @@ declare global {
     interface Chainable {
       login(): Chainable<void>;
 
+      loginAdmin(): Chainable<void>;
+
       pickOptionFromSelect(name: string, position: number): Chainable<void>;
 
       pickLocationInMap(triggerOpenMapButtonName: string): Chainable<void>;
@@ -24,6 +26,13 @@ function login() {
   cy.setCookie(
     'ds_root_session',
     'eyJfX3Nlc3Npb25faWRfXyI6ImM0ZTFiNTY4LTBlMzAtNDY2ZC04ZmYwLWUxMGYyMTJlM2M1ZiJ9.JjNS%2B5DEc7mf3OkCnGLesD5pPb0NFMVYMU0imAzvxKU'
+  );
+}
+
+function loginAdmin() {
+  cy.setCookie(
+    'ds_root_session',
+    'eyJfX3Nlc3Npb25faWRfXyI6IjI5N2VmZWI4LTM5Y2YtNGI3NC05MzExLWMwODIzMzlkZTU1YSJ9.37yKylNYa4IFtwx6tM6dqYMU9wNPnlG28uvBeB18V60'
   );
 }
 
@@ -90,6 +99,7 @@ function visitAndWaitForHydration(url: string, options?: Partial<VisitOptions>) 
 }
 
 Cypress.Commands.add('login', login);
+Cypress.Commands.add('loginAdmin', loginAdmin);
 Cypress.Commands.add('pickOptionFromSelect', pickOptionFromSelect);
 Cypress.Commands.add('pickLocationInMap', pickLocationInMap);
 Cypress.Commands.add('wasImageLoaded', wasImageLoaded);

@@ -1,6 +1,6 @@
 Cypress.Cookies.debug(true);
 
-describe('Authentication / Authorization', () => {
+describe.skip('Authentication / Authorization', () => {
   beforeEach(() => {
     cy.task('db:reset');
   });
