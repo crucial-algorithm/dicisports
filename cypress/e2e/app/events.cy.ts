@@ -91,6 +91,53 @@ describe('Event', () => {
       cy.visit('/event/non-existing-event').get('p[data-cy=event-not-found');
     });
   });
+
+  context('Security', () => {
+    it('should not access /organizer/event/create when not authenticated', () => {
+      // TODO
+    });
+
+    it('should not allow a user from editing another user event', () => {
+      // TODO
+    });
+  });
+
+  context('Maintenance', () => {
+    beforeEach(() => {
+      cy.task('db:reset');
+      cy.task('cleanDownloadFolder');
+      cy.loginAdmin();
+    });
+
+    it('should create and publish an event', () => {
+      // TODO
+    });
+
+    it('should enable external booking address when option is selected, and save the url provided', () => {
+      // TODO
+    });
+
+    it('should update a event', () => {
+      // TODO
+    });
+
+    it('should change race order', () => {
+      // TODO
+    });
+
+    it('should change document order', () => {
+      // TODO
+    });
+
+    it('should download document', () => {
+      // TODO
+    });
+
+    it('should add a new perk', () => {
+      // TODO
+    });
+
+  });
 });
 
 function verifyRace(
