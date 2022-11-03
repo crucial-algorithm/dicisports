@@ -132,8 +132,7 @@ export const handle = {
 
 export const loader: LoaderFunction = async ({ request, params }) => {
   // hide while this is still in dev
-  await requireAdminUser(request);
-  const user = await requireUser(request);
+  const user = await requireAdminUser(request);
 
   const sports = await findSports();
   const eventId = params.eventId as string;

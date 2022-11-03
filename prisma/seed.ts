@@ -188,7 +188,7 @@ function events() {
       eventDescription:
         'O Peso da Régua será ponto de partida e de reencontro, depois de serem atravessados os concelhos de Lamego, Armamar, ' +
         'Tabuaço, Penedono, Foz Coa e São João da Pesqueira.',
-      createdById: 'nTQ8idPqTY8PmhzbsN4u',
+      createdById: '3beca472138d6d234d3f',
       image1: 'users/NtGwBBJeHdR6X6XHZPJ3',
       slug: 'love-tiles-douro-granfondo-2023'
     }

@@ -17,7 +17,16 @@ const prisma = new PrismaClient();
 async function findEvents(): Promise<Array<Event>> {
   return db.event.findMany({
     where: {
-      status: { not: Status.auto }
+      status: { notIn: [Status.auto, Status.deleted] }
+    }
+  });
+}
+
+async function findUserEvents(userId: string): Promise<Array<Event>> {
+  return db.event.findMany({
+    where: {
+      status: { notIn: [Status.auto, Status.deleted] },
+      createdById: userId
     }
   });
 }
@@ -221,6 +230,7 @@ async function findUserFavoriteEvent(
 
 export {
   findEvents,
+  findUserEvents,
   findEvent,
   createDraftEvent,
   updateEvent,

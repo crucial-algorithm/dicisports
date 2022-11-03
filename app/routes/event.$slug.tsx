@@ -342,7 +342,7 @@ export default function EventDisplayRoute() {
         <H3 id="races-list">{t('Races')}</H3>
         <div
           data-cy="races-list"
-          className="flex flex-col mt-2 scroll-mx-2 items-center md:items-start md:flex-row md:flex-nowrap md:overflow-x-auto pb-10 hide-scroll-bar"
+          className="flex flex-col mt-2 scroll-mx-2 items-center md:items-start md:flex-row md:flex-nowrap md:overflow-x-auto pb-10"
         >
           {races
             .sort((a: Race, b: Race) => a.displayOrder - b.displayOrder)

@@ -5,7 +5,7 @@ describe('Event', () => {
   });
 
   context('Public', () => {
-    it.only('Should display event', () => {
+    it('Should display event', () => {
       const name = 'Love Tiles Douro Granfondo 2023';
       const description =
         'O Peso da Régua será ponto de partida e de reencontro, depois de serem atravessados os concelhos de Lamego, Armamar, ' +
@@ -88,7 +88,7 @@ describe('Event', () => {
     });
 
     it('Should show error message when accessing an non existing event', () => {
-      cy.visit('/event/asidjas').get('p[data-cy=event-not-found');
+      cy.visit('/event/non-existing-event').get('p[data-cy=event-not-found');
     });
   });
 });

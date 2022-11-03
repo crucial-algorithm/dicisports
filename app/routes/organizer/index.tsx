@@ -14,7 +14,7 @@ import Button from '~/components/shared/Button';
 
 import Main from '~/components/shared/Main';
 
-import { findEvents } from '~/server/db/events.server';
+import { findUserEvents } from '~/server/db/events.server';
 import WhenListEmpty from '~/components/shared/Empty';
 
 import type { Sport } from '~/types';
@@ -33,9 +33,9 @@ export const handle = {
 
 export const loader: LoaderFunction = async ({ request }) => {
   // hide while this is still in dev
-  await requireAdminUser(request);
+  const user = await requireAdminUser(request);
 
-  const events = await findEvents();
+  const events = await findUserEvents(user.id);
   const sports = await findSports();
 
   return json({
