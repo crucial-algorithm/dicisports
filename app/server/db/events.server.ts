@@ -146,7 +146,6 @@ async function assignUniqueSlug(name: string, attempt = 0): Promise<string> {
   const prefix = `${Math.floor(Math.random() * 1000)}-`;
   const slug = `${attempt ? prefix : ''}${generateSlug(name)}`;
 
-  console.log(`attempt nbr ${attempt}, slug = ${slug}`);
   const event = await db.event.findUnique({
     where: { slug }
   });

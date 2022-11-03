@@ -80,22 +80,8 @@ function wasImageLoaded(selector: string) {
 }
 
 function visitAndWaitForHydration(url: string, options?: Partial<VisitOptions>) {
-  cy.visit(url, options).window().then((win) => {
-    return new Promise<AUTWindow>((resolve, reject) => {
-      const id = setInterval(() => {
-        const resource = win.performance
-          .getEntriesByType('resource')
-          .find((rs) => /(.*)\/entry.client-(.*)\.js/.test(rs.name));
-
-        if (!resource) {
-          return;
-        }
-
-        clearInterval(id);
-        setTimeout(() => resolve(win), 0);
-      }, 10);
-    });
-  });
+  cy.visit(url, options)
+    .get('body[data-cy=ready]');
 }
 
 Cypress.Commands.add('login', login);

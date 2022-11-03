@@ -10,9 +10,9 @@ import {
 } from '@heroicons/react/24/outline';
 import { HeartIcon as Favorite, ShareIcon } from '@heroicons/react/24/solid';
 import * as React from 'react';
-import { Component, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import CopyToClipboard from 'react-copy-to-clipboard';
+import { CopyToClipboard } from 'react-copy-to-clipboard';
 import { Carousel } from 'react-responsive-carousel';
 import clsx from 'clsx';
 import handleViewport from 'react-in-viewport';
@@ -94,10 +94,8 @@ export default function EventDisplayRoute() {
   let minPrice = 0;
   const [visiblePriceTag, setVisiblePriceTag] = useState<boolean>(true);
 
-  class Price extends Component {
-    render() {
-      return <PriceTag />;
-    }
+  function Price() {
+    return <PriceTag />;
   }
 
   function PriceTag() {
@@ -169,6 +167,7 @@ export default function EventDisplayRoute() {
                 </Button>
               )}
             </favorite.Form>
+            {/* @ts-ignore */}
             <CopyToClipboard
               text={`${address}/group/${event.slug}`}
               onCopy={handlerClickToCopy}
@@ -249,8 +248,6 @@ export default function EventDisplayRoute() {
   }
 
   const EventHeader = handleViewport(Price);
-
-  console.log('visible -->', visiblePriceTag);
 
   function handlerSetShowNotificationFunction(callback: () => void) {
     showFavoriteAddedNotification = callback;

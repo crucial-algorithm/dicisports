@@ -140,6 +140,6 @@ function verifyRace(
 
     cy.get(`[data-cy=gpx-${raceId}]`)
       .click()
-      .readFile('./cypress/downloads/Granfondo.gpx');
+      .readFile('./cypress/downloads/Granfondo.gpx', { timeout: 8000 });
   }
 }
