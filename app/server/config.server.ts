@@ -11,6 +11,7 @@ export type ConfigServer = {
   SESSION_EXPIRATION_TIME: number
   EMAIL_VERIFIER_TOKEN: string
   MAILGUN_DOMAIN: string | undefined
+  MAILGUN_ENDPOINT: string
   MAILGUN_SENDING_KEY: string | undefined
   CONVERT_KIT_FORM: string
   CONVERT_KIT_API_KEY: string
@@ -40,6 +41,7 @@ export default function Config(): ConfigServer {
     SESSION_EXPIRATION_TIME: 1000 * 60 * 60 * 24 * 365,
     EMAIL_VERIFIER_TOKEN: extractVar('EMAIL_VERIFIER_TOKEN'),
     MAILGUN_DOMAIN: process.env.MAILGUN_DOMAIN,
+    MAILGUN_ENDPOINT: extractVar('MAILGUN_ENDPOINT'),
     MAILGUN_SENDING_KEY: process.env.MAILGUN_SENDING_KEY,
 
     CONVERT_KIT_FORM: extractVar('CONVERT_KIT_FORM'),

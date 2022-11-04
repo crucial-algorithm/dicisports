@@ -8,3 +8,11 @@ services:
       - POSTGRES_DB=dicisports
     ports:
       - '6432:5432'
+
+  mailgun:
+    image: 'fakemailgun:latest'
+    build:
+      context: services/fakemailgun/.
+      dockerfile: .
+    ports:
+      - '8080:8080'

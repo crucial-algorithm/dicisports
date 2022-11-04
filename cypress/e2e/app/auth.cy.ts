@@ -1,6 +1,6 @@
 Cypress.Cookies.debug(true);
 
-describe('Authentication / Authorization', () => {
+describe.only('Authentication / Authorization', () => {
   beforeEach(() => {
     cy.task('db:reset');
   });
@@ -27,14 +27,33 @@ describe('Authentication / Authorization', () => {
         .should('eq', `${Cypress.config().baseUrl}/signup`);
     });
 
-    it('should allow to navigate to recover password', () => {
+    it.only('should allow to recover password', () => {
+
       cy.visit('/recover')
 
         .url()
         .should('eq', `${Cypress.config().baseUrl}/recover`)
 
         .get('input[name=email]')
-        .should('exist');
+        .should('exist')
+        .type('regular@gmail.com')
+        .get('button[type=submit]')
+        .click()
+
+        .get('#success-message')
+
+        .getRecoverPasswordUrl()
+        .then((url) => {
+          cy.visit(url)
+            .get('input[name=password]')
+            .type('Password2')
+            .get('input[name=confirmation]')
+            .type('Password2')
+            .get('button[type=submit]')
+            .click()
+            .url()
+            .should('eq', `${Cypress.config().baseUrl}/me`);
+        });
     });
 
     it('should login user', () => {

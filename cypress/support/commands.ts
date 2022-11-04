@@ -12,7 +12,12 @@ declare global {
 
       wasImageLoaded(selector: string): Chainable<void>;
 
-      visitAndWaitForHydration(url: string, options?: Partial<VisitOptions>): Chainable<AUTWindow>;
+      getRecoverPasswordUrl(): Chainable<string>;
+
+      visitAndWaitForHydration(
+        url: string,
+        options?: Partial<VisitOptions>
+      ): Chainable<AUTWindow>;
     }
   }
 }
@@ -86,10 +91,22 @@ function visitAndWaitForHydration(url: string, options?: Partial<VisitOptions>) 
   });
 }
 
+function getRecoverPasswordUrl() {
+  return cy.request({ method: 'GET', url: 'http://localhost:8080/' })
+    .then(
+      ({ body }) => {
+        const start = body.url.search('/magic');
+
+        return body.url.substr(start);
+      }
+    );
+}
+
 Cypress.Commands.add('login', login);
 Cypress.Commands.add('pickOptionFromSelect', pickOptionFromSelect);
 Cypress.Commands.add('pickLocationInMap', pickLocationInMap);
 Cypress.Commands.add('wasImageLoaded', wasImageLoaded);
 Cypress.Commands.add('visitAndWaitForHydration', visitAndWaitForHydration);
+Cypress.Commands.add('getRecoverPasswordUrl', getRecoverPasswordUrl);
 
 export {};
