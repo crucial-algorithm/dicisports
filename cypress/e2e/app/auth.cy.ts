@@ -1,6 +1,6 @@
 Cypress.Cookies.debug(true);
 
-describe.only('Authentication / Authorization', () => {
+describe('Authentication / Authorization', () => {
   beforeEach(() => {
     cy.task('db:reset');
   });
@@ -27,7 +27,7 @@ describe.only('Authentication / Authorization', () => {
         .should('eq', `${Cypress.config().baseUrl}/signup`);
     });
 
-    it.only('should allow to recover password', () => {
+    it('should allow to recover password', () => {
 
       cy.visit('/recover')
 
