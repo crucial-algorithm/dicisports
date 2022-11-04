@@ -105,7 +105,7 @@ describe('Event', () => {
   context('Maintenance', () => {
     beforeEach(() => {
       cy.task('db:reset');
-      cy.task('cleanDownloadFolder');
+      cy.task('clearDownloadFolder');
       cy.loginAdmin();
     });
 
