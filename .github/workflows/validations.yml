@@ -45,7 +45,7 @@ jobs:
           --health-timeout 5s
           --health-retries 5
       mailgun:
-        image: services/fakemailgun/.
+        image: services/fakemailgun
 
     steps:
       - name: Check out repository code
