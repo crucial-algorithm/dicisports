@@ -1,5 +1,3 @@
-Cypress.Cookies.debug(true);
-
 describe('Authentication / Authorization', () => {
   beforeEach(() => {
     cy.task('db:reset');
@@ -77,21 +75,12 @@ describe('Authentication / Authorization', () => {
     beforeEach(() => cy.login());
 
     it('should redirect to profile when accessing login', () => {
-      cy
-        .visit('/login')
-        .url()
-        .should('eq', `${Cypress.config().baseUrl}/me`)
-        ;
+      cy.visit('/login').url().should('eq', `${Cypress.config().baseUrl}/me`);
     });
 
     it('should be able to access it\'s profile', () => {
-      cy
-        .visit('/me')
-        .url()
-        .should('eq', `${Cypress.config().baseUrl}/me`)
-      ;
+      cy.visit('/me').url().should('eq', `${Cypress.config().baseUrl}/me`);
     });
-
   });
 
   context('When user wants to signup', () => {
@@ -139,8 +128,7 @@ describe('Authentication / Authorization', () => {
         .should('exist')
 
         .get('div[data-cy=password]>p[role=alert]')
-        .should('exist')
-      ;
+        .should('exist');
     });
 
     it('should fail if user already exists', () => {
@@ -193,7 +181,6 @@ describe('Authentication / Authorization', () => {
         .should('exist');
     });
   });
-
 });
 
 export {};

@@ -92,7 +92,7 @@ function visitAndWaitForHydration(url: string, options?: Partial<VisitOptions>) 
 }
 
 function getRecoverPasswordUrl() {
-  return cy.request({ method: 'GET', url: 'http://localhost:8080/' })
+  return cy.request({ method: 'GET', url: 'http://127.0.0.1:8080/' })
     .then(
       ({ body }) => {
         const start = body.url.search('/magic');
