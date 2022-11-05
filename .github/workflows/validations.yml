@@ -56,6 +56,11 @@ jobs:
       - name: Reset permissions
         run: chmod -R 777 .
 
+      - name: build and execute mailgun container
+        run: |
+          docker build -t mailgun:latest services/fakemailgun
+          execId=`docker run -p 8080:8080 -d mailgun`        
+
       - name: Cypress e2e tests
         uses: cypress-io/github-action@v4.2.0
         with:
