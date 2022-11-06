@@ -10,7 +10,7 @@ export default defineConfig({
     baseUrl: 'http://localhost:3000',
     experimentalSessionAndOrigin: true,
     env: {
-      HTTP_CATCHER: 'http://localhost:8080/'
+      HTTP_CATCHER: 'http://localhost:3001/'
     },
     setupNodeEvents(on, config) {
       // implement node event listeners here
