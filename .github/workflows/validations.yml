@@ -75,7 +75,7 @@ jobs:
           build: npm run ci:build
           start: npm run dev
         env:
-          DATABASE_URL: ${{secrets.E2E_DATABASE_URL}}
+          DATABASE_URL: postgresql://dici:sports@localhost:5432/dicisports?schema=public&charset=utf8
 
           MAPBOX_TOKEN: ${{secrets.E2E_MAPBOX_TOKEN}}
 
