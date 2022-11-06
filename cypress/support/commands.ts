@@ -92,12 +92,24 @@ function visitAndWaitForHydration(url: string, options?: Partial<VisitOptions>) 
 }
 
 function getRecoverPasswordUrl() {
-  return cy.request({ method: 'GET', url: 'http://127.0.0.1:8080/' })
+  function extractUrl(text: string) {
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    let loginLink = '';
+
+    text.replace(urlRegex, (url: string) => {
+      loginLink = url;
+      return url;
+    });
+    return loginLink;
+  }
+
+  return cy.request({ method: 'GET', url: Cypress.env('HTTP_CATCHER') })
     .then(
       ({ body }) => {
-        const start = body.url.search('/magic');
+        const url = extractUrl(body.text);
+        const start = url.search('/magic');
 
-        return body.url.substr(start);
+        return url.substr(start);
       }
     );
 }
