@@ -29,6 +29,7 @@ jobs:
 
   e2e:
     runs-on: ubuntu-latest
+    name: E2E on Chrome
 #    needs: [lint]
 #    container: cypress/browsers:node16.14.0-chrome99-ff97
 
@@ -44,6 +45,8 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+        ports:
+          - 5432:5432
       http-catcher:
         image: filipeutter/http-catcher
         ports:
