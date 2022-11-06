@@ -52,7 +52,7 @@ jobs:
     steps:
       - name: Test connection
         run: |
-          curl http-catcher:3001
+          curl localhost:3001
 
       - name: Check out repository code
         uses: actions/checkout@v3
