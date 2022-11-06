@@ -33,17 +33,17 @@ jobs:
 #    container: cypress/browsers:node16.14.0-chrome99-ff97
 
     services:
-#      postgres:
-#        image: postgres:13
-#        env:
-#          POSTGRES_USER: dici
-#          POSTGRES_PASSWORD: sports
-#          POSTGRES_DB: dicisports
-#        options: >-
-#          --health-cmd pg_isready
-#          --health-interval 10s
-#          --health-timeout 5s
-#          --health-retries 5
+      postgres:
+        image: postgres:13
+        env:
+          POSTGRES_USER: dici
+          POSTGRES_PASSWORD: sports
+          POSTGRES_DB: dicisports
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
       http-catcher:
         image: filipeutter/http-catcher
         ports:
