@@ -56,6 +56,7 @@ function pickLocationInMap(triggerOpenMapButtonName: string) {
     // open modal
     .get(`button[name=${triggerOpenMapButtonName}]`)
     .click()
+    .get('button[name=pick-location]')
 
     // search location
     .get('input.mapboxgl-ctrl-geocoder--input')
@@ -69,7 +70,10 @@ function pickLocationInMap(triggerOpenMapButtonName: string) {
 
     .wait('@mapBoxFindAddressFromCoords', { timeout: 10000 })
     .get('button[name=pick-location]')
-    .click();
+    .click()
+
+    .get('input[name=discard-location]')
+    .should('have.value', 'Estrada De Torres Novas');
 }
 
 function wasImageLoaded(selector: string) {
@@ -79,9 +83,11 @@ function wasImageLoaded(selector: string) {
     .should('be.greaterThan', 0);
 }
 
-function visitAndWaitForHydration(url: string, options?: Partial<VisitOptions>) {
-  cy.visit(url, options)
-    .get('body[data-cy=ready]');
+function visitAndWaitForHydration(
+  url: string,
+  options?: Partial<VisitOptions>
+) {
+  cy.visit(url, options).get('body[data-cy=ready]');
 }
 
 Cypress.Commands.add('login', login);
