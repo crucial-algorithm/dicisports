@@ -30,6 +30,10 @@ describe('Event', () => {
         .should('have.attr', 'href')
         .and('include', locationLink)
 
+        //TODO: check why it can't check translated name without wait(XXX)
+        .get('[data-cy=difficulty]')
+        .contains('Hard')
+
         .get('[data-cy=race]')
         .should('have.length', 3)
 
@@ -136,7 +140,6 @@ describe('Event', () => {
     it('should add a new perk', () => {
       // TODO
     });
-
   });
 });
 

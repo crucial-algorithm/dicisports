@@ -206,7 +206,7 @@ export default function EventDisplayRoute() {
             </div>
             <div className="flex flex-row items-center mb-2">
               <ArrowTrendingUpIcon className="h-6 w-6 m-0 inline-block text-primary" />
-              <H6 data-cy="date" className="ml-4 md:ml-2">
+              <H6 data-cy="difficulty" className="ml-4 md:ml-2">
                 {`${t(difficulties[event.difficultyId - 1])}`}
               </H6>
             </div>
@@ -268,14 +268,6 @@ export default function EventDisplayRoute() {
     return '';
   }
 
-  function handleEventHeaderLeaveViewport() {
-    setVisiblePriceTag(false);
-  }
-
-  function handleEventHeaderInViewport() {
-    setVisiblePriceTag(true);
-  }
-
   useEffect(() => {
     if (favorite.type === 'actionReload' && favorite.data.ok) {
       setMessage(
@@ -323,7 +315,6 @@ export default function EventDisplayRoute() {
   ].filter(Boolean) as string[];
   const [lat, lng] = event.location.split(',');
 
-  console.log('a');
   return (
     <>
       {!visiblePriceTag && <StickyPriceTag />}

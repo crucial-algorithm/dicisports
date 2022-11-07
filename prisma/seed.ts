@@ -27,6 +27,7 @@ async function persist(name: string, list: Array<any>, entity: any) {
 
 async function seed() {
   await persist('sports', sports(), db.sport);
+  await persist('difficulties', difficulties(), db.difficulty);
   await persist('group types', groupTypes(), db.groupType);
   await persist('group spirit', groupsSpirit(), db.groupSpirit);
 
@@ -36,7 +37,6 @@ async function seed() {
   await persist('documents', documents(), db.document);
   await persist('races', races(), db.race);
   await persist('perks', perks(), db.perk);
-  await persist('difficulties', difficulties(), db.difficulty);
   await persist('sessions', sessions(), db.session);
 }
 
