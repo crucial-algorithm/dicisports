@@ -9,6 +9,7 @@ import type {
   Perk as DBPerk,
   Race as DBRace,
   GroupSchedule as DBGroupSchedule,
+  Difficulty as DBDifficulty,
   Status
 } from '@prisma/client';
 
@@ -124,6 +125,7 @@ type CreateEventInput = {
   name: string
   slug?: string
   sportId: number
+  difficultyId: number
   startAt: Date | string
   location: string
   address: string
@@ -270,6 +272,8 @@ type FavoriteEvent = {
   updatedAt?: Date
 }
 
+type Difficulty = {} & DBDifficulty;
+
 export {
   NonNullProperties,
   MemberProfile,
@@ -302,5 +306,6 @@ export {
   CreateDocumentInput,
   DBRawGroup,
   LoginAction,
-  FavoriteEvent
+  FavoriteEvent,
+  Difficulty
 };

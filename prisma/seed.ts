@@ -36,6 +36,7 @@ async function seed() {
   await persist('documents', documents(), db.document);
   await persist('races', races(), db.race);
   await persist('perks', perks(), db.perk);
+  await persist('difficulties', difficulties(), db.difficulty);
   await persist('sessions', sessions(), db.session);
 }
 
@@ -52,6 +53,7 @@ async function clear() {
   await db.groupSpirit.deleteMany();
   await db.groupType.deleteMany();
   await db.sport.deleteMany();
+  await db.difficulty.deleteMany();
 }
 
 clear().then(() => seed().then());
@@ -144,6 +146,7 @@ function events() {
       id: 'bQmGXYkbhJetjk6mniMt',
       name: 'Trail do Zêzere',
       sportId: 2,
+      difficultyId: 2,
       startAt: new Date('2022-01-22T08:00:00Z'),
       endAt: new Date('2022-01-22T18:00:00Z'),
       location: '39.6929301,-8.302317',
@@ -160,6 +163,7 @@ function events() {
       id: 'TgKZi8NQKNoJQGArd3zc',
       name: 'Flavius Challenge OCR',
       sportId: 1,
+      difficultyId: 1,
       startAt: new Date('2022-02-18T10:00:00Z'),
       endAt: new Date('2022-02-19T15:00:00Z'),
       location: '41.7352772,-7.4712548',
@@ -176,6 +180,7 @@ function events() {
       id: 'MY4bvgxDbMtGv8rbYe5d',
       name: 'Love Tiles Douro Granfondo 2023',
       sportId: 3,
+      difficultyId: 3,
       startAt: new Date('2022-10-30T10:00:00Z'),
       endAt: new Date('2022-11-30T15:00:00Z'),
       location: '41.7352772,-7.4712548',
@@ -223,6 +228,23 @@ function perks() {
     ...p,
     createdAt: new Date()
   }));
+}
+
+function difficulties() {
+  return [
+    {
+      id: 1,
+      name: { pt: 'Fácil' }
+    },
+    {
+      id: 2,
+      name: { pt: 'Intermédio' }
+    },
+    {
+      id: 3,
+      name: { pt: 'Difícil' }
+    }
+  ];
 }
 
 // Generated using the following SQL statement:

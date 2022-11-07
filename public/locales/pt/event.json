@@ -23,5 +23,9 @@
   "Elevation Loss": "Perda de elevação",
   "No Races": "Nenhuma corrida encontrada",
   "Event not found": "Hmmm, não conhecemos o evento que estás à procura, mas temos muitos outros disponíveis.",
-  "Event not found action": "Clica para voltar à pesquisa"
+  "Event not found action": "Clica para voltar à pesquisa",
+
+  "Easy": "Fácil",
+  "Intermediate": "Intermédio",
+  "Hard": "Difícil"
 }

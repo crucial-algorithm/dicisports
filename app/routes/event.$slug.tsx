@@ -4,6 +4,7 @@ import { Link, useFetcher, useLoaderData } from '@remix-run/react';
 
 import { Status } from '@prisma/client';
 import {
+  ArrowTrendingUpIcon,
   CalendarDaysIcon,
   HeartIcon,
   MapPinIcon
@@ -93,6 +94,7 @@ export default function EventDisplayRoute() {
   let showCopiedToClipboardNotification: any = null;
   let minPrice = 0;
   const [visiblePriceTag, setVisiblePriceTag] = useState<boolean>(true);
+  const difficulties = ['Easy', 'Intermediate', 'Hard'];
 
   function Price() {
     return <PriceTag />;
@@ -192,7 +194,7 @@ export default function EventDisplayRoute() {
               <DisplayDate date={new Date(event.startAt)} />
             </H6>
           </div>
-          <div className="flex flex-row items-center">
+          <div className="flex flex-row items-center mb-2">
             <MapPinIcon className="h-6 w-6 m-0 inline-block text-primary" />
             <a
               href={`https://www.google.com/maps/search/?api=1&query=${lat}%2C${lng}`}
@@ -204,6 +206,14 @@ export default function EventDisplayRoute() {
                 {event.address}
               </H6>
             </a>
+          </div>
+          <div className="flex flex-row items-center mb-2">
+            <ArrowTrendingUpIcon className="h-6 w-6 m-0 inline-block text-primary" />
+            <H6 data-cy="date" className="ml-4 md:ml-2">
+              <b className="break-words">{`${t(
+                difficulties[event.difficultyId - 1]
+              )}`}</b>
+            </H6>
           </div>
           <div className="flex flex-row justify-between items-center mt-16 dark:bg-gray-900 bg-white">
             <div className="flex flex-col justify-start">
