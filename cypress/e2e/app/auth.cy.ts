@@ -5,7 +5,7 @@ describe('Authentication / Authorization', () => {
     cy.task('db:reset');
   });
 
-  context('When user not authenticated', () => {
+  context.skip('When user not authenticated', () => {
     it('should redirect to login when accessing groups', () => {
       cy.visit('/m/groups')
 

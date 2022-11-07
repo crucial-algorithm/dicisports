@@ -295,7 +295,7 @@ export const action: ActionFunction = async ({ request, params }) => {
       // return badRequest({
       //   error: t('We dont know what happened')
       // });
-      throw new Response('Unexpected error', { status: 404 });
+      return new Response('Unexpected error', { status: 404 });
     }
     const errors: { [key: string]: string | undefined } = {};
 
@@ -307,7 +307,7 @@ export const action: ActionFunction = async ({ request, params }) => {
     errors.schedules = schedules.map((s) => s.errors || {});
 
     // return badRequest({ error: undefined, errors });
-    throw new Response('Validation error', { status: 401 });
+    return json({ errors }, { status: 500 });
   }
 };
 
@@ -342,6 +342,10 @@ export default function GroupRoute() {
         }
       : null
   );
+
+  if (actionData) {
+    console.log(actionData.errors);
+  }
 
   const [schedules, setSchedules] = useState<
     Array<
@@ -595,6 +599,10 @@ export default function GroupRoute() {
                 />
               </div>
             </FormField>
+
+            <InputError id="global-error" className="mt-4">
+              {[actionData?.errors?.name, actionData?.errors?.location, actionData?.errors?.near, actionData?.errors?.schedules].join(' | ')}
+            </InputError>
 
             <Button name="save-group" className="mt-8" type="submit" form="profile-form">
               {isUpdate ? t('Update Group') : t('Create Group')}

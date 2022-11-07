@@ -4,7 +4,7 @@ describe('Event', () => {
     cy.task('clearDownloadFolder');
   });
 
-  context('Public', () => {
+  context.skip('Public', () => {
     it('Should display event', () => {
       const name = 'Love Tiles Douro Granfondo 2023';
       const description =
