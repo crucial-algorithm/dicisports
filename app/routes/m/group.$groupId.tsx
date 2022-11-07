@@ -284,12 +284,11 @@ export const action: ActionFunction = async ({ request, params }) => {
   try {
     GroupSchema.parse(data);
     await updateGroup(data, schedules);
-    // return redirect(
-    //   `/m/groups?message=${t(
-    //     isUpdate ? 'Group updated successfully' : 'Group created successfully'
-    //   )}`
-    // );
-    throw new Response('Submit action', { status: 400 });
+    return redirect(
+      `/m/groups?message=${t(
+        isUpdate ? 'Group updated successfully' : 'Group created successfully'
+      )}`
+    );
   } catch (excp) {
     if (!(excp instanceof ZodError)) {
       console.error(excp);
