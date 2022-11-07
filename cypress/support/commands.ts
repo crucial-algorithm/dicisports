@@ -14,6 +14,8 @@ declare global {
 
       wasImageLoaded(selector: string): Chainable<void>;
 
+      getRecoverPasswordUrl(): Chainable<string>;
+
       visitAndWaitForHydration(
         url: string,
         options?: Partial<VisitOptions>
@@ -69,7 +71,7 @@ function pickLocationInMap(triggerOpenMapButtonName: string) {
     .click()
 
     .wait('@mapBoxFindAddressFromCoords', { timeout: 10000 })
-    .get('button[name=pick-location]')
+    .get('button[name=pick-location]:enabled', { timeout: 10000 })
     .click()
 
     .get('input[name=discard-location]')
@@ -90,11 +92,35 @@ function visitAndWaitForHydration(
   cy.visit(url, options).get('body[data-cy=ready]');
 }
 
+function getRecoverPasswordUrl() {
+  function extractUrl(text: string) {
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    let loginLink = '';
+
+    text.replace(urlRegex, (url: string) => {
+      loginLink = url;
+      return url;
+    });
+    return loginLink;
+  }
+
+  return cy.request({ method: 'GET', url: Cypress.env('HTTP_CATCHER') })
+    .then(
+      ({ body }) => {
+        const url = extractUrl(body.text);
+        const start = url.search('/magic');
+
+        return url.substr(start);
+      }
+    );
+}
+
 Cypress.Commands.add('login', login);
 Cypress.Commands.add('loginAdmin', loginAdmin);
 Cypress.Commands.add('pickOptionFromSelect', pickOptionFromSelect);
 Cypress.Commands.add('pickLocationInMap', pickLocationInMap);
 Cypress.Commands.add('wasImageLoaded', wasImageLoaded);
 Cypress.Commands.add('visitAndWaitForHydration', visitAndWaitForHydration);
+Cypress.Commands.add('getRecoverPasswordUrl', getRecoverPasswordUrl);
 
 export {};

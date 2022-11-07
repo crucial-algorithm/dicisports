@@ -1,5 +1,3 @@
-Cypress.Cookies.debug(true);
-
 describe('Authentication / Authorization', () => {
   beforeEach(() => {
     cy.task('db:reset');
@@ -27,18 +25,37 @@ describe('Authentication / Authorization', () => {
         .should('eq', `${Cypress.config().baseUrl}/signup`);
     });
 
-    it('should allow to navigate to recover password', () => {
+    it('should allow to recover password', () => {
+
       cy.visit('/recover')
 
         .url()
         .should('eq', `${Cypress.config().baseUrl}/recover`)
 
         .get('input[name=email]')
-        .should('exist');
+        .should('exist')
+        .type('regular@gmail.com')
+        .get('button[type=submit]')
+        .click()
+
+        .get('#success-message')
+
+        .getRecoverPasswordUrl()
+        .then((url) => {
+          cy.visit(url)
+            .get('input[name=password]')
+            .type('Password2')
+            .get('input[name=confirmation]')
+            .type('Password2')
+            .get('button[type=submit]')
+            .click()
+            .url()
+            .should('eq', `${Cypress.config().baseUrl}/me`);
+        });
     });
 
     it('should login user', () => {
-      cy.visit('/login')
+      cy.visitAndWaitForHydration('/login')
 
         .get('[name=email]')
         .type('regular@gmail.com', { delay: 1 })
@@ -58,21 +75,12 @@ describe('Authentication / Authorization', () => {
     beforeEach(() => cy.login());
 
     it('should redirect to profile when accessing login', () => {
-      cy
-        .visit('/login')
-        .url()
-        .should('eq', `${Cypress.config().baseUrl}/me`)
-        ;
+      cy.visit('/login').url().should('eq', `${Cypress.config().baseUrl}/me`);
     });
 
     it('should be able to access it\'s profile', () => {
-      cy
-        .visit('/me')
-        .url()
-        .should('eq', `${Cypress.config().baseUrl}/me`)
-      ;
+      cy.visit('/me').url().should('eq', `${Cypress.config().baseUrl}/me`);
     });
-
   });
 
   context('When user wants to signup', () => {
@@ -120,8 +128,7 @@ describe('Authentication / Authorization', () => {
         .should('exist')
 
         .get('div[data-cy=password]>p[role=alert]')
-        .should('exist')
-      ;
+        .should('exist');
     });
 
     it('should fail if user already exists', () => {
@@ -174,7 +181,6 @@ describe('Authentication / Authorization', () => {
         .should('exist');
     });
   });
-
 });
 
 export {};

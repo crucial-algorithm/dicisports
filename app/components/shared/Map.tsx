@@ -245,7 +245,9 @@ function MapDialog({
   }
 
   function handleCallback(location: DiciLocation | null) {
-    if (onPickedLocation) {onPickedLocation(location);}
+    if (onPickedLocation) {
+      onPickedLocation(location);
+    }
     setLocation(location);
   }
 
@@ -268,7 +270,7 @@ function MapDialog({
         <Button variant="secondary" onClick={handleClose}>
           {t('Cancel')}
         </Button>
-        <Button name="pick-location" onClick={handleClose}>
+        <Button name="pick-location" onClick={handleClose} disabled={!location}>
           {t('Pick Location Button')}
         </Button>
       </div>

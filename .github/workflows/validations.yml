@@ -29,8 +29,8 @@ jobs:
 
   e2e:
     runs-on: ubuntu-latest
+    name: E2E on Chrome
     needs: [lint]
-    container: cypress/browsers:node16.14.0-chrome99-ff97
 
     services:
       postgres:
@@ -44,8 +44,18 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+        ports:
+          - 5432:5432
+      http-catcher:
+        image: filipeutter/http-catcher
+        ports:
+          - 3001:3001
 
     steps:
+      - name: Test connection
+        run: |
+          curl localhost:3001
+
       - name: Check out repository code
         uses: actions/checkout@v3
 
@@ -64,7 +74,7 @@ jobs:
           build: npm run ci:build
           start: npm run dev
         env:
-          DATABASE_URL: ${{secrets.E2E_DATABASE_URL}}
+          DATABASE_URL: postgresql://dici:sports@localhost:5432/dicisports?schema=public&charset=utf8
 
           MAPBOX_TOKEN: ${{secrets.E2E_MAPBOX_TOKEN}}
 
@@ -78,6 +88,7 @@ jobs:
 
           EMAIL_VERIFIER_TOKEN: ${{secrets.E2E_EMAIL_VERIFIER_TOKEN}}
           MAILGUN_SENDING_KEY: ${{secrets.E2E_MAILGUN_SENDING_KEY}}
+          MAILGUN_ENDPOINT: http://127.0.0.1:3001
 
           CONVERT_KIT_FORM: ${{secrets.E2E_CONVERT_KIT_FORM}}
           CONVERT_KIT_API_KEY: ${{secrets.E2E_CONVERT_KIT_API_KEY}}
