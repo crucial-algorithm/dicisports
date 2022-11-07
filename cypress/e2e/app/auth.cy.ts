@@ -1,11 +1,11 @@
 Cypress.Cookies.debug(true);
 
-describe('Authentication / Authorization', () => {
+describe.skip('Authentication / Authorization', () => {
   beforeEach(() => {
     cy.task('db:reset');
   });
 
-  context.skip('When user not authenticated', () => {
+  context('When user not authenticated', () => {
     it('should redirect to login when accessing groups', () => {
       cy.visit('/m/groups')
 

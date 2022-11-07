@@ -1,10 +1,10 @@
-describe('Event', () => {
+describe.skip('Event', () => {
   before(() => {
     cy.task('db:reset');
     cy.task('clearDownloadFolder');
   });
 
-  context.skip('Public', () => {
+  context('Public', () => {
     it('Should display event', () => {
       const name = 'Love Tiles Douro Granfondo 2023';
       const description =
