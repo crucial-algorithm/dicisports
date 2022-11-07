@@ -37,7 +37,7 @@ describe('Groups', () => {
   context('Maintenance', () => {
     beforeEach(() => cy.login());
 
-    it('should create a group', () => {
+    it.only('should create a group', () => {
       cy
         .visit('/m/groups')
         .get('button[name=create-group]')

@@ -284,17 +284,19 @@ export const action: ActionFunction = async ({ request, params }) => {
   try {
     GroupSchema.parse(data);
     await updateGroup(data, schedules);
-    return redirect(
-      `/m/groups?message=${t(
-        isUpdate ? 'Group updated successfully' : 'Group created successfully'
-      )}`
-    );
+    // return redirect(
+    //   `/m/groups?message=${t(
+    //     isUpdate ? 'Group updated successfully' : 'Group created successfully'
+    //   )}`
+    // );
+    throw new Response('Submit action', { status: 400 });
   } catch (excp) {
     if (!(excp instanceof ZodError)) {
       console.error(excp);
-      return badRequest({
-        error: t('We dont know what happened')
-      });
+      // return badRequest({
+      //   error: t('We dont know what happened')
+      // });
+      throw new Response('Unexpected error', { status: 404 });
     }
     const errors: { [key: string]: string | undefined } = {};
 
@@ -305,7 +307,8 @@ export const action: ActionFunction = async ({ request, params }) => {
     // @ts-ignore
     errors.schedules = schedules.map((s) => s.errors || {});
 
-    return badRequest({ error: undefined, errors });
+    // return badRequest({ error: undefined, errors });
+    throw new Response('Validation error', { status: 401 });
   }
 };
 
