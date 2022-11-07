@@ -132,8 +132,7 @@ export const handle = {
 
 export const loader: LoaderFunction = async ({ request, params }) => {
   // hide while this is still in dev
-  await requireAdminUser(request);
-  const user = await requireUser(request);
+  const user = await requireAdminUser(request);
 
   const sports = await findSports();
   const eventId = params.eventId as string;
@@ -427,7 +426,7 @@ export default function OrganizerEventRoute() {
       <div className="mb-24">
         <UploadForm method="post" className="w-full">
           <div className="mb-12 lg:mb-20">
-            <div className="flex flex-col-reverse items-start justify-between lg:flex-row lg:items-center">
+            <div className="flex flex-row items-start justify-between items-center">
               <div>
                 <H2>{t('Create Event')}</H2>
               </div>
@@ -1087,7 +1086,7 @@ function RaceDialog(props: {
                 </div>
                 <div>
                   <a
-                    href={`/organizer/race/${race?.id}`}
+                    href={`/organizer/race/gpx/${race?.id}`}
                     target="_blank"
                     rel="noreferrer"
                     className="group relative inline-flex ml-14 dark:text-blueGray-500"
@@ -1388,7 +1387,7 @@ function UploadDocumentDialog(props: {
 
   const { getRootProps, getInputProps } = useDropzone({
     multiple: false,
-    accept: 'text/*, .pdf',
+    accept: '.pdf, .gpx',
     onDrop: (accepted) => {
       if (accepted.length === 0) {
         return;

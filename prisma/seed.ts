@@ -1,7 +1,9 @@
-import { PrismaClient, Status, Role } from '@prisma/client';
+import { PrismaClient, Status } from '@prisma/client';
 
-import usersSeed from './data/users.json';
+import perksSeed from './data/perks.json';
 import groupsSeed from './data/groups.json';
+import usersSeed from './data/users.json';
+import racesSeed from './data/races.json';
 
 const db = new PrismaClient();
 
@@ -32,6 +34,8 @@ async function seed() {
   await persist('groups', groups(), db.group);
   await persist('events', events(), db.event);
   await persist('documents', documents(), db.document);
+  await persist('races', races(), db.race);
+  await persist('perks', perks(), db.perk);
   await persist('sessions', sessions(), db.session);
 }
 
@@ -39,6 +43,7 @@ async function clear() {
   await db.document.deleteMany();
   await db.race.deleteMany();
   await db.perk.deleteMany();
+  await db.favoriteEvent.deleteMany();
   await db.event.deleteMany();
   await db.groupSchedule.deleteMany();
   await db.favoriteGroup.deleteMany();
@@ -145,9 +150,11 @@ function events() {
       address: 'Ferreira do Zêzere',
       useExternalBooking: false,
       externalBookingUrl: null,
-      status: Status.auto,
+      status: Status.draft,
       createdAt: new Date('2021-12-31T08:00:00Z'),
-      updatedAt: new Date('2021-12-31T08:00:00Z')
+      updatedAt: new Date('2021-12-31T08:00:00Z'),
+      slug: 'trail-do-zezere',
+      createdById: 'nTQ8idPqTY8PmhzbsN4u'
     },
     {
       id: 'TgKZi8NQKNoJQGArd3zc',
@@ -160,9 +167,30 @@ function events() {
       useExternalBooking: true,
       externalBookingUrl:
         'https://stopandgo.com.pt/events/viii-trilho-dos-reis',
-      status: Status.auto,
+      status: Status.published,
       createdAt: new Date('2021-12-31T08:00:00Z'),
-      updatedAt: new Date('2021-12-31T08:00:00Z')
+      updatedAt: new Date('2021-12-31T08:00:00Z'),
+      createdById: 'nTQ8idPqTY8PmhzbsN4u'
+    },
+    {
+      id: 'MY4bvgxDbMtGv8rbYe5d',
+      name: 'Love Tiles Douro Granfondo 2023',
+      sportId: 3,
+      startAt: new Date('2022-10-30T10:00:00Z'),
+      endAt: new Date('2022-11-30T15:00:00Z'),
+      location: '41.7352772,-7.4712548',
+      address: 'Chaves',
+      useExternalBooking: false,
+      status: Status.published,
+      createdAt: new Date('2021-12-31T08:00:00Z'),
+      updatedAt: new Date('2021-12-31T08:00:00Z'),
+      directions: 'Carro: Saida pela A3 direção a Braga',
+      eventDescription:
+        'O Peso da Régua será ponto de partida e de reencontro, depois de serem atravessados os concelhos de Lamego, Armamar, ' +
+        'Tabuaço, Penedono, Foz Coa e São João da Pesqueira.',
+      createdById: '3beca472138d6d234d3f',
+      image1: 'users/NtGwBBJeHdR6X6XHZPJ3',
+      slug: 'love-tiles-douro-granfondo-2023'
     }
   ];
 }
@@ -170,16 +198,31 @@ function events() {
 function documents() {
   return [
     {
-      id: 'iMJfFDJkQK3FWW8C5YW8',
-      path: 'seed/MqmdXHau8JAjpfbCKJAW.png',
+      id: 'MY4bvgxDbMtGv8rbYe5d',
+      path: 'MY4bvgxDbMtGv8rbYe5d/9Xjz6PY2n5rPCq5DWKPJ.pdf',
       position: 1,
-      label: 'regulamento',
-      eventId: 'bQmGXYkbhJetjk6mniMt',
+      label: 'Regulamento',
+      eventId: 'MY4bvgxDbMtGv8rbYe5d',
       createdAt: new Date('2021-12-31T08:00:00Z'),
       updatedAt: new Date('2021-12-31T08:00:00Z'),
       status: Status.auto
     }
   ];
+}
+
+function races() {
+  return racesSeed.map((r) => ({
+    ...r,
+    createdAt: new Date(),
+    updatedAt: new Date()
+  }));
+}
+
+function perks() {
+  return perksSeed.map((p) => ({
+    ...p,
+    createdAt: new Date()
+  }));
 }
 
 // Generated using the following SQL statement:
@@ -199,8 +242,7 @@ function users() {
     return {
       ...u,
       createdAt: new Date(u.createdAt),
-      updatedAt: new Date(u.updatedAt),
-      role: Role.MEMBER
+      updatedAt: new Date(u.updatedAt)
     };
   });
 }
@@ -210,6 +252,12 @@ function sessions() {
     {
       id: 'c4e1b568-0e30-466d-8ff0-e10f212e3c5f',
       userId: 'nTQ8idPqTY8PmhzbsN4u',
+      createdAt: new Date(),
+      expirationDate: new Date('2100-10-16 19:29:16.667')
+    },
+    {
+      id: '297efeb8-39cf-4b74-9311-c082339de55a',
+      userId: '3beca472138d6d234d3f',
       createdAt: new Date(),
       expirationDate: new Date('2100-10-16 19:29:16.667')
     }

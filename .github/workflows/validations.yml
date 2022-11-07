@@ -22,7 +22,7 @@ jobs:
         run: npm ci
       - name: Generate CSS dependencies
         run: |
-          npm run generate:css 
+          npm run generate:css
           npm run deploy:css
       - name: Run Lint
         run: npm run lint

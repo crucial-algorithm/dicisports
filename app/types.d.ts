@@ -263,6 +263,13 @@ type GroupFilters = {
 
 type LoginAction = null | 'login' | 'ws' | 'favorite'
 
+type FavoriteEvent = {
+  userId: string
+  eventId: string
+  createdAt?: Date
+  updatedAt?: Date
+}
+
 export {
   NonNullProperties,
   MemberProfile,
@@ -294,5 +301,6 @@ export {
   CreateRaceInput,
   CreateDocumentInput,
   DBRawGroup,
-  LoginAction
+  LoginAction,
+  FavoriteEvent
 };
