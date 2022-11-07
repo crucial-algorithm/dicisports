@@ -79,7 +79,7 @@ describe('Event', () => {
         2274,
         576,
         granfondo,
-        '/organizer/race/xaXaCzs2t7D8DpRNnffM'
+        '/organizer/race/gpx/xaXaCzs2t7D8DpRNnffM'
       );
     });
 

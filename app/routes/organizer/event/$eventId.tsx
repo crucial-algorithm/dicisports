@@ -1086,7 +1086,7 @@ function RaceDialog(props: {
                 </div>
                 <div>
                   <a
-                    href={`/organizer/race/${race?.id}`}
+                    href={`/organizer/race/gpx/${race?.id}`}
                     target="_blank"
                     rel="noreferrer"
                     className="group relative inline-flex ml-14 dark:text-blueGray-500"

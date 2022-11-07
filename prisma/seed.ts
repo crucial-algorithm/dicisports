@@ -199,7 +199,7 @@ function documents() {
   return [
     {
       id: 'MY4bvgxDbMtGv8rbYe5d',
-      path: 'uvp7YxqzgH7W27y982bw/yRDcarz2jYYAEydMdF6i.pdf',
+      path: 'MY4bvgxDbMtGv8rbYe5d/9Xjz6PY2n5rPCq5DWKPJ.pdf',
       position: 1,
       label: 'Regulamento',
       eventId: 'MY4bvgxDbMtGv8rbYe5d',

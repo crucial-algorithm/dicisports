@@ -167,7 +167,6 @@ export default function EventDisplayRoute() {
                 </Button>
               )}
             </favorite.Form>
-            {/* @ts-ignore */}
             <CopyToClipboard
               text={`${address}/group/${event.slug}`}
               onCopy={handlerClickToCopy}
@@ -206,7 +205,7 @@ export default function EventDisplayRoute() {
               </H6>
             </a>
           </div>
-          <div className="flex flex-row justify-between items-center mt-16 top-4 sticky dark:bg-gray-900 bg-white">
+          <div className="flex flex-row justify-between items-center mt-16 dark:bg-gray-900 bg-white">
             <div className="flex flex-col justify-start">
               <H6 className="md:ml-2">{t('From')}</H6>
               <H2
@@ -342,7 +341,7 @@ export default function EventDisplayRoute() {
         <H3 id="races-list">{t('Races')}</H3>
         <div
           data-cy="races-list"
-          className="flex flex-col mt-2 scroll-mx-2 items-center md:items-start md:flex-row md:flex-nowrap md:overflow-x-auto pb-10"
+          className="flex flex-col mt-2 scroll-mx-2 items-center md:items-start md:flex-row md:flex-nowrap md:overflow-x-auto pb-10 hide-scrollbar"
         >
           {races
             .sort((a: Race, b: Race) => a.displayOrder - b.displayOrder)
@@ -487,7 +486,7 @@ function DisplayRace(props: { race: Race }) {
             )}
             {race.track && (
               <Link
-                to={`/organizer/race/${race.id}`}
+                to={`/organizer/race/gpx/${race.id}`}
                 target="_blank"
                 rel="noreferrer"
                 data-cy={`gpx-${race.id}`}
