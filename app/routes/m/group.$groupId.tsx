@@ -292,10 +292,9 @@ export const action: ActionFunction = async ({ request, params }) => {
   } catch (excp) {
     if (!(excp instanceof ZodError)) {
       console.error(excp);
-      // return badRequest({
-      //   error: t('We dont know what happened')
-      // });
-      return new Response('Unexpected error', { status: 404 });
+      return badRequest({
+        error: t('We dont know what happened')
+      });
     }
     const errors: { [key: string]: string | undefined } = {};
 
@@ -306,8 +305,7 @@ export const action: ActionFunction = async ({ request, params }) => {
     // @ts-ignore
     errors.schedules = schedules.map((s) => s.errors || {});
 
-    // return badRequest({ error: undefined, errors });
-    return json({ errors }, { status: 500 });
+    return badRequest({ error: undefined, errors });
   }
 };
 
