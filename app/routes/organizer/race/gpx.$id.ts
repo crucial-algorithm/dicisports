@@ -1,7 +1,7 @@
 import type { LoaderFunction } from 'remix';
 import { Status } from '@prisma/client';
 
-import { requireAdminUser, requireUser } from '~/server/auth/session.server';
+import { requireAdminUser } from '~/server/auth/session.server';
 import { downloadFromS3 } from '~/server/utils/s3';
 import i18n from '~/server/i18n.server';
 import { findRace } from '~/server/db/races.server';
@@ -14,7 +14,6 @@ const RESOURCES_NS = 'create-event-form';
 export const loader: LoaderFunction = async ({ request, params }) => {
   // hide while this is still in dev
   await requireAdminUser(request);
-  const user = await requireUser(request);
 
   const t = await i18n.getFixedT(request, RESOURCES_NS);
 
@@ -30,7 +29,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   if (!event) {
     throw NotFound(t('Event not found'));
   }
-  if (event.status !== Status.published && event.createdById !== user.id) {
+  if (event.status !== Status.published) {
     throw Unauthorized(t('Not authorized'));
   }
 

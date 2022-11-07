@@ -18,6 +18,10 @@ export default defineConfig({
         'db:reset'() {
           execSync('npx prisma db seed');
           return null;
+        },
+        'clearDownloadFolder'() {
+          execSync('rm -rf ./cypress/downloads/*');
+          return null;
         }
       });
     }

@@ -10,7 +10,7 @@ async function createRace(race: CreateRaceInput): Promise<Race> {
   const raceId = race.id || Id();
   const raceAt = new Date();
 
-  const r = await db.race.create({
+  return await db.race.create({
     data: {
       id: raceId,
       name: race.name,
@@ -28,9 +28,6 @@ async function createRace(race: CreateRaceInput): Promise<Race> {
       eventId: race.eventId
     }
   });
-
-  console.log(r);
-  return r;
 }
 
 async function findEventRaces(eventId: string): Promise<Race[] | null> {

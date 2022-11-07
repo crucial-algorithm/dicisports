@@ -75,7 +75,7 @@ export default function GroupDisplayRoute() {
   if (!group) {
     return (
       <Main>
-        <p data-cy="group-not-found">{t('Group not found')}</p>
+        <Paragraph data-cy="group-not-found">{t('Group not found')}</Paragraph>
         <a href="/">{t('Group not found action')}</a>
       </Main>
     );

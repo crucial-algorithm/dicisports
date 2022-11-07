@@ -6,6 +6,8 @@ declare global {
     interface Chainable {
       login(): Chainable<void>;
 
+      loginAdmin(): Chainable<void>;
+
       pickOptionFromSelect(name: string, position: number): Chainable<void>;
 
       pickLocationInMap(triggerOpenMapButtonName: string): Chainable<void>;
@@ -29,6 +31,13 @@ function login() {
   );
 }
 
+function loginAdmin() {
+  cy.setCookie(
+    'ds_root_session',
+    'eyJfX3Nlc3Npb25faWRfXyI6IjI5N2VmZWI4LTM5Y2YtNGI3NC05MzExLWMwODIzMzlkZTU1YSJ9.37yKylNYa4IFtwx6tM6dqYMU9wNPnlG28uvBeB18V60'
+  );
+}
+
 function pickOptionFromSelect(name: string, position: number) {
   cy.get(`#select-${name}`)
     .click()
@@ -49,6 +58,7 @@ function pickLocationInMap(triggerOpenMapButtonName: string) {
     // open modal
     .get(`button[name=${triggerOpenMapButtonName}]`)
     .click()
+    .get('button[name=pick-location]')
 
     // search location
     .get('input.mapboxgl-ctrl-geocoder--input')
@@ -62,7 +72,10 @@ function pickLocationInMap(triggerOpenMapButtonName: string) {
 
     .wait('@mapBoxFindAddressFromCoords', { timeout: 10000 })
     .get('button[name=pick-location]')
-    .click();
+    .click()
+
+    .get('input[name=discard-location]')
+    .should('have.value', 'Estrada De Torres Novas');
 }
 
 function wasImageLoaded(selector: string) {
@@ -72,23 +85,11 @@ function wasImageLoaded(selector: string) {
     .should('be.greaterThan', 0);
 }
 
-function visitAndWaitForHydration(url: string, options?: Partial<VisitOptions>) {
-  cy.visit(url, options).window().then((win) => {
-    return new Promise<AUTWindow>((resolve, reject) => {
-      const id = setInterval(() => {
-        const resource = win.performance
-          .getEntriesByType('resource')
-          .find((rs) => /(.*)\/entry.client-(.*)\.js/.test(rs.name));
-
-        if (!resource) {
-          return;
-        }
-
-        clearInterval(id);
-        setTimeout(() => resolve(win), 0);
-      }, 10);
-    });
-  });
+function visitAndWaitForHydration(
+  url: string,
+  options?: Partial<VisitOptions>
+) {
+  cy.visit(url, options).get('body[data-cy=ready]');
 }
 
 function getRecoverPasswordUrl() {
@@ -115,6 +116,7 @@ function getRecoverPasswordUrl() {
 }
 
 Cypress.Commands.add('login', login);
+Cypress.Commands.add('loginAdmin', loginAdmin);
 Cypress.Commands.add('pickOptionFromSelect', pickOptionFromSelect);
 Cypress.Commands.add('pickLocationInMap', pickLocationInMap);
 Cypress.Commands.add('wasImageLoaded', wasImageLoaded);

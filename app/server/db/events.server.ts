@@ -3,7 +3,7 @@ import { PrismaClient, Status } from '@prisma/client';
 
 import { db } from '~/server/db.server';
 import Id from '~/server/utils/Id.server';
-import type { CreateEventInput, Language } from '~/types';
+import type { CreateEventInput, FavoriteEvent, Language } from '~/types';
 import {
   createDefaultPerks,
   createPerks,
@@ -17,7 +17,16 @@ const prisma = new PrismaClient();
 async function findEvents(): Promise<Array<Event>> {
   return db.event.findMany({
     where: {
-      status: { not: Status.auto }
+      status: { notIn: [Status.auto, Status.deleted] }
+    }
+  });
+}
+
+async function findUserEvents(userId: string): Promise<Array<Event>> {
+  return db.event.findMany({
+    where: {
+      status: { notIn: [Status.auto, Status.deleted] },
+      createdById: userId
     }
   });
 }
@@ -146,7 +155,6 @@ async function assignUniqueSlug(name: string, attempt = 0): Promise<string> {
   const prefix = `${Math.floor(Math.random() * 1000)}-`;
   const slug = `${attempt ? prefix : ''}${generateSlug(name)}`;
 
-  console.log(`attempt nbr ${attempt}, slug = ${slug}`);
   const event = await db.event.findUnique({
     where: { slug }
   });
@@ -157,11 +165,80 @@ async function assignUniqueSlug(name: string, attempt = 0): Promise<string> {
   return await assignUniqueSlug(name, ++attempt);
 }
 
+async function findEventBySlug(slug: string): Promise<Event | null> {
+  return await db.event.findUnique({
+    where: { slug },
+    include: {
+      documents: {
+        where: {
+          status: {
+            not: 'deleted'
+          }
+        },
+        orderBy: { position: 'asc' }
+      }
+    }
+  });
+}
+
+async function findUserFavoriteEvents(id: string): Promise<Array<Event>> {
+  const user = await db.user.findUnique({
+    where: { id },
+    include: {
+      favEvents: true
+    }
+  });
+
+  if (!user) {
+    return [];
+  }
+
+  return await db.event.findMany({
+    where: { id: { in: user.favEvents.map((fe) => fe.eventId) } }
+  });
+}
+
+async function addEventToFavorites(
+  userId: string,
+  eventId: string
+): Promise<void> {
+  await db.favoriteEvent.create({
+    data: {
+      userId,
+      eventId
+    }
+  });
+}
+
+async function removeEventFromFavorites(
+  userId: string,
+  eventId: string
+): Promise<void> {
+  await db.favoriteEvent.delete({
+    where: { userId_eventId: { userId, eventId } }
+  });
+}
+
+async function findUserFavoriteEvent(
+  userId: string,
+  eventId: string
+): Promise<FavoriteEvent | null> {
+  return await db.favoriteEvent.findUnique({
+    where: { userId_eventId: { userId, eventId } }
+  });
+}
+
 export {
   findEvents,
+  findUserEvents,
   findEvent,
   createDraftEvent,
   updateEvent,
   publishEvent,
-  unpublishEvent
+  unpublishEvent,
+  findEventBySlug,
+  addEventToFavorites,
+  removeEventFromFavorites,
+  findUserFavoriteEvents,
+  findUserFavoriteEvent
 };

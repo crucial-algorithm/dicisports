@@ -41,6 +41,7 @@ model User {
   groups    Group[]
   favGroups FavoriteGroup[]
   events    Event[]
+  favEvents FavoriteEvent[]
 
   @@map("users")
 }
@@ -103,6 +104,7 @@ model Event {
   perks              Perk[]
   races              Race[]
 
+  favEvents          FavoriteEvent[]
   @@map("events")
 }
 
@@ -229,4 +231,16 @@ model GroupSchedule {
     group       Group       @relation(fields: [groupId], references: [id])
 
   	@@map("group_schedule")
+}
+
+model FavoriteEvent {
+  userId    String      @map("user_id")
+  eventId   String      @map("event_id")
+  user      User        @relation(fields: [userId], references: [id])
+  event     Event       @relation(fields: [eventId], references: [id])
+  createdAt DateTime    @default(now()) @map("created_at")
+  updatedAt DateTime    @updatedAt @map("updated_at")
+
+  @@unique([userId, eventId])
+  @@map("favorite_events")
 }

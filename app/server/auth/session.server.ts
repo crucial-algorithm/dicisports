@@ -39,7 +39,6 @@ function getRecoverPasswordLink({
     creationDate: new Date().toISOString()
   };
 
-  console.log('.... encrypting payload', payload);
   const stringToEncrypt = JSON.stringify(payload);
   const encryptedString = encrypt(stringToEncrypt);
   const url = new URL(domainUrl);
@@ -266,7 +265,6 @@ async function validateMagicLink(
     validateSessionMagicLink = payload.validateSessionMagicLink;
     action = payload.action;
     group = payload.group;
-    console.log('.... payload', payload);
   } catch (error: unknown) {
     console.error(error);
     throw invalidLinkError;
