@@ -71,7 +71,7 @@ function pickLocationInMap(triggerOpenMapButtonName: string) {
     .click()
 
     .wait('@mapBoxFindAddressFromCoords', { timeout: 10000 })
-    .get('button[name=pick-location]')
+    .get('button[name=pick-location]:enabled', { timeout: 10000 })
     .click()
 
     .get('input[name=discard-location]')
