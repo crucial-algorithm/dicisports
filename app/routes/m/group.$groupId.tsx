@@ -341,10 +341,6 @@ export default function GroupRoute() {
       : null
   );
 
-  if (actionData) {
-    console.log(actionData.errors);
-  }
-
   const [schedules, setSchedules] = useState<
     Array<
       Omit<GroupSchedule, 'groupId'> & {
@@ -597,10 +593,6 @@ export default function GroupRoute() {
                 />
               </div>
             </FormField>
-
-            <InputError id="global-error" className="mt-4">
-              {[actionData?.errors?.name, actionData?.errors?.location, actionData?.errors?.near, actionData?.errors?.schedules].join(' | ')}
-            </InputError>
 
             <Button name="save-group" className="mt-8" type="submit" form="profile-form">
               {isUpdate ? t('Update Group') : t('Create Group')}
