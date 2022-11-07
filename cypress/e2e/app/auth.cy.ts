@@ -55,7 +55,7 @@ describe('Authentication / Authorization', () => {
     });
 
     it('should login user', () => {
-      cy.visit('/login')
+      cy.visitAndWaitForHydration('/login')
 
         .get('[name=email]')
         .type('regular@gmail.com', { delay: 1 })
