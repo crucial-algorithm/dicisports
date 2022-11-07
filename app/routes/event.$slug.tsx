@@ -16,7 +16,7 @@ import { useTranslation } from 'react-i18next';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import { Carousel } from 'react-responsive-carousel';
 import clsx from 'clsx';
-import handleViewport from 'react-in-viewport';
+import { InView } from 'react-intersection-observer';
 
 import {
   findEventBySlug,
@@ -96,139 +96,135 @@ export default function EventDisplayRoute() {
   const [visiblePriceTag, setVisiblePriceTag] = useState<boolean>(true);
   const difficulties = ['Easy', 'Intermediate', 'Hard'];
 
-  function Price() {
-    return <PriceTag />;
-  }
-
   function PriceTag() {
     return (
-      <div className="flex flex-col md:flex-row mt-4">
-        <div className="w-full md:w-144">
-          {images.length > 1 ? (
-            <Carousel statusFormatter={cleanStatus}>
-              {images.map((image, idx) => (
-                <DisplayImg
-                  key={idx}
-                  dataCy={`image${idx}`}
-                  imageId={image}
-                  className="w-[500px]"
-                  transformations={{
-                    resize: {
-                      type: 'fill',
-                      width: 400,
-                      height: 400
-                    }
-                  }}
-                />
-              ))}
-            </Carousel>
-          ) : (
-            <DisplayImg
-              dataCy="image0"
-              imageId={images[0]}
-              className="w-[500px]"
-              transformations={{
-                resize: {
-                  type: 'fill',
-                  width: 400,
-                  height: 400
-                }
-              }}
-            />
-          )}
-        </div>
+      <InView onChange={setVisiblePriceTag}>
+        <div className="flex flex-col md:flex-row mt-4">
+          <div className="w-full md:w-144">
+            {images.length > 1 ? (
+              <Carousel statusFormatter={cleanStatus}>
+                {images.map((image, idx) => (
+                  <DisplayImg
+                    key={idx}
+                    dataCy={`image${idx}`}
+                    imageId={image}
+                    className="w-[500px]"
+                    transformations={{
+                      resize: {
+                        type: 'fill',
+                        width: 400,
+                        height: 400
+                      }
+                    }}
+                  />
+                ))}
+              </Carousel>
+            ) : (
+              <DisplayImg
+                dataCy="image0"
+                imageId={images[0]}
+                className="w-[500px]"
+                transformations={{
+                  resize: {
+                    type: 'fill',
+                    width: 400,
+                    height: 400
+                  }
+                }}
+              />
+            )}
+          </div>
 
-        <div className="flex flex-auto flex-col mt-4 ml-4">
-          <div className="flex flex-row justify-end mb-2">
-            <H2 className="text-sp-light-blue-900 mb-8 w-[calc(100%-(40px+40px+8px))]">
-              <b data-cy="name" className="break-words w-full">
-                {event.name}
-              </b>
-            </H2>
-            <favorite.Form
-              method="post"
-              action={`/organizer/event/fav/${event.id}`}
-            >
-              {isFavorite ? (
-                <Button
-                  size="tiny"
-                  name="action"
-                  value={actions.remove}
-                  className="w-[40px] h-[40px]"
-                >
-                  <Favorite className="h-6 w-6 m-0 inline-block" />
-                </Button>
-              ) : (
-                <Button
-                  size="tiny"
-                  name="action"
-                  value={actions.add}
-                  className="w-[40px] h-[40px]"
-                >
-                  <HeartIcon className="h-6 w-6 m-0 inline-block" />
-                </Button>
-              )}
-            </favorite.Form>
-            <CopyToClipboard
-              text={`${address}/group/${event.slug}`}
-              onCopy={handlerClickToCopy}
-            >
-              <Button
-                size="tiny"
-                className="w-[40px] h-[40px] ml-2"
-                name="share"
-              >
-                <ShareIcon className="h-6 w-6 m-0 inline-block" />
-              </Button>
-            </CopyToClipboard>
-            <Notification show={handlerSetShowNotificationFunction}>
-              {message}
-            </Notification>
-            <Notification show={handlerSetShowNotificationCopyToClipboard}>
-              {copiedToClipMessage}
-            </Notification>
-          </div>
-          <div className="flex flex-row items-center mb-2">
-            <CalendarDaysIcon className="h-6 w-6 m-0 inline-block text-primary" />
-            <H6 data-cy="date" className="ml-4 md:ml-2">
-              <DisplayDate date={new Date(event.startAt)} />
-            </H6>
-          </div>
-          <div className="flex flex-row items-center mb-2">
-            <MapPinIcon className="h-6 w-6 m-0 inline-block text-primary" />
-            <a
-              href={`https://www.google.com/maps/search/?api=1&query=${lat}%2C${lng}`}
-              target="_blank"
-              rel="noreferrer"
-              data-cy="location-link"
-            >
-              <H6 className="ml-4 mr-2 md:ml-2" data-cy="location">
-                {event.address}
-              </H6>
-            </a>
-          </div>
-          <div className="flex flex-row items-center mb-2">
-            <ArrowTrendingUpIcon className="h-6 w-6 m-0 inline-block text-primary" />
-            <H6 data-cy="date" className="ml-4 md:ml-2">
-              <b className="break-words">{`${t(
-                difficulties[event.difficultyId - 1]
-              )}`}</b>
-            </H6>
-          </div>
-          <div className="flex flex-row justify-between items-center mt-16 dark:bg-gray-900 bg-white">
-            <div className="flex flex-col justify-start">
-              <H6 className="md:ml-2">{t('From')}</H6>
-              <H2
-                data-cy="price"
-                className="text-sp-light-blue-900 w-full md:ml-2"
-              >
-                <b className="break-words">{`${minPrice}€`}</b>
+          <div className="flex flex-auto flex-col mt-4 ml-4">
+            <div className="flex flex-row justify-end mb-2">
+              <H2 className="text-sp-light-blue-900 mb-8 w-[calc(100%-(40px+40px+8px))]">
+                <b data-cy="name" className="break-words w-full">
+                  {event.name}
+                </b>
               </H2>
+              <favorite.Form
+                method="post"
+                action={`/organizer/event/fav/${event.id}`}
+              >
+                {isFavorite ? (
+                  <Button
+                    size="tiny"
+                    name="action"
+                    value={actions.remove}
+                    className="w-[40px] h-[40px]"
+                  >
+                    <Favorite className="h-6 w-6 m-0 inline-block" />
+                  </Button>
+                ) : (
+                  <Button
+                    size="tiny"
+                    name="action"
+                    value={actions.add}
+                    className="w-[40px] h-[40px]"
+                  >
+                    <HeartIcon className="h-6 w-6 m-0 inline-block" />
+                  </Button>
+                )}
+              </favorite.Form>
+              <CopyToClipboard
+                text={`${address}/group/${event.slug}`}
+                onCopy={handlerClickToCopy}
+              >
+                <Button
+                  size="tiny"
+                  className="w-[40px] h-[40px] ml-2"
+                  name="share"
+                >
+                  <ShareIcon className="h-6 w-6 m-0 inline-block" />
+                </Button>
+              </CopyToClipboard>
+              <Notification show={handlerSetShowNotificationFunction}>
+                {message}
+              </Notification>
+              <Notification show={handlerSetShowNotificationCopyToClipboard}>
+                {copiedToClipMessage}
+              </Notification>
             </div>
-            <ButtonLink to="#races-list">{t('Races Anchor')}</ButtonLink>
+            <div className="flex flex-row items-center mb-2">
+              <CalendarDaysIcon className="h-6 w-6 m-0 inline-block text-primary" />
+              <H6 data-cy="date" className="ml-4 md:ml-2">
+                <DisplayDate date={new Date(event.startAt)} />
+              </H6>
+            </div>
+            <div className="flex flex-row items-center mb-2">
+              <MapPinIcon className="h-6 w-6 m-0 inline-block text-primary" />
+              <a
+                href={`https://www.google.com/maps/search/?api=1&query=${lat}%2C${lng}`}
+                target="_blank"
+                rel="noreferrer"
+                data-cy="location-link"
+              >
+                <H6 className="ml-4 mr-2 md:ml-2" data-cy="location">
+                  {event.address}
+                </H6>
+              </a>
+            </div>
+            <div className="flex flex-row items-center mb-2">
+              <ArrowTrendingUpIcon className="h-6 w-6 m-0 inline-block text-primary" />
+              <H6 data-cy="date" className="ml-4 md:ml-2">
+                {`${t(difficulties[event.difficultyId - 1])}`}
+              </H6>
+            </div>
+            <div className="flex flex-row justify-between items-center mt-16 dark:bg-gray-900 bg-white">
+              <div className="flex flex-col justify-start">
+                <H6 className="md:ml-2">{t('From')}</H6>
+                <H2
+                  data-cy="price"
+                  className="text-sp-light-blue-900 w-full md:ml-2"
+                >
+                  <b className="break-words">{`${minPrice}€`}</b>
+                </H2>
+              </div>
+              <ButtonLink to="#races-list">{t('Races Anchor')}</ButtonLink>
+            </div>
           </div>
         </div>
-      </div>
+      </InView>
     );
   }
 
@@ -255,8 +251,6 @@ export default function EventDisplayRoute() {
       </div>
     );
   }
-
-  const EventHeader = handleViewport(Price);
 
   function handlerSetShowNotificationFunction(callback: () => void) {
     showFavoriteAddedNotification = callback;
@@ -329,15 +323,13 @@ export default function EventDisplayRoute() {
   ].filter(Boolean) as string[];
   const [lat, lng] = event.location.split(',');
 
+  console.log('a');
   return (
     <>
       {!visiblePriceTag && <StickyPriceTag />}
 
       <Main>
-        <EventHeader
-          onEnterViewport={handleEventHeaderInViewport}
-          onLeaveViewport={handleEventHeaderLeaveViewport}
-        />
+        <PriceTag />
         <div className="my-8">
           <H3>{t('About')}</H3>
           <div
