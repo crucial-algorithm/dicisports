@@ -29,17 +29,19 @@ import Button, { ButtonLink } from '~/components/shared/Button';
 import { getUser } from '~/server/auth/session.server';
 import { Notification } from '~/components/shared/NotificationMessage';
 import DisplayImg from '~/components/shared/DisplayImg';
-import type { Document, Event, Perk, Race } from '~/types';
+import type { Difficulty, Document, Event, Perk, Race } from '~/types';
 import { findEventRaces } from '~/server/db/races.server';
 import DisplayDate from '~/components/shared/DIsplayDate';
 import { displayTimeOfDay } from '~/utils/misc';
 import { findEventPerks } from '~/server/db/perks.server';
 import WhenListEmpty from '~/components/shared/Empty';
+import { findDifficulty } from '~/server/db/difficulties.server';
 
 type LoaderData = {
   event: Event;
   isUserFavorite: boolean;
   races: Race[];
+  difficulty: Difficulty;
 };
 
 const actions = {
@@ -74,13 +76,14 @@ export const loader: LoaderFunction = async ({ params, request }) => {
     event: isPublished ? event : null,
     isUserFavorite,
     races,
-    perks: await findEventPerks(eventId)
+    perks: await findEventPerks(eventId),
+    difficulty: event ? await findDifficulty(event.difficultyId as number) : null
   });
 };
 
 export default function EventDisplayRoute() {
   const favorite = useFetcher();
-  const { event, isUserFavorite, races, perks } = useLoaderData<LoaderData>();
+  const { event, isUserFavorite, races, perks, difficulty } = useLoaderData<LoaderData>();
   const { t } = useTranslation('event');
 
   const favoriteAddedMessage = t('Favorite Added');
@@ -94,7 +97,6 @@ export default function EventDisplayRoute() {
   let showCopiedToClipboardNotification: any = null;
   let minPrice = 0;
   const [visiblePriceTag, setVisiblePriceTag] = useState<boolean>(true);
-  const difficulties = ['Easy', 'Intermediate', 'Hard'];
 
   function PriceTag() {
     return (
@@ -207,7 +209,7 @@ export default function EventDisplayRoute() {
             <div className="flex flex-row items-center mb-2">
               <ArrowTrendingUpIcon className="h-6 w-6 m-0 inline-block text-primary" />
               <H6 data-cy="difficulty" className="ml-4 md:ml-2">
-                {`${t(difficulties[event.difficultyId - 1])}`}
+                {`${difficulty.name.pt}`}
               </H6>
             </div>
             <div className="flex flex-row justify-between items-center mt-16 dark:bg-gray-900 bg-white">

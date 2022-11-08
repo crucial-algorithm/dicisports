@@ -8,4 +8,10 @@ async function findDifficulties(): Promise<Array<Difficulty>> {
   return difficulties.map(dbDifficultyToDifficulty);
 }
 
-export { findDifficulties };
+async function findDifficulty(id: number): Promise<Difficulty | null> {
+  return await db.difficulty.findUnique({
+    where: { id }
+  });
+}
+
+export { findDifficulties, findDifficulty };
