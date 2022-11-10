@@ -499,7 +499,7 @@ export default function OrganizerEventRoute() {
 
             <FormField
               label={t('Difficulty')}
-              id="event-sport"
+              id="event-difficulty"
               className="w-full md:basis-1/3"
             >
               <ComboBox
