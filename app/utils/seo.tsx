@@ -1,7 +1,11 @@
 import type { MetaFunction } from 'remix';
 
+import { useTranslation } from 'react-i18next';
+
 import type { RootLoaderData } from '~/root';
-import I18nText from '~/components/I18nText';
+import { getI18nText } from '~/components/I18nText';
+
+import type { Language } from '~/types';
 
 function getOpenGraphMeta({
   url = 'https://dicisports.com',
@@ -43,11 +47,13 @@ function getOpenGraphMeta({
 const DEFAULT_DESCRIPTION = 'Dicisports.com é o ponto de encontro de todos os desportistas. Encontra grupos com quem praticar as tuas actividades favoritas. Um só lugar, todos os desportos.';
 
 const CanonicalMeta: MetaFunction = ({ data, params, location, parentsData }) => {
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const { i18n } = useTranslation();
   const root: RootLoaderData = parentsData.root as RootLoaderData;
   const { searchParams } = new URL(`https://a.com/${location.search}`);
   const sportId = searchParams.get('sport');
   const sport = root.sports.find((s) => s.id === Number(sportId));
-  const name = sport ? I18nText({ text: sport.name }) : null;
+  const name = sport ? getI18nText(sport.name, i18n.language as Language) : null;
   const url = `${root.requestInfo.origin}${root.requestInfo.path}${root.requestInfo.path === '/' ? location.search : ''}`;
   const description = sport
     ? `Procuras companhia na tua zona para treinar? Encontra no Dicisports.com groups de ${name?.toLowerCase()} com objetivos parecidos com os teus.`

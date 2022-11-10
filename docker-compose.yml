@@ -12,4 +12,4 @@ services:
   mailgun:
     image: filipeutter/http-catcher
     ports:
-      - '8080:3001'
+      - '3001:3001'

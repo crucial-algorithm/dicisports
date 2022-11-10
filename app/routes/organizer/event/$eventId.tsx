@@ -20,12 +20,12 @@ import { unstable_composeUploadHandlers } from '@remix-run/node';
 import { useTranslation } from 'react-i18next';
 
 import {
+  ArrowDownTrayIcon,
   ChevronDownIcon,
   ChevronUpIcon,
   MapPinIcon,
   PlusIcon,
-  TrashIcon,
-  ArrowDownTrayIcon
+  TrashIcon
 } from '@heroicons/react/24/outline';
 
 import clsx from 'clsx';
@@ -43,6 +43,7 @@ import UploadImage from '~/components/shared/form/UploadImage';
 import type {
   CreateEventInput,
   DiciLocation,
+  Difficulty,
   Document,
   Event,
   Language,
@@ -56,11 +57,12 @@ import Button, { ButtonLink } from '~/components/shared/Button';
 import { inputBaseClasses } from '~/components/shared/form/InputBase';
 import Config from '~/server/config.server';
 import { findSports } from '~/server/db/sports.server';
+import { findDifficulties } from '~/server/db/difficulties.server';
 import {
   findEvent,
   publishEvent,
-  updateEvent,
-  unpublishEvent
+  unpublishEvent,
+  updateEvent
 } from '~/server/db/events.server';
 import Main from '~/components/shared/Main';
 import FormField from '~/components/shared/form/FormField';
@@ -120,6 +122,7 @@ type LoaderData = {
   event: SportEvent | null;
   perks: Array<Perk>;
   races: Array<Race>;
+  difficulties: Array<Difficulty>;
 };
 
 type SportEvent = Event & {
@@ -135,6 +138,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   const user = await requireAdminUser(request);
 
   const sports = await findSports();
+  const difficulties = await findDifficulties();
   const eventId = params.eventId as string;
   const event = eventId ? await findEvent(eventId) : null;
 
@@ -152,7 +156,10 @@ export const loader: LoaderFunction = async ({ request, params }) => {
       return { id: sport.id, name: sport.name };
     }),
     perks: await findEventPerks(eventId),
-    races: await findEventRaces(eventId)
+    races: await findEventRaces(eventId),
+    difficulties: difficulties.map((d) => {
+      return { id: d.id, name: d.name };
+    })
   });
 };
 
@@ -207,6 +214,7 @@ export const action: ActionFunction = async ({ request, params }) => {
     id: params.eventId as string,
     name: form.get('name') as string,
     sportId: parseInt(form.get('sport') as string),
+    difficultyId: parseInt(form.get('difficulty') as string),
     startAt: new Date(date), //TODO: hour
     location: `${location.lat},${location.lng}`,
     address: location.address,
@@ -328,7 +336,8 @@ export default function OrganizerEventRoute() {
     mapToken,
     event,
     perks: dbPerks,
-    races: dbRaces
+    races: dbRaces,
+    difficulties
   } = useLoaderData<LoaderData>();
   const actionData = useActionData<ActionData>();
   const [showLocationPicker, setShowLocationPicker] = useState<boolean>(false);
@@ -430,15 +439,16 @@ export default function OrganizerEventRoute() {
               <div>
                 <H2>{t('Create Event')}</H2>
               </div>
-              {event.status !== Status.auto && (isPublished ? (
-                <Button onClick={handleUnpublish} type="submit" size="medium">
-                  {t('Unpublish Button')}
-                </Button>
-              ) : (
-                <Button onClick={handlePublish} type="submit" size="medium">
-                  {t('Publish Button')}
-                </Button>
-              ))}
+              {event.status !== Status.auto &&
+                (isPublished ? (
+                  <Button onClick={handleUnpublish} type="submit" size="medium">
+                    {t('Unpublish Button')}
+                  </Button>
+                ) : (
+                  <Button onClick={handlePublish} type="submit" size="medium">
+                    {t('Publish Button')}
+                  </Button>
+                ))}
 
               <input type="hidden" name="actionId" value={actionId || ''} />
             </div>
@@ -456,11 +466,11 @@ export default function OrganizerEventRoute() {
               defaultValue={event.name || ''}
             />
           </FormField>
-          <div className="flex flex-col flex-wrap md:flex-row lg:space-x-4">
+          <div className="flex flex-col flex-wrap md:flex-row">
             <FormField
               label={t('Sport')}
               id="event-sport"
-              className="md:basis-1/2 lg:basis-1/4"
+              className="w-full md:basis-1/3 md:pr-4"
             >
               <ComboBox
                 name="sport"
@@ -477,7 +487,7 @@ export default function OrganizerEventRoute() {
             <FormField
               label={''}
               id="event-date"
-              className="md:basis-1/2 md:pl-4 lg:pl-0 lg:basis-1/5"
+              className="w-full md:basis-1/3 md:pr-4"
               error={actionData?.errors?.startAt}
             >
               <BasicDatePicker
@@ -488,38 +498,59 @@ export default function OrganizerEventRoute() {
             </FormField>
 
             <FormField
-              label={t('Location')}
-              id="event-location"
-              className="md:w-full lg:basis-1/3"
-              error={actionData?.errors?.address}
+              label={t('Difficulty')}
+              id="event-difficulty"
+              className="w-full md:basis-1/3"
             >
-              <TextField
-                name="discard-location"
-                id="event-sport"
-                defaultValue={location?.shortAddress}
-                disabled={true}
-                adornment={
-                  <Button
-                    className="mr-2"
-                    variant="adornment"
-                    type="button"
-                    onClick={handleShowMap}
-                  >
-                    <MapPinIcon className="h-6 w-6 m-0 inline-block" />
-                  </Button>
+              <ComboBox
+                name="difficulty"
+                id="event-difficulty"
+                lang={language}
+                placeholder=""
+                defaultValue={
+                  event.difficultyId ? event.difficultyId : undefined
                 }
-              />
-              <input
-                type="hidden"
-                name="location"
-                value={
-                  location
-                    ? `${location?.coords}|${location?.shortAddress}`
-                    : undefined
-                }
+                options={difficulties
+                  .sort((a: Difficulty, b: Difficulty) => a.id - b.id)
+                  .map((d: Difficulty) => {
+                    return { value: d.id, label: d.name };
+                  })}
               />
             </FormField>
           </div>
+
+          <FormField
+            label={t('Location')}
+            id="event-location"
+            className="w-full"
+            error={actionData?.errors?.address}
+          >
+            <TextField
+              name="discard-location"
+              id="event-sport"
+              defaultValue={location?.shortAddress}
+              disabled={true}
+              adornment={
+                <Button
+                  className="mr-2"
+                  variant="adornment"
+                  type="button"
+                  onClick={handleShowMap}
+                >
+                  <MapPinIcon className="h-6 w-6 m-0 inline-block" />
+                </Button>
+              }
+            />
+            <input
+              type="hidden"
+              name="location"
+              value={
+                location
+                  ? `${location?.coords}|${location?.shortAddress}`
+                  : undefined
+              }
+            />
+          </FormField>
 
           <FormField
             label={t('Link to External Booking URL')}

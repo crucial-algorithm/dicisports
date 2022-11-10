@@ -6,8 +6,14 @@ export default function I18nText({
   text
 }: {
   text: TranslationObject
-}): string {
+}) {
   const { i18n } = useTranslation();
 
-  return text ? text[i18n.language as Language] : '';
+  return <>{getI18nText(text, i18n.language as Language)}</>;
 }
+
+function getI18nText(text: TranslationObject, language: Language) {
+  return text ? text[language] : '';
+}
+
+export { getI18nText };

@@ -4,6 +4,7 @@ import perksSeed from './data/perks.json';
 import groupsSeed from './data/groups.json';
 import usersSeed from './data/users.json';
 import racesSeed from './data/races.json';
+import difficultiesSeed from './data/difficulties.json';
 
 const db = new PrismaClient();
 
@@ -27,6 +28,7 @@ async function persist(name: string, list: Array<any>, entity: any) {
 
 async function seed() {
   await persist('sports', sports(), db.sport);
+  await persist('difficulties', difficulties(), db.difficulty);
   await persist('group types', groupTypes(), db.groupType);
   await persist('group spirit', groupsSpirit(), db.groupSpirit);
 
@@ -52,6 +54,7 @@ async function clear() {
   await db.groupSpirit.deleteMany();
   await db.groupType.deleteMany();
   await db.sport.deleteMany();
+  await db.difficulty.deleteMany();
 }
 
 clear().then(() => seed().then());
@@ -144,6 +147,7 @@ function events() {
       id: 'bQmGXYkbhJetjk6mniMt',
       name: 'Trail do Zêzere',
       sportId: 2,
+      difficultyId: 2,
       startAt: new Date('2022-01-22T08:00:00Z'),
       endAt: new Date('2022-01-22T18:00:00Z'),
       location: '39.6929301,-8.302317',
@@ -160,6 +164,7 @@ function events() {
       id: 'TgKZi8NQKNoJQGArd3zc',
       name: 'Flavius Challenge OCR',
       sportId: 1,
+      difficultyId: 1,
       startAt: new Date('2022-02-18T10:00:00Z'),
       endAt: new Date('2022-02-19T15:00:00Z'),
       location: '41.7352772,-7.4712548',
@@ -176,6 +181,7 @@ function events() {
       id: 'MY4bvgxDbMtGv8rbYe5d',
       name: 'Love Tiles Douro Granfondo 2023',
       sportId: 3,
+      difficultyId: 3,
       startAt: new Date('2022-10-30T10:00:00Z'),
       endAt: new Date('2022-11-30T15:00:00Z'),
       location: '41.7352772,-7.4712548',
@@ -223,6 +229,10 @@ function perks() {
     ...p,
     createdAt: new Date()
   }));
+}
+
+function difficulties() {
+  return difficultiesSeed.map((d) => d);
 }
 
 // Generated using the following SQL statement:

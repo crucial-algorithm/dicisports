@@ -59,6 +59,7 @@ async function createDraftEvent(
       id: eventId,
       name: null,
       sportId: 1,
+      difficultyId: 1,
       startAt: eventAt,
       endAt: null,
       location: null,
@@ -85,6 +86,7 @@ async function updateEvent(
       data: {
         name: event.name,
         sportId: event.sportId,
+        difficultyId: event.difficultyId,
         startAt: event.startAt,
         endAt: event.startAt,
         location: event.location,
@@ -176,7 +178,8 @@ async function findEventBySlug(slug: string): Promise<Event | null> {
           }
         },
         orderBy: { position: 'asc' }
-      }
+      },
+      difficulty: true
     }
   });
 }

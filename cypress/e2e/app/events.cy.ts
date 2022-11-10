@@ -30,6 +30,9 @@ describe('Event', () => {
         .should('have.attr', 'href')
         .and('include', locationLink)
 
+        .get('[data-cy=difficulty]')
+        .contains('Difícil')
+
         .get('[data-cy=race]')
         .should('have.length', 3)
 
@@ -136,7 +139,6 @@ describe('Event', () => {
     it('should add a new perk', () => {
       // TODO
     });
-
   });
 });
 
