@@ -97,23 +97,60 @@ describe('Event', () => {
 
   context('Security', () => {
     it('should not access /organizer/event/create when not authenticated', () => {
-      // TODO
+      cy.visit('/organizer/event/create')
+
+        .url()
+        .should('eq', `${Cypress.config().baseUrl}/login`);
     });
 
     it('should not allow a user from editing another user event', () => {
-      // TODO
+      cy.login()
+        .visit('/organizer/event/MY4bvgxDbMtGv8rbYe5d')
+
+        .url()
+        .should('eq', `${Cypress.config().baseUrl}/`);
     });
   });
 
-  context('Maintenance', () => {
+  context.only('Maintenance', () => {
     beforeEach(() => {
       cy.task('db:reset');
       cy.task('clearDownloadFolder');
       cy.loginAdmin();
     });
 
-    it('should create and publish an event', () => {
-      // TODO
+    it.only('should create and publish an event', () => {
+      cy.visit('/organizer')
+        .get('button[name=create-event]')
+        .click()
+
+        .get('input[name=event-name]')
+        .type('a new event')
+        .should('have.value', 'a new event')
+
+        .pickOptionFromSelect('sport', 4)
+        .pickOptionFromSelect('difficulty', 1)
+
+        .pickLocationInMap('open-map')
+
+        .get('#booking-external')
+        .check()
+        .get('input[name=booking-url]')
+        .type('https://...')
+
+        .get('input[name="/file/image/0"]')
+        .selectFile('cypress/assets/logo.jpg', { force: true });
+    });
+
+    it.skip('should select date', () => {
+      cy.visit('/organizer')
+        .get('button[name=create-event]')
+        .click()
+
+        // ERROR: Cannot read properties of undefined (reading 'value')
+        .get('input[name=event-date]')
+        .type('2022-11-30')
+        .should('have.value', '11/30/2022');
     });
 
     it('should enable external booking address when option is selected, and save the url provided', () => {

@@ -460,7 +460,7 @@ export default function OrganizerEventRoute() {
             error={actionData?.errors?.name}
           >
             <TextField
-              name="name"
+              name="event-name"
               id="event-name"
               placeholder={t('Event Name')}
               defaultValue={event.name || ''}
@@ -492,7 +492,7 @@ export default function OrganizerEventRoute() {
             >
               <BasicDatePicker
                 label={t('Date')}
-                name="date"
+                name="event-date"
                 date={event?.startAt}
               />
             </FormField>
@@ -532,6 +532,7 @@ export default function OrganizerEventRoute() {
               disabled={true}
               adornment={
                 <Button
+                  name="open-map"
                   className="mr-2"
                   variant="adornment"
                   type="button"
