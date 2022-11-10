@@ -97,6 +97,7 @@ export default function EventDisplayRoute() {
   const [visiblePriceTag, setVisiblePriceTag] = useState<boolean>(true);
 
   function PriceTag() {
+
     return (
       <InView onChange={setVisiblePriceTag}>
         <div className="flex flex-col md:flex-row mt-4">
@@ -166,6 +167,7 @@ export default function EventDisplayRoute() {
                   </Button>
                 )}
               </favorite.Form>
+              {/* @ts-ignore */}
               <CopyToClipboard
                 text={`${address}/group/${event.slug}`}
                 onCopy={handlerClickToCopy}
@@ -207,7 +209,7 @@ export default function EventDisplayRoute() {
             <div className="flex flex-row items-center mb-2">
               <ArrowTrendingUpIcon className="h-6 w-6 m-0 inline-block text-primary" />
               <H6 data-cy="difficulty" className="ml-4 md:ml-2">
-                {I18nText({ text: event.difficulty.name })}
+                <I18nText text={event.difficulty.name} />
               </H6>
             </div>
             <div className="flex flex-row justify-between items-center mt-16 dark:bg-gray-900 bg-white">

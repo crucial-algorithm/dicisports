@@ -7,7 +7,7 @@ import type { TransformerOption } from '@cld-apis/types';
 import { useLoaderData } from '@remix-run/react';
 
 import { findGroupBySlug } from '~/server/db/groups.server';
-import type { Group } from '~/types';
+import type { Group, Language } from '~/types';
 import { H2, Paragraph } from '~/components/shared/typography';
 import Main from '~/components/shared/Main';
 
@@ -15,7 +15,7 @@ import DisplayImg from '~/components/shared/DisplayImg';
 import { displayTimeOfDay } from '~/utils/misc';
 import { getOpenGraphMeta } from '~/utils/seo';
 import type { RootLoaderData } from '~/root';
-import I18nText from '~/components/I18nText';
+import { getI18nText } from '~/components/I18nText';
 
 export const handle = {
   i18n: ['m-groups', 'common']
@@ -26,6 +26,8 @@ type LoaderData = {
 };
 
 export const meta: MetaFunction = ({ data, params, location, parentsData }) => {
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const { i18n } = useTranslation();
   const root: RootLoaderData = parentsData.root as RootLoaderData;
   const { group } = data as { group: Group };
 
@@ -35,7 +37,7 @@ export const meta: MetaFunction = ({ data, params, location, parentsData }) => {
 
   const description = group.description?.slice(0, 160);
   const url = `${root.requestInfo.origin}${root.requestInfo.path}${root.requestInfo.path === '/' ? location.search : ''}`;
-  const name = group.sport ? I18nText({ text: group.sport.name }) : group.name;
+  const name = group.sport ? getI18nText(group.sport.name, i18n.language as Language) : group.name;
 
   return {
     viewport: 'width=device-width,initial-scale=1,viewport-fit=cover',
