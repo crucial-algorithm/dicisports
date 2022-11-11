@@ -220,7 +220,7 @@ export const action: ActionFunction = async ({ request, params }) => {
     address: location.address,
     useExternalBooking: form.get('booking') === 'external',
     externalBookingUrl: (form.get('booking-url') as string) || null,
-    eventDescription: (form.get('description') as string) || null,
+    eventDescription: (form.get('event-description') as string) || null,
     directions: (form.get('get-there') as string) || null,
     image1: processImgField(image1, isUpdate),
     image2: processImgField(image2, isUpdate),

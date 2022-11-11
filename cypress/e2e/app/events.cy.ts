@@ -253,7 +253,19 @@ describe('Event', () => {
         .click()
 
         .get('textarea[name=event-description]')
-        .type('event update');
+        .clear()
+        .type('event update')
+
+        .get('button[name=update-event]')
+        .click()
+
+        .wait('@EventRequests')
+
+        .visitAndWaitForHydration('/organizer')
+        .visitAndWaitForHydration('/event/love-tiles-douro-granfondo-2023')
+
+        .get('[data-cy=description]')
+        .contains('event update');
     });
 
     it('should change race order', () => {
