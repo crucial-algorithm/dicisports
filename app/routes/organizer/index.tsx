@@ -78,6 +78,7 @@ export default function OrganizerIndexRoute() {
                       event.status === 'draft' || event.status === 'unpublished'
                   }
                 )}
+                data-cy="event"
               >
                 <div id="event-image">
                   <H5 className={clsx('mb-5')}>{event.name}</H5>

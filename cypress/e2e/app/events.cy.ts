@@ -111,7 +111,6 @@ describe('Event', () => {
         .should('eq', `${Cypress.config().baseUrl}/`);
     });
   });
-
   context.only('Maintenance', () => {
     beforeEach(() => {
       cy.task('db:reset');
@@ -119,10 +118,16 @@ describe('Event', () => {
       cy.loginAdmin();
     });
 
-    it.only('should create and publish an event', () => {
-      cy.visit('/organizer')
+    it('should create and publish an event', () => {
+      const description = 'O Peso da Régua será ponto de partida';
+
+      cy.intercept('GET', '/organizer/event/*?_data=routes*')
+        .as('EventRequests')
+        .visitAndWaitForHydration('/organizer')
         .get('button[name=create-event]')
         .click()
+
+        .wait('@EventRequests')
 
         .get('input[name=event-name]')
         .type('a new event')
@@ -130,6 +135,9 @@ describe('Event', () => {
 
         .pickOptionFromSelect('sport', 4)
         .pickOptionFromSelect('difficulty', 1)
+
+        .get('input[name=event-date]')
+        .type('2022-11-30')
 
         .pickLocationInMap('open-map')
 
@@ -139,26 +147,113 @@ describe('Event', () => {
         .type('https://...')
 
         .get('input[name="/file/image/0"]')
-        .selectFile('cypress/assets/logo.jpg', { force: true });
-    });
+        .selectFile('cypress/assets/logo.jpg', { force: true })
 
-    it.skip('should select date', () => {
-      cy.visit('/organizer')
+        .get('textarea[name=event-description]')
+        .type(description)
+        .should('have.value', description)
+
+        .get('input[data-cy=perk-1]')
+        .check()
+
+        .get('input[data-cy=perk-5]')
+        .check()
+
+        .get('input[data-cy=perk-6]')
+        .check()
+
+        // Create a new race
+        .get('button[name=create-race]')
+        .click()
+
+        .get('input[name=race-name]')
+        .type('a new race')
+
+        .get('input[name=race-distance]')
+        .type('10')
+
+        .pickOptionFromSelect('hour', 9)
+        .pickOptionFromSelect('minute', 31)
+
+        .get('input[name=elevationGain]')
+        .type('9')
+
+        .get('input[name=elevationLoss]')
+        .type('8')
+
+        .get('input[name=price]')
+        .type('25')
+
+        .get('input[name=priceEarlyBird]')
+        .type('15')
+
+        .get('input[name=race-date]')
+        .type('2022-11-30')
+
+        .get('textarea[name=race-description]')
+        .type('10km run')
+
+        .get('input[name="/file/gpx/"]')
+        .selectFile('cypress/assets/sample.gpx', { force: true })
+
+        // End of new race
+        .get('button[name=create-race-button]')
+        .click()
+
+        .wait('@EventRequests')
+
+        .get('textarea[name=get-there]')
+        .type('Carro: Saida pela A3 direção a Braga')
+
+        // "Create" document
+        .get('button[name=create-document]')
+        .click()
+
+        .get('input[name=document-name]')
+        .type('a new document')
+
+        .get('input[name="/file/misc/"]')
+        .selectFile('cypress/assets/sample.pdf', { force: true })
+
+        .get('button[name=create-document-button]')
+        .click()
+
+        .wait('@EventRequests')
+
         .get('button[name=create-event]')
         .click()
 
-        // ERROR: Cannot read properties of undefined (reading 'value')
-        .get('input[name=event-date]')
-        .type('2022-11-30')
-        .should('have.value', '11/30/2022');
+        .wait('@EventRequests')
+
+        .get('button[name=update-event]')
+
+        .get('button[name=publish]')
+        .click()
+
+        .wait('@EventRequests')
+
+        .get('button[name=unpublish]')
+
+        // Check if event slug was created
+        .visit('/event/a-new-event')
+
+        .get('[data-cy=name]')
+        .contains('a new event');
     });
 
     it('should enable external booking address when option is selected, and save the url provided', () => {
       // TODO
     });
 
-    it('should update a event', () => {
-      // TODO
+    it.only('should update a event', () => {
+      cy.intercept('GET', '/organizer/event/*?_data=routes*')
+        .as('EventRequests')
+        .visitAndWaitForHydration('/organizer')
+        .get('div[data-cy=event]')
+        .click()
+
+        .get('textarea[name=event-description]')
+        .type('event update');
     });
 
     it('should change race order', () => {

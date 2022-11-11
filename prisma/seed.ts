@@ -153,11 +153,11 @@ function events() {
       address: 'Ferreira do Zêzere',
       useExternalBooking: false,
       externalBookingUrl: null,
-      status: Status.draft,
+      status: Status.auto,
       createdAt: new Date('2021-12-31T08:00:00Z'),
       updatedAt: new Date('2021-12-31T08:00:00Z'),
       slug: 'trail-do-zezere',
-      createdById: 'nTQ8idPqTY8PmhzbsN4u'
+      createdById: '3beca472138d6d234d3f'
     },
     {
       id: 'TgKZi8NQKNoJQGArd3zc',

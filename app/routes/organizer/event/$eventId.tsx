@@ -195,7 +195,7 @@ export const action: ActionFunction = async ({ request, params }) => {
   const form = await unstable_parseMultipartFormData(request, uploadHandler);
 
   const isUpdate = event.status !== 'auto';
-  const date = form.get('date') as string;
+  const date = form.get('event-date') as string;
   const image1 = form.get('/file/image/0') as string;
   const image2 = form.get('/file/image/1') as string;
   const image3 = form.get('/file/image/2') as string;
@@ -212,7 +212,7 @@ export const action: ActionFunction = async ({ request, params }) => {
 
   const data: CreateEventInput = {
     id: params.eventId as string,
-    name: form.get('name') as string,
+    name: form.get('event-name') as string,
     sportId: parseInt(form.get('sport') as string),
     difficultyId: parseInt(form.get('difficulty') as string),
     startAt: new Date(date), //TODO: hour
@@ -359,6 +359,7 @@ export default function OrganizerEventRoute() {
   const [showDocumentsDialog, setSowDocumentsDialog] = useState<{
     show: boolean;
     hash: number;
+    document?: Document;
   }>({
     show: false,
     hash: 0
@@ -425,6 +426,29 @@ export default function OrganizerEventRoute() {
     setActionId(actionIds.unpublish);
   }
 
+  function handleUpdateRace(e: React.MouseEvent) {
+    const race = races.find((r) => r.id === e.currentTarget.id);
+
+    if (!race) {
+      // should never happen
+      return;
+    }
+
+    setShowRacesDialog({ show: true, race, hash: Date.now() });
+  }
+
+  function handleUpdateDocument(e: React.MouseEvent) {
+    const document = event.documents.find(
+      (d: Document) => d.id === e.currentTarget.id
+    );
+
+    if (!document) {
+      return;
+    }
+
+    setSowDocumentsDialog({ show: true, document, hash: Date.now() });
+  }
+
   useEffect(() => {
     setRaces(dbRaces);
     setActionId('');
@@ -441,11 +465,21 @@ export default function OrganizerEventRoute() {
               </div>
               {event.status !== Status.auto &&
                 (isPublished ? (
-                  <Button onClick={handleUnpublish} type="submit" size="medium">
+                  <Button
+                    onClick={handleUnpublish}
+                    type="submit"
+                    size="medium"
+                    name="unpublish"
+                  >
                     {t('Unpublish Button')}
                   </Button>
                 ) : (
-                  <Button onClick={handlePublish} type="submit" size="medium">
+                  <Button
+                    onClick={handlePublish}
+                    type="submit"
+                    size="medium"
+                    name="publish"
+                  >
                     {t('Publish Button')}
                   </Button>
                 ))}
@@ -605,7 +639,7 @@ export default function OrganizerEventRoute() {
           >
             <div className="mt-1 relative rounded-md shadow-sm">
               <textarea
-                name="description"
+                name="event-description"
                 className={inputBaseClasses('p-10')}
                 placeholder={t('Event description')}
                 defaultValue={event.eventDescription || ''}
@@ -619,9 +653,10 @@ export default function OrganizerEventRoute() {
             <div className="grid grid-rows-8 md:grid-rows-6 md:grid-flow-col gap-y-4 md:gap-y-2 mb-2">
               {perks
                 .sort((a, b) => a.displayOrder - b.displayOrder)
-                .map((p: any) => (
+                .map((p: any, index: number) => (
                   <div key={p.id} className="flex items-center mb-1">
                     <input
+                      data-cy={`perk-${index}`}
                       type="checkbox"
                       id={p.id}
                       name={p.id ? 'perks' : 'new-perk-input'}
@@ -673,12 +708,17 @@ export default function OrganizerEventRoute() {
                 onClick={handleCreateRace}
                 size="small"
                 className="flex lg:hidden"
+                name="create-race"
               >
                 <PlusIcon className="md:h-6 w-6 m-0 inline-block"></PlusIcon>
               </Button>
             </Label>
             <div>
-              <RacesList races={races} eventId={event.id} />
+              <RacesList
+                races={races}
+                eventId={event.id}
+                handleUpdateRace={handleUpdateRace}
+              />
             </div>
             <WhenListEmpty list={races}>
               <H6 className="text-center p-12" variant="secondary" as="p">
@@ -708,9 +748,9 @@ export default function OrganizerEventRoute() {
             </div>
           </FormField>
 
-          <div id="races" className="mb-12">
+          <div id="documents" className="mb-12">
             <Label
-              htmlFor="races"
+              htmlFor="documents"
               className={clsx(
                 'mb-5 flex justify-between items-center flex-row'
               )}
@@ -725,6 +765,7 @@ export default function OrganizerEventRoute() {
                 {t('Upload Document')}
               </Button>
               <Button
+                name="create-document"
                 type="button"
                 onClick={handleOpenDocumentsDialog}
                 size="small"
@@ -734,7 +775,11 @@ export default function OrganizerEventRoute() {
               </Button>
             </Label>
             <div>
-              <DocumentsList documents={event.documents} eventId={event.id} />
+              <DocumentsList
+                documents={event.documents}
+                eventId={event.id}
+                handleUpdateDocument={handleUpdateDocument}
+              />
             </div>
             <WhenListEmpty list={event.documents}>
               <H6 className="text-center p-12" variant="secondary" as="p">
@@ -748,7 +793,11 @@ export default function OrganizerEventRoute() {
               {t('Cancel')}
             </ButtonLink>
 
-            <Button type="submit" variant="primary">
+            <Button
+              type="submit"
+              variant="primary"
+              name={event.status === 'auto' ? 'create-event' : 'update-event'}
+            >
               {event.status === 'auto' ? t('Create Button') : t('Save Button')}
             </Button>
           </ButtonGroup>
@@ -765,6 +814,7 @@ export default function OrganizerEventRoute() {
 
       <UploadDocumentDialog
         isOpen={showDocumentsDialog.show}
+        document={showDocumentsDialog.document}
         onDismiss={handleCloseDocumentsDialog}
         eventId={event.id}
         hash={showDocumentsDialog.hash}
@@ -947,7 +997,7 @@ function RaceDialog(props: {
           }
         )}
       >
-        <div className="relative" key={hash}>
+        <div className="relative" key={hash} data-cy="race-dialog">
           <div className="px-6 py-2 flex flex-col lg:px-24 lg:py-14">
             <H3 className="w-full md:w-112 text-left">{t('Distance Modal')}</H3>
             <Spacer size="2xs" />
@@ -959,7 +1009,7 @@ function RaceDialog(props: {
             <FormField label={t('Race name')} error={errors?.name}>
               <TextField
                 id="race-name"
-                name="name"
+                name="race-name"
                 placeholder={t('Race Name Placeholder')}
                 input={name}
                 className="max-w-md"
@@ -974,7 +1024,7 @@ function RaceDialog(props: {
             >
               <TextField
                 id="race-distance"
-                name="distance"
+                name="race-distance"
                 type="number"
                 className="w-44"
                 placeholder={t('Distance Placeholder')}
@@ -1052,7 +1102,7 @@ function RaceDialog(props: {
               >
                 <BasicDatePicker
                   label={''}
-                  name="date"
+                  name="race-date"
                   date={race?.validUntil ? new Date(race.validUntil) : null}
                   input={validUntil}
                   className="w-full"
@@ -1063,7 +1113,7 @@ function RaceDialog(props: {
             <FormField label={t('Description')}>
               <div className="mt-1 relative rounded-md shadow-sm">
                 <textarea
-                  name="description"
+                  name="race-description"
                   className={inputBaseClasses('p-10 max-w-lg')}
                   placeholder={t('Race Description')}
                   defaultValue={race?.raceDescription || ''}
@@ -1089,7 +1139,7 @@ function RaceDialog(props: {
                       className: 'h-80 w-full overflow-hidden'
                     })}
                   >
-                    <input {...inputProps} name="" ref={inputEl} />
+                    <input {...inputProps} name="/file/gpx/" ref={inputEl} />
                     <p className="h-40 w-full flex items-center justify-center">
                       {t('GPX Dropzone')}
                     </p>
@@ -1156,7 +1206,11 @@ function RaceDialog(props: {
                 {t('Cancel')}
               </Button>
 
-              <Button type="button" onClick={handleSubmit}>
+              <Button
+                type="button"
+                onClick={handleSubmit}
+                name="create-race-button"
+              >
                 {race?.id ? t('Update Distance') : t('Create Distance')}
               </Button>
             </ButtonGroup>
@@ -1167,15 +1221,14 @@ function RaceDialog(props: {
   );
 }
 
-function RacesList(props: { races: Race[]; eventId: string }) {
-  const { races, eventId } = props;
+function RacesList(props: {
+  races: Race[];
+  eventId: string;
+  handleUpdateRace: (e: React.MouseEvent) => void;
+}) {
+  const { races, eventId, handleUpdateRace } = props;
   const fetcher = useFetcher();
 
-  const [showRacesDialog, setShowRacesDialog] = useState<{
-    show: boolean;
-    hash: number;
-    race?: Race;
-  }>({ show: false, hash: 0 });
   const [deleteModalOpen, setDeleteModalOpen] = useState<{
     show: boolean;
     race?: Race;
@@ -1213,21 +1266,6 @@ function RacesList(props: { races: Race[]; eventId: string }) {
 
   function handleDeleteRaceClose() {
     setDeleteModalOpen({ show: false });
-  }
-
-  function handleUpdateRace(e: React.MouseEvent) {
-    const race = races.find((r) => r.id === e.currentTarget.id);
-
-    if (!race) {
-      // should never happen
-      return;
-    }
-
-    setShowRacesDialog({ show: true, race, hash: Date.now() });
-  }
-
-  function handleCloseRace() {
-    setShowRacesDialog({ show: false, hash: 0 });
   }
 
   return (
@@ -1282,13 +1320,6 @@ function RacesList(props: { races: Race[]; eventId: string }) {
             </div>
           ))}
       </div>
-      <RaceDialog
-        isOpen={showRacesDialog.show}
-        triggerModalClose={handleCloseRace}
-        eventId={eventId}
-        race={showRacesDialog.race}
-        hash={showRacesDialog.hash}
-      />
 
       <DeleteRaceDialog
         isOpen={deleteModalOpen.show}
@@ -1465,7 +1496,7 @@ function UploadDocumentDialog(props: {
         aria-modal={true}
         className={clsx(
           'h-full w-full lg:h-auto lg:w-11/12 px-8 py-8 md:px-24 md:py-14 ' +
-            'dark:bg-gray-900  lg:max-w-screen-lg',
+            'bg-white dark:bg-gray-900  lg:max-w-screen-lg',
           'lg:border-2 lg:border-black dark:lg:border-white lg:rounded-lg lg:max-w-screen-lg',
           {
             'hidden ': !isOpen,
@@ -1481,7 +1512,7 @@ function UploadDocumentDialog(props: {
 
           <FormField label={t('Name')} error={errors?.label}>
             <TextField
-              name="name"
+              name="document-name"
               placeholder={t('Document Name')}
               defaultValue={document?.label ? document.label : ''}
               className="max-w-md"
@@ -1524,7 +1555,11 @@ function UploadDocumentDialog(props: {
             <Button type="button" variant="secondary" onClick={close}>
               {t('Cancel')}
             </Button>
-            <Button type="button" onClick={handleSubmit}>
+            <Button
+              type="button"
+              onClick={handleSubmit}
+              name="create-document-button"
+            >
               {document?.id
                 ? t('Update Document Button')
                 : t('Upload Document Button')}
@@ -1536,14 +1571,13 @@ function UploadDocumentDialog(props: {
   );
 }
 
-function DocumentsList(props: { documents: Document[]; eventId: string }) {
-  const { documents, eventId } = props;
+function DocumentsList(props: {
+  documents: Document[];
+  eventId: string;
+  handleUpdateDocument: (e: React.MouseEvent) => void;
+}) {
+  const { documents, eventId, handleUpdateDocument } = props;
   const fetcher = useFetcher();
-  const [showDocumentsDialog, setSowDocumentsDialog] = useState<{
-    show: boolean;
-    document?: Document;
-    hash: number;
-  }>({ show: false, hash: 0 });
   const [showDeleteDocumentDialog, setShowDeleteDocumentDialog] = useState<{
     show: boolean;
     document?: Document;
@@ -1567,20 +1601,6 @@ function DocumentsList(props: { documents: Document[]; eventId: string }) {
         action: `organizer/document/${e.currentTarget.id}/move-down`
       }
     );
-  }
-
-  function handleUpdateDocument(e: React.MouseEvent) {
-    const document = documents.find((d) => d.id === e.currentTarget.id);
-
-    if (!document) {
-      return;
-    }
-
-    setSowDocumentsDialog({ show: true, document, hash: Date.now() });
-  }
-
-  function handleCloseDocumentsDialog() {
-    setSowDocumentsDialog({ show: false, hash: 0 });
   }
 
   function handleOpenDeleteDocumentDialog(e: React.MouseEvent) {
@@ -1656,13 +1676,6 @@ function DocumentsList(props: { documents: Document[]; eventId: string }) {
             </div>
           ))}
       </div>
-      <UploadDocumentDialog
-        isOpen={showDocumentsDialog.show}
-        document={showDocumentsDialog.document}
-        onDismiss={handleCloseDocumentsDialog}
-        eventId={eventId}
-        hash={showDocumentsDialog.hash}
-      />
 
       <DeleteDocumentDialog
         isOpen={showDeleteDocumentDialog.show}
