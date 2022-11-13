@@ -1278,13 +1278,14 @@ function RacesList(props: {
               key={r.id}
               className="relative flex mb-4 justify-between items-center flex-row flex-wrap border-b p-4 last:border-none border-gray-300 dark:border-gray-300"
             >
-              <div className="flex flex-col items-center dark:text-blueGray-500">
+              <div className="flex flex-col items-center dark:text-blueGray-500" >
                 {index === 0 ? null : (
                   <button
                     type="button"
                     id={r.id}
                     onClick={handleMoveUp}
                     className="w-[24px] h-[24px]"
+                    name={`move-up-${r.id}`}
                   >
                     <ChevronUpIcon className="mh-6 w-6 m-0 inline-block" />
                   </button>
@@ -1295,6 +1296,7 @@ function RacesList(props: {
                     id={r.id}
                     onClick={handleMoveDown}
                     className="w-[24px] h-[24px]"
+                    name={`move-down-${r.id}`}
                   >
                     <ChevronDownIcon className="md:h-6 w-6 m-0 inline-block" />
                   </button>
@@ -1305,6 +1307,7 @@ function RacesList(props: {
                 className="text-lg font-extrabold pl-3 dark:text-white w-[calc(100%-(24px+24px))]"
                 id={r.id}
                 onClick={handleUpdateRace}
+                data-cy={`index-${index}`}
               >
                 {r.name}
               </div>

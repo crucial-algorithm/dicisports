@@ -241,11 +241,7 @@ describe('Event', () => {
         .contains('a new event');
     });
 
-    it('should enable external booking address when option is selected, and save the url provided', () => {
-      // TODO
-    });
-
-    it.only('should update a event', () => {
+    it('should update a event', () => {
       cy.intercept('GET', '/organizer/event/*?_data=routes*')
         .as('EventRequests')
         .visitAndWaitForHydration('/organizer')
@@ -268,8 +264,22 @@ describe('Event', () => {
         .contains('event update');
     });
 
-    it('should change race order', () => {
-      // TODO
+    it.only('should change race order', () => {
+      cy.intercept('GET', '/organizer/event/*?_data=routes*')
+        .as('EventRequests')
+        .visitAndWaitForHydration('/organizer')
+        .get('div[data-cy=event]')
+        .click()
+
+        .wait('@EventRequests')
+
+        .get('button[name=move-down-AhowRdNWCBQWSuivSt7h]')
+        .click()
+
+        .wait('@EventRequests')
+
+        .get('div[data-cy=index-0]')
+        .contains('Mediofondo');
     });
 
     it('should change document order', () => {
