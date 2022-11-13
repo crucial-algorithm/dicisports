@@ -211,6 +211,16 @@ function documents() {
       createdAt: new Date('2021-12-31T08:00:00Z'),
       updatedAt: new Date('2021-12-31T08:00:00Z'),
       status: Status.auto
+    },
+    {
+      id: 'fFSRHEHwpR8vGngkED3T',
+      path: 'MY4bvgxDbMtGv8rbYe5d/nXGWh6PrptLSSLpA5p4s.pdf',
+      position: 2,
+      label: 'Circuito',
+      eventId: 'MY4bvgxDbMtGv8rbYe5d',
+      createdAt: new Date('2021-12-31T08:00:00Z'),
+      updatedAt: new Date('2021-12-31T08:00:00Z'),
+      status: Status.auto
     }
   ];
 }

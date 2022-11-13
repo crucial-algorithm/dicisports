@@ -257,14 +257,14 @@ describe('Event', () => {
 
         .wait('@EventRequests')
 
-        .visitAndWaitForHydration('/organizer')
         .visitAndWaitForHydration('/event/love-tiles-douro-granfondo-2023')
+        .reload()
 
         .get('[data-cy=description]')
         .contains('event update');
     });
 
-    it.only('should change race order', () => {
+    it('should change race order', () => {
       cy.intercept('GET', '/organizer/event/*?_data=routes*')
         .as('EventRequests')
         .visitAndWaitForHydration('/organizer')
@@ -283,11 +283,36 @@ describe('Event', () => {
     });
 
     it('should change document order', () => {
-      // TODO
+      cy.intercept('GET', '/organizer/event/*?_data=routes*')
+        .as('EventRequests')
+        .visitAndWaitForHydration('/organizer')
+        .get('div[data-cy=event]')
+        .click()
+
+        .wait('@EventRequests')
+
+        .get('button[name=move-down-MY4bvgxDbMtGv8rbYe5d]')
+        .click()
+
+        .wait('@EventRequests')
+
+        .get('div[data-cy=index-0]')
+        .contains('Circuito');
     });
 
-    it('should download document', () => {
-      // TODO
+    it.only('should download document', () => {
+      cy.intercept('GET', '/organizer/event/*?_data=routes*')
+        .as('EventRequests')
+        .visitAndWaitForHydration('/organizer')
+        .get('div[data-cy=event]')
+        .click()
+
+        .wait('@EventRequests')
+
+        .get('[data-cy=download-MY4bvgxDbMtGv8rbYe5d]')
+        .then((link) => {
+          cy.request(link.prop('href')).its('status').should('eq', 200);
+        });
     });
 
     it('should add a new perk', () => {

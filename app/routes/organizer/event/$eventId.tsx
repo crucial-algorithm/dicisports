@@ -1637,6 +1637,7 @@ function DocumentsList(props: {
                     id={d.id}
                     onClick={handleMoveUp}
                     className="w-[24px] h-[24px]"
+                    name={`move-up-${d.id}`}
                   >
                     <ChevronUpIcon className="md:h-6 w-6 m-0 inline-block" />
                   </button>
@@ -1647,6 +1648,7 @@ function DocumentsList(props: {
                     id={d.id}
                     onClick={handleMoveDown}
                     className="w-[24px] h-[24px]"
+                    name={`move-down-${d.id}`}
                   >
                     <ChevronDownIcon className="md:h-6 w-6 m-0 inline-block" />
                   </button>
@@ -1657,6 +1659,7 @@ function DocumentsList(props: {
                 className="text-lg text-left font-extrabold pl-3 dark:text-white w-[calc(100%-(24px+24px+24px))]"
                 id={d.id}
                 onClick={handleUpdateDocument}
+                data-cy={`index-${index}`}
               >
                 {d.label}
               </div>
@@ -1665,6 +1668,7 @@ function DocumentsList(props: {
                 href={`/organizer/document/${d.id}`}
                 target="_blank"
                 rel="noreferrer"
+                data-cy={`download-${d.id}`}
               >
                 <ArrowDownTrayIcon className="md:h-6 w-6 m-0 inline-block text-black dark:text-blueGray-500" />
               </a>
