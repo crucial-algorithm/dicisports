@@ -20,12 +20,12 @@ import { unstable_composeUploadHandlers } from '@remix-run/node';
 import { useTranslation } from 'react-i18next';
 
 import {
+  ArrowDownTrayIcon,
   ChevronDownIcon,
   ChevronUpIcon,
   MapPinIcon,
   PlusIcon,
-  TrashIcon,
-  ArrowDownTrayIcon
+  TrashIcon
 } from '@heroicons/react/24/outline';
 
 import clsx from 'clsx';
@@ -43,13 +43,13 @@ import UploadImage from '~/components/shared/form/UploadImage';
 import type {
   CreateEventInput,
   DiciLocation,
+  Difficulty,
   Document,
   Event,
   Language,
   Perk,
   Race,
-  Sport,
-  Difficulty
+  Sport
 } from '~/types';
 import TextField from '~/components/shared/form/TextField';
 import Button, { ButtonLink } from '~/components/shared/Button';
@@ -61,8 +61,8 @@ import { findDifficulties } from '~/server/db/difficulties.server';
 import {
   findEvent,
   publishEvent,
-  updateEvent,
-  unpublishEvent
+  unpublishEvent,
+  updateEvent
 } from '~/server/db/events.server';
 import Main from '~/components/shared/Main';
 import FormField from '~/components/shared/form/FormField';
@@ -533,12 +533,12 @@ export default function OrganizerEventRoute() {
 
             <FormField
               label={t('Difficulty')}
-              id="event-sport"
+              id="event-difficulty"
               className="w-full md:basis-1/3"
             >
               <ComboBox
                 name="difficulty"
-                id="event-sport"
+                id="event-difficulty"
                 lang={language}
                 placeholder=""
                 defaultValue={

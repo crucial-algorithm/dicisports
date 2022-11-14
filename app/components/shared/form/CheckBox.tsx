@@ -24,7 +24,7 @@ export default function CheckBox({
   return (
     <div className={clsx('flex align-middle justify-between', className)}>
       <Label variant="secondary" htmlFor={id}>
-        {typeof label === 'string' ? label : I18nText({ text: label })}
+        {typeof label === 'string' ? label : <I18nText text={label} />}
       </Label>
       <input
         id={id}

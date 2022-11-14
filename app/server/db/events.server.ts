@@ -178,7 +178,8 @@ async function findEventBySlug(slug: string): Promise<Event | null> {
           }
         },
         orderBy: { position: 'asc' }
-      }
+      },
+      difficulty: true
     }
   });
 }

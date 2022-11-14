@@ -4,6 +4,7 @@ import perksSeed from './data/perks.json';
 import groupsSeed from './data/groups.json';
 import usersSeed from './data/users.json';
 import racesSeed from './data/races.json';
+import difficultiesSeed from './data/difficulties.json';
 
 const db = new PrismaClient();
 
@@ -241,20 +242,7 @@ function perks() {
 }
 
 function difficulties() {
-  return [
-    {
-      id: 1,
-      name: { pt: 'Fácil' }
-    },
-    {
-      id: 2,
-      name: { pt: 'Intermédio' }
-    },
-    {
-      id: 3,
-      name: { pt: 'Difícil' }
-    }
-  ];
+  return difficultiesSeed.map((d) => d);
 }
 
 // Generated using the following SQL statement:
