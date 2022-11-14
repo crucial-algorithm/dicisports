@@ -457,6 +457,7 @@ export default function Index() {
               name="actionId"
               value={actions.search}
               className="mt-8 w-80 m-auto lg:mt-0 lg:w-auto lg:m-0"
+              id="search-button"
             >
               {t('Search')}
             </Button>
@@ -541,7 +542,7 @@ export default function Index() {
       </Form>
       {searchPerformed && (
         <>
-          {groups.map((group) => (
+          {groups.map((group, index: number) => (
             <GroupResult
               group={group}
               key={`${group.id}-${group.position}`}
@@ -557,6 +558,7 @@ export default function Index() {
               isLoggedIn={user !== null}
               userLocation={userLocation}
               showLocation={orderBy === SortMethod.proximity}
+              index={index}
             />
           ))}
         </>
@@ -626,7 +628,8 @@ function GroupResult({
   location,
   isLoggedIn,
   userLocation,
-  showLocation
+  showLocation,
+  index
 }: {
   group: Group;
   img?: string;
@@ -639,6 +642,7 @@ function GroupResult({
   isLoggedIn: boolean;
   userLocation: [number, number] | null;
   showLocation: boolean;
+  index: number;
 }) {
   const favorite = useFetcher();
   const ref = useRef();
@@ -712,7 +716,7 @@ function GroupResult({
                   <Favorite className="h-6 w-6 m-0 inline-block" />
                 </Button>
               ) : (
-                <Button size="tiny" name="action" value="add">
+                <Button size="tiny" name="action" value="add" id={`add-favorite-${index}`}>
                   <HeartIcon className="h-6 w-6 m-0 inline-block" />
                 </Button>
               )}

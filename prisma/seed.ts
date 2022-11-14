@@ -40,6 +40,7 @@ async function seed() {
   await persist('perks', perks(), db.perk);
   await persist('sessions', sessions(), db.session);
   await persist('favorite groups', favoriteGroup(), db.favoriteGroup);
+  await persist('group schedules', groupsSchedules(), db.groupSchedule);
 }
 
 async function clear() {
@@ -335,4 +336,15 @@ function favoriteGroup() {
       updatedAt: new Date()
     }
   ];
+}
+
+function groupsSchedules() {
+  return groupsSeed.map((g) => {
+    return {
+      id: g.id,
+      dayOfWeek: 6,
+      timeOfDay: 900,
+      groupId: g.id
+    };
+  });
 }

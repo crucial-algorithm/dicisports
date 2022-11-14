@@ -12,14 +12,62 @@ describe('Groups', () => {
     });
 
     it('should favorite group', () => {
-      // TODO
+      cy.intercept('GET', '/*?coords=*')
+        .as('search')
+        .login()
+        .visit('/')
+
+        .get('#search-button')
+        .click()
+
+        .wait('@search')
+
+        .get('#add-favorite-0')
+        .click()
+
+        .wait('@search')
+
+        .visit('/m/groups')
+
+        .get('button[name=groupId]')
+        .should('have.length', 2);
     });
 
     it('should favorite a group unauthenticated', () => {
-      // TODO
+      cy.intercept('GET', '/*?coords=*')
+        .as('search')
+        .visit('/')
+
+        .get('#search-button')
+        .click()
+
+        .wait('@search')
+
+        .get('#add-favorite-0')
+        .click()
+
+        .url()
+        .should('include', '/login?a=favorite&g=')
+
+        .get('[name=email]')
+        .type('regular@gmail.com', { delay: 1 })
+
+        .get('[name=password]')
+        .type('Password1', { delay: 1 })
+
+        .get('button[name=login]')
+        .click()
+
+        .url()
+        .should('eq', `${Cypress.config().baseUrl}/`)
+
+        .visit('/m/groups')
+
+        .get('button[name=groupId]')
+        .should('have.length', 2);
     });
 
-    it.only('should remove group from favorites', () => {
+    it('should remove group from favorites', () => {
       cy.intercept('GET', '/m/groups?message=*')
         .as('removeFavorite')
 
