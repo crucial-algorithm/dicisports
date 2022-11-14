@@ -30,10 +30,10 @@ import WhenListEmpty from '~/components/shared/Empty';
 import i18n from '~/server/i18n.server';
 
 type LoaderData = {
-  sports: Sport[]
-  groups: Group[]
-  favorites: Group[]
-}
+  sports: Sport[];
+  groups: Group[];
+  favorites: Group[];
+};
 
 const actionIds = {
   create: 'create',
@@ -107,7 +107,7 @@ export default function Groups() {
       </div>
       <H3>{t('Favorite Groups')}</H3>
       <div className="col-span-full mb-24 lg:col-span-5 lg:mb-0">
-        {favorites.map((group: Group) => (
+        {favorites.sort((a: any, b: any) => (new Date(a.createdAt)).getTime() - (new Date(b.createdAt)).getTime()).map((group: Group, index: number) => (
           <GroupEntry
             group={group}
             key={group.id}
@@ -115,7 +115,7 @@ export default function Groups() {
             actions={
               <ButtonGroup>
                 <Form method="post">
-                  <Button size="tiny" name="groupId" value={group.id}>
+                    <Button size="tiny" name="groupId" value={group.id} id={`remove-favorite-${index}`}>
                     <HeartIconActive className="h-6 w-6 m-0 inline-block" />
                   </Button>
                 </Form>
@@ -124,7 +124,7 @@ export default function Groups() {
           />
         ))}
         <WhenListEmpty list={favorites}>
-          <H4 variant="secondary" as="p">
+          <H4 variant="secondary" as="p" data-cy="empty-favorites">
             {t('Favorite Groups Empty')}
           </H4>
         </WhenListEmpty>

@@ -6,6 +6,7 @@ export default defineConfig({
   viewportWidth: 375,
   viewportHeight: 667,
   screenshotOnRunFailure: true,
+  requestTimeout: 20000,
   e2e: {
     baseUrl: 'http://localhost:3000',
     experimentalSessionAndOrigin: true,
