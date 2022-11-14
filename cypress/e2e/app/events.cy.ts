@@ -221,7 +221,7 @@ describe('Event', () => {
 
         .wait('@EventRequests')
 
-        .get('button[name=create-event]')
+        .get('button[name=create-event]', { timeout: 6000 })
         .click()
 
         .wait('@EventRequests')
