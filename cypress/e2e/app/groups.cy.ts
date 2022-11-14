@@ -19,18 +19,37 @@ describe('Groups', () => {
       // TODO
     });
 
-    it('should remove group from favorites', () => {
-      // TODO
+    it.only('should remove group from favorites', () => {
+      cy.intercept('GET', '/m/groups?message=*')
+        .as('removeFavorite')
+
+        .login()
+        .visit('/m/groups')
+
+        .get('#remove-favorite-0')
+        .click()
+
+        .wait('@removeFavorite')
+        .reload()
+
+        .get('[data-cy=empty-favorites]')
+        .should('exist');
     });
   });
 
   context('Security', () => {
     it('should not access /m/groups when not authenticated', () => {
-      // TODO
+      cy.visit('/m/groups')
+        .url()
+        .should('eq', `${Cypress.config().baseUrl}/login`);
     });
 
     it('should not allow a user from editing another user group', () => {
-      // TODO
+      cy.login()
+        .visit('/m/group/d888b22b730daaf3b70e')
+
+        .url()
+        .should('eq', `${Cypress.config().baseUrl}/m/groups`);
     });
   });
 

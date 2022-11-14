@@ -39,6 +39,7 @@ async function seed() {
   await persist('races', races(), db.race);
   await persist('perks', perks(), db.perk);
   await persist('sessions', sessions(), db.session);
+  await persist('favorite groups', favoriteGroup(), db.favoriteGroup);
 }
 
 async function clear() {
@@ -323,4 +324,15 @@ function groups() {
       updatedAt: new Date(g.updatedAt)
     };
   });
+}
+
+function favoriteGroup() {
+  return [
+    {
+      userId: 'nTQ8idPqTY8PmhzbsN4u',
+      groupId: 'eaaf16cc63285c840ad1',
+      createdAt: new Date(),
+      updatedAt: new Date()
+    }
+  ];
 }

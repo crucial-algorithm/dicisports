@@ -14,7 +14,6 @@ import { findSports } from '~/server/db/sports.server';
 import type { Group, Sport } from '~/types';
 import Button, { ButtonLink } from '~/components/shared/Button';
 
-
 import { H3, H4, H6 } from '~/components/shared/typography';
 import Main from '~/components/shared/Main';
 import InputError from '~/components/shared/form/InputError';
@@ -30,10 +29,10 @@ import WhenListEmpty from '~/components/shared/Empty';
 import i18n from '~/server/i18n.server';
 
 type LoaderData = {
-  sports: Sport[]
-  groups: Group[]
-  favorites: Group[]
-}
+  sports: Sport[];
+  groups: Group[];
+  favorites: Group[];
+};
 
 const actionIds = {
   create: 'create',
@@ -60,7 +59,9 @@ export const action: ActionFunction = async ({ request }) => {
   const data = await request.formData();
   const groupId: string | null = data.get('groupId') as string;
 
-  if (!groupId) {return json({});}
+  if (!groupId) {
+    return json({});
+  }
   await removeGroupFromFavorites(user.id, groupId);
   return redirect(`/m/groups?message=${t('Favorite Removed')}`);
 };
@@ -107,24 +108,26 @@ export default function Groups() {
       </div>
       <H3>{t('Favorite Groups')}</H3>
       <div className="col-span-full mb-24 lg:col-span-5 lg:mb-0">
-        {favorites.map((group: Group) => (
-          <GroupEntry
-            group={group}
-            key={group.id}
-            img={sports.find((s: Sport) => s.id === group.sportId)?.picture}
-            actions={
-              <ButtonGroup>
-                <Form method="post">
-                  <Button size="tiny" name="groupId" value={group.id}>
-                    <HeartIconActive className="h-6 w-6 m-0 inline-block" />
-                  </Button>
-                </Form>
-              </ButtonGroup>
-            }
-          />
-        ))}
+        {favorites
+          .sort((a: any, b: any) => (new Date(a.createdAt)).getTime() - (new Date(b.createdAt)).getTime())
+          .map((group: Group, index: number) => (
+            <GroupEntry
+              group={group}
+              key={group.id}
+              img={sports.find((s: Sport) => s.id === group.sportId)?.picture}
+              actions={
+                <ButtonGroup>
+                  <Form method="post">
+                    <Button size="tiny" name="groupId" value={group.id} id={`remove-favorite-${index}`}>
+                      <HeartIconActive className="h-6 w-6 m-0 inline-block" />
+                    </Button>
+                  </Form>
+                </ButtonGroup>
+              }
+            />
+          ))}
         <WhenListEmpty list={favorites}>
-          <H4 variant="secondary" as="p">
+          <H4 variant="secondary" as="p" data-cy="empty-favorites">
             {t('Favorite Groups Empty')}
           </H4>
         </WhenListEmpty>
