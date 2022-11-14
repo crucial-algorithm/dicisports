@@ -24,7 +24,7 @@ describe('Event', () => {
         .contains(name)
 
         .get('[data-cy=date]')
-        .contains('30 Outubro, 2022')
+        .contains('30 Outubro, 2023')
 
         .get('[data-cy=location-link]')
         .should('have.attr', 'href')
@@ -97,11 +97,18 @@ describe('Event', () => {
 
   context('Security', () => {
     it('should not access /organizer/event/create when not authenticated', () => {
-      // TODO
+      cy.visit('/organizer/event/create')
+
+        .url()
+        .should('eq', `${Cypress.config().baseUrl}/login`);
     });
 
     it('should not allow a user from editing another user event', () => {
-      // TODO
+      cy.login()
+        .visit('/organizer/event/MY4bvgxDbMtGv8rbYe5d')
+
+        .url()
+        .should('eq', `${Cypress.config().baseUrl}/`);
     });
   });
 
@@ -113,31 +120,240 @@ describe('Event', () => {
     });
 
     it('should create and publish an event', () => {
-      // TODO
-    });
+      const description = 'O Peso da Régua será ponto de partida';
 
-    it('should enable external booking address when option is selected, and save the url provided', () => {
-      // TODO
+      cy.intercept('GET', '/organizer/event/*?_data=routes*')
+        .as('EventRequests')
+        .visitAndWaitForHydration('/organizer')
+        .get('button[name=create-event]')
+        .click()
+
+        .wait('@EventRequests')
+
+        .get('input[name=event-name]')
+        .type('a new event')
+        .should('have.value', 'a new event')
+
+        .pickOptionFromSelect('sport', 4)
+        .pickOptionFromSelect('difficulty', 1)
+
+        .get('input[name=event-date]')
+        .type('2022-11-30')
+
+        .pickLocationInMap('open-map')
+
+        .get('#booking-external')
+        .check()
+        .get('input[name=booking-url]')
+        .type('https://...')
+
+        .get('input[name="/file/image/0"]')
+        .selectFile('cypress/assets/logo.jpg', { force: true })
+
+        .get('textarea[name=event-description]')
+        .type(description)
+        .should('have.value', description)
+
+        .get('input[data-cy=perk-1]')
+        .check()
+
+        .get('input[data-cy=perk-5]')
+        .check()
+
+        .get('input[data-cy=perk-6]')
+        .check()
+
+        // Create a new race
+        .get('button[name=create-race]')
+        .click()
+
+        .get('input[name=race-name]')
+        .type('a new race')
+
+        .get('input[name=race-distance]')
+        .type('10')
+
+        .pickOptionFromSelect('hour', 9)
+        .pickOptionFromSelect('minute', 31)
+
+        .get('input[name=elevationGain]')
+        .type('9')
+
+        .get('input[name=elevationLoss]')
+        .type('8')
+
+        .get('input[name=price]')
+        .type('25')
+
+        .get('input[name=priceEarlyBird]')
+        .type('15')
+
+        .get('input[name=race-date]')
+        .type('2022-11-30')
+
+        .get('textarea[name=race-description]')
+        .type('10km run')
+
+        .get('input[name="/file/gpx/"]')
+        .selectFile('cypress/assets/sample.gpx', { force: true })
+
+        // End of new race
+        .get('button[name=create-race-button]')
+        .click()
+
+        .wait('@EventRequests')
+
+        .get('textarea[name=get-there]')
+        .type('Carro: Saida pela A3 direção a Braga')
+
+        // "Create" document
+        .get('button[name=create-document]')
+        .click()
+
+        .get('input[name=document-name]')
+        .type('a new document')
+
+        .get('input[name="/file/misc/"]')
+        .selectFile('cypress/assets/sample.pdf', { force: true })
+
+        .get('button[name=create-document-button]')
+        .click()
+
+        .wait('@EventRequests')
+
+        .get('button[name=create-event]', { timeout: 6000 })
+        .click()
+
+        .wait('@EventRequests')
+
+        .get('button[name=update-event]')
+
+        .get('button[name=publish]')
+        .click()
+
+        .wait('@EventRequests')
+
+        .get('button[name=unpublish]')
+
+        // Check if event slug was created
+        .visit('/event/a-new-event')
+
+        .get('[data-cy=name]')
+        .contains('a new event');
     });
 
     it('should update a event', () => {
-      // TODO
+      cy.intercept('GET', '/organizer/event/*?_data=routes*')
+        .as('EventRequests')
+        .visitAndWaitForHydration('/organizer')
+        .get('div[data-cy=event]')
+        .click()
+
+        .get('textarea[name=event-description]')
+        .clear()
+        .type('event update')
+
+        .get('button[name=update-event]')
+        .click()
+
+        .wait('@EventRequests')
+
+        .visitAndWaitForHydration('/event/love-tiles-douro-granfondo-2023')
+        .reload()
+
+        .get('[data-cy=description]')
+        .contains('event update');
     });
 
     it('should change race order', () => {
-      // TODO
+      cy.intercept('GET', '/organizer/event/*?_data=routes*')
+        .as('EventRequests')
+        .visitAndWaitForHydration('/organizer')
+        .get('div[data-cy=event]')
+        .click()
+
+        .wait('@EventRequests')
+
+        .get('button[name=move-down-AhowRdNWCBQWSuivSt7h]')
+        .click()
+
+        .wait('@EventRequests')
+
+        .get('div[data-cy=race-index-0]')
+        .contains('Mediofondo')
+
+        .visitAndWaitForHydration('/event/love-tiles-douro-granfondo-2023')
+        .reload()
+
+        .get('div[data-cy=race-0]')
+        .contains('Mediofondo');
     });
 
     it('should change document order', () => {
-      // TODO
+      cy.intercept('GET', '/organizer/event/*?_data=routes*')
+        .as('EventRequests')
+        .visitAndWaitForHydration('/organizer')
+        .get('div[data-cy=event]')
+        .click()
+
+        .wait('@EventRequests')
+
+        .get('button[name=move-down-MY4bvgxDbMtGv8rbYe5d]')
+        .click()
+
+        .wait('@EventRequests')
+
+        .get('div[data-cy=document-index-0]')
+        .contains('Circuito')
+
+        .visitAndWaitForHydration('/event/love-tiles-douro-granfondo-2023')
+        .reload()
+
+        .get('div[data-cy=document-0]')
+        .contains('Circuito');
     });
 
     it('should download document', () => {
-      // TODO
+      cy.intercept('GET', '/organizer/event/*?_data=routes*')
+        .as('EventRequests')
+        .visitAndWaitForHydration('/organizer')
+        .get('div[data-cy=event]')
+        .click()
+
+        .wait('@EventRequests')
+
+        .get('[data-cy=download-MY4bvgxDbMtGv8rbYe5d]')
+        .then((link) => {
+          cy.request(link.prop('href')).its('status').should('eq', 200);
+        });
     });
 
     it('should add a new perk', () => {
-      // TODO
+      cy.intercept('GET', '/organizer/event/*?_data=routes*')
+        .as('EventRequests')
+        .visitAndWaitForHydration('/organizer')
+        .get('div[data-cy=event]')
+        .click()
+
+        .wait('@EventRequests')
+
+        .get('input[name=new-perk-input]')
+        .type('a new perk')
+
+        .get('textarea[name=event-description]')
+        .click()
+
+        // Click another thing to get input out of focus and add the new perk
+        .get('button[name=update-event]')
+        .click()
+
+        .wait('@EventRequests')
+
+        .visitAndWaitForHydration('/event/love-tiles-douro-granfondo-2023')
+        .reload()
+
+        .get('label[data-cy=perk-9]')
+        .contains('a new perk');
     });
   });
 });

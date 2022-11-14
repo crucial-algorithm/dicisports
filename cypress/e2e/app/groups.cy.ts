@@ -38,13 +38,14 @@ describe('Groups', () => {
     beforeEach(() => cy.login());
 
     it('should create a group', () => {
-      cy
-        .visit('/m/groups')
+      cy.visit('/m/groups')
         .get('button[name=create-group]')
         .click()
 
         // fill the form
-        .get('input[name=name]').type('a new group')
+        .get('input[name=name]')
+        .type('a new group')
+        .should('have.value', 'a new group')
 
         .pickOptionFromSelect('sport', 4)
         .pickOptionFromSelect('type', 2)
@@ -52,25 +53,31 @@ describe('Groups', () => {
 
         .pickLocationInMap('open-map')
 
-        .get('input[name=near]').type('gaz station aaa')
+        .get('input[name=near]')
+        .type('gaz station aaa')
 
-        .get('button[name=add-new-schedule]').click()
+        .get('button[name=add-new-schedule]')
+        .click()
         .get('button[name="remove-schedule"]')
 
         .pickOptionFromSelect('dayOfWeek', 3)
         .pickOptionFromSelect('hour', 11)
         .pickOptionFromSelect('minute', 31)
 
-        .get('input[name=whatsapp]').type('https://...')
+        .get('input[name=whatsapp]')
+        .type('https://...')
 
         .get('input[name="/file/image/0"]')
         .selectFile('cypress/assets/cycling.jpeg', { force: true })
 
-        .get('textarea[name=description]').type('we do things')
+        .get('textarea[name=description]')
+        .type('we do things')
 
         // save group (prepare to wait for the redirect to happen when group is created)
-        .intercept('GET', '/m/groups?message=*').as('createGroup')
-        .get('button[name=save-group]').click()
+        .intercept('GET', '/m/groups?message=*')
+        .as('createGroup')
+        .get('button[name=save-group]')
+        .click()
 
         .wait('@createGroup', { timeout: 12000 })
 
@@ -81,8 +88,7 @@ describe('Groups', () => {
         .visit('/group/a-new-group')
         .wasImageLoaded('img[data-cy=image1]')
         .get('p[data-cy=schedule]')
-        .contains('Terça-Feira, 10:30 | Domingo, 09:00')
-      ;
+        .contains('Terça-Feira, 10:30 | Domingo, 09:00');
     });
 
     it('should update group', () => {
@@ -91,8 +97,10 @@ describe('Groups', () => {
       cy.visit('/m/group/FkoxmH5db6RXqBpExion')
         .get('textarea')
         .type(description)
-        .intercept('GET', '/m/groups?message=*').as('createGroup')
-        .get('button[name=save-group]').click()
+        .intercept('GET', '/m/groups?message=*')
+        .as('createGroup')
+        .get('button[name=save-group]')
+        .click()
         .wait('@createGroup')
         .visit('/group/bike-brothers-domingueira')
         .get('[data-cy=description]')
@@ -107,8 +115,10 @@ describe('Groups', () => {
 
         .get('[data-cy=delete-dialog]')
 
-        .intercept('GET', '/m/groups?message=*').as('deleteGroup')
-        .get('button[name=confirm-delete]').click()
+        .intercept('GET', '/m/groups?message=*')
+        .as('deleteGroup')
+        .get('button[name=confirm-delete]')
+        .click()
 
         .wait('@deleteGroup')
 

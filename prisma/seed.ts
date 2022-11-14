@@ -154,11 +154,11 @@ function events() {
       address: 'Ferreira do Zêzere',
       useExternalBooking: false,
       externalBookingUrl: null,
-      status: Status.draft,
+      status: Status.auto,
       createdAt: new Date('2021-12-31T08:00:00Z'),
       updatedAt: new Date('2021-12-31T08:00:00Z'),
       slug: 'trail-do-zezere',
-      createdById: 'nTQ8idPqTY8PmhzbsN4u'
+      createdById: '3beca472138d6d234d3f'
     },
     {
       id: 'TgKZi8NQKNoJQGArd3zc',
@@ -182,8 +182,8 @@ function events() {
       name: 'Love Tiles Douro Granfondo 2023',
       sportId: 3,
       difficultyId: 3,
-      startAt: new Date('2022-10-30T10:00:00Z'),
-      endAt: new Date('2022-11-30T15:00:00Z'),
+      startAt: new Date('2023-10-30T10:00:00Z'),
+      endAt: new Date('2023-11-30T15:00:00Z'),
       location: '41.7352772,-7.4712548',
       address: 'Chaves',
       useExternalBooking: false,
@@ -208,6 +208,16 @@ function documents() {
       path: 'MY4bvgxDbMtGv8rbYe5d/9Xjz6PY2n5rPCq5DWKPJ.pdf',
       position: 1,
       label: 'Regulamento',
+      eventId: 'MY4bvgxDbMtGv8rbYe5d',
+      createdAt: new Date('2021-12-31T08:00:00Z'),
+      updatedAt: new Date('2021-12-31T08:00:00Z'),
+      status: Status.auto
+    },
+    {
+      id: 'fFSRHEHwpR8vGngkED3T',
+      path: 'MY4bvgxDbMtGv8rbYe5d/nXGWh6PrptLSSLpA5p4s.pdf',
+      position: 2,
+      label: 'Circuito',
       eventId: 'MY4bvgxDbMtGv8rbYe5d',
       createdAt: new Date('2021-12-31T08:00:00Z'),
       updatedAt: new Date('2021-12-31T08:00:00Z'),

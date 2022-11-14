@@ -22,8 +22,8 @@ export default function BasicDatePicker({
   );
   const id = HTMLId();
 
-  function handleOnChange(e: any) {
-    const str: string = new Date(e.target.value).toISOString();
+  function handleOnChange(date: any) {
+    const str: string = new Date(date).toISOString();
 
     setValue(str);
   }
