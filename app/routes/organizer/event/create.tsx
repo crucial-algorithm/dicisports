@@ -8,11 +8,7 @@ import type { Language } from '~/types';
 import { requireAdminUser, requireUser } from '~/server/auth/session.server';
 
 export const loader: LoaderFunction = async ({ request }) => {
-  const adminUser = await requireAdminUser(request);
-
-  if (!adminUser) {
-    return redirect('/login');
-  }
+  await requireAdminUser(request);
 };
 
 export const action: ActionFunction = async ({ request }) => {
