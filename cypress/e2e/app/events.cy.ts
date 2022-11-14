@@ -24,7 +24,7 @@ describe('Event', () => {
         .contains(name)
 
         .get('[data-cy=date]')
-        .contains('30 Outubro, 2022')
+        .contains('30 Outubro, 2023')
 
         .get('[data-cy=location-link]')
         .should('have.attr', 'href')
@@ -111,7 +111,8 @@ describe('Event', () => {
         .should('eq', `${Cypress.config().baseUrl}/`);
     });
   });
-  context.only('Maintenance', () => {
+
+  context('Maintenance', () => {
     beforeEach(() => {
       cy.task('db:reset');
       cy.task('clearDownloadFolder');
@@ -278,7 +279,13 @@ describe('Event', () => {
 
         .wait('@EventRequests')
 
-        .get('div[data-cy=index-0]')
+        .get('div[data-cy=race-index-0]')
+        .contains('Mediofondo')
+
+        .visitAndWaitForHydration('/event/love-tiles-douro-granfondo-2023')
+        .reload()
+
+        .get('div[data-cy=race-0]')
         .contains('Mediofondo');
     });
 
@@ -296,11 +303,17 @@ describe('Event', () => {
 
         .wait('@EventRequests')
 
-        .get('div[data-cy=index-0]')
+        .get('div[data-cy=-document-index-0]')
+        .contains('Circuito')
+
+        .visitAndWaitForHydration('/event/love-tiles-douro-granfondo-2023')
+        .reload()
+
+        .get('div[data-cy=document-0]')
         .contains('Circuito');
     });
 
-    it.only('should download document', () => {
+    it('should download document', () => {
       cy.intercept('GET', '/organizer/event/*?_data=routes*')
         .as('EventRequests')
         .visitAndWaitForHydration('/organizer')
@@ -316,7 +329,31 @@ describe('Event', () => {
     });
 
     it('should add a new perk', () => {
-      // TODO
+      cy.intercept('GET', '/organizer/event/*?_data=routes*')
+        .as('EventRequests')
+        .visitAndWaitForHydration('/organizer')
+        .get('div[data-cy=event]')
+        .click()
+
+        .wait('@EventRequests')
+
+        .get('input[name=new-perk-input]')
+        .type('a new perk')
+
+        .get('textarea[name=event-description]')
+        .click()
+
+        // Click another thing to get input out of focus and add the new perk
+        .get('button[name=update-event]')
+        .click()
+
+        .wait('@EventRequests')
+
+        .visitAndWaitForHydration('/event/love-tiles-douro-granfondo-2023')
+        .reload()
+
+        .get('label[data-cy=perk-9]')
+        .contains('a new perk');
     });
   });
 });

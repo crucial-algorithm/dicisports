@@ -77,13 +77,16 @@ export const loader: LoaderFunction = async ({ params, request }) => {
     isUserFavorite,
     races,
     perks: await findEventPerks(eventId),
-    difficulty: event ? await findDifficulty(event.difficultyId as number) : null
+    difficulty: event
+      ? await findDifficulty(event.difficultyId as number)
+      : null
   });
 };
 
 export default function EventDisplayRoute() {
   const favorite = useFetcher();
-  const { event, isUserFavorite, races, perks, difficulty } = useLoaderData<LoaderData>();
+  const { event, isUserFavorite, races, perks, difficulty } =
+    useLoaderData<LoaderData>();
   const { t } = useTranslation('event');
 
   const favoriteAddedMessage = t('Favorite Added');
@@ -340,8 +343,8 @@ export default function EventDisplayRoute() {
         >
           {races
             .sort((a: Race, b: Race) => a.displayOrder - b.displayOrder)
-            .map((race: Race) => (
-              <DisplayRace race={race} key={race.id} />
+            .map((race: Race, index: number) => (
+              <DisplayRace race={race} key={race.id} index={index} />
             ))}
           <WhenListEmpty list={races}>
             <H6 className="text-center p-12" variant="secondary" as="p">
@@ -355,7 +358,7 @@ export default function EventDisplayRoute() {
           <div className="grid grid-rows-8 md:grid-rows-6 md:grid-flow-col gap-y-4 md:gap-y-2 my-2">
             {perks
               .sort((a: Perk, b: Perk) => a.displayOrder - b.displayOrder)
-              .map((p: Perk) => (
+              .map((p: Perk, index: number) => (
                 <div
                   key={p.id}
                   className="flex items-center mb-1"
@@ -371,6 +374,7 @@ export default function EventDisplayRoute() {
                   <label
                     htmlFor={p.id}
                     className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300"
+                    data-cy={`perk-${index}`}
                   >
                     {p.name}
                   </label>
@@ -398,8 +402,12 @@ export default function EventDisplayRoute() {
         >
           {event.documents
             .sort((a: Document, b: Document) => a.position - b.position)
-            .map((document: Document) => (
-              <DisplayDocument document={document} key={document.id} />
+            .map((document: Document, index: number) => (
+              <DisplayDocument
+                document={document}
+                key={document.id}
+                index={index}
+              />
             ))}
         </div>
       </Main>
@@ -407,8 +415,8 @@ export default function EventDisplayRoute() {
   );
 }
 
-function DisplayRace(props: { race: Race }) {
-  const { race } = props;
+function DisplayRace(props: { race: Race; index: number }) {
+  const { race, index } = props;
   const { t } = useTranslation('event');
   const raceTime = displayTimeOfDay(race.startTime);
   const [expanded, setExpanded] = useState<boolean>(false);
@@ -419,7 +427,10 @@ function DisplayRace(props: { race: Race }) {
 
   return (
     <div className="flex flex-col" data-cy="race">
-      <div className="gap-y-2 mb-4 mr-2 md:mr-4 text-center items-center border border-black dark:border-white rounded-2xl outline-offset-1 w-[340px] md:overflow-hidden">
+      <div
+        className="gap-y-2 mb-4 mr-2 md:mr-4 text-center items-center border border-black dark:border-white rounded-2xl outline-offset-1 w-[340px] md:overflow-hidden"
+        data-cy={`race-${index}`}
+      >
         <div className="mt-4">
           <H4 data-cy={`race-name-${race.id}`}>{race.name}</H4>
         </div>
@@ -509,13 +520,16 @@ function DisplayRace(props: { race: Race }) {
   );
 }
 
-function DisplayDocument(props: { document: Document }) {
-  const { document } = props;
+function DisplayDocument(props: { document: Document; index: number }) {
+  const { document, index } = props;
   const path = document.path;
   const fileExtension = path.split('.');
 
   return (
-    <div className="flex items-center border border-black dark:border-white rounded-2xl h-16 p-4 mr-2 mb-2">
+    <div
+      className="flex items-center border border-black dark:border-white rounded-2xl h-16 p-4 mr-2 mb-2"
+      data-cy={`document-${index}`}
+    >
       <div
         className="dark:text-white font-medium border-2 border-secondary bg-primary rounded-full p-2 mr-2"
         data-cy="document-extension"

@@ -681,6 +681,7 @@ export default function OrganizerEventRoute() {
                   placeholder={t('Type to create new')}
                   onBlur={handleOnCreatePerk}
                   className="rounded-lg focus-ring text-sm w-60 md:text-sm bg-gray-100 text-black placeholder-gray-500 font-medium box-border dark:disabled:bg-gray-700 dark:text-white dark:bg-gray-800 disabled:text-gray-700 border-0 sm:col-span-4"
+
                 />
               </div>
             </div>
@@ -1307,7 +1308,7 @@ function RacesList(props: {
                 className="text-lg font-extrabold pl-3 dark:text-white w-[calc(100%-(24px+24px))]"
                 id={r.id}
                 onClick={handleUpdateRace}
-                data-cy={`index-${index}`}
+                data-cy={`race-index-${index}`}
               >
                 {r.name}
               </div>
@@ -1659,7 +1660,7 @@ function DocumentsList(props: {
                 className="text-lg text-left font-extrabold pl-3 dark:text-white w-[calc(100%-(24px+24px+24px))]"
                 id={d.id}
                 onClick={handleUpdateDocument}
-                data-cy={`index-${index}`}
+                data-cy={`document-index-${index}`}
               >
                 {d.label}
               </div>
