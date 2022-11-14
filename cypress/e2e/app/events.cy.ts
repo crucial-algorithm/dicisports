@@ -303,7 +303,7 @@ describe('Event', () => {
 
         .wait('@EventRequests')
 
-        .get('div[data-cy=-document-index-0]')
+        .get('div[data-cy=document-index-0]')
         .contains('Circuito')
 
         .visitAndWaitForHydration('/event/love-tiles-douro-granfondo-2023')
