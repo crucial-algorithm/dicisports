@@ -33,7 +33,7 @@ describe('Groups', () => {
         .should('have.length', 2);
     });
 
-    it('should favorite a group unauthenticated', () => {
+    it('should favorite a group unauthenticated: login', () => {
       cy.intercept('GET', '/*?coords=*')
         .as('search')
         .visit('/')
@@ -43,11 +43,13 @@ describe('Groups', () => {
 
         .wait('@search')
 
+        .intercept('GET', '/login?a=favorite&g=*')
+        .as('loadLoginPage')
+
         .get('#add-favorite-0')
         .click()
 
-        .url()
-        .should('include', '/login?a=favorite&g=')
+        .wait('@loadLoginPage')
 
         .get('[name=email]')
         .type('regular@gmail.com', { delay: 1 })
@@ -55,8 +57,13 @@ describe('Groups', () => {
         .get('[name=password]')
         .type('Password1', { delay: 1 })
 
+        .intercept('POST', '/login*')
+        .as('login')
+
         .get('button[name=login]')
         .click()
+
+        .wait('@login', { timeout: 10000 })
 
         .url()
         .should('eq', `${Cypress.config().baseUrl}/`)
@@ -65,6 +72,58 @@ describe('Groups', () => {
 
         .get('button[name=groupId]')
         .should('have.length', 2);
+    });
+
+    it('should favorite a group unauthenticated: signup', () => {
+      cy.intercept('GET', '/*?coords=*')
+        .as('search')
+        .visit('/')
+
+        .get('#search-button')
+        .click()
+
+        .wait('@search')
+
+        .intercept('GET', '/login?a=favorite&g=*')
+        .as('login')
+
+        .get('#add-favorite-0')
+        .click()
+
+        .wait('@login')
+
+        .intercept('GET', '/signup?a=favorite&g=*')
+        .as('signup')
+
+        .get('#create-account')
+        .click()
+
+        .wait('@signup', { timeout: 7000 })
+
+        .get('input[name=email]')
+        .type('a@gmail.com')
+
+        .get('input[name=confirmation]')
+        .type('a@gmail.com')
+
+        .get('input[name=name]')
+        .type('Projeto Pedal')
+
+        .get('input[name=password]')
+        .type('pp@password1')
+
+        .intercept('GET', '/me?*')
+        .as('createAccount')
+
+        .get('button[name=create]')
+        .click()
+
+        .wait('@createAccount', { timeout: 12000 })
+
+        .visit('/m/groups')
+
+        .get('button[name=groupId]')
+        .should('have.length', 1);
     });
 
     it('should remove group from favorites', () => {
