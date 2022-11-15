@@ -1,10 +1,17 @@
-import { PrismaClient, Status } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 
 import perksSeed from './data/perks.json';
 import groupsSeed from './data/groups.json';
 import usersSeed from './data/users.json';
 import racesSeed from './data/races.json';
 import difficultiesSeed from './data/difficulties.json';
+import favoriteGroupsSeed from './data/favoriteGroups.json';
+import sessionsSeed from './data/sessions.json';
+import documentsSeed from './data/documents.json';
+import eventsSeed from './data/events.json';
+import groupSpiritSeed from './data/groupSpirit.json';
+import groupTypesSeed from './data/groupTypes.json';
+import sportsSeed from './data/sports.json';
 
 const db = new PrismaClient();
 
@@ -62,170 +69,37 @@ async function clear() {
 clear().then(() => seed().then());
 
 function sports() {
-  return [
-    {
-      id: 1,
-      name: { pt: 'Atletismo' },
-      picture: 'running_dtwkmj'
-    },
-    {
-      id: 2,
-      name: { pt: 'Trail' },
-      picture: 'trail_o1psbv'
-    },
-    {
-      id: 3,
-      name: { pt: 'Ciclismo Estrada' },
-      picture: 'road_npwaqu'
-    },
-    {
-      id: 4,
-      name: { pt: 'Ciclismo BTT' },
-      picture: 'btt_dm3gqq'
-    },
-    {
-      id: 5,
-      name: { pt: 'E-bike' },
-      picture: 'ebike_v4ae6b'
-    },
-    {
-      id: 6,
-      name: { pt: 'Gravel' },
-      picture: 'gravel_a3zrzj'
-    },
-    {
-      id: 7,
-      name: { pt: 'Enduro' },
-      picture: 'enduro_m3s1ti'
-    }
-  ];
+  return sportsSeed.map((s) => s);
 }
 
 function groupTypes() {
-  return [
-    {
-      id: 1,
-      name: { pt: 'Informal' }
-    },
-    {
-      id: 2,
-      name: { pt: 'Clube' }
-    },
-    {
-      id: 3,
-      name: { pt: 'Loja' }
-    }
-  ];
+  return groupTypesSeed.map((gt) => gt);
 }
 
 function groupsSpirit() {
-  return [
-    {
-      id: 1,
-      name: { pt: 'Convívio' }
-    },
-    {
-      id: 2,
-      name: { pt: 'Desportivo' }
-    },
-    {
-      id: 3,
-      name: { pt: 'Treino' }
-    },
-    {
-      id: 4,
-      name: { pt: 'Amizade' }
-    },
-    {
-      id: 5,
-      name: { pt: 'Turismo' }
-    }
-  ];
+  return groupSpiritSeed.map((gs) => gs);
 }
 
 function events() {
-  return [
-    {
-      id: 'bQmGXYkbhJetjk6mniMt',
-      name: 'Trail do Zêzere',
-      sportId: 2,
-      difficultyId: 2,
-      startAt: new Date('2022-01-22T08:00:00Z'),
-      endAt: new Date('2022-01-22T18:00:00Z'),
-      location: '39.6929301,-8.302317',
-      address: 'Ferreira do Zêzere',
-      useExternalBooking: false,
-      externalBookingUrl: null,
-      status: Status.auto,
-      createdAt: new Date('2021-12-31T08:00:00Z'),
-      updatedAt: new Date('2021-12-31T08:00:00Z'),
-      slug: 'trail-do-zezere',
-      createdById: '3beca472138d6d234d3f'
-    },
-    {
-      id: 'TgKZi8NQKNoJQGArd3zc',
-      name: 'Flavius Challenge OCR',
-      sportId: 1,
-      difficultyId: 1,
-      startAt: new Date('2022-02-18T10:00:00Z'),
-      endAt: new Date('2022-02-19T15:00:00Z'),
-      location: '41.7352772,-7.4712548',
-      address: 'Chaves',
-      useExternalBooking: true,
-      externalBookingUrl:
-        'https://stopandgo.com.pt/events/viii-trilho-dos-reis',
-      status: Status.published,
-      createdAt: new Date('2021-12-31T08:00:00Z'),
-      updatedAt: new Date('2021-12-31T08:00:00Z'),
-      createdById: 'nTQ8idPqTY8PmhzbsN4u'
-    },
-    {
-      id: 'MY4bvgxDbMtGv8rbYe5d',
-      name: 'Love Tiles Douro Granfondo 2023',
-      sportId: 3,
-      difficultyId: 3,
+  return eventsSeed.map((e) => {
+    return {
+      ...e,
       startAt: new Date('2023-10-30T10:00:00Z'),
       endAt: new Date('2023-11-30T15:00:00Z'),
-      location: '41.7352772,-7.4712548',
-      address: 'Chaves',
-      useExternalBooking: false,
-      status: Status.published,
       createdAt: new Date('2021-12-31T08:00:00Z'),
-      updatedAt: new Date('2021-12-31T08:00:00Z'),
-      directions: 'Carro: Saida pela A3 direção a Braga',
-      eventDescription:
-        'O Peso da Régua será ponto de partida e de reencontro, depois de serem atravessados os concelhos de Lamego, Armamar, ' +
-        'Tabuaço, Penedono, Foz Coa e São João da Pesqueira.',
-      createdById: '3beca472138d6d234d3f',
-      image1: 'users/NtGwBBJeHdR6X6XHZPJ3',
-      slug: 'love-tiles-douro-granfondo-2023'
-    }
-  ];
+      updatedAt: new Date('2021-12-31T08:00:00Z')
+    };
+  });
 }
 
 function documents() {
-  return [
-    {
-      id: 'MY4bvgxDbMtGv8rbYe5d',
-      path: 'MY4bvgxDbMtGv8rbYe5d/9Xjz6PY2n5rPCq5DWKPJ.pdf',
-      position: 1,
-      label: 'Regulamento',
-      eventId: 'MY4bvgxDbMtGv8rbYe5d',
+  return documentsSeed.map((d) => {
+    return {
+      ...d,
       createdAt: new Date('2021-12-31T08:00:00Z'),
-      updatedAt: new Date('2021-12-31T08:00:00Z'),
-      status: Status.auto
-    },
-    {
-      id: 'fFSRHEHwpR8vGngkED3T',
-      path: 'MY4bvgxDbMtGv8rbYe5d/nXGWh6PrptLSSLpA5p4s.pdf',
-      position: 2,
-      label: 'Circuito',
-      eventId: 'MY4bvgxDbMtGv8rbYe5d',
-      createdAt: new Date('2021-12-31T08:00:00Z'),
-      updatedAt: new Date('2021-12-31T08:00:00Z'),
-      status: Status.auto
-    }
-  ];
+      updatedAt: new Date('2021-12-31T08:00:00Z')
+    };
+  });
 }
 
 function races() {
@@ -270,20 +144,13 @@ function users() {
 }
 
 function sessions() {
-  return [
-    {
-      id: 'c4e1b568-0e30-466d-8ff0-e10f212e3c5f',
-      userId: 'nTQ8idPqTY8PmhzbsN4u',
+  return sessionsSeed.map((s) => {
+    return {
+      ...s,
       createdAt: new Date(),
       expirationDate: new Date('2100-10-16 19:29:16.667')
-    },
-    {
-      id: '297efeb8-39cf-4b74-9311-c082339de55a',
-      userId: '3beca472138d6d234d3f',
-      createdAt: new Date(),
-      expirationDate: new Date('2100-10-16 19:29:16.667')
-    }
-  ];
+    };
+  });
 }
 
 // Generated using the following SQL statement:
@@ -328,14 +195,15 @@ function groups() {
 }
 
 function favoriteGroup() {
-  return [
-    {
-      userId: 'nTQ8idPqTY8PmhzbsN4u',
-      groupId: 'eaaf16cc63285c840ad1',
+  return favoriteGroupsSeed.map((f) => {
+    return {
+      ...f,
       createdAt: new Date(),
       updatedAt: new Date()
-    }
-  ];
+    };
+  })
+
+  ;
 }
 
 function groupsSchedules() {

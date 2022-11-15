@@ -107,7 +107,7 @@ export default function Groups() {
       </div>
       <H3>{t('Favorite Groups')}</H3>
       <div className="col-span-full mb-24 lg:col-span-5 lg:mb-0">
-        {favorites.sort((a: any, b: any) => (new Date(a.createdAt)).getTime() - (new Date(b.createdAt)).getTime()).map((group: Group, index: number) => (
+        {favorites.sort((a: Group, b: Group) => (new Date(a.createdAt)).getTime() - (new Date(b.createdAt)).getTime()).map((group: Group, index: number) => (
           <GroupEntry
             group={group}
             key={group.id}
