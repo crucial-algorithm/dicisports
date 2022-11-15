@@ -35,8 +35,14 @@ describe('Authentication / Authorization', () => {
         .get('input[name=email]')
         .should('exist')
         .type('regular@gmail.com')
+
+        .intercept('POST', '/recover?*')
+        .as('recoverPassword')
+
         .get('button[type=submit]')
         .click()
+
+        .wait('@recoverPassword')
 
         .get('#success-message')
 
@@ -47,8 +53,15 @@ describe('Authentication / Authorization', () => {
             .type('Password2')
             .get('input[name=confirmation]')
             .type('Password2')
+
+            .intercept('GET', '/me?message=*')
+            .as('newPassword')
+
             .get('button[type=submit]')
             .click()
+
+            .wait('@newPassword')
+
             .url()
             .should('include', `${Cypress.config().baseUrl}/me`);
         });
