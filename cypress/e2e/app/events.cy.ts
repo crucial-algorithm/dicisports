@@ -278,7 +278,8 @@ describe('Event', () => {
         .click()
 
         .wait('@EventRequests')
-
+        .reload()
+          
         .get('div[data-cy=race-index-0]')
         .contains('Mediofondo')
 

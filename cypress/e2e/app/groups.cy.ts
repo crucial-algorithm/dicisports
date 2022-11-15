@@ -84,23 +84,23 @@ describe('Groups', () => {
 
         .wait('@search')
 
-        .intercept('GET', '/login?a=favorite&g=*')
-        .as('login')
+        .intercept('GET', '/login?*_data=routes*')
+        .as('loginPage')
 
         .get('#add-favorite-0')
         .click()
 
-        .wait('@login')
+        .wait('@loginPage')
 
-        .intercept('GET', '/signup?a=favorite&g=*')
-        .as('signup')
+        .intercept('GET', '/signup?*_data=routes*')
+        .as('signupPage')
 
         .get('#create-account')
         .click()
 
-        .wait('@signup')
+        .wait('@signupPage')
 
-        .get('input[name=email]')
+        .get('input[name=signup-email]')
         .type('a@gmail.com')
 
         .get('input[name=confirmation]')
@@ -112,13 +112,13 @@ describe('Groups', () => {
         .get('input[name=password]')
         .type('pp@password1')
 
-        .intercept('GET', '/me?*')
-        .as('createAccount')
+        .intercept('GET', '/me?*_data=routes*')
+        .as('signup')
 
         .get('button[name=create]')
         .click()
 
-        .wait('@createAccount')
+        .wait('@signup')
 
         .visit('/m/groups')
 
