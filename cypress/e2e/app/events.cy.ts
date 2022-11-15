@@ -221,10 +221,13 @@ describe('Event', () => {
 
         .wait('@EventRequests')
 
+        .intercept('GET', '/organizer/event/*_data=routes*')
+        .as('createEvent')
+
         .get('button[name=create-event]', { timeout: 6000 })
         .click()
 
-        .wait('@EventRequests')
+        .wait('@createEvent')
 
         .get('button[name=update-event]')
 
@@ -279,7 +282,7 @@ describe('Event', () => {
 
         .wait('@EventRequests')
         .reload()
-          
+
         .get('div[data-cy=race-index-0]')
         .contains('Mediofondo')
 
