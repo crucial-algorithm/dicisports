@@ -76,8 +76,13 @@ describe('Authentication / Authorization', () => {
         .get('[name=password]')
         .type('Password1', { delay: 1 })
 
+        .intercept('GET', '/?_data=routes*')
+        .as('login')
+
         .get('button[name=login]')
         .click()
+
+        .wait('@login')
 
         .url()
         .should('eq', `${Cypress.config().baseUrl}/`);
@@ -197,8 +202,13 @@ describe('Authentication / Authorization', () => {
         .get('input[name=password]')
         .type('pp@password1')
 
+        .intercept('GET', '/signup?*_data=routes*')
+        .as('signin')
+
         .get('button[name=create]')
         .click()
+
+        .wait('@signin')
 
         .get('div[data-cy=confirmation]>p[role=alert]')
         .should('exist');

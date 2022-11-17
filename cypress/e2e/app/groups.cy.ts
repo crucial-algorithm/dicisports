@@ -43,7 +43,7 @@ describe('Groups', () => {
 
         .wait('@search')
 
-        .intercept('GET', '/login?a=favorite&g=*')
+        .intercept('GET', '/login?a=favorite&g=*_data=routes*')
         .as('loadLoginPage')
 
         .get('#add-favorite-0')

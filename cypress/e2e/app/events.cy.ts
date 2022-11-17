@@ -224,7 +224,7 @@ describe('Event', () => {
         .intercept('GET', '/organizer/event/*_data=routes*')
         .as('createEvent')
 
-        .get('button[name=create-event]', { timeout: 6000 })
+        .get('button[name=create-event]')
         .click()
 
         .wait('@createEvent')
@@ -251,6 +251,8 @@ describe('Event', () => {
         .visitAndWaitForHydration('/organizer')
         .get('div[data-cy=event]')
         .click()
+
+        .wait('@EventRequests')
 
         .get('textarea[name=event-description]')
         .clear()
@@ -409,6 +411,6 @@ function verifyRace(
 
     cy.get(`[data-cy=gpx-${raceId}]`)
       .click()
-      .readFile('./cypress/downloads/Granfondo.gpx', { timeout: 8000 });
+      .readFile('./cypress/downloads/Granfondo.gpx');
   }
 }
