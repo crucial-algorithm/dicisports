@@ -1,6 +1,6 @@
 import crypto from 'crypto';
 
-import type { User } from '@prisma/client';
+import type { User } from '~/types';
 
 import { db } from '~/server/db.server';
 import Config from '~/server/config.server';
@@ -9,7 +9,41 @@ import Id from '~/server/utils/Id.server';
 const sessionExpirationTime = Config().SESSION_EXPIRATION_TIME;
 
 function findUserByEmail(email: string) {
-  return db.user.findUnique({ where: { email } });
+  return db.user.findUnique({
+    where: { email },
+    select: {
+      id: true,
+      createdAt: true,
+      updatedAt: true,
+      email: true,
+      password: false,
+      salt: false,
+      lat: true,
+      lng: true,
+      location: true,
+      name: true,
+      role: true
+    }
+  });
+}
+
+function findUserByEmailWithHash(email: string) {
+  return db.user.findUnique({
+    where: { email },
+    select: {
+      id: true,
+      createdAt: true,
+      updatedAt: true,
+      email: true,
+      password: true,
+      salt: true,
+      lat: true,
+      lng: true,
+      location: true,
+      name: true,
+      role: true
+    }
+  });
 }
 
 async function findUserFromSessionId(sessionId: string) {
@@ -39,7 +73,7 @@ async function findUserFromSessionId(sessionId: string) {
     });
   }
 
-  return session.user;
+  return { ...session.user, password: null, salt: null };
 }
 
 async function createUser({
@@ -68,7 +102,7 @@ async function loginUser({
   email: string;
   password: string;
 }): Promise<User | null> {
-  const user = await findUserByEmail(email);
+  const user = await findUserByEmailWithHash(email);
 
   if (!user) {
     return null;
