@@ -1,0 +1,44 @@
+[
+  {
+    "id": "bQmGXYkbhJetjk6mniMt",
+    "name": "Trail do Zêzere",
+    "sportId": 2,
+    "difficultyId": 2,
+    "location": "39.6929301,-8.302317",
+    "address": "Ferreira do Zêzere",
+    "useExternalBooking": false,
+    "externalBookingUrl": null,
+    "status": "auto",
+    "slug": "trail-do-zezere",
+    "createdById": "3beca472138d6d234d3f"
+  },
+  {
+    "id": "TgKZi8NQKNoJQGArd3zc",
+    "name": "Flavius Challenge OCR",
+    "sportId": 1,
+    "difficultyId": 1,
+    "location": "41.7352772,-7.4712548",
+    "address": "Chaves",
+    "useExternalBooking": true,
+    "externalBookingUrl":
+    "https://stopandgo.com.pt/events/viii-trilho-dos-reis",
+    "status": "published",
+    "createdById": "nTQ8idPqTY8PmhzbsN4u"
+  },
+  {
+    "id": "MY4bvgxDbMtGv8rbYe5d",
+    "name": "Love Tiles Douro Granfondo 2023",
+    "sportId": 3,
+    "difficultyId": 3,
+    "location": "41.7352772,-7.4712548",
+    "address": "Chaves",
+    "useExternalBooking": false,
+    "status": "published",
+    "directions": "Carro: Saida pela A3 direção a Braga",
+    "eventDescription":
+    "O Peso da Régua será ponto de partida e de reencontro, depois de serem atravessados os concelhos de Lamego, Armamar, Tabuaço, Penedono, Foz Coa e São João da Pesqueira.",
+    "createdById": "3beca472138d6d234d3f",
+    "image1": "users/NtGwBBJeHdR6X6XHZPJ3",
+    "slug": "love-tiles-douro-granfondo-2023"
+  }
+]

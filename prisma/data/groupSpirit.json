@@ -1,0 +1,22 @@
+[
+  {
+    "id": 1,
+    "name": { "pt": "Convívio" }
+  },
+  {
+    "id": 2,
+    "name": { "pt": "Desportivo" }
+  },
+  {
+    "id": 3,
+    "name": { "pt": "Treino" }
+  },
+  {
+    "id": 4,
+    "name": { "pt": "Amizade" }
+  },
+  {
+    "id": 5,
+    "name": { "pt": "Turismo" }
+  }
+]

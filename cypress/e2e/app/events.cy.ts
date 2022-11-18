@@ -221,10 +221,13 @@ describe('Event', () => {
 
         .wait('@EventRequests')
 
-        .get('button[name=create-event]', { timeout: 6000 })
+        .intercept('GET', '/organizer/event/*_data=routes*')
+        .as('createEvent')
+
+        .get('button[name=create-event]')
         .click()
 
-        .wait('@EventRequests')
+        .wait('@createEvent')
 
         .get('button[name=update-event]')
 
@@ -248,6 +251,8 @@ describe('Event', () => {
         .visitAndWaitForHydration('/organizer')
         .get('div[data-cy=event]')
         .click()
+
+        .wait('@EventRequests')
 
         .get('textarea[name=event-description]')
         .clear()
@@ -278,6 +283,7 @@ describe('Event', () => {
         .click()
 
         .wait('@EventRequests')
+        .reload()
 
         .get('div[data-cy=race-index-0]')
         .contains('Mediofondo')
@@ -405,6 +411,6 @@ function verifyRace(
 
     cy.get(`[data-cy=gpx-${raceId}]`)
       .click()
-      .readFile('./cypress/downloads/Granfondo.gpx', { timeout: 8000 });
+      .readFile('./cypress/downloads/Granfondo.gpx');
   }
 }

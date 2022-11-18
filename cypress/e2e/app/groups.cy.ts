@@ -12,25 +12,151 @@ describe('Groups', () => {
     });
 
     it('should favorite group', () => {
-      // TODO
+      cy.intercept('GET', '/*?coords=*')
+        .as('search')
+        .login()
+        .visit('/')
+
+        .get('#search-button')
+        .click()
+
+        .wait('@search')
+
+        .get('#add-favorite-0')
+        .click()
+
+        .wait('@search')
+
+        .visit('/m/groups')
+
+        .get('button[name=groupId]')
+        .should('have.length', 2);
     });
 
-    it('should favorite a group unauthenticated', () => {
-      // TODO
+    it('should favorite a group unauthenticated: login', () => {
+      cy.intercept('GET', '/*?coords=*')
+        .as('search')
+        .visit('/')
+
+        .get('#search-button')
+        .click()
+
+        .wait('@search')
+
+        .intercept('GET', '/login?a=favorite&g=*_data=routes*')
+        .as('loadLoginPage')
+
+        .get('#add-favorite-0')
+        .click()
+
+        .wait('@loadLoginPage')
+
+        .get('[name=email]')
+        .type('regular@gmail.com', { delay: 1 })
+
+        .get('[name=password]')
+        .type('Password1', { delay: 1 })
+
+        .intercept('POST', '/login*')
+        .as('login')
+
+        .get('button[name=login]')
+        .click()
+
+        .wait('@login')
+
+        .url()
+        .should('eq', `${Cypress.config().baseUrl}/`)
+
+        .visit('/m/groups')
+
+        .get('button[name=groupId]')
+        .should('have.length', 2);
+    });
+
+    it('should favorite a group unauthenticated: signup', () => {
+      cy.intercept('GET', '/*?coords=*')
+        .as('search')
+        .visit('/')
+
+        .get('#search-button')
+        .click()
+
+        .wait('@search')
+
+        .intercept('GET', '/login?*_data=routes*')
+        .as('loginPage')
+
+        .get('#add-favorite-0')
+        .click()
+
+        .wait('@loginPage')
+
+        .intercept('GET', '/signup?*_data=routes*')
+        .as('signupPage')
+
+        .get('#create-account')
+        .click()
+
+        .wait('@signupPage')
+
+        .get('input[name=signup-email]')
+        .type('a@gmail.com')
+
+        .get('input[name=confirmation]')
+        .type('a@gmail.com')
+
+        .get('input[name=name]')
+        .type('Projeto Pedal')
+
+        .get('input[name=password]')
+        .type('pp@password1')
+
+        .intercept('GET', '/me?*_data=routes*')
+        .as('signup')
+
+        .get('button[name=create]')
+        .click()
+
+        .wait('@signup')
+
+        .visit('/m/groups')
+
+        .get('button[name=groupId]')
+        .should('have.length', 1);
     });
 
     it('should remove group from favorites', () => {
-      // TODO
+      cy.intercept('GET', '/m/groups?message=*')
+        .as('removeFavorite')
+
+        .login()
+        .visit('/m/groups')
+
+        .get('#remove-favorite-0')
+        .click()
+
+        .wait('@removeFavorite')
+        .reload()
+
+        .get('[data-cy=empty-favorites]')
+        .should('exist');
     });
   });
 
   context('Security', () => {
     it('should not access /m/groups when not authenticated', () => {
-      // TODO
+      cy.visit('/m/groups')
+        .url()
+        .should('eq', `${Cypress.config().baseUrl}/login`);
     });
 
     it('should not allow a user from editing another user group', () => {
-      // TODO
+      cy.login()
+        .visit('/m/group/d888b22b730daaf3b70e')
+
+        .url()
+        .should('eq', `${Cypress.config().baseUrl}/m/groups`);
     });
   });
 
@@ -79,7 +205,7 @@ describe('Groups', () => {
         .get('button[name=save-group]')
         .click()
 
-        .wait('@createGroup', { timeout: 12000 })
+        .wait('@createGroup')
 
         // validate that form was properly created
         .get('div[data-cy="group-entry"]')
