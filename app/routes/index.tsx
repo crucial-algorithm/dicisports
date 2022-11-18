@@ -13,13 +13,13 @@ import {
 import { useTranslation } from 'react-i18next';
 
 import {
-  AdjustmentsIcon,
+  AdjustmentsVerticalIcon,
   ChevronDownIcon,
   HeartIcon as Favorite,
   ShareIcon
-} from '@heroicons/react/solid';
+} from '@heroicons/react/24/solid';
 
-import { HeartIcon, XCircleIcon } from '@heroicons/react/outline';
+import { HeartIcon, XCircleIcon } from '@heroicons/react/24/outline';
 
 import clsx from 'clsx';
 
@@ -474,7 +474,7 @@ export default function Index() {
             <Spacer size="xs" />
             <div className="pl-6 flex align-middle">
               <Button size="small" onClick={handleOpenFilters} type="button">
-                <AdjustmentsIcon className="h-6" />
+                <AdjustmentsVerticalIcon className="h-6" />
               </Button>
               <div className="flex mx-2 items-center dark:text-white text-blueGray-500 text-sm">
                 {data?.total
@@ -758,7 +758,7 @@ function SportsGrid({
         .map((s) => (
           <Link to={`?actionId=${actions.search}&sport=${s.id}`} key={s.id}>
             <DisplayImg
-              id={`product/sports/${s.picture}`}
+              imageId={`product/sports/${s.picture}`}
               key={s.id}
               alt={getLocalizedText(lang, s.name)}
               dontMessWithImgSize={true}
@@ -775,7 +775,7 @@ function SportsGrid({
           key={i}
         >
           <DisplayImg
-            id={'product/sports/add-sport_xe6eok'}
+            imageId={'product/sports/add-sport_xe6eok'}
             key={i}
             alt={t('Add Sport')}
             className={width}

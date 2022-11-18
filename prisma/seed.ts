@@ -1,7 +1,10 @@
-import { PrismaClient, Status, Role } from '@prisma/client';
+import { PrismaClient, Status } from '@prisma/client';
 
-import usersSeed from './data/users.json';
+import perksSeed from './data/perks.json';
 import groupsSeed from './data/groups.json';
+import usersSeed from './data/users.json';
+import racesSeed from './data/races.json';
+import difficultiesSeed from './data/difficulties.json';
 
 const db = new PrismaClient();
 
@@ -25,6 +28,7 @@ async function persist(name: string, list: Array<any>, entity: any) {
 
 async function seed() {
   await persist('sports', sports(), db.sport);
+  await persist('difficulties', difficulties(), db.difficulty);
   await persist('group types', groupTypes(), db.groupType);
   await persist('group spirit', groupsSpirit(), db.groupSpirit);
 
@@ -32,9 +36,28 @@ async function seed() {
   await persist('groups', groups(), db.group);
   await persist('events', events(), db.event);
   await persist('documents', documents(), db.document);
+  await persist('races', races(), db.race);
+  await persist('perks', perks(), db.perk);
+  await persist('sessions', sessions(), db.session);
 }
 
-seed().then();
+async function clear() {
+  await db.document.deleteMany();
+  await db.race.deleteMany();
+  await db.perk.deleteMany();
+  await db.favoriteEvent.deleteMany();
+  await db.event.deleteMany();
+  await db.groupSchedule.deleteMany();
+  await db.favoriteGroup.deleteMany();
+  await db.group.deleteMany();
+  await db.user.deleteMany();
+  await db.groupSpirit.deleteMany();
+  await db.groupType.deleteMany();
+  await db.sport.deleteMany();
+  await db.difficulty.deleteMany();
+}
+
+clear().then(() => seed().then());
 
 function sports() {
   return [
@@ -124,6 +147,7 @@ function events() {
       id: 'bQmGXYkbhJetjk6mniMt',
       name: 'Trail do Zêzere',
       sportId: 2,
+      difficultyId: 2,
       startAt: new Date('2022-01-22T08:00:00Z'),
       endAt: new Date('2022-01-22T18:00:00Z'),
       location: '39.6929301,-8.302317',
@@ -132,12 +156,15 @@ function events() {
       externalBookingUrl: null,
       status: Status.auto,
       createdAt: new Date('2021-12-31T08:00:00Z'),
-      updatedAt: new Date('2021-12-31T08:00:00Z')
+      updatedAt: new Date('2021-12-31T08:00:00Z'),
+      slug: 'trail-do-zezere',
+      createdById: '3beca472138d6d234d3f'
     },
     {
       id: 'TgKZi8NQKNoJQGArd3zc',
       name: 'Flavius Challenge OCR',
       sportId: 1,
+      difficultyId: 1,
       startAt: new Date('2022-02-18T10:00:00Z'),
       endAt: new Date('2022-02-19T15:00:00Z'),
       location: '41.7352772,-7.4712548',
@@ -145,9 +172,31 @@ function events() {
       useExternalBooking: true,
       externalBookingUrl:
         'https://stopandgo.com.pt/events/viii-trilho-dos-reis',
-      status: Status.auto,
+      status: Status.published,
       createdAt: new Date('2021-12-31T08:00:00Z'),
-      updatedAt: new Date('2021-12-31T08:00:00Z')
+      updatedAt: new Date('2021-12-31T08:00:00Z'),
+      createdById: 'nTQ8idPqTY8PmhzbsN4u'
+    },
+    {
+      id: 'MY4bvgxDbMtGv8rbYe5d',
+      name: 'Love Tiles Douro Granfondo 2023',
+      sportId: 3,
+      difficultyId: 3,
+      startAt: new Date('2023-10-30T10:00:00Z'),
+      endAt: new Date('2023-11-30T15:00:00Z'),
+      location: '41.7352772,-7.4712548',
+      address: 'Chaves',
+      useExternalBooking: false,
+      status: Status.published,
+      createdAt: new Date('2021-12-31T08:00:00Z'),
+      updatedAt: new Date('2021-12-31T08:00:00Z'),
+      directions: 'Carro: Saida pela A3 direção a Braga',
+      eventDescription:
+        'O Peso da Régua será ponto de partida e de reencontro, depois de serem atravessados os concelhos de Lamego, Armamar, ' +
+        'Tabuaço, Penedono, Foz Coa e São João da Pesqueira.',
+      createdById: '3beca472138d6d234d3f',
+      image1: 'users/NtGwBBJeHdR6X6XHZPJ3',
+      slug: 'love-tiles-douro-granfondo-2023'
     }
   ];
 }
@@ -155,71 +204,45 @@ function events() {
 function documents() {
   return [
     {
-      id: 'iMJfFDJkQK3FWW8C5YW8',
+      id: 'MY4bvgxDbMtGv8rbYe5d',
+      path: 'MY4bvgxDbMtGv8rbYe5d/9Xjz6PY2n5rPCq5DWKPJ.pdf',
       position: 1,
-      key: 'seed/MqmdXHau8JAjpfbCKJAW.png',
-      eventId: 'bQmGXYkbhJetjk6mniMt',
+      label: 'Regulamento',
+      eventId: 'MY4bvgxDbMtGv8rbYe5d',
       createdAt: new Date('2021-12-31T08:00:00Z'),
-      updatedAt: new Date('2021-12-31T08:00:00Z')
+      updatedAt: new Date('2021-12-31T08:00:00Z'),
+      status: Status.auto
     },
     {
-      id: 'SbW72nZ5RbsXY6B9Ncts',
+      id: 'fFSRHEHwpR8vGngkED3T',
+      path: 'MY4bvgxDbMtGv8rbYe5d/nXGWh6PrptLSSLpA5p4s.pdf',
       position: 2,
-      key: 'seed/LAJwAEY62EPjRjkKXSSu.png',
-      eventId: 'bQmGXYkbhJetjk6mniMt',
+      label: 'Circuito',
+      eventId: 'MY4bvgxDbMtGv8rbYe5d',
       createdAt: new Date('2021-12-31T08:00:00Z'),
-      updatedAt: new Date('2021-12-31T08:00:00Z')
-    },
-    {
-      id: 'WPigAvEJZT9L66uuzp9a',
-      position: 3,
-      key: 'seed/hWLixbGygbkadiPdhDof.png',
-      eventId: 'bQmGXYkbhJetjk6mniMt',
-      createdAt: new Date('2021-12-31T08:00:00Z'),
-      updatedAt: new Date('2021-12-31T08:00:00Z')
-    },
-    {
-      id: 'NjENPYBRoBb6kmcBFS5d',
-      position: 4,
-      key: 'seed/sq7gTo6c68G4Nj9eadup.png',
-      eventId: 'bQmGXYkbhJetjk6mniMt',
-      createdAt: new Date('2021-12-31T08:00:00Z'),
-      updatedAt: new Date('2021-12-31T08:00:00Z')
-    },
-
-    {
-      id: 'whW47SRRxxGSyip3uLqW',
-      position: 1,
-      key: 'seed/MqmdXHau8JAjpfbCKJAW.png',
-      eventId: 'TgKZi8NQKNoJQGArd3zc',
-      createdAt: new Date('2021-12-31T08:00:00Z'),
-      updatedAt: new Date('2021-12-31T08:00:00Z')
-    },
-    {
-      id: 'B25oJq3xthr8cM8GKqiW',
-      position: 2,
-      key: 'seed/LAJwAEY62EPjRjkKXSSu.png',
-      eventId: 'TgKZi8NQKNoJQGArd3zc',
-      createdAt: new Date('2021-12-31T08:00:00Z'),
-      updatedAt: new Date('2021-12-31T08:00:00Z')
-    },
-    {
-      id: '29AotH3sCcYWJph6Ftrx',
-      position: 3,
-      key: 'seed/hWLixbGygbkadiPdhDof.png',
-      eventId: 'TgKZi8NQKNoJQGArd3zc',
-      createdAt: new Date('2021-12-31T08:00:00Z'),
-      updatedAt: new Date('2021-12-31T08:00:00Z')
-    },
-    {
-      id: 'wdXiF63vAwvB46r6R3MR',
-      position: 4,
-      key: 'seed/sq7gTo6c68G4Nj9eadup.png',
-      eventId: 'TgKZi8NQKNoJQGArd3zc',
-      createdAt: new Date('2021-12-31T08:00:00Z'),
-      updatedAt: new Date('2021-12-31T08:00:00Z')
+      updatedAt: new Date('2021-12-31T08:00:00Z'),
+      status: Status.auto
     }
   ];
+}
+
+function races() {
+  return racesSeed.map((r) => ({
+    ...r,
+    createdAt: new Date(),
+    updatedAt: new Date()
+  }));
+}
+
+function perks() {
+  return perksSeed.map((p) => ({
+    ...p,
+    createdAt: new Date()
+  }));
+}
+
+function difficulties() {
+  return difficultiesSeed.map((d) => d);
 }
 
 // Generated using the following SQL statement:
@@ -235,24 +258,30 @@ function documents() {
 //
 //
 function users() {
-  const users = usersSeed.map((u) => {
+  return usersSeed.map((u) => {
     return {
       ...u,
       createdAt: new Date(u.createdAt),
-      updatedAt: new Date(u.updatedAt),
-      role: Role.MEMBER
+      updatedAt: new Date(u.updatedAt)
     };
   });
+}
 
-  users.push({
-    id: '3beca472138d6d234d3f',
-    createdAt: new Date('2022-02-19 10:56:59.959'),
-    updatedAt: new Date('2022-02-19 10:56:59.959'),
-    email: 'u@gmail.com',
-    name: 'Bike Brothers',
-    role: Role.MEMBER
-  });
-  return users;
+function sessions() {
+  return [
+    {
+      id: 'c4e1b568-0e30-466d-8ff0-e10f212e3c5f',
+      userId: 'nTQ8idPqTY8PmhzbsN4u',
+      createdAt: new Date(),
+      expirationDate: new Date('2100-10-16 19:29:16.667')
+    },
+    {
+      id: '297efeb8-39cf-4b74-9311-c082339de55a',
+      userId: '3beca472138d6d234d3f',
+      createdAt: new Date(),
+      expirationDate: new Date('2100-10-16 19:29:16.667')
+    }
+  ];
 }
 
 // Generated using the following SQL statement:
@@ -287,58 +316,11 @@ function users() {
 //
 //
 function groups() {
-  const groups = groupsSeed.map((g) => {
+  return groupsSeed.map((g) => {
     return {
       ...g,
       createdAt: new Date(g.createdAt),
       updatedAt: new Date(g.updatedAt)
     };
   });
-
-  groups.push({
-    id: 'FkoxmH5db6RXqBpExion',
-    name: 'Bike Brothers Domingueira',
-    slug: 'bike-brothers-domingueira',
-    sportId: 3,
-    groupTypeId: 1,
-    groupSpiritId: 2,
-    location: 'R Cónego Dr Manuel Faria',
-    lat: 41.5513986,
-    lng: -8.434844,
-    near: 'Loja da Bike Brothers',
-    dayOfWeek: 6,
-    timeOfDay: 900,
-    whatsapp: null,
-    image1: null,
-    image2: null,
-    image3: null,
-    createdAt: new Date('2021-06-01T08:00:00Z'),
-    updatedAt: new Date('2021-06-01T08:00:00Z'),
-    status: Status.published,
-    createdById: '3beca472138d6d234d3f'
-  });
-
-  groups.push({
-    id: 'GkoxmH5db6RXqBpExion',
-    name: 'Bike Brothers BTT ao Sábado',
-    slug: 'bike-brothers-btt-ao-sabado',
-    sportId: 4,
-    groupTypeId: 1,
-    groupSpiritId: 2,
-    location: 'R Cónego Dr Manuel Faria',
-    lat: 41.5513986,
-    lng: -8.434844,
-    near: 'Loja da Bike Brothers',
-    dayOfWeek: 5,
-    timeOfDay: 900,
-    whatsapp: null,
-    image1: null,
-    image2: null,
-    image3: null,
-    createdAt: new Date('2021-06-01T08:00:00Z'),
-    updatedAt: new Date('2021-06-01T08:00:00Z'),
-    status: Status.published,
-    createdById: '3beca472138d6d234d3f'
-  });
-  return groups;
 }

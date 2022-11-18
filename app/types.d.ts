@@ -8,7 +8,9 @@ import type {
   Event as DBEvent,
   Perk as DBPerk,
   Race as DBRace,
-  GroupSchedule as DBGroupSchedule
+  GroupSchedule as DBGroupSchedule,
+  Difficulty as DBDifficulty,
+  Status
 } from '@prisma/client';
 
 type NonNullProperties<Type> = {
@@ -100,7 +102,7 @@ type Document = {} & DBDocument
 type CreateDocumentInput = {
   id: string
   label: string
-  path: string
+  path?: string
   eventId: string
 }
 
@@ -121,7 +123,9 @@ type Event = {} & DBEvent
 type CreateEventInput = {
   id: string
   name: string
+  slug?: string
   sportId: number
+  difficultyId: number
   startAt: Date | string
   location: string
   address: string
@@ -136,6 +140,7 @@ type CreateEventInput = {
   image5?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  status?: Status
 }
 
 type Perk = {} & DBPerk
@@ -260,6 +265,15 @@ type GroupFilters = {
 
 type LoginAction = null | 'login' | 'ws' | 'favorite'
 
+type FavoriteEvent = {
+  userId: string
+  eventId: string
+  createdAt?: Date
+  updatedAt?: Date
+}
+
+type Difficulty = {} & DBDifficulty;
+
 export {
   NonNullProperties,
   MemberProfile,
@@ -291,5 +305,7 @@ export {
   CreateRaceInput,
   CreateDocumentInput,
   DBRawGroup,
-  LoginAction
+  LoginAction,
+  FavoriteEvent,
+  Difficulty
 };

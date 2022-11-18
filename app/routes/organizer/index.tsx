@@ -1,4 +1,4 @@
-import { Link, useLoaderData } from '@remix-run/react';
+import { Form, Link, useLoaderData } from '@remix-run/react';
 import type { LinksFunction, LoaderFunction } from 'remix';
 import { json } from 'remix';
 import { useTranslation } from 'react-i18next';
@@ -10,11 +10,11 @@ import clsx from 'clsx';
 
 import { H4, H5, H6 } from '~/components/shared/typography';
 
-import { ButtonLink } from '~/components/shared/Button';
+import Button from '~/components/shared/Button';
 
 import Main from '~/components/shared/Main';
 
-import { findEvents } from '~/server/db/events.server';
+import { findUserEvents } from '~/server/db/events.server';
 import WhenListEmpty from '~/components/shared/Empty';
 
 import type { Sport } from '~/types';
@@ -33,9 +33,9 @@ export const handle = {
 
 export const loader: LoaderFunction = async ({ request }) => {
   // hide while this is still in dev
-  await requireAdminUser(request);
+  const user = await requireAdminUser(request);
 
-  const events = await findEvents();
+  const events = await findUserEvents(user.id);
   const sports = await findSports();
 
   return json({
@@ -56,11 +56,12 @@ export default function OrganizerIndexRoute() {
     <Main>
       <div className="dark:text-blueGray-500">
         <div className="col-span-full mb-12 lg:mb-12">
-          <div className="flex flex-col-reverse items-start justify-between lg:flex-row lg:items-center">
-            <div />
-            <ButtonLink variant="secondary" to={'/organizer/event/create'}>
-              <H6 as="span">{t('Create')}</H6>
-            </ButtonLink>
+          <div className="flex flex-col-reverse justify-end lg:flex-row lg:items-center">
+            <Form method="post" action="/organizer/event/create">
+              <Button variant="secondary" name="create-event">
+                <H6 as="span">{t('Create')}</H6>
+              </Button>
+            </Form>
           </div>
         </div>
         <div className="events-list">
@@ -77,6 +78,7 @@ export default function OrganizerIndexRoute() {
                       event.status === 'draft' || event.status === 'unpublished'
                   }
                 )}
+                data-cy="event"
               >
                 <div id="event-image">
                   <H5 className={clsx('mb-5')}>{event.name}</H5>
@@ -115,7 +117,7 @@ function PlaceholderImg({
   }
   return (
     <DisplayImg
-      id={`product/sports/${img}`}
+      imageId={`product/sports/${img}`}
       alt={event.name || ''}
       variant="List"
     />
@@ -140,7 +142,7 @@ function RaceImage({ event, img }: { event: Event; img?: string }) {
         />
       ) : (
         <DisplayImg
-          id={image1 || image2 || image3 || ''}
+          imageId={image1 || image2 || image3 || ''}
           transformations={{
             resize: {
               type: 'fill',

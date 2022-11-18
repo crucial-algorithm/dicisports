@@ -80,11 +80,12 @@ async function findGroupBySlug(slug: string): Promise<Group | null> {
       groupType: true,
       groupSpirit: true,
       sport: true,
-      createdBy: true
+      createdBy: true,
+      schedules: true
     }
   });
 
-  if (!group) {
+  if (!group || group.status === Status.deleted) {
     return null;
   }
   return dbGroupToGroup(group);
@@ -94,7 +95,6 @@ async function assignUniqueSlug(name: string, attempt = 0): Promise<string> {
   const prefix = `${Math.floor(Math.random() * 1000)}-`;
   const slug = `${attempt ? prefix : ''}${generateSlug(name)}`;
 
-  console.log(`attempt nbr ${attempt}, slug = ${slug}`);
   const group = await db.group.findUnique({
     where: { slug }
   });

@@ -12,7 +12,7 @@ import { unstable_composeUploadHandlers } from '@remix-run/node';
 
 import { z, ZodError } from 'zod';
 
-import { requireAdminUser } from '~/server/auth/session.server';
+import { requireAdminUser, requireUser } from '~/server/auth/session.server';
 import {
   createDocument,
   deleteDocument,
@@ -23,20 +23,28 @@ import type { CreateDocumentInput } from '~/types';
 import { badRequest } from '~/utils/misc';
 import { uploadToS3 } from '~/server/utils/s3';
 import Id from '~/server/utils/Id.server';
+import { findEvent } from '~/server/db/events.server';
+import { NotFound, Unauthorized } from '~/server/utils/misc';
 
 const RESOURCES_NS = 'create-event-form';
 
 export const action: ActionFunction = async ({ request, params }) => {
   await requireAdminUser(request);
+  const user = await requireUser(request);
 
   const t = await i18n.getFixedT(request, RESOURCES_NS);
 
   const uploadHandler: UploadHandler = unstable_composeUploadHandlers(
     // our custom upload handler
-    async ({ name, contentType, data, filename }) => {
+    async ({ name, data, filename }) => {
       if (name !== 'file') {
         return undefined;
       }
+
+      if (filename === undefined) {
+        return undefined;
+      }
+
       const eventId = params.eventId as string;
       const path = require('path');
       const fileExtension = path.parse(filename as string).ext;
@@ -58,17 +66,46 @@ export const action: ActionFunction = async ({ request, params }) => {
   const documentId = form.get('documentId') as string;
   const hash = form.get('hash') as string;
   const actionId = form.get('actionId') as string;
-  const file = form.get('file');
+  const file =
+    form.get('file') === 'undefined' || form.get('file') === null
+      ? undefined
+      : form.get('file');
 
+  const isInsert = !documentId;
   const documentData: CreateDocumentInput = {
     id: documentId,
     label: name,
-    path: file as string,
+    // @ts-ignore
+    path: file,
     eventId
   };
 
+  const event = await findEvent(eventId);
+
+  if (!event) {
+    throw NotFound(t('Event not found'));
+  }
+  if (event.createdById !== user.id) {
+    throw Unauthorized(t('Not authorized'));
+  }
+
   const DocumentSchema = z.object({
-    label: z.string().min(5, { message: t('Min 5 chars') })
+    label: z.string().min(5, { message: t('Min 5 chars') }),
+    path: z
+      .string()
+      .optional()
+      .refine(
+        () => {
+          if (!isInsert) {
+            return true;
+          }
+
+          return documentData.path !== undefined;
+        },
+        {
+          message: t('Select a document')
+        }
+      )
   });
 
   try {
@@ -80,9 +117,9 @@ export const action: ActionFunction = async ({ request, params }) => {
 
     //If actionId is null or !== 'delete' check if there is a document and update or create
     DocumentSchema.parse(documentData);
-    documentId
-      ? await updateDocument(documentData)
-      : await createDocument(documentData);
+    isInsert
+      ? await createDocument(documentData)
+      : await updateDocument(documentData);
     return json({ ok: true });
   } catch (e) {
     if (!(e instanceof ZodError)) {

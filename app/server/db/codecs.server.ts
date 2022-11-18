@@ -3,6 +3,7 @@ import type {
   GroupType as DBGroupType,
   Perk as DBPerk,
   Sport as DBSport,
+  Difficulty as DBDifficulty,
   Status
 } from '@prisma/client';
 import { Role } from '@prisma/client';
@@ -16,7 +17,7 @@ import type {
   Perk,
   Sport,
   TranslationObject,
-  GroupInput
+  GroupInput, Difficulty
 } from '~/types';
 
 function dbSportToSport(sport: DBSport): Sport {
@@ -28,6 +29,17 @@ function dbSportToSport(sport: DBSport): Sport {
     updatedAt,
     name: name as TranslationObject,
     picture
+  };
+}
+
+function dbDifficultyToDifficulty(difficulty: DBDifficulty): Difficulty {
+  const { id, name, createdAt, updatedAt } = difficulty;
+
+  return {
+    id,
+    createdAt,
+    updatedAt,
+    name: name as TranslationObject
   };
 }
 
@@ -128,5 +140,6 @@ export {
   dbGroupTypeToGroupType,
   dbGroupToGroup,
   dbPerkToPerk,
-  dbRawGroupToGroup
+  dbRawGroupToGroup,
+  dbDifficultyToDifficulty
 };

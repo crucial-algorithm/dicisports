@@ -40,6 +40,8 @@ model User {
   sessions  Session[]
   groups    Group[]
   favGroups FavoriteGroup[]
+  events    Event[]
+  favEvents FavoriteEvent[]
 
   @@map("users")
 }
@@ -66,6 +68,16 @@ model Sport {
   @@map("sports")
 }
 
+model Difficulty {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  name      Json
+  events    Event[]
+
+  @@map("difficulties")
+}
+
 enum Status {
   auto
   draft
@@ -75,30 +87,36 @@ enum Status {
 }
 
 model Event {
-  id                 String     @id @default(uuid())
+  id                 String         @id @default(uuid())
   name               String?
-  sport              Sport?     @relation(fields: [sportId], references: [id])
-  sportId            Int?       @map("sport_id")
-  startAt            DateTime?  @map("start_at")
-  endAt              DateTime?  @map("end_at")
+  slug               String?        @unique
+  sport              Sport?         @relation(fields: [sportId], references: [id])
+  sportId            Int?           @map("sport_id")
+  difficulty         Difficulty?    @relation(fields: [difficultyId], references: [id])
+  difficultyId       Int?           @map("difficulty_id")
+  startAt            DateTime?      @map("start_at")
+  endAt              DateTime?      @map("end_at")
   location           String?
   address            String?
-  useExternalBooking Boolean    @default(false) @map("use_external_booking")
-  externalBookingUrl String?    @map("external_booking_url")
-  eventDescription   String?    @map("event_description")
-  status             Status     @default(auto)
+  useExternalBooking Boolean        @default(false) @map("use_external_booking")
+  externalBookingUrl String?        @map("external_booking_url")
+  eventDescription   String?        @map("event_description")
+  status             Status         @default(auto)
   image1             String?
   image2             String?
   image3             String?
   image4             String?
   image5             String?
   directions         String?
-  createdAt          DateTime   @default(now()) @map("created_at")
-  updatedAt          DateTime   @updatedAt @map("updated_at")
+  createdBy          User           @relation(fields: [createdById], references: [id])
+  createdById        String         @map("created_by")
+  createdAt          DateTime       @default(now()) @map("created_at")
+  updatedAt          DateTime       @updatedAt @map("updated_at")
   documents          Document[]
   perks              Perk[]
   races              Race[]
 
+  favEvents          FavoriteEvent[]
   @@map("events")
 }
 
@@ -225,4 +243,16 @@ model GroupSchedule {
     group       Group       @relation(fields: [groupId], references: [id])
 
   	@@map("group_schedule")
+}
+
+model FavoriteEvent {
+  userId    String      @map("user_id")
+  eventId   String      @map("event_id")
+  user      User        @relation(fields: [userId], references: [id])
+  event     Event       @relation(fields: [eventId], references: [id])
+  createdAt DateTime    @default(now()) @map("created_at")
+  updatedAt DateTime    @updatedAt @map("updated_at")
+
+  @@unique([userId, eventId])
+  @@map("favorite_events")
 }

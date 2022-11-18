@@ -1,0 +1,35 @@
+[
+  {
+    "id": "xaXaCzs2t7D8DpRNnffM",
+    "name": "Granfondo",
+    "distance": 154,
+    "startTime": 900,
+    "elevationGain": 2274,
+    "elevationLoss": 576,
+    "price": 25,
+    "track": "MY4bvgxDbMtGv8rbYe5d/H3ZemBpKtywySKoT862B.gpx",
+    "raceDescription": "O Granfondo tem 154km de distância e irá testar as vossas capacidades. Estão prontos para o desafio ?",
+    "displayOrder": 3,
+    "eventId": "MY4bvgxDbMtGv8rbYe5d"
+  },
+  {
+    "id": "AhowRdNWCBQWSuivSt7s",
+    "name": "Mediofondo",
+    "distance": 102,
+    "startTime": 830,
+    "elevationGain": 1804,
+    "price": 15,
+    "displayOrder": 2,
+    "eventId": "MY4bvgxDbMtGv8rbYe5d"
+  },
+  {
+    "id": "AhowRdNWCBQWSuivSt7h",
+    "name": "Minifondo",
+    "distance": 57,
+    "startTime": 830,
+    "elevationGain": 800,
+    "price": 10,
+    "displayOrder": 1,
+    "eventId": "MY4bvgxDbMtGv8rbYe5d"
+  }
+]

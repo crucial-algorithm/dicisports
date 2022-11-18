@@ -6,9 +6,9 @@ import * as React from 'react';
 
 import { Form, useLoaderData } from '@remix-run/react';
 
-import { PencilAltIcon } from '@heroicons/react/outline';
+import { PencilSquareIcon } from '@heroicons/react/24/outline';
 
-import { HeartIcon as HeartIconActive } from '@heroicons/react/solid';
+import { HeartIcon as HeartIconActive } from '@heroicons/react/24/solid';
 
 import { findSports } from '~/server/db/sports.server';
 import type { Group, Sport } from '~/types';
@@ -76,7 +76,7 @@ export default function Groups() {
           <div />
           <Form method="post" action="/m/group/add">
             <input type="hidden" name="actionId" value={actionIds.create} />
-            <Button variant="secondary">
+            <Button variant="secondary" name="create-group">
               <H6 as="span">{t('Create')}</H6>
             </Button>
           </Form>
@@ -93,7 +93,7 @@ export default function Groups() {
             actions={
               <ButtonGroup>
                 <ButtonLink size="small" to={`/m/group/${group.id}`}>
-                  <PencilAltIcon className="h-6 w-6 m-0 inline-block" />
+                  <PencilSquareIcon className="h-6 w-6 m-0 inline-block" />
                 </ButtonLink>
               </ButtonGroup>
             }

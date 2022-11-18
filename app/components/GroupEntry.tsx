@@ -26,25 +26,19 @@ export default function GroupEntry({ group, actions, footer, img }: Props) {
   function translateDay(day: number) {
     return tc(
         [
-          'Sunday',
+          'Monday',
           'Tuesday',
           'Wednesday',
           'Thursday',
           'Friday',
           'Saturday',
-          'Monday'
+          'Sunday'
         ][day]
     );
   }
 
   const schedule = group?.schedules
-    ?.map((s) => {
-      return {
-        ...s,
-        dayOfWeek: s.dayOfWeek === 6 ? 0 : s.dayOfWeek === 0 ? 6 : s.dayOfWeek
-      };
-    })
-    .sort((a, b) => a.dayOfWeek - b.dayOfWeek)
+    ?.sort((a, b) => a.dayOfWeek - b.dayOfWeek)
     .map(
       ({ dayOfWeek, timeOfDay }) =>
         `${translateDay(dayOfWeek)}, ${displayTimeOfDay(timeOfDay)}`
@@ -60,6 +54,7 @@ export default function GroupEntry({ group, actions, footer, img }: Props) {
         'p-4',
         'border-b last:border-none border-gray-300 dark:border-gray-300'
       )}
+      data-cy="group-entry"
     >
       <GroupImage group={group} img={img} />
       <div className="w-full h-full p-2 lg:pl-6">
@@ -197,7 +192,7 @@ function PlaceholderImg({
   }
   return (
     <DisplayImg
-      id={`product/sports/${img}`}
+      imageId={`product/sports/${img}`}
       alt={group.name || ''}
       variant="List"
     />
@@ -217,7 +212,7 @@ function Feature({ value, label, children }: FeatureProps) {
           {label}
         </div>
         <div className="inline-block dark:text-white text-gray-500 text-base">
-          {typeof value === 'string' ? value : I18nText({ text: value })}
+          {typeof value === 'string' ? value : <I18nText text={value} />}
           {children}
         </div>
       </div>
@@ -249,7 +244,7 @@ function GroupImage({ group, img }: { group: Group; img?: string }) {
     return (
       <Wrapper>
         <DisplayImg
-          id={image1 || image2 || image3 || ''}
+          imageId={image1 || image2 || image3 || ''}
           alt={group.name || ''}
           transformations={{
             resize: {
@@ -273,7 +268,7 @@ function GroupImage({ group, img }: { group: Group; img?: string }) {
         {images.map((image, idx) => (
           <DisplayImg
             key={idx}
-            id={image}
+            imageId={image}
             transformations={{
               resize: {
                 type: 'fill',

@@ -4,19 +4,21 @@ import clsx from 'clsx';
 import type { TransformerOption } from '@cld-apis/types';
 
 type DisplayImgProps = {
-  id: string | null
+  imageId: string | null
   dontMessWithImgSize?: boolean
   transformations?: TransformerOption
   variant?: 'List' | 'View' | 'Grid'
+  dataCy?: string
 } & React.ComponentProps<'img'>
 
 export default function DisplayImg({
   alt,
-  id,
+  dataCy,
   className,
   dontMessWithImgSize,
   transformations = {},
-  variant = 'List'
+  variant = 'List',
+  imageId
 }: DisplayImgProps) {
 
   let widths: number[];
@@ -50,6 +52,7 @@ export default function DisplayImg({
 
   return (
     <img
+      data-cy={dataCy}
       className={clsx(
         {
           'w-full lg:w-144 lg:max-h-144': !dontMessWithImgSize
@@ -57,7 +60,7 @@ export default function DisplayImg({
         'rounded-lg object-cover object-top',
         className
       )}
-      {...getImgProps(getImageBuilder(id, alt), {
+      {...getImgProps(getImageBuilder(imageId || '', alt), {
         transformations,
         widths,
         sizes

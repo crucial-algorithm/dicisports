@@ -3,7 +3,7 @@ import { useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import MapboxGeocoder from '@mapbox/mapbox-gl-geocoder';
 import { Dialog } from '@reach/dialog';
-import { LocationMarkerIcon } from '@heroicons/react/solid';
+import { MapPinIcon } from '@heroicons/react/24/solid';
 
 import { useTranslation } from 'react-i18next';
 
@@ -151,7 +151,7 @@ function Map({
 function Pin() {
   return (
     <div className="map-pin">
-      <LocationMarkerIcon className="text-black w-8 h-8" />
+      <MapPinIcon className="text-black w-6 h-6" />
     </div>
   );
 }
@@ -245,7 +245,9 @@ function MapDialog({
   }
 
   function handleCallback(location: DiciLocation | null) {
-    if (onPickedLocation) {onPickedLocation(location);}
+    if (onPickedLocation) {
+      onPickedLocation(location);
+    }
     setLocation(location);
   }
 
@@ -268,7 +270,9 @@ function MapDialog({
         <Button variant="secondary" onClick={handleClose}>
           {t('Cancel')}
         </Button>
-        <Button onClick={handleClose}>{t('Pick Location Button')}</Button>
+        <Button name="pick-location" onClick={handleClose} disabled={!location}>
+          {t('Pick Location Button')}
+        </Button>
       </div>
     </Dialog>
   );

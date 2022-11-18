@@ -7,7 +7,7 @@ import type { TransformerOption } from '@cld-apis/types';
 import { useLoaderData } from '@remix-run/react';
 
 import { findGroupBySlug } from '~/server/db/groups.server';
-import type { Group } from '~/types';
+import type { Group, Language } from '~/types';
 import { H2, Paragraph } from '~/components/shared/typography';
 import Main from '~/components/shared/Main';
 
@@ -15,7 +15,7 @@ import DisplayImg from '~/components/shared/DisplayImg';
 import { displayTimeOfDay } from '~/utils/misc';
 import { getOpenGraphMeta } from '~/utils/seo';
 import type { RootLoaderData } from '~/root';
-import I18nText from '~/components/I18nText';
+import { getI18nText } from '~/components/I18nText';
 
 export const handle = {
   i18n: ['m-groups', 'common']
@@ -26,11 +26,18 @@ type LoaderData = {
 };
 
 export const meta: MetaFunction = ({ data, params, location, parentsData }) => {
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const { i18n } = useTranslation();
   const root: RootLoaderData = parentsData.root as RootLoaderData;
   const { group } = data as { group: Group };
+
+  if (!group) {
+    return {};
+  }
+
   const description = group.description?.slice(0, 160);
   const url = `${root.requestInfo.origin}${root.requestInfo.path}${root.requestInfo.path === '/' ? location.search : ''}`;
-  const name = group.sport ? I18nText({ text: group.sport.name }) : group.name;
+  const name = group.sport ? getI18nText(group.sport.name, i18n.language as Language) : group.name;
 
   return {
     viewport: 'width=device-width,initial-scale=1,viewport-fit=cover',
@@ -66,44 +73,76 @@ export default function GroupDisplayRoute() {
       height: 400
     }
   };
-  const day = tc(
-    [
-      'Monday',
-      'Tuesday',
-      'Wednesday',
-      'Thursday',
-      'Friday',
-      'Saturday',
-      'Sunday'
-    ][group.dayOfWeek]
-  );
+
+  if (!group) {
+    return (
+      <Main>
+        <Paragraph data-cy="group-not-found">{t('Group not found')}</Paragraph>
+        <a href="/">{t('Group not found action')}</a>
+      </Main>
+    );
+  }
+
+  function translateDay(day: number) {
+    return tc(
+      [
+        'Monday',
+        'Tuesday',
+        'Wednesday',
+        'Thursday',
+        'Friday',
+        'Saturday',
+        'Sunday'
+      ][day]
+    );
+  }
+
+  const schedule = group?.schedules
+    ?.sort((a, b) => a.dayOfWeek - b.dayOfWeek)
+    .map(
+      ({ dayOfWeek, timeOfDay }) =>
+        `${translateDay(dayOfWeek)}, ${displayTimeOfDay(timeOfDay)}`
+    )
+    .join(' | ');
 
   return (
     <Main>
       <H2 className="text-sp-light-blue-900 mb-4">
         <b>{group.name}</b>
         <small>
-          {t('Single Group Title Organizer')} {group.createdBy?.name},
-          <span className="lowercase"> {day}</span> {t('Single Group Title At')}{' '}
-          {displayTimeOfDay(group.timeOfDay)}
+          {t('Single Group Title Organizer')} {group.createdBy?.name}
+          <p className="text-sm" data-cy="schedule">{schedule}</p>
         </small>
       </H2>
 
       <div className="w-full m-auto flex flex-row justify-begin gap-4 md:w-full md:grid-flow-col md:grid-rows-1">
         {group.image1 ? (
-          <DisplayImg id={group.image1} transformations={transformations} alt={t('Alt For Picture 1')} />
+          <DisplayImg
+            imageId={group.image1}
+            transformations={transformations}
+            alt={t('Alt For Picture 1')}
+            dataCy="image1"
+          />
         ) : null}
         {group.image2 ? (
-          <DisplayImg id={group.image2} transformations={transformations} alt={t('Alt For Picture 2')} />
+          <DisplayImg
+            imageId={group.image2}
+            transformations={transformations}
+            alt={t('Alt For Picture 2')}
+          />
         ) : null}
         {group.image3 ? (
-          <DisplayImg id={group.image3} transformations={transformations} alt={t('Alt For Picture 3')} />
+          <DisplayImg
+            imageId={group.image3}
+            transformations={transformations}
+            alt={t('Alt For Picture 3')}
+          />
         ) : null}
       </div>
 
       <div className="max-w-full text-lg text-secondary mt-2">
         {t('Description')}
-        <div>{group.description}</div>
+        <div data-cy="description">{group.description}</div>
       </div>
 
       <Paragraph className="mt-8">

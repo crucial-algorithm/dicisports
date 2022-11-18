@@ -6,3 +6,7 @@ node_modules
 .env
 .idea
 /app/styles/**/*.css
+
+/cypress/downloads
+/cypress/videos
+/cypress/screenshots

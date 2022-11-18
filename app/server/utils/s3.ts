@@ -51,8 +51,6 @@ const downloadFromS3 = async (key: string) => {
 
   const fileStream = await s3Client.send(new GetObjectCommand(options));
 
-  console.log(fileStream);
-
   // @ts-ignore
   return fileStream?.Body;
 };

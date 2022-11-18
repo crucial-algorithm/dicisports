@@ -1,17 +1,17 @@
-import type { User } from '@prisma/client';
+import type { User } from '~/types';
 
 import Config from '~/server/config.server';
 
 const {
-  MAILGUN_DOMAIN,
+  MAILGUN_ENDPOINT,
   MAILGUN_SENDING_KEY,
   CONVERT_KIT_API_KEY,
   CONVERT_KIT_FORM
 } = Config();
 
-const mailgunDomain: string | undefined = MAILGUN_DOMAIN;
+const mailgunEndpoint: string = MAILGUN_ENDPOINT;
 
-if (process.env.NODE_ENV === 'production' && !MAILGUN_DOMAIN) {
+if (process.env.NODE_ENV === 'production' && !MAILGUN_ENDPOINT) {
   throw new Error('MAILGUN_DOMAIN is required');
 }
 const mailgunSendingKey: string | undefined = MAILGUN_SENDING_KEY;
@@ -38,11 +38,7 @@ async function sendEmail({ to, from, subject, text, html }: MailgunMessage) {
   // @ts-ignore
   const body = new URLSearchParams({ to, from, subject, text, html });
 
-  if (!MAILGUN_DOMAIN) {
-    // eslint-disable-next-line no-console
-    console.log(text);
-  }
-  await fetch(`https://api.eu.mailgun.net/v3/${mailgunDomain}/messages`, {
+  await fetch(mailgunEndpoint, {
     method: 'post',
     body,
     headers: {

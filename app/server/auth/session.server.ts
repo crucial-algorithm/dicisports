@@ -1,5 +1,4 @@
 import { createCookieSessionStorage, redirect } from 'remix';
-import type { User } from '@prisma/client';
 
 import Config from '~/server/config.server';
 import { decrypt, encrypt } from '~/server/utils/encryption.server';
@@ -8,7 +7,7 @@ import {
   findUserFromSessionId
 } from '~/server/db/users.server';
 import { createSession, deleteSession } from '~/server/db/sessions.server';
-import type { LoginAction } from '~/types';
+import type { LoginAction, User } from '~/types';
 
 import { sendRecoverPasswordEmail } from '../email.server';
 
@@ -39,7 +38,6 @@ function getRecoverPasswordLink({
     creationDate: new Date().toISOString()
   };
 
-  console.log('.... encrypting payload', payload);
   const stringToEncrypt = JSON.stringify(payload);
   const encryptedString = encrypt(stringToEncrypt);
   const url = new URL(domainUrl);
@@ -266,7 +264,6 @@ async function validateMagicLink(
     validateSessionMagicLink = payload.validateSessionMagicLink;
     action = payload.action;
     group = payload.group;
-    console.log('.... payload', payload);
   } catch (error: unknown) {
     console.error(error);
     throw invalidLinkError;
