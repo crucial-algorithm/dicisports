@@ -610,6 +610,7 @@ function CallToActionToCreateGroup({
           'background-transparent text-orange-600 dark:text-blueGray-500 font-medium',
           className
         )}
+        name="create-your-group"
       >
         {label}
       </button>
@@ -701,7 +702,7 @@ function GroupResult({
               text={`${address}/group/${group.slug}`}
               onCopy={handlerClickToCopy}
             >
-              <Button size="tiny" type="submit">
+              <Button size="tiny" type="submit" name={`share-${index}`}>
                 <ShareIcon className="h-6 w-6 m-0 inline-block" />
               </Button>
             </CopyToClipboard>

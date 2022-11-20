@@ -62,6 +62,7 @@ export default function GroupEntry({ group, actions, footer, img }: Props) {
           <a
             href={`/group/${group.slug}`}
             className="text-lg font-extrabold dark:text-white cursor-default"
+            data-cy="group-name"
           >
             {group.name}
           </a>
