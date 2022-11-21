@@ -186,7 +186,6 @@ describe('Search', () => {
           .click()
 
           .wait('@search')
-          .reload()
 
           .get('[data-cy=group-schedule]')
           .each((text) => {
@@ -223,7 +222,6 @@ describe('Search', () => {
           .click()
 
           .wait('@search')
-          .reload()
 
           .get('[data-cy=group-schedule]')
           .each((text) => {
@@ -255,7 +253,6 @@ describe('Search', () => {
           .click()
 
           .wait('@search')
-          .reload()
 
           .get('[data-cy=group-schedule]')
           .each((text) => {
@@ -298,6 +295,131 @@ describe('Search', () => {
 
         // Saturday
         verifyDayOfWeek(7, 'Sábado');
+      });
+
+      it("should return 'Convivio' groups", () => {
+        cy.intercept('GET', '/*?coords=*_data=routes*')
+          .as('search')
+          .visitAndWaitForHydration('/')
+
+          .get('#search-button')
+          .click()
+
+          .wait('@search')
+
+          .get('button[name=filters]')
+          .click()
+
+          .get('#35')
+          .click()
+
+          .get('#apply-filters')
+          .click()
+
+          .wait('@search')
+
+          .get('div[data-cy=group-spirit]')
+          .should('contain', 'Convívio');
+      });
+
+      it("should return 'Desportivo' groups", () => {
+        cy.intercept('GET', '/*?coords=*_data=routes*')
+          .as('search')
+          .visitAndWaitForHydration('/')
+
+          .get('#search-button')
+          .click()
+
+          .wait('@search')
+
+          .get('button[name=filters]')
+          .click()
+
+          .get('#36')
+          .click()
+
+          .get('#apply-filters')
+          .click()
+
+          .wait('@search')
+
+          .get('div[data-cy=group-spirit]')
+          .should('contain', 'Desportivo');
+      });
+
+      it("should return 'Treino' groups", () => {
+        cy.intercept('GET', '/*?coords=*_data=routes*')
+          .as('search')
+          .visitAndWaitForHydration('/')
+
+          .get('#search-button')
+          .click()
+
+          .wait('@search')
+
+          .get('button[name=filters]')
+          .click()
+
+          .get('#37')
+          .click()
+
+          .get('#apply-filters')
+          .click()
+
+          .wait('@search')
+
+          .get('div[data-cy=group-spirit]')
+          .should('contain', 'Treino');
+      });
+
+      it("should return 'Amizade' groups", () => {
+        cy.intercept('GET', '/*?coords=*_data=routes*')
+          .as('search')
+          .visitAndWaitForHydration('/')
+
+          .get('#search-button')
+          .click()
+
+          .wait('@search')
+
+          .get('button[name=filters]')
+          .click()
+
+          .get('#38')
+          .click()
+
+          .get('#apply-filters')
+          .click()
+
+          .wait('@search')
+
+          .get('div[data-cy=group-spirit]')
+          .should('contain', 'Amizade');
+      });
+
+      it("should return 'Turismo' groups", () => {
+        cy.intercept('GET', '/*?coords=*_data=routes*')
+          .as('search')
+          .visitAndWaitForHydration('/')
+
+          .get('#search-button')
+          .click()
+
+          .wait('@search')
+
+          .get('button[name=filters]')
+          .click()
+
+          .get('#39')
+          .click()
+
+          .get('#apply-filters')
+          .click()
+
+          .wait('@search')
+
+          .get('div[data-cy=group-spirit]')
+          .should('contain', 'Turismo');
       });
     });
   });

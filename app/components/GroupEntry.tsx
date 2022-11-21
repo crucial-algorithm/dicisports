@@ -83,7 +83,7 @@ export default function GroupEntry({ group, actions, footer, img }: Props) {
               ({t('View in Map')})
             </a>
           </Feature>
-          <div className="flex justify-between align-middle">
+          <div className="flex justify-between align-middle" data-cy="group-spirit">
             <Feature
               label={t('Purpose')}
               value={group.groupSpirit?.name || ''}
