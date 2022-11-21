@@ -149,7 +149,7 @@ model Group {
   lng           Float
   location      String?
   near          String?
-  dayOfWeek     Int         @map("day_of_week")
+  dayOfWeek     Int         @map("day_of_week")  // 0 Monday, 6 Sunday
   timeOfDay     Int         @map("time_of_day")
   whatsapp      String?
   image1        String?

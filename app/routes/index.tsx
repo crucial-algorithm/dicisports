@@ -131,7 +131,7 @@ export const loader: LoaderFunction = async ({ request, params, context }) => {
   const favorites = user ? await findUserFavoriteGroups(user.id) : [];
 
   let result: ActionData | null = null;
-  const page = data.page || 0;
+  const page = data.actionId === actions.search ? 0 : data.page || 0;
 
   if (
     data.actionId === actions.search ||
@@ -148,7 +148,7 @@ export const loader: LoaderFunction = async ({ request, params, context }) => {
       data.coords
         ? (data.coords.split(',').map(Number) as [number, number])
         : null,
-      data.dayOfWeek || -1,
+      data.dayOfWeek,
       data.actionId === actions.more ? page + 1 : page,
       data.actionId !== actions.more,
       !isNaN(Number(lat)) ? [Number(lat), Number(lng)] : null,
@@ -237,7 +237,7 @@ async function search(
   spirit: number[] | null,
   sport: number | null,
   searchedLocation: [number, number] | null,
-  dayOfWeek: number,
+  dayOfWeek: number | null,
   page: number,
   reset: boolean = true,
   userLocation: [number, number] | null,
@@ -247,7 +247,7 @@ async function search(
   const filters = {
     spirit: spirit || null,
     sport: !sport || sport === -1 ? null : sport,
-    dayOfWeek: dayOfWeek === -1 ? null : dayOfWeek,
+    dayOfWeek: dayOfWeek,
     timeOfDay:
       dayParts === null || dayParts.length === 0
         ? null
@@ -307,6 +307,9 @@ export default function Index() {
       : SortMethod.recency
   );
   const searchForm = useRef<HTMLFormElement | null>(null);
+  const [filtersCacheBurst, setFiltersCacheBurst] = useState<number>(
+    Date.now()
+  );
 
   useEffect(() => {
     if (!result) {
@@ -343,11 +346,12 @@ export default function Index() {
     };
   }, [result, location]);
 
-  const showMoreResults = !!data && data.results.length < data.total;
+  const showMoreResults = !!data && groups.length < data.total;
 
   function handleOnSubmit() {
     setSearchPerformed(true);
     setFiltersModalOpen(false);
+    setFiltersCacheBurst(Date.now());
   }
 
   function handleSearchLocations(
@@ -464,6 +468,7 @@ export default function Index() {
           </div>
         </div>
         <FiltersDialog
+          key={filtersCacheBurst}
           isOpen={filtersModalOpen}
           sports={sports}
           groupsSpirit={groupsSpirit}
@@ -869,6 +874,7 @@ function FiltersDialog(props: {
               className="w-full md:w-112"
             >
               <PeekDayOfWeek
+                key={Date.now()}
                 name="dow"
                 id="day-of-week"
                 defaultValue={filters?.dayOfWeek as DaysOfWeek}
