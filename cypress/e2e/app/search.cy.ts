@@ -179,7 +179,7 @@ describe('Search', () => {
           .get('button[name=filters]')
           .click()
 
-          .get('#4')
+          .get('#31')
           .click()
 
           .get('#apply-filters')
@@ -216,7 +216,7 @@ describe('Search', () => {
           .get('button[name=filters]')
           .click()
 
-          .get('#5')
+          .get('#32')
           .click()
 
           .get('#apply-filters')
@@ -248,7 +248,7 @@ describe('Search', () => {
           .get('button[name=filters]')
           .click()
 
-          .get('#6')
+          .get('#33')
           .click()
 
           .get('#apply-filters')
@@ -281,8 +281,8 @@ describe('Search', () => {
         // Sunday
         verifyDayOfWeek(1, 'Domingo');
 
-        // Monday TODO: fix monday
-        // verifyDayOfWeek(2, 'Segunda-Feira');
+        // Monday
+        verifyDayOfWeek(2, 'Segunda-Feira');
 
         // Tuesday
         verifyDayOfWeek(3, 'Terça-Feira');
