@@ -164,7 +164,7 @@ describe('Search', () => {
         .should('be.called');
     });
 
-    context.only('should test all filters', () => {
+    context('Test all filters', () => {
       it('should return Morning groups', () => {
         cy.intercept('GET', '/*?coords=*_data=routes*')
           .as('search')
@@ -421,6 +421,18 @@ describe('Search', () => {
           .get('div[data-cy=group-spirit]')
           .should('contain', 'Turismo');
       });
+
+      it.only('should return groups from each sport', () => {
+        cy.intercept('GET', '/?actionId=search*_data=routes*').as(
+          'selectSport'
+        );
+        checkGroupsBySport('Atletismo', 3);
+        checkGroupsBySport('Trail', 12);
+        checkGroupsBySport('Ciclismo-Estrada', 5);
+        checkGroupsBySport('Ciclismo-BTT', 7);
+        checkGroupsBySport('Gravel', 5);
+        checkGroupsBySport('Enduro', 4);
+      });
     });
   });
 });
@@ -438,4 +450,39 @@ function verifyDayOfWeek(filterOption: number, dayOfWeek: string) {
 
     .get('[data-cy=group-schedule]')
     .should('contain', dayOfWeek);
+}
+
+function checkGroupsBySport(sport: string, length: number) {
+  if (length > 10 && length <= 20) {
+    cy.visitAndWaitForHydration('/')
+
+      .get(`[data-cy=${sport}]`)
+      .click()
+
+      .wait('@selectSport')
+
+      .intercept('GET', '/?index=&coords=*_data=routes*')
+      .as('seeMore')
+
+      .get('#see-more')
+      .click()
+
+      .wait('@seeMore')
+
+      .get('#see-more')
+      .should('not.exist')
+
+      .get('div[data-cy=group-entry]')
+      .should('have.length', length);
+  } else {
+    cy.visitAndWaitForHydration('/')
+
+      .get(`[data-cy=${sport}]`)
+      .click()
+
+      .wait('@selectSport')
+
+      .get('div[data-cy=group-entry]')
+      .should('have.length', length);
+  }
 }

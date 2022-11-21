@@ -244,7 +244,7 @@
   {
     "id": "ec6e4c40e0fa337e4ac1",
     "name": "Amigos de Alcobaça",
-    "sportId": 1,
+    "sportId": 7,
     "groupTypeId": 2,
     "groupSpiritId": 4,
     "lat": 39.5522,
@@ -332,7 +332,7 @@
   {
     "id": "334a3081b9dd416e384d",
     "name": "Associação recreativa Alfândega da Fé",
-    "sportId": 4,
+    "sportId": 5,
     "groupTypeId": 2,
     "groupSpiritId": 3,
     "lat": 41.35,
@@ -376,7 +376,7 @@
   {
     "id": "ef1f2789520f8c5f6b3e",
     "name": "Associação recreativa Alijó",
-    "sportId": 4,
+    "sportId": 5,
     "groupTypeId": 2,
     "groupSpiritId": 2,
     "lat": 41.2764,
@@ -398,7 +398,7 @@
   {
     "id": "7fa7dc7ef4477200ed59",
     "name": "Grupo Desportivo de Aljezur",
-    "sportId": 4,
+    "sportId": 5,
     "groupTypeId": 1,
     "groupSpiritId": 2,
     "lat": 37.3178,
@@ -420,7 +420,7 @@
   {
     "id": "d19cb910b40b056e33d9",
     "name": "Patos de Aljustrel",
-    "sportId": 1,
+    "sportId": 7,
     "groupTypeId": 3,
     "groupSpiritId": 2,
     "lat": 37.8775,
@@ -464,7 +464,7 @@
   {
     "id": "af4200e565b331603e6a",
     "name": "Borgas em Almargem",
-    "sportId": 3,
+    "sportId": 6,
     "groupTypeId": 1,
     "groupSpiritId": 2,
     "lat": 38.8475,
@@ -486,7 +486,7 @@
   {
     "id": "05b72760f9674a2abdcc",
     "name": "Associação recreativa Almeida",
-    "sportId": 3,
+    "sportId": 6,
     "groupTypeId": 2,
     "groupSpiritId": 3,
     "lat": 40.7259,
@@ -530,7 +530,7 @@
   {
     "id": "235107b829678e491189",
     "name": "Patos de Almodôvar",
-    "sportId": 3,
+    "sportId": 6,
     "groupTypeId": 2,
     "groupSpiritId": 5,
     "lat": 37.5114,
@@ -552,7 +552,7 @@
   {
     "id": "a9fe1fde3c4d20c48b26",
     "name": "Borgas em Alpiarça",
-    "sportId": 3,
+    "sportId": 6,
     "groupTypeId": 2,
     "groupSpiritId": 4,
     "lat": 39.2593,
@@ -574,7 +574,7 @@
   {
     "id": "2632486059874a0b03d9",
     "name": "Borgas em Alter do Chão",
-    "sportId": 1,
+    "sportId": 7,
     "groupTypeId": 3,
     "groupSpiritId": 2,
     "lat": 39.1974,
@@ -706,7 +706,7 @@
   {
     "id": "d338313921aa04e6cd0c",
     "name": "Borgas em Amora",
-    "sportId": 1,
+    "sportId": 7,
     "groupTypeId": 3,
     "groupSpiritId": 5,
     "lat": 38.6265,
@@ -816,7 +816,7 @@
   {
     "id": "1dce343371991050978d",
     "name": "Grupo Desportivo de Arcozelo",
-    "sportId": 3,
+    "sportId": 6,
     "groupTypeId": 2,
     "groupSpiritId": 2,
     "lat": 41.7917,

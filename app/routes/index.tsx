@@ -501,6 +501,7 @@ export default function Index() {
           <>
             <div className="mb-8 flex align-middle justify-center absolute bottom-0 w-full">
               <Button
+                id="see-more"
                 name="actionId"
                 value={actions.more}
                 onClick={handleLoadNextPage}
@@ -766,7 +767,7 @@ function SportsGrid({
       {sports
         .sort((a, b) => a.id - b.id)
         .map((s) => (
-          <Link to={`?actionId=${actions.search}&sport=${s.id}`} key={s.id}>
+          <Link to={`?actionId=${actions.search}&sport=${s.id}`} key={s.id} data-cy={(s.name.pt).split(' ').join('-')}>
             <DisplayImg
               imageId={`product/sports/${s.picture}`}
               key={s.id}
