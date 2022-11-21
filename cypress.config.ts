@@ -6,7 +6,7 @@ export default defineConfig({
   viewportWidth: 375,
   viewportHeight: 667,
   screenshotOnRunFailure: true,
-  // LENOVO
+  // LENOVO 🤦‍♂️
   requestTimeout: 90000,
   responseTimeout: 90000,
   defaultCommandTimeout: 90000,

@@ -164,36 +164,141 @@ describe('Search', () => {
         .should('be.called');
     });
 
-    it.only('should test all filters', () => {
-      cy.intercept('GET', '/*?coords=*_data=routes*')
-        .as('search')
-        .visitAndWaitForHydration('/')
+    context.only('should test all filters', () => {
+      it('should return Morning groups', () => {
+        cy.intercept('GET', '/*?coords=*_data=routes*')
+          .as('search')
+          .visitAndWaitForHydration('/')
 
-        .get('#search-button')
-        .click()
+          .get('#search-button')
+          .click()
 
-        .wait('@search');
+          .wait('@search')
 
-      // Sunday
-      verifyDayOfWeek(1, 'Domingo');
+          // Morning groups < 12H:00min
+          .get('button[name=filters]')
+          .click()
 
-      // Monday TODO: fix monday
-      // verifyDayOfWeek(2, 'Segunda-Feira');
+          .get('#4')
+          .click()
 
-      // Tuesday
-      verifyDayOfWeek(3, 'Terça-Feira');
+          .get('#apply-filters')
+          .click()
 
-      // Wednesday
-      verifyDayOfWeek(4, 'Quarta-Feira');
+          .wait('@search')
+          .reload()
 
-      // Thursday
-      verifyDayOfWeek(5, 'Quinta-Feira');
+          .get('[data-cy=group-schedule]')
+          .each((text) => {
+            // Get text from JQuery object and split day of the week and hour
+            const schedule = Cypress.$(text).text().split(',');
+            // Get time of the day from schedule
+            const time = schedule[1];
+            // Split time of the day and trim to get hour
+            const hour = time.split(':')[0].trim();
 
-      // Friday
-      verifyDayOfWeek(6, 'Sexta-Feira');
+            // Cast string to number and compare
+            expect(Number(hour)).to.be.lessThan(12);
+          });
+      });
 
-      // Saturday
-      verifyDayOfWeek(7, 'Sábado');
+      it('should return Afternoon groups', () => {
+        cy.intercept('GET', '/*?coords=*_data=routes*')
+          .as('search')
+          .visitAndWaitForHydration('/')
+
+          .get('#search-button')
+          .click()
+
+          .wait('@search')
+
+          // Afternoon groups > 13H:00min and < 20H:00min
+          .get('button[name=filters]')
+          .click()
+
+          .get('#5')
+          .click()
+
+          .get('#apply-filters')
+          .click()
+
+          .wait('@search')
+          .reload()
+
+          .get('[data-cy=group-schedule]')
+          .each((text) => {
+            const schedule = Cypress.$(text).text().split(',');
+            const time = schedule[1];
+            const hour = time.split(':')[0].trim();
+
+            expect(Number(hour)).to.be.lessThan(20);
+            expect(Number(hour)).to.be.greaterThan(11);
+          });
+      });
+      it('should return Noon groups', () => {
+        cy.intercept('GET', '/*?coords=*_data=routes*')
+          .as('search')
+          .visitAndWaitForHydration('/')
+
+          .get('#search-button')
+          .click()
+
+          .wait('@search')
+          // Night groups > 20H:00min and < 23H:00min
+          .get('button[name=filters]')
+          .click()
+
+          .get('#6')
+          .click()
+
+          .get('#apply-filters')
+          .click()
+
+          .wait('@search')
+          .reload()
+
+          .get('[data-cy=group-schedule]')
+          .each((text) => {
+            const schedule = Cypress.$(text).text().split(',');
+            const time = schedule[1];
+            const hour = time.split(':')[0].trim();
+
+            expect(Number(hour)).to.be.lessThan(24);
+            expect(Number(hour)).to.be.greaterThan(19);
+          });
+      });
+
+      it('should return groups from each day of the week', () => {
+        cy.intercept('GET', '/*?coords=*_data=routes*')
+          .as('search')
+          .visitAndWaitForHydration('/')
+
+          .get('#search-button')
+          .click()
+
+          .wait('@search');
+
+        // Sunday
+        verifyDayOfWeek(1, 'Domingo');
+
+        // Monday TODO: fix monday
+        // verifyDayOfWeek(2, 'Segunda-Feira');
+
+        // Tuesday
+        verifyDayOfWeek(3, 'Terça-Feira');
+
+        // Wednesday
+        verifyDayOfWeek(4, 'Quarta-Feira');
+
+        // Thursday
+        verifyDayOfWeek(5, 'Quinta-Feira');
+
+        // Friday
+        verifyDayOfWeek(6, 'Sexta-Feira');
+
+        // Saturday
+        verifyDayOfWeek(7, 'Sábado');
+      });
     });
   });
 });
