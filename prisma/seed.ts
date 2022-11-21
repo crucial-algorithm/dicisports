@@ -210,8 +210,8 @@ function groupsSchedules() {
   return groupsSeed.map((g) => {
     return {
       id: g.id,
-      dayOfWeek: 6,
-      timeOfDay: 900,
+      dayOfWeek: g.dayOfWeek,
+      timeOfDay: g.timeOfDay,
       groupId: g.id
     };
   });

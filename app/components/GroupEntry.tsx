@@ -66,7 +66,7 @@ export default function GroupEntry({ group, actions, footer, img }: Props) {
           >
             {group.name}
           </a>
-          <span className="mb-4 dark:text-white font-bold capitalize">
+          <span className="mb-4 dark:text-white font-bold capitalize" data-cy="group-schedule">
             {schedule}
           </span>
           <Feature

@@ -28,6 +28,7 @@ describe('Search', () => {
 
         .wait('@search');
     });
+
     it('should redirect to create a group form: authenticated', () => {
       cy.intercept('GET', '/*?coords=*')
         .as('search')
@@ -162,5 +163,52 @@ describe('Search', () => {
         .get('@copyToClipboardPrompt')
         .should('be.called');
     });
+
+    it.only('should test all filters', () => {
+      cy.intercept('GET', '/*?coords=*_data=routes*')
+        .as('search')
+        .visitAndWaitForHydration('/')
+
+        .get('#search-button')
+        .click()
+
+        .wait('@search');
+
+      // Sunday
+      verifyDayOfWeek(1, 'Domingo');
+
+      // Monday TODO: fix monday
+      // verifyDayOfWeek(2, 'Segunda-Feira');
+
+      // Tuesday
+      verifyDayOfWeek(3, 'Terça-Feira');
+
+      // Wednesday
+      verifyDayOfWeek(4, 'Quarta-Feira');
+
+      // Thursday
+      verifyDayOfWeek(5, 'Quinta-Feira');
+
+      // Friday
+      verifyDayOfWeek(6, 'Sexta-Feira');
+
+      // Saturday
+      verifyDayOfWeek(7, 'Sábado');
+    });
   });
 });
+
+function verifyDayOfWeek(filterOption: number, dayOfWeek: string) {
+  cy.get('button[name=filters]')
+    .click()
+
+    .pickOptionFromSelect('dow', filterOption)
+
+    .get('#apply-filters')
+    .click()
+
+    .wait('@search')
+
+    .get('[data-cy=group-schedule]')
+    .should('contain', dayOfWeek);
+}

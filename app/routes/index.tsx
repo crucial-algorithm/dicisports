@@ -474,7 +474,7 @@ export default function Index() {
           <>
             <Spacer size="xs" />
             <div className="pl-6 flex align-middle">
-              <Button size="small" onClick={handleOpenFilters} type="button">
+              <Button size="small" onClick={handleOpenFilters} type="button" name="filters">
                 <AdjustmentsVerticalIcon className="h-6" />
               </Button>
               <div className="flex mx-2 items-center dark:text-white text-blueGray-500 text-sm">
@@ -927,6 +927,7 @@ function FiltersDialog(props: {
                 {t('Cancel')}
               </Button>
               <Button
+                id="apply-filters"
                 variant="primary"
                 size="medium"
                 type="submit"
