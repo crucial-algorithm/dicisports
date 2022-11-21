@@ -245,3 +245,7 @@ table.privacy-policy td {
 .events-list > a:last-child > div {
     border: none;
 }
+
+.z-100 {
+    z-index: 100;
+}

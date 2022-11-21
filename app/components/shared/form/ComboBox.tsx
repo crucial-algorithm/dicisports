@@ -1,14 +1,16 @@
 import * as React from 'react';
-import { useEffect, useState } from 'react';
+import { Fragment, useEffect, useRef, useState } from 'react';
 
-import Select from 'react-select';
-import clsx from 'clsx';
+import { Combobox, Transition } from '@headlessui/react';
+import { CheckIcon, ChevronUpDownIcon } from '@heroicons/react/20/solid';
 
-import { inputBaseClasses } from '~/components/shared/form/InputBase';
 import type { Language, TranslationObject } from '~/types';
 import { getLocalizedText } from '~/utils/misc';
 
 import { useTheme } from '~/utils/theme-provider';
+import { inputBaseClasses } from '~/components/shared/form/InputBase';
+import clsx from 'clsx';
+import { useTranslation } from 'react-i18next';
 
 export type Option = {
   value: string | number;
@@ -33,9 +35,16 @@ export default function ComboBox({
   placeholder,
   onChange
 }: Props) {
-  const [value, setValue] = useState<Option | undefined>(undefined);
+  const { i18n } = useTranslation();
+  const [value, setValue] = useState<Option | undefined>(
+    options.find((o) => o.value === defaultValue) || undefined
+  );
+  const dropdownButton = useRef<HTMLButtonElement | null>(null);
+  const [query, setQuery] = useState('');
   const [theme] = useTheme();
   const inDarkMode = theme === 'dark';
+
+  console.log(options);
 
   const values = options.map((o) => {
     return {
@@ -65,91 +74,99 @@ export default function ComboBox({
     }
   }
 
-  function NoOptionsMessage() {
-    return <div style={{ textAlign: 'start' }}>&nbsp;</div>;
+  function handleInputChange(event: React.ChangeEvent<HTMLInputElement>) {
+    setQuery(event.target.value);
+  }
+
+  function handleOptionStyle({ active }: { active: boolean }) {
+    return `relative cursor-default select-none py-2 pl-10 pr-4 ${
+      active ? 'bg-teal-600 text-white' : 'text-gray-900'
+    }`;
+  }
+
+  function display(o: Option | number | string) {
+    if (['number', 'string'].includes(typeof o)) {
+      const c = values.find((v) => v.value === o);
+
+      return c?.label;
+    }
+    return (o as Option).label;
+  }
+
+  const filteredValues =
+    query === ''
+      ? values
+      : values.filter(({ label }) => {
+          return label.toLowerCase().includes(query.toLowerCase());
+        });
+
+  function handleOpenOnFocus() {
+    dropdownButton.current?.click();
   }
 
   return (
-    <>
-      <input type="hidden" name={name} value={value?.value || ''} />
-      <Select
-        aria-label=""
-        id={`select-${name}`}
-        className={clsx(inputBaseClasses('py-2.5'), className)}
-        value={value}
-        isClearable={false}
-        isSearchable={true}
-        backspaceRemovesValue={true}
-        noOptionsMessage={NoOptionsMessage}
-        placeholder={placeholder}
-        components={{
-          DropdownIndicator: () => null,
-          IndicatorSeparator: () => null
-        }}
-        // @ts-ignore
-        options={values}
-        // @ts-ignore
-        onChange={handleSelectChange}
-        styles={{
-          control: (base) => {
-            return {
-              ...base,
-              backgroundColor: undefined,
-              border: 0,
-              boxShadow: 'none'
-            };
-          },
-          input: (base) => {
-            return {
-              padding: 10,
-              ...base,
-              color: 'var(--color-blueGray-500)',
-              outline: 'none'
-            };
-          },
-          menu: (base) => {
-            return {
-              ...base,
-              left: 0,
-              borderRadius: 0,
-              borderTopLeftRadius: 4,
-              backgroundColor: inDarkMode
-                ? 'var(--color-gray-800)'
-                : 'var(--color-gray-100)'
-            };
-          },
-          option: (base, { isFocused }) => {
-            return {
-              ...base,
-              color: inDarkMode
-                ? 'var(--color-blueGray-500)'
-                : 'var(--color-gray-500)',
-              backgroundColor: !isFocused
-                ? undefined
-                : inDarkMode
-                ? 'var(--color-gray-600)'
-                : 'var(--color-gray-200)'
-            };
-          },
-          singleValue: (base) => {
-            return {
-              ...base,
-              color: inDarkMode
-                ? 'var(--color-blueGray-500)'
-                : 'var(--color-gray-500)'
-            };
-          },
-          clearIndicator: (base) => {
-            return {
-              ...base,
-              cursor: 'pointer',
-              ':hover': {
-                color: inDarkMode ? 'var(--color-gray-200)' : 'initial'
-              }
-            };
-          }
-        }}
-      />
-    </>
+    <div className="top-16 w-72">
+      <Combobox value={value} onChange={handleSelectChange} >
+        <div className="relative mt-1">
+          <div className="z-100">
+            <Combobox.Input
+              className={clsx(inputBaseClasses('py-2.5'), className)}
+              displayValue={display}
+              onChange={handleInputChange}
+              onFocus={handleOpenOnFocus}
+            />
+            <Combobox.Button ref={dropdownButton} className="absolute inset-y-0 right-0 flex items-center pr-2">
+              <ChevronUpDownIcon
+                className="h-5 w-5 text-gray-400"
+                aria-hidden="true"
+              />
+            </Combobox.Button>
+          </div>
+          <Transition
+            as={Fragment}
+            leave="transition ease-in duration-100"
+            leaveFrom="opacity-100"
+            leaveTo="opacity-0"
+          >
+            <Combobox.Options className="z-10 absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm" static>
+              {filteredValues.length === 0 ? (
+                <div className="relative cursor-default select-none py-2 px-4 text-gray-700">
+                  Nothing found.
+                </div>
+              ) : (
+                filteredValues.map(({ value, label }, index) => (
+                  <Combobox.Option
+                    key={`${index}-${value}`}
+                    className={handleOptionStyle}
+                    value={value}
+                  >
+                    {({ selected, active }) => (
+                      <>
+                        <span
+                          className={`block truncate ${
+                            selected ? 'font-medium' : 'font-normal'
+                          }`}
+                        >
+                          {label}
+                        </span>
+                        {selected ? (
+                          <span
+                            className={`absolute inset-y-0 left-0 flex items-center pl-3 ${
+                              active ? 'text-white' : 'text-teal-600'
+                            }`}
+                          >
+                            <CheckIcon className="h-5 w-5" aria-hidden="true" />
+                          </span>
+                        ) : null}
+                      </>
+                    )}
+                  </Combobox.Option>
+                ))
+              )}
+            </Combobox.Options>
+          </Transition>
+        </div>
+      </Combobox>
+    </div>
   );
 }
