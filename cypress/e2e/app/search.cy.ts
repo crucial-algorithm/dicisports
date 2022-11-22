@@ -166,26 +166,24 @@ describe('Search', () => {
 
     context('Test all filters', () => {
       it('should return Morning groups', () => {
-        cy.intercept('GET', '/*?coords=*_data=routes*')
-          .as('search')
-          .visitAndWaitForHydration('/')
-
-          .get('#search-button')
-          .click()
-
-          .wait('@search')
+        cy.intercept('GET', '/?index=&coords=*_data=routes*')
+          .as('applyFilters')
+          .visitAndWaitForHydration(
+            '/?index=&coords=&search=&page=0&sport=&dow=&value=&actionId=search'
+          )
 
           // Morning groups < 12H:00min
           .get('button[name=filters]')
           .click()
 
-          .get('#31')
+          .get('#4')
           .click()
 
           .get('#apply-filters')
           .click()
 
-          .wait('@search')
+          .wait('@applyFilters')
+          .reload()
 
           .get('[data-cy=group-schedule]')
           .each((text) => {
@@ -202,26 +200,24 @@ describe('Search', () => {
       });
 
       it('should return Afternoon groups', () => {
-        cy.intercept('GET', '/*?coords=*_data=routes*')
+        cy.intercept('GET', '/?index=&coords=*_data=routes*')
           .as('search')
-          .visitAndWaitForHydration('/')
-
-          .get('#search-button')
-          .click()
-
-          .wait('@search')
+          .visitAndWaitForHydration(
+            '/?index=&coords=&search=&page=0&sport=&dow=&value=&actionId=search'
+          )
 
           // Afternoon groups > 13H:00min and < 20H:00min
           .get('button[name=filters]')
           .click()
 
-          .get('#32')
+          .get('#5')
           .click()
 
           .get('#apply-filters')
           .click()
 
           .wait('@search')
+          .reload()
 
           .get('[data-cy=group-schedule]')
           .each((text) => {
@@ -233,26 +229,26 @@ describe('Search', () => {
             expect(Number(hour)).to.be.greaterThan(11);
           });
       });
+
       it('should return Noon groups', () => {
-        cy.intercept('GET', '/*?coords=*_data=routes*')
+        cy.intercept('GET', '/?index=&coords=*_data=routes*')
           .as('search')
-          .visitAndWaitForHydration('/')
+          .visitAndWaitForHydration(
+            '/?index=&coords=&search=&page=0&sport=&dow=&value=&actionId=search'
+          )
 
-          .get('#search-button')
-          .click()
-
-          .wait('@search')
           // Night groups > 20H:00min and < 23H:00min
           .get('button[name=filters]')
           .click()
 
-          .get('#33')
+          .get('#6')
           .click()
 
           .get('#apply-filters')
           .click()
 
           .wait('@search')
+          .reload()
 
           .get('[data-cy=group-schedule]')
           .each((text) => {
@@ -266,14 +262,11 @@ describe('Search', () => {
       });
 
       it('should return groups from each day of the week', () => {
-        cy.intercept('GET', '/*?coords=*_data=routes*')
+        cy.intercept('GET', '/?index=&coords=*_data=routes*')
           .as('search')
-          .visitAndWaitForHydration('/')
-
-          .get('#search-button')
-          .click()
-
-          .wait('@search');
+          .visitAndWaitForHydration(
+            '/?index=&coords=&search=&page=0&sport=&dow=&value=&actionId=search'
+          );
 
         // Sunday
         verifyDayOfWeek(1, 'Domingo');
@@ -317,6 +310,7 @@ describe('Search', () => {
           .click()
 
           .wait('@search')
+          .reload()
 
           .get('div[data-cy=group-spirit]')
           .should('contain', 'Convívio');
@@ -342,6 +336,7 @@ describe('Search', () => {
           .click()
 
           .wait('@search')
+          .reload()
 
           .get('div[data-cy=group-spirit]')
           .should('contain', 'Desportivo');
@@ -367,6 +362,7 @@ describe('Search', () => {
           .click()
 
           .wait('@search')
+          .reload()
 
           .get('div[data-cy=group-spirit]')
           .should('contain', 'Treino');
@@ -392,6 +388,7 @@ describe('Search', () => {
           .click()
 
           .wait('@search')
+          .reload()
 
           .get('div[data-cy=group-spirit]')
           .should('contain', 'Amizade');
@@ -417,6 +414,7 @@ describe('Search', () => {
           .click()
 
           .wait('@search')
+          .reload()
 
           .get('div[data-cy=group-spirit]')
           .should('contain', 'Turismo');
@@ -425,7 +423,7 @@ describe('Search', () => {
       it('should return groups from each sport', () => {
         cy.intercept('GET', '/?actionId=search*_data=routes*')
           .as('selectSport')
-          .intercept('GET', '/*?coords=*_data=routes*')
+          .intercept('GET', '/?index=&coords=*_data=routes*')
           .as('search');
 
         checkGroupsBySport(1, 3);
@@ -524,12 +522,9 @@ function checkGroupsBySport(sport: number, length: number) {
       .get('div[data-cy=group-entry]')
       .should('have.length', length)
 
-      .visitAndWaitForHydration('/')
-
-      .get('#search-button')
-      .click()
-
-      .wait('@search')
+      .visitAndWaitForHydration(
+        '/?index=&coords=&search=&page=0&sport=&dow=&value=&actionId=search'
+      )
 
       // Check if filter works from filter dialog
       .get('button[name=filters]')
@@ -537,10 +532,13 @@ function checkGroupsBySport(sport: number, length: number) {
 
       .pickOptionFromSelect('sport', sport)
 
+      .intercept('GET', `/?index=&coords*sport=${sport}*`)
+      .as('applyFilter')
+
       .get('#apply-filters')
       .click()
 
-      .wait('@search')
+      .wait('@applyFilter')
 
       .get('#see-more')
       .click()
@@ -566,12 +564,9 @@ function checkGroupsBySport(sport: number, length: number) {
       .get('#see-more')
       .should('not.exist')
 
-      .visitAndWaitForHydration('/')
-
-      .get('#search-button')
-      .click()
-
-      .wait('@search')
+      .visitAndWaitForHydration(
+        '/?index=&coords=&search=&page=0&sport=&dow=&value=&actionId=search'
+      )
 
       .get('button[name=filters]')
       .click()
