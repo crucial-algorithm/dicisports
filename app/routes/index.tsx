@@ -479,7 +479,12 @@ export default function Index() {
           <>
             <Spacer size="xs" />
             <div className="pl-6 flex align-middle">
-              <Button size="small" onClick={handleOpenFilters} type="button" name="filters">
+              <Button
+                size="small"
+                onClick={handleOpenFilters}
+                type="button"
+                name="filters"
+              >
                 <AdjustmentsVerticalIcon className="h-6" />
               </Button>
               <div className="flex mx-2 items-center dark:text-white text-blueGray-500 text-sm">
@@ -699,7 +704,12 @@ function GroupResult({
         actions={
           <ButtonGroup density="compact">
             {group.whatsapp && (
-              <ButtonLink size="tiny" type="button" to={whatsAppLink}>
+              <ButtonLink
+                size="tiny"
+                type="button"
+                to={whatsAppLink}
+                id={`whatsapp-${group.id}`}
+              >
                 <WhatsApp className="h-6 w-6 m-0 inline-block fill-white dark:fill-black" />
               </ButtonLink>
             )}
@@ -723,7 +733,12 @@ function GroupResult({
                   <Favorite className="h-6 w-6 m-0 inline-block" />
                 </Button>
               ) : (
-                <Button size="tiny" name="action" value="add" id={`add-favorite-${index}`}>
+                <Button
+                  size="tiny"
+                  name="action"
+                  value="add"
+                  id={`add-favorite-${index}`}
+                >
                   <HeartIcon className="h-6 w-6 m-0 inline-block" />
                 </Button>
               )}
@@ -767,7 +782,11 @@ function SportsGrid({
       {sports
         .sort((a, b) => a.id - b.id)
         .map((s) => (
-          <Link to={`?actionId=${actions.search}&sport=${s.id}`} key={s.id} data-cy={(s.name.pt).split(' ').join('-')}>
+          <Link
+            to={`?actionId=${actions.search}&sport=${s.id}`}
+            key={s.id}
+            data-cy={s.id}
+          >
             <DisplayImg
               imageId={`product/sports/${s.picture}`}
               key={s.id}
@@ -817,13 +836,15 @@ function FiltersDialog(props: {
   const { isOpen, sports, groupsSpirit, triggerModalClose, filters } = props;
   const sportsOptions: Option[] = [];
 
-  sports.map((s) => {
-    sportsOptions.push({
-      value: s.id,
-      label: s.name
+  sports
+    .sort((a, b) => a.id - b.id)
+    .map((s) => {
+      sportsOptions.push({
+        value: s.id,
+        label: s.name
+      });
+      return s;
     });
-    return s;
-  });
   return (
     <div
       data-reach-dialog-overlay={true}

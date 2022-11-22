@@ -422,17 +422,34 @@ describe('Search', () => {
           .should('contain', 'Turismo');
       });
 
-      it.only('should return groups from each sport', () => {
-        cy.intercept('GET', '/?actionId=search*_data=routes*').as(
-          'selectSport'
-        );
-        checkGroupsBySport('Atletismo', 3);
-        checkGroupsBySport('Trail', 12);
-        checkGroupsBySport('Ciclismo-Estrada', 5);
-        checkGroupsBySport('Ciclismo-BTT', 7);
-        checkGroupsBySport('Gravel', 5);
-        checkGroupsBySport('Enduro', 4);
+      it('should return groups from each sport', () => {
+        cy.intercept('GET', '/?actionId=search*_data=routes*')
+          .as('selectSport')
+          .intercept('GET', '/*?coords=*_data=routes*')
+          .as('search');
+
+        checkGroupsBySport(1, 3);
+        checkGroupsBySport(2, 12);
+        checkGroupsBySport(3, 5);
+        checkGroupsBySport(4, 7);
+        checkGroupsBySport(5, 3);
+        checkGroupsBySport(6, 5);
+        checkGroupsBySport(7, 4);
       });
+    });
+
+    it('should have whatsapp link', () => {
+      cy.intercept('GET', '/?actionId=search*_data=routes*')
+        .as('selectSport')
+        .visitAndWaitForHydration('/')
+
+        .get('[data-cy=4]')
+        .click()
+
+        .wait('@selectSport')
+
+        .get('#whatsapp-GkoxmH5db6RXqBpExion')
+        .should('be.visible');
     });
   });
 });
@@ -452,10 +469,11 @@ function verifyDayOfWeek(filterOption: number, dayOfWeek: string) {
     .should('contain', dayOfWeek);
 }
 
-function checkGroupsBySport(sport: string, length: number) {
+function checkGroupsBySport(sport: number, length: number) {
   if (length > 10 && length <= 20) {
     cy.visitAndWaitForHydration('/')
 
+      // Check if filter works from homepage
       .get(`[data-cy=${sport}]`)
       .click()
 
@@ -473,7 +491,36 @@ function checkGroupsBySport(sport: string, length: number) {
       .should('not.exist')
 
       .get('div[data-cy=group-entry]')
-      .should('have.length', length);
+      .should('have.length', length)
+
+      .visitAndWaitForHydration('/')
+
+      .get('#search-button')
+      .click()
+
+      .wait('@search')
+
+      // Check if filter works from filter dialog
+      .get('button[name=filters]')
+      .click()
+
+      .pickOptionFromSelect('sport', sport)
+
+      .get('#apply-filters')
+      .click()
+
+      .wait('@search')
+
+      .get('#see-more')
+      .click()
+
+      .wait('@seeMore')
+
+      .get('div[data-cy=group-entry]')
+      .should('have.length', length)
+
+      .get('#see-more')
+      .should('not.exist');
   } else {
     cy.visitAndWaitForHydration('/')
 
@@ -483,6 +530,32 @@ function checkGroupsBySport(sport: string, length: number) {
       .wait('@selectSport')
 
       .get('div[data-cy=group-entry]')
-      .should('have.length', length);
+      .should('have.length', length)
+
+      .get('#see-more')
+      .should('not.exist')
+
+      .visitAndWaitForHydration('/')
+
+      .get('#search-button')
+      .click()
+
+      .wait('@search')
+
+      .get('button[name=filters]')
+      .click()
+
+      .pickOptionFromSelect('sport', sport)
+
+      .get('#apply-filters')
+      .click()
+
+      .wait('@search')
+
+      .get('div[data-cy=group-entry]')
+      .should('have.length', length)
+
+      .get('#see-more')
+      .should('not.exist');
   }
 }
