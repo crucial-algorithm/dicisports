@@ -448,8 +448,39 @@ describe('Search', () => {
 
         .wait('@selectSport')
 
-        .get('#whatsapp-GkoxmH5db6RXqBpExion')
+        .get('[name=whatsapp-GkoxmH5db6RXqBpExion]')
         .should('be.visible');
+    });
+
+    it('should send whatsapp link when user is not authenticated', () => {
+      cy.intercept('GET', '/?actionId=search*_data=routes*')
+        .as('selectSport')
+        .visitAndWaitForHydration('/')
+
+        .get('[data-cy=4]')
+        .click()
+
+        .wait('@selectSport')
+
+        .intercept('GET', '/login?a=*_data=routes*')
+        .as('whatsappLink')
+
+        .get('[name=whatsapp-GkoxmH5db6RXqBpExion]')
+        .should('be.visible')
+        .click()
+
+        .wait('@whatsappLink')
+
+        .get('input[name=email]')
+        .type('abcd@gmail.com')
+
+        .intercept('GET', '/?actionId=*message=*_data=routes*')
+        .as('sendEmail')
+
+        .get('button[name=login]')
+        .click()
+
+        .wait('@sendEmail');
     });
   });
 });
