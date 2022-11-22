@@ -708,7 +708,7 @@ function GroupResult({
                 size="tiny"
                 type="button"
                 to={whatsAppLink}
-                name={`whatsapp-${group.id}`}
+                id={`whatsapp-${group.id}`}
               >
                 <WhatsApp className="h-6 w-6 m-0 inline-block fill-white dark:fill-black" />
               </ButtonLink>

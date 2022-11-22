@@ -446,7 +446,7 @@ describe('Search', () => {
 
         .wait('@selectSport')
 
-        .get('[name=whatsapp-GkoxmH5db6RXqBpExion]')
+        .get('#whatsapp-GkoxmH5db6RXqBpExion')
         .should('be.visible');
     });
 
@@ -463,7 +463,7 @@ describe('Search', () => {
         .intercept('GET', '/login?a=*_data=routes*')
         .as('whatsappLink')
 
-        .get('[name=whatsapp-GkoxmH5db6RXqBpExion]')
+        .get('#whatsapp-GkoxmH5db6RXqBpExion')
         .should('be.visible')
         .click()
 
@@ -479,6 +479,32 @@ describe('Search', () => {
         .click()
 
         .wait('@sendEmail');
+    });
+
+    it('should return groups from \'Porto\'', () => {
+      cy.intercept('GET', '/?index=*_data=routes*')
+        .as('search')
+        .visitAndWaitForHydration('/')
+
+        .intercept('GET', 'https://api.mapbox.com/geocoding/v5/mapbox.places/Porto*')
+        .as('mapBoxSearchResult')
+
+        .get('input.react-select__input')
+        .type('Porto, Porto, Portugal', { delay: 1 })
+
+        .wait('@mapBoxSearchResult')
+
+        .get('#react-select-2-listbox')
+        .contains('Porto, Porto, Portugal')
+        .click()
+
+        .get('#search-button')
+        .click()
+
+        .wait('@search')
+
+        .get('div[data-cy=group-entry]')
+        .should('have.length', 2);
     });
   });
 });
