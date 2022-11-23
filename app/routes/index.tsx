@@ -15,8 +15,7 @@ import { useTranslation } from 'react-i18next';
 import {
   AdjustmentsVerticalIcon,
   ChevronDownIcon,
-  HeartIcon as Favorite,
-  ShareIcon
+  HeartIcon as Favorite
 } from '@heroicons/react/24/solid';
 
 import { HeartIcon, XCircleIcon } from '@heroicons/react/24/outline';
@@ -24,8 +23,6 @@ import { HeartIcon, XCircleIcon } from '@heroicons/react/24/outline';
 import clsx from 'clsx';
 
 import type { TFunction } from 'i18next';
-
-import { CopyToClipboard } from 'react-copy-to-clipboard';
 
 import { Dialog } from '@reach/dialog';
 
@@ -70,6 +67,8 @@ import { useRootData } from '~/utils/use-root-data';
 import { getLocationSession } from '~/routes/action/set-my-location';
 import { useUserLocation } from '~/utils/LocationProvider';
 import { CanonicalMeta } from '~/utils/seo';
+
+import CopyToClipboard from '~/components/shared/CopyToClipboard';
 
 type FilterParams = {
   actionId: keyof typeof actions | null;
@@ -540,6 +539,7 @@ export default function Index() {
                     name="actionId"
                     value={actions.sort}
                     onClick={handleOrderBy}
+                    id="sort-location"
                   >
                     {orderBy === SortMethod.proximity
                       ? t('Order by recency')
@@ -670,7 +670,7 @@ function GroupResult({
     showCopiedToClipboardNotification = callback;
   }
 
-  function handlerClickToCopy() {
+  function handlerShowURLCopiedMessage() {
     showCopiedToClipboardNotification();
   }
 
@@ -713,15 +713,11 @@ function GroupResult({
                 <WhatsApp className="h-6 w-6 m-0 inline-block fill-white dark:fill-black" />
               </ButtonLink>
             )}
-            {/* @ts-ignore */}
             <CopyToClipboard
               text={`${address}/group/${group.slug}`}
-              onCopy={handlerClickToCopy}
-            >
-              <Button size="tiny" type="submit" name={`share-${index}`}>
-                <ShareIcon className="h-6 w-6 m-0 inline-block" />
-              </Button>
-            </CopyToClipboard>
+              id={group.id}
+              showMessage={handlerShowURLCopiedMessage}
+            />
             <favorite.Form
               // @ts-ignore
               ref={ref}
@@ -752,7 +748,7 @@ function GroupResult({
           </ButtonGroup>
         }
         footer={
-          <div className="font-medium text-gray-500 dark:text-white flex items-center justify-center">
+          <div className="font-medium text-gray-500 dark:text-white flex items-center justify-center" data-cy="distance">
             {userLocation && showLocation && (
               <span>{Math.ceil(group.distance || 0)} km</span>
             )}

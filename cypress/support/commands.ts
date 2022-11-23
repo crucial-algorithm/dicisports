@@ -20,6 +20,8 @@ declare global {
         url: string,
         options?: Partial<VisitOptions>
       ): Chainable<AUTWindow>;
+
+      assertValueCopiedToClipboard(value: string): Chainable<string>;
     }
   }
 }
@@ -115,6 +117,14 @@ function getRecoverPasswordUrl() {
     );
 }
 
+function assertValueCopiedToClipboard(value: string) {
+  cy.window().then((win) => {
+    win.navigator.clipboard.readText().then((text) => {
+      expect(text).to.eq(Cypress.config().baseUrl + value);
+    });
+  });
+}
+
 Cypress.Commands.add('login', login);
 Cypress.Commands.add('loginAdmin', loginAdmin);
 Cypress.Commands.add('pickOptionFromSelect', pickOptionFromSelect);
@@ -122,5 +132,6 @@ Cypress.Commands.add('pickLocationInMap', pickLocationInMap);
 Cypress.Commands.add('wasImageLoaded', wasImageLoaded);
 Cypress.Commands.add('visitAndWaitForHydration', visitAndWaitForHydration);
 Cypress.Commands.add('getRecoverPasswordUrl', getRecoverPasswordUrl);
+Cypress.Commands.add('assertValueCopiedToClipboard', assertValueCopiedToClipboard);
 
 export {};

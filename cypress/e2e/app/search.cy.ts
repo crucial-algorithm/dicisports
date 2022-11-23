@@ -17,16 +17,33 @@ describe('Search', () => {
         .get('[data-cy=group-name]')
         .should('exist');
     });
-    it.skip('should load groups from Porto', () => {
-      //TODO: check how to allow location
-      cy.intercept('GET', '/*?coords=*')
+    it('should return groups from Porto', () => {
+      cy.intercept('GET', '/?index=*_data=routes*')
         .as('search')
-        .visit('/')
+        .visitAndWaitForHydration('/')
+
+        .intercept(
+          'GET',
+          'https://api.mapbox.com/geocoding/v5/mapbox.places/Porto*'
+        )
+        .as('mapBoxSearchResult')
+
+        .get('input.react-select__input')
+        .type('Porto, Porto, Portugal', { delay: 1 })
+
+        .wait('@mapBoxSearchResult')
+
+        .get('#react-select-2-listbox')
+        .contains('Porto, Porto, Portugal')
+        .click()
 
         .get('#search-button')
         .click()
 
-        .wait('@search');
+        .wait('@search')
+
+        .get('div[data-cy=group-entry]')
+        .should('have.length', 2);
     });
 
     it('should redirect to create a group form: authenticated', () => {
@@ -140,28 +157,24 @@ describe('Search', () => {
         .should('have.length', 1);
     });
 
-    //TODO: check how to disbale popup prompt and check value
-    it.skip('should copy from clipboard', () => {
-      cy.intercept('GET', '/*?coords=*')
-        .as('search')
-        .visit('/')
+    it.skip('Should get URL address', { browser: 'chrome' }, () => {
+      return Cypress.automation('remote:debugger:protocol', {
+        command: 'Browser.grantPermissions',
+        params: {
+          permissions: ['clipboardReadWrite', 'clipboardSanitizedWrite'],
+          origin: window.location.origin
+        }
+      }).then(() => {
+        cy.intercept('GET', '/*?coords=*')
+          .as('search')
+          .visit('/?actionId=search&sport=5')
 
-        .get('#search-button')
-        .click()
-
-        .wait('@search')
-
-        .window()
-        .then((win) => {
-          cy.stub(win, 'prompt')
-            .returns(win.prompt)
-            .as('copyToClipboardPrompt');
-        })
-
-        .get('button[name=share-1]')
-        .click()
-        .get('@copyToClipboardPrompt')
-        .should('be.called');
+          .get('button[name=share-334a3081b9dd416e384d]')
+          .click()
+          .assertValueCopiedToClipboard(
+            '/group/associaco-recreativa-alfandega-da-fe'
+          );
+      });
     });
 
     context('Test all filters', () => {
@@ -481,30 +494,58 @@ describe('Search', () => {
         .wait('@sendEmail');
     });
 
-    it('should return groups from \'Porto\'', () => {
-      cy.intercept('GET', '/?index=*_data=routes*')
-        .as('search')
-        .visitAndWaitForHydration('/')
+    it.skip('should order by closest location', () => {
+      const distances = [];
 
-        .intercept('GET', 'https://api.mapbox.com/geocoding/v5/mapbox.places/Porto*')
-        .as('mapBoxSearchResult')
+      cy.visitAndWaitForHydration(
+        '/?index=&coords=&search=&page=0&sport=&dow=&value=&actionId=search'
+      )
 
-        .get('input.react-select__input')
-        .type('Porto, Porto, Portugal', { delay: 1 })
+        .intercept('GET', '/*order=*')
+        .as('order')
 
-        .wait('@mapBoxSearchResult')
+        .intercept('POST', '/action/*set-my-location*')
+        .as('setLocation')
 
-        .get('#react-select-2-listbox')
-        .contains('Porto, Porto, Portugal')
+        .get('#sort-location')
         .click()
 
-        .get('#search-button')
+        .wait('@setLocation')
+
+        .get('#sort-location')
         .click()
 
-        .wait('@search')
+        .wait('@order')
 
-        .get('div[data-cy=group-entry]')
-        .should('have.length', 2);
+        .get('#sort-location')
+        .click()
+
+        .wait('@order')
+        .reload()
+
+        .get('div[data-cy=distance]')
+        .should('exist')
+        .each((text) => {
+          const distance = text.text().split(' ')[0];
+
+          distances.push(Number(distance));
+        })
+        .then(() => {
+          distances.map((distance, index) => {
+            const next = distances[index === 9 ? index : index + 1];
+
+            console.log(
+              'distance ---> ',
+              distance,
+              'next ---> ',
+              next,
+              'Typeof both ---> ',
+              typeof distance,
+              typeof next
+            );
+            return expect(distance).not.to.be.greaterThan(next);
+          });
+        });
     });
   });
 });
