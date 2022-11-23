@@ -303,7 +303,7 @@ describe('Search', () => {
         verifyDayOfWeek(7, 'Sábado');
       });
 
-      it("should return 'Convivio' groups", () => {
+      it('should return Convivio groups', () => {
         cy.intercept('GET', '/*?coords=*_data=routes*')
           .as('search')
           .visitAndWaitForHydration('/')
@@ -329,7 +329,7 @@ describe('Search', () => {
           .should('contain', 'Convívio');
       });
 
-      it("should return 'Desportivo' groups", () => {
+      it('should return Desportivo groups', () => {
         cy.intercept('GET', '/*?coords=*_data=routes*')
           .as('search')
           .visitAndWaitForHydration('/')
@@ -355,7 +355,7 @@ describe('Search', () => {
           .should('contain', 'Desportivo');
       });
 
-      it("should return 'Treino' groups", () => {
+      it('should return Treino groups', () => {
         cy.intercept('GET', '/*?coords=*_data=routes*')
           .as('search')
           .visitAndWaitForHydration('/')
@@ -381,7 +381,7 @@ describe('Search', () => {
           .should('contain', 'Treino');
       });
 
-      it("should return 'Amizade' groups", () => {
+      it('should return Amizade groups', () => {
         cy.intercept('GET', '/*?coords=*_data=routes*')
           .as('search')
           .visitAndWaitForHydration('/')
@@ -407,7 +407,7 @@ describe('Search', () => {
           .should('contain', 'Amizade');
       });
 
-      it("should return 'Turismo' groups", () => {
+      it('should return Turismo groups', () => {
         cy.intercept('GET', '/*?coords=*_data=routes*')
           .as('search')
           .visitAndWaitForHydration('/')
@@ -534,15 +534,6 @@ describe('Search', () => {
           distances.map((distance, index) => {
             const next = distances[index === 9 ? index : index + 1];
 
-            console.log(
-              'distance ---> ',
-              distance,
-              'next ---> ',
-              next,
-              'Typeof both ---> ',
-              typeof distance,
-              typeof next
-            );
             return expect(distance).not.to.be.greaterThan(next);
           });
         });
