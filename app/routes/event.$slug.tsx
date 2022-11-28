@@ -170,7 +170,7 @@ export default function EventDisplayRoute() {
               <CopyToClipboard
                 text={`${address}/group/${event.slug}`}
                 id={event.id}
-                showMessage={handlerClickToCopy}
+                successMessage={handlerClickToCopy}
                 className="w-[40px] h-[40px] ml-2"
               />
               <Notification show={handlerSetShowNotificationFunction}>

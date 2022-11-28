@@ -6,17 +6,17 @@ import Button from '~/components/shared/Button';
 export default function CopyToClipboard({
   text,
   id,
-  showMessage,
+  successMessage,
   className
 }: {
   text: string;
   id: string;
-  showMessage: () => void;
-  className?: string
+  successMessage: () => void;
+  className?: string;
 }) {
   function handlerClickToCopy() {
     navigator.clipboard.writeText(text).then(() => {
-      showMessage();
+      successMessage();
     });
   }
 

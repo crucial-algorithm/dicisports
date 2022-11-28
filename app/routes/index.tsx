@@ -716,7 +716,7 @@ function GroupResult({
             <CopyToClipboard
               text={`${address}/group/${group.slug}`}
               id={group.id}
-              showMessage={handlerShowURLCopiedMessage}
+              successMessage={handlerShowURLCopiedMessage}
             />
             <favorite.Form
               // @ts-ignore
