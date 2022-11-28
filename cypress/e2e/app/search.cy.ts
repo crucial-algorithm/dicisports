@@ -157,24 +157,129 @@ describe('Search', () => {
         .should('have.length', 1);
     });
 
-    it.skip('Should get URL address', { browser: 'chrome' }, () => {
-      return Cypress.automation('remote:debugger:protocol', {
-        command: 'Browser.grantPermissions',
-        params: {
-          permissions: ['clipboardReadWrite', 'clipboardSanitizedWrite'],
-          origin: window.location.origin
-        }
-      }).then(() => {
-        cy.intercept('GET', '/*?coords=*')
-          .as('search')
-          .visit('/?actionId=search&sport=5')
+    it('should copy to clipboard', { browser: 'chrome' }, () => {
+      cy.wrap(
+        Cypress.automation('remote:debugger:protocol', {
+          command: 'Browser.grantPermissions',
+          params: {
+            permissions: ['clipboardReadWrite', 'clipboardSanitizedWrite'],
+            origin: window.location.origin
+          }
+        })
+      ).then(() => {
+        cy.visit('/?actionId=search&sport=5')
 
           .get('button[name=share-334a3081b9dd416e384d]')
+          .focus()
           .click()
-          .assertValueCopiedToClipboard(
-            '/group/associaco-recreativa-alfandega-da-fe'
-          );
+          .then(() => {
+            cy.assertValueCopiedToClipboard(
+              '/group/associaco-recreativa-alfandega-da-fe'
+            );
+          });
       });
+    });
+
+    it('should have whatsapp link', () => {
+      cy.intercept('GET', '/?actionId=search*_data=routes*')
+        .as('selectSport')
+        .visitAndWaitForHydration('/')
+
+        .get('[data-cy=4]')
+        .click()
+
+        .wait('@selectSport')
+
+        .get('#whatsapp-GkoxmH5db6RXqBpExion')
+        .should('be.visible');
+    });
+
+    it('should send whatsapp link when user is not authenticated', () => {
+      cy.intercept('GET', '/?actionId=search*_data=routes*')
+        .as('selectSport')
+        .visitAndWaitForHydration('/')
+
+        .get('[data-cy=4]')
+        .click()
+
+        .wait('@selectSport')
+
+        .intercept('GET', '/login?a=*_data=routes*')
+        .as('whatsappLink')
+
+        .get('#whatsapp-GkoxmH5db6RXqBpExion')
+        .should('be.visible')
+        .click()
+
+        .wait('@whatsappLink')
+
+        .get('input[name=email]')
+        .type('abcd@gmail.com')
+
+        .intercept('GET', '/?actionId=*message=*_data=routes*')
+        .as('sendEmail')
+
+        .get('button[name=login]')
+        .click()
+
+        .wait('@sendEmail');
+    });
+
+    it('should order by closest location', () => {
+      const distances = [];
+
+      cy.visitAndWaitForHydration(
+        '/?index=&coords=&search=&page=0&sport=&dow=&value=&actionId=search',
+        {
+          onBeforeLoad(win: Cypress.AUTWindow) {
+            const latitude = 41.15;
+            const longitude = -8.61024;
+
+            cy.stub(win.navigator.geolocation, 'getCurrentPosition').callsFake(
+              (cb) => {
+                return cb({ coords: { latitude, longitude } });
+              }
+            );
+          }
+        }
+      )
+
+        .intercept('GET', '/*order=*')
+        .as('order')
+
+        .intercept('POST', '/action/*set-my-location*')
+        .as('setLocation')
+
+        .get('#sort-location')
+        .click()
+
+        .wait('@setLocation')
+
+        .get('#sort-location')
+        .click()
+
+        .wait('@order')
+
+        .get('#sort-location')
+        .click()
+
+        .wait('@order')
+        .reload()
+
+        .get('div[data-cy=distance]')
+        .should('exist')
+        .each((text) => {
+          const distance = text.text().split(' ')[0];
+
+          distances.push(Number(distance));
+        })
+        .then(() => {
+          distances.map((distance, index) => {
+            const next = distances[index === 9 ? index : index + 1];
+
+            return expect(distance).not.to.be.greaterThan(next);
+          });
+        });
     });
 
     context('Test all filters', () => {
@@ -447,108 +552,6 @@ describe('Search', () => {
         checkGroupsBySport(6, 5);
         checkGroupsBySport(7, 4);
       });
-    });
-
-    it('should have whatsapp link', () => {
-      cy.intercept('GET', '/?actionId=search*_data=routes*')
-        .as('selectSport')
-        .visitAndWaitForHydration('/')
-
-        .get('[data-cy=4]')
-        .click()
-
-        .wait('@selectSport')
-
-        .get('#whatsapp-GkoxmH5db6RXqBpExion')
-        .should('be.visible');
-    });
-
-    it('should send whatsapp link when user is not authenticated', () => {
-      cy.intercept('GET', '/?actionId=search*_data=routes*')
-        .as('selectSport')
-        .visitAndWaitForHydration('/')
-
-        .get('[data-cy=4]')
-        .click()
-
-        .wait('@selectSport')
-
-        .intercept('GET', '/login?a=*_data=routes*')
-        .as('whatsappLink')
-
-        .get('#whatsapp-GkoxmH5db6RXqBpExion')
-        .should('be.visible')
-        .click()
-
-        .wait('@whatsappLink')
-
-        .get('input[name=email]')
-        .type('abcd@gmail.com')
-
-        .intercept('GET', '/?actionId=*message=*_data=routes*')
-        .as('sendEmail')
-
-        .get('button[name=login]')
-        .click()
-
-        .wait('@sendEmail');
-    });
-
-    it('should order by closest location', () => {
-      const distances = [];
-
-      cy.visitAndWaitForHydration(
-        '/?index=&coords=&search=&page=0&sport=&dow=&value=&actionId=search',
-        {
-          onBeforeLoad(win: Cypress.AUTWindow) {
-            const latitude = 41.15;
-            const longitude = -8.61024;
-
-            cy.stub(win.navigator.geolocation, 'getCurrentPosition').callsFake(
-              (cb) => {
-                return cb({ coords: { latitude, longitude } });
-              }
-            );
-          }
-        }
-      )
-
-        .intercept('GET', '/*order=*')
-        .as('order')
-
-        .intercept('POST', '/action/*set-my-location*')
-        .as('setLocation')
-
-        .get('#sort-location')
-        .click()
-
-        .wait('@setLocation')
-
-        .get('#sort-location')
-        .click()
-
-        .wait('@order')
-
-        .get('#sort-location')
-        .click()
-
-        .wait('@order')
-        .reload()
-
-        .get('div[data-cy=distance]')
-        .should('exist')
-        .each((text) => {
-          const distance = text.text().split(' ')[0];
-
-          distances.push(Number(distance));
-        })
-        .then(() => {
-          distances.map((distance, index) => {
-            const next = distances[index === 9 ? index : index + 1];
-
-            return expect(distance).not.to.be.greaterThan(next);
-          });
-        });
     });
   });
 });
