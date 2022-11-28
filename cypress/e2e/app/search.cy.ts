@@ -494,11 +494,23 @@ describe('Search', () => {
         .wait('@sendEmail');
     });
 
-    it.skip('should order by closest location', () => {
+    it('should order by closest location', () => {
       const distances = [];
 
       cy.visitAndWaitForHydration(
-        '/?index=&coords=&search=&page=0&sport=&dow=&value=&actionId=search'
+        '/?index=&coords=&search=&page=0&sport=&dow=&value=&actionId=search',
+        {
+          onBeforeLoad(win: Cypress.AUTWindow) {
+            const latitude = 41.15;
+            const longitude = -8.61024;
+
+            cy.stub(win.navigator.geolocation, 'getCurrentPosition').callsFake(
+              (cb) => {
+                return cb({ coords: { latitude, longitude } });
+              }
+            );
+          }
+        }
       )
 
         .intercept('GET', '/*order=*')
