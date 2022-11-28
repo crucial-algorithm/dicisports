@@ -13,10 +13,11 @@ import { HeartIcon as Favorite, ShareIcon } from '@heroicons/react/24/solid';
 import * as React from 'react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { CopyToClipboard } from 'react-copy-to-clipboard';
 import { Carousel } from 'react-responsive-carousel';
 import clsx from 'clsx';
 import { InView } from 'react-intersection-observer';
+
+import CopyToClipboard from '~/components/shared/CopyToClipboard';
 
 import {
   findEventBySlug,
@@ -97,7 +98,6 @@ export default function EventDisplayRoute() {
   const [visiblePriceTag, setVisiblePriceTag] = useState<boolean>(true);
 
   function PriceTag() {
-
     return (
       <InView onChange={setVisiblePriceTag}>
         <div className="flex flex-col md:flex-row mt-4">
@@ -169,16 +169,10 @@ export default function EventDisplayRoute() {
               </favorite.Form>
               <CopyToClipboard
                 text={`${address}/group/${event.slug}`}
-                onCopy={handlerClickToCopy}
-              >
-                <Button
-                  size="tiny"
-                  className="w-[40px] h-[40px] ml-2"
-                  name="share"
-                >
-                  <ShareIcon className="h-6 w-6 m-0 inline-block" />
-                </Button>
-              </CopyToClipboard>
+                id={event.id}
+                successMessage={handlerClickToCopy}
+                className="w-[40px] h-[40px] ml-2"
+              />
               <Notification show={handlerSetShowNotificationFunction}>
                 {message}
               </Notification>

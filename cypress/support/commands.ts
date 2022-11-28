@@ -20,6 +20,8 @@ declare global {
         url: string,
         options?: Partial<VisitOptions>
       ): Chainable<AUTWindow>;
+
+      assertValueCopiedToClipboard(value: string): Promise<Chainable<void>>;
     }
   }
 }
@@ -110,9 +112,20 @@ function getRecoverPasswordUrl() {
         const url = extractUrl(body.text);
         const start = url.search('/magic');
 
-        return url.substr(start);
-      }
-    );
+      return url.substr(start);
+    });
+}
+
+function assertValueCopiedToClipboard(value: string) {
+  cy.window().then((win) => {
+    return new Cypress.Promise((resolve) => {
+      win.navigator.clipboard.readText().then((text) => {
+        expect(text).to.eq(Cypress.config().baseUrl + value);
+        resolve();
+      });
+    });
+  });
+
 }
 
 Cypress.Commands.add('login', login);
@@ -122,5 +135,6 @@ Cypress.Commands.add('pickLocationInMap', pickLocationInMap);
 Cypress.Commands.add('wasImageLoaded', wasImageLoaded);
 Cypress.Commands.add('visitAndWaitForHydration', visitAndWaitForHydration);
 Cypress.Commands.add('getRecoverPasswordUrl', getRecoverPasswordUrl);
+Cypress.Commands.add('assertValueCopiedToClipboard', assertValueCopiedToClipboard);
 
 export {};

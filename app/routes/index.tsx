@@ -15,8 +15,7 @@ import { useTranslation } from 'react-i18next';
 import {
   AdjustmentsVerticalIcon,
   ChevronDownIcon,
-  HeartIcon as Favorite,
-  ShareIcon
+  HeartIcon as Favorite
 } from '@heroicons/react/24/solid';
 
 import { HeartIcon, XCircleIcon } from '@heroicons/react/24/outline';
@@ -24,8 +23,6 @@ import { HeartIcon, XCircleIcon } from '@heroicons/react/24/outline';
 import clsx from 'clsx';
 
 import type { TFunction } from 'i18next';
-
-import { CopyToClipboard } from 'react-copy-to-clipboard';
 
 import { Dialog } from '@reach/dialog';
 
@@ -70,6 +67,8 @@ import { useRootData } from '~/utils/use-root-data';
 import { getLocationSession } from '~/routes/action/set-my-location';
 import { useUserLocation } from '~/utils/LocationProvider';
 import { CanonicalMeta } from '~/utils/seo';
+
+import CopyToClipboard from '~/components/shared/CopyToClipboard';
 
 type FilterParams = {
   actionId: keyof typeof actions | null;
@@ -479,7 +478,12 @@ export default function Index() {
           <>
             <Spacer size="xs" />
             <div className="pl-6 flex align-middle">
-              <Button size="small" onClick={handleOpenFilters} type="button">
+              <Button
+                size="small"
+                onClick={handleOpenFilters}
+                type="button"
+                name="filters"
+              >
                 <AdjustmentsVerticalIcon className="h-6" />
               </Button>
               <div className="flex mx-2 items-center dark:text-white text-blueGray-500 text-sm">
@@ -501,6 +505,7 @@ export default function Index() {
           <>
             <div className="mb-8 flex align-middle justify-center absolute bottom-0 w-full">
               <Button
+                id="see-more"
                 name="actionId"
                 value={actions.more}
                 onClick={handleLoadNextPage}
@@ -534,6 +539,7 @@ export default function Index() {
                     name="actionId"
                     value={actions.sort}
                     onClick={handleOrderBy}
+                    id="sort-location"
                   >
                     {orderBy === SortMethod.proximity
                       ? t('Order by recency')
@@ -615,6 +621,7 @@ function CallToActionToCreateGroup({
           'background-transparent text-orange-600 dark:text-blueGray-500 font-medium',
           className
         )}
+        name="create-your-group"
       >
         {label}
       </button>
@@ -663,7 +670,7 @@ function GroupResult({
     showCopiedToClipboardNotification = callback;
   }
 
-  function handlerClickToCopy() {
+  function handlerShowURLCopiedMessage() {
     showCopiedToClipboardNotification();
   }
 
@@ -697,19 +704,20 @@ function GroupResult({
         actions={
           <ButtonGroup density="compact">
             {group.whatsapp && (
-              <ButtonLink size="tiny" type="button" to={whatsAppLink}>
+              <ButtonLink
+                size="tiny"
+                type="button"
+                to={whatsAppLink}
+                id={`whatsapp-${group.id}`}
+              >
                 <WhatsApp className="h-6 w-6 m-0 inline-block fill-white dark:fill-black" />
               </ButtonLink>
             )}
-            {/* @ts-ignore */}
             <CopyToClipboard
               text={`${address}/group/${group.slug}`}
-              onCopy={handlerClickToCopy}
-            >
-              <Button size="tiny" type="submit">
-                <ShareIcon className="h-6 w-6 m-0 inline-block" />
-              </Button>
-            </CopyToClipboard>
+              id={group.id}
+              successMessage={handlerShowURLCopiedMessage}
+            />
             <favorite.Form
               // @ts-ignore
               ref={ref}
@@ -721,7 +729,12 @@ function GroupResult({
                   <Favorite className="h-6 w-6 m-0 inline-block" />
                 </Button>
               ) : (
-                <Button size="tiny" name="action" value="add" id={`add-favorite-${index}`}>
+                <Button
+                  size="tiny"
+                  name="action"
+                  value="add"
+                  id={`add-favorite-${index}`}
+                >
                   <HeartIcon className="h-6 w-6 m-0 inline-block" />
                 </Button>
               )}
@@ -735,7 +748,7 @@ function GroupResult({
           </ButtonGroup>
         }
         footer={
-          <div className="font-medium text-gray-500 dark:text-white flex items-center justify-center">
+          <div className="font-medium text-gray-500 dark:text-white flex items-center justify-center" data-cy="distance">
             {userLocation && showLocation && (
               <span>{Math.ceil(group.distance || 0)} km</span>
             )}
@@ -765,7 +778,11 @@ function SportsGrid({
       {sports
         .sort((a, b) => a.id - b.id)
         .map((s) => (
-          <Link to={`?actionId=${actions.search}&sport=${s.id}`} key={s.id}>
+          <Link
+            to={`?actionId=${actions.search}&sport=${s.id}`}
+            key={s.id}
+            data-cy={s.id}
+          >
             <DisplayImg
               imageId={`product/sports/${s.picture}`}
               key={s.id}
@@ -815,13 +832,15 @@ function FiltersDialog(props: {
   const { isOpen, sports, groupsSpirit, triggerModalClose, filters } = props;
   const sportsOptions: Option[] = [];
 
-  sports.map((s) => {
-    sportsOptions.push({
-      value: s.id,
-      label: s.name
+  sports
+    .sort((a, b) => a.id - b.id)
+    .map((s) => {
+      sportsOptions.push({
+        value: s.id,
+        label: s.name
+      });
+      return s;
     });
-    return s;
-  });
   return (
     <div
       data-reach-dialog-overlay={true}
@@ -932,6 +951,7 @@ function FiltersDialog(props: {
                 {t('Cancel')}
               </Button>
               <Button
+                id="apply-filters"
                 variant="primary"
                 size="medium"
                 type="submit"
