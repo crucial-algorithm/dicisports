@@ -2,6 +2,7 @@ import type { LoaderFunction } from 'remix';
 import { json, redirect } from 'remix';
 import { Link, useFetcher, useLoaderData } from '@remix-run/react';
 
+import type { User } from '@prisma/client';
 import { Status } from '@prisma/client';
 import {
   ArrowTrendingUpIcon,
@@ -9,7 +10,7 @@ import {
   HeartIcon,
   MapPinIcon
 } from '@heroicons/react/24/outline';
-import { HeartIcon as Favorite, ShareIcon } from '@heroicons/react/24/solid';
+import { HeartIcon as Favorite } from '@heroicons/react/24/solid';
 import * as React from 'react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -49,20 +50,25 @@ const actions = {
   remove: 'remove'
 };
 
-export const loader: LoaderFunction = async ({ params, request }) => {
-  const user = await getUser(request);
-  const slug = params.slug as string;
+export async function loadDisplayEventData(
+  user: User | null,
+  event: Event | null,
+  preview?: boolean
+) {
   let isUserFavorite = false;
-  let isPublished = false;
+  let isUserAllowed = false;
 
-  if (!slug) {
-    redirect('/');
-  }
+  /**
+   * Condition to know if event is available for the user
+   * @param preview - know if data is coming from the preview route to let user see the event preview
+   * @param isUserAllowed - know if user is allowed to navigate to this route
+   * @returns {boolean} - true when user who created the event wants to preview it or when it is published
+   *
+   * Value is then used to return an event or not
+   */
 
-  const event = await findEventBySlug(slug);
-
-  if (event?.status === Status.published) {
-    isPublished = true;
+  if (event?.status === Status.published || preview) {
+    isUserAllowed = true;
   }
 
   if (user && event) {
@@ -73,11 +79,24 @@ export const loader: LoaderFunction = async ({ params, request }) => {
   const races = await findEventRaces(eventId);
 
   return json({
-    event: isPublished ? event : null,
+    event: isUserAllowed ? event : null,
     isUserFavorite,
     races,
     perks: await findEventPerks(eventId)
   });
+}
+
+export const loader: LoaderFunction = async ({ params, request }) => {
+  const user = await getUser(request);
+  const slug = params.slug as string;
+
+  if (!slug) {
+    redirect('/');
+  }
+
+  const event = await findEventBySlug(slug);
+
+  return loadDisplayEventData(user, event);
 };
 
 export default function EventDisplayRoute() {
