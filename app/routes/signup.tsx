@@ -62,7 +62,7 @@ export const action: ActionFunction = async ({ request }) => {
 
   const data = {
     name: form.get('name'),
-    email: form.get('email'),
+    email: form.get('signup-email'),
     confirmation: form.get('confirmation'),
     password: form.get('password')
   };
@@ -193,7 +193,7 @@ export default function SignUp() {
         }`}
       >
         <FormField label={t('Email')} error={errors?.email} dataCy="email">
-          <TextField name="email" defaultValue={fields?.name} />
+          <TextField name="signup-email" defaultValue={fields?.name} />
         </FormField>
         <FormField label={t('Confirm Email')} error={errors?.confirmation} dataCy="confirmation">
           <TextField name="confirmation" autoComplete="off" />

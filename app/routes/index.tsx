@@ -15,8 +15,7 @@ import { useTranslation } from 'react-i18next';
 import {
   AdjustmentsVerticalIcon,
   ChevronDownIcon,
-  HeartIcon as Favorite,
-  ShareIcon
+  HeartIcon as Favorite
 } from '@heroicons/react/24/solid';
 
 import { HeartIcon, XCircleIcon } from '@heroicons/react/24/outline';
@@ -24,8 +23,6 @@ import { HeartIcon, XCircleIcon } from '@heroicons/react/24/outline';
 import clsx from 'clsx';
 
 import type { TFunction } from 'i18next';
-
-import { CopyToClipboard } from 'react-copy-to-clipboard';
 
 import { Dialog } from '@reach/dialog';
 
@@ -70,6 +67,8 @@ import { useRootData } from '~/utils/use-root-data';
 import { getLocationSession } from '~/routes/action/set-my-location';
 import { useUserLocation } from '~/utils/LocationProvider';
 import { CanonicalMeta } from '~/utils/seo';
+
+import CopyToClipboard from '~/components/shared/CopyToClipboard';
 
 type FilterParams = {
   actionId: keyof typeof actions | null;
@@ -131,7 +130,7 @@ export const loader: LoaderFunction = async ({ request, params, context }) => {
   const favorites = user ? await findUserFavoriteGroups(user.id) : [];
 
   let result: ActionData | null = null;
-  const page = data.page || 0;
+  const page = data.actionId === actions.search ? 0 : data.page || 0;
 
   if (
     data.actionId === actions.search ||
@@ -148,7 +147,7 @@ export const loader: LoaderFunction = async ({ request, params, context }) => {
       data.coords
         ? (data.coords.split(',').map(Number) as [number, number])
         : null,
-      data.dayOfWeek || -1,
+      data.dayOfWeek,
       data.actionId === actions.more ? page + 1 : page,
       data.actionId !== actions.more,
       !isNaN(Number(lat)) ? [Number(lat), Number(lng)] : null,
@@ -237,7 +236,7 @@ async function search(
   spirit: number[] | null,
   sport: number | null,
   searchedLocation: [number, number] | null,
-  dayOfWeek: number,
+  dayOfWeek: number | null,
   page: number,
   reset: boolean = true,
   userLocation: [number, number] | null,
@@ -247,7 +246,7 @@ async function search(
   const filters = {
     spirit: spirit || null,
     sport: !sport || sport === -1 ? null : sport,
-    dayOfWeek: dayOfWeek === -1 ? null : dayOfWeek,
+    dayOfWeek: dayOfWeek,
     timeOfDay:
       dayParts === null || dayParts.length === 0
         ? null
@@ -307,6 +306,9 @@ export default function Index() {
       : SortMethod.recency
   );
   const searchForm = useRef<HTMLFormElement | null>(null);
+  const [filtersCacheBurst, setFiltersCacheBurst] = useState<number>(
+    Date.now()
+  );
 
   useEffect(() => {
     if (!result) {
@@ -343,11 +345,12 @@ export default function Index() {
     };
   }, [result, location]);
 
-  const showMoreResults = !!data && data.results.length < data.total;
+  const showMoreResults = !!data && groups.length < data.total;
 
   function handleOnSubmit() {
     setSearchPerformed(true);
     setFiltersModalOpen(false);
+    setFiltersCacheBurst(Date.now());
   }
 
   function handleSearchLocations(
@@ -457,12 +460,14 @@ export default function Index() {
               name="actionId"
               value={actions.search}
               className="mt-8 w-80 m-auto lg:mt-0 lg:w-auto lg:m-0"
+              id="search-button"
             >
               {t('Search')}
             </Button>
           </div>
         </div>
         <FiltersDialog
+          key={filtersCacheBurst}
           isOpen={filtersModalOpen}
           sports={sports}
           groupsSpirit={groupsSpirit}
@@ -473,7 +478,12 @@ export default function Index() {
           <>
             <Spacer size="xs" />
             <div className="pl-6 flex align-middle">
-              <Button size="small" onClick={handleOpenFilters} type="button">
+              <Button
+                size="small"
+                onClick={handleOpenFilters}
+                type="button"
+                name="filters"
+              >
                 <AdjustmentsVerticalIcon className="h-6" />
               </Button>
               <div className="flex mx-2 items-center dark:text-white text-blueGray-500 text-sm">
@@ -495,6 +505,7 @@ export default function Index() {
           <>
             <div className="mb-8 flex align-middle justify-center absolute bottom-0 w-full">
               <Button
+                id="see-more"
                 name="actionId"
                 value={actions.more}
                 onClick={handleLoadNextPage}
@@ -528,6 +539,7 @@ export default function Index() {
                     name="actionId"
                     value={actions.sort}
                     onClick={handleOrderBy}
+                    id="sort-location"
                   >
                     {orderBy === SortMethod.proximity
                       ? t('Order by recency')
@@ -541,7 +553,7 @@ export default function Index() {
       </Form>
       {searchPerformed && (
         <>
-          {groups.map((group) => (
+          {groups.map((group, index: number) => (
             <GroupResult
               group={group}
               key={`${group.id}-${group.position}`}
@@ -557,6 +569,7 @@ export default function Index() {
               isLoggedIn={user !== null}
               userLocation={userLocation}
               showLocation={orderBy === SortMethod.proximity}
+              index={index}
             />
           ))}
         </>
@@ -608,6 +621,7 @@ function CallToActionToCreateGroup({
           'background-transparent text-orange-600 dark:text-blueGray-500 font-medium',
           className
         )}
+        name="create-your-group"
       >
         {label}
       </button>
@@ -626,7 +640,8 @@ function GroupResult({
   location,
   isLoggedIn,
   userLocation,
-  showLocation
+  showLocation,
+  index
 }: {
   group: Group;
   img?: string;
@@ -639,6 +654,7 @@ function GroupResult({
   isLoggedIn: boolean;
   userLocation: [number, number] | null;
   showLocation: boolean;
+  index: number;
 }) {
   const favorite = useFetcher();
   const ref = useRef();
@@ -654,7 +670,7 @@ function GroupResult({
     showCopiedToClipboardNotification = callback;
   }
 
-  function handlerClickToCopy() {
+  function handlerShowURLCopiedMessage() {
     showCopiedToClipboardNotification();
   }
 
@@ -688,19 +704,20 @@ function GroupResult({
         actions={
           <ButtonGroup density="compact">
             {group.whatsapp && (
-              <ButtonLink size="tiny" type="button" to={whatsAppLink}>
+              <ButtonLink
+                size="tiny"
+                type="button"
+                to={whatsAppLink}
+                id={`whatsapp-${group.id}`}
+              >
                 <WhatsApp className="h-6 w-6 m-0 inline-block fill-white dark:fill-black" />
               </ButtonLink>
             )}
-            {/* @ts-ignore */}
             <CopyToClipboard
               text={`${address}/group/${group.slug}`}
-              onCopy={handlerClickToCopy}
-            >
-              <Button size="tiny" type="submit">
-                <ShareIcon className="h-6 w-6 m-0 inline-block" />
-              </Button>
-            </CopyToClipboard>
+              id={group.id}
+              successMessage={handlerShowURLCopiedMessage}
+            />
             <favorite.Form
               // @ts-ignore
               ref={ref}
@@ -712,7 +729,12 @@ function GroupResult({
                   <Favorite className="h-6 w-6 m-0 inline-block" />
                 </Button>
               ) : (
-                <Button size="tiny" name="action" value="add">
+                <Button
+                  size="tiny"
+                  name="action"
+                  value="add"
+                  id={`add-favorite-${index}`}
+                >
                   <HeartIcon className="h-6 w-6 m-0 inline-block" />
                 </Button>
               )}
@@ -726,7 +748,7 @@ function GroupResult({
           </ButtonGroup>
         }
         footer={
-          <div className="font-medium text-gray-500 dark:text-white flex items-center justify-center">
+          <div className="font-medium text-gray-500 dark:text-white flex items-center justify-center" data-cy="distance">
             {userLocation && showLocation && (
               <span>{Math.ceil(group.distance || 0)} km</span>
             )}
@@ -756,7 +778,11 @@ function SportsGrid({
       {sports
         .sort((a, b) => a.id - b.id)
         .map((s) => (
-          <Link to={`?actionId=${actions.search}&sport=${s.id}`} key={s.id}>
+          <Link
+            to={`?actionId=${actions.search}&sport=${s.id}`}
+            key={s.id}
+            data-cy={s.id}
+          >
             <DisplayImg
               imageId={`product/sports/${s.picture}`}
               key={s.id}
@@ -806,13 +832,15 @@ function FiltersDialog(props: {
   const { isOpen, sports, groupsSpirit, triggerModalClose, filters } = props;
   const sportsOptions: Option[] = [];
 
-  sports.map((s) => {
-    sportsOptions.push({
-      value: s.id,
-      label: s.name
+  sports
+    .sort((a, b) => a.id - b.id)
+    .map((s) => {
+      sportsOptions.push({
+        value: s.id,
+        label: s.name
+      });
+      return s;
     });
-    return s;
-  });
   return (
     <div
       data-reach-dialog-overlay={true}
@@ -864,6 +892,7 @@ function FiltersDialog(props: {
               className="w-full md:w-112"
             >
               <PeekDayOfWeek
+                key={Date.now()}
                 name="dow"
                 id="day-of-week"
                 defaultValue={filters?.dayOfWeek as DaysOfWeek}
@@ -922,6 +951,7 @@ function FiltersDialog(props: {
                 {t('Cancel')}
               </Button>
               <Button
+                id="apply-filters"
                 variant="primary"
                 size="medium"
                 type="submit"

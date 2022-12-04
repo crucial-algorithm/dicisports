@@ -12,25 +12,58 @@ describe('Groups', () => {
     });
 
     it('should favorite group', () => {
-      // TODO
-    });
+      cy.intercept('GET', '/*?coords=*')
+        .as('search')
+        .login()
+        .visit('/')
 
-    it('should favorite a group unauthenticated', () => {
-      // TODO
+        .get('#search-button')
+        .click()
+
+        .wait('@search')
+
+        .get('#add-favorite-0')
+        .click()
+
+        .wait('@search')
+
+        .visit('/m/groups')
+
+        .get('button[name=groupId]')
+        .should('have.length', 2);
     });
 
     it('should remove group from favorites', () => {
-      // TODO
+      cy.intercept('GET', '/m/groups?message=*')
+        .as('removeFavorite')
+
+        .login()
+        .visit('/m/groups')
+
+        .get('#remove-favorite-0')
+        .click()
+
+        .wait('@removeFavorite')
+        .reload()
+
+        .get('[data-cy=empty-favorites]')
+        .should('exist');
     });
   });
 
   context('Security', () => {
     it('should not access /m/groups when not authenticated', () => {
-      // TODO
+      cy.visit('/m/groups')
+        .url()
+        .should('eq', `${Cypress.config().baseUrl}/login`);
     });
 
     it('should not allow a user from editing another user group', () => {
-      // TODO
+      cy.login()
+        .visit('/m/group/d888b22b730daaf3b70e')
+
+        .url()
+        .should('eq', `${Cypress.config().baseUrl}/m/groups`);
     });
   });
 
@@ -41,6 +74,9 @@ describe('Groups', () => {
       cy.visit('/m/groups')
         .get('button[name=create-group]')
         .click()
+
+        .url()
+        .should('include', '/m/group/')
 
         // fill the form
         .get('input[name=name]')
@@ -79,7 +115,7 @@ describe('Groups', () => {
         .get('button[name=save-group]')
         .click()
 
-        .wait('@createGroup', { timeout: 12000 })
+        .wait('@createGroup')
 
         // validate that form was properly created
         .get('div[data-cy="group-entry"]')

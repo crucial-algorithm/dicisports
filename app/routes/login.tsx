@@ -329,7 +329,7 @@ function CreateAccount({
   return (
     <p className="dark:text-blueGray-500 text-gray-500 mt-8">
       {text} &nbsp;
-      <Link to={`/signup${queryString ? `?${queryString}` : '' }`}>
+      <Link to={`/signup${queryString ? `?${queryString}` : '' }`} id="create-account">
         {cta}
       </Link>
     </p>

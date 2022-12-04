@@ -62,10 +62,11 @@ export default function GroupEntry({ group, actions, footer, img }: Props) {
           <a
             href={`/group/${group.slug}`}
             className="text-lg font-extrabold dark:text-white cursor-default"
+            data-cy="group-name"
           >
             {group.name}
           </a>
-          <span className="mb-4 dark:text-white font-bold capitalize">
+          <span className="mb-4 dark:text-white font-bold capitalize" data-cy="group-schedule">
             {schedule}
           </span>
           <Feature
@@ -82,7 +83,7 @@ export default function GroupEntry({ group, actions, footer, img }: Props) {
               ({t('View in Map')})
             </a>
           </Feature>
-          <div className="flex justify-between align-middle">
+          <div className="flex justify-between align-middle" data-cy="group-spirit">
             <Feature
               label={t('Purpose')}
               value={group.groupSpirit?.name || ''}

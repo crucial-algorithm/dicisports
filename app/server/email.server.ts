@@ -1,4 +1,4 @@
-import type { User } from '@prisma/client';
+import type { User } from '~/types';
 
 import Config from '~/server/config.server';
 

@@ -27,7 +27,7 @@ describe('Authentication / Authorization', () => {
 
     it('should allow to recover password', () => {
 
-      cy.visit('/recover')
+      cy.visitAndWaitForHydration('/recover')
 
         .url()
         .should('eq', `${Cypress.config().baseUrl}/recover`)
@@ -35,22 +35,35 @@ describe('Authentication / Authorization', () => {
         .get('input[name=email]')
         .should('exist')
         .type('regular@gmail.com')
+
+        .intercept('POST', '/recover?*')
+        .as('recoverPassword')
+
         .get('button[type=submit]')
         .click()
+
+        .wait('@recoverPassword')
 
         .get('#success-message')
 
         .getRecoverPasswordUrl()
         .then((url) => {
-          cy.visit(url)
+          cy.visitAndWaitForHydration(url)
             .get('input[name=password]')
             .type('Password2')
             .get('input[name=confirmation]')
             .type('Password2')
+
+            .intercept('GET', '/me?message=*')
+            .as('newPassword')
+
             .get('button[type=submit]')
             .click()
+
+            .wait('@newPassword')
+
             .url()
-            .should('eq', `${Cypress.config().baseUrl}/me`);
+            .should('include', `${Cypress.config().baseUrl}/me`);
         });
     });
 
@@ -63,8 +76,13 @@ describe('Authentication / Authorization', () => {
         .get('[name=password]')
         .type('Password1', { delay: 1 })
 
+        .intercept('GET', '/?_data=routes*')
+        .as('login')
+
         .get('button[name=login]')
         .click()
+
+        .wait('@login')
 
         .url()
         .should('eq', `${Cypress.config().baseUrl}/`);
@@ -85,12 +103,12 @@ describe('Authentication / Authorization', () => {
 
   context('When user wants to signup', () => {
     it('should allow to create a new user', () => {
-      cy.visit('/signup')
+      cy.visitAndWaitForHydration('/signup')
 
         .url()
         .should('eq', `${Cypress.config().baseUrl}/signup`)
 
-        .get('input[name=email]')
+        .get('input[name=signup-email]')
         .type('a@gmail.com')
 
         .get('input[name=confirmation]')
@@ -102,8 +120,13 @@ describe('Authentication / Authorization', () => {
         .get('input[name=password]')
         .type('pp@password1')
 
+        .intercept('GET', '/me?*')
+        .as('signup')
+
         .get('button[name=create]')
         .click()
+
+        .wait('@signup')
 
         .url()
         .should('eq', `${Cypress.config().baseUrl}/me`);
@@ -132,12 +155,12 @@ describe('Authentication / Authorization', () => {
     });
 
     it('should fail if user already exists', () => {
-      cy.visit('/signup')
+      cy.visitAndWaitForHydration('/signup')
 
         .url()
         .should('eq', `${Cypress.config().baseUrl}/signup`)
 
-        .get('input[name=email]')
+        .get('input[name=signup-email]')
         .type('regular@gmail.com')
 
         .get('input[name=confirmation]')
@@ -149,20 +172,25 @@ describe('Authentication / Authorization', () => {
         .get('input[name=password]')
         .type('pp@password1')
 
+        .intercept('GET', '/signup?*_data=routes*')
+        .as('signup')
+
         .get('button[name=create]')
         .click()
+
+        .wait('@signup')
 
         .get('div[data-cy=email]>p[role=alert]')
         .should('exist');
     });
 
     it('should fail if emails don\t match', () => {
-      cy.visit('/signup')
+      cy.visitAndWaitForHydration('/signup')
 
         .url()
         .should('eq', `${Cypress.config().baseUrl}/signup`)
 
-        .get('input[name=email]')
+        .get('input[name=signup-email]')
         .type('a-email@gmail.com')
 
         .get('input[name=confirmation]')
@@ -174,8 +202,13 @@ describe('Authentication / Authorization', () => {
         .get('input[name=password]')
         .type('pp@password1')
 
+        .intercept('GET', '/signup?*_data=routes*')
+        .as('signin')
+
         .get('button[name=create]')
         .click()
+
+        .wait('@signin')
 
         .get('div[data-cy=confirmation]>p[role=alert]')
         .should('exist');
