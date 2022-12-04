@@ -1,4 +1,6 @@
 import * as React from 'react';
+import clsx from 'clsx';
+import { useTranslation } from 'react-i18next';
 import { Fragment, useEffect, useRef, useState } from 'react';
 
 import { Combobox, Transition } from '@headlessui/react';
@@ -9,8 +11,7 @@ import { getLocalizedText } from '~/utils/misc';
 
 import { useTheme } from '~/utils/theme-provider';
 import { inputBaseClasses } from '~/components/shared/form/InputBase';
-import clsx from 'clsx';
-import { useTranslation } from 'react-i18next';
+import { getI18nText } from '~/components/I18nText';
 
 export type Option = {
   value: string | number;
@@ -43,8 +44,6 @@ export default function ComboBox({
   const [query, setQuery] = useState('');
   const [theme] = useTheme();
   const inDarkMode = theme === 'dark';
-
-  console.log(options);
 
   const values = options.map((o) => {
     return {
@@ -84,13 +83,20 @@ export default function ComboBox({
     }`;
   }
 
-  function display(o: Option | number | string) {
+  function display(o: Option | number | string): string {
     if (['number', 'string'].includes(typeof o)) {
       const c = values.find((v) => v.value === o);
 
-      return c?.label;
+      return c?.label || 'label not found';
     }
-    return (o as Option).label;
+
+    const option = o as Option;
+
+    if (typeof option.label === 'string') {
+      return option.label;
+    }
+
+    return getI18nText(option.label, i18n.language as Language);
   }
 
   const filteredValues =
@@ -100,22 +106,32 @@ export default function ComboBox({
           return label.toLowerCase().includes(query.toLowerCase());
         });
 
-  function handleOpenOnFocus() {
+  // trigger open of dropdown when user focus input
+  function handleOpenOnFocus(e: FocusEvent) {
+    // Discard if user clicks in dropdown button
+    // Without this, dropdown would open and close immediately
+    if (e.relatedTarget) {
+      return;
+    }
     dropdownButton.current?.click();
   }
 
   return (
     <div className="top-16 w-72">
-      <Combobox value={value} onChange={handleSelectChange} >
+      <Combobox value={value} onChange={handleSelectChange}>
         <div className="relative mt-1">
           <div className="z-100">
             <Combobox.Input
               className={clsx(inputBaseClasses('py-2.5'), className)}
               displayValue={display}
               onChange={handleInputChange}
+              // @ts-ignore
               onFocus={handleOpenOnFocus}
             />
-            <Combobox.Button ref={dropdownButton} className="absolute inset-y-0 right-0 flex items-center pr-2">
+            <Combobox.Button
+              ref={dropdownButton}
+              className="absolute inset-y-0 right-0 flex items-center pr-2"
+            >
               <ChevronUpDownIcon
                 className="h-5 w-5 text-gray-400"
                 aria-hidden="true"
@@ -128,7 +144,15 @@ export default function ComboBox({
             leaveFrom="opacity-100"
             leaveTo="opacity-0"
           >
-            <Combobox.Options className="z-10 absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm" static>
+            <Combobox.Options
+              className={clsx(
+                'absolute w-full overflow-auto z-10 mt-1 max-h-60 py-1',
+                'rounded-md bg-white text-base shadow-lg',
+                'ring-1 ring-black ring-opacity-5',
+                'focus:outline-none sm:text-sm'
+              )}
+              static
+            >
               {filteredValues.length === 0 ? (
                 <div className="relative cursor-default select-none py-2 px-4 text-gray-700">
                   Nothing found.
@@ -149,7 +173,7 @@ export default function ComboBox({
                         >
                           {label}
                         </span>
-                        {selected ? (
+                        {selected && (
                           <span
                             className={`absolute inset-y-0 left-0 flex items-center pl-3 ${
                               active ? 'text-white' : 'text-teal-600'
@@ -157,7 +181,7 @@ export default function ComboBox({
                           >
                             <CheckIcon className="h-5 w-5" aria-hidden="true" />
                           </span>
-                        ) : null}
+                        )}
                       </>
                     )}
                   </Combobox.Option>
