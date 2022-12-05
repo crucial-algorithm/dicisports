@@ -114,8 +114,6 @@ describe('Event', () => {
 
   context('Maintenance', () => {
     beforeEach(() => {
-      cy.task('db:reset');
-      cy.task('clearDownloadFolder');
       cy.loginAdmin();
     });
 
@@ -249,7 +247,7 @@ describe('Event', () => {
       cy.intercept('GET', '/organizer/event/*?_data=routes*')
         .as('EventRequests')
         .visitAndWaitForHydration('/organizer')
-        .get('div[data-cy=event]')
+        .get('div[data-cy=event-MY4bvgxDbMtGv8rbYe5d]')
         .click()
 
         .wait('@EventRequests')
@@ -274,7 +272,7 @@ describe('Event', () => {
       cy.intercept('GET', '/organizer/event/*?_data=routes*')
         .as('EventRequests')
         .visitAndWaitForHydration('/organizer')
-        .get('div[data-cy=event]')
+        .get('div[data-cy=event-MY4bvgxDbMtGv8rbYe5d]')
         .click()
 
         .wait('@EventRequests')
@@ -299,7 +297,7 @@ describe('Event', () => {
       cy.intercept('GET', '/organizer/event/*?_data=routes*')
         .as('EventRequests')
         .visitAndWaitForHydration('/organizer')
-        .get('div[data-cy=event]')
+        .get('div[data-cy=event-MY4bvgxDbMtGv8rbYe5d]')
         .click()
 
         .wait('@EventRequests')
@@ -323,7 +321,7 @@ describe('Event', () => {
       cy.intercept('GET', '/organizer/event/*?_data=routes*')
         .as('EventRequests')
         .visitAndWaitForHydration('/organizer')
-        .get('div[data-cy=event]')
+        .get('div[data-cy=event-MY4bvgxDbMtGv8rbYe5d]')
         .click()
 
         .wait('@EventRequests')
@@ -338,7 +336,7 @@ describe('Event', () => {
       cy.intercept('GET', '/organizer/event/*?_data=routes*')
         .as('EventRequests')
         .visitAndWaitForHydration('/organizer')
-        .get('div[data-cy=event]')
+        .get('div[data-cy=event-MY4bvgxDbMtGv8rbYe5d]')
         .click()
 
         .wait('@EventRequests')
@@ -368,7 +366,9 @@ describe('Event', () => {
         .should('exist')
         .then((link) => {
           cy.request(link.prop('href')).its('status').should('eq', 200);
-          cy.visit(link.prop('href'));
+          cy.visitAndWaitForHydration(link.prop('href'))
+            .get('[data-cy=name]')
+            .contains('Love Tiles Douro Granfondo 2023');
         });
     });
 
@@ -383,6 +383,33 @@ describe('Event', () => {
 
         .get('#preview-button')
         .should('not.exist');
+    });
+
+    it('should preview saved event', () => {
+      cy.intercept('GET', '/organizer/event/*?_data=routes*')
+        .as('EventRoute')
+        .visitAndWaitForHydration('/organizer')
+        .get('div[data-cy=event-bQmGXYkbhJetjk6mniMt]')
+        .click()
+
+        .wait('@EventRoute')
+
+        .get('#preview-button')
+        .should('exist')
+        .then((link) => {
+          cy.request(link.prop('href')).its('status').should('eq', 200);
+          cy.visitAndWaitForHydration(link.prop('href'))
+            .get('[data-cy=name]')
+            .contains('Trail do Zêzere');
+        });
+    });
+
+    it('should not access a preview if user did not create such event', () => {
+      cy.login()
+        .visitAndWaitForHydration('/event/preview/MY4bvgxDbMtGv8rbYe5d')
+
+        .get('p[data-cy=event-not-found]')
+        .should('exist');
     });
   });
 });

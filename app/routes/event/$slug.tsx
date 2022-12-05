@@ -52,24 +52,9 @@ const actions = {
 
 export async function loadDisplayEventData(
   user: User | null,
-  event: Event | null,
-  preview?: boolean
+  event: Event | null
 ) {
   let isUserFavorite = false;
-  let isUserAllowed = false;
-
-  /**
-   * Condition to know if event is available for the user
-   * @param preview - know if data is coming from the preview route to let user see the event preview
-   * @param isUserAllowed - know if user is allowed to navigate to this route
-   * @returns {boolean} - true when user who created the event wants to preview it or when it is published
-   *
-   * Value is then used to return an event or not
-   */
-
-  if (event?.status === Status.published || preview) {
-    isUserAllowed = true;
-  }
 
   if (user && event) {
     isUserFavorite = !!(await findUserFavoriteEvent(user.id, event.id));
@@ -79,7 +64,7 @@ export async function loadDisplayEventData(
   const races = await findEventRaces(eventId);
 
   return json({
-    event: isUserAllowed ? event : null,
+    event: event,
     isUserFavorite,
     races,
     perks: await findEventPerks(eventId)
@@ -231,7 +216,9 @@ export default function EventDisplayRoute() {
                   data-cy="price"
                   className="text-sp-light-blue-900 w-full md:ml-2"
                 >
-                  <b className="break-words">{`${minPrice ? minPrice : t('Undefined')}€`}</b>
+                  <b className="break-words">{`${
+                    minPrice ? minPrice : t('Undefined')
+                  }€`}</b>
                 </H2>
               </div>
               <ButtonLink to="#races-list">{t('Races Anchor')}</ButtonLink>
@@ -341,7 +328,13 @@ export default function EventDisplayRoute() {
             className="dark:text-blueGray-500 text-base font-medium mr-2 mt-2 whitespace-pre-line"
             data-cy="description"
           >
-            {event.eventDescription}
+            {event.eventDescription ? (
+              event.eventDescription
+            ) : (
+              <H6 className="text-center p-12" variant="secondary" as="p">
+                {t('No Description')}
+              </H6>
+            )}
           </div>
         </div>
 
@@ -418,6 +411,11 @@ export default function EventDisplayRoute() {
                 index={index}
               />
             ))}
+          <WhenListEmpty list={event.documents}>
+            <H6 className="text-center p-12" variant="secondary" as="p">
+              {t('No Documents')}
+            </H6>
+          </WhenListEmpty>
         </div>
       </Main>
     </>

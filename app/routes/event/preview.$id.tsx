@@ -9,13 +9,7 @@ export const loader: LoaderFunction = async ({ params, request }) => {
   const id = params.id as string;
   const event = await findEvent(id);
 
-  if (user?.id !== event?.createdById) {
-    // Send preview as false so it triggers the handled error
-    return loadDisplayEventData(user, event, false);
-  }
-
-  // Otherwise send it as true
-  return loadDisplayEventData(user, event, true);
+  return loadDisplayEventData(user, event?.createdById === user?.id? event : null, true);
 };
 
 export default EventDisplayRoute;

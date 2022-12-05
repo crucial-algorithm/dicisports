@@ -489,6 +489,7 @@ export default function OrganizerEventRoute() {
                 ) : (
                   <div className="flex flex-col justify-center md:flex-row">
                     <Button
+                      className="mb-4 md:mb-0"
                       onClick={handlePublish}
                       type="submit"
                       size="medium"
@@ -497,7 +498,8 @@ export default function OrganizerEventRoute() {
                       {t('Publish Button')}
                     </Button>
                     <ButtonLink
-                      className="ml-4"
+                      id="preview-button"
+                      className="md:ml-4"
                       variant="secondary"
                       size="medium"
                       to={`/event/preview/${event.id}`}
