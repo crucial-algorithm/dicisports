@@ -231,7 +231,7 @@ export default function EventDisplayRoute() {
                   data-cy="price"
                   className="text-sp-light-blue-900 w-full md:ml-2"
                 >
-                  <b className="break-words">{`${minPrice}€`}</b>
+                  <b className="break-words">{`${minPrice ? minPrice : t('Undefined')}€`}</b>
                 </H2>
               </div>
               <ButtonLink to="#races-list">{t('Races Anchor')}</ButtonLink>

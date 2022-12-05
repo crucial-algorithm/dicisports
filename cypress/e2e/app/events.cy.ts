@@ -138,7 +138,7 @@ describe('Event', () => {
         .pickOptionFromSelect('difficulty', 1)
 
         .get('input[name=event-date]')
-        .type('2022-11-30')
+        .type('2030-11-30')
 
         .pickLocationInMap('open-map')
 
@@ -189,7 +189,7 @@ describe('Event', () => {
         .type('15')
 
         .get('input[name=race-date]')
-        .type('2022-11-30')
+        .type('2030-11-30')
 
         .get('textarea[name=race-description]')
         .type('10km run')
@@ -360,6 +360,29 @@ describe('Event', () => {
 
         .get('label[data-cy=perk-9]')
         .contains('a new perk');
+    });
+
+    it('should display event preview', () => {
+      cy.visit('/organizer/event/MY4bvgxDbMtGv8rbYe5d')
+        .get('#preview-button')
+        .should('exist')
+        .then((link) => {
+          cy.request(link.prop('href')).its('status').should('eq', 200);
+          cy.visit(link.prop('href'));
+        });
+    });
+
+    it('should not have preview button if event is not created yet', () => {
+      cy.intercept('GET', '/organizer/event/*?_data=routes*')
+        .as('EventRequests')
+        .visitAndWaitForHydration('/organizer')
+        .get('button[name=create-event]')
+        .click()
+
+        .wait('@EventRequests')
+
+        .get('#preview-button')
+        .should('not.exist');
     });
   });
 });

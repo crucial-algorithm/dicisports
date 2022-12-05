@@ -476,6 +476,7 @@ export default function OrganizerEventRoute() {
                       {t('Unpublish Button')}
                     </Button>
                     <ButtonLink
+                      id="preview-button"
                       className="md:ml-4"
                       variant="secondary"
                       size="medium"
