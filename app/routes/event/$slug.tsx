@@ -81,7 +81,7 @@ export const loader: LoaderFunction = async ({ params, request }) => {
 
   const event = await findEventBySlug(slug);
 
-  return loadDisplayEventData(user, event);
+  return loadDisplayEventData(user, event?.status === Status.published ? event : null);
 };
 
 export default function EventDisplayRoute() {
@@ -331,7 +331,7 @@ export default function EventDisplayRoute() {
             {event.eventDescription ? (
               event.eventDescription
             ) : (
-              <H6 className="text-center p-12" variant="secondary" as="p">
+              <H6 className="text-center p-12" variant="secondary" as="p" data-cy="no-description">
                 {t('No Description')}
               </H6>
             )}
@@ -349,7 +349,7 @@ export default function EventDisplayRoute() {
               <DisplayRace race={race} key={race.id} index={index} />
             ))}
           <WhenListEmpty list={races}>
-            <H6 className="text-center p-12" variant="secondary" as="p">
+            <H6 className="text-center p-12" variant="secondary" as="p" data-cy="no-races">
               {t('No Races')}
             </H6>
           </WhenListEmpty>
@@ -412,7 +412,7 @@ export default function EventDisplayRoute() {
               />
             ))}
           <WhenListEmpty list={event.documents}>
-            <H6 className="text-center p-12" variant="secondary" as="p">
+            <H6 className="text-center p-12" variant="secondary" as="p" data-cy="no-documents">
               {t('No Documents')}
             </H6>
           </WhenListEmpty>

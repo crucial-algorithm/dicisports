@@ -115,6 +115,8 @@ describe('Event', () => {
   context('Maintenance', () => {
     beforeEach(() => {
       cy.loginAdmin();
+      cy.task('db:reset');
+      cy.task('clearDownloadFolder');
     });
 
     it('should create and publish an event', () => {
@@ -400,7 +402,17 @@ describe('Event', () => {
           cy.request(link.prop('href')).its('status').should('eq', 200);
           cy.visitAndWaitForHydration(link.prop('href'))
             .get('[data-cy=name]')
-            .contains('Trail do Zêzere');
+            .contains('Trail do Zêzere')
+
+            // Check if it shows message when there is no races, documents, etc.
+            .get('[data-cy=no-races]')
+            .should('exist')
+
+            .get('[data-cy=no-documents]')
+            .should('exist')
+
+            .get('[data-cy=no-description]')
+            .should('exist');
         });
     });
 

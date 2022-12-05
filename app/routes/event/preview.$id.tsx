@@ -9,7 +9,7 @@ export const loader: LoaderFunction = async ({ params, request }) => {
   const id = params.id as string;
   const event = await findEvent(id);
 
-  return loadDisplayEventData(user, event?.createdById === user?.id? event : null, true);
+  return loadDisplayEventData(user, event?.createdById === user?.id? event : null);
 };
 
 export default EventDisplayRoute;

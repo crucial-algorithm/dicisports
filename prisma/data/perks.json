@@ -80,7 +80,7 @@
     "eventId": "MY4bvgxDbMtGv8rbYe5d"
   },
   {
-    "id": "fff",
+    "id": "kkk",
     "name": "Saco de brinde",
     "isDefault": true,
     "isEnabled": false,
@@ -88,7 +88,7 @@
     "eventId": "bQmGXYkbhJetjk6mniMt"
   },
   {
-    "id": "ggg",
+    "id": "lll",
     "name": "Bebedouros",
     "isDefault": true,
     "isEnabled": true,
@@ -96,7 +96,7 @@
     "eventId": "bQmGXYkbhJetjk6mniMt"
   },
   {
-    "id": "hhh",
+    "id": "mmm",
     "name": "Chuveiros",
     "isDefault": true,
     "isEnabled": true,
@@ -104,7 +104,7 @@
     "eventId": "bQmGXYkbhJetjk6mniMt"
   },
   {
-    "id": "iii",
+    "id": "nnn",
     "name": "T-shirts do evento",
     "isDefault": true,
     "isEnabled": false,
@@ -112,7 +112,7 @@
     "eventId": "bQmGXYkbhJetjk6mniMt"
   },
   {
-    "id": "jjj",
+    "id": "ooo",
     "name": "Medalhas",
     "isDefault": true,
     "isEnabled": false,
@@ -120,7 +120,7 @@
     "eventId": "bQmGXYkbhJetjk6mniMt"
   },
   {
-    "id": "kkk",
+    "id": "ppp",
     "name": "Resultados cronometrados",
     "isDefault": true,
     "isEnabled": true,
@@ -128,7 +128,7 @@
     "eventId": "bQmGXYkbhJetjk6mniMt"
   },
   {
-    "id": "lll",
+    "id": "qqq",
     "name": "Fotos do evento",
     "isDefault": true,
     "isEnabled": false,
@@ -136,7 +136,7 @@
     "eventId": "bQmGXYkbhJetjk6mniMt"
   },
   {
-    "id": "mmm",
+    "id": "rrr",
     "name": "Música ao vivo",
     "isDefault": true,
     "isEnabled": false,
