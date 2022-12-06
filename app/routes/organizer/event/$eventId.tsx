@@ -465,23 +465,49 @@ export default function OrganizerEventRoute() {
               </div>
               {event.status !== Status.auto &&
                 (isPublished ? (
-                  <Button
-                    onClick={handleUnpublish}
-                    type="submit"
-                    size="medium"
-                    name="unpublish"
-                  >
-                    {t('Unpublish Button')}
-                  </Button>
+                  <div className="flex flex-col justify-center md:flex-row">
+                    <Button
+                      className="mb-4 md:mb-0"
+                      onClick={handleUnpublish}
+                      type="submit"
+                      size="medium"
+                      name="unpublish"
+                    >
+                      {t('Unpublish Button')}
+                    </Button>
+                    <ButtonLink
+                      id="preview-button"
+                      className="md:ml-4"
+                      variant="secondary"
+                      size="medium"
+                      to={`/event/preview/${event.id}`}
+                      target="_blank"
+                    >
+                      {t('Preview Button')}
+                    </ButtonLink>
+                  </div>
                 ) : (
-                  <Button
-                    onClick={handlePublish}
-                    type="submit"
-                    size="medium"
-                    name="publish"
-                  >
-                    {t('Publish Button')}
-                  </Button>
+                  <div className="flex flex-col justify-center md:flex-row">
+                    <Button
+                      className="mb-4 md:mb-0"
+                      onClick={handlePublish}
+                      type="submit"
+                      size="medium"
+                      name="publish"
+                    >
+                      {t('Publish Button')}
+                    </Button>
+                    <ButtonLink
+                      id="preview-button"
+                      className="md:ml-4"
+                      variant="secondary"
+                      size="medium"
+                      to={`/event/preview/${event.id}`}
+                      target="_blank"
+                    >
+                      {t('Preview Button')}
+                    </ButtonLink>
+                  </div>
                 ))}
 
               <input type="hidden" name="actionId" value={actionId || ''} />
@@ -681,7 +707,6 @@ export default function OrganizerEventRoute() {
                   placeholder={t('Type to create new')}
                   onBlur={handleOnCreatePerk}
                   className="rounded-lg focus-ring text-sm w-60 md:text-sm bg-gray-100 text-black placeholder-gray-500 font-medium box-border dark:disabled:bg-gray-700 dark:text-white dark:bg-gray-800 disabled:text-gray-700 border-0 sm:col-span-4"
-
                 />
               </div>
             </div>
@@ -1279,7 +1304,7 @@ function RacesList(props: {
               key={r.id}
               className="relative flex mb-4 justify-between items-center flex-row flex-wrap border-b p-4 last:border-none border-gray-300 dark:border-gray-300"
             >
-              <div className="flex flex-col items-center dark:text-blueGray-500" >
+              <div className="flex flex-col items-center dark:text-blueGray-500">
                 {index === 0 ? null : (
                   <button
                     type="button"

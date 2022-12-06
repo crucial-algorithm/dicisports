@@ -2,6 +2,7 @@ import type { LoaderFunction } from 'remix';
 import { json, redirect } from 'remix';
 import { Link, useFetcher, useLoaderData } from '@remix-run/react';
 
+import type { User } from '@prisma/client';
 import { Status } from '@prisma/client';
 import {
   ArrowTrendingUpIcon,
@@ -9,7 +10,7 @@ import {
   HeartIcon,
   MapPinIcon
 } from '@heroicons/react/24/outline';
-import { HeartIcon as Favorite, ShareIcon } from '@heroicons/react/24/solid';
+import { HeartIcon as Favorite } from '@heroicons/react/24/solid';
 import * as React from 'react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -49,21 +50,11 @@ const actions = {
   remove: 'remove'
 };
 
-export const loader: LoaderFunction = async ({ params, request }) => {
-  const user = await getUser(request);
-  const slug = params.slug as string;
+export async function loadDisplayEventData(
+  user: User | null,
+  event: Event | null
+) {
   let isUserFavorite = false;
-  let isPublished = false;
-
-  if (!slug) {
-    redirect('/');
-  }
-
-  const event = await findEventBySlug(slug);
-
-  if (event?.status === Status.published) {
-    isPublished = true;
-  }
 
   if (user && event) {
     isUserFavorite = !!(await findUserFavoriteEvent(user.id, event.id));
@@ -73,11 +64,24 @@ export const loader: LoaderFunction = async ({ params, request }) => {
   const races = await findEventRaces(eventId);
 
   return json({
-    event: isPublished ? event : null,
+    event: event,
     isUserFavorite,
     races,
     perks: await findEventPerks(eventId)
   });
+}
+
+export const loader: LoaderFunction = async ({ params, request }) => {
+  const user = await getUser(request);
+  const slug = params.slug as string;
+
+  if (!slug) {
+    redirect('/');
+  }
+
+  const event = await findEventBySlug(slug);
+
+  return loadDisplayEventData(user, event?.status === Status.published ? event : null);
 };
 
 export default function EventDisplayRoute() {
@@ -212,7 +216,9 @@ export default function EventDisplayRoute() {
                   data-cy="price"
                   className="text-sp-light-blue-900 w-full md:ml-2"
                 >
-                  <b className="break-words">{`${minPrice}€`}</b>
+                  <b className="break-words">{`${
+                    minPrice ? minPrice : t('Undefined')
+                  }€`}</b>
                 </H2>
               </div>
               <ButtonLink to="#races-list">{t('Races Anchor')}</ButtonLink>
@@ -322,7 +328,13 @@ export default function EventDisplayRoute() {
             className="dark:text-blueGray-500 text-base font-medium mr-2 mt-2 whitespace-pre-line"
             data-cy="description"
           >
-            {event.eventDescription}
+            {event.eventDescription ? (
+              event.eventDescription
+            ) : (
+              <H6 className="text-center p-12" variant="secondary" as="p" data-cy="no-description">
+                {t('No Description')}
+              </H6>
+            )}
           </div>
         </div>
 
@@ -337,7 +349,7 @@ export default function EventDisplayRoute() {
               <DisplayRace race={race} key={race.id} index={index} />
             ))}
           <WhenListEmpty list={races}>
-            <H6 className="text-center p-12" variant="secondary" as="p">
+            <H6 className="text-center p-12" variant="secondary" as="p" data-cy="no-races">
               {t('No Races')}
             </H6>
           </WhenListEmpty>
@@ -399,6 +411,11 @@ export default function EventDisplayRoute() {
                 index={index}
               />
             ))}
+          <WhenListEmpty list={event.documents}>
+            <H6 className="text-center p-12" variant="secondary" as="p" data-cy="no-documents">
+              {t('No Documents')}
+            </H6>
+          </WhenListEmpty>
         </div>
       </Main>
     </>

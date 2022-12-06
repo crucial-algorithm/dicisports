@@ -114,9 +114,9 @@ describe('Event', () => {
 
   context('Maintenance', () => {
     beforeEach(() => {
+      cy.loginAdmin();
       cy.task('db:reset');
       cy.task('clearDownloadFolder');
-      cy.loginAdmin();
     });
 
     it('should create and publish an event', () => {
@@ -138,7 +138,7 @@ describe('Event', () => {
         .pickOptionFromSelect('difficulty', 1)
 
         .get('input[name=event-date]')
-        .type('2022-11-30')
+        .type('2030-11-30')
 
         .pickLocationInMap('open-map')
 
@@ -189,7 +189,7 @@ describe('Event', () => {
         .type('15')
 
         .get('input[name=race-date]')
-        .type('2022-11-30')
+        .type('2030-11-30')
 
         .get('textarea[name=race-description]')
         .type('10km run')
@@ -249,7 +249,7 @@ describe('Event', () => {
       cy.intercept('GET', '/organizer/event/*?_data=routes*')
         .as('EventRequests')
         .visitAndWaitForHydration('/organizer')
-        .get('div[data-cy=event]')
+        .get('div[data-cy=event-MY4bvgxDbMtGv8rbYe5d]')
         .click()
 
         .wait('@EventRequests')
@@ -274,7 +274,7 @@ describe('Event', () => {
       cy.intercept('GET', '/organizer/event/*?_data=routes*')
         .as('EventRequests')
         .visitAndWaitForHydration('/organizer')
-        .get('div[data-cy=event]')
+        .get('div[data-cy=event-MY4bvgxDbMtGv8rbYe5d]')
         .click()
 
         .wait('@EventRequests')
@@ -299,7 +299,7 @@ describe('Event', () => {
       cy.intercept('GET', '/organizer/event/*?_data=routes*')
         .as('EventRequests')
         .visitAndWaitForHydration('/organizer')
-        .get('div[data-cy=event]')
+        .get('div[data-cy=event-MY4bvgxDbMtGv8rbYe5d]')
         .click()
 
         .wait('@EventRequests')
@@ -323,7 +323,7 @@ describe('Event', () => {
       cy.intercept('GET', '/organizer/event/*?_data=routes*')
         .as('EventRequests')
         .visitAndWaitForHydration('/organizer')
-        .get('div[data-cy=event]')
+        .get('div[data-cy=event-MY4bvgxDbMtGv8rbYe5d]')
         .click()
 
         .wait('@EventRequests')
@@ -338,7 +338,7 @@ describe('Event', () => {
       cy.intercept('GET', '/organizer/event/*?_data=routes*')
         .as('EventRequests')
         .visitAndWaitForHydration('/organizer')
-        .get('div[data-cy=event]')
+        .get('div[data-cy=event-MY4bvgxDbMtGv8rbYe5d]')
         .click()
 
         .wait('@EventRequests')
@@ -360,6 +360,68 @@ describe('Event', () => {
 
         .get('label[data-cy=perk-9]')
         .contains('a new perk');
+    });
+
+    it('should display event preview', () => {
+      cy.visit('/organizer/event/MY4bvgxDbMtGv8rbYe5d')
+        .get('#preview-button')
+        .should('exist')
+        .then((link) => {
+          cy.request(link.prop('href')).its('status').should('eq', 200);
+          cy.visitAndWaitForHydration(link.prop('href'))
+            .get('[data-cy=name]')
+            .contains('Love Tiles Douro Granfondo 2023');
+        });
+    });
+
+    it('should not have preview button if event is not created yet', () => {
+      cy.intercept('GET', '/organizer/event/*?_data=routes*')
+        .as('EventRequests')
+        .visitAndWaitForHydration('/organizer')
+        .get('button[name=create-event]')
+        .click()
+
+        .wait('@EventRequests')
+
+        .get('#preview-button')
+        .should('not.exist');
+    });
+
+    it('should preview saved event', () => {
+      cy.intercept('GET', '/organizer/event/*?_data=routes*')
+        .as('EventRoute')
+        .visitAndWaitForHydration('/organizer')
+        .get('div[data-cy=event-bQmGXYkbhJetjk6mniMt]')
+        .click()
+
+        .wait('@EventRoute')
+
+        .get('#preview-button')
+        .should('exist')
+        .then((link) => {
+          cy.request(link.prop('href')).its('status').should('eq', 200);
+          cy.visitAndWaitForHydration(link.prop('href'))
+            .get('[data-cy=name]')
+            .contains('Trail do Zêzere')
+
+            // Check if it shows message when there is no races, documents, etc.
+            .get('[data-cy=no-races]')
+            .should('exist')
+
+            .get('[data-cy=no-documents]')
+            .should('exist')
+
+            .get('[data-cy=no-description]')
+            .should('exist');
+        });
+    });
+
+    it('should not access a preview if user did not create such event', () => {
+      cy.login()
+        .visitAndWaitForHydration('/event/preview/MY4bvgxDbMtGv8rbYe5d')
+
+        .get('p[data-cy=event-not-found]')
+        .should('exist');
     });
   });
 });

@@ -78,6 +78,7 @@ describe('Groups', () => {
         .url()
         .should('include', '/m/group/')
 
+        .reload()
         // fill the form
         .get('input[name=name]')
         .type('a new group')

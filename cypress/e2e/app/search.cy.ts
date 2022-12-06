@@ -57,6 +57,7 @@ describe('Search', () => {
 
         .wait('@search')
 
+        .reload()
         .get('button[name=create-your-group]')
         .click()
 

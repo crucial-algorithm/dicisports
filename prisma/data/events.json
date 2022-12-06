@@ -8,7 +8,7 @@
     "address": "Ferreira do Zêzere",
     "useExternalBooking": false,
     "externalBookingUrl": null,
-    "status": "auto",
+    "status": "draft",
     "slug": "trail-do-zezere",
     "createdById": "3beca472138d6d234d3f"
   },
