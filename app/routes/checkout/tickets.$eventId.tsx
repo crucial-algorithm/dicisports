@@ -20,7 +20,7 @@ type LoaderData = {
   races: Race[];
 };
 
-export const loader: LoaderFunction = async ({ request, params }) => {
+export const loader: LoaderFunction = async ({ params }) => {
   const eventId = params.eventId as string;
 
   const event = await findEvent(eventId);
@@ -51,13 +51,14 @@ export default function CheckoutRoute() {
 
     if (index !== -1) {
       const newArr = [...cart];
-      const newPrice = (totalPrice + ticket.race.price);
+      const newPrice = totalPrice + ticket.race.price;
 
       newArr[index].numberOfTickets = ticket.numberOfTickets;
+
       setCart(newArr);
       setTotalPrice(newPrice);
     } else {
-      const newPrice = (totalPrice + ticket.race.price);
+      const newPrice = totalPrice + ticket.race.price;
 
       setCart([...cart, ticket]);
       setTotalPrice(newPrice);
@@ -95,10 +96,11 @@ export default function CheckoutRoute() {
               </H6>
             </div>
             {cart.map((t, index: number) => (
-              <Cart ticket={t} key={index + ' ' + t.race.id} />
+              <Cart ticket={t} key={index + ' - ' + t.race.id} />
             ))}
+
             {cart.length !== 0 && (
-              <div className="flex flex-row items-center justify-between border-t border-b border-gray-500 rounded-md mt-2">
+              <div className="flex flex-row items-center justify-between mt-4 py-4 border-t-2 border-grey-300">
                 <H6>{t('Total')}</H6>
                 <H6>{totalPrice + '€'}</H6>
               </div>
