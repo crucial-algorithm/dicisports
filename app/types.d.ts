@@ -274,6 +274,11 @@ type FavoriteEvent = {
 
 type Difficulty = {} & DBDifficulty;
 
+type Ticket = {
+  race: Race
+  numberOfTickets: number
+}
+
 export {
   NonNullProperties,
   MemberProfile,
@@ -307,5 +312,6 @@ export {
   DBRawGroup,
   LoginAction,
   FavoriteEvent,
-  Difficulty
+  Difficulty,
+  Ticket
 };
