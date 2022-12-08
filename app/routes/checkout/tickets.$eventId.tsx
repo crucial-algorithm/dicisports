@@ -11,18 +11,21 @@ import { findEvent } from '~/server/db/events.server';
 import { H2, H4, H5, H6 } from '~/components/shared/typography';
 import DisplayDate from '~/components/shared/DIsplayDate';
 import type { Event, Race, Ticket } from '~/types';
-import { findEventRaces } from '~/server/db/races.server';
+import { findEventRaces, findRace } from '~/server/db/races.server';
 import { displayTimeOfDay } from '~/utils/misc';
 import Button from '~/components/shared/Button';
 
 type LoaderData = {
   event: Event;
   races: Race[];
+  selectedRace: Race | null;
 };
 
-export const loader: LoaderFunction = async ({ params }) => {
-  const eventId = params.eventId as string;
+export const loader: LoaderFunction = async ({ request, params }) => {
+  const url = new URL(request.url);
+  const selectedRaceId = url.searchParams.get('selectedRace');
 
+  const eventId = params.eventId as string;
   const event = await findEvent(eventId);
 
   if (!event) {
@@ -33,16 +36,21 @@ export const loader: LoaderFunction = async ({ params }) => {
 
   return json({
     event,
-    races
+    races,
+    selectedRace: selectedRaceId ? await findRace(selectedRaceId as string) : null
   });
 };
 
 export default function CheckoutRoute() {
   const { t } = useTranslation('checkout');
-  const { event, races } = useLoaderData<LoaderData>();
+  const { event, races, selectedRace } = useLoaderData<LoaderData>();
 
-  const [cart, setCart] = useState<Ticket[]>([]);
-  const [totalPrice, setTotalPrice] = useState<number>(0);
+  const [cart, setCart] = useState<Ticket[]>(
+    selectedRace ? [{ race: selectedRace, numberOfTickets: 1 }] : []
+  );
+  const [totalPrice, setTotalPrice] = useState<number>(
+    selectedRace ? selectedRace.price : 0
+  );
 
   function handleAddToCart(ticket: Ticket) {
     const index = cart.findIndex((obj) => {
@@ -82,9 +90,18 @@ export default function CheckoutRoute() {
         <div className="flex-col w-[50%]">
           {races
             .sort((a: Race, b: Race) => a.displayOrder - b.displayOrder)
-            .map((r: Race) => (
-              <DisplayRace race={r} key={r.id} addToCart={handleAddToCart} />
-            ))}
+            .map((r: Race) =>
+              selectedRace && r.id === selectedRace.id ? (
+                <DisplayRace
+                  race={r}
+                  key={r.id}
+                  addToCart={handleAddToCart}
+                  selectedRace={selectedRace}
+                />
+              ) : (
+                <DisplayRace race={r} key={r.id} addToCart={handleAddToCart} />
+              )
+            )}
         </div>
         <div className="w-[50%] pl-48">
           <div className="flex flex-col border-2 border-b border-gray-500 rounded-md w-full h-full p-12 ml-4">
@@ -118,14 +135,18 @@ export default function CheckoutRoute() {
 
 function DisplayRace({
   race,
-  addToCart
+  addToCart,
+  selectedRace
 }: {
   race: Race;
   addToCart: (ticket: Ticket) => void;
+  selectedRace?: Race;
 }) {
   const { t } = useTranslation('checkout');
   const raceTime = displayTimeOfDay(race.startTime);
-  const [numberOfTickets, setNumberOfTickets] = useState<number>(0);
+  const [numberOfTickets, setNumberOfTickets] = useState<number>(
+    selectedRace ? 1 : 0
+  );
 
   function handleAddTicket() {
     const next = numberOfTickets + 1;
