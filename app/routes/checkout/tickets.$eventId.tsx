@@ -37,12 +37,13 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   return json({
     event,
     races,
-    selectedRace: selectedRaceId ? await findRace(selectedRaceId as string) : null
+    selectedRace: selectedRaceId
+      ? await findRace(selectedRaceId as string)
+      : null
   });
 };
 
 export default function CheckoutRoute() {
-  const { t } = useTranslation('checkout');
   const { event, races, selectedRace } = useLoaderData<LoaderData>();
 
   const [cart, setCart] = useState<Ticket[]>(
@@ -53,23 +54,49 @@ export default function CheckoutRoute() {
   );
 
   function handleAddToCart(ticket: Ticket) {
-    const index = cart.findIndex((obj) => {
-      return obj.race.id === ticket.race.id;
+    const index = cart.findIndex((t) => {
+      return t.race.id === ticket.race.id;
     });
 
     if (index !== -1) {
-      const newArr = [...cart];
+      const newCart = [...cart];
       const newPrice = totalPrice + ticket.race.price;
 
-      newArr[index].numberOfTickets = ticket.numberOfTickets;
+      newCart[index].numberOfTickets = ticket.numberOfTickets;
 
-      setCart(newArr);
+      setCart(newCart);
       setTotalPrice(newPrice);
     } else {
       const newPrice = totalPrice + ticket.race.price;
 
       setCart([...cart, ticket]);
       setTotalPrice(newPrice);
+    }
+  }
+
+  function handleRemoveFromCart(ticket: Ticket) {
+    const newCart = [...cart];
+    const index = cart.findIndex((t) => {
+      return t.race.id === ticket.race.id;
+    });
+    const racePrice = cart[index].race.price;
+
+    if (cart[index].numberOfTickets !== 1) {
+      newCart[index].numberOfTickets -= 1;
+
+      setCart(newCart);
+    } else {
+      newCart.splice(index, 1);
+
+      setCart(newCart);
+    }
+
+    if (totalPrice >= racePrice) {
+      const newPrice = totalPrice - racePrice;
+
+      setTotalPrice(newPrice);
+    } else {
+      setTotalPrice(0);
     }
   }
 
@@ -96,37 +123,21 @@ export default function CheckoutRoute() {
                   race={r}
                   key={r.id}
                   addToCart={handleAddToCart}
+                  removeFromCart={handleRemoveFromCart}
                   selectedRace={selectedRace}
                 />
               ) : (
-                <DisplayRace race={r} key={r.id} addToCart={handleAddToCart} />
+                <DisplayRace
+                  race={r}
+                  key={r.id}
+                  addToCart={handleAddToCart}
+                  removeFromCart={handleRemoveFromCart}
+                />
               )
             )}
         </div>
         <div className="w-[50%] pl-48">
-          <div className="flex flex-col border-2 border-b border-gray-500 rounded-md w-full h-full p-12 ml-4">
-            <H4>{t('Your Tickets')}</H4>
-            <div className="mt-4 space-y-1">
-              <H5>{event.name}</H5>
-              <H6 className="dark:text-blueGray-500">
-                <DisplayDate date={new Date(event.startAt as Date)} />
-              </H6>
-            </div>
-            {cart.map((t, index: number) => (
-              <Cart ticket={t} key={index + ' - ' + t.race.id} />
-            ))}
-
-            {cart.length !== 0 && (
-              <div className="flex flex-row items-center justify-between mt-4 py-4 border-t-2 border-grey-300">
-                <H6>{t('Total')}</H6>
-                <H6>{totalPrice + '€'}</H6>
-              </div>
-            )}
-
-            <Button type="button" disabled={cart.length === 0} className="mt-4">
-              {t('Checkout now')}
-            </Button>
-          </div>
+          <Cart cart={cart} event={event} totalPrice={totalPrice} />
         </div>
       </div>
     </Main>
@@ -136,10 +147,12 @@ export default function CheckoutRoute() {
 function DisplayRace({
   race,
   addToCart,
+  removeFromCart,
   selectedRace
 }: {
   race: Race;
   addToCart: (ticket: Ticket) => void;
+  removeFromCart: (ticket: Ticket) => void;
   selectedRace?: Race;
 }) {
   const { t } = useTranslation('checkout');
@@ -156,8 +169,11 @@ function DisplayRace({
   }
 
   function handleRemoveTicket() {
-    if (numberOfTickets !== 0) {
-      setNumberOfTickets(numberOfTickets - 1);
+    const previous = numberOfTickets - 1;
+
+    if (numberOfTickets > 0) {
+      setNumberOfTickets(previous);
+      removeFromCart({ race: race, numberOfTickets: previous });
     }
   }
 
@@ -204,19 +220,53 @@ function DisplayRace({
   );
 }
 
-function Cart({ ticket }: { ticket: Ticket }) {
-  const ticketsPrice = ticket.race.price * ticket.numberOfTickets;
+function Cart({
+  cart,
+  event,
+  totalPrice
+}: {
+  cart: Ticket[];
+  event: Event;
+  totalPrice: number;
+}) {
+  const { t } = useTranslation('checkout');
 
   return (
-    <div className="flex flex-col mt-8 w-full">
-      <div className="flex flex-row items-center justify-between">
-        <H6>{ticket.race.name}</H6>
-        <H6>{'x' + ticket.numberOfTickets}</H6>
+    <div className="flex flex-col border-2 border-b border-gray-500 rounded-md w-full h-full p-12 ml-4">
+      <H4>{t('Your Tickets')}</H4>
+      <div className="mt-4 space-y-1">
+        <H5>{event.name}</H5>
+        <H6 className="dark:text-blueGray-500">
+          <DisplayDate date={new Date(event.startAt as Date)} />
+        </H6>
       </div>
-      <div className="flex flex-row items-center justify-between">
-        <H6 className="dark:text-blueGray-500">{ticket.race.price + '€'}</H6>
-        <H6 className="dark:text-blueGray-500">{ticketsPrice + '€'}</H6>
-      </div>
+      {cart.map((ticket, index: number) => (
+        <div className="flex flex-col mt-8 w-full" key={ticket.race.id + ' - ' + index}>
+          <div className="flex flex-row items-center justify-between">
+            <H6>{ticket.race.name}</H6>
+            <H6>{'x' + ticket.numberOfTickets}</H6>
+          </div>
+          <div className="flex flex-row items-center justify-between">
+            <H6 className="dark:text-blueGray-500">
+              {ticket.race.price + '€'}
+            </H6>
+            <H6 className="dark:text-blueGray-500">
+              {ticket.race.price * ticket.numberOfTickets + '€'}
+            </H6>
+          </div>
+        </div>
+      ))}
+
+      {cart.length !== 0 && (
+        <div className="flex flex-row items-center justify-between mt-4 py-4 border-t-2 border-grey-300">
+          <H6>{t('Total')}</H6>
+          <H6>{totalPrice + '€'}</H6>
+        </div>
+      )}
+
+      <Button type="button" disabled={cart.length === 0} className="mt-4">
+        {t('Checkout now')}
+      </Button>
     </div>
   );
 }
