@@ -17,7 +17,10 @@ import type {
   Perk,
   Sport,
   TranslationObject,
-  GroupInput, Difficulty
+  GroupInput,
+  Difficulty,
+  Cart,
+  DBRawCart
 } from '~/types';
 
 function dbSportToSport(sport: DBSport): Sport {
@@ -44,9 +47,18 @@ function dbDifficultyToDifficulty(difficulty: DBDifficulty): Difficulty {
 }
 
 function dbPerkToPerk(perk: DBPerk): Perk {
-  const { id, name, createdAt, isDefault, isEnabled, eventId, displayOrder } = perk;
+  const { id, name, createdAt, isDefault, isEnabled, eventId, displayOrder } =
+    perk;
 
-  return { id, name, createdAt: new Date(createdAt), isDefault, isEnabled, eventId, displayOrder };
+  return {
+    id,
+    name,
+    createdAt: new Date(createdAt),
+    isDefault,
+    isEnabled,
+    eventId,
+    displayOrder
+  };
 }
 
 function dbGroupSpiritToGroupSpirit(group: DBGroupSpirit): GroupSpirit {
@@ -129,8 +141,23 @@ function dbRawGroupToGroup(group: DBRawGroup): Group {
     schedules: group.schedules.map((s) => {
       const [id, day, hour] = s.split(':').map(String);
 
-      return { timeOfDay: Number(hour), dayOfWeek: Number(day), groupId: group.id, id };
+      return {
+        timeOfDay: Number(hour),
+        dayOfWeek: Number(day),
+        groupId: group.id,
+        id
+      };
     })
+  };
+}
+
+function dbCartToCart(cart: DBRawCart): Cart {
+  return {
+    id: cart.checkout_id,
+    qtd: cart.qtd,
+    raceName: cart.race_name,
+    racePrice: cart.race_price,
+    displayOrder: cart.display_order
   };
 }
 
@@ -141,5 +168,6 @@ export {
   dbGroupToGroup,
   dbPerkToPerk,
   dbRawGroupToGroup,
-  dbDifficultyToDifficulty
+  dbDifficultyToDifficulty,
+  dbCartToCart
 };

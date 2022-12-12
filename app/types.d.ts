@@ -291,6 +291,22 @@ type RaceCheckoutInput = {
   updatedAt?: Date
 }
 
+type Cart = {
+  id: string
+  qtd: number
+  raceName: string
+  racePrice: number
+  displayOrder: number
+}
+
+type DBRawCart = {
+  checkout_id: string
+  qtd: number
+  race_name: string
+  race_price: number
+  display_order: number
+}
+
 export {
   NonNullProperties,
   MemberProfile,
@@ -327,5 +343,7 @@ export {
   Difficulty,
   Ticket,
   RaceCheckout,
-  RaceCheckoutInput
+  RaceCheckoutInput,
+  Cart,
+  DBRawCart
 };
