@@ -231,6 +231,7 @@ model Race {
   track             String?
   eventId           String          @map("event_id")
   event             Event           @relation(fields: [eventId], references: [id])
+  raceChekout       RaceCheckout[]
 
   @@map("races")
 }
@@ -255,4 +256,17 @@ model FavoriteEvent {
 
   @@unique([userId, eventId])
   @@map("favorite_events")
+}
+
+model RaceCheckout {
+    id          String      @id @default(uuid())
+    raceId      String      @map("race_id")
+    race        Race        @relation(fields: [raceId], references: [id])
+    userId      String      @map("user_id")
+    qtd         Int
+    createdAt   DateTime    @default(now()) @map("created_at")
+    updatedAt   DateTime    @updatedAt @map("updated_at")
+
+    @@unique([userId, raceId])
+    @@map("race_checkout")
 }

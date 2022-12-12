@@ -10,6 +10,7 @@ import type {
   Race as DBRace,
   GroupSchedule as DBGroupSchedule,
   Difficulty as DBDifficulty,
+  RaceCheckout as DBRaceCheckout,
   Status
 } from '@prisma/client';
 
@@ -279,6 +280,17 @@ type Ticket = {
   numberOfTickets: number
 }
 
+type RaceCheckout = {} & DBRaceCheckout
+
+type RaceCheckoutInput = {
+  id?: string
+  raceId: string
+  userId: string
+  qtd: number
+  createdAt?: Date
+  updatedAt?: Date
+}
+
 export {
   NonNullProperties,
   MemberProfile,
@@ -313,5 +325,7 @@ export {
   LoginAction,
   FavoriteEvent,
   Difficulty,
-  Ticket
+  Ticket,
+  RaceCheckout,
+  RaceCheckoutInput
 };

@@ -1,6 +1,6 @@
 import type { LoaderFunction } from 'remix';
 import { json, redirect } from 'remix';
-import { Link, useFetcher, useLoaderData } from '@remix-run/react';
+import { Form, Link, useFetcher, useLoaderData } from '@remix-run/react';
 
 import type { User } from '@prisma/client';
 import { Status } from '@prisma/client';
@@ -538,12 +538,11 @@ function DisplayRace(props: { race: Race; index: number }) {
           </label>
         </div>
         <div className="my-4">
-          <ButtonLink
-            id="book"
-            to={`/checkout/tickets/${race.eventId}?selectedRace=${race.id}`}
-          >
-            {t('Book')}
-          </ButtonLink>
+          <Form method="post" action="/checkout/create">
+            <input type="hidden" value={race.id} name="raceId" />
+            <input type="hidden" value={race.eventId} name="eventId" />
+            <Button id="book">{t('Book')}</Button>
+          </Form>
         </div>
       </div>
     </div>

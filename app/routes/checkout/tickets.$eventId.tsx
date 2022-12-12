@@ -1,6 +1,6 @@
-import type { LoaderFunction } from 'remix';
+import type { ActionFunction, LoaderFunction } from 'remix';
 import { json, redirect } from 'remix';
-import { useLoaderData } from '@remix-run/react';
+import { Form, useLoaderData } from '@remix-run/react';
 import * as React from 'react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -14,14 +14,41 @@ import type { Event, Race, Ticket } from '~/types';
 import { findEventRaces, findRace } from '~/server/db/races.server';
 import { displayTimeOfDay } from '~/utils/misc';
 import Button from '~/components/shared/Button';
+import { getClientSession } from '~/server/auth/client.server';
+import {
+  addTicket,
+  getUserTickets,
+  removeTicket
+} from '~/server/db/checkout.server';
 
 type LoaderData = {
   event: Event;
   races: Race[];
   selectedRace: Race | null;
+  clientId: string;
+};
+
+export const action: ActionFunction = async ({ request }) => {
+  const form = await request.formData();
+  const clientSession = await getClientSession(request);
+
+  const clientId = clientSession.getClientId();
+  const actionId = form.get('actionId') as string;
+  const raceId = form.get('raceId') as string;
+
+  if (actionId === 'add') {
+    return await addTicket(clientId, raceId);
+  }
+
+  if (actionId === 'remove') {
+    return await removeTicket(clientId, raceId);
+  }
 };
 
 export const loader: LoaderFunction = async ({ request, params }) => {
+  const clientSession = await getClientSession(request);
+  const clientId = clientSession.getClientId();
+
   const url = new URL(request.url);
   const selectedRaceId = url.searchParams.get('selectedRace');
 
@@ -39,11 +66,12 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     races,
     selectedRace: selectedRaceId
       ? await findRace(selectedRaceId as string)
-      : null
+      : null,
+    userTickets: await getUserTickets(clientId)
   });
 };
 
-export default function CheckoutRoute() {
+export default function CheckoutTicketsRoute() {
   const { event, races, selectedRace } = useLoaderData<LoaderData>();
 
   const [cart, setCart] = useState<Ticket[]>(
@@ -197,23 +225,30 @@ function DisplayRace({
         </div>
 
         <div className="flex flex-row items-center dark:text-blueGray-500 w-[80px] justify-between">
-          <button
-            type="button"
-            onClick={handleRemoveTicket}
-            className="w-[24px] h-[24px]"
-            name={`remove-ticket-${race.id}`}
-          >
-            <ChevronDownIcon className="md:h-6 w-6 m-0 inline-block" />
-          </button>
+          <Form method="post">
+            <input type="hidden" name="actionId" value="remove" />
+            <input type="hidden" name="raceId" value={race.id as string} />
+            <button
+              type="submit"
+              className="w-[24px] h-[24px]"
+              name={`remove-ticket-${race.id}`}
+            >
+              <ChevronDownIcon className="md:h-6 w-6 m-0 inline-block" />
+            </button>
+          </Form>
+
           <H6 className="dark:text-blueGray-500">{numberOfTickets}</H6>
-          <button
-            type="button"
-            onClick={handleAddTicket}
-            className="w-[24px] h-[24px]"
-            name={`remove-ticket-${race.id}`}
-          >
-            <ChevronUpIcon className="md:h-6 w-6 m-0 inline-block" />
-          </button>
+          <Form method="post">
+            <input type="hidden" name="actionId" value="add" />
+            <input type="hidden" name="raceId" value={race.id as string} />
+            <button
+              type="submit"
+              className="w-[24px] h-[24px]"
+              name={`add-ticket-${race.id}`}
+            >
+              <ChevronUpIcon className="md:h-6 w-6 m-0 inline-block" />
+            </button>
+          </Form>
         </div>
       </div>
     </div>
@@ -241,7 +276,10 @@ function Cart({
         </H6>
       </div>
       {cart.map((ticket, index: number) => (
-        <div className="flex flex-col mt-8 w-full" key={ticket.race.id + ' - ' + index}>
+        <div
+          className="flex flex-col mt-8 w-full"
+          key={ticket.race.id + ' - ' + index}
+        >
           <div className="flex flex-row items-center justify-between">
             <H6>{ticket.race.name}</H6>
             <H6>{'x' + ticket.numberOfTickets}</H6>
