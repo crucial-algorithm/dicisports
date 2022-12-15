@@ -130,10 +130,16 @@ async function findEventRacesCheckoutQtd(
   userSessionId: string
 ): Promise<RaceQtd[] | null> {
   const query = `
-        SELECT races.id, name, distance, start_time, price, display_order, rc.qtd
-        FROM races
-                 LEFT JOIN race_checkout rc on races.id = rc.race_id
-        WHERE user_id = '${userSessionId}';
+        SELECT r.id,
+               r.name,
+               r.distance,
+               r.start_time,
+               r.price,
+               r.display_order,
+               CASE WHEN rc.qtd IS NULL THEN 0 ELSE rc.qtd END qtd
+        FROM races r
+                 LEFT JOIN race_checkout rc on r.id = rc.race_id AND rc.user_id = '${userSessionId}'
+        WHERE event_id = '${eventId}';
     `;
 
   const results: Array<DBRawEventQtd> = await db.$queryRawUnsafe(query);
