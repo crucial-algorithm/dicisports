@@ -52,6 +52,7 @@ async function seed() {
 
 async function clear() {
   await db.document.deleteMany();
+  await db.raceCheckout.deleteMany();
   await db.race.deleteMany();
   await db.perk.deleteMany();
   await db.favoriteEvent.deleteMany();

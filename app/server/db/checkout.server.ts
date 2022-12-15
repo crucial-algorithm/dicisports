@@ -1,8 +1,18 @@
 import { db } from '~/server/db.server';
 import Id from '~/server/utils/Id.server';
-import type { Cart, Race, RaceCheckout, RaceCheckoutInput } from '~/types';
-import { dbCartToCart } from '~/server/db/codecs.server';
-import type { DBRawCart } from '~/types';
+import type {
+  Cart,
+  DBRawCart,
+  DBRawEventQtd,
+  Race,
+  RaceCheckout,
+  RaceCheckoutInput,
+  RaceQtd
+} from '~/types';
+import {
+  dbCartToCart,
+  dbEventRaceCheckoutQtd
+} from '~/server/db/codecs.server';
 import { findEventRaces } from '~/server/db/races.server';
 
 async function createTicket(
@@ -27,7 +37,7 @@ async function getUserTickets(
   userSessionId: string,
   eventId: string
 ): Promise<RaceCheckout[] | null> {
-  const eventRaces: Array<Race> = await findEventRaces(eventId) as Race[];
+  const eventRaces: Array<Race> = (await findEventRaces(eventId)) as Race[];
 
   return await db.raceCheckout.findMany({
     where: {
@@ -84,7 +94,7 @@ async function removeTicket(
     return null;
   }
 
-  if (existingCheckout.qtd === 1 || existingCheckout.qtd === 0) {
+  if (existingCheckout.qtd === 1) {
     return await db.raceCheckout.delete({
       where: { userId_raceId: { userId: userSessionId, raceId } }
     });
@@ -115,10 +125,27 @@ async function getUserCheckoutRaces(userSessionId: string): Promise<Cart[]> {
   return results.map(dbCartToCart);
 }
 
+async function findEventRacesCheckoutQtd(
+  eventId: string,
+  userSessionId: string
+): Promise<RaceQtd[] | null> {
+  const query = `
+        SELECT races.id, name, distance, start_time, price, display_order, rc.qtd
+        FROM races
+                 LEFT JOIN race_checkout rc on races.id = rc.race_id
+        WHERE user_id = '${userSessionId}';
+    `;
+
+  const results: Array<DBRawEventQtd> = await db.$queryRawUnsafe(query);
+
+  return results.map(dbEventRaceCheckoutQtd);
+}
+
 export {
   createTicket,
   getUserTickets,
   addTicket,
   removeTicket,
-  getUserCheckoutRaces
+  getUserCheckoutRaces,
+  findEventRacesCheckoutQtd
 };

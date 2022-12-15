@@ -2,7 +2,6 @@ import type { ActionFunction, LoaderFunction } from 'remix';
 import { json, redirect } from 'remix';
 import { Form, useLoaderData } from '@remix-run/react';
 import * as React from 'react';
-import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline';
 
@@ -10,13 +9,13 @@ import Main from '~/components/shared/Main';
 import { findEvent } from '~/server/db/events.server';
 import { H2, H4, H5, H6 } from '~/components/shared/typography';
 import DisplayDate from '~/components/shared/DIsplayDate';
-import type { Event, Race, Cart } from '~/types';
-import { findEventRaces } from '~/server/db/races.server';
+import type { Cart, Event, Race, RaceQtd } from '~/types';
 import { displayTimeOfDay } from '~/utils/misc';
 import Button from '~/components/shared/Button';
 import { getClientSession } from '~/server/auth/client.server';
 import {
   addTicket,
+  findEventRacesCheckoutQtd,
   getUserCheckoutRaces,
   removeTicket
 } from '~/server/db/checkout.server';
@@ -61,7 +60,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     return redirect('/');
   }
 
-  const races = await findEventRaces(eventId);
+  const races = await findEventRacesCheckoutQtd(eventId, clientId);
 
   return json({
     event,
@@ -72,8 +71,6 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 
 export default function CheckoutTicketsRoute() {
   const { event, races, userCheckoutRaces } = useLoaderData<LoaderData>();
-
-  const [totalPrice, setTotalPrice] = useState<number>(0);
 
   return (
     <Main>
@@ -92,7 +89,7 @@ export default function CheckoutTicketsRoute() {
         <div className="flex-col w-[50%]">
           {races
             .sort((a: Race, b: Race) => a.displayOrder - b.displayOrder)
-            .map((r: Race) => (
+            .map((r: RaceQtd) => (
               <DisplayRace race={r} key={r.id} />
             ))}
         </div>
@@ -104,10 +101,9 @@ export default function CheckoutTicketsRoute() {
   );
 }
 
-function DisplayRace({ race }: { race: Race }) {
+function DisplayRace({ race }: { race: RaceQtd }) {
   const { t } = useTranslation('checkout');
   const raceTime = displayTimeOfDay(race.startTime);
-  const [numberOfTickets, setNumberOfTickets] = useState<number>(0);
 
   return (
     <div className="flex flex-col mt-8 w-full">
@@ -141,7 +137,7 @@ function DisplayRace({ race }: { race: Race }) {
             </button>
           </Form>
 
-          <H6 className="dark:text-blueGray-500">{numberOfTickets}</H6>
+          <H6 className="dark:text-blueGray-500">{race.qtd}</H6>
           <Form method="post">
             <input type="hidden" name="raceId" value={race.id as string} />
             <button
@@ -161,7 +157,7 @@ function DisplayRace({ race }: { race: Race }) {
 
 function DisplayCart({ cart, event }: { cart: Cart[]; event: Event }) {
   const { t } = useTranslation('checkout');
-  const totalPrice = 0;
+  let totalPrice = 0;
 
   return (
     <div className="flex flex-col border-2 border-b border-gray-500 rounded-md w-full h-full p-12 ml-4">
@@ -194,12 +190,17 @@ function DisplayCart({ cart, event }: { cart: Cart[]; event: Event }) {
           </div>
         ))}
 
-      {cart.length !== 0 && (
-        <div className="flex flex-row items-center justify-between mt-4 py-4 border-t-2 border-grey-300">
-          <H6>{t('Total')}</H6>
-          <H6>{totalPrice + '€'}</H6>
-        </div>
-      )}
+      {cart.length !== 0 &&
+        cart.map((c) => {
+          totalPrice += c.racePrice * c.qtd;
+
+          return totalPrice;
+        }) && (
+          <div className="flex flex-row items-center justify-between mt-4 py-4 border-t-2 border-grey-300">
+            <H6>{t('Total')}</H6>
+            <H6>{totalPrice + '€'}</H6>
+          </div>
+        )}
 
       <Button type="button" disabled={cart.length === 0} className="mt-4">
         {t('Checkout now')}

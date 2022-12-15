@@ -307,6 +307,26 @@ type DBRawCart = {
   display_order: number
 }
 
+type DBRawEventQtd = {
+  id: string
+  name: string
+  distance: number
+  start_time: number
+  price: number
+  display_order: number
+  qtd: number
+}
+
+type RaceQtd = {
+  id: string
+  name: string
+  distance: number
+  startTime: number
+  price: number
+  displayOrder: number
+  qtd: number
+}
+
 export {
   NonNullProperties,
   MemberProfile,
@@ -345,5 +365,7 @@ export {
   RaceCheckout,
   RaceCheckoutInput,
   Cart,
-  DBRawCart
+  DBRawCart,
+  DBRawEventQtd,
+  RaceQtd
 };

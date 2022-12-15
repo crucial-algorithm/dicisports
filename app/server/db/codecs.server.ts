@@ -20,7 +20,9 @@ import type {
   GroupInput,
   Difficulty,
   Cart,
-  DBRawCart
+  DBRawCart,
+  DBRawEventQtd,
+  RaceQtd
 } from '~/types';
 
 function dbSportToSport(sport: DBSport): Sport {
@@ -161,6 +163,18 @@ function dbCartToCart(cart: DBRawCart): Cart {
   };
 }
 
+function dbEventRaceCheckoutQtd(races: DBRawEventQtd): RaceQtd {
+  return {
+    id: races.id,
+    name: races.name,
+    distance: races.distance,
+    startTime: races.start_time,
+    price: races.price,
+    displayOrder: races.display_order,
+    qtd: races.qtd
+  };
+}
+
 export {
   dbSportToSport,
   dbGroupSpiritToGroupSpirit,
@@ -169,5 +183,6 @@ export {
   dbPerkToPerk,
   dbRawGroupToGroup,
   dbDifficultyToDifficulty,
-  dbCartToCart
+  dbCartToCart,
+  dbEventRaceCheckoutQtd
 };
