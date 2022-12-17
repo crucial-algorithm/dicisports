@@ -78,16 +78,22 @@ export default function ComboBox({
   }
 
   function handleOptionStyle({ active }: { active: boolean }) {
-    return `relative cursor-default select-none py-2 pl-10 pr-4 ${
-      active ? 'bg-teal-600 text-white' : 'text-gray-900'
-    }`;
+    return clsx('relative cursor-default select-none py-2 pl-10 pr-4',
+      {
+        'bg-gray-300 text-gray-700': active && !inDarkMode,
+        'bg-gray-600 text-gray-100': active && inDarkMode
+      });
   }
 
-  function display(o: Option | number | string): string {
+  function display(o: Option | number | string | undefined): string {
+    if (typeof o === 'undefined') {
+      return placeholder || '';
+    }
+
     if (['number', 'string'].includes(typeof o)) {
       const c = values.find((v) => v.value === o);
 
-      return c?.label || 'label not found';
+      return c?.label || placeholder || 'label not found';
     }
 
     const option = o as Option;
@@ -117,12 +123,12 @@ export default function ComboBox({
   }
 
   return (
-    <div className="top-16 w-72">
-      <Combobox value={value} onChange={handleSelectChange}>
+    <div className={clsx('top-16', className)}>
+      <Combobox defaultValue={value} onChange={handleSelectChange}>
         <div className="relative mt-1">
           <div className="z-100">
             <Combobox.Input
-              className={clsx(inputBaseClasses('py-2.5'), className)}
+              className={inputBaseClasses('py-2.5')}
               displayValue={display}
               onChange={handleInputChange}
               // @ts-ignore
@@ -147,9 +153,13 @@ export default function ComboBox({
             <Combobox.Options
               className={clsx(
                 'absolute w-full overflow-auto z-10 mt-1 max-h-60 py-1',
-                'rounded-md bg-white text-base shadow-lg',
+                'rounded-md shadow-lg',
                 'ring-1 ring-black ring-opacity-5',
-                'focus:outline-none sm:text-sm'
+                'focus:outline-none sm:text-sm',
+                {
+                  'bg-gray-800 text-gray-100': inDarkMode,
+                  'bg-white text-base': !inDarkMode
+                }
               )}
               static
             >
@@ -193,4 +203,8 @@ export default function ComboBox({
       </Combobox>
     </div>
   );
+}
+
+export function AsyncComboBox({}: {}) {
+  return (<>...</>);
 }

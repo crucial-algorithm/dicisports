@@ -36,7 +36,7 @@ export default function HourOfDay({
         name="hour"
         onChange={handleOnChangeHour}
         defaultValue={hour}
-        className="px-4 mr-2"
+        className="max-w-36 w-32"
         placeholder=""
         options={[
           { value: 0, label: '00' },
@@ -70,7 +70,7 @@ export default function HourOfDay({
         onChange={handleOnChangeMinute}
         defaultValue={String(minute)}
         placeholder=""
-        className="px-4"
+        className="mx-4 w-32"
         options={[
           { value: '0', label: '00' }, // react-select doesn't handle zero values
           { value: '1', label: '01' },
