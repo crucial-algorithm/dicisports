@@ -28,7 +28,8 @@ type LoaderData = {
 
 const actions = {
   add: 'add',
-  remove: 'remove'
+  remove: 'remove',
+  checkout: 'checkout'
 };
 
 export const action: ActionFunction = async ({ request }) => {
@@ -128,6 +129,7 @@ function DisplayRace({ race }: { race: RaceQtd }) {
           <Form method="post">
             <input type="hidden" name="raceId" value={race.id as string} />
             <button
+              id={`remove-race-${race.id}`}
               type="submit"
               className="w-[24px] h-[24px]"
               name="actionId"
@@ -137,12 +139,16 @@ function DisplayRace({ race }: { race: RaceQtd }) {
             </button>
           </Form>
 
-          <H6 className="dark:text-blueGray-500" data-cy={`race-${race.id}-qtd`}>
+          <H6
+            className="dark:text-blueGray-500"
+            data-cy={`race-${race.id}-qtd`}
+          >
             {race.qtd}
           </H6>
           <Form method="post">
             <input type="hidden" name="raceId" value={race.id as string} />
             <button
+              id={`add-race-${race.id}`}
               type="submit"
               className="w-[24px] h-[24px]"
               name="actionId"
@@ -162,51 +168,59 @@ function DisplayCart({ cart, event }: { cart: Cart[]; event: Event }) {
   let totalPrice = 0;
 
   return (
-    <div className="flex flex-col border-2 border-b border-gray-500 rounded-md w-full h-full p-8 lg:p-12 md:ml-4">
-      <H4>{t('Your Tickets')}</H4>
-      <div className="mt-4 space-y-1">
-        <H5>{event.name}</H5>
-        <H6 className="dark:text-blueGray-500">
-          <DisplayDate date={new Date(event.startAt as Date)} />
-        </H6>
+    <Form method="post">
+      <div className="flex flex-col border-2 border-b border-gray-500 rounded-md w-full h-full p-8 lg:p-12 md:ml-4">
+        <H4>{t('Your Tickets')}</H4>
+        <div className="mt-4 space-y-1">
+          <H5>{event.name}</H5>
+          <H6 className="dark:text-blueGray-500">
+            <DisplayDate date={new Date(event.startAt as Date)} />
+          </H6>
+        </div>
+        {cart
+          .sort((a, b) => a.displayOrder - b.displayOrder)
+          .map((ticket, index: number) => (
+            <div
+              className="flex flex-col mt-8 w-full"
+              key={ticket.id + ' - ' + index}
+            >
+              <div className="flex flex-row items-center justify-between">
+                <H6>{ticket.raceName}</H6>
+                <H6>{'x' + ticket.qtd}</H6>
+              </div>
+              <div className="flex flex-row items-center justify-between">
+                <H6 className="dark:text-blueGray-500">
+                  {ticket.racePrice + '€'}
+                </H6>
+                <H6 className="dark:text-blueGray-500">
+                  {ticket.racePrice * ticket.qtd + '€'}
+                </H6>
+              </div>
+            </div>
+          ))}
+
+        {cart.length !== 0 &&
+          cart.map((c) => {
+            totalPrice += c.racePrice * c.qtd;
+
+            return totalPrice;
+          }) && (
+            <div className="flex flex-row items-center justify-between mt-4 py-4 border-t-2 border-grey-300">
+              <H6>{t('Total')}</H6>
+              <H6>{totalPrice + '€'}</H6>
+            </div>
+          )}
+
+        <Button
+          type="submit"
+          name="actionId"
+          value={actions.checkout}
+          disabled={cart.length === 0}
+          className="mt-4"
+        >
+          {t('Checkout now')}
+        </Button>
       </div>
-      {cart
-        .sort((a, b) => a.displayOrder - b.displayOrder)
-        .map((ticket, index: number) => (
-          <div
-            className="flex flex-col mt-8 w-full"
-            key={ticket.id + ' - ' + index}
-          >
-            <div className="flex flex-row items-center justify-between">
-              <H6>{ticket.raceName}</H6>
-              <H6>{'x' + ticket.qtd}</H6>
-            </div>
-            <div className="flex flex-row items-center justify-between">
-              <H6 className="dark:text-blueGray-500">
-                {ticket.racePrice + '€'}
-              </H6>
-              <H6 className="dark:text-blueGray-500">
-                {ticket.racePrice * ticket.qtd + '€'}
-              </H6>
-            </div>
-          </div>
-        ))}
-
-      {cart.length !== 0 &&
-        cart.map((c) => {
-          totalPrice += c.racePrice * c.qtd;
-
-          return totalPrice;
-        }) && (
-          <div className="flex flex-row items-center justify-between mt-4 py-4 border-t-2 border-grey-300">
-            <H6>{t('Total')}</H6>
-            <H6>{totalPrice + '€'}</H6>
-          </div>
-        )}
-
-      <Button type="button" disabled={cart.length === 0} className="mt-4">
-        {t('Checkout now')}
-      </Button>
-    </div>
+    </Form>
   );
 }
