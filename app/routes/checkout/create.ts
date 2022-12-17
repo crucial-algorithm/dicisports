@@ -3,7 +3,11 @@ import { redirect } from 'remix';
 
 import { getClientSession } from '~/server/auth/client.server';
 import type { RaceCheckoutInput } from '~/types';
-import { createTicket } from '~/server/db/checkout.server';
+import {
+  addTicket,
+  createTicket,
+  getCheckoutByUserAndRace
+} from '~/server/db/checkout.server';
 
 export const action: ActionFunction = async ({ request }) => {
   const form = await request.formData();
@@ -13,6 +17,8 @@ export const action: ActionFunction = async ({ request }) => {
   const raceId = form.get('raceId') as string;
   const eventId = form.get('eventId') as string;
 
+  const checkout = await getCheckoutByUserAndRace(clientId, raceId);
+
   const data: RaceCheckoutInput = {
     raceId: raceId,
     userId: clientId as string,
@@ -20,7 +26,11 @@ export const action: ActionFunction = async ({ request }) => {
   };
 
   try {
-    await createTicket(data);
+    if (checkout) {
+      await addTicket(clientId, raceId);
+    } else {
+      await createTicket(data);
+    }
   } catch (e) {
     console.log(e);
 

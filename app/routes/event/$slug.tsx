@@ -541,7 +541,7 @@ function DisplayRace(props: { race: Race; index: number }) {
           <Form method="post" action="/checkout/create">
             <input type="hidden" value={race.id} name="raceId" />
             <input type="hidden" value={race.eventId} name="eventId" />
-            <Button id="book">{t('Book')}</Button>
+            <Button name={`race-${race.id}`}>{t('Book')}</Button>
           </Form>
         </div>
       </div>

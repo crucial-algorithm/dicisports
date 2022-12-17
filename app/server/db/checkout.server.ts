@@ -153,5 +153,6 @@ export {
   addTicket,
   removeTicket,
   getUserCheckoutRaces,
-  findEventRacesCheckoutQtd
+  findEventRacesCheckoutQtd,
+  getCheckoutByUserAndRace
 };

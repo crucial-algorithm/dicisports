@@ -85,15 +85,15 @@ export default function CheckoutTicketsRoute() {
         </H6>
         <H6>{event.address}</H6>
       </div>
-      <div className="flex flex-row">
-        <div className="flex-col w-[50%]">
+      <div className="flex flex-col md:flex-row">
+        <div className="flex-col w-full md:w-[50%]">
           {races
             .sort((a: Race, b: Race) => a.displayOrder - b.displayOrder)
             .map((r: RaceQtd) => (
               <DisplayRace race={r} key={r.id} />
             ))}
         </div>
-        <div className="w-[50%] pl-48">
+        <div className="w-full mt-8 md:w-[50%] md:mt-0 md:pl-48">
           <DisplayCart cart={userCheckoutRaces} event={event} />
         </div>
       </div>
@@ -137,7 +137,9 @@ function DisplayRace({ race }: { race: RaceQtd }) {
             </button>
           </Form>
 
-          <H6 className="dark:text-blueGray-500">{race.qtd}</H6>
+          <H6 className="dark:text-blueGray-500" data-cy={`race-${race.id}-qtd`}>
+            {race.qtd}
+          </H6>
           <Form method="post">
             <input type="hidden" name="raceId" value={race.id as string} />
             <button
@@ -160,7 +162,7 @@ function DisplayCart({ cart, event }: { cart: Cart[]; event: Event }) {
   let totalPrice = 0;
 
   return (
-    <div className="flex flex-col border-2 border-b border-gray-500 rounded-md w-full h-full p-12 ml-4">
+    <div className="flex flex-col border-2 border-b border-gray-500 rounded-md w-full h-full p-8 lg:p-12 md:ml-4">
       <H4>{t('Your Tickets')}</H4>
       <div className="mt-4 space-y-1">
         <H5>{event.name}</H5>
