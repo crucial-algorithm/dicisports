@@ -125,6 +125,23 @@ async function getUserCheckoutRaces(userSessionId: string): Promise<Cart[]> {
   return results.map(dbCartToCart);
 }
 
+async function getUserCheckoutEventRaces(userSessionId: string, eventId: string): Promise<Cart[]> {
+  const query = `
+        SELECT race_checkout.id as checkout_id,
+               qtd,
+               r.name           as race_name,
+               r.price          as race_price,
+               r.display_order
+        FROM race_checkout
+                 LEFT JOIN races r ON r.id = race_checkout.race_id
+        WHERE user_id = '${userSessionId}' AND r.event_id = '${eventId}';
+    `;
+
+  const results: Array<DBRawCart> = await db.$queryRawUnsafe(query);
+
+  return results.map(dbCartToCart);
+}
+
 async function findEventRacesCheckoutQtd(
   eventId: string,
   userSessionId: string
@@ -154,5 +171,6 @@ export {
   removeTicket,
   getUserCheckoutRaces,
   findEventRacesCheckoutQtd,
-  getCheckoutByUserAndRace
+  getCheckoutByUserAndRace,
+  getUserCheckoutEventRaces
 };

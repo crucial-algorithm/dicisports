@@ -56,10 +56,10 @@ describe('Checkout', () => {
 
         .wait('@selectRace')
 
-        .get('button[name=checkout]')
+        .get('#checkout')
         .click()
 
-        .wait('@checkout')
+        .wait('@selectRace')
 
         .get('input[name=first-name]')
         .type('Nuno')
@@ -69,21 +69,24 @@ describe('Checkout', () => {
 
         .pickOptionFromSelect('gender', 2)
 
-        .get('input[name=event-date]')
+        .get('input[name=birthday]')
         .type('2001-09-21')
 
-        .get('input[name=phone]')
+        .get('input[name=phone-number]')
         .type('987654321')
 
         .get('input[name=nif]')
         .type('987654321')
 
+        .get('input[name=federation-number]')
+        .type('8165238')
+
         .pickOptionFromSelect('shirt', 2)
 
         .get('input[name=nationality]')
-        .type('Portuguese')
+        .type('Português')
 
-        .get('input[name=postalcode]')
+        .get('input[name=postal-code]')
         .type('4730-454');
     });
   });

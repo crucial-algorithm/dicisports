@@ -163,12 +163,12 @@ function DisplayRace({ race }: { race: RaceQtd }) {
   );
 }
 
-function DisplayCart({ cart, event }: { cart: Cart[]; event: Event }) {
+export function DisplayCart({ cart, event }: { cart: Cart[]; event: Event }) {
   const { t } = useTranslation('checkout');
   let totalPrice = 0;
 
   return (
-    <Form method="post">
+    <Form method="post" action={`/checkout/info/${event.id}`}>
       <div className="flex flex-col border-2 border-b border-gray-500 rounded-md w-full h-full p-8 lg:p-12 md:ml-4">
         <H4>{t('Your Tickets')}</H4>
         <div className="mt-4 space-y-1">
@@ -217,6 +217,7 @@ function DisplayCart({ cart, event }: { cart: Cart[]; event: Event }) {
           value={actions.checkout}
           disabled={cart.length === 0}
           className="mt-4"
+          id="checkout"
         >
           {t('Checkout now')}
         </Button>

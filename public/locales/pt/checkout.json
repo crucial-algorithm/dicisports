@@ -2,5 +2,21 @@
   "Distance": "Distância",
   "Hour": "Hora",
   "Your Tickets": "Os seus bilhetes",
-  "Checkout now": "Complete a sua compra"
+  "Checkout now": "Complete a sua compra",
+
+  "First Name": "Primeiro Nome",
+  "Last Name": "Último Nome",
+  "Gender": "Gênero",
+  "Phone Number": "Número de telemóvel",
+  "Shirt Size": "Tamanho da camisola",
+  "Nationality": "Nacionalidade",
+  "Postal Code": "Código postal",
+  "Birthday": "Data de nascimento",
+  "National Federation Number": "Número da Federação Nacional",
+
+  "Feminine": "Feminino",
+  "Masculine": "Masculino",
+  "Other": "Outro",
+
+  "Save": "Guardar"
 }
