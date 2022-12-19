@@ -1,4 +1,4 @@
-import type { ActionFunction, LoaderFunction } from 'remix';
+import type { LoaderFunction } from 'remix';
 import { json } from 'remix';
 import * as React from 'react';
 
@@ -8,10 +8,7 @@ import { useTranslation } from 'react-i18next';
 import DisplayDate from '~/components/shared/DIsplayDate';
 
 import { getClientSession } from '~/server/auth/client.server';
-import {
-  getUserCheckoutEventRaces,
-  getUserTickets
-} from '~/server/db/checkout.server';
+import { findEventRacesCheckoutQtd } from '~/server/db/checkout.server';
 import Main from '~/components/shared/Main';
 import { findEvent } from '~/server/db/events.server';
 import { H2, H6 } from '~/components/shared/typography';
@@ -43,7 +40,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   const clientId = clientSession.getClientId();
 
   const event = await findEvent(eventId);
-  const cart = await getUserCheckoutEventRaces(clientId, eventId);
+  const cart = await findEventRacesCheckoutQtd(clientId, eventId);
 
   return json({
     event,
@@ -82,8 +79,8 @@ export default function CheckoutInfoRoute() {
 function ParticipantForm() {
   const { t } = useTranslation('checkout');
   const genderOptions = [
-    { value: '0', label: t('Feminine') },
-    { value: '1', label: t('Masculine') },
+    { value: '0', label: t('Female') },
+    { value: '1', label: t('Male') },
     { value: '2', label: t('Other') }
   ];
   const shirtOptions = [
@@ -108,11 +105,7 @@ function ParticipantForm() {
       </div>
 
       <FormField label={t('Gender')}>
-        <ComboBox
-          name="gender"
-          placeholder={t('Gender')}
-          options={genderOptions}
-        />
+        <ComboBox name="gender" placeholder="" options={genderOptions} />
       </FormField>
 
       <div className="flex flex-col md:flex-row md:space-x-2">
@@ -134,8 +127,8 @@ function ParticipantForm() {
       </div>
 
       <div className="flex flex-col md:flex-row md:space-x-2">
-        <FormField label={t('NIF')} id="nif">
-          <TextField type="number" name="nif" placeholder={t('NIF')} />
+        <FormField label={t('CC')} id="CC">
+          <TextField type="number" name="cc" placeholder={t('CC')} />
         </FormField>
 
         <FormField
@@ -151,11 +144,7 @@ function ParticipantForm() {
       </div>
 
       <FormField label={t('Shirt Size')}>
-        <ComboBox
-          name="shirt"
-          placeholder={t('Shirt Size')}
-          options={shirtOptions}
-        />
+        <ComboBox name="shirt" placeholder="" options={shirtOptions} />
       </FormField>
 
       <FormField label={t('Nationality')} id="nationality">

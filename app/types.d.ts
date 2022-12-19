@@ -307,7 +307,7 @@ type DBRawCart = {
   display_order: number
 }
 
-type DBRawEventQtd = {
+type DBRawRaceQtd = {
   id: string
   name: string
   distance: number
@@ -366,6 +366,6 @@ export {
   RaceCheckoutInput,
   Cart,
   DBRawCart,
-  DBRawEventQtd,
+  DBRawRaceQtd,
   RaceQtd
 };

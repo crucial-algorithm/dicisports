@@ -3,11 +3,11 @@ import Id from '~/server/utils/Id.server';
 import type {
   Cart,
   DBRawCart,
-  DBRawEventQtd,
   Race,
   RaceCheckout,
   RaceCheckoutInput,
-  RaceQtd
+  RaceQtd,
+  DBRawRaceQtd
 } from '~/types';
 import {
   dbCartToCart,
@@ -33,7 +33,7 @@ async function createTicket(
   });
 }
 
-async function getUserTickets(
+async function getUserEventTickets(
   userSessionId: string,
   eventId: string
 ): Promise<RaceCheckout[] | null> {
@@ -125,23 +125,6 @@ async function getUserCheckoutRaces(userSessionId: string): Promise<Cart[]> {
   return results.map(dbCartToCart);
 }
 
-async function getUserCheckoutEventRaces(userSessionId: string, eventId: string): Promise<Cart[]> {
-  const query = `
-        SELECT race_checkout.id as checkout_id,
-               qtd,
-               r.name           as race_name,
-               r.price          as race_price,
-               r.display_order
-        FROM race_checkout
-                 LEFT JOIN races r ON r.id = race_checkout.race_id
-        WHERE user_id = '${userSessionId}' AND r.event_id = '${eventId}';
-    `;
-
-  const results: Array<DBRawCart> = await db.$queryRawUnsafe(query);
-
-  return results.map(dbCartToCart);
-}
-
 async function findEventRacesCheckoutQtd(
   eventId: string,
   userSessionId: string
@@ -159,18 +142,42 @@ async function findEventRacesCheckoutQtd(
         WHERE event_id = '${eventId}';
     `;
 
-  const results: Array<DBRawEventQtd> = await db.$queryRawUnsafe(query);
+  const results: Array<DBRawRaceQtd> = await db.$queryRawUnsafe(query);
 
   return results.map(dbEventRaceCheckoutQtd);
 }
 
+async function addParticipantToRace(
+  raceId: string,
+  userSessionId: string
+): Promise<void> {
+  const participant = await db.participant.create({
+    data: {
+      id: Id(),
+      userId: userSessionId,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    }
+  });
+
+  await db.raceParticipant.create({
+    data: {
+      id: Id(),
+      participantId: participant.id,
+      raceId: raceId,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    }
+  });
+}
+
 export {
   createTicket,
-  getUserTickets,
+  getUserEventTickets,
   addTicket,
   removeTicket,
   getUserCheckoutRaces,
   findEventRacesCheckoutQtd,
   getCheckoutByUserAndRace,
-  getUserCheckoutEventRaces
+  addParticipantToRace
 };

@@ -14,9 +14,11 @@ import { displayTimeOfDay } from '~/utils/misc';
 import Button from '~/components/shared/Button';
 import { getClientSession } from '~/server/auth/client.server';
 import {
+  addParticipantToRace,
   addTicket,
   findEventRacesCheckoutQtd,
   getUserCheckoutRaces,
+  getUserEventTickets,
   removeTicket
 } from '~/server/db/checkout.server';
 
@@ -32,20 +34,37 @@ const actions = {
   checkout: 'checkout'
 };
 
-export const action: ActionFunction = async ({ request }) => {
+export const action: ActionFunction = async ({ request, params }) => {
   const form = await request.formData();
   const clientSession = await getClientSession(request);
+  const eventId = params.eventId as string;
 
   const clientId = clientSession.getClientId();
   const actionId = form.get('actionId') as string;
   const raceId = form.get('raceId') as string;
 
-  if (actionId === actions.add) {
-    return await addTicket(clientId, raceId);
-  }
+  try {
+    if (actionId === actions.add) {
+      return await addTicket(clientId, raceId);
+    }
 
-  if (actionId === actions.remove) {
-    return await removeTicket(clientId, raceId);
+    if (actionId === actions.remove) {
+      return await removeTicket(clientId, raceId);
+    }
+
+    if (actionId === actions.checkout) {
+      const userCheckoutRace = await getUserEventTickets(clientId, eventId);
+
+      if (userCheckoutRace) {
+        await addParticipantToRace(userCheckoutRace[0].raceId, clientId);
+
+        return redirect(`/checkout/info/${eventId}`);
+      }
+    }
+  } catch (e) {
+    console.log(e);
+
+    return json({});
   }
 };
 
@@ -168,7 +187,7 @@ export function DisplayCart({ cart, event }: { cart: Cart[]; event: Event }) {
   let totalPrice = 0;
 
   return (
-    <Form method="post" action={`/checkout/info/${event.id}`}>
+    <Form method="post">
       <div className="flex flex-col border-2 border-b border-gray-500 rounded-md w-full h-full p-8 lg:p-12 md:ml-4">
         <H4>{t('Your Tickets')}</H4>
         <div className="mt-4 space-y-1">
