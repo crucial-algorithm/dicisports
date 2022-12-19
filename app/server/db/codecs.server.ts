@@ -21,9 +21,9 @@ import type {
   Difficulty,
   Cart,
   DBRawCart,
-  DBRawEventQtd,
-  RaceQtd
+  RaceQtd, RaceCheckout, DBRawRaceCheckout
 } from '~/types';
+import { DBRawRaceQtd } from "~/types";
 
 function dbSportToSport(sport: DBSport): Sport {
   const { id, name, createdAt, updatedAt, picture } = sport;
@@ -163,15 +163,25 @@ function dbCartToCart(cart: DBRawCart): Cart {
   };
 }
 
-function dbEventRaceCheckoutQtd(races: DBRawEventQtd): RaceQtd {
+function dbEventRaceCheckoutQtdToEventRaceCheckoutQtd(race: DBRawRaceQtd): RaceQtd {
   return {
-    id: races.id,
-    name: races.name,
-    distance: races.distance,
-    startTime: races.start_time,
-    price: races.price,
-    displayOrder: races.display_order,
-    qtd: races.qtd
+    id: race.id,
+    name: race.name,
+    distance: race.distance,
+    startTime: race.start_time,
+    price: race.price,
+    displayOrder: race.display_order,
+    qtd: race.qtd
+  };
+}
+
+function dbRaceCheckoutToRaceCheckout(raceCheckout: DBRawRaceCheckout): Partial<RaceCheckout> {
+  return {
+    id: raceCheckout.id,
+    raceId: raceCheckout.race_id,
+    userId: raceCheckout.user_id,
+    createdAt: raceCheckout.created_at,
+    updatedAt: raceCheckout.updated_at
   };
 }
 
@@ -184,5 +194,6 @@ export {
   dbRawGroupToGroup,
   dbDifficultyToDifficulty,
   dbCartToCart,
-  dbEventRaceCheckoutQtd
+  dbEventRaceCheckoutQtdToEventRaceCheckoutQtd,
+  dbRaceCheckoutToRaceCheckout
 };

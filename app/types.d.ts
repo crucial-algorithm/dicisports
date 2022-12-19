@@ -291,6 +291,15 @@ type RaceCheckoutInput = {
   updatedAt?: Date
 }
 
+type DBRawRaceCheckout = {
+  id: string
+  race_id: string
+  user_id: string
+  qtd: number
+  created_at: Date
+  updated_at: Date
+}
+
 type Cart = {
   id: string
   qtd: number
@@ -367,5 +376,6 @@ export {
   Cart,
   DBRawCart,
   DBRawRaceQtd,
-  RaceQtd
+  RaceQtd,
+  DBRawRaceCheckout
 };

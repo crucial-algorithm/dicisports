@@ -17,8 +17,8 @@ import {
   addParticipantToRace,
   addTicket,
   findEventRacesCheckoutQtd,
+  getDistinctUserEventTickets,
   getUserCheckoutRaces,
-  getUserEventTickets,
   removeTicket
 } from '~/server/db/checkout.server';
 
@@ -53,13 +53,16 @@ export const action: ActionFunction = async ({ request, params }) => {
     }
 
     if (actionId === actions.checkout) {
-      const userCheckoutRace = await getUserEventTickets(clientId, eventId);
+      const userCheckoutRace = await getDistinctUserEventTickets(
+        clientId,
+        eventId
+      );
 
-      if (userCheckoutRace) {
-        await addParticipantToRace(userCheckoutRace[0].raceId, clientId);
+      userCheckoutRace?.map((c) =>
+        addParticipantToRace(c.raceId as string, clientId)
+      );
 
-        return redirect(`/checkout/info/${eventId}`);
-      }
+      return redirect(`/checkout/info/${eventId}`);
     }
   } catch (e) {
     console.log(e);
@@ -74,7 +77,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 
   const eventId = params.eventId as string;
   const event = await findEvent(eventId);
-  const userCheckoutRaces = await getUserCheckoutRaces(clientId);
+  const userCheckoutRaces = await getUserCheckoutRaces(clientId, eventId);
 
   if (!event) {
     return redirect('/');

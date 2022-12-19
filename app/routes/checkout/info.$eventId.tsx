@@ -8,7 +8,7 @@ import { useTranslation } from 'react-i18next';
 import DisplayDate from '~/components/shared/DIsplayDate';
 
 import { getClientSession } from '~/server/auth/client.server';
-import { findEventRacesCheckoutQtd } from '~/server/db/checkout.server';
+import { getUserCheckoutRaces } from '~/server/db/checkout.server';
 import Main from '~/components/shared/Main';
 import { findEvent } from '~/server/db/events.server';
 import { H2, H6 } from '~/components/shared/typography';
@@ -40,7 +40,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   const clientId = clientSession.getClientId();
 
   const event = await findEvent(eventId);
-  const cart = await findEventRacesCheckoutQtd(clientId, eventId);
+  const cart = await getUserCheckoutRaces(clientId, eventId);
 
   return json({
     event,

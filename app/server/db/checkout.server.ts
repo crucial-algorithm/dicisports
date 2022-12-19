@@ -7,11 +7,13 @@ import type {
   RaceCheckout,
   RaceCheckoutInput,
   RaceQtd,
-  DBRawRaceQtd
+  DBRawRaceQtd,
+  DBRawRaceCheckout
 } from '~/types';
 import {
   dbCartToCart,
-  dbEventRaceCheckoutQtd
+  dbEventRaceCheckoutQtdToEventRaceCheckoutQtd,
+  dbRaceCheckoutToRaceCheckout
 } from '~/server/db/codecs.server';
 import { findEventRaces } from '~/server/db/races.server';
 
@@ -108,7 +110,7 @@ async function removeTicket(
   });
 }
 
-async function getUserCheckoutRaces(userSessionId: string): Promise<Cart[]> {
+async function getUserCheckoutRaces(userSessionId: string, eventId: string): Promise<Cart[]> {
   const query = `
         SELECT race_checkout.id as checkout_id,
                qtd,
@@ -117,7 +119,7 @@ async function getUserCheckoutRaces(userSessionId: string): Promise<Cart[]> {
                r.display_order
         FROM race_checkout
                  LEFT JOIN races r ON r.id = race_checkout.race_id
-        WHERE user_id = '${userSessionId}';
+        WHERE user_id = '${userSessionId}' AND r.event_id = '${eventId}';
     `;
 
   const results: Array<DBRawCart> = await db.$queryRawUnsafe(query);
@@ -144,7 +146,23 @@ async function findEventRacesCheckoutQtd(
 
   const results: Array<DBRawRaceQtd> = await db.$queryRawUnsafe(query);
 
-  return results.map(dbEventRaceCheckoutQtd);
+  return results.map(dbEventRaceCheckoutQtdToEventRaceCheckoutQtd);
+}
+
+async function getDistinctUserEventTickets(
+  userSessionId: string,
+  eventId: string
+): Promise<Array<Partial<RaceCheckout>> | null> {
+  const query = `
+        SELECT id, race_id, user_id, created_at, updated_at
+        FROM race_checkout, generate_series(1, qtd)
+        WHERE user_id = '${userSessionId}'
+          and race_id IN (SELECT id FROM races WHERE event_id = '${eventId}');
+    `;
+
+  const results: Array<DBRawRaceCheckout> = await db.$queryRawUnsafe(query);
+
+  return results.map(dbRaceCheckoutToRaceCheckout);
 }
 
 async function addParticipantToRace(
@@ -179,5 +197,6 @@ export {
   getUserCheckoutRaces,
   findEventRacesCheckoutQtd,
   getCheckoutByUserAndRace,
-  addParticipantToRace
+  addParticipantToRace,
+  getDistinctUserEventTickets
 };
