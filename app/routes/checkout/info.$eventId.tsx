@@ -66,8 +66,8 @@ type ActionData = {
     shirtSize?: string;
     nationality?: string;
     postalcode?: string;
-  }
-}
+  };
+};
 
 export const action: ActionFunction = async ({ request }) => {
   const t = await i18n.getFixedT(request, 'checkout');
@@ -100,12 +100,18 @@ export const action: ActionFunction = async ({ request }) => {
         lastName: z
           .string({ required_error: t('Field Required') })
           .min(5, { message: t('Min 5 Chars') }),
-        gender: z.number({ required_error: t('Field Required'), invalid_type_error: t('Invalid Type') }),
+        gender: z.number({
+          required_error: t('Field Required'),
+          invalid_type_error: t('Invalid Type')
+        }),
         birthday: z
           .date({ required_error: t('Field Required') })
           .max(new Date(), t('Past Date')),
         phoneNumber: z
-          .number({ required_error: t('Field Required'), invalid_type_error: t('Invalid Type') })
+          .number({
+            required_error: t('Field Required'),
+            invalid_type_error: t('Invalid Type')
+          })
           .refine((val) => val.toString().length === 9, t('9 Digits'))
           .refine(
             (val) =>
@@ -113,12 +119,18 @@ export const action: ActionFunction = async ({ request }) => {
               val.toString().startsWith('92') ||
               val.toString().startsWith('93') ||
               val.toString().startsWith('96'),
-              t('Invalid number')
+            t('Invalid number')
           ),
-        cc: z.number().max(9, t('Max 9 Number')).nullable(),
+        cc: z
+          .number()
+          .refine((val) => val.toString().length === 9, t('9 Digits'))
+          .nullable(),
         federationNumber: z.number().nullable(),
         shirtSize: z
-          .number({ required_error: t('Field Required'), invalid_type_error: t('Invalid Type') })
+          .number({
+            required_error: t('Field Required'),
+            invalid_type_error: t('Invalid Type')
+          })
           .min(0, t('Invalid Option'))
           .max(5, t('Invalid Option')),
         nationality: z.string().nullable(),
@@ -251,19 +263,25 @@ function ParticipantForm({ participant }: { participant: Participant | null }) {
     { value: '5', label: 'XXL' }
   ];
 
-  console.log(actionData?.errors);
-
   return (
     <UploadForm
       method="post"
       className={clsx('w-full', participant ? 'opacity-100' : 'opacity-50')}
     >
       <div className="flex flex-col md:flex-row md:space-x-2">
-        <FormField label={t('First Name')} id="first-name" error={actionData?.errors?.firstName}>
+        <FormField
+          label={t('First Name')}
+          id="first-name"
+          error={actionData?.errors?.firstName}
+        >
           <TextField name="first-name" placeholder={t('First Name')} />
         </FormField>
 
-        <FormField label={t('Last Name')} id="last-name" error={actionData?.errors?.lastName}>
+        <FormField
+          label={t('Last Name')}
+          id="last-name"
+          error={actionData?.errors?.lastName}
+        >
           <TextField name="last-name" placeholder={t('Last Name')} />
         </FormField>
       </div>
@@ -273,7 +291,11 @@ function ParticipantForm({ participant }: { participant: Participant | null }) {
       </FormField>
 
       <div className="flex flex-col md:flex-row md:space-x-2">
-        <FormField label={''} id="birthday" error={actionData?.errors?.birthday}>
+        <FormField
+          label={''}
+          id="birthday"
+          error={actionData?.errors?.birthday}
+        >
           <BasicDatePicker
             label={t('Birthday')}
             name="birthday"
@@ -281,7 +303,11 @@ function ParticipantForm({ participant }: { participant: Participant | null }) {
           />
         </FormField>
 
-        <FormField label={t('Phone Number')} id="phone-number" error={actionData?.errors?.phoneNumber}>
+        <FormField
+          label={t('Phone Number')}
+          id="phone-number"
+          error={actionData?.errors?.phoneNumber}
+        >
           <TextField
             type="number"
             name="phone-number"
@@ -312,11 +338,19 @@ function ParticipantForm({ participant }: { participant: Participant | null }) {
         <ComboBox name="shirt" placeholder="" options={shirtOptions} />
       </FormField>
 
-      <FormField label={t('Nationality')} id="nationality" error={actionData?.errors?.nationality}>
+      <FormField
+        label={t('Nationality')}
+        id="nationality"
+        error={actionData?.errors?.nationality}
+      >
         <TextField name="nationality" placeholder={t('Nationality')} />
       </FormField>
 
-      <FormField label={t('Postal Code')} id="postal-code" error={actionData?.errors?.postalcode}>
+      <FormField
+        label={t('Postal Code')}
+        id="postal-code"
+        error={actionData?.errors?.postalcode}
+      >
         <TextField name="postal-code" placeholder={t('Postal Code')} />
       </FormField>
 
