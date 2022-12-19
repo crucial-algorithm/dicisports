@@ -1,11 +1,12 @@
-import type { LoaderFunction } from 'remix';
+import type { ActionFunction, LoaderFunction } from 'remix';
 import { json } from 'remix';
 import * as React from 'react';
 import { useState } from 'react';
 
-import { useLoaderData } from '@remix-run/react';
+import { useActionData, useLoaderData } from '@remix-run/react';
 import { useTranslation } from 'react-i18next';
 import clsx from 'clsx';
+import { z, ZodError } from 'zod';
 
 import DisplayDate from '~/components/shared/DIsplayDate';
 
@@ -14,13 +15,20 @@ import {
   findUserParticipants,
   findUserRaceParticipants,
   findUserSavedParticipants,
-  getUserCheckoutRaces
+  getUserCheckoutRaces,
+  updateParticipant
 } from '~/server/db/checkout.server';
 import Main from '~/components/shared/Main';
 import { findEvent } from '~/server/db/events.server';
 import { H2, H5, H6 } from '~/components/shared/typography';
 
-import type { Cart, Event, Participant, RaceParticipant } from '~/types';
+import type {
+  Cart,
+  Event,
+  Participant,
+  ParticipantInput,
+  RaceParticipant
+} from '~/types';
 import { DisplayCart } from '~/routes/checkout/tickets.$eventId';
 import UploadForm from '~/components/shared/form/UploadForm';
 import TextField from '~/components/shared/form/TextField';
@@ -29,6 +37,8 @@ import FormField from '~/components/shared/form/FormField';
 import ComboBox from '~/components/shared/form/ComboBox';
 import BasicDatePicker from '~/components/shared/form/DatePicker';
 import Button from '~/components/shared/Button';
+import i18n from '~/server/i18n.server';
+import { badRequest } from '~/utils/misc';
 
 const actions = {
   add: 'add',
@@ -44,11 +54,105 @@ type LoaderData = {
   userSavedParticipants: Participant[] | null;
 };
 
+type ActionData = {
+  errors?: {
+    firstName?: string;
+    lastName?: string;
+    gender?: string;
+    birthday?: string;
+    phoneNumber?: string;
+    cc?: string;
+    federationNumber?: string;
+    shirtSize?: string;
+    nationality?: string;
+    postalcode?: string;
+  }
+}
+
+export const action: ActionFunction = async ({ request }) => {
+  const t = await i18n.getFixedT(request, 'checkout');
+  const form = await request.formData();
+
+  const actionId = form.get('actionId');
+
+  try {
+    if (actionId === actions.update) {
+      const phoneNumber = form.get('phone-number') as string;
+      const data: ParticipantInput = {
+        id: form.get('participant-id') as string,
+        firstName: form.get('first-name') as string,
+        lastName: form.get('last-name') as string,
+        gender: parseInt(form.get('gender') as string),
+        birthday: new Date(form.get('birthday') as string),
+        phoneNumber: parseInt(phoneNumber),
+        cc: parseInt(form.get('cc') as string) || null,
+        federationNumber:
+          parseInt(form.get('federation-number') as string) || null,
+        shirtSize: parseInt(form.get('shirt') as string),
+        nationality: (form.get('nationality') as string) || null,
+        postalCode: form.get('postal-code') as string
+      };
+
+      const ParticipantSchema = z.object({
+        firstName: z
+          .string({ required_error: t('Field Required') })
+          .min(5, { message: t('Min 5 Chars') }),
+        lastName: z
+          .string({ required_error: t('Field Required') })
+          .min(5, { message: t('Min 5 Chars') }),
+        gender: z.number({ required_error: t('Field Required'), invalid_type_error: t('Invalid Type') }),
+        birthday: z
+          .date({ required_error: t('Field Required') })
+          .max(new Date(), t('Past Date')),
+        phoneNumber: z
+          .number({ required_error: t('Field Required'), invalid_type_error: t('Invalid Type') })
+          .refine((val) => val.toString().length === 9, t('9 Digits'))
+          .refine(
+            (val) =>
+              val.toString().startsWith('91') ||
+              val.toString().startsWith('92') ||
+              val.toString().startsWith('93') ||
+              val.toString().startsWith('96'),
+              t('Invalid number')
+          ),
+        cc: z.number().max(9, t('Max 9 Number')).nullable(),
+        federationNumber: z.number().nullable(),
+        shirtSize: z
+          .number({ required_error: t('Field Required'), invalid_type_error: t('Invalid Type') })
+          .min(0, t('Invalid Option'))
+          .max(5, t('Invalid Option')),
+        nationality: z.string().nullable(),
+        postalcode: z.string({ required_error: t('Field Required') })
+      });
+
+      ParticipantSchema.parse(data);
+      await updateParticipant(data);
+    }
+
+    return json({});
+  } catch (e) {
+    if (!(e instanceof ZodError)) {
+      console.error(e);
+      return badRequest({
+        error: 'We dont know what happened'
+      });
+    }
+
+    const errors: { [key: string]: string | undefined } = {};
+
+    for (const error of (e as ZodError).errors) {
+      errors[error.path[0]] = error.message;
+    }
+
+    return badRequest({ errors });
+  }
+};
+
 export const loader: LoaderFunction = async ({ request, params }) => {
   const eventId = params.eventId as string;
   const clientSession = await getClientSession(request);
-  const clientId = clientSession.getClientId();
 
+  const clientId = clientSession.getClientId();
   const event = await findEvent(eventId);
   const cart = await getUserCheckoutRaces(clientId, eventId);
   const raceParticipants = await findUserRaceParticipants(clientId, eventId);
@@ -131,6 +235,7 @@ export default function CheckoutInfoRoute() {
 }
 
 function ParticipantForm({ participant }: { participant: Participant | null }) {
+  const actionData = useActionData<ActionData>();
   const { t } = useTranslation('checkout');
   const genderOptions = [
     { value: '0', label: t('Female') },
@@ -146,27 +251,29 @@ function ParticipantForm({ participant }: { participant: Participant | null }) {
     { value: '5', label: 'XXL' }
   ];
 
+  console.log(actionData?.errors);
+
   return (
     <UploadForm
       method="post"
       className={clsx('w-full', participant ? 'opacity-100' : 'opacity-50')}
     >
       <div className="flex flex-col md:flex-row md:space-x-2">
-        <FormField label={t('First Name')} id="first-name">
+        <FormField label={t('First Name')} id="first-name" error={actionData?.errors?.firstName}>
           <TextField name="first-name" placeholder={t('First Name')} />
         </FormField>
 
-        <FormField label={t('Last Name')} id="last-name">
+        <FormField label={t('Last Name')} id="last-name" error={actionData?.errors?.lastName}>
           <TextField name="last-name" placeholder={t('Last Name')} />
         </FormField>
       </div>
 
-      <FormField label={t('Gender')}>
+      <FormField label={t('Gender')} error={actionData?.errors?.gender}>
         <ComboBox name="gender" placeholder="" options={genderOptions} />
       </FormField>
 
       <div className="flex flex-col md:flex-row md:space-x-2">
-        <FormField label={''} id="birthday">
+        <FormField label={''} id="birthday" error={actionData?.errors?.birthday}>
           <BasicDatePicker
             label={t('Birthday')}
             name="birthday"
@@ -174,7 +281,7 @@ function ParticipantForm({ participant }: { participant: Participant | null }) {
           />
         </FormField>
 
-        <FormField label={t('Phone Number')} id="phone-number">
+        <FormField label={t('Phone Number')} id="phone-number" error={actionData?.errors?.phoneNumber}>
           <TextField
             type="number"
             name="phone-number"
@@ -184,13 +291,14 @@ function ParticipantForm({ participant }: { participant: Participant | null }) {
       </div>
 
       <div className="flex flex-col md:flex-row md:space-x-2">
-        <FormField label={t('CC')} id="CC">
+        <FormField label={t('CC')} id="CC" error={actionData?.errors?.cc}>
           <TextField type="number" name="cc" placeholder={t('CC')} />
         </FormField>
 
         <FormField
           label={t('National Federation Number')}
           id="federation-number"
+          error={actionData?.errors?.federationNumber}
         >
           <TextField
             type="number"
@@ -200,22 +308,27 @@ function ParticipantForm({ participant }: { participant: Participant | null }) {
         </FormField>
       </div>
 
-      <FormField label={t('Shirt Size')}>
+      <FormField label={t('Shirt Size')} error={actionData?.errors?.shirtSize}>
         <ComboBox name="shirt" placeholder="" options={shirtOptions} />
       </FormField>
 
-      <FormField label={t('Nationality')} id="nationality">
+      <FormField label={t('Nationality')} id="nationality" error={actionData?.errors?.nationality}>
         <TextField name="nationality" placeholder={t('Nationality')} />
       </FormField>
 
-      <FormField label={t('Postal Code')} id="postal-code">
+      <FormField label={t('Postal Code')} id="postal-code" error={actionData?.errors?.postalcode}>
         <TextField name="postal-code" placeholder={t('Postal Code')} />
       </FormField>
 
       {participant && (
         <input type="hidden" name="participantId" value={participant.id} />
       )}
-      <Button value={actions.update} name="actionId" disabled={!participant}>
+      <Button
+        type="submit"
+        value={actions.update}
+        name="actionId"
+        disabled={!participant}
+      >
         {t('Save')}
       </Button>
     </UploadForm>

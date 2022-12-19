@@ -344,6 +344,23 @@ type RaceParticipant = {
 
 type Participant = {} & DBParticipant;
 
+type ParticipantInput = {
+  id: string
+  userId?: string | null
+  firstName: string
+  lastName: string
+  gender: number
+  birthday: Date
+  phoneNumber: number
+  cc?: number | null
+  federationNumber?: number | null
+  shirtSize: number
+  nationality?: string | null
+  postalCode: string
+  createdAt?: Date
+  updatedAt?: Date
+}
+
 export {
   NonNullProperties,
   MemberProfile,
@@ -387,5 +404,6 @@ export {
   RaceQtd,
   DBRawRaceCheckout,
   RaceParticipant,
-  Participant
+  Participant,
+  ParticipantInput
 };

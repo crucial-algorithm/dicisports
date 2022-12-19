@@ -19,5 +19,14 @@
   "Masculine": "Masculino",
   "Other": "Outro",
 
-  "Save": "Guardar"
+  "Save": "Guardar",
+
+  "Field Required": "Campo obrigatório",
+  "Min 5 Chars": "Insira no mínimo 5 caracteres",
+  "Past Date": "Data tem que estar no passado",
+  "9 Digits": "Número tem de conter 9 dígitos",
+  "Invalid number": "Número inválido",
+  "Max 9 Number": "Apenas permitidos 9 dígitos",
+  "Invalid Option": "Opção inválida",
+  "Invalid Type": "Tipo inválido"
 }

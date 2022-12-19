@@ -6,6 +6,7 @@ import type {
   DBRawRaceCheckout,
   DBRawRaceQtd,
   Participant,
+  ParticipantInput,
   Race,
   RaceCheckout,
   RaceCheckoutInput,
@@ -234,6 +235,26 @@ async function findUserSavedParticipants(
   });
 }
 
+async function updateParticipant(
+  participant: ParticipantInput
+): Promise<Participant> {
+  return await db.participant.update({
+    where: { id: participant.id },
+    data: {
+      firstName: participant.firstName,
+      lastName: participant.lastName,
+      gender: participant.gender,
+      birthday: participant.birthday,
+      phoneNumber: participant.phoneNumber,
+      cc: participant.cc,
+      federationNumber: participant.federationNumber,
+      shirtSize: participant.shirtSize,
+      nationality: participant.nationality,
+      postalCode: participant.postalCode
+    }
+  });
+}
+
 export {
   createTicket,
   getUserEventTickets,
@@ -246,5 +267,6 @@ export {
   getDistinctUserEventTickets,
   findUserRaceParticipants,
   findUserParticipants,
-  findUserSavedParticipants
+  findUserSavedParticipants,
+  updateParticipant
 };
