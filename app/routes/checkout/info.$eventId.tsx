@@ -1,19 +1,26 @@
 import type { LoaderFunction } from 'remix';
 import { json } from 'remix';
 import * as React from 'react';
+import { useState } from 'react';
 
 import { useLoaderData } from '@remix-run/react';
 import { useTranslation } from 'react-i18next';
+import clsx from 'clsx';
 
 import DisplayDate from '~/components/shared/DIsplayDate';
 
 import { getClientSession } from '~/server/auth/client.server';
-import { getUserCheckoutRaces } from '~/server/db/checkout.server';
+import {
+  findUserParticipants,
+  findUserRaceParticipants,
+  findUserSavedParticipants,
+  getUserCheckoutRaces
+} from '~/server/db/checkout.server';
 import Main from '~/components/shared/Main';
 import { findEvent } from '~/server/db/events.server';
-import { H2, H6 } from '~/components/shared/typography';
+import { H2, H5, H6 } from '~/components/shared/typography';
 
-import type { Cart, Event } from '~/types';
+import type { Cart, Event, Participant, RaceParticipant } from '~/types';
 import { DisplayCart } from '~/routes/checkout/tickets.$eventId';
 import UploadForm from '~/components/shared/form/UploadForm';
 import TextField from '~/components/shared/form/TextField';
@@ -32,6 +39,9 @@ const actions = {
 type LoaderData = {
   event: Event;
   cart: Cart[];
+  raceParticipants: RaceParticipant[];
+  userParticipants: Participant[];
+  userSavedParticipants: Participant[] | null;
 };
 
 export const loader: LoaderFunction = async ({ request, params }) => {
@@ -41,15 +51,39 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 
   const event = await findEvent(eventId);
   const cart = await getUserCheckoutRaces(clientId, eventId);
+  const raceParticipants = await findUserRaceParticipants(clientId, eventId);
+  const userParticipants = await findUserParticipants(clientId);
+  const userSavedParticipants = await findUserSavedParticipants(clientId);
 
   return json({
     event,
-    cart
+    cart,
+    raceParticipants,
+    userParticipants,
+    userSavedParticipants
   });
 };
 
 export default function CheckoutInfoRoute() {
-  const { event, cart } = useLoaderData<LoaderData>();
+  const { t } = useTranslation('checkout');
+  const {
+    event,
+    cart,
+    raceParticipants,
+    userParticipants,
+    userSavedParticipants
+  } = useLoaderData<LoaderData>();
+
+  const [participant, setParticipant] = useState<Participant | null>(null);
+
+  function handleSetParticipant(e: React.MouseEvent) {
+    const index = userParticipants.findIndex(
+      (a: RaceParticipant) => a.id === e.currentTarget.id
+    );
+    const participant = userParticipants[index];
+
+    setParticipant(participant);
+  }
 
   return (
     <Main>
@@ -64,11 +98,31 @@ export default function CheckoutInfoRoute() {
         </H6>
         <H6>{event.address}</H6>
       </div>
+
+      <div className="w-full my-8 flex flex-row scroll-mx-2 items-center md:items-start md:flex-row md:flex-nowrap md:overflow-x-auto">
+        {raceParticipants.map((p: RaceParticipant, index: number) => (
+          <div
+            className={clsx(
+              'flex flex-col gap-y-2 border-2 border-b border-gray-500 p-2 mx-2 items-center w-[200px]',
+              p.participantId === participant?.id ? 'opacity-100' : 'opacity-50'
+            )}
+            key={p.id}
+            id={p.participantId}
+            onClick={handleSetParticipant}
+          >
+            <H5>{p.race.name}</H5>
+            <H6 className="dark:text-blueGray-500">
+              {t('Participant') + ' ' + (index + 1)}
+            </H6>
+          </div>
+        ))}
+      </div>
+
       <div className="flex flex-col md:flex-row">
         <div className="flex-col w-full md:w-[50%] mt-8">
-          <ParticipantForm />
+          <ParticipantForm participant={participant} />
         </div>
-        <div className="w-full mt-8 md:w-[50%] md:mt-0 md:pl-48">
+        <div className="w-full md:w-[50%] md:mt-0 md:pl-48">
           <DisplayCart cart={cart} event={event} />
         </div>
       </div>
@@ -76,7 +130,7 @@ export default function CheckoutInfoRoute() {
   );
 }
 
-function ParticipantForm() {
+function ParticipantForm({ participant }: { participant: Participant | null }) {
   const { t } = useTranslation('checkout');
   const genderOptions = [
     { value: '0', label: t('Female') },
@@ -93,7 +147,10 @@ function ParticipantForm() {
   ];
 
   return (
-    <UploadForm method="post" className="w-full">
+    <UploadForm
+      method="post"
+      className={clsx('w-full', participant ? 'opacity-100' : 'opacity-50')}
+    >
       <div className="flex flex-col md:flex-row md:space-x-2">
         <FormField label={t('First Name')} id="first-name">
           <TextField name="first-name" placeholder={t('First Name')} />
@@ -155,7 +212,12 @@ function ParticipantForm() {
         <TextField name="postal-code" placeholder={t('Postal Code')} />
       </FormField>
 
-      <Button>{t('Save')}</Button>
+      {participant && (
+        <input type="hidden" name="participantId" value={participant.id} />
+      )}
+      <Button value={actions.update} name="actionId" disabled={!participant}>
+        {t('Save')}
+      </Button>
     </UploadForm>
   );
 }

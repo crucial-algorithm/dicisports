@@ -3,12 +3,14 @@ import Id from '~/server/utils/Id.server';
 import type {
   Cart,
   DBRawCart,
+  DBRawRaceCheckout,
+  DBRawRaceQtd,
+  Participant,
   Race,
   RaceCheckout,
   RaceCheckoutInput,
-  RaceQtd,
-  DBRawRaceQtd,
-  DBRawRaceCheckout
+  RaceParticipant,
+  RaceQtd
 } from '~/types';
 import {
   dbCartToCart,
@@ -110,7 +112,10 @@ async function removeTicket(
   });
 }
 
-async function getUserCheckoutRaces(userSessionId: string, eventId: string): Promise<Cart[]> {
+async function getUserCheckoutRaces(
+  userSessionId: string,
+  eventId: string
+): Promise<Cart[]> {
   const query = `
         SELECT race_checkout.id as checkout_id,
                qtd,
@@ -119,7 +124,8 @@ async function getUserCheckoutRaces(userSessionId: string, eventId: string): Pro
                r.display_order
         FROM race_checkout
                  LEFT JOIN races r ON r.id = race_checkout.race_id
-        WHERE user_id = '${userSessionId}' AND r.event_id = '${eventId}';
+        WHERE user_id = '${userSessionId}'
+          AND r.event_id = '${eventId}';
     `;
 
   const results: Array<DBRawCart> = await db.$queryRawUnsafe(query);
@@ -189,6 +195,45 @@ async function addParticipantToRace(
   });
 }
 
+async function findUserParticipants(
+  userSessionId: string
+): Promise<Participant[]> {
+  return await db.participant.findMany({
+    where: {
+      userId: userSessionId
+    }
+  });
+}
+
+async function findUserRaceParticipants(
+  userSessionId: string,
+  eventId: string
+): Promise<RaceParticipant[] | null> {
+  const eventRaces = await findEventRaces(eventId);
+  const userParticipants = await findUserParticipants(userSessionId);
+
+  return await db.raceParticipant.findMany({
+    where: {
+      participantId: { in: userParticipants.map((p) => p.id) },
+      raceId: { in: eventRaces?.map((e) => e.id) }
+    },
+    include: {
+      race: true
+    }
+  });
+}
+
+async function findUserSavedParticipants(
+  userSessionId: string
+): Promise<Participant[] | null> {
+  return await db.participant.findMany({
+    where: {
+      userId: userSessionId,
+      firstName: { not: null }
+    }
+  });
+}
+
 export {
   createTicket,
   getUserEventTickets,
@@ -198,5 +243,8 @@ export {
   findEventRacesCheckoutQtd,
   getCheckoutByUserAndRace,
   addParticipantToRace,
-  getDistinctUserEventTickets
+  getDistinctUserEventTickets,
+  findUserRaceParticipants,
+  findUserParticipants,
+  findUserSavedParticipants
 };
