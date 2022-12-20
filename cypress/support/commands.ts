@@ -41,10 +41,12 @@ function loginAdmin() {
 }
 
 function pickOptionFromSelect(name: string, position: number) {
-  cy.get(`#select-${name}`)
+  cy.get(`button[name="${name}"]`)
+    .last() // in case we have multiple with the same name, pick the last one 🤷‍♂️
     .click()
 
-    .get(`[class*="-menu"] [class*="-option"]:nth-child(${position})`)
+    .siblings('ul')
+    .children(`:nth-child(${position})`)
     .click();
 }
 

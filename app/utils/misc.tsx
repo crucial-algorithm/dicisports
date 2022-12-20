@@ -137,9 +137,7 @@ function PeekDayOfWeek(props: {
         lang={i18n.language as Language}
         id={id}
         placeholder={addAll ? t('Any Day Of week') : ''}
-        defaultValue={
-          defaultValue || defaultValue === 0 ? String(defaultValue) : undefined
-        }
+        defaultValue={defaultValue === null ? -1 : defaultValue}
         options={options}
       />
       <input type="hidden" name="value" value={day} ref={input} />

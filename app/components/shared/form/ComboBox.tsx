@@ -3,7 +3,7 @@ import clsx from 'clsx';
 import { useTranslation } from 'react-i18next';
 import { Fragment, useEffect, useRef, useState } from 'react';
 
-import { Combobox, Transition } from '@headlessui/react';
+import { Combobox, Transition, Listbox } from '@headlessui/react';
 import { CheckIcon, ChevronUpDownIcon } from '@heroicons/react/20/solid';
 
 import type { Language, TranslationObject } from '~/types';
@@ -16,7 +16,6 @@ import { getI18nText } from '~/components/I18nText';
 export type Option = {
   value: string | number;
   label: string | TranslationObject;
-  extra?: object;
 };
 
 type Props = {
@@ -27,7 +26,7 @@ type Props = {
   onChange?: (value: string | number) => void;
 } & Omit<React.ComponentProps<'select'>, 'onChange'>;
 
-export default function ComboBox({
+export function AsyncComboBox({
   name,
   defaultValue,
   className,
@@ -78,11 +77,10 @@ export default function ComboBox({
   }
 
   function handleOptionStyle({ active }: { active: boolean }) {
-    return clsx('relative cursor-default select-none py-2 pl-10 pr-4',
-      {
-        'bg-gray-300 text-gray-700': active && !inDarkMode,
-        'bg-gray-600 text-gray-100': active && inDarkMode
-      });
+    return clsx('relative cursor-default select-none py-2 pl-10 pr-4', {
+      'bg-gray-300 text-gray-700': active && !inDarkMode,
+      'bg-gray-600 text-gray-100': active && inDarkMode
+    });
   }
 
   function display(o: Option | number | string | undefined): string {
@@ -205,6 +203,107 @@ export default function ComboBox({
   );
 }
 
-export function AsyncComboBox({}: {}) {
-  return (<>...</>);
+type SelectProps = {
+  name: string;
+  options: Array<Option>;
+  lang?: Language;
+  defaultValue?: string | number;
+  placeholder: string;
+  onChange?: (value: string | number) => void;
+} & Omit<React.ComponentProps<'select'>, 'onChange' | 'defaultValue'>;
+
+export default function ComboBox({
+  name,
+  className,
+  options: paramOptions,
+  defaultValue,
+  lang,
+  onChange
+}: SelectProps) {
+  const options = paramOptions.map((o) => {
+    return {
+      value: o.value,
+      label:
+        typeof o.label === 'string'
+          ? o.label
+          : getLocalizedText(lang as Language, o.label)
+    };
+  });
+
+  const [selected, setSelected] = useState(defaultValue);
+
+  function StyleOption({ active }: { active: boolean }) {
+    return clsx('relative cursor-default select-none py-2 pl-10 pr-4', {
+      'bg-gray-100 text-gray-800': active,
+      'bg-white text-base dark:bg-gray-800 dark:text-gray-100': !active
+    });
+  }
+
+  function onChangedInternal(value: string | number) {
+    setSelected(value);
+    onChange && onChange(value);
+  }
+
+  return (
+    <Listbox value={selected} onChange={onChangedInternal}>
+      <div className={clsx('relative mt-1', className)}>
+        <Listbox.Button className={inputBaseClasses('text-left min-h-[60px]')} name={name}>
+          <span className="block truncate">{(options.find((o) => o.value === selected))?.label || ''}</span>
+          <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+            <ChevronUpDownIcon
+              className="h-5 w-5 text-gray-400"
+              aria-hidden="true"
+            />
+          </span>
+        </Listbox.Button>
+        <Transition
+          as={Fragment}
+          leave="transition ease-in duration-100"
+          leaveFrom="opacity-100"
+          leaveTo="opacity-0"
+        >
+          <Listbox.Options
+            className={clsx(
+              'absolute w-full overflow-auto py-1 mt-2 max-h-60 z-150',
+              'rounded-md shadow-lg ring-1 ring-black ring-opacity-5',
+              'text-base sm:text-sm',
+              'bg-white text-base dark:bg-gray-800 dark:text-gray-100',
+              'focus:outline-none'
+            )}
+          >
+            {options.map((option, idx) => (
+              <Listbox.Option key={idx} className={StyleOption} value={option.value}>
+                {({ selected, active }) => (
+                  <>
+                    <span
+                      className={clsx('block truncate', {
+                        'font-medium': selected,
+                        'font-normal': !selected
+                      })}
+                    >
+                      {option.label}
+                    </span>
+                    {selected && (
+                      <span
+                        className={clsx(
+                          'absolute inset-y-0 left-0 flex items-center pl-3',
+                          {
+                            'text-grey-600 dark:text-gray-800': active,
+                            'text-grey-600 dark:text-gray-100': !active
+                          }
+                        )}
+                      >
+                        <CheckIcon className="h-5 w-5" aria-hidden="true" />
+                      </span>
+                    )}
+                  </>
+                )}
+              </Listbox.Option>
+            ))}
+          </Listbox.Options>
+        </Transition>
+      </div>
+      <input type="hidden" name={name} value={selected} />
+    </Listbox>
+  );
 }
