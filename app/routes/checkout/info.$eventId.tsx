@@ -81,10 +81,10 @@ export const action: ActionFunction = async ({ request }) => {
       const ParticipantSchema = z.object({
         firstName: z
           .string({ required_error: t('Field Required') })
-          .min(5, { message: t('Min 5 Chars') }),
+          .min(2, { message: t('Min 2 Chars') }),
         lastName: z
           .string({ required_error: t('Field Required') })
-          .min(5, { message: t('Min 5 Chars') }),
+          .min(2, { message: t('Min 2 Chars') }),
         gender: z.number({
           required_error: t('Field Required'),
           invalid_type_error: t('Invalid Type')
@@ -119,7 +119,7 @@ export const action: ActionFunction = async ({ request }) => {
           .min(0, t('Invalid Option'))
           .max(5, t('Invalid Option')),
         nationality: z.string().nullable(),
-        postalcode: z.string({ required_error: t('Field Required') })
+        postalCode: z.string({ required_error: t('Field Required') })
       });
 
       ParticipantSchema.parse(data);
@@ -269,7 +269,6 @@ function ParticipantForm({
   errors?: FormErrors;
 }) {
   const fetcher = useFetcher();
-
   const { t } = useTranslation('checkout');
   const genderOptions = [
     { value: '0', label: t('Female') },
@@ -304,13 +303,17 @@ function ParticipantForm({
       method="post"
       className={clsx('w-full', participant ? 'opacity-100' : 'opacity-50')}
     >
-      <div className="flex flex-col md:flex-row md:space-x-2">
+      <div className="flex flex-col md:flex-row md:space-x-2" key={hash}>
         <FormField
           label={t('First Name')}
           id="first-name"
           error={errors?.firstName}
         >
-          <TextField name="first-name" placeholder={t('First Name')} />
+          <TextField
+            name="first-name"
+            placeholder={t('First Name')}
+            defaultValue={participant?.firstName ? participant.firstName : ''}
+          />
         </FormField>
 
         <FormField
@@ -318,12 +321,21 @@ function ParticipantForm({
           id="last-name"
           error={errors?.lastName}
         >
-          <TextField name="last-name" placeholder={t('Last Name')} />
+          <TextField
+            name="last-name"
+            placeholder={t('Last Name')}
+            defaultValue={participant?.lastName ? participant.lastName : ''}
+          />
         </FormField>
       </div>
 
       <FormField label={t('Gender')} error={errors?.gender}>
-        <ComboBox name="gender" placeholder="" options={genderOptions} />
+        <ComboBox
+          name="gender"
+          placeholder=""
+          options={genderOptions}
+          defaultValue={participant?.gender ? participant.gender : undefined}
+        />
       </FormField>
 
       <div className="flex flex-col md:flex-row md:space-x-2">
@@ -331,7 +343,11 @@ function ParticipantForm({
           <BasicDatePicker
             label={t('Birthday')}
             name="birthday"
-            date={new Date()}
+            date={
+              participant?.birthday
+                ? new Date(participant.birthday)
+                : new Date()
+            }
           />
         </FormField>
 
@@ -344,6 +360,7 @@ function ParticipantForm({
             type="number"
             name="phone-number"
             placeholder={t('Phone Number')}
+            defaultValue={participant?.phoneNumber as number}
           />
         </FormField>
       </div>
@@ -362,12 +379,18 @@ function ParticipantForm({
             type="number"
             name="federation-number"
             placeholder={t('National Federation Number')}
+            defaultValue={participant?.federationNumber as number}
           />
         </FormField>
       </div>
 
       <FormField label={t('Shirt Size')} error={errors?.shirtSize}>
-        <ComboBox name="shirt" placeholder="" options={shirtOptions} />
+        <ComboBox
+          name="shirt"
+          placeholder=""
+          options={shirtOptions}
+          defaultValue={participant?.shirtSize as number}
+        />
       </FormField>
 
       <FormField
@@ -375,7 +398,11 @@ function ParticipantForm({
         id="nationality"
         error={errors?.nationality}
       >
-        <TextField name="nationality" placeholder={t('Nationality')} />
+        <TextField
+          name="nationality"
+          placeholder={t('Nationality')}
+          defaultValue={participant?.nationality ? participant.nationality : ''}
+        />
       </FormField>
 
       <FormField
@@ -383,11 +410,15 @@ function ParticipantForm({
         id="postal-code"
         error={errors?.postalcode}
       >
-        <TextField name="postal-code" placeholder={t('Postal Code')} />
+        <TextField
+          name="postal-code"
+          placeholder={t('Postal Code')}
+          defaultValue={participant?.postalCode ? participant.postalCode : ''}
+        />
       </FormField>
 
       {participant && (
-        <input type="hidden" name="participantId" value={participant.id} />
+        <input type="hidden" name="participant-id" value={participant.id} />
       )}
 
       <input type="hidden" name="hash" value={hash} />

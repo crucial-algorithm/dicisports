@@ -15,14 +15,14 @@
   "National Federation Number": "Número da Federação Nacional",
   "Participant": "Participante",
 
-  "Feminine": "Feminino",
-  "Masculine": "Masculino",
+  "Female": "Feminino",
+  "Male": "Masculino",
   "Other": "Outro",
 
   "Save": "Guardar",
 
   "Field Required": "Campo obrigatório",
-  "Min 5 Chars": "Insira no mínimo 5 caracteres",
+  "Min 2 Chars": "Insira no mínimo 2 caracteres",
   "Past Date": "Data tem que estar no passado",
   "9 Digits": "Número tem de conter 9 dígitos",
   "Invalid number": "Número inválido",
