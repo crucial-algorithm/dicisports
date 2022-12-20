@@ -1,9 +1,9 @@
 import type { ActionFunction, LoaderFunction } from 'remix';
 import { json } from 'remix';
 import * as React from 'react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
-import { useActionData, useLoaderData } from '@remix-run/react';
+import { useFetcher, useLoaderData } from '@remix-run/react';
 import { useTranslation } from 'react-i18next';
 import clsx from 'clsx';
 import { z, ZodError } from 'zod';
@@ -30,7 +30,6 @@ import type {
   RaceParticipant
 } from '~/types';
 import { DisplayCart } from '~/routes/checkout/tickets.$eventId';
-import UploadForm from '~/components/shared/form/UploadForm';
 import TextField from '~/components/shared/form/TextField';
 import FormField from '~/components/shared/form/FormField';
 
@@ -54,26 +53,12 @@ type LoaderData = {
   userSavedParticipants: Participant[] | null;
 };
 
-type ActionData = {
-  errors?: {
-    firstName?: string;
-    lastName?: string;
-    gender?: string;
-    birthday?: string;
-    phoneNumber?: string;
-    cc?: string;
-    federationNumber?: string;
-    shirtSize?: string;
-    nationality?: string;
-    postalcode?: string;
-  };
-};
-
 export const action: ActionFunction = async ({ request }) => {
   const t = await i18n.getFixedT(request, 'checkout');
   const form = await request.formData();
 
   const actionId = form.get('actionId');
+  const hash = form.get('hash') as string;
 
   try {
     if (actionId === actions.update) {
@@ -156,7 +141,7 @@ export const action: ActionFunction = async ({ request }) => {
       errors[error.path[0]] = error.message;
     }
 
-    return badRequest({ errors });
+    return badRequest({ errors, hash: parseInt(hash) });
   }
 };
 
@@ -191,6 +176,12 @@ export default function CheckoutInfoRoute() {
   } = useLoaderData<LoaderData>();
 
   const [participant, setParticipant] = useState<Participant | null>(null);
+  const [errors, setErrors] = useState<FormErrors>({});
+  const [hash, setHash] = useState<number>(Date.now());
+
+  function handleSetErrors(errors: FormErrors) {
+    setErrors(errors);
+  }
 
   function handleSetParticipant(e: React.MouseEvent) {
     const index = userParticipants.findIndex(
@@ -199,6 +190,8 @@ export default function CheckoutInfoRoute() {
     const participant = userParticipants[index];
 
     setParticipant(participant);
+    setErrors({});
+    setHash(Date.now());
   }
 
   return (
@@ -236,7 +229,12 @@ export default function CheckoutInfoRoute() {
 
       <div className="flex flex-col md:flex-row">
         <div className="flex-col w-full md:w-[50%] mt-8">
-          <ParticipantForm participant={participant} />
+          <ParticipantForm
+            participant={participant}
+            setErrors={handleSetErrors}
+            hash={hash}
+            errors={errors}
+          />
         </div>
         <div className="w-full md:w-[50%] md:mt-0 md:pl-48">
           <DisplayCart cart={cart} event={event} />
@@ -246,8 +244,32 @@ export default function CheckoutInfoRoute() {
   );
 }
 
-function ParticipantForm({ participant }: { participant: Participant | null }) {
-  const actionData = useActionData<ActionData>();
+type FormErrors = {
+  firstName?: string;
+  lastName?: string;
+  gender?: string;
+  birthday?: string;
+  phoneNumber?: string;
+  cc?: string;
+  federationNumber?: string;
+  shirtSize?: string;
+  nationality?: string;
+  postalcode?: string;
+};
+
+function ParticipantForm({
+  participant,
+  setErrors,
+  hash,
+  errors
+}: {
+  participant: Participant | null;
+  setErrors: (errors: FormErrors) => void;
+  hash: number;
+  errors?: FormErrors;
+}) {
+  const fetcher = useFetcher();
+
   const { t } = useTranslation('checkout');
   const genderOptions = [
     { value: '0', label: t('Female') },
@@ -263,8 +285,22 @@ function ParticipantForm({ participant }: { participant: Participant | null }) {
     { value: '5', label: 'XXL' }
   ];
 
+  useEffect(() => {
+    if (fetcher.type === 'actionReload' && fetcher.data.ok) {
+      return setErrors({});
+    }
+
+    if (
+      fetcher.type === 'done' &&
+      fetcher.data?.errors &&
+      fetcher.data?.hash === hash
+    ) {
+      return setErrors(fetcher.data.errors as FormErrors);
+    }
+  }, [fetcher, hash, errors, setErrors]);
+
   return (
-    <UploadForm
+    <fetcher.Form
       method="post"
       className={clsx('w-full', participant ? 'opacity-100' : 'opacity-50')}
     >
@@ -272,7 +308,7 @@ function ParticipantForm({ participant }: { participant: Participant | null }) {
         <FormField
           label={t('First Name')}
           id="first-name"
-          error={actionData?.errors?.firstName}
+          error={errors?.firstName}
         >
           <TextField name="first-name" placeholder={t('First Name')} />
         </FormField>
@@ -280,22 +316,18 @@ function ParticipantForm({ participant }: { participant: Participant | null }) {
         <FormField
           label={t('Last Name')}
           id="last-name"
-          error={actionData?.errors?.lastName}
+          error={errors?.lastName}
         >
           <TextField name="last-name" placeholder={t('Last Name')} />
         </FormField>
       </div>
 
-      <FormField label={t('Gender')} error={actionData?.errors?.gender}>
+      <FormField label={t('Gender')} error={errors?.gender}>
         <ComboBox name="gender" placeholder="" options={genderOptions} />
       </FormField>
 
       <div className="flex flex-col md:flex-row md:space-x-2">
-        <FormField
-          label={''}
-          id="birthday"
-          error={actionData?.errors?.birthday}
-        >
+        <FormField label={''} id="birthday" error={errors?.birthday}>
           <BasicDatePicker
             label={t('Birthday')}
             name="birthday"
@@ -306,7 +338,7 @@ function ParticipantForm({ participant }: { participant: Participant | null }) {
         <FormField
           label={t('Phone Number')}
           id="phone-number"
-          error={actionData?.errors?.phoneNumber}
+          error={errors?.phoneNumber}
         >
           <TextField
             type="number"
@@ -317,14 +349,14 @@ function ParticipantForm({ participant }: { participant: Participant | null }) {
       </div>
 
       <div className="flex flex-col md:flex-row md:space-x-2">
-        <FormField label={t('CC')} id="CC" error={actionData?.errors?.cc}>
+        <FormField label={t('CC')} id="CC" error={errors?.cc}>
           <TextField type="number" name="cc" placeholder={t('CC')} />
         </FormField>
 
         <FormField
           label={t('National Federation Number')}
           id="federation-number"
-          error={actionData?.errors?.federationNumber}
+          error={errors?.federationNumber}
         >
           <TextField
             type="number"
@@ -334,14 +366,14 @@ function ParticipantForm({ participant }: { participant: Participant | null }) {
         </FormField>
       </div>
 
-      <FormField label={t('Shirt Size')} error={actionData?.errors?.shirtSize}>
+      <FormField label={t('Shirt Size')} error={errors?.shirtSize}>
         <ComboBox name="shirt" placeholder="" options={shirtOptions} />
       </FormField>
 
       <FormField
         label={t('Nationality')}
         id="nationality"
-        error={actionData?.errors?.nationality}
+        error={errors?.nationality}
       >
         <TextField name="nationality" placeholder={t('Nationality')} />
       </FormField>
@@ -349,7 +381,7 @@ function ParticipantForm({ participant }: { participant: Participant | null }) {
       <FormField
         label={t('Postal Code')}
         id="postal-code"
-        error={actionData?.errors?.postalcode}
+        error={errors?.postalcode}
       >
         <TextField name="postal-code" placeholder={t('Postal Code')} />
       </FormField>
@@ -357,6 +389,8 @@ function ParticipantForm({ participant }: { participant: Participant | null }) {
       {participant && (
         <input type="hidden" name="participantId" value={participant.id} />
       )}
+
+      <input type="hidden" name="hash" value={hash} />
       <Button
         type="submit"
         value={actions.update}
@@ -365,6 +399,6 @@ function ParticipantForm({ participant }: { participant: Participant | null }) {
       >
         {t('Save')}
       </Button>
-    </UploadForm>
+    </fetcher.Form>
   );
 }
