@@ -116,8 +116,8 @@ export const action: ActionFunction = async ({ request }) => {
             required_error: t('Field Required'),
             invalid_type_error: t('Invalid Type')
           })
-          .min(0, t('Invalid Option'))
-          .max(5, t('Invalid Option')),
+          .nonnegative(t('Invalid Option'))
+          .max(6, t('Invalid Option')),
         nationality: z.string().nullable(),
         postalCode: z.string({ required_error: t('Field Required') })
       });
@@ -271,17 +271,17 @@ function ParticipantForm({
   const fetcher = useFetcher();
   const { t } = useTranslation('checkout');
   const genderOptions = [
-    { value: '0', label: t('Female') },
-    { value: '1', label: t('Male') },
-    { value: '2', label: t('Other') }
+    { value: 1, label: t('Female') },
+    { value: 2, label: t('Male') },
+    { value: 3, label: t('Other') }
   ];
   const shirtOptions = [
-    { value: '0', label: 'XS' },
-    { value: '1', label: 'S' },
-    { value: '2', label: 'M' },
-    { value: '3', label: 'L' },
-    { value: '4', label: 'XL' },
-    { value: '5', label: 'XXL' }
+    { value: 1, label: 'XS' },
+    { value: 2, label: 'S' },
+    { value: 3, label: 'M' },
+    { value: 4, label: 'L' },
+    { value: 5, label: 'XL' },
+    { value: 6, label: 'XXL' }
   ];
 
   useEffect(() => {
@@ -302,8 +302,9 @@ function ParticipantForm({
     <fetcher.Form
       method="post"
       className={clsx('w-full', participant ? 'opacity-100' : 'opacity-50')}
+      key={hash}
     >
-      <div className="flex flex-col md:flex-row md:space-x-2" key={hash}>
+      <div className="flex flex-col md:flex-row md:space-x-2">
         <FormField
           label={t('First Name')}
           id="first-name"
@@ -312,7 +313,7 @@ function ParticipantForm({
           <TextField
             name="first-name"
             placeholder={t('First Name')}
-            defaultValue={participant?.firstName ? participant.firstName : ''}
+            defaultValue={participant?.firstName as string}
           />
         </FormField>
 
@@ -324,7 +325,7 @@ function ParticipantForm({
           <TextField
             name="last-name"
             placeholder={t('Last Name')}
-            defaultValue={participant?.lastName ? participant.lastName : ''}
+            defaultValue={participant?.lastName as string}
           />
         </FormField>
       </div>
@@ -360,7 +361,7 @@ function ParticipantForm({
             type="number"
             name="phone-number"
             placeholder={t('Phone Number')}
-            defaultValue={participant?.phoneNumber as number}
+            defaultValue={participant?.phoneNumber ? participant?.phoneNumber : undefined}
           />
         </FormField>
       </div>
@@ -401,7 +402,7 @@ function ParticipantForm({
         <TextField
           name="nationality"
           placeholder={t('Nationality')}
-          defaultValue={participant?.nationality ? participant.nationality : ''}
+          defaultValue={participant?.nationality as string}
         />
       </FormField>
 
@@ -413,7 +414,7 @@ function ParticipantForm({
         <TextField
           name="postal-code"
           placeholder={t('Postal Code')}
-          defaultValue={participant?.postalCode ? participant.postalCode : ''}
+          defaultValue={participant?.postalCode as string}
         />
       </FormField>
 
