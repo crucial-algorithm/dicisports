@@ -41,7 +41,8 @@ async function findEvent(id: string): Promise<Event | null> {
             not: Status.deleted
           }
         }
-      }
+      },
+      difficulty: true
     }
   });
 }
