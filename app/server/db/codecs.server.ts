@@ -1,29 +1,31 @@
 import type {
+  Difficulty as DBDifficulty,
   GroupSpirit as DBGroupSpirit,
   GroupType as DBGroupType,
   Perk as DBPerk,
   Sport as DBSport,
-  Difficulty as DBDifficulty,
   Status
 } from '@prisma/client';
 import { Role } from '@prisma/client';
 
 import type {
+  Cart,
   DaysOfWeek,
+  DBRawCart,
   DBRawGroup,
+  DBRawRaceCheckout,
+  DBRawRaceQtd,
+  Difficulty,
   Group,
+  GroupInput,
   GroupSpirit,
   GroupType,
   Perk,
+  RaceCheckout,
+  RaceQtd,
   Sport,
-  TranslationObject,
-  GroupInput,
-  Difficulty,
-  Cart,
-  DBRawCart,
-  RaceQtd, RaceCheckout, DBRawRaceCheckout
+  TranslationObject
 } from '~/types';
-import { DBRawRaceQtd } from "~/types";
 
 function dbSportToSport(sport: DBSport): Sport {
   const { id, name, createdAt, updatedAt, picture } = sport;
@@ -163,7 +165,9 @@ function dbCartToCart(cart: DBRawCart): Cart {
   };
 }
 
-function dbEventRaceCheckoutQtdToEventRaceCheckoutQtd(race: DBRawRaceQtd): RaceQtd {
+function dbEventRaceCheckoutQtdToEventRaceCheckoutQtd(
+  race: DBRawRaceQtd
+): RaceQtd {
   return {
     id: race.id,
     name: race.name,
@@ -175,7 +179,9 @@ function dbEventRaceCheckoutQtdToEventRaceCheckoutQtd(race: DBRawRaceQtd): RaceQ
   };
 }
 
-function dbRaceCheckoutToRaceCheckout(raceCheckout: DBRawRaceCheckout): Partial<RaceCheckout> {
+function dbRaceCheckoutToRaceCheckout(
+  raceCheckout: DBRawRaceCheckout
+): Partial<RaceCheckout> {
   return {
     id: raceCheckout.id,
     raceId: raceCheckout.race_id,

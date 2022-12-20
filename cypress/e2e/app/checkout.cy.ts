@@ -75,7 +75,7 @@ describe('Checkout', () => {
         .get('input[name=phone-number]')
         .type('987654321')
 
-        .get('input[name=nif]')
+        .get('input[name=cc]')
         .type('987654321')
 
         .get('input[name=federation-number]')
