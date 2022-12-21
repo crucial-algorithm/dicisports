@@ -1,3 +1,5 @@
+import { PrismaClient } from '@prisma/client';
+
 import { db } from '~/server/db.server';
 import Id from '~/server/utils/Id.server';
 import type {
@@ -19,6 +21,8 @@ import {
   dbRaceCheckoutToRaceCheckout
 } from '~/server/db/codecs.server';
 import { findEventRaces } from '~/server/db/races.server';
+
+const prisma = new PrismaClient();
 
 async function createTicket(
   raceCheckout: RaceCheckoutInput
@@ -176,23 +180,25 @@ async function addParticipantToRace(
   raceId: string,
   userSessionId: string
 ): Promise<void> {
-  const participant = await db.participant.create({
-    data: {
-      id: Id(),
-      userId: userSessionId,
-      createdAt: new Date(),
-      updatedAt: new Date()
-    }
-  });
+  return await prisma.$transaction(async (prisma) => {
+    const participant = await prisma.participant.create({
+      data: {
+        id: Id(),
+        userId: userSessionId,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      }
+    });
 
-  await db.raceParticipant.create({
-    data: {
-      id: Id(),
-      participantId: participant.id,
-      raceId: raceId,
-      createdAt: new Date(),
-      updatedAt: new Date()
-    }
+    await prisma.raceParticipant.create({
+      data: {
+        id: Id(),
+        participantId: participant.id,
+        raceId: raceId,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      }
+    });
   });
 }
 

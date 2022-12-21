@@ -1,5 +1,5 @@
 import type { ActionFunction, LoaderFunction } from 'remix';
-import { json } from 'remix';
+import { json, redirect } from 'remix';
 import * as React from 'react';
 import { useEffect, useState } from 'react';
 
@@ -48,7 +48,7 @@ const actions = {
 type LoaderData = {
   event: Event;
   cart: Cart[];
-  raceParticipants: RaceParticipant[];
+  raceParticipants: RaceParticipant[] | null;
   userParticipants: Participant[];
   userSavedParticipants: Participant[] | null;
 };
@@ -153,6 +153,11 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   const event = await findEvent(eventId);
   const cart = await getUserCheckoutRaces(clientId, eventId);
   const raceParticipants = await findUserRaceParticipants(clientId, eventId);
+
+  if (raceParticipants?.length === 0) {
+    return redirect(`/checkout/tickets/${eventId}`);
+  }
+
   const userParticipants = await findUserParticipants(clientId);
   const userSavedParticipants = await findUserSavedParticipants(clientId);
 
@@ -361,7 +366,9 @@ function ParticipantForm({
             type="number"
             name="phone-number"
             placeholder={t('Phone Number')}
-            defaultValue={participant?.phoneNumber ? participant?.phoneNumber : undefined}
+            defaultValue={
+              participant?.phoneNumber ? participant?.phoneNumber : undefined
+            }
           />
         </FormField>
       </div>
