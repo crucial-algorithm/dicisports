@@ -12,9 +12,12 @@ import DisplayDate from '~/components/shared/DIsplayDate';
 
 import { getClientSession } from '~/server/auth/client.server';
 import {
+  addParticipantToRace,
+  changeToSelectedRaceParticipant,
   findUserParticipants,
   findUserRaceParticipants,
   findUserSavedParticipants,
+  getDistinctUserEventTickets,
   getUserCheckoutRaces,
   updateParticipant
 } from '~/server/db/checkout.server';
@@ -42,7 +45,8 @@ import { badRequest } from '~/utils/misc';
 const actions = {
   add: 'add',
   update: 'update',
-  checkout: 'checkout'
+  checkout: 'checkout',
+  selectUser: 'selectUser'
 };
 
 type LoaderData = {
@@ -53,12 +57,45 @@ type LoaderData = {
   userSavedParticipants: Participant[] | null;
 };
 
-export const action: ActionFunction = async ({ request }) => {
+export const action: ActionFunction = async ({ request, params }) => {
   const t = await i18n.getFixedT(request, 'checkout');
   const form = await request.formData();
+  const clientSession = await getClientSession(request);
+  const eventId = params.eventId as string;
 
+  const clientId = clientSession.getClientId();
   const actionId = form.get('actionId');
   const hash = form.get('hash') as string;
+
+  if (actionId === actions.checkout) {
+    const userCheckoutRace = await getDistinctUserEventTickets(
+      clientId,
+      eventId
+    );
+
+    return userCheckoutRace?.map(
+      async (c) => await addParticipantToRace(c.raceId as string, clientId)
+    );
+  }
+
+  if (actionId === actions.selectUser) {
+    const newUser = form.get('newUser') as string;
+    const oldUser = form.get('oldUser') as string;
+    const raceId = form.get('raceId') as string;
+
+    try {
+      await changeToSelectedRaceParticipant(newUser, oldUser, raceId);
+
+      return json({});
+    } catch (e) {
+      console.log(e);
+
+      return badRequest({
+        errors: { selectedParticipant: t('Existing Race Participant') },
+        hash: parseInt(hash)
+      });
+    }
+  }
 
   try {
     if (actionId === actions.update) {
@@ -154,6 +191,10 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   const cart = await getUserCheckoutRaces(clientId, eventId);
   const raceParticipants = await findUserRaceParticipants(clientId, eventId);
 
+  if (!event) {
+    return redirect('/');
+  }
+
   if (raceParticipants?.length === 0) {
     return redirect(`/checkout/tickets/${eventId}`);
   }
@@ -181,6 +222,7 @@ export default function CheckoutInfoRoute() {
   } = useLoaderData<LoaderData>();
 
   const [participant, setParticipant] = useState<Participant | null>(null);
+  const [selectedRace, setSelectedRace] = useState<string | null>(null);
   const [errors, setErrors] = useState<FormErrors>({});
   const [hash, setHash] = useState<number>(Date.now());
 
@@ -189,12 +231,14 @@ export default function CheckoutInfoRoute() {
   }
 
   function handleSetParticipant(e: React.MouseEvent) {
+    const newParticipant = e.currentTarget.id.split('|')[0];
     const index = userParticipants.findIndex(
-      (a: RaceParticipant) => a.id === e.currentTarget.id
+      (a: RaceParticipant) => a.id === newParticipant
     );
     const participant = userParticipants[index];
 
     setParticipant(participant);
+    setSelectedRace(e.currentTarget.id.split('|')[1]);
     setErrors({});
     setHash(Date.now());
   }
@@ -218,10 +262,12 @@ export default function CheckoutInfoRoute() {
           <div
             className={clsx(
               'flex flex-col gap-y-2 border-2 border-b border-gray-500 p-2 mx-2 items-center w-[200px]',
-              p.participantId === participant?.id ? 'opacity-100' : 'opacity-50'
+              p.participantId === participant?.id && p.race.id === selectedRace
+                ? 'opacity-100'
+                : 'opacity-50'
             )}
             key={p.id}
-            id={p.participantId}
+            id={p.participantId + '|' + p.race.id}
             onClick={handleSetParticipant}
           >
             <H5>{p.race.name}</H5>
@@ -239,6 +285,11 @@ export default function CheckoutInfoRoute() {
             setErrors={handleSetErrors}
             hash={hash}
             errors={errors}
+            userSavedParticipants={
+              userSavedParticipants.length !== 0 ? userSavedParticipants : null
+            }
+            eventId={event.id}
+            raceId={selectedRace}
           />
         </div>
         <div className="w-full md:w-[50%] md:mt-0 md:pl-48">
@@ -260,20 +311,29 @@ type FormErrors = {
   shirtSize?: string;
   nationality?: string;
   postalcode?: string;
+  selectedParticipant?: string;
 };
 
 function ParticipantForm({
   participant,
   setErrors,
   hash,
-  errors
+  errors,
+  userSavedParticipants,
+  eventId,
+  raceId
 }: {
   participant: Participant | null;
   setErrors: (errors: FormErrors) => void;
   hash: number;
   errors?: FormErrors;
+  userSavedParticipants: Participant[] | null;
+  eventId: string;
+  raceId: string | null;
 }) {
   const fetcher = useFetcher();
+  const [showSavedParticipants, setShowSavedParticipants] =
+    useState<boolean>(false);
   const { t } = useTranslation('checkout');
   const genderOptions = [
     { value: 1, label: t('Female') },
@@ -303,12 +363,52 @@ function ParticipantForm({
     }
   }, [fetcher, hash, errors, setErrors]);
 
+  function handleOnSelectSavedParticipant(v: string | number) {
+    fetcher.submit(
+      {
+        actionId: 'selectUser',
+        newUser: v as string,
+        oldUser: participant?.id as string,
+        raceId: raceId as string,
+        hash: String(hash)
+      },
+      {
+        method: 'post',
+        action: `/checkout/info/${eventId}`
+      }
+    );
+  }
+
+  function handleShowSelectSavedParticipants() {
+    setShowSavedParticipants(!showSavedParticipants);
+  }
+
   return (
     <fetcher.Form
       method="post"
       className={clsx('w-full', participant ? 'opacity-100' : 'opacity-50')}
       key={hash}
     >
+      {participant && userSavedParticipants && (
+        <div className="mb-8">
+          <div onClick={handleShowSelectSavedParticipants}>
+            <H6>{t('Saved Participants')}</H6>
+          </div>
+          {showSavedParticipants && (
+            <FormField label="" error={errors?.selectedParticipant}>
+              <ComboBox
+                name="userSavedParticipants"
+                placeholder=""
+                options={userSavedParticipants.map((u) => {
+                  return { value: u.id, label: u.firstName + ' ' + u.lastName };
+                })}
+                onChange={handleOnSelectSavedParticipant}
+                className="w-[50%]"
+              />
+            </FormField>
+          )}
+        </div>
+      )}
       <div className="flex flex-col md:flex-row md:space-x-2">
         <FormField
           label={t('First Name')}

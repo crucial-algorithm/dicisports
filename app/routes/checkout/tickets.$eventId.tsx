@@ -14,10 +14,8 @@ import { displayTimeOfDay } from '~/utils/misc';
 import Button from '~/components/shared/Button';
 import { getClientSession } from '~/server/auth/client.server';
 import {
-  addParticipantToRace,
   addTicket,
   findEventRacesCheckoutQtd,
-  getDistinctUserEventTickets,
   getUserCheckoutRaces,
   removeTicket
 } from '~/server/db/checkout.server';
@@ -34,10 +32,9 @@ const actions = {
   checkout: 'checkout'
 };
 
-export const action: ActionFunction = async ({ request, params }) => {
+export const action: ActionFunction = async ({ request }) => {
   const form = await request.formData();
   const clientSession = await getClientSession(request);
-  const eventId = params.eventId as string;
 
   const clientId = clientSession.getClientId();
   const actionId = form.get('actionId') as string;
@@ -52,18 +49,7 @@ export const action: ActionFunction = async ({ request, params }) => {
       return await removeTicket(clientId, raceId);
     }
 
-    if (actionId === actions.checkout) {
-      const userCheckoutRace = await getDistinctUserEventTickets(
-        clientId,
-        eventId
-      );
-
-      userCheckoutRace?.map((c) =>
-        addParticipantToRace(c.raceId as string, clientId)
-      );
-
-      return redirect(`/checkout/info/${eventId}`);
-    }
+    return json({});
   } catch (e) {
     console.log(e);
 
@@ -190,7 +176,7 @@ export function DisplayCart({ cart, event }: { cart: Cart[]; event: Event }) {
   let totalPrice = 0;
 
   return (
-    <Form method="post">
+    <Form method="post" action={`/checkout/info/${event.id}`}>
       <div className="flex flex-col border-2 border-b border-gray-500 rounded-md w-full h-full p-8 lg:p-12 md:ml-4">
         <H4>{t('Your Tickets')}</H4>
         <div className="mt-4 space-y-1">

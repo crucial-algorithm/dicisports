@@ -28,5 +28,7 @@
   "Invalid number": "Número inválido",
   "Max 9 Number": "Apenas permitidos 9 dígitos",
   "Invalid Option": "Opção inválida",
-  "Invalid Type": "Tipo inválido"
+  "Invalid Type": "Tipo inválido",
+
+  "Saved Participants": "Detetamos que já tem participantes guardados, deseja selecionar um ?"
 }
