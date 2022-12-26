@@ -35,5 +35,7 @@
   "Update Cart": "Atualizar carrinho",
   "Existing Race Participant": "Upss.. Este participante já está a participar nesta distância !",
   "Participant Selected": "Participante selecionado",
-  "Participant Saved": "Participante guardado"
+  "Participant Saved": "Participante guardado,",
+  "Reset": "Redefinir",
+  "Participant Reset": "Participante redefinido"
 }

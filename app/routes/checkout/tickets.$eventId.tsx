@@ -31,7 +31,8 @@ type LoaderData = {
 const actions = {
   add: 'add',
   remove: 'remove',
-  checkout: 'checkout'
+  checkoutTickets: 'checkoutTickets',
+  checkoutInfo: 'checkoutInfo'
 };
 
 export const action: ActionFunction = async ({ request }) => {
@@ -243,7 +244,9 @@ export function DisplayCart({
             <Button
               type="submit"
               name="actionId"
-              value={actions.checkout}
+              value={
+                isInfoRoute ? actions.checkoutInfo : actions.checkoutTickets
+              }
               disabled={cart.length === 0}
               id="checkout"
             >
@@ -262,7 +265,7 @@ export function DisplayCart({
           <Button
             type="submit"
             name="actionId"
-            value={actions.checkout}
+            value={isInfoRoute ? actions.checkoutInfo : actions.checkoutTickets}
             disabled={cart.length === 0}
             className="mt-4"
             id="checkout"

@@ -266,7 +266,6 @@ async function changeToSelectedRaceParticipant(
   oldUser: string,
   raceId: string
 ): Promise<void> {
-
   await db.raceParticipant.update({
     where: {
       participantId_raceId: {
@@ -276,6 +275,30 @@ async function changeToSelectedRaceParticipant(
     },
     data: {
       participantId: newUser
+    }
+  });
+}
+
+async function resetParticipant(
+  oldParticipant: string,
+  userSessionId: string,
+  raceId: string
+): Promise<void> {
+  const newParticipant = await prisma.participant.create({
+    data: {
+      id: Id(),
+      userId: userSessionId,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    }
+  });
+
+  await db.raceParticipant.update({
+    where: {
+      participantId_raceId: { participantId: oldParticipant, raceId }
+    },
+    data: {
+      participantId: newParticipant.id
     }
   });
 }
@@ -294,5 +317,6 @@ export {
   findUserParticipants,
   findUserSavedParticipants,
   updateParticipant,
-  changeToSelectedRaceParticipant
+  changeToSelectedRaceParticipant,
+  resetParticipant
 };

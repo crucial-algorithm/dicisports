@@ -23,6 +23,7 @@ import {
   findUserSavedParticipants,
   getDistinctUserEventTickets,
   getUserCheckoutRaces,
+  resetParticipant,
   updateParticipant
 } from '~/server/db/checkout.server';
 import Main from '~/components/shared/Main';
@@ -51,7 +52,8 @@ const actions = {
   add: 'add',
   update: 'update',
   checkout: 'checkout',
-  selectUser: 'selectUser'
+  selectParticipant: 'selectParticipant',
+  resetParticipant: 'resetParticipant'
 };
 
 type LoaderData = {
@@ -83,7 +85,7 @@ export const action: ActionFunction = async ({ request, params }) => {
     );
   }
 
-  if (actionId === actions.selectUser) {
+  if (actionId === actions.selectParticipant) {
     const newUser = form.get('newUser') as string;
     const oldUser = form.get('oldUser') as string;
     const raceId = form.get('raceId') as string;
@@ -91,7 +93,7 @@ export const action: ActionFunction = async ({ request, params }) => {
     try {
       await changeToSelectedRaceParticipant(newUser, oldUser, raceId);
 
-      return json({ ok: true, action: actions.selectUser });
+      return json({ ok: true, action: actions.selectParticipant });
     } catch (e) {
       console.log(e);
 
@@ -100,6 +102,15 @@ export const action: ActionFunction = async ({ request, params }) => {
         hash: parseInt(hash)
       });
     }
+  }
+
+  if (actionId === actions.resetParticipant) {
+    const participantId = form.get('participantId') as string;
+    const raceId = form.get('raceId') as string;
+
+    await resetParticipant(participantId, clientId, raceId);
+
+    return json({ ok: true, action: actions.resetParticipant });
   }
 
   try {
@@ -235,17 +246,15 @@ export default function CheckoutInfoRoute() {
     useState<boolean>(false);
   const [message, setMessage] = useState<string>('');
   let showNotification: any = null;
+  const [isParticipantSaved, setIsParticipantSaved] = useState<boolean>(false);
 
   const reset = useCallback(() => {
     setErrors({});
     setHash(Date.now());
     setSelectedRace(null);
     setParticipant(null);
+    setIsParticipantSaved(false);
   }, []);
-
-  function handleSetErrors(errors: FormErrors) {
-    setErrors(errors);
-  }
 
   function handleSetParticipant(e: React.MouseEvent) {
     const newParticipant = e.currentTarget.id.split('|')[0];
@@ -253,12 +262,16 @@ export default function CheckoutInfoRoute() {
       (a: RaceParticipant) => a.id === newParticipant
     );
     const participant = userParticipants[index];
+    const savedParticipant = userSavedParticipants.find(
+      (s: Participant) => s.id === newParticipant
+    );
 
     setParticipant(participant);
     setSelectedRace(e.currentTarget.id.split('|')[1]);
     setShowSavedParticipants(false);
     setErrors({});
     setHash(Date.now());
+    setIsParticipantSaved(!!savedParticipant);
   }
 
   function handleShowSelectSavedParticipants() {
@@ -273,9 +286,20 @@ export default function CheckoutInfoRoute() {
     if (
       fetcher.type === 'actionReload' &&
       fetcher.data.ok &&
-      fetcher.data.action === actions.selectUser
+      fetcher.data.action === actions.selectParticipant
     ) {
       setMessage(t('Participant Selected'));
+      showNotification();
+
+      return reset;
+    }
+
+    if (
+      fetcher.type === 'actionReload' &&
+      fetcher.data.ok &&
+      fetcher.data.action === actions.resetParticipant
+    ) {
+      setMessage(t('Participant Reset'));
       showNotification();
 
       return reset;
@@ -343,7 +367,6 @@ export default function CheckoutInfoRoute() {
         <div className="flex-col w-full md:w-[50%] mt-8">
           <ParticipantForm
             participant={participant}
-            setErrors={handleSetErrors}
             hash={hash}
             errors={errors}
             userSavedParticipants={
@@ -356,6 +379,7 @@ export default function CheckoutInfoRoute() {
               handleShowSelectSavedParticipants
             }
             fetcher={fetcher}
+            isParticipantSaved={isParticipantSaved}
           />
           <Notification show={handlerSetShowNotificationFunction}>
             {message}
@@ -385,7 +409,6 @@ type FormErrors = {
 
 function ParticipantForm({
   participant,
-  setErrors,
   hash,
   errors,
   userSavedParticipants,
@@ -393,10 +416,10 @@ function ParticipantForm({
   raceId,
   showSavedParticipants,
   handleShowSelectSavedParticipants,
-  fetcher
+  fetcher,
+  isParticipantSaved
 }: {
   participant: Participant | null;
-  setErrors: (errors: FormErrors) => void;
   hash: number;
   errors?: FormErrors;
   userSavedParticipants: Participant[] | null;
@@ -405,6 +428,7 @@ function ParticipantForm({
   showSavedParticipants: boolean;
   handleShowSelectSavedParticipants: () => void;
   fetcher: FetcherWithComponents<any>;
+  isParticipantSaved: boolean;
 }) {
   const { t } = useTranslation('checkout');
   const genderOptions = [
@@ -424,11 +448,25 @@ function ParticipantForm({
   function handleOnSelectSavedParticipant(v: string | number) {
     fetcher.submit(
       {
-        actionId: 'selectUser',
+        actionId: 'selectParticipant',
         newUser: v as string,
         oldUser: participant?.id as string,
         raceId: raceId as string,
         hash: String(hash)
+      },
+      {
+        method: 'post',
+        action: `/checkout/info/${eventId}`
+      }
+    );
+  }
+
+  function handleResetParticipant() {
+    fetcher.submit(
+      {
+        actionId: 'resetParticipant',
+        participantId: participant?.id as string,
+        raceId: raceId as string
       },
       {
         method: 'post',
@@ -449,7 +487,11 @@ function ParticipantForm({
             <H6>{t('Saved Participants')}</H6>
           </div>
           {showSavedParticipants && (
-            <FormField label="" error={errors?.selectedParticipant}>
+            <FormField
+              label=""
+              error={errors?.selectedParticipant}
+              className="flex flex-row items-center mt-2"
+            >
               <ComboBox
                 name="userSavedParticipants"
                 placeholder=""
@@ -457,8 +499,14 @@ function ParticipantForm({
                   return { value: u.id, label: u.firstName + ' ' + u.lastName };
                 })}
                 onChange={handleOnSelectSavedParticipant}
-                className="w-[50%]"
+                defaultValue={participant.id}
+                className="w-[50%] mr-2"
               />
+              {isParticipantSaved && (
+                <div onClick={handleResetParticipant}>
+                  <H6 className="dark:text-blueGray-500">{t('Reset')}</H6>
+                </div>
+              )}
             </FormField>
           )}
         </div>
