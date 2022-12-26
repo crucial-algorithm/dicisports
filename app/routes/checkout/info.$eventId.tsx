@@ -1,9 +1,13 @@
 import type { ActionFunction, LoaderFunction } from 'remix';
 import { json, redirect } from 'remix';
 import * as React from 'react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
-import { useFetcher, useLoaderData } from '@remix-run/react';
+import {
+  FetcherWithComponents,
+  useFetcher,
+  useLoaderData
+} from '@remix-run/react';
 import { useTranslation } from 'react-i18next';
 import clsx from 'clsx';
 import { z, ZodError } from 'zod';
@@ -41,6 +45,7 @@ import BasicDatePicker from '~/components/shared/form/DatePicker';
 import Button from '~/components/shared/Button';
 import i18n from '~/server/i18n.server';
 import { badRequest } from '~/utils/misc';
+import { Notification } from '~/components/shared/NotificationMessage';
 
 const actions = {
   add: 'add',
@@ -86,7 +91,7 @@ export const action: ActionFunction = async ({ request, params }) => {
     try {
       await changeToSelectedRaceParticipant(newUser, oldUser, raceId);
 
-      return json({});
+      return json({ ok: true, action: actions.selectUser });
     } catch (e) {
       console.log(e);
 
@@ -163,7 +168,7 @@ export const action: ActionFunction = async ({ request, params }) => {
       await updateParticipant(data);
     }
 
-    return json({});
+    return json({ ok: true });
   } catch (e) {
     if (!(e instanceof ZodError)) {
       console.error(e);
@@ -212,6 +217,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 };
 
 export default function CheckoutInfoRoute() {
+  const fetcher = useFetcher();
   const { t } = useTranslation('checkout');
   const {
     event,
@@ -227,6 +233,15 @@ export default function CheckoutInfoRoute() {
   const [hash, setHash] = useState<number>(Date.now());
   const [showSavedParticipants, setShowSavedParticipants] =
     useState<boolean>(false);
+  const [message, setMessage] = useState<string>('');
+  let showNotification: any = null;
+
+  const reset = useCallback(() => {
+    setErrors({});
+    setHash(Date.now());
+    setSelectedRace(null);
+    setParticipant(null);
+  }, []);
 
   function handleSetErrors(errors: FormErrors) {
     setErrors(errors);
@@ -249,6 +264,38 @@ export default function CheckoutInfoRoute() {
   function handleShowSelectSavedParticipants() {
     setShowSavedParticipants(!showSavedParticipants);
   }
+
+  function handlerSetShowNotificationFunction(callback: () => void) {
+    showNotification = callback;
+  }
+
+  useEffect(() => {
+    if (
+      fetcher.type === 'actionReload' &&
+      fetcher.data.ok &&
+      fetcher.data.action === actions.selectUser
+    ) {
+      setMessage(t('Participant Selected'));
+      showNotification();
+
+      return reset;
+    }
+
+    if (fetcher.type === 'actionReload' && fetcher.data.ok) {
+      setMessage(t('Participant Saved'));
+      showNotification();
+
+      return setErrors({});
+    }
+
+    if (
+      fetcher.type === 'done' &&
+      fetcher.data?.errors &&
+      fetcher.data?.hash === hash
+    ) {
+      return setErrors(fetcher.data.errors as FormErrors);
+    }
+  }, [reset, fetcher, t, showNotification, hash, errors, setErrors]);
 
   return (
     <Main>
@@ -308,7 +355,11 @@ export default function CheckoutInfoRoute() {
             handleShowSelectSavedParticipants={
               handleShowSelectSavedParticipants
             }
+            fetcher={fetcher}
           />
+          <Notification show={handlerSetShowNotificationFunction}>
+            {message}
+          </Notification>
         </div>
         <div className="w-full mt-8 md:w-[50%] md:mt-0 md:pl-48">
           <DisplayCart cart={cart} event={event} isInfoRoute={true} />
@@ -341,7 +392,8 @@ function ParticipantForm({
   eventId,
   raceId,
   showSavedParticipants,
-  handleShowSelectSavedParticipants
+  handleShowSelectSavedParticipants,
+  fetcher
 }: {
   participant: Participant | null;
   setErrors: (errors: FormErrors) => void;
@@ -352,9 +404,8 @@ function ParticipantForm({
   raceId: string | null;
   showSavedParticipants: boolean;
   handleShowSelectSavedParticipants: () => void;
+  fetcher: FetcherWithComponents<any>;
 }) {
-  const fetcher = useFetcher();
-
   const { t } = useTranslation('checkout');
   const genderOptions = [
     { value: 1, label: t('Female') },
@@ -369,20 +420,6 @@ function ParticipantForm({
     { value: 5, label: 'XL' },
     { value: 6, label: 'XXL' }
   ];
-
-  useEffect(() => {
-    if (fetcher.type === 'actionReload' && fetcher.data.ok) {
-      return setErrors({});
-    }
-
-    if (
-      fetcher.type === 'done' &&
-      fetcher.data?.errors &&
-      fetcher.data?.hash === hash
-    ) {
-      return setErrors(fetcher.data.errors as FormErrors);
-    }
-  }, [fetcher, hash, errors, setErrors]);
 
   function handleOnSelectSavedParticipant(v: string | number) {
     fetcher.submit(

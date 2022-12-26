@@ -32,5 +32,8 @@
 
   "Saved Participants": "Detetamos que já tem participantes guardados, deseja selecionar um ?",
   "Checkout Detected": "Detetemos que já tem uma inscrição em progresso, deseja continuar ?",
-  "Update Cart": "Atualizar carrinho"
+  "Update Cart": "Atualizar carrinho",
+  "Existing Race Participant": "Upss.. Este participante já está a participar nesta distância !",
+  "Participant Selected": "Participante selecionado",
+  "Participant Saved": "Participante guardado"
 }
