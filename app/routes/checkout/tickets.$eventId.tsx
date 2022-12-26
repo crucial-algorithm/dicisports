@@ -11,11 +11,12 @@ import { H2, H4, H5, H6 } from '~/components/shared/typography';
 import DisplayDate from '~/components/shared/DIsplayDate';
 import type { Cart, Event, Race, RaceQtd } from '~/types';
 import { displayTimeOfDay } from '~/utils/misc';
-import Button from '~/components/shared/Button';
+import Button, { ButtonLink } from '~/components/shared/Button';
 import { getClientSession } from '~/server/auth/client.server';
 import {
   addTicket,
   findEventRacesCheckoutQtd,
+  findUserRaceParticipants,
   getUserCheckoutRaces,
   removeTicket
 } from '~/server/db/checkout.server';
@@ -24,6 +25,7 @@ type LoaderData = {
   event: Event;
   races: Race[];
   userCheckoutRaces: Cart[];
+  hasCheckout: boolean;
 };
 
 const actions = {
@@ -64,6 +66,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   const eventId = params.eventId as string;
   const event = await findEvent(eventId);
   const userCheckoutRaces = await getUserCheckoutRaces(clientId, eventId);
+  const raceParticipants = await findUserRaceParticipants(clientId, eventId);
 
   if (!event) {
     return redirect('/');
@@ -74,12 +77,15 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   return json({
     event,
     races,
-    userCheckoutRaces
+    userCheckoutRaces,
+    hasCheckout: raceParticipants?.length !== 0
   });
 };
 
 export default function CheckoutTicketsRoute() {
-  const { event, races, userCheckoutRaces } = useLoaderData<LoaderData>();
+  const { t } = useTranslation('checkout');
+  const { event, races, userCheckoutRaces, hasCheckout } =
+    useLoaderData<LoaderData>();
 
   return (
     <Main>
@@ -93,6 +99,11 @@ export default function CheckoutTicketsRoute() {
           <DisplayDate date={new Date(event.startAt)} />
         </H6>
         <H6>{event.address}</H6>
+        {hasCheckout && (
+          <a className="mt-8" href={`/checkout/info/${event.id}`}>
+            <H6 className="dark:text-blueGray-500">{t('Checkout Detected')}</H6>
+          </a>
+        )}
       </div>
       <div className="flex flex-col md:flex-row">
         <div className="flex-col w-full md:w-[50%]">
@@ -171,7 +182,15 @@ function DisplayRace({ race }: { race: RaceQtd }) {
   );
 }
 
-export function DisplayCart({ cart, event }: { cart: Cart[]; event: Event }) {
+export function DisplayCart({
+  cart,
+  event,
+  isInfoRoute
+}: {
+  cart: Cart[];
+  event: Event;
+  isInfoRoute?: boolean;
+}) {
   const { t } = useTranslation('checkout');
   let totalPrice = 0;
 
@@ -219,16 +238,38 @@ export function DisplayCart({ cart, event }: { cart: Cart[]; event: Event }) {
             </div>
           )}
 
-        <Button
-          type="submit"
-          name="actionId"
-          value={actions.checkout}
-          disabled={cart.length === 0}
-          className="mt-4"
-          id="checkout"
-        >
-          {t('Checkout now')}
-        </Button>
+        {isInfoRoute ? (
+          <div className="flex flex-col mt-4">
+            <Button
+              type="submit"
+              name="actionId"
+              value={actions.checkout}
+              disabled={cart.length === 0}
+              id="checkout"
+            >
+              {t('Checkout now')}
+            </Button>
+            <ButtonLink
+              className="mt-4"
+              id="updateCart"
+              to={`/checkout/tickets/${event.id}`}
+              variant="secondary"
+            >
+              {t('Update Cart')}
+            </ButtonLink>
+          </div>
+        ) : (
+          <Button
+            type="submit"
+            name="actionId"
+            value={actions.checkout}
+            disabled={cart.length === 0}
+            className="mt-4"
+            id="checkout"
+          >
+            {t('Checkout now')}
+          </Button>
+        )}
       </div>
     </Form>
   );

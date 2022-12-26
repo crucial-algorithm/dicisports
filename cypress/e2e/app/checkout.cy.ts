@@ -61,6 +61,11 @@ describe('Checkout', () => {
 
         .wait('@selectRace')
 
+        .reload()
+
+        .get('div[data-cy=participant-1]')
+        .click()
+
         .get('input[name=first-name]')
         .type('Nuno')
 

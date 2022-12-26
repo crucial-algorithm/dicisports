@@ -30,5 +30,7 @@
   "Invalid Option": "Opção inválida",
   "Invalid Type": "Tipo inválido",
 
-  "Saved Participants": "Detetamos que já tem participantes guardados, deseja selecionar um ?"
+  "Saved Participants": "Detetamos que já tem participantes guardados, deseja selecionar um ?",
+  "Checkout Detected": "Detetemos que já tem uma inscrição em progresso, deseja continuar ?",
+  "Update Cart": "Atualizar carrinho"
 }

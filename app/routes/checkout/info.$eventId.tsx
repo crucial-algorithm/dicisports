@@ -269,6 +269,7 @@ export default function CheckoutInfoRoute() {
             key={p.id}
             id={p.participantId + '|' + p.race.id}
             onClick={handleSetParticipant}
+            data-cy={`participant-${index + 1}`}
           >
             <H5>{p.race.name}</H5>
             <H6 className="dark:text-blueGray-500">
@@ -292,8 +293,8 @@ export default function CheckoutInfoRoute() {
             raceId={selectedRace}
           />
         </div>
-        <div className="w-full md:w-[50%] md:mt-0 md:pl-48">
-          <DisplayCart cart={cart} event={event} />
+        <div className="w-full mt-8 md:w-[50%] md:mt-0 md:pl-48">
+          <DisplayCart cart={cart} event={event} isInfoRoute={true} />
         </div>
       </div>
     </Main>
@@ -475,7 +476,12 @@ function ParticipantForm({
 
       <div className="flex flex-col md:flex-row md:space-x-2">
         <FormField label={t('CC')} id="CC" error={errors?.cc}>
-          <TextField type="number" name="cc" placeholder={t('CC')} />
+          <TextField
+            type="number"
+            name="cc"
+            placeholder={t('CC')}
+            defaultValue={participant?.cc ? participant.cc : undefined}
+          />
         </FormField>
 
         <FormField
