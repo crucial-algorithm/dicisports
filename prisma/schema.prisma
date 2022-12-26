@@ -305,6 +305,8 @@ model RaceParticipant {
     raceId              String          @map("race_id")
     race                Race            @relation(fields: [raceId], references: [id])
     status              CheckoutStatus  @default(checkout)
+    displayOrder        Int             @default(autoincrement()) @map("display_order")
+
     createdAt           DateTime        @default(now()) @map("created_at")
     updatedAt           DateTime        @updatedAt @map("updated_at")
 

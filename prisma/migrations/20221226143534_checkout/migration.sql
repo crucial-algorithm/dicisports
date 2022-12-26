@@ -39,6 +39,7 @@ CREATE TABLE "race_participants" (
     "participant_id" TEXT NOT NULL,
     "race_id" TEXT NOT NULL,
     "status" "CheckoutStatus" NOT NULL DEFAULT E'checkout',
+    "display_order" SERIAL NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
 

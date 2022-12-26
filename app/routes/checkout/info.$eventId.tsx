@@ -258,25 +258,31 @@ export default function CheckoutInfoRoute() {
       </div>
 
       <div className="w-full my-8 flex flex-row scroll-mx-2 items-center md:items-start md:flex-row md:flex-nowrap md:overflow-x-auto">
-        {raceParticipants.map((p: RaceParticipant, index: number) => (
-          <div
-            className={clsx(
-              'flex flex-col gap-y-2 border-2 border-b border-gray-500 p-2 mx-2 items-center w-[200px]',
-              p.participantId === participant?.id && p.race.id === selectedRace
-                ? 'opacity-100'
-                : 'opacity-50'
-            )}
-            key={p.id}
-            id={p.participantId + '|' + p.race.id}
-            onClick={handleSetParticipant}
-            data-cy={`participant-${index + 1}`}
-          >
-            <H5>{p.race.name}</H5>
-            <H6 className="dark:text-blueGray-500">
-              {t('Participant') + ' ' + (index + 1)}
-            </H6>
-          </div>
-        ))}
+        {raceParticipants
+          .sort(
+            (a: RaceParticipant, b: RaceParticipant) =>
+              a.displayOrder - b.displayOrder
+          )
+          .map((p: RaceParticipant, index: number) => (
+            <div
+              className={clsx(
+                'flex flex-col gap-y-2 border-2 border-b border-gray-500 p-2 mx-2 items-center w-[200px]',
+                p.participantId === participant?.id &&
+                  p.race.id === selectedRace
+                  ? 'opacity-100'
+                  : 'opacity-50'
+              )}
+              key={p.id}
+              id={p.participantId + '|' + p.race.id}
+              onClick={handleSetParticipant}
+              data-cy={`participant-${index + 1}`}
+            >
+              <H5>{p.race.name}</H5>
+              <H6 className="dark:text-blueGray-500">
+                {t('Participant') + ' ' + (index + 1)}
+              </H6>
+            </div>
+          ))}
       </div>
 
       <div className="flex flex-col md:flex-row">
