@@ -225,6 +225,8 @@ export default function CheckoutInfoRoute() {
   const [selectedRace, setSelectedRace] = useState<string | null>(null);
   const [errors, setErrors] = useState<FormErrors>({});
   const [hash, setHash] = useState<number>(Date.now());
+  const [showSavedParticipants, setShowSavedParticipants] =
+    useState<boolean>(false);
 
   function handleSetErrors(errors: FormErrors) {
     setErrors(errors);
@@ -239,8 +241,13 @@ export default function CheckoutInfoRoute() {
 
     setParticipant(participant);
     setSelectedRace(e.currentTarget.id.split('|')[1]);
+    setShowSavedParticipants(false);
     setErrors({});
     setHash(Date.now());
+  }
+
+  function handleShowSelectSavedParticipants() {
+    setShowSavedParticipants(!showSavedParticipants);
   }
 
   return (
@@ -297,6 +304,10 @@ export default function CheckoutInfoRoute() {
             }
             eventId={event.id}
             raceId={selectedRace}
+            showSavedParticipants={showSavedParticipants}
+            handleShowSelectSavedParticipants={
+              handleShowSelectSavedParticipants
+            }
           />
         </div>
         <div className="w-full mt-8 md:w-[50%] md:mt-0 md:pl-48">
@@ -328,7 +339,9 @@ function ParticipantForm({
   errors,
   userSavedParticipants,
   eventId,
-  raceId
+  raceId,
+  showSavedParticipants,
+  handleShowSelectSavedParticipants
 }: {
   participant: Participant | null;
   setErrors: (errors: FormErrors) => void;
@@ -337,10 +350,11 @@ function ParticipantForm({
   userSavedParticipants: Participant[] | null;
   eventId: string;
   raceId: string | null;
+  showSavedParticipants: boolean;
+  handleShowSelectSavedParticipants: () => void;
 }) {
   const fetcher = useFetcher();
-  const [showSavedParticipants, setShowSavedParticipants] =
-    useState<boolean>(false);
+
   const { t } = useTranslation('checkout');
   const genderOptions = [
     { value: 1, label: t('Female') },
@@ -384,10 +398,6 @@ function ParticipantForm({
         action: `/checkout/info/${eventId}`
       }
     );
-  }
-
-  function handleShowSelectSavedParticipants() {
-    setShowSavedParticipants(!showSavedParticipants);
   }
 
   return (
