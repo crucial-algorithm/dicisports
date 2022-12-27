@@ -101,7 +101,7 @@ export default function CheckoutTicketsRoute() {
         </H6>
         <H6>{event.address}</H6>
         {hasCheckout && (
-          <a className="mt-8" href={`/checkout/info/${event.id}`}>
+          <a className="mt-8" href={`/checkout/info/${event.id}`} data-cy="has-checkout">
             <H6 className="dark:text-blueGray-500">{t('Checkout Detected')}</H6>
           </a>
         )}

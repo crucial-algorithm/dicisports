@@ -3,11 +3,8 @@ import { json, redirect } from 'remix';
 import * as React from 'react';
 import { useCallback, useEffect, useState } from 'react';
 
-import {
-  FetcherWithComponents,
-  useFetcher,
-  useLoaderData
-} from '@remix-run/react';
+import type { FetcherWithComponents } from '@remix-run/react';
+import { useFetcher, useLoaderData } from '@remix-run/react';
 import { useTranslation } from 'react-i18next';
 import clsx from 'clsx';
 import { z, ZodError } from 'zod';
@@ -51,7 +48,8 @@ import { Notification } from '~/components/shared/NotificationMessage';
 const actions = {
   add: 'add',
   update: 'update',
-  checkout: 'checkout',
+  checkoutTickets: 'checkoutTickets',
+  checkoutInfo: 'checkoutInfo',
   selectParticipant: 'selectParticipant',
   resetParticipant: 'resetParticipant'
 };
@@ -74,7 +72,7 @@ export const action: ActionFunction = async ({ request, params }) => {
   const actionId = form.get('actionId');
   const hash = form.get('hash') as string;
 
-  if (actionId === actions.checkout) {
+  if (actionId === actions.checkoutTickets) {
     const userCheckoutRace = await getDistinctUserEventTickets(
       clientId,
       eventId
@@ -355,9 +353,14 @@ export default function CheckoutInfoRoute() {
               onClick={handleSetParticipant}
               data-cy={`participant-${index + 1}`}
             >
-              <H5>{p.race.name}</H5>
-              <H6 className="dark:text-blueGray-500">
-                {t('Participant') + ' ' + (index + 1)}
+              <H5 data-cy="participant">{p.race.name}</H5>
+              <H6
+                className="dark:text-blueGray-500"
+                data-cy={`participant-name-${index + 1}`}
+              >
+                {p.participant.firstName
+                  ? p.participant.firstName
+                  : t('Participant') + ' ' + (index + 1)}
               </H6>
             </div>
           ))}
@@ -484,7 +487,9 @@ function ParticipantForm({
       {participant && userSavedParticipants && (
         <div className="mb-8">
           <div onClick={handleShowSelectSavedParticipants}>
-            <H6>{t('Saved Participants')}</H6>
+            <H6 data-cy="save-participants-description">
+              {t('Saved Participants')}
+            </H6>
           </div>
           {showSavedParticipants && (
             <FormField
@@ -518,6 +523,7 @@ function ParticipantForm({
           error={errors?.firstName}
         >
           <TextField
+            data-cy="first-name"
             name="first-name"
             placeholder={t('First Name')}
             defaultValue={participant?.firstName as string}
@@ -642,6 +648,7 @@ function ParticipantForm({
         value={actions.update}
         name="actionId"
         disabled={!participant}
+        id="save-button"
       >
         {t('Save')}
       </Button>

@@ -339,7 +339,8 @@ type RaceQtd = {
 }
 
 type RaceParticipant = {
-  race: Race
+  race: Race,
+  participant: Participant
 } & DBRaceParticipant;
 
 type Participant = {} & DBParticipant;

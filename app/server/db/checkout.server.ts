@@ -225,7 +225,8 @@ async function findUserRaceParticipants(
       raceId: { in: eventRaces?.map((e) => e.id) }
     },
     include: {
-      race: true
+      race: true,
+      participant: true
     }
   });
 }
@@ -284,22 +285,24 @@ async function resetParticipant(
   userSessionId: string,
   raceId: string
 ): Promise<void> {
-  const newParticipant = await prisma.participant.create({
-    data: {
-      id: Id(),
-      userId: userSessionId,
-      createdAt: new Date(),
-      updatedAt: new Date()
-    }
-  });
+  return await prisma.$transaction(async (prisma) => {
+    const newParticipant = await prisma.participant.create({
+      data: {
+        id: Id(),
+        userId: userSessionId,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      }
+    });
 
-  await db.raceParticipant.update({
-    where: {
-      participantId_raceId: { participantId: oldParticipant, raceId }
-    },
-    data: {
-      participantId: newParticipant.id
-    }
+    await db.raceParticipant.update({
+      where: {
+        participantId_raceId: { participantId: oldParticipant, raceId }
+      },
+      data: {
+        participantId: newParticipant.id
+      }
+    });
   });
 }
 
