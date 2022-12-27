@@ -16,7 +16,6 @@ import { getClientSession } from '~/server/auth/client.server';
 import {
   addTicket,
   findEventRacesCheckoutQtd,
-  findUserRaceParticipants,
   getUserCheckoutRaces,
   removeTicket
 } from '~/server/db/checkout.server';
@@ -67,7 +66,6 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   const eventId = params.eventId as string;
   const event = await findEvent(eventId);
   const userCheckoutRaces = await getUserCheckoutRaces(clientId, eventId);
-  const raceParticipants = await findUserRaceParticipants(clientId, eventId);
 
   if (!event) {
     return redirect('/');
@@ -78,15 +76,12 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   return json({
     event,
     races,
-    userCheckoutRaces,
-    hasCheckout: raceParticipants?.length !== 0
+    userCheckoutRaces
   });
 };
 
 export default function CheckoutTicketsRoute() {
-  const { t } = useTranslation('checkout');
-  const { event, races, userCheckoutRaces, hasCheckout } =
-    useLoaderData<LoaderData>();
+  const { event, races, userCheckoutRaces } = useLoaderData<LoaderData>();
 
   return (
     <Main>
@@ -100,11 +95,6 @@ export default function CheckoutTicketsRoute() {
           <DisplayDate date={new Date(event.startAt)} />
         </H6>
         <H6>{event.address}</H6>
-        {hasCheckout && (
-          <a className="mt-8" href={`/checkout/info/${event.id}`} data-cy="has-checkout">
-            <H6 className="dark:text-blueGray-500">{t('Checkout Detected')}</H6>
-          </a>
-        )}
       </div>
       <div className="flex flex-col md:flex-row">
         <div className="flex-col w-full md:w-[50%]">
