@@ -8,6 +8,11 @@ import { useFetcher, useLoaderData } from '@remix-run/react';
 import { useTranslation } from 'react-i18next';
 import clsx from 'clsx';
 import { z, ZodError } from 'zod';
+import {
+  ChevronDownIcon,
+  ChevronUpIcon,
+  PlusIcon
+} from '@heroicons/react/24/outline';
 
 import DisplayDate from '~/components/shared/DIsplayDate';
 
@@ -20,18 +25,20 @@ import {
   findUserSavedParticipants,
   getDistinctUserEventTickets,
   getUserCheckoutRaces,
+  removeRaceParticipant,
   resetParticipant,
   updateParticipant
 } from '~/server/db/checkout.server';
 import Main from '~/components/shared/Main';
 import { findEvent } from '~/server/db/events.server';
-import { H2, H5, H6 } from '~/components/shared/typography';
+import { H2, H4, H5, H6 } from '~/components/shared/typography';
 
 import type {
   Cart,
   Event,
   Participant,
   ParticipantInput,
+  Race,
   RaceParticipant
 } from '~/types';
 import { DisplayCart } from '~/routes/checkout/tickets.$eventId';
@@ -42,8 +49,9 @@ import ComboBox from '~/components/shared/form/ComboBox';
 import BasicDatePicker from '~/components/shared/form/DatePicker';
 import Button from '~/components/shared/Button';
 import i18n from '~/server/i18n.server';
-import { badRequest } from '~/utils/misc';
+import { badRequest, displayTimeOfDay } from '~/utils/misc';
 import { Notification } from '~/components/shared/NotificationMessage';
+import ButtonGroup from '~/components/shared/ButtonGroup';
 
 const actions = {
   add: 'add',
@@ -51,7 +59,8 @@ const actions = {
   checkoutTickets: 'checkoutTickets',
   checkoutInfo: 'checkoutInfo',
   selectParticipant: 'selectParticipant',
-  resetParticipant: 'resetParticipant'
+  resetParticipant: 'resetParticipant',
+  removeParticipant: 'removeParticipant'
 };
 
 type LoaderData = {
@@ -109,6 +118,19 @@ export const action: ActionFunction = async ({ request, params }) => {
     await resetParticipant(participantId, clientId, raceId);
 
     return json({ ok: true, action: actions.resetParticipant });
+  }
+
+  if (actionId === actions.removeParticipant) {
+    const participantId = form.get('participantId') as string;
+    const raceId = form.get('raceId') as string;
+
+    try {
+      await removeRaceParticipant(participantId, raceId);
+
+      return json({ ok: true, action: actions.removeParticipant });
+    } catch (e) {
+      return badRequest({ errors: e });
+    }
   }
 
   try {
@@ -245,6 +267,7 @@ export default function CheckoutInfoRoute() {
   const [message, setMessage] = useState<string>('');
   let showNotification: any = null;
   const [isParticipantSaved, setIsParticipantSaved] = useState<boolean>(false);
+  const [showAddRacesDialog, setShowAddRacesDialog] = useState<boolean>(false);
 
   const reset = useCallback(() => {
     setErrors({});
@@ -280,6 +303,28 @@ export default function CheckoutInfoRoute() {
     showNotification = callback;
   }
 
+  function handleRemoveRaceParticipant() {
+    fetcher.submit(
+      {
+        actionId: actions.removeParticipant,
+        participantId: participant?.id as string,
+        raceId: selectedRace as string
+      },
+      {
+        method: 'post',
+        action: `/checkout/info/${event.id}`
+      }
+    );
+  }
+
+  function handleOpenAddRaces() {
+    setShowAddRacesDialog(true);
+  }
+
+  function handleCloseAddRaces() {
+    setShowAddRacesDialog(false);
+  }
+
   useEffect(() => {
     if (
       fetcher.type === 'actionReload' &&
@@ -298,6 +343,17 @@ export default function CheckoutInfoRoute() {
       fetcher.data.action === actions.resetParticipant
     ) {
       setMessage(t('Participant Reset'));
+      showNotification();
+
+      return reset;
+    }
+
+    if (
+      fetcher.type === 'actionReload' &&
+      fetcher.data.ok &&
+      fetcher.data.action === actions.removeParticipant
+    ) {
+      setMessage(t('Participant Removed'));
       showNotification();
 
       return reset;
@@ -340,30 +396,47 @@ export default function CheckoutInfoRoute() {
               a.displayOrder - b.displayOrder
           )
           .map((p: RaceParticipant, index: number) => (
-            <div
-              className={clsx(
-                'flex flex-col gap-y-2 border-2 border-b border-gray-500 p-2 mx-2 items-center w-[200px]',
-                p.participantId === participant?.id &&
-                  p.race.id === selectedRace
-                  ? 'opacity-100'
-                  : 'opacity-50'
-              )}
-              key={p.id}
-              id={p.participantId + '|' + p.race.id}
-              onClick={handleSetParticipant}
-              data-cy={`participant-${index + 1}`}
-            >
-              <H5 data-cy="participant">{p.race.name}</H5>
-              <H6
-                className="dark:text-blueGray-500"
-                data-cy={`participant-name-${index + 1}`}
+            <div className="flex flex-col items-center" key={p.id}>
+              {p.participantId === participant?.id &&
+                p.race.id === selectedRace && (
+                  <div onClick={handleRemoveRaceParticipant}>
+                    <H6 className="dark:text-blueGray-500">{t('Remove')}</H6>
+                  </div>
+                )}
+
+              <div
+                className={clsx(
+                  'flex flex-col gap-y-2 border-2 border-b border-gray-500 p-2 mx-2 items-center w-[200px]',
+                  p.participantId === participant?.id &&
+                    p.race.id === selectedRace
+                    ? 'opacity-100'
+                    : 'opacity-50'
+                )}
+                id={p.participantId + '|' + p.race.id}
+                onClick={handleSetParticipant}
+                data-cy={`participant-${index + 1}`}
               >
-                {p.participant.firstName
-                  ? p.participant.firstName
-                  : t('Participant') + ' ' + (index + 1)}
-              </H6>
+                <H5 data-cy="participant">{p.race.name}</H5>
+                <H6
+                  className="dark:text-blueGray-500"
+                  data-cy={`participant-name-${index + 1}`}
+                >
+                  {p.participant.firstName
+                    ? p.participant.firstName
+                    : t('Participant') + ' ' + (index + 1)}
+                </H6>
+              </div>
             </div>
           ))}
+        <div className="flex flex-col items-center">
+          <div
+            className="flex flex-col gap-y-2 border-2 border-b border-gray-500 p-2 mx-2 items-center w-[200px]"
+            onClick={handleOpenAddRaces}
+          >
+            <PlusIcon className="md:h-6 w-6 m-0 inline-block dark:text-blueGray-500 " />
+            <H6 className="dark:text-blueGray-500">{t('Add Race')}</H6>
+          </div>
+        </div>
       </div>
 
       <div className="flex flex-col md:flex-row">
@@ -392,6 +465,12 @@ export default function CheckoutInfoRoute() {
           <DisplayCart cart={cart} event={event} isInfoRoute={true} />
         </div>
       </div>
+
+      <AddRacesDialog
+        isOpen={showAddRacesDialog}
+        triggerModalClose={handleCloseAddRaces}
+        eventRaces={event.races}
+      />
     </Main>
   );
 }
@@ -653,5 +732,137 @@ function ParticipantForm({
         {t('Save')}
       </Button>
     </fetcher.Form>
+  );
+}
+
+function AddRacesDialog({
+  isOpen,
+  triggerModalClose,
+  eventRaces
+}: {
+  isOpen: boolean;
+  triggerModalClose: () => void;
+  eventRaces: Race[];
+}) {
+  const { t } = useTranslation('checkout');
+  const [addedRaces, setAddedRaces] = useState<string[]>([]);
+
+  const close = useCallback(() => {
+    setAddedRaces([]);
+    triggerModalClose();
+  }, [triggerModalClose]);
+
+  function handleAddRace(raceId: string) {
+    addedRaces.push(raceId);
+    setAddedRaces(addedRaces);
+  }
+
+  function handleRemoveRace(raceId: string) {
+    const index = addedRaces.indexOf(raceId);
+
+    if (index !== -1) {
+      addedRaces.splice(index, 1);
+      setAddedRaces(addedRaces);
+    }
+  }
+
+  return (
+    <div
+      data-reach-dialog-overlay={true}
+      className={clsx({
+        'hidden ': !isOpen,
+        'z-50 flex h-screen': isOpen
+      })}
+    >
+      <div
+        aria-modal={true}
+        aria-label={t('Add Race Modal')}
+        className={clsx(
+          'lg:w-[500px] w-full',
+          'bg-white dark:bg-gray-900 font-extrabold',
+          'lg:border-2 lg:border-black dark:lg:border-white lg:rounded-lg p-8',
+          {
+            'hidden ': !isOpen,
+            'm-auto': isOpen
+          }
+        )}
+      >
+        {eventRaces
+          .sort((a, b) => a.displayOrder - b.displayOrder)
+          .map((r) => (
+            <DisplayRace
+              race={r}
+              key={r.id}
+              addRace={handleAddRace}
+              removeRace={handleRemoveRace}
+            />
+          ))}
+        <ButtonGroup className="flex justify-end mt-4">
+          <Button variant="secondary" onClick={close}>
+            {t('Discard')}
+          </Button>
+          <Button>{t('Save')}</Button>
+        </ButtonGroup>
+      </div>
+    </div>
+  );
+}
+
+function DisplayRace({
+  race,
+  addRace,
+  removeRace
+}: {
+  race: Race;
+  addRace: (raceId: string) => void;
+  removeRace: (raceId: string) => void;
+}) {
+  const { t } = useTranslation('checkout');
+  const raceTime = displayTimeOfDay(race.startTime);
+  const [raceQtd, setRaceQtd] = useState<number>(0);
+
+  function handleAddRace() {
+    setRaceQtd((c) => c + 1);
+    addRace(race.id);
+  }
+
+  function handleRemoveRace() {
+    if (raceQtd !== 0) {
+      setRaceQtd((c) => c - 1);
+      removeRace(race.id);
+    }
+  }
+
+  return (
+    <div className="flex flex-col mt-8 w-full">
+      <div className="flex flex-row items-center justify-between">
+        <H4>{race.name}</H4>
+        <H5>{race.price + '€'}</H5>
+      </div>
+      <div className="flex flex-row mt-2 justify-between items-center">
+        <div className="flex flex-row">
+          <div>
+            <H6 className="dark:text-blueGray-500">{t('Distance')}</H6>
+            <H5>{race.distance + ' km'}</H5>
+          </div>
+
+          <div className="ml-8">
+            <H6 className="dark:text-blueGray-500">{t('Hour')}</H6>
+            <H5>{raceTime}</H5>
+          </div>
+        </div>
+
+        <div className="flex flex-row items-center dark:text-blueGray-500 w-[80px] justify-between">
+          <button className="w-[24px] h-[24px]" onClick={handleRemoveRace}>
+            <ChevronDownIcon className="md:h-6 w-6 m-0 inline-block" />
+          </button>
+
+          <H6 className="dark:text-blueGray-500">{raceQtd}</H6>
+          <button className="w-[24px] h-[24px]" onClick={handleAddRace}>
+            <ChevronUpIcon className="md:h-6 w-6 m-0 inline-block" />
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }

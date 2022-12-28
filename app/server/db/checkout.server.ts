@@ -306,6 +306,17 @@ async function resetParticipant(
   });
 }
 
+async function removeRaceParticipant(
+  participantId: string,
+  raceId: string
+): Promise<void> {
+  await db.raceParticipant.delete({
+    where: {
+      participantId_raceId: { participantId, raceId }
+    }
+  });
+}
+
 export {
   createTicket,
   getUserEventTickets,
@@ -321,5 +332,6 @@ export {
   findUserSavedParticipants,
   updateParticipant,
   changeToSelectedRaceParticipant,
-  resetParticipant
+  resetParticipant,
+  removeRaceParticipant
 };
