@@ -18,12 +18,10 @@ import DisplayDate from '~/components/shared/DIsplayDate';
 
 import { getClientSession } from '~/server/auth/client.server';
 import {
-  addParticipantToRace,
   changeToSelectedRaceParticipant,
   findUserParticipants,
   findUserRaceParticipants,
   findUserSavedParticipants,
-  getDistinctUserEventTickets,
   getUserCheckoutRaces,
   resetParticipant,
   updateParticipant
@@ -55,8 +53,7 @@ import ButtonGroup from '~/components/shared/ButtonGroup';
 const actions = {
   add: 'add',
   update: 'update',
-  checkoutTickets: 'checkoutTickets',
-  checkoutInfo: 'checkoutInfo',
+  checkout: 'checkout',
   selectParticipant: 'selectParticipant',
   resetParticipant: 'resetParticipant',
   removeParticipant: 'removeParticipant',
@@ -80,17 +77,6 @@ export const action: ActionFunction = async ({ request, params }) => {
   const clientId = clientSession.getClientId();
   const actionId = form.get('actionId');
   const hash = form.get('hash') as string;
-
-  if (actionId === actions.checkoutTickets) {
-    const userCheckoutRace = await getDistinctUserEventTickets(
-      clientId,
-      eventId
-    );
-
-    return userCheckoutRace?.map(
-      async (c) => await addParticipantToRace(c.raceId as string, clientId)
-    );
-  }
 
   if (actionId === actions.selectParticipant) {
     const newUser = form.get('newUser') as string;
@@ -120,7 +106,7 @@ export const action: ActionFunction = async ({ request, params }) => {
     return json({ ok: true, action: actions.resetParticipant });
   }
 
-  if (actionId === actions.checkoutInfo) {
+  if (actionId === actions.checkout) {
     const raceParticipants = await findUserRaceParticipants(clientId, eventId);
     const verifiedRaceParticipants: RaceParticipant[] = [];
 
@@ -481,11 +467,7 @@ export default function CheckoutInfoRoute() {
           </Notification>
         </div>
         <div className="w-full mt-8 md:w-[50%] md:mt-0 md:pl-48">
-          <DisplayCart
-            cart={cart}
-            event={event}
-            actionsValue={actions.checkoutInfo}
-          />
+          <DisplayCart cart={cart} event={event} />
         </div>
       </div>
 

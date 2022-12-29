@@ -10,16 +10,19 @@ import { findEvent } from '~/server/db/events.server';
 import { H2, H4, H5, H6 } from '~/components/shared/typography';
 import DisplayDate from '~/components/shared/DIsplayDate';
 import type { Cart, Event, Race, RaceQtd } from '~/types';
-import { displayTimeOfDay } from '~/utils/misc';
+import { badRequest, displayTimeOfDay } from '~/utils/misc';
 import Button from '~/components/shared/Button';
 import { getClientSession } from '~/server/auth/client.server';
 import {
+  addParticipantToRace,
   addTicket,
   findEventRacesCheckoutQtd,
   findUserRaceParticipants,
+  getDistinctUserEventTickets,
   getUserCheckoutRaces,
   removeTicket
 } from '~/server/db/checkout.server';
+import i18n from '~/server/i18n.server';
 
 type LoaderData = {
   event: Event;
@@ -31,13 +34,14 @@ type LoaderData = {
 const actions = {
   add: 'add',
   remove: 'remove',
-  checkoutTickets: 'checkoutTickets',
-  checkoutInfo: 'checkoutInfo'
+  checkout: 'checkout'
 };
 
-export const action: ActionFunction = async ({ request }) => {
+export const action: ActionFunction = async ({ request, params }) => {
+  const t = await i18n.getFixedT(request, 'checkout');
   const form = await request.formData();
   const clientSession = await getClientSession(request);
+  const eventId = params.eventId as string;
 
   const clientId = clientSession.getClientId();
   const actionId = form.get('actionId') as string;
@@ -50,6 +54,23 @@ export const action: ActionFunction = async ({ request }) => {
 
     if (actionId === actions.remove) {
       return await removeTicket(clientId, raceId);
+    }
+
+    if (actionId === actions.checkout) {
+      const userCheckoutRace = await getDistinctUserEventTickets(
+        clientId,
+        eventId
+      );
+
+      if (!userCheckoutRace) {
+        return badRequest({ error: t('No Races In Checkout') });
+      }
+
+      for (const uc of userCheckoutRace) {
+        await addParticipantToRace(uc.raceId as string, clientId);
+      }
+
+      return redirect(`/checkout/info/${eventId}`);
     }
 
     return json({});
@@ -111,11 +132,7 @@ export default function CheckoutTicketsRoute() {
             ))}
         </div>
         <div className="w-full mt-8 md:w-[50%] md:mt-0 md:pl-48">
-          <DisplayCart
-            cart={userCheckoutRaces}
-            event={event}
-            actionsValue={actions.checkoutTickets}
-          />
+          <DisplayCart cart={userCheckoutRaces} event={event} />
         </div>
       </div>
     </Main>
@@ -183,20 +200,12 @@ function DisplayRace({ race }: { race: RaceQtd }) {
   );
 }
 
-export function DisplayCart({
-  cart,
-  event,
-  actionsValue
-}: {
-  cart: Cart[];
-  event: Event;
-  actionsValue: string;
-}) {
+export function DisplayCart({ cart, event }: { cart: Cart[]; event: Event }) {
   const { t } = useTranslation('checkout');
   let totalPrice = 0;
 
   return (
-    <Form method="post" action={`/checkout/info/${event.id}`}>
+    <Form method="post">
       <div className="flex flex-col border-2 border-b border-gray-500 rounded-md w-full h-full p-8 lg:p-12 md:ml-4">
         <H4>{t('Your Tickets')}</H4>
         <div className="mt-4 space-y-1">
@@ -242,7 +251,7 @@ export function DisplayCart({
         <Button
           type="submit"
           name="actionId"
-          value={actionsValue}
+          value={actions.checkout}
           disabled={cart.length === 0}
           className="mt-4"
           id="checkout"
