@@ -19,9 +19,10 @@
   "Male": "Masculino",
   "Other": "Outro",
 
+  "Add": "Adicionar",
   "Save": "Guardar",
   "Remove": "Remover",
-  "Discar": "Cancelar",
+  "Discard": "Cancelar",
 
   "Field Required": "Campo obrigatório",
   "Min 2 Chars": "Insira no mínimo 2 caracteres",

@@ -379,7 +379,7 @@ export default function CheckoutInfoRoute() {
         <H6>{event.address}</H6>
       </div>
 
-      <div className="w-full my-8 flex flex-row scroll-mx-2 items-center md:items-start md:flex-row md:flex-nowrap md:overflow-x-auto">
+      <div className="w-full my-8 flex flex-row scroll-mx-2 items-center items-start flex-nowrap overflow-x-auto snap-x">
         {raceParticipants
           .sort(
             (a: RaceParticipant, b: RaceParticipant) =>
@@ -396,7 +396,7 @@ export default function CheckoutInfoRoute() {
 
               <div
                 className={clsx(
-                  'flex flex-col gap-y-2 border-2 border-b border-gray-500 p-2 mx-2 items-center w-[200px]',
+                  'flex flex-col gap-y-2 border-2 border-b border-gray-500 p-2 mx-2 items-center w-[200px] snap-center',
                   p.participantId === participant?.id &&
                     p.race.id === selectedRace
                     ? 'opacity-100'
@@ -418,12 +418,12 @@ export default function CheckoutInfoRoute() {
               </div>
             </div>
           ))}
-        <div className="flex flex-col items-center">
+        <div className="flex flex-col items-center snap-center">
           <div
             className="flex flex-col gap-y-2 border-2 border-b border-gray-500 p-2 mx-2 items-center w-[200px]"
             onClick={handleOpenAddRaces}
           >
-            <PlusIcon className="md:h-6 w-6 m-0 inline-block dark:text-blueGray-500 " />
+            <PlusIcon className="h-7 w-7 dark:text-blueGray-500" />
             <H6 className="dark:text-blueGray-500">{t('Add Race')}</H6>
           </div>
         </div>
@@ -812,7 +812,7 @@ function AddRacesDialog({
               name="actionId"
               value={actions.addParticipants}
             >
-              {t('Save')}
+              {t('Add')}
             </Button>
           </ButtonGroup>
         </div>
