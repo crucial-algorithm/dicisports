@@ -25,7 +25,6 @@ import {
   findUserSavedParticipants,
   getDistinctUserEventTickets,
   getUserCheckoutRaces,
-  removeRaceParticipant,
   resetParticipant,
   updateParticipant
 } from '~/server/db/checkout.server';
@@ -60,7 +59,8 @@ const actions = {
   checkoutInfo: 'checkoutInfo',
   selectParticipant: 'selectParticipant',
   resetParticipant: 'resetParticipant',
-  removeParticipant: 'removeParticipant'
+  removeParticipant: 'removeParticipant',
+  addParticipants: 'addParticipants'
 };
 
 type LoaderData = {
@@ -118,19 +118,6 @@ export const action: ActionFunction = async ({ request, params }) => {
     await resetParticipant(participantId, clientId, raceId);
 
     return json({ ok: true, action: actions.resetParticipant });
-  }
-
-  if (actionId === actions.removeParticipant) {
-    const participantId = form.get('participantId') as string;
-    const raceId = form.get('raceId') as string;
-
-    try {
-      await removeRaceParticipant(participantId, raceId);
-
-      return json({ ok: true, action: actions.removeParticipant });
-    } catch (e) {
-      return badRequest({ errors: e });
-    }
   }
 
   try {
@@ -268,6 +255,7 @@ export default function CheckoutInfoRoute() {
   let showNotification: any = null;
   const [isParticipantSaved, setIsParticipantSaved] = useState<boolean>(false);
   const [showAddRacesDialog, setShowAddRacesDialog] = useState<boolean>(false);
+  const [isReset, setIsReset] = useState<boolean>(false);
 
   const reset = useCallback(() => {
     setErrors({});
@@ -312,17 +300,19 @@ export default function CheckoutInfoRoute() {
       },
       {
         method: 'post',
-        action: `/checkout/info/${event.id}`
+        action: '/checkout/manage'
       }
     );
   }
 
   function handleOpenAddRaces() {
     setShowAddRacesDialog(true);
+    setIsReset(false);
   }
 
   function handleCloseAddRaces() {
     setShowAddRacesDialog(false);
+    setIsReset(true);
   }
 
   useEffect(() => {
@@ -470,6 +460,7 @@ export default function CheckoutInfoRoute() {
         isOpen={showAddRacesDialog}
         triggerModalClose={handleCloseAddRaces}
         eventRaces={event.races}
+        reset={isReset}
       />
     </Main>
   );
@@ -738,12 +729,15 @@ function ParticipantForm({
 function AddRacesDialog({
   isOpen,
   triggerModalClose,
-  eventRaces
+  eventRaces,
+  reset
 }: {
   isOpen: boolean;
   triggerModalClose: () => void;
   eventRaces: Race[];
+  reset: boolean;
 }) {
+  const fetcher = useFetcher();
   const { t } = useTranslation('checkout');
   const [addedRaces, setAddedRaces] = useState<string[]>([]);
 
@@ -753,69 +747,92 @@ function AddRacesDialog({
   }, [triggerModalClose]);
 
   function handleAddRace(raceId: string) {
-    addedRaces.push(raceId);
-    setAddedRaces(addedRaces);
+    setAddedRaces((p) => [...p, raceId]);
   }
 
   function handleRemoveRace(raceId: string) {
+    const newArray = [...addedRaces];
     const index = addedRaces.indexOf(raceId);
 
     if (index !== -1) {
-      addedRaces.splice(index, 1);
-      setAddedRaces(addedRaces);
+      newArray.splice(index, 1);
+      setAddedRaces(newArray);
     }
   }
 
+  useEffect(() => {
+    if (
+      fetcher.type === 'actionReload' &&
+      fetcher.data.ok &&
+      fetcher.data?.action === actions.addParticipants
+    ) {
+      return close;
+    }
+  });
+
   return (
-    <div
-      data-reach-dialog-overlay={true}
-      className={clsx({
-        'hidden ': !isOpen,
-        'z-50 flex h-screen': isOpen
-      })}
-    >
+    <fetcher.Form method="post" action="/checkout/manage">
       <div
-        aria-modal={true}
-        aria-label={t('Add Race Modal')}
-        className={clsx(
-          'lg:w-[500px] w-full',
-          'bg-white dark:bg-gray-900 font-extrabold',
-          'lg:border-2 lg:border-black dark:lg:border-white lg:rounded-lg p-8',
-          {
-            'hidden ': !isOpen,
-            'm-auto': isOpen
-          }
-        )}
+        data-reach-dialog-overlay={true}
+        className={clsx({
+          'hidden ': !isOpen,
+          'z-50 flex h-screen': isOpen
+        })}
       >
-        {eventRaces
-          .sort((a, b) => a.displayOrder - b.displayOrder)
-          .map((r) => (
-            <DisplayRace
-              race={r}
-              key={r.id}
-              addRace={handleAddRace}
-              removeRace={handleRemoveRace}
-            />
-          ))}
-        <ButtonGroup className="flex justify-end mt-4">
-          <Button variant="secondary" onClick={close}>
-            {t('Discard')}
-          </Button>
-          <Button>{t('Save')}</Button>
-        </ButtonGroup>
+        <div
+          aria-modal={true}
+          aria-label={t('Add Race Modal')}
+          className={clsx(
+            'lg:w-[500px] w-full',
+            'bg-white dark:bg-gray-900 font-extrabold',
+            'lg:border-2 lg:border-black dark:lg:border-white lg:rounded-lg p-8',
+            {
+              'hidden ': !isOpen,
+              'm-auto': isOpen
+            }
+          )}
+        >
+          {eventRaces
+            .sort((a, b) => a.displayOrder - b.displayOrder)
+            .map((r) => (
+              <DisplayRace
+                race={r}
+                key={r.id}
+                addRace={handleAddRace}
+                removeRace={handleRemoveRace}
+                reset={reset}
+              />
+            ))}
+          <ButtonGroup className="flex justify-end mt-4">
+            <Button type="button" variant="secondary" onClick={close}>
+              {t('Discard')}
+            </Button>
+            <Button
+              type="submit"
+              name="actionId"
+              value={actions.addParticipants}
+            >
+              {t('Save')}
+            </Button>
+          </ButtonGroup>
+        </div>
       </div>
-    </div>
+
+      <input type="hidden" name="races" value={JSON.stringify(addedRaces)} />
+    </fetcher.Form>
   );
 }
 
 function DisplayRace({
   race,
   addRace,
-  removeRace
+  removeRace,
+  reset
 }: {
   race: Race;
   addRace: (raceId: string) => void;
   removeRace: (raceId: string) => void;
+  reset: boolean;
 }) {
   const { t } = useTranslation('checkout');
   const raceTime = displayTimeOfDay(race.startTime);
@@ -832,6 +849,12 @@ function DisplayRace({
       removeRace(race.id);
     }
   }
+
+  useEffect(() => {
+    if (reset) {
+      setRaceQtd(0);
+    }
+  }, [reset]);
 
   return (
     <div className="flex flex-col mt-8 w-full">
@@ -853,12 +876,20 @@ function DisplayRace({
         </div>
 
         <div className="flex flex-row items-center dark:text-blueGray-500 w-[80px] justify-between">
-          <button className="w-[24px] h-[24px]" onClick={handleRemoveRace}>
+          <button
+            type="button"
+            className="w-[24px] h-[24px]"
+            onClick={handleRemoveRace}
+          >
             <ChevronDownIcon className="md:h-6 w-6 m-0 inline-block" />
           </button>
 
           <H6 className="dark:text-blueGray-500">{raceQtd}</H6>
-          <button className="w-[24px] h-[24px]" onClick={handleAddRace}>
+          <button
+            type="button"
+            className="w-[24px] h-[24px]"
+            onClick={handleAddRace}
+          >
             <ChevronUpIcon className="md:h-6 w-6 m-0 inline-block" />
           </button>
         </div>

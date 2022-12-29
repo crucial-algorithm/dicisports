@@ -16,6 +16,7 @@ import { getClientSession } from '~/server/auth/client.server';
 import {
   addTicket,
   findEventRacesCheckoutQtd,
+  findUserRaceParticipants,
   getUserCheckoutRaces,
   removeTicket
 } from '~/server/db/checkout.server';
@@ -66,6 +67,11 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   const eventId = params.eventId as string;
   const event = await findEvent(eventId);
   const userCheckoutRaces = await getUserCheckoutRaces(clientId, eventId);
+  const raceParticipants = await findUserRaceParticipants(clientId, eventId);
+
+  if (raceParticipants?.length !== 0) {
+    return redirect(`/checkout/info/${eventId}`);
+  }
 
   if (!event) {
     return redirect('/');
@@ -229,40 +235,16 @@ export function DisplayCart({
             </div>
           )}
 
-        {isInfoRoute ? (
-          <div className="flex flex-col mt-4">
-            <Button
-              type="submit"
-              name="actionId"
-              value={
-                isInfoRoute ? actions.checkoutInfo : actions.checkoutTickets
-              }
-              disabled={cart.length === 0}
-              id="checkout"
-            >
-              {t('Checkout now')}
-            </Button>
-            <ButtonLink
-              className="mt-4"
-              id="updateCart"
-              to={`/checkout/tickets/${event.id}`}
-              variant="secondary"
-            >
-              {t('Update Cart')}
-            </ButtonLink>
-          </div>
-        ) : (
-          <Button
-            type="submit"
-            name="actionId"
-            value={isInfoRoute ? actions.checkoutInfo : actions.checkoutTickets}
-            disabled={cart.length === 0}
-            className="mt-4"
-            id="checkout"
-          >
-            {t('Checkout now')}
-          </Button>
-        )}
+        <Button
+          type="submit"
+          name="actionId"
+          value={isInfoRoute ? actions.checkoutInfo : actions.checkoutTickets}
+          disabled={cart.length === 0}
+          className="mt-4"
+          id="checkout"
+        >
+          {t('Checkout now')}
+        </Button>
       </div>
     </Form>
   );

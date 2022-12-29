@@ -20,6 +20,8 @@
   "Other": "Outro",
 
   "Save": "Guardar",
+  "Remove": "Remover",
+  "Discar": "Cancelar",
 
   "Field Required": "Campo obrigatório",
   "Min 2 Chars": "Insira no mínimo 2 caracteres",
@@ -38,5 +40,6 @@
   "Participant Saved": "Participante guardado",
   "Reset": "Redefinir",
   "Participant Reset": "Participante redefinido",
+  "Participant Removed": "Participante removido",
   "Add Race": "Adicionar distância"
 }

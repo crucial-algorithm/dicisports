@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { Prisma, PrismaClient } from '@prisma/client';
 
 import { db } from '~/server/db.server';
 import Id from '~/server/utils/Id.server';
@@ -25,12 +25,13 @@ import { findEventRaces } from '~/server/db/races.server';
 const prisma = new PrismaClient();
 
 async function createTicket(
-  raceCheckout: RaceCheckoutInput
+  raceCheckout: RaceCheckoutInput,
+  tx?: Prisma.TransactionClient
 ): Promise<RaceCheckout> {
   const checkoutId = raceCheckout.id || Id();
   const checkoutAt = new Date();
 
-  return await db.raceCheckout.create({
+  return await (tx || db).raceCheckout.create({
     data: {
       id: checkoutId,
       raceId: raceCheckout.raceId,
@@ -67,7 +68,8 @@ async function getCheckoutByUserAndRace(
 
 async function addTicket(
   userSessionId: string,
-  raceId: string
+  raceId: string,
+  tx?: Prisma.TransactionClient
 ): Promise<RaceCheckout> {
   const existingCheckout = await getCheckoutByUserAndRace(
     userSessionId,
@@ -75,14 +77,17 @@ async function addTicket(
   );
 
   if (!existingCheckout) {
-    return await createTicket({
-      userId: userSessionId,
-      raceId: raceId,
-      qtd: 1
-    });
+    return await createTicket(
+      {
+        userId: userSessionId,
+        raceId: raceId,
+        qtd: 1
+      },
+      tx
+    );
   }
 
-  return await db.raceCheckout.update({
+  return await (tx || db).raceCheckout.update({
     where: { id: existingCheckout.id },
     data: {
       qtd: existingCheckout.qtd + 1
@@ -92,7 +97,8 @@ async function addTicket(
 
 async function removeTicket(
   userSessionId: string,
-  raceId: string
+  raceId: string,
+  tx?: Prisma.TransactionClient
 ): Promise<RaceCheckout | null> {
   const existingCheckout = await getCheckoutByUserAndRace(
     userSessionId,
@@ -104,12 +110,12 @@ async function removeTicket(
   }
 
   if (existingCheckout.qtd === 1) {
-    return await db.raceCheckout.delete({
+    return await (tx || db).raceCheckout.delete({
       where: { userId_raceId: { userId: userSessionId, raceId } }
     });
   }
 
-  return await db.raceCheckout.update({
+  return await (tx || db).raceCheckout.update({
     where: { userId_raceId: { userId: userSessionId, raceId } },
     data: {
       qtd: existingCheckout.qtd - 1
@@ -178,10 +184,11 @@ async function getDistinctUserEventTickets(
 
 async function addParticipantToRace(
   raceId: string,
-  userSessionId: string
+  userSessionId: string,
+  tx?: Prisma.TransactionClient
 ): Promise<void> {
   return await prisma.$transaction(async (prisma) => {
-    const participant = await prisma.participant.create({
+    const participant = await (tx || prisma).participant.create({
       data: {
         id: Id(),
         userId: userSessionId,
@@ -190,7 +197,7 @@ async function addParticipantToRace(
       }
     });
 
-    await prisma.raceParticipant.create({
+    await (tx || prisma).raceParticipant.create({
       data: {
         id: Id(),
         participantId: participant.id,
@@ -295,7 +302,7 @@ async function resetParticipant(
       }
     });
 
-    await db.raceParticipant.update({
+    await prisma.raceParticipant.update({
       where: {
         participantId_raceId: { participantId: oldParticipant, raceId }
       },
@@ -308,11 +315,28 @@ async function resetParticipant(
 
 async function removeRaceParticipant(
   participantId: string,
-  raceId: string
+  raceId: string,
+  userSessionId: string
 ): Promise<void> {
-  await db.raceParticipant.delete({
-    where: {
-      participantId_raceId: { participantId, raceId }
+  return await prisma.$transaction(async (prisma) => {
+    await prisma.raceParticipant.delete({
+      where: {
+        participantId_raceId: { participantId, raceId }
+      }
+    });
+
+    await removeTicket(userSessionId, raceId, prisma);
+  });
+}
+
+async function addRaceParticipants(
+  races: Array<string>,
+  userSessionId: string
+): Promise<void> {
+  return await prisma.$transaction(async (prisma) => {
+    for (const r of races) {
+      await addParticipantToRace(r, userSessionId, prisma);
+      await addTicket(userSessionId, r, prisma);
     }
   });
 }
@@ -333,5 +357,6 @@ export {
   updateParticipant,
   changeToSelectedRaceParticipant,
   resetParticipant,
-  removeRaceParticipant
+  removeRaceParticipant,
+  addRaceParticipants
 };
