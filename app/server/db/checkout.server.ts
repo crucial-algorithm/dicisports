@@ -1,4 +1,5 @@
-import { Prisma, PrismaClient } from '@prisma/client';
+import type { Prisma } from '@prisma/client';
+import { PrismaClient, CheckoutStatus } from '@prisma/client';
 
 import { db } from '~/server/db.server';
 import Id from '~/server/utils/Id.server';
@@ -341,6 +342,27 @@ async function addRaceParticipants(
   });
 }
 
+async function updateRaceParticipantStatus(
+  raceParticipants: RaceParticipant[],
+  status: CheckoutStatus
+): Promise<void> {
+  return await prisma.$transaction(async (prisma) => {
+    for (const r of raceParticipants) {
+      await prisma.raceParticipant.update({
+        where: {
+          participantId_raceId: {
+            participantId: r.participant.id,
+            raceId: r.race.id
+          }
+        },
+        data: {
+          status
+        }
+      });
+    }
+  });
+}
+
 export {
   createTicket,
   getUserEventTickets,
@@ -358,5 +380,6 @@ export {
   changeToSelectedRaceParticipant,
   resetParticipant,
   removeRaceParticipant,
-  addRaceParticipants
+  addRaceParticipants,
+  updateRaceParticipantStatus
 };

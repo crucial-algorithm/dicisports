@@ -24,7 +24,8 @@ import {
   findUserSavedParticipants,
   getUserCheckoutRaces,
   resetParticipant,
-  updateParticipant
+  updateParticipant,
+  updateRaceParticipantStatus
 } from '~/server/db/checkout.server';
 import Main from '~/components/shared/Main';
 import { findEvent } from '~/server/db/events.server';
@@ -131,6 +132,8 @@ export const action: ActionFunction = async ({ request, params }) => {
         }
       });
     }
+
+    await updateRaceParticipantStatus(raceParticipants, 'pending');
 
     return redirect(`/checkout/payment/${eventId}`);
   }

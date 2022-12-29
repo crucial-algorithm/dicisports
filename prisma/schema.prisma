@@ -294,8 +294,8 @@ model Participant {
 
 enum CheckoutStatus {
     checkout
-    paying
-    payed
+    pending
+    confirmed
 }
 
 model RaceParticipant {

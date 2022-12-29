@@ -90,8 +90,20 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   const userCheckoutRaces = await getUserCheckoutRaces(clientId, eventId);
   const raceParticipants = await findUserRaceParticipants(clientId, eventId);
 
-  if (raceParticipants?.length !== 0) {
+  if (
+    raceParticipants &&
+    raceParticipants?.length !== 0 &&
+    raceParticipants[0].status === 'checkout'
+  ) {
     return redirect(`/checkout/info/${eventId}`);
+  }
+
+  if (
+    raceParticipants &&
+    raceParticipants?.length !== 0 &&
+    raceParticipants?.map((p) => p.status === 'pending')
+  ) {
+    return redirect(`/checkout/payment/${eventId}`);
   }
 
   if (!event) {
