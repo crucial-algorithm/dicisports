@@ -1,7 +1,7 @@
 import * as React from 'react';
 import type { ActionFunction, LoaderFunction } from 'remix';
-import { json } from 'remix';
-import { useLoaderData } from '@remix-run/react';
+import { json, redirect } from 'remix';
+import { Form, useLoaderData } from '@remix-run/react';
 import { useTranslation } from 'react-i18next';
 
 import Main from '~/components/shared/Main';
@@ -10,17 +10,37 @@ import DisplayDate from '~/components/shared/DIsplayDate';
 import { findEvent } from '~/server/db/events.server';
 import type { Cart, Event } from '~/types';
 import { getClientSession } from '~/server/auth/client.server';
-import { getUserCheckoutRaces } from '~/server/db/checkout.server';
+import {
+  findUserRaceParticipants,
+  getUserCheckoutRaces,
+  updateRaceParticipantStatus
+} from '~/server/db/checkout.server';
 import { DisplayCart } from '~/routes/checkout/tickets.$eventId';
 import Button from '~/components/shared/Button';
+import { badRequest } from '~/utils/misc';
+import i18n from '~/server/i18n.server';
 
 type LoaderData = {
   event: Event;
   cart: Cart[];
 };
 
-export const action: ActionFunction = async({ request, params }) => {
+export const action: ActionFunction = async ({ request, params }) => {
+  const t = await i18n.getFixedT(request, 'checkout');
+  const eventId = params.eventId as string;
+  const clientSession = await getClientSession(request);
 
+  const clientId = clientSession.getClientId();
+
+  const raceParticipants = await findUserRaceParticipants(clientId, eventId);
+
+  if (!raceParticipants) {
+    return badRequest({ error: t('No Race Participants') });
+  }
+
+  await updateRaceParticipantStatus(raceParticipants, 'confirmed');
+
+  return redirect(`/checkout/confirmation/${eventId}`);
 };
 
 export const loader: LoaderFunction = async ({ request, params }) => {
@@ -57,7 +77,9 @@ export default function CheckoutPaymentRoute() {
       <div className="flex flex-col md:flex-row">
         {/*Payment Form*/}
         <div className="flex-col w-full md:w-[50%] mt-8">
-          <Button type="submit">{t('Pay')}</Button>
+          <Form method="post">
+            <Button type="submit">{t('Pay')}</Button>
+          </Form>
         </div>
         <div className="w-full mt-8 md:w-[50%] md:mt-0 md:pl-48">
           <DisplayCart cart={cart} event={event} />
