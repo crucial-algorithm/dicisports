@@ -51,33 +51,6 @@ describe('Checkout', () => {
       registerParticipant();
     });
 
-    it('should have option to redirect to checkout if user has a checkout already', () => {
-      cy.intercept('GET', '*?_data=routes*checkout*')
-        .as('selectRace')
-
-        .visitAndWaitForHydration('/checkout/tickets/MY4bvgxDbMtGv8rbYe5d')
-
-        .get('#add-race-AhowRdNWCBQWSuivSt7h')
-        .click()
-
-        .wait('@selectRace')
-
-        .get('#add-race-AhowRdNWCBQWSuivSt7h')
-        .click()
-
-        .wait('@selectRace')
-
-        .get('#checkout')
-        .click()
-
-        .wait('@selectRace')
-
-        .visitAndWaitForHydration('/checkout/tickets/MY4bvgxDbMtGv8rbYe5d')
-
-        .get('[data-cy=has-checkout]')
-        .should('exist');
-    });
-
     it('should contain right amount of races', () => {
       cy.login()
         .intercept('GET', '*?_data=routes*checkout*')
