@@ -120,6 +120,35 @@ export const action: ActionFunction = async ({ request, params }) => {
     return json({ ok: true, action: actions.resetParticipant });
   }
 
+  if (actionId === actions.checkoutInfo) {
+    const raceParticipants = await findUserRaceParticipants(clientId, eventId);
+    const verifiedRaceParticipants: RaceParticipant[] = [];
+
+    if (!raceParticipants) {
+      return badRequest({ error: t('No Race Participants') });
+    }
+
+    for (const rc of raceParticipants) {
+      if (rc.participant.firstName !== null) {
+        verifiedRaceParticipants.push(rc);
+      }
+    }
+
+    if (verifiedRaceParticipants.length !== raceParticipants?.length) {
+      const missingFilledParticipants =
+        raceParticipants?.length - verifiedRaceParticipants.length;
+
+      return badRequest({
+        error: {
+          missingFilledParticipants:
+            missingFilledParticipants + ' ' + t('Participant Not Filled')
+        }
+      });
+    }
+
+    return redirect(`/checkout/payment/${eventId}`);
+  }
+
   try {
     if (actionId === actions.update) {
       const phoneNumber = form.get('phone-number') as string;
@@ -452,7 +481,11 @@ export default function CheckoutInfoRoute() {
           </Notification>
         </div>
         <div className="w-full mt-8 md:w-[50%] md:mt-0 md:pl-48">
-          <DisplayCart cart={cart} event={event} isInfoRoute={true} />
+          <DisplayCart
+            cart={cart}
+            event={event}
+            actionsValue={actions.checkoutInfo}
+          />
         </div>
       </div>
 

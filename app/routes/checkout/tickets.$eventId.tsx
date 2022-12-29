@@ -11,7 +11,7 @@ import { H2, H4, H5, H6 } from '~/components/shared/typography';
 import DisplayDate from '~/components/shared/DIsplayDate';
 import type { Cart, Event, Race, RaceQtd } from '~/types';
 import { displayTimeOfDay } from '~/utils/misc';
-import Button, { ButtonLink } from '~/components/shared/Button';
+import Button from '~/components/shared/Button';
 import { getClientSession } from '~/server/auth/client.server';
 import {
   addTicket,
@@ -111,7 +111,11 @@ export default function CheckoutTicketsRoute() {
             ))}
         </div>
         <div className="w-full mt-8 md:w-[50%] md:mt-0 md:pl-48">
-          <DisplayCart cart={userCheckoutRaces} event={event} />
+          <DisplayCart
+            cart={userCheckoutRaces}
+            event={event}
+            actionsValue={actions.checkoutTickets}
+          />
         </div>
       </div>
     </Main>
@@ -182,11 +186,11 @@ function DisplayRace({ race }: { race: RaceQtd }) {
 export function DisplayCart({
   cart,
   event,
-  isInfoRoute
+  actionsValue
 }: {
   cart: Cart[];
   event: Event;
-  isInfoRoute?: boolean;
+  actionsValue: string;
 }) {
   const { t } = useTranslation('checkout');
   let totalPrice = 0;
@@ -238,7 +242,7 @@ export function DisplayCart({
         <Button
           type="submit"
           name="actionId"
-          value={isInfoRoute ? actions.checkoutInfo : actions.checkoutTickets}
+          value={actionsValue}
           disabled={cart.length === 0}
           className="mt-4"
           id="checkout"
