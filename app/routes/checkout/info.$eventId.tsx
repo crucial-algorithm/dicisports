@@ -267,8 +267,6 @@ export default function CheckoutInfoRoute() {
   const [selectedRace, setSelectedRace] = useState<string | null>(null);
   const [errors, setErrors] = useState<FormErrors>({});
   const [hash, setHash] = useState<number>(Date.now());
-  const [showSavedParticipants, setShowSavedParticipants] =
-    useState<boolean>(false);
   const [message, setMessage] = useState<string>('');
   let showNotification: any = null;
   const [isParticipantSaved, setIsParticipantSaved] = useState<boolean>(false);
@@ -295,14 +293,9 @@ export default function CheckoutInfoRoute() {
 
     setParticipant(participant);
     setSelectedRace(e.currentTarget.id.split('|')[1]);
-    setShowSavedParticipants(false);
     setErrors({});
     setHash(Date.now());
     setIsParticipantSaved(!!savedParticipant);
-  }
-
-  function handleShowSelectSavedParticipants() {
-    setShowSavedParticipants(!showSavedParticipants);
   }
 
   function handlerSetShowNotificationFunction(callback: () => void) {
@@ -458,10 +451,6 @@ export default function CheckoutInfoRoute() {
             }
             eventId={event.id}
             raceId={selectedRace}
-            showSavedParticipants={showSavedParticipants}
-            handleShowSelectSavedParticipants={
-              handleShowSelectSavedParticipants
-            }
             fetcher={fetcher}
             isParticipantSaved={isParticipantSaved}
           />
@@ -505,8 +494,6 @@ function ParticipantForm({
   userSavedParticipants,
   eventId,
   raceId,
-  showSavedParticipants,
-  handleShowSelectSavedParticipants,
   fetcher,
   isParticipantSaved
 }: {
@@ -516,8 +503,6 @@ function ParticipantForm({
   userSavedParticipants: Participant[] | null;
   eventId: string;
   raceId: string | null;
-  showSavedParticipants: boolean;
-  handleShowSelectSavedParticipants: () => void;
   fetcher: FetcherWithComponents<any>;
   isParticipantSaved: boolean;
 }) {
@@ -574,34 +559,27 @@ function ParticipantForm({
     >
       {participant && userSavedParticipants && (
         <div className="mb-8">
-          <div onClick={handleShowSelectSavedParticipants}>
-            <H6 data-cy="save-participants-description">
-              {t('Saved Participants')}
-            </H6>
-          </div>
-          {showSavedParticipants && (
-            <FormField
-              label=""
-              error={errors?.selectedParticipant}
-              className="flex flex-row items-center mt-2"
-            >
-              <ComboBox
-                name="userSavedParticipants"
-                placeholder=""
-                options={userSavedParticipants.map((u) => {
-                  return { value: u.id, label: u.firstName + ' ' + u.lastName };
-                })}
-                onChange={handleOnSelectSavedParticipant}
-                defaultValue={participant.id}
-                className="w-[50%] mr-2"
-              />
-              {isParticipantSaved && (
-                <div onClick={handleResetParticipant}>
-                  <H6 className="dark:text-blueGray-500">{t('Reset')}</H6>
-                </div>
-              )}
-            </FormField>
-          )}
+          <FormField
+            label=""
+            error={errors?.selectedParticipant}
+            className="flex flex-row items-center mt-2"
+          >
+            <ComboBox
+              name="userSavedParticipants"
+              placeholder=""
+              options={userSavedParticipants.map((u) => {
+                return { value: u.id, label: u.firstName + ' ' + u.lastName };
+              })}
+              onChange={handleOnSelectSavedParticipant}
+              defaultValue={participant.id}
+              className="w-[50%] mr-2"
+            />
+            {isParticipantSaved && (
+              <div onClick={handleResetParticipant}>
+                <H6 className="dark:text-blueGray-500">{t('Reset')}</H6>
+              </div>
+            )}
+          </FormField>
         </div>
       )}
       <div className="flex flex-col md:flex-row md:space-x-2">

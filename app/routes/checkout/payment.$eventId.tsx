@@ -50,6 +50,19 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   const clientId = clientSession.getClientId();
   const event = await findEvent(eventId);
   const cart = await getUserCheckoutRaces(clientId, eventId);
+  const raceParticipants = await findUserRaceParticipants(clientId, eventId);
+
+  if (!raceParticipants || raceParticipants?.length === 0) {
+    return redirect(`/checkout/tickets/${eventId}`);
+  }
+
+  if (raceParticipants[0].status !== 'pending') {
+    return redirect(
+      `/checkout/${
+        raceParticipants[0].status === 'checkout' ? 'checkout' : 'confirmation'
+      }/${eventId}`
+    );
+  }
 
   return json({
     event,

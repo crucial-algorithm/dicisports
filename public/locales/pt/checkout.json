@@ -2,7 +2,7 @@
   "Distance": "Distância",
   "Hour": "Hora",
   "Your Tickets": "Os seus bilhetes",
-  "Checkout now": "Complete a sua compra",
+  "Checkout now": "Complete a sua inscrição",
 
   "First Name": "Primeiro Nome",
   "Last Name": "Último Nome",
@@ -33,8 +33,6 @@
   "Invalid Option": "Opção inválida",
   "Invalid Type": "Tipo inválido",
 
-  "Saved Participants": "Detetamos que já tem participantes guardados, deseja selecionar um ?",
-  "Checkout Detected": "Detetemos que já tem uma inscrição em progresso, deseja continuar ?",
   "Update Cart": "Atualizar carrinho",
   "Existing Race Participant": "Upss.. Este participante já está a participar nesta distância !",
   "Participant Selected": "Participante selecionado",
@@ -42,7 +40,7 @@
   "Reset": "Redefinir",
   "Participant Reset": "Participante redefinido",
   "Participant Removed": "Participante removido",
-  "Add Race": "Adicionar distância",
+  "Add Race": "Adicionar inscrição",
 
   "Participant Not Filled": "Participante não inscrito !"
 }
