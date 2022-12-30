@@ -1,5 +1,5 @@
 import type { Prisma } from '@prisma/client';
-import { PrismaClient, CheckoutStatus } from '@prisma/client';
+import { CheckoutStatus, PrismaClient } from '@prisma/client';
 
 import { db } from '~/server/db.server';
 import Id from '~/server/utils/Id.server';
@@ -14,7 +14,8 @@ import type {
   RaceCheckout,
   RaceCheckoutInput,
   RaceParticipant,
-  RaceQtd
+  RaceQtd,
+  Registration
 } from '~/types';
 import {
   dbCartToCart,
@@ -186,6 +187,7 @@ async function getDistinctUserEventTickets(
 async function addParticipantToRace(
   raceId: string,
   userSessionId: string,
+  registrationId: string,
   tx?: Prisma.TransactionClient
 ): Promise<void> {
   return await prisma.$transaction(async (prisma) => {
@@ -203,6 +205,7 @@ async function addParticipantToRace(
         id: Id(),
         participantId: participant.id,
         raceId: raceId,
+        registrationId,
         createdAt: new Date(),
         updatedAt: new Date()
       }
@@ -261,11 +264,12 @@ async function updateParticipant(
       gender: participant.gender,
       birthday: participant.birthday,
       phoneNumber: participant.phoneNumber,
-      cc: participant.cc,
+      identityCard: participant.identityCard,
       federationNumber: participant.federationNumber,
       shirtSize: participant.shirtSize,
       nationality: participant.nationality,
-      postalCode: participant.postalCode
+      postalCode: participant.postalCode,
+      status: 'saved'
     }
   });
 }
@@ -332,11 +336,12 @@ async function removeRaceParticipant(
 
 async function addRaceParticipants(
   races: Array<string>,
-  userSessionId: string
+  userSessionId: string,
+  registrationId: string
 ): Promise<void> {
   return await prisma.$transaction(async (prisma) => {
     for (const r of races) {
-      await addParticipantToRace(r, userSessionId, prisma);
+      await addParticipantToRace(r, userSessionId, registrationId, prisma);
       await addTicket(userSessionId, r, prisma);
     }
   });
@@ -363,6 +368,32 @@ async function updateRaceParticipantStatus(
   });
 }
 
+async function findRegistration(
+  userSessionId: string,
+  eventId: string
+): Promise<Registration | null> {
+  return db.registration.findUnique({
+    where: { eventId_userId: { eventId, userId: userSessionId } }
+  });
+}
+
+async function createRegistration(
+  pin: number,
+  eventId: string,
+  userSessionId: string
+): Promise<Registration> {
+  return await db.registration.create({
+    data: {
+      id: Id(),
+      pin,
+      eventId,
+      userId: userSessionId,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    }
+  });
+}
+
 export {
   createTicket,
   getUserEventTickets,
@@ -381,5 +412,7 @@ export {
   resetParticipant,
   removeRaceParticipant,
   addRaceParticipants,
-  updateRaceParticipantStatus
+  updateRaceParticipantStatus,
+  findRegistration,
+  createRegistration
 };

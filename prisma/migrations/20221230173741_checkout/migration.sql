@@ -1,5 +1,8 @@
 -- CreateEnum
-CREATE TYPE "CheckoutStatus" AS ENUM ('checkout', 'paying', 'payed');
+CREATE TYPE "ParticipantStatus" AS ENUM ('auto', 'saved');
+
+-- CreateEnum
+CREATE TYPE "CheckoutStatus" AS ENUM ('checkout', 'pending', 'confirmed');
 
 -- CreateTable
 CREATE TABLE "race_checkout" (
@@ -22,11 +25,12 @@ CREATE TABLE "participants" (
     "gender" INTEGER,
     "birthday" TIMESTAMP(3),
     "phone_number" INTEGER,
-    "cc" INTEGER,
+    "identity_card" TEXT,
     "federation_number" INTEGER,
     "shirt_size" INTEGER,
     "nationality" TEXT,
     "postal_code" TEXT,
+    "status" "ParticipantStatus" NOT NULL DEFAULT E'auto',
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
 
@@ -40,10 +44,24 @@ CREATE TABLE "race_participants" (
     "race_id" TEXT NOT NULL,
     "status" "CheckoutStatus" NOT NULL DEFAULT E'checkout',
     "display_order" SERIAL NOT NULL,
+    "registration_id" TEXT NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "race_participants_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "registrations" (
+    "id" TEXT NOT NULL,
+    "status" "CheckoutStatus" NOT NULL DEFAULT E'checkout',
+    "pin" INTEGER NOT NULL,
+    "event_id" TEXT NOT NULL,
+    "user_id" TEXT NOT NULL,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "registrations_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
@@ -51,6 +69,9 @@ CREATE UNIQUE INDEX "race_checkout_user_id_race_id_key" ON "race_checkout"("user
 
 -- CreateIndex
 CREATE UNIQUE INDEX "race_participants_participant_id_race_id_key" ON "race_participants"("participant_id", "race_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "registrations_event_id_user_id_key" ON "registrations"("event_id", "user_id");
 
 -- AddForeignKey
 ALTER TABLE "race_checkout" ADD CONSTRAINT "race_checkout_race_id_fkey" FOREIGN KEY ("race_id") REFERENCES "races"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -60,3 +81,9 @@ ALTER TABLE "race_participants" ADD CONSTRAINT "race_participants_race_id_fkey" 
 
 -- AddForeignKey
 ALTER TABLE "race_participants" ADD CONSTRAINT "race_participants_participant_id_fkey" FOREIGN KEY ("participant_id") REFERENCES "participants"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "race_participants" ADD CONSTRAINT "race_participants_registration_id_fkey" FOREIGN KEY ("registration_id") REFERENCES "registrations"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "registrations" ADD CONSTRAINT "registrations_event_id_fkey" FOREIGN KEY ("event_id") REFERENCES "events"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

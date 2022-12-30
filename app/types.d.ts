@@ -13,6 +13,7 @@ import type {
   RaceCheckout as DBRaceCheckout,
   RaceParticipant as DBRaceParticipant,
   Participant as DBParticipant,
+  Registration as DBRegistration,
   Status
 } from '@prisma/client';
 
@@ -353,7 +354,7 @@ type ParticipantInput = {
   gender: number
   birthday: Date
   phoneNumber: number
-  cc?: number | null
+  identityCard?: string | null
   federationNumber?: number | null
   shirtSize: number
   nationality?: string | null
@@ -361,6 +362,8 @@ type ParticipantInput = {
   createdAt?: Date
   updatedAt?: Date
 }
+
+type Registration = {} & DBRegistration;
 
 export {
   NonNullProperties,
@@ -406,5 +409,6 @@ export {
   DBRawRaceCheckout,
   RaceParticipant,
   Participant,
-  ParticipantInput
+  ParticipantInput,
+  Registration
 };

@@ -148,7 +148,7 @@ export const action: ActionFunction = async ({ request, params }) => {
         gender: parseInt(form.get('gender') as string),
         birthday: new Date(form.get('birthday') as string),
         phoneNumber: parseInt(phoneNumber),
-        cc: parseInt(form.get('cc') as string) || null,
+        identityCard: form.get('identity-card') as string || null,
         federationNumber:
           parseInt(form.get('federation-number') as string) || null,
         shirtSize: parseInt(form.get('shirt') as string),
@@ -184,9 +184,8 @@ export const action: ActionFunction = async ({ request, params }) => {
               val.toString().startsWith('96'),
             t('Invalid number')
           ),
-        cc: z
-          .number()
-          .refine((val) => val.toString().length === 9, t('9 Digits'))
+        identityCard: z
+          .string()
           .nullable(),
         federationNumber: z.number().nullable(),
         shirtSize: z
@@ -256,10 +255,11 @@ export const loader: LoaderFunction = async ({ request, params }) => {
       gender: null,
       phoneNumber: null,
       nationality: null,
-      cc: null,
+      identityCard: null,
       userId: 'a',
       createdAt: new Date(),
-      updatedAt: new Date()
+      updatedAt: new Date(),
+      status: 'auto'
     };
 
     userSavedParticipants?.push(draftParticipant);
@@ -504,7 +504,7 @@ type FormErrors = {
   gender?: string;
   birthday?: string;
   phoneNumber?: string;
-  cc?: string;
+  identityCard?: string;
   federationNumber?: string;
   shirtSize?: string;
   nationality?: string;
@@ -683,12 +683,12 @@ function ParticipantForm({
       </div>
 
       <div className="flex flex-col md:flex-row md:space-x-2">
-        <FormField label={t('CC')} id="CC" error={errors?.cc}>
+        <FormField label={t('Identity Card')} id="identity-card" error={errors?.identityCard}>
           <TextField
             type="number"
-            name="cc"
-            placeholder={t('CC')}
-            defaultValue={participant?.cc ? participant.cc : undefined}
+            name="identity-card"
+            placeholder={t('Identity Card')}
+            defaultValue={participant?.identityCard ? participant.identityCard : undefined}
           />
         </FormField>
 
