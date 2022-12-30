@@ -37,10 +37,12 @@
   "Existing Race Participant": "Upss.. Este participante já está a participar nesta distância !",
   "Participant Selected": "Participante selecionado",
   "Participant Saved": "Participante guardado",
-  "Reset": "Redefinir",
+  "Fill": "Preencher",
   "Participant Reset": "Participante redefinido",
   "Participant Removed": "Participante removido",
   "Add Race": "Adicionar inscrição",
 
-  "Participant Not Filled": "Participante não inscrito !"
+  "Participant Not Filled": "Participante não inscrito !",
+  "New Participant First Name": "Novo",
+  "New Participant Last Name": "Participante"
 }

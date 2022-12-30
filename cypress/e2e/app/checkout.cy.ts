@@ -154,6 +154,6 @@ function registerParticipant() {
 
     .wait('@saveParticipant')
 
-    .get('[data-cy=save-participants-description]')
+    .get('#saved-participants')
     .should('exist');
 }
