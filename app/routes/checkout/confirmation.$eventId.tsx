@@ -11,13 +11,13 @@ import {
   getUserCheckoutRaces
 } from '~/server/db/checkout.server';
 import { findEvent } from '~/server/db/events.server';
-import type { Registration, Event, Cart } from '~/types';
+import type { Cart, Event, Registration } from '~/types';
 import Main from '~/components/shared/Main';
-import { H2, H4, H5, H6 } from '~/components/shared/typography';
+import { H2, H4, H6 } from '~/components/shared/typography';
 import DisplayDate from '~/components/shared/DIsplayDate';
 import { DisplayCart } from '~/routes/checkout/tickets.$eventId';
-import TextField from "~/components/shared/form/TextField";
-import Button from "~/components/shared/Button";
+import TextField from '~/components/shared/form/TextField';
+import Button from '~/components/shared/Button';
 
 type LoaderData = {
   registration: Registration;
@@ -90,8 +90,14 @@ export default function CheckoutConfirmationRoute() {
           </div>
 
           <div className="flex flex-col items-start mt-16">
-            <H6 className="dark:text-blueGray-500">{t('Mail Confirmation Details')}</H6>
-            <TextField name="mail-confirmation" className="w-[350px] p-8" placeholder={t('Email Address')}/>
+            <H6 className="dark:text-blueGray-500">
+              {t('Mail Confirmation Details')}
+            </H6>
+            <TextField
+              name="mail-confirmation"
+              className="w-[350px] p-8"
+              placeholder={t('Email Address')}
+            />
             <Button name="send-confirmation" type="button" className="mt-4">
               {t('Send')}
             </Button>
