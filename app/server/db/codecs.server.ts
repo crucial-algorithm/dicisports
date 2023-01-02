@@ -2,6 +2,7 @@ import type {
   Difficulty as DBDifficulty,
   GroupSpirit as DBGroupSpirit,
   GroupType as DBGroupType,
+  ShirtSize as DBShirtSize,
   Perk as DBPerk,
   Sport as DBSport,
   Status
@@ -23,6 +24,7 @@ import type {
   Perk,
   RaceCheckout,
   RaceQtd,
+  ShirtSize,
   Sport,
   TranslationObject
 } from '~/types';
@@ -84,6 +86,17 @@ function dbGroupTypeToGroupType(group: DBGroupType): GroupType {
     createdAt,
     updatedAt,
     name: name as TranslationObject
+  };
+}
+
+function dbShirtSizeToShirtSize(shirt: DBShirtSize): ShirtSize {
+  const { id, name, createdAt, updatedAt } = shirt;
+
+  return {
+    id,
+    name: name as TranslationObject,
+    createdAt,
+    updatedAt
   };
 }
 
@@ -201,5 +214,6 @@ export {
   dbDifficultyToDifficulty,
   dbCartToCart,
   dbEventRaceCheckoutQtdToEventRaceCheckoutQtd,
-  dbRaceCheckoutToRaceCheckout
+  dbRaceCheckoutToRaceCheckout,
+  dbShirtSizeToShirtSize
 };

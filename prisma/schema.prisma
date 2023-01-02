@@ -283,12 +283,13 @@ model Participant {
     userId              String                  @map("user_id")
     firstName           String?                 @map("first_name")
     lastName            String?                 @map("last_name")
-    gender              Int?
+    gender              String?                 @db.Char(1)
     birthday            DateTime?
     phoneNumber         Int?                    @map("phone_number")
     identityCard        String?                 @map("identity_card")
     federationNumber    Int?                    @map("federation_number")
     shirtSize           Int?                    @map("shirt_size")
+    shirt               ShirtSize?              @relation(fields: [shirtSize], references: [id])
     nationality         String?
     postalCode          String?                 @map("postal_code")
     status              ParticipantStatus       @default(auto)
@@ -336,4 +337,14 @@ model Booking {
 
     @@unique([eventId, userId])
     @@map("bookings")
+}
+
+model ShirtSize {
+    id              Int                 @id @default(autoincrement())
+    name            Json
+    createdAt       DateTime            @default(now()) @map("created_at")
+    updatedAt       DateTime            @updatedAt @map("updated_at")
+    participants    Participant[]
+
+    @@map("shirt_size")
 }

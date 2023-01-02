@@ -11,6 +11,7 @@ import documentsSeed from './data/documents.json';
 import eventsSeed from './data/events.json';
 import groupSpiritSeed from './data/groupSpirit.json';
 import groupTypesSeed from './data/groupTypes.json';
+import shirtSizesSeed from './data/shirtSizes.json';
 import sportsSeed from './data/sports.json';
 
 const db = new PrismaClient();
@@ -38,6 +39,7 @@ async function seed() {
   await persist('difficulties', difficulties(), db.difficulty);
   await persist('group types', groupTypes(), db.groupType);
   await persist('group spirit', groupsSpirit(), db.groupSpirit);
+  await persist('shirt sizes', shirtSizes(), db.shirtSize);
 
   await persist('users', users(), db.user);
   await persist('groups', groups(), db.group);
@@ -66,6 +68,7 @@ async function clear() {
   await db.user.deleteMany();
   await db.groupSpirit.deleteMany();
   await db.groupType.deleteMany();
+  await db.shirtSize.deleteMany();
   await db.sport.deleteMany();
   await db.difficulty.deleteMany();
 }
@@ -78,6 +81,10 @@ function sports() {
 
 function groupTypes() {
   return groupTypesSeed.map((gt) => gt);
+}
+
+function shirtSizes() {
+  return shirtSizesSeed.map((ss) => ss);
 }
 
 function groupsSpirit() {

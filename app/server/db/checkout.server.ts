@@ -16,12 +16,14 @@ import type {
   RaceCheckoutInput,
   RaceParticipant,
   RaceQtd,
-  Registration
+  Booking,
+  ShirtSize
 } from '~/types';
 import {
   dbCartToCart,
   dbEventRaceCheckoutQtdToEventRaceCheckoutQtd,
-  dbRaceCheckoutToRaceCheckout
+  dbRaceCheckoutToRaceCheckout,
+  dbShirtSizeToShirtSize
 } from '~/server/db/codecs.server';
 import { findEventRaces } from '~/server/db/races.server';
 
@@ -372,7 +374,7 @@ async function updateRaceParticipantStatus(
 async function findBooking(
   userSessionId: string,
   eventId: string
-): Promise<Registration | null> {
+): Promise<Booking | null> {
   return db.booking.findUnique({
     where: { eventId_userId: { eventId, userId: userSessionId } }
   });
@@ -382,7 +384,7 @@ async function createBooking(
   pin: number,
   eventId: string,
   userSessionId: string
-): Promise<Registration> {
+): Promise<Booking> {
   return await db.booking.create({
     data: {
       id: Id(),
@@ -393,6 +395,16 @@ async function createBooking(
       updatedAt: new Date()
     }
   });
+}
+
+async function findShirtSizes(): Promise<Array<ShirtSize>> {
+  const shirtSizes = await db.shirtSize.findMany({
+    orderBy: {
+      id: 'asc'
+    }
+  });
+
+  return shirtSizes.map((ss) => dbShirtSizeToShirtSize(ss));
 }
 
 export {
@@ -415,5 +427,6 @@ export {
   addRaceParticipants,
   updateRaceParticipantStatus,
   findBooking,
-  createBooking
+  createBooking,
+  findShirtSizes
 };

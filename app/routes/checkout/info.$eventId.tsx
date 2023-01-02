@@ -19,6 +19,7 @@ import DisplayDate from '~/components/shared/DIsplayDate';
 import { getClientSession } from '~/server/auth/client.server';
 import {
   changeToSelectedRaceParticipant,
+  findShirtSizes,
   findUserParticipants,
   findUserRaceParticipants,
   findUserSavedParticipants,
@@ -37,8 +38,10 @@ import type {
   Participant,
   ParticipantInput,
   Race,
-  RaceParticipant
+  RaceParticipant,
+  ShirtSize
 } from '~/types';
+import { Language } from '~/types';
 import { DisplayCart } from '~/routes/checkout/registrations.$eventId';
 import TextField from '~/components/shared/form/TextField';
 import FormField from '~/components/shared/form/FormField';
@@ -145,10 +148,10 @@ export const action: ActionFunction = async ({ request, params }) => {
         id: form.get('participant-id') as string,
         firstName: form.get('first-name') as string,
         lastName: form.get('last-name') as string,
-        gender: parseInt(form.get('gender') as string),
+        gender: form.get('gender') as string,
         birthday: new Date(form.get('birthday') as string),
         phoneNumber: parseInt(phoneNumber),
-        identityCard: form.get('identity-card') as string || null,
+        identityCard: (form.get('identity-card') as string) || null,
         federationNumber:
           parseInt(form.get('federation-number') as string) || null,
         shirtSize: parseInt(form.get('shirt') as string),
@@ -184,17 +187,12 @@ export const action: ActionFunction = async ({ request, params }) => {
               val.toString().startsWith('96'),
             t('Invalid number')
           ),
-        identityCard: z
-          .string()
-          .nullable(),
+        identityCard: z.string().nullable(),
         federationNumber: z.number().nullable(),
-        shirtSize: z
-          .number({
-            required_error: t('Field Required'),
-            invalid_type_error: t('Invalid Type')
-          })
-          .nonnegative(t('Invalid Option'))
-          .max(6, t('Invalid Option')),
+        shirtSize: z.string({
+          required_error: t('Field Required'),
+          invalid_type_error: t('Invalid Type')
+        }),
         nationality: z.string().nullable(),
         postalCode: z.string({ required_error: t('Field Required') })
       });
@@ -242,6 +240,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 
   const userParticipants = await findUserParticipants(clientId);
   const userSavedParticipants = await findUserSavedParticipants(clientId);
+  const shirtSizes = await findShirtSizes();
 
   if (userSavedParticipants?.length !== 0) {
     const draftParticipant: Participant = {
@@ -270,7 +269,8 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     cart,
     raceParticipants,
     userParticipants,
-    userSavedParticipants
+    userSavedParticipants,
+    shirtSizes
   });
 };
 
@@ -282,23 +282,31 @@ export default function CheckoutInfoRoute() {
     cart,
     raceParticipants,
     userParticipants,
-    userSavedParticipants
+    userSavedParticipants,
+    shirtSizes
   } = useLoaderData<LoaderData>();
 
   const defaultSelectedParticipant =
-      userParticipants[
-          userParticipants.findIndex(
-              (p: Participant) => p.id === raceParticipants[0].participantId)
-          ];
-  const [participant, setParticipant] = useState<Participant | null>(defaultSelectedParticipant);
-  const [selectedRace, setSelectedRace] = useState<string | null>(raceParticipants[0].raceId);
+    userParticipants[
+      userParticipants.findIndex(
+        (p: Participant) => p.id === raceParticipants[0].participantId
+      )
+    ];
+  const [participant, setParticipant] = useState<Participant | null>(
+    defaultSelectedParticipant
+  );
+  const [selectedRace, setSelectedRace] = useState<string | null>(
+    raceParticipants[0].raceId
+  );
   const [errors, setErrors] = useState<FormErrors>({});
   const [hash, setHash] = useState<number>(Date.now());
   const [message, setMessage] = useState<string>('');
   let showNotification: any = null;
   const [showAddRacesDialog, setShowAddRacesDialog] = useState<boolean>(false);
   const [isReset, setIsReset] = useState<boolean>(false);
-  const [selectedParticipant, setSelectedParticipant] = useState<string | number | null>(null);
+  const [selectedParticipant, setSelectedParticipant] = useState<
+    string | number | null
+  >(null);
 
   const reset = useCallback(() => {
     setErrors({});
@@ -481,6 +489,7 @@ export default function CheckoutInfoRoute() {
             fetcher={fetcher}
             selectedParticipant={selectedParticipant}
             setSelectedParticipant={handleSetSelectedParticipant}
+            shirtSizes={shirtSizes}
           />
           <Notification show={handlerSetShowNotificationFunction}>
             {message}
@@ -524,7 +533,8 @@ function ParticipantForm({
   raceId,
   fetcher,
   selectedParticipant,
-  setSelectedParticipant
+  setSelectedParticipant,
+  shirtSizes
 }: {
   participant: Participant | null;
   hash: number;
@@ -535,21 +545,14 @@ function ParticipantForm({
   fetcher: FetcherWithComponents<any>;
   selectedParticipant: string | number | null;
   setSelectedParticipant: (v: string | number) => void;
+  shirtSizes: ShirtSize[];
 }) {
-  const { t } = useTranslation('checkout');
+  const { t, i18n } = useTranslation('checkout');
+  const language = i18n.language as Language;
 
   const genderOptions = [
-    { value: 1, label: t('Female') },
-    { value: 2, label: t('Male') },
-    { value: 3, label: t('Other') }
-  ];
-  const shirtOptions = [
-    { value: 1, label: 'XS' },
-    { value: 2, label: 'S' },
-    { value: 3, label: 'M' },
-    { value: 4, label: 'L' },
-    { value: 5, label: 'XL' },
-    { value: 6, label: 'XXL' }
+    { value: 'F', label: t('Female') },
+    { value: 'M', label: t('Male') }
   ];
 
   function handleOnSelectSavedParticipant() {
@@ -686,12 +689,18 @@ function ParticipantForm({
       </div>
 
       <div className="flex flex-col md:flex-row md:space-x-2">
-        <FormField label={t('Identity Card')} id="identity-card" error={errors?.identityCard}>
+        <FormField
+          label={t('Identity Card')}
+          id="identity-card"
+          error={errors?.identityCard}
+        >
           <TextField
             type="number"
             name="identity-card"
             placeholder={t('Identity Card')}
-            defaultValue={participant?.identityCard ? participant.identityCard : undefined}
+            defaultValue={
+              participant?.identityCard ? participant.identityCard : undefined
+            }
           />
         </FormField>
 
@@ -713,7 +722,10 @@ function ParticipantForm({
         <ComboBox
           name="shirt"
           placeholder=""
-          options={shirtOptions}
+          lang={language}
+          options={shirtSizes.map((ss: ShirtSize) => {
+            return { value: ss.id, label: ss.name as string };
+          })}
           defaultValue={participant?.shirtSize as number}
         />
       </FormField>

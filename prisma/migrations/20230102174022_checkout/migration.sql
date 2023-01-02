@@ -22,7 +22,7 @@ CREATE TABLE "participants" (
     "user_id" TEXT NOT NULL,
     "first_name" TEXT,
     "last_name" TEXT,
-    "gender" INTEGER,
+    "gender" CHAR(1),
     "birthday" TIMESTAMP(3),
     "phone_number" INTEGER,
     "identity_card" TEXT,
@@ -64,6 +64,16 @@ CREATE TABLE "bookings" (
     CONSTRAINT "bookings_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
+CREATE TABLE "shirt_size" (
+    "id" SERIAL NOT NULL,
+    "name" JSONB NOT NULL,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "shirt_size_pkey" PRIMARY KEY ("id")
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "race_checkout_user_id_race_id_key" ON "race_checkout"("user_id", "race_id");
 
@@ -75,6 +85,9 @@ CREATE UNIQUE INDEX "bookings_event_id_user_id_key" ON "bookings"("event_id", "u
 
 -- AddForeignKey
 ALTER TABLE "race_checkout" ADD CONSTRAINT "race_checkout_race_id_fkey" FOREIGN KEY ("race_id") REFERENCES "races"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "participants" ADD CONSTRAINT "participants_shirt_size_fkey" FOREIGN KEY ("shirt_size") REFERENCES "shirt_size"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "race_participants" ADD CONSTRAINT "race_participants_race_id_fkey" FOREIGN KEY ("race_id") REFERENCES "races"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
