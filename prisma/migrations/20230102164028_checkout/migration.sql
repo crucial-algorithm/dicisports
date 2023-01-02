@@ -44,7 +44,7 @@ CREATE TABLE "race_participants" (
     "race_id" TEXT NOT NULL,
     "status" "CheckoutStatus" NOT NULL DEFAULT E'checkout',
     "display_order" SERIAL NOT NULL,
-    "registration_id" TEXT NOT NULL,
+    "booking_id" TEXT NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
 
@@ -52,7 +52,7 @@ CREATE TABLE "race_participants" (
 );
 
 -- CreateTable
-CREATE TABLE "registrations" (
+CREATE TABLE "bookings" (
     "id" TEXT NOT NULL,
     "status" "CheckoutStatus" NOT NULL DEFAULT E'checkout',
     "pin" INTEGER NOT NULL,
@@ -61,7 +61,7 @@ CREATE TABLE "registrations" (
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
 
-    CONSTRAINT "registrations_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "bookings_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
@@ -71,7 +71,7 @@ CREATE UNIQUE INDEX "race_checkout_user_id_race_id_key" ON "race_checkout"("user
 CREATE UNIQUE INDEX "race_participants_participant_id_race_id_key" ON "race_participants"("participant_id", "race_id");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "registrations_event_id_user_id_key" ON "registrations"("event_id", "user_id");
+CREATE UNIQUE INDEX "bookings_event_id_user_id_key" ON "bookings"("event_id", "user_id");
 
 -- AddForeignKey
 ALTER TABLE "race_checkout" ADD CONSTRAINT "race_checkout_race_id_fkey" FOREIGN KEY ("race_id") REFERENCES "races"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -83,7 +83,7 @@ ALTER TABLE "race_participants" ADD CONSTRAINT "race_participants_race_id_fkey" 
 ALTER TABLE "race_participants" ADD CONSTRAINT "race_participants_participant_id_fkey" FOREIGN KEY ("participant_id") REFERENCES "participants"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "race_participants" ADD CONSTRAINT "race_participants_registration_id_fkey" FOREIGN KEY ("registration_id") REFERENCES "registrations"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "race_participants" ADD CONSTRAINT "race_participants_booking_id_fkey" FOREIGN KEY ("booking_id") REFERENCES "bookings"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "registrations" ADD CONSTRAINT "registrations_event_id_fkey" FOREIGN KEY ("event_id") REFERENCES "events"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "bookings" ADD CONSTRAINT "bookings_event_id_fkey" FOREIGN KEY ("event_id") REFERENCES "events"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

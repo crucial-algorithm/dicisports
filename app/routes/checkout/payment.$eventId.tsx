@@ -15,7 +15,7 @@ import {
   getUserCheckoutRaces,
   updateRaceParticipantStatus
 } from '~/server/db/checkout.server';
-import { DisplayCart } from '~/routes/checkout/tickets.$eventId';
+import { DisplayCart } from '~/routes/checkout/registrations.$eventId';
 import Button from '~/components/shared/Button';
 import { badRequest } from '~/utils/misc';
 import i18n from '~/server/i18n.server';
@@ -53,13 +53,13 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   const raceParticipants = await findUserRaceParticipants(clientId, eventId);
 
   if (!raceParticipants || raceParticipants?.length === 0) {
-    return redirect(`/checkout/tickets/${eventId}`);
+    return redirect(`/checkout/registrations/${eventId}`);
   }
 
   if (raceParticipants[0].status !== 'pending') {
     return redirect(
       `/checkout/${
-        raceParticipants[0].status === 'checkout' ? 'checkout' : 'confirmation'
+        raceParticipants[0].status === 'checkout' ? 'registrations' : 'confirmation'
       }/${eventId}`
     );
   }

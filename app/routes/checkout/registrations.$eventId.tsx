@@ -15,12 +15,12 @@ import Button from '~/components/shared/Button';
 import { getClientSession } from '~/server/auth/client.server';
 import {
   addParticipantToRace,
-  addTicket, createRegistration,
+  addRegistration, createBooking,
   findEventRacesCheckoutQtd,
   findUserRaceParticipants,
-  getDistinctUserEventTickets,
+  getDistinctUserEventRegistrations,
   getUserCheckoutRaces,
-  removeTicket
+  removeRegistration
 } from '~/server/db/checkout.server';
 import i18n from '~/server/i18n.server';
 
@@ -49,15 +49,15 @@ export const action: ActionFunction = async ({ request, params }) => {
 
   try {
     if (actionId === actions.add) {
-      return await addTicket(clientId, raceId);
+      return await addRegistration(clientId, raceId);
     }
 
     if (actionId === actions.remove) {
-      return await removeTicket(clientId, raceId);
+      return await removeRegistration(clientId, raceId);
     }
 
     if (actionId === actions.checkout) {
-      const userCheckoutRace = await getDistinctUserEventTickets(
+      const userCheckoutRace = await getDistinctUserEventRegistrations(
         clientId,
         eventId
       );
@@ -67,7 +67,7 @@ export const action: ActionFunction = async ({ request, params }) => {
       }
 
       const pin = Math.floor(1000 + Math.random() * 9000);
-      const registration = await createRegistration(pin, eventId, clientId);
+      const registration = await createBooking(pin, eventId, clientId);
 
       for (const uc of userCheckoutRace) {
         await addParticipantToRace(uc.raceId as string, clientId, registration?.id);
@@ -118,7 +118,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   });
 };
 
-export default function CheckoutTicketsRoute() {
+export default function CheckoutRegistrationsRoute() {
   const { event, races, userCheckoutRaces } = useLoaderData<LoaderData>();
 
   return (

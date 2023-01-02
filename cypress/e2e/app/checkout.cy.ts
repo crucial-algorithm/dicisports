@@ -28,7 +28,7 @@ describe('Checkout', () => {
       cy.intercept('GET', '*?_data=routes*checkout*')
         .as('selectRace')
 
-        .visitAndWaitForHydration('/checkout/tickets/MY4bvgxDbMtGv8rbYe5d')
+        .visitAndWaitForHydration('/checkout/registrations/MY4bvgxDbMtGv8rbYe5d')
 
         .get('#add-race-AhowRdNWCBQWSuivSt7h')
         .click()
@@ -56,10 +56,10 @@ describe('Checkout', () => {
         .intercept('GET', '*?_data=routes*checkout*')
         .as('selectRace')
 
-        .intercept('POST', '*?_data=route*checkout*tickets*')
+        .intercept('POST', '*?_data=route*checkout*registrations*')
         .as('addRace')
 
-        .visitAndWaitForHydration('/checkout/tickets/MY4bvgxDbMtGv8rbYe5d')
+        .visitAndWaitForHydration('/checkout/registrations/MY4bvgxDbMtGv8rbYe5d')
 
         .get('#add-race-AhowRdNWCBQWSuivSt7h')
         .click()
@@ -103,7 +103,7 @@ function registerParticipant() {
   cy.intercept('GET', '*?_data=routes*checkout*')
     .as('selectRace')
 
-    .visitAndWaitForHydration('/checkout/tickets/MY4bvgxDbMtGv8rbYe5d')
+    .visitAndWaitForHydration('/checkout/registrations/MY4bvgxDbMtGv8rbYe5d')
 
     .get('#add-race-AhowRdNWCBQWSuivSt7h')
     .click()

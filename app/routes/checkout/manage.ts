@@ -5,7 +5,7 @@ import { getClientSession } from '~/server/auth/client.server';
 import { badRequest } from '~/utils/misc';
 import {
   addRaceParticipants,
-  findRegistration,
+  findBooking,
   removeRaceParticipant
 } from '~/server/db/checkout.server';
 import { findRace } from '~/server/db/races.server';
@@ -33,12 +33,12 @@ export const action: ActionFunction = async ({ request }) => {
     if (actionId === actions.addParticipants) {
       const races = JSON.parse(form.get('races') as string);
       const eventId = await findRace(races[0]).then((p) => p?.eventId);
-      const registrationId = await findRegistration(
+      const registrationId = await findBooking(
         clientId,
         eventId as string
       ).then((p) => p?.id);
 
-      await addRaceParticipants(races, clientId, registrationId);
+      await addRaceParticipants(races, clientId, registrationId as string);
     }
 
     return json({ ok: true, action: actionId });

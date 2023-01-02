@@ -4,8 +4,8 @@ import { redirect } from 'remix';
 import { getClientSession } from '~/server/auth/client.server';
 import type { RaceCheckoutInput } from '~/types';
 import {
-  addTicket,
-  createTicket,
+  addRegistration,
+  createRegistration,
   getCheckoutByUserAndRace
 } from '~/server/db/checkout.server';
 
@@ -27,9 +27,9 @@ export const action: ActionFunction = async ({ request }) => {
 
   try {
     if (checkout) {
-      await addTicket(clientId, raceId);
+      await addRegistration(clientId, raceId);
     } else {
-      await createTicket(data);
+      await createRegistration(data);
     }
   } catch (e) {
     console.log(e);
@@ -37,5 +37,5 @@ export const action: ActionFunction = async ({ request }) => {
     return redirect('/');
   }
 
-  return redirect(`/checkout/tickets/${eventId}`);
+  return redirect(`/checkout/registrations/${eventId}`);
 };

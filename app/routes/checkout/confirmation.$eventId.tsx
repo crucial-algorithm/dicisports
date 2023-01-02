@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 
 import { getClientSession } from '~/server/auth/client.server';
 import {
-  findRegistration,
+  findBooking,
   findUserRaceParticipants,
   getUserCheckoutRaces
 } from '~/server/db/checkout.server';
@@ -15,7 +15,7 @@ import type { Cart, Event, Registration } from '~/types';
 import Main from '~/components/shared/Main';
 import { H2, H4, H6 } from '~/components/shared/typography';
 import DisplayDate from '~/components/shared/DIsplayDate';
-import { DisplayCart } from '~/routes/checkout/tickets.$eventId';
+import { DisplayCart } from '~/routes/checkout/registrations.$eventId';
 import TextField from '~/components/shared/form/TextField';
 import Button from '~/components/shared/Button';
 
@@ -33,18 +33,18 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   const raceParticipants = await findUserRaceParticipants(clientId, eventId);
 
   if (!raceParticipants || raceParticipants?.length === 0) {
-    return redirect(`/checkout/tickets/${eventId}`);
+    return redirect(`/checkout/registrations/${eventId}`);
   }
 
   if (raceParticipants[0].status !== 'confirmed') {
     return redirect(
       `/checkout/${
-        raceParticipants[0].status === 'pending' ? 'payment' : 'checkout'
+        raceParticipants[0].status === 'pending' ? 'payment' : 'registrations'
       }/${eventId}`
     );
   }
 
-  const registration = await findRegistration(clientId, eventId);
+  const registration = await findBooking(clientId, eventId);
   const event = await findEvent(registration?.eventId as string);
   const cart = await getUserCheckoutRaces(clientId, eventId);
 

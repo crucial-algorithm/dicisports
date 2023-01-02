@@ -1,5 +1,6 @@
 import type { Prisma } from '@prisma/client';
-import { CheckoutStatus, PrismaClient } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
+import type { CheckoutStatus } from '@prisma/client';
 
 import { db } from '~/server/db.server';
 import Id from '~/server/utils/Id.server';
@@ -26,7 +27,7 @@ import { findEventRaces } from '~/server/db/races.server';
 
 const prisma = new PrismaClient();
 
-async function createTicket(
+async function createRegistration(
   raceCheckout: RaceCheckoutInput,
   tx?: Prisma.TransactionClient
 ): Promise<RaceCheckout> {
@@ -45,7 +46,7 @@ async function createTicket(
   });
 }
 
-async function getUserEventTickets(
+async function getUserEventRegistrations(
   userSessionId: string,
   eventId: string
 ): Promise<RaceCheckout[] | null> {
@@ -68,7 +69,7 @@ async function getCheckoutByUserAndRace(
   });
 }
 
-async function addTicket(
+async function addRegistration(
   userSessionId: string,
   raceId: string,
   tx?: Prisma.TransactionClient
@@ -79,7 +80,7 @@ async function addTicket(
   );
 
   if (!existingCheckout) {
-    return await createTicket(
+    return await createRegistration(
       {
         userId: userSessionId,
         raceId: raceId,
@@ -97,7 +98,7 @@ async function addTicket(
   });
 }
 
-async function removeTicket(
+async function removeRegistration(
   userSessionId: string,
   raceId: string,
   tx?: Prisma.TransactionClient
@@ -168,7 +169,7 @@ async function findEventRacesCheckoutQtd(
   return results.map(dbEventRaceCheckoutQtdToEventRaceCheckoutQtd);
 }
 
-async function getDistinctUserEventTickets(
+async function getDistinctUserEventRegistrations(
   userSessionId: string,
   eventId: string
 ): Promise<Array<Partial<RaceCheckout>> | null> {
@@ -187,7 +188,7 @@ async function getDistinctUserEventTickets(
 async function addParticipantToRace(
   raceId: string,
   userSessionId: string,
-  registrationId: string,
+  bookingId: string,
   tx?: Prisma.TransactionClient
 ): Promise<void> {
   return await prisma.$transaction(async (prisma) => {
@@ -205,7 +206,7 @@ async function addParticipantToRace(
         id: Id(),
         participantId: participant.id,
         raceId: raceId,
-        registrationId,
+        bookingId,
         createdAt: new Date(),
         updatedAt: new Date()
       }
@@ -330,7 +331,7 @@ async function removeRaceParticipant(
       }
     });
 
-    await removeTicket(userSessionId, raceId, prisma);
+    await removeRegistration(userSessionId, raceId, prisma);
   });
 }
 
@@ -342,7 +343,7 @@ async function addRaceParticipants(
   return await prisma.$transaction(async (prisma) => {
     for (const r of races) {
       await addParticipantToRace(r, userSessionId, registrationId, prisma);
-      await addTicket(userSessionId, r, prisma);
+      await addRegistration(userSessionId, r, prisma);
     }
   });
 }
@@ -368,21 +369,21 @@ async function updateRaceParticipantStatus(
   });
 }
 
-async function findRegistration(
+async function findBooking(
   userSessionId: string,
   eventId: string
 ): Promise<Registration | null> {
-  return db.registration.findUnique({
+  return db.booking.findUnique({
     where: { eventId_userId: { eventId, userId: userSessionId } }
   });
 }
 
-async function createRegistration(
+async function createBooking(
   pin: number,
   eventId: string,
   userSessionId: string
 ): Promise<Registration> {
-  return await db.registration.create({
+  return await db.booking.create({
     data: {
       id: Id(),
       pin,
@@ -395,15 +396,15 @@ async function createRegistration(
 }
 
 export {
-  createTicket,
-  getUserEventTickets,
-  addTicket,
-  removeTicket,
+  createRegistration,
+  getUserEventRegistrations,
+  addRegistration,
+  removeRegistration,
   getUserCheckoutRaces,
   findEventRacesCheckoutQtd,
   getCheckoutByUserAndRace,
   addParticipantToRace,
-  getDistinctUserEventTickets,
+  getDistinctUserEventRegistrations,
   findUserRaceParticipants,
   findUserParticipants,
   findUserSavedParticipants,
@@ -413,6 +414,6 @@ export {
   removeRaceParticipant,
   addRaceParticipants,
   updateRaceParticipantStatus,
-  findRegistration,
-  createRegistration
+  findBooking,
+  createBooking
 };

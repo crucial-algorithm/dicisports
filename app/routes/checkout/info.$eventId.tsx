@@ -39,7 +39,7 @@ import type {
   Race,
   RaceParticipant
 } from '~/types';
-import { DisplayCart } from '~/routes/checkout/tickets.$eventId';
+import { DisplayCart } from '~/routes/checkout/registrations.$eventId';
 import TextField from '~/components/shared/form/TextField';
 import FormField from '~/components/shared/form/FormField';
 
@@ -237,7 +237,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   }
 
   if (raceParticipants?.length === 0) {
-    return redirect(`/checkout/tickets/${eventId}`);
+    return redirect(`/checkout/registrations/${eventId}`);
   }
 
   const userParticipants = await findUserParticipants(clientId);

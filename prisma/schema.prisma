@@ -115,7 +115,7 @@ model Event {
   documents          Document[]
   perks              Perk[]
   races              Race[]
-  registrations      Registration[]
+  bookings           Booking[]
 
   favEvents          FavoriteEvent[]
   @@map("events")
@@ -313,8 +313,8 @@ model RaceParticipant {
     race                Race            @relation(fields: [raceId], references: [id])
     status              CheckoutStatus  @default(checkout)
     displayOrder        Int             @default(autoincrement()) @map("display_order")
-    registrationId      String          @map("registration_id")
-    registration        Registration    @relation(fields: [registrationId], references: [id])
+    bookingId           String          @map("booking_id")
+    booking             Booking         @relation(fields: [bookingId], references: [id])
 
     createdAt           DateTime        @default(now()) @map("created_at")
     updatedAt           DateTime        @updatedAt @map("updated_at")
@@ -323,7 +323,7 @@ model RaceParticipant {
     @@map("race_participants")
 }
 
-model Registration {
+model Booking {
     id                  String              @id @default(uuid())
     status              CheckoutStatus      @default(checkout)
     pin                 Int
@@ -335,5 +335,5 @@ model Registration {
     raceParticipant     RaceParticipant[]
 
     @@unique([eventId, userId])
-    @@map("registrations")
+    @@map("bookings")
 }
