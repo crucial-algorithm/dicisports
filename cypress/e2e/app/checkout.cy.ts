@@ -132,7 +132,7 @@ function registerParticipant() {
     .get('input[name=phone-number]')
     .type('937654321')
 
-    .get('input[name=cc]')
+    .get('input[name=identity-card]')
     .type('987654321')
 
     .get('input[name=federation-number]')
@@ -152,8 +152,8 @@ function registerParticipant() {
     .get('#save-button')
     .click()
 
-    .wait('@saveParticipant')
+    .wait('@selectRace')
 
-    .get('#saved-participants')
+    .get('#select-userSavedParticipants')
     .should('exist');
 }

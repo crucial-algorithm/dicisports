@@ -66,7 +66,6 @@ export const action: ActionFunction = async ({ request, params }) => {
         return badRequest({ error: t('No Races In Checkout') });
       }
 
-      console.log(eventId);
       const pin = Math.floor(1000 + Math.random() * 9000);
       const registration = await createRegistration(pin, eventId, clientId);
 

@@ -285,17 +285,20 @@ export default function CheckoutInfoRoute() {
     userSavedParticipants
   } = useLoaderData<LoaderData>();
 
-  const [participant, setParticipant] = useState<Participant | null>(null);
-  const [selectedRace, setSelectedRace] = useState<string | null>(null);
+  const defaultSelectedParticipant =
+      userParticipants[
+          userParticipants.findIndex(
+              (p: Participant) => p.id === raceParticipants[0].participantId)
+          ];
+  const [participant, setParticipant] = useState<Participant | null>(defaultSelectedParticipant);
+  const [selectedRace, setSelectedRace] = useState<string | null>(raceParticipants[0].raceId);
   const [errors, setErrors] = useState<FormErrors>({});
   const [hash, setHash] = useState<number>(Date.now());
   const [message, setMessage] = useState<string>('');
   let showNotification: any = null;
   const [showAddRacesDialog, setShowAddRacesDialog] = useState<boolean>(false);
   const [isReset, setIsReset] = useState<boolean>(false);
-  const [selectedParticipant, setSelectedParticipant] = useState<
-    string | number | null
-  >(null);
+  const [selectedParticipant, setSelectedParticipant] = useState<string | number | null>(null);
 
   const reset = useCallback(() => {
     setErrors({});

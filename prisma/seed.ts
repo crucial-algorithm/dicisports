@@ -53,6 +53,7 @@ async function seed() {
 async function clear() {
   await db.document.deleteMany();
   await db.raceParticipant.deleteMany();
+  await db.registration.deleteMany();
   await db.participant.deleteMany();
   await db.raceCheckout.deleteMany();
   await db.race.deleteMany();

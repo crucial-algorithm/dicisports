@@ -1,8 +1,8 @@
 {
   "Distance": "Distância",
   "Hour": "Hora",
-  "Your Tickets": "Os seus bilhetes",
-  "Checkout now": "Complete a sua inscrição",
+  "Your Tickets": "Os teus bilhetes",
+  "Checkout now": "Completa a tua inscrição",
 
   "First Name": "Primeiro Nome",
   "Last Name": "Último Nome",
@@ -10,6 +10,7 @@
   "Phone Number": "Número de telemóvel",
   "Shirt Size": "Tamanho da camisola",
   "Nationality": "Nacionalidade",
+  "Identity Card": "Cartão de Cidadão",
   "Postal Code": "Código postal",
   "Birthday": "Data de nascimento",
   "National Federation Number": "Número da Federação Nacional",
@@ -44,5 +45,12 @@
 
   "Participant Not Filled": "Participante não inscrito !",
   "New Participant First Name": "Novo",
-  "New Participant Last Name": "Participante"
+  "New Participant Last Name": "Participante",
+
+  "Thanks For Buying": "Obrigado por te registares com a Dicisports. Por favor imprime esta página com os dados da confirmação, para o caso de quereres mudar algo.",
+  "Confirmation ID": "ID de confirmação",
+  "PIN": "PIN",
+  "Mail Confirmation Details": "Envia-me os detalhes da confirmação para o e-mail:",
+  "Email Address": "E-mail",
+  "Send": "Enviar"
 }
