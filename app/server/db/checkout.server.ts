@@ -352,7 +352,9 @@ async function addRaceParticipants(
 
 async function updateRaceParticipantStatus(
   raceParticipants: RaceParticipant[],
-  status: CheckoutStatus
+  status: CheckoutStatus,
+  userSessionId: string,
+  eventId: string
 ): Promise<void> {
   return await prisma.$transaction(async (prisma) => {
     for (const r of raceParticipants) {
@@ -368,6 +370,8 @@ async function updateRaceParticipantStatus(
         }
       });
     }
+
+    await updateBookingStatus(userSessionId, eventId, status, prisma);
   });
 }
 
@@ -393,6 +397,20 @@ async function createBooking(
       userId: userSessionId,
       createdAt: new Date(),
       updatedAt: new Date()
+    }
+  });
+}
+
+async function updateBookingStatus(
+  userSessionId: string,
+  eventId: string,
+  status: CheckoutStatus,
+  tx?: Prisma.TransactionClient
+): Promise<Booking> {
+  return await (tx || db).booking.update({
+    where: { eventId_userId: { eventId, userId: userSessionId } },
+    data: {
+      status
     }
   });
 }

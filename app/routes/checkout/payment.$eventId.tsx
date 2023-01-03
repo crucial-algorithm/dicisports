@@ -3,6 +3,7 @@ import type { ActionFunction, LoaderFunction } from 'remix';
 import { json, redirect } from 'remix';
 import { Form, useLoaderData } from '@remix-run/react';
 import { useTranslation } from 'react-i18next';
+import { CheckoutStatus } from '@prisma/client';
 
 import Main from '~/components/shared/Main';
 import { H2, H6 } from '~/components/shared/typography';
@@ -11,6 +12,7 @@ import { findEvent } from '~/server/db/events.server';
 import type { Cart, Event } from '~/types';
 import { getClientSession } from '~/server/auth/client.server';
 import {
+  findBooking,
   findUserRaceParticipants,
   getUserCheckoutRaces,
   updateRaceParticipantStatus
@@ -38,7 +40,12 @@ export const action: ActionFunction = async ({ request, params }) => {
     return badRequest({ error: t('No Race Participants') });
   }
 
-  await updateRaceParticipantStatus(raceParticipants, 'confirmed');
+  await updateRaceParticipantStatus(
+    raceParticipants,
+    CheckoutStatus.confirmed,
+    clientId,
+    eventId
+  );
 
   return redirect(`/checkout/confirmation/${eventId}`);
 };
@@ -51,15 +58,18 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   const event = await findEvent(eventId);
   const cart = await getUserCheckoutRaces(clientId, eventId);
   const raceParticipants = await findUserRaceParticipants(clientId, eventId);
+  const booking = await findBooking(clientId, eventId);
 
   if (!raceParticipants || raceParticipants?.length === 0) {
     return redirect(`/checkout/registrations/${eventId}`);
   }
 
-  if (raceParticipants[0].status !== 'pending') {
+  if (booking?.status !== CheckoutStatus.pending) {
     return redirect(
       `/checkout/${
-        raceParticipants[0].status === 'checkout' ? 'registrations' : 'confirmation'
+        booking?.status === CheckoutStatus.checkout
+          ? 'registrations'
+          : 'confirmation'
       }/${eventId}`
     );
   }

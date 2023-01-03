@@ -4,6 +4,7 @@ import { Form, useLoaderData } from '@remix-run/react';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 import { ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline';
+import { CheckoutStatus, Status } from '@prisma/client';
 
 import Main from '~/components/shared/Main';
 import { findEvent } from '~/server/db/events.server';
@@ -15,7 +16,9 @@ import Button from '~/components/shared/Button';
 import { getClientSession } from '~/server/auth/client.server';
 import {
   addParticipantToRace,
-  addRegistration, createBooking,
+  addRegistration,
+  createBooking,
+  findBooking,
   findEventRacesCheckoutQtd,
   findUserRaceParticipants,
   getDistinctUserEventRegistrations,
@@ -70,7 +73,11 @@ export const action: ActionFunction = async ({ request, params }) => {
       const registration = await createBooking(pin, eventId, clientId);
 
       for (const uc of userCheckoutRace) {
-        await addParticipantToRace(uc.raceId as string, clientId, registration?.id);
+        await addParticipantToRace(
+          uc.raceId as string,
+          clientId,
+          registration?.id
+        );
       }
 
       return redirect(`/checkout/info/${eventId}`);
@@ -91,21 +98,21 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   const eventId = params.eventId as string;
   const event = await findEvent(eventId);
   const userCheckoutRaces = await getUserCheckoutRaces(clientId, eventId);
-  const raceParticipants = await findUserRaceParticipants(clientId, eventId);
+  const booking = await findBooking(clientId, eventId);
 
-  if (raceParticipants && raceParticipants?.length !== 0) {
+  if (booking) {
     return redirect(
       `/checkout/${
-        raceParticipants[0].status === 'checkout'
+        booking.status === CheckoutStatus.checkout
           ? 'info'
-          : raceParticipants[0].status === 'pending'
+          : booking.status === CheckoutStatus.pending
           ? 'payment'
           : 'confirmation'
       }/${eventId}`
     );
   }
 
-  if (!event) {
+  if (!event || event.status !== Status.published) {
     return redirect('/');
   }
 

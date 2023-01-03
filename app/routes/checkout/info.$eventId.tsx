@@ -2,6 +2,7 @@ import type { ActionFunction, LoaderFunction } from 'remix';
 import { json, redirect } from 'remix';
 import * as React from 'react';
 import { useCallback, useEffect, useState } from 'react';
+import { CheckoutStatus } from '@prisma/client';
 
 import type { FetcherWithComponents } from '@remix-run/react';
 import { useFetcher, useLoaderData } from '@remix-run/react';
@@ -18,7 +19,7 @@ import DisplayDate from '~/components/shared/DIsplayDate';
 
 import { getClientSession } from '~/server/auth/client.server';
 import {
-  changeToSelectedRaceParticipant,
+  changeToSelectedRaceParticipant, findBooking,
   findShirtSizes,
   findUserParticipants,
   findUserRaceParticipants,
@@ -41,7 +42,7 @@ import type {
   RaceParticipant,
   ShirtSize
 } from '~/types';
-import { Language } from '~/types';
+import type { Language } from '~/types';
 import { DisplayCart } from '~/routes/checkout/registrations.$eventId';
 import TextField from '~/components/shared/form/TextField';
 import FormField from '~/components/shared/form/FormField';
@@ -136,7 +137,7 @@ export const action: ActionFunction = async ({ request, params }) => {
       });
     }
 
-    await updateRaceParticipantStatus(raceParticipants, 'pending');
+    await updateRaceParticipantStatus(raceParticipants, CheckoutStatus.pending, clientId, eventId);
 
     return redirect(`/checkout/payment/${eventId}`);
   }
@@ -166,7 +167,7 @@ export const action: ActionFunction = async ({ request, params }) => {
         lastName: z
           .string({ required_error: t('Field Required') })
           .min(2, { message: t('Min 2 Chars') }),
-        gender: z.number({
+        gender: z.string({
           required_error: t('Field Required'),
           invalid_type_error: t('Invalid Type')
         }),
@@ -189,7 +190,7 @@ export const action: ActionFunction = async ({ request, params }) => {
           ),
         identityCard: z.string().nullable(),
         federationNumber: z.number().nullable(),
-        shirtSize: z.string({
+        shirtSize: z.number({
           required_error: t('Field Required'),
           invalid_type_error: t('Invalid Type')
         }),
@@ -433,12 +434,14 @@ export default function CheckoutInfoRoute() {
           )
           .map((p: RaceParticipant, index: number) => (
             <div className="flex flex-col items-center" key={p.id}>
-              {p.participantId === participant?.id &&
-                p.race.id === selectedRace && (
-                  <div onClick={handleRemoveRaceParticipant}>
-                    <H6 className="dark:text-blueGray-500">{t('Remove')}</H6>
-                  </div>
-                )}
+              <div className="h-[28px]">
+                {p.participantId === participant?.id &&
+                  p.race.id === selectedRace && (
+                    <button type="button" onClick={handleRemoveRaceParticipant}>
+                      <H6 className="dark:text-blueGray-500">{t('Remove')}</H6>
+                    </button>
+                  )}
+              </div>
 
               <div
                 className={clsx(
@@ -466,7 +469,7 @@ export default function CheckoutInfoRoute() {
           ))}
         <div className="flex flex-col items-center snap-center">
           <div
-            className="flex flex-col gap-y-2 border-2 border-b border-gray-500 p-2 mx-2 items-center w-[200px]"
+            className="flex flex-col gap-y-2 border-2 border-b border-gray-500 p-2 mx-2 items-center w-[200px] mt-[28px]"
             onClick={handleOpenAddRaces}
           >
             <PlusIcon className="h-7 w-7 dark:text-blueGray-500" />

@@ -3,6 +3,7 @@ import { json, redirect } from 'remix';
 import { useLoaderData } from '@remix-run/react';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
+import { CheckoutStatus } from '@prisma/client';
 
 import { getClientSession } from '~/server/auth/client.server';
 import {
@@ -31,15 +32,16 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 
   const clientId = clientSession.getClientId();
   const raceParticipants = await findUserRaceParticipants(clientId, eventId);
+  const booking = await findBooking(clientId, eventId);
 
   if (!raceParticipants || raceParticipants?.length === 0) {
     return redirect(`/checkout/registrations/${eventId}`);
   }
 
-  if (raceParticipants[0].status !== 'confirmed') {
+  if (booking?.status !== CheckoutStatus.confirmed) {
     return redirect(
       `/checkout/${
-        raceParticipants[0].status === 'pending' ? 'payment' : 'registrations'
+        booking?.status === CheckoutStatus.pending ? 'payment' : 'registrations'
       }/${eventId}`
     );
   }
