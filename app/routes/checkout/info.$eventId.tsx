@@ -19,7 +19,6 @@ import DisplayDate from '~/components/shared/DIsplayDate';
 
 import { getClientSession } from '~/server/auth/client.server';
 import {
-  changeToSelectedRaceParticipant,
   findShirtSizes,
   findUserParticipants,
   findUserRaceParticipants,
@@ -83,34 +82,6 @@ export const action: ActionFunction = async ({ request, params }) => {
   const actionId = form.get('actionId');
   const hash = form.get('hash') as string;
 
-  if (actionId === actions.selectParticipant) {
-    const newUser = form.get('newUser') as string;
-    const oldUser = form.get('oldUser') as string;
-    const raceId = form.get('raceId') as string;
-
-    try {
-      await changeToSelectedRaceParticipant(newUser, oldUser, raceId);
-
-      return json({ ok: true, action: actions.selectParticipant });
-    } catch (e) {
-      console.log(e);
-
-      return badRequest({
-        errors: { selectedParticipant: t('Existing Race Participant') },
-        hash: parseInt(hash)
-      });
-    }
-  }
-
-  if (actionId === actions.resetParticipant) {
-    const participantId = form.get('participantId') as string;
-    const raceId = form.get('raceId') as string;
-
-    await resetParticipant(participantId, clientId, raceId);
-
-    return json({ ok: true, action: actions.resetParticipant });
-  }
-
   if (actionId === actions.checkout) {
     const raceParticipants = await findUserRaceParticipants(clientId, eventId);
     const verifiedRaceParticipants: RaceParticipant[] = [];
@@ -137,7 +108,12 @@ export const action: ActionFunction = async ({ request, params }) => {
       });
     }
 
-    await updateRaceParticipantStatus(raceParticipants, CheckoutStatus.pending, clientId, eventId);
+    await updateRaceParticipantStatus(
+      raceParticipants,
+      CheckoutStatus.pending,
+      clientId,
+      eventId
+    );
 
     return redirect(`/checkout/payment/${eventId}`);
   }
@@ -487,7 +463,6 @@ export default function CheckoutInfoRoute() {
             userSavedParticipants={
               userSavedParticipants.length !== 0 ? userSavedParticipants : null
             }
-            eventId={event.id}
             raceId={selectedRace}
             fetcher={fetcher}
             selectedParticipant={selectedParticipant}
@@ -532,7 +507,6 @@ function ParticipantForm({
   hash,
   errors,
   userSavedParticipants,
-  eventId,
   raceId,
   fetcher,
   selectedParticipant,
@@ -543,7 +517,6 @@ function ParticipantForm({
   hash: number;
   errors?: FormErrors;
   userSavedParticipants: Participant[] | null;
-  eventId: string;
   raceId: string | null;
   fetcher: FetcherWithComponents<any>;
   selectedParticipant: string | number | null;
@@ -573,7 +546,7 @@ function ParticipantForm({
           },
           {
             method: 'post',
-            action: `/checkout/info/${eventId}`
+            action: '/checkout/manage/'
           }
         );
       }
@@ -589,7 +562,7 @@ function ParticipantForm({
       },
       {
         method: 'post',
-        action: `/checkout/info/${eventId}`
+        action: '/checkout/manage/'
       }
     );
   }

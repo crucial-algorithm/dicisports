@@ -12,7 +12,7 @@ import {
   getUserCheckoutRaces
 } from '~/server/db/checkout.server';
 import { findEvent } from '~/server/db/events.server';
-import type { Cart, Event, Booking } from '~/types';
+import type { Booking, Cart, Event } from '~/types';
 import Main from '~/components/shared/Main';
 import { H2, H4, H6 } from '~/components/shared/typography';
 import DisplayDate from '~/components/shared/DIsplayDate';
