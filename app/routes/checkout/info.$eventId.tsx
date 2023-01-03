@@ -19,7 +19,7 @@ import DisplayDate from '~/components/shared/DIsplayDate';
 
 import { getClientSession } from '~/server/auth/client.server';
 import {
-  changeToSelectedRaceParticipant, findBooking,
+  changeToSelectedRaceParticipant,
   findShirtSizes,
   findUserParticipants,
   findUserRaceParticipants,
@@ -36,13 +36,13 @@ import { H2, H4, H5, H6 } from '~/components/shared/typography';
 import type {
   Cart,
   Event,
+  Language,
   Participant,
   ParticipantInput,
   Race,
   RaceParticipant,
   ShirtSize
 } from '~/types';
-import type { Language } from '~/types';
 import { DisplayCart } from '~/routes/checkout/registrations.$eventId';
 import TextField from '~/components/shared/form/TextField';
 import FormField from '~/components/shared/form/FormField';

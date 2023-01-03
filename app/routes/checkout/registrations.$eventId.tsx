@@ -20,7 +20,6 @@ import {
   createBooking,
   findBooking,
   findEventRacesCheckoutQtd,
-  findUserRaceParticipants,
   getDistinctUserEventRegistrations,
   getUserCheckoutRaces,
   removeRegistration
