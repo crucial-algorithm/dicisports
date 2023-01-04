@@ -1,7 +1,7 @@
 import * as React from 'react';
 import type { ActionFunction, LoaderFunction } from 'remix';
 import { json, redirect } from 'remix';
-import { Form, useLoaderData } from '@remix-run/react';
+import { Form, useFetcher, useLoaderData } from '@remix-run/react';
 import { useTranslation } from 'react-i18next';
 import { CheckoutStatus } from '@prisma/client';
 
@@ -17,7 +17,7 @@ import {
   getUserCheckoutRaces,
   updateRaceParticipantStatus
 } from '~/server/db/checkout.server';
-import { DisplayCart } from '~/routes/checkout/registrations.$eventId';
+import DisplayCart from '~/components/shared/DisplayCart';
 import Button from '~/components/shared/Button';
 import { badRequest } from '~/utils/misc';
 import i18n from '~/server/i18n.server';
@@ -83,6 +83,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 export default function CheckoutPaymentRoute() {
   const { event, cart } = useLoaderData<LoaderData>();
   const { t } = useTranslation('checkout');
+  const fetcher = useFetcher();
 
   return (
     <Main>
@@ -105,7 +106,7 @@ export default function CheckoutPaymentRoute() {
           </Form>
         </div>
         <div className="w-full mt-8 md:w-[50%] md:mt-0 md:pl-48">
-          <DisplayCart cart={cart} event={event} />
+          <DisplayCart cart={cart} event={event} fetcher={fetcher} />
         </div>
       </div>
     </Main>

@@ -1,6 +1,6 @@
 import type { LoaderFunction } from 'remix';
 import { json, redirect } from 'remix';
-import { useLoaderData } from '@remix-run/react';
+import { useFetcher, useLoaderData } from '@remix-run/react';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 import { CheckoutStatus } from '@prisma/client';
@@ -16,7 +16,7 @@ import type { Booking, Cart, Event } from '~/types';
 import Main from '~/components/shared/Main';
 import { H2, H4, H6 } from '~/components/shared/typography';
 import DisplayDate from '~/components/shared/DIsplayDate';
-import { DisplayCart } from '~/routes/checkout/registrations.$eventId';
+import DisplayCart from '~/components/shared/DisplayCart';
 import TextField from '~/components/shared/form/TextField';
 import Button from '~/components/shared/Button';
 
@@ -60,6 +60,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 export default function CheckoutConfirmationRoute() {
   const { registration, event, cart } = useLoaderData<LoaderData>();
   const { t } = useTranslation('checkout');
+  const fetcher = useFetcher();
 
   return (
     <Main>
@@ -106,7 +107,7 @@ export default function CheckoutConfirmationRoute() {
           </div>
         </div>
         <div className="w-full mt-8 md:w-[50%] md:mt-0 md:pl-48">
-          <DisplayCart cart={cart} event={event} />
+          <DisplayCart cart={cart} event={event} fetcher={fetcher} />
         </div>
       </div>
     </Main>

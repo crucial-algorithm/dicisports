@@ -24,7 +24,6 @@ import {
   findUserRaceParticipants,
   findUserSavedParticipants,
   getUserCheckoutRaces,
-  resetParticipant,
   updateParticipant,
   updateRaceParticipantStatus
 } from '~/server/db/checkout.server';
@@ -42,7 +41,7 @@ import type {
   RaceParticipant,
   ShirtSize
 } from '~/types';
-import { DisplayCart } from '~/routes/checkout/registrations.$eventId';
+import DisplayCart from '~/components/shared/DisplayCart';
 import TextField from '~/components/shared/form/TextField';
 import FormField from '~/components/shared/form/FormField';
 
@@ -101,10 +100,11 @@ export const action: ActionFunction = async ({ request, params }) => {
         raceParticipants?.length - verifiedRaceParticipants.length;
 
       return badRequest({
-        error: {
+        errors: {
           missingFilledParticipants:
             missingFilledParticipants + ' ' + t('Participant Not Filled')
-        }
+        },
+        hash: parseInt(hash)
       });
     }
 
@@ -262,7 +262,6 @@ export default function CheckoutInfoRoute() {
     userSavedParticipants,
     shirtSizes
   } = useLoaderData<LoaderData>();
-
   const defaultSelectedParticipant =
     userParticipants[
       userParticipants.findIndex(
@@ -474,7 +473,13 @@ export default function CheckoutInfoRoute() {
           </Notification>
         </div>
         <div className="w-full mt-8 md:w-[50%] md:mt-0 md:pl-48">
-          <DisplayCart cart={cart} event={event} />
+          <DisplayCart
+            cart={cart}
+            event={event}
+            error={errors.missingFilledParticipants}
+            fetcher={fetcher}
+            hash={hash}
+          />
         </div>
       </div>
 
@@ -500,6 +505,7 @@ type FormErrors = {
   nationality?: string;
   postalcode?: string;
   selectedParticipant?: string;
+  missingFilledParticipants?: string;
 };
 
 function ParticipantForm({
@@ -546,7 +552,7 @@ function ParticipantForm({
           },
           {
             method: 'post',
-            action: '/checkout/manage/'
+            action: '/checkout/manage'
           }
         );
       }
@@ -562,7 +568,7 @@ function ParticipantForm({
       },
       {
         method: 'post',
-        action: '/checkout/manage/'
+        action: '/checkout/manage'
       }
     );
   }
@@ -578,24 +584,26 @@ function ParticipantForm({
           <FormField
             label=""
             error={errors?.selectedParticipant}
-            className="flex flex-row items-center mt-2"
+            className="w-full"
           >
-            <ComboBox
-              id="saved-participants"
-              name="userSavedParticipants"
-              placeholder=""
-              options={userSavedParticipants.map((u) => {
-                return { value: u.id, label: u.firstName + ' ' + u.lastName };
-              })}
-              onChange={setSelectedParticipant}
-              defaultValue={participant.id}
-              className="w-[50%] mr-2"
-            />
-            {selectedParticipant && (
-              <div onClick={handleOnSelectSavedParticipant}>
-                <H6 className="dark:text-blueGray-500">{t('Fill')}</H6>
-              </div>
-            )}
+            <div className="flex flex-row items-center mt-2">
+              <ComboBox
+                id="saved-participants"
+                name="userSavedParticipants"
+                placeholder=""
+                options={userSavedParticipants.map((u) => {
+                  return { value: u.id, label: u.firstName + ' ' + u.lastName };
+                })}
+                onChange={setSelectedParticipant}
+                defaultValue={participant.id}
+                className="w-[50%] mr-2"
+              />
+              {selectedParticipant && (
+                <button type="button" onClick={handleOnSelectSavedParticipant}>
+                  <H6 className="dark:text-blueGray-500">{t('Fill')}</H6>
+                </button>
+              )}
+            </div>
           </FormField>
         </div>
       )}
