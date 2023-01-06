@@ -415,6 +415,16 @@ async function updateBookingStatus(
   });
 }
 
+async function removeBooking(
+  userSessionId: string,
+  eventId: string,
+  tx?: Prisma.TransactionClient
+): Promise<void> {
+  await (tx || db).booking.delete({
+    where: { eventId_userId: { eventId, userId: userSessionId } }
+  });
+}
+
 async function findShirtSizes(): Promise<Array<ShirtSize>> {
   const shirtSizes = await db.shirtSize.findMany({
     orderBy: {
@@ -446,5 +456,6 @@ export {
   updateRaceParticipantStatus,
   findBooking,
   createBooking,
-  findShirtSizes
+  findShirtSizes,
+  removeBooking
 };

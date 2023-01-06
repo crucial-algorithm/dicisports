@@ -7,6 +7,8 @@ import {
   addRaceParticipants,
   changeToSelectedRaceParticipant,
   findBooking,
+  findUserRaceParticipants,
+  removeBooking,
   removeRaceParticipant,
   resetParticipant
 } from '~/server/db/checkout.server';
@@ -52,8 +54,18 @@ export const action: ActionFunction = async ({ request }) => {
     if (actionId === actions.removeParticipant) {
       const participantId = form.get('participantId') as string;
       const raceId = form.get('raceId') as string;
+      const eventId = await findRace(raceId).then((p) => p?.eventId);
 
       await removeRaceParticipant(participantId, raceId, clientId);
+
+      const raceParticipants = await findUserRaceParticipants(
+        clientId,
+        eventId as string
+      );
+
+      if (raceParticipants?.length === 0) {
+        await removeBooking(clientId, eventId as string);
+      }
     }
 
     if (actionId === actions.addParticipants) {

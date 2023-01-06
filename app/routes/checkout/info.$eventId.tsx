@@ -412,7 +412,7 @@ export default function CheckoutInfoRoute() {
               <div className="h-[28px]">
                 {p.participantId === participant?.id &&
                   p.race.id === selectedRace && (
-                    <button type="button" onClick={handleRemoveRaceParticipant}>
+                    <button type="button" onClick={handleRemoveRaceParticipant} name="remove">
                       <H6 className="dark:text-blueGray-500">{t('Remove')}</H6>
                     </button>
                   )}
@@ -612,6 +612,7 @@ function ParticipantForm({
           label={t('First Name')}
           id="first-name"
           error={errors?.firstName}
+          dataCy="firstName"
         >
           <TextField
             data-cy="first-name"
@@ -625,6 +626,7 @@ function ParticipantForm({
           label={t('Last Name')}
           id="last-name"
           error={errors?.lastName}
+          dataCy="lastName"
         >
           <TextField
             name="last-name"
@@ -634,7 +636,7 @@ function ParticipantForm({
         </FormField>
       </div>
 
-      <FormField label={t('Gender')} error={errors?.gender}>
+      <FormField label={t('Gender')} error={errors?.gender} dataCy="gender">
         <ComboBox
           name="gender"
           placeholder=""
@@ -644,7 +646,7 @@ function ParticipantForm({
       </FormField>
 
       <div className="flex flex-col md:flex-row md:space-x-2">
-        <FormField label={''} id="birthday" error={errors?.birthday}>
+        <FormField label={''} id="birthday" error={errors?.birthday} dataCy="birthday">
           <BasicDatePicker
             label={t('Birthday')}
             name="birthday"
@@ -660,6 +662,7 @@ function ParticipantForm({
           label={t('Phone Number')}
           id="phone-number"
           error={errors?.phoneNumber}
+          dataCy="phoneNumber"
         >
           <TextField
             type="number"
@@ -677,6 +680,7 @@ function ParticipantForm({
           label={t('Identity Card')}
           id="identity-card"
           error={errors?.identityCard}
+          dataCy="identityCard"
         >
           <TextField
             type="number"
@@ -692,6 +696,7 @@ function ParticipantForm({
           label={t('National Federation Number')}
           id="federation-number"
           error={errors?.federationNumber}
+          dataCy="federationNumber"
         >
           <TextField
             type="number"
@@ -702,7 +707,7 @@ function ParticipantForm({
         </FormField>
       </div>
 
-      <FormField label={t('Shirt Size')} error={errors?.shirtSize}>
+      <FormField label={t('Shirt Size')} error={errors?.shirtSize} dataCy="shirtSize">
         <ComboBox
           name="shirt"
           placeholder=""
@@ -718,6 +723,7 @@ function ParticipantForm({
         label={t('Nationality')}
         id="nationality"
         error={errors?.nationality}
+        dataCy="nationality"
       >
         <TextField
           name="nationality"
@@ -730,6 +736,7 @@ function ParticipantForm({
         label={t('Postal Code')}
         id="postal-code"
         error={errors?.postalcode}
+        dataCy="postalCode"
       >
         <TextField
           name="postal-code"

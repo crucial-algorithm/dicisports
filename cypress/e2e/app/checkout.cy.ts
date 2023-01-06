@@ -28,7 +28,9 @@ describe('Checkout', () => {
       cy.intercept('GET', '*?_data=routes*checkout*')
         .as('selectRace')
 
-        .visitAndWaitForHydration('/checkout/registrations/MY4bvgxDbMtGv8rbYe5d')
+        .visitAndWaitForHydration(
+          '/checkout/registrations/MY4bvgxDbMtGv8rbYe5d'
+        )
 
         .get('#add-race-AhowRdNWCBQWSuivSt7h')
         .click()
@@ -59,7 +61,9 @@ describe('Checkout', () => {
         .intercept('POST', '*?_data=route*checkout*registrations*')
         .as('addRace')
 
-        .visitAndWaitForHydration('/checkout/registrations/MY4bvgxDbMtGv8rbYe5d')
+        .visitAndWaitForHydration(
+          '/checkout/registrations/MY4bvgxDbMtGv8rbYe5d'
+        )
 
         .get('#add-race-AhowRdNWCBQWSuivSt7h')
         .click()
@@ -96,6 +100,104 @@ describe('Checkout', () => {
         .get('input[name=first-name]')
         .should('have.value', 'Nuno');
     });
+
+    it('should remove race participant', () => {
+      cy.intercept('GET', '*?_data=routes*checkout*')
+        .as('selectRace')
+
+        .visitAndWaitForHydration(
+          '/checkout/registrations/MY4bvgxDbMtGv8rbYe5d'
+        )
+
+        .get('#add-race-AhowRdNWCBQWSuivSt7h')
+        .click()
+
+        .wait('@selectRace')
+
+        .get('#add-race-AhowRdNWCBQWSuivSt7h')
+        .click()
+
+        .wait('@selectRace')
+
+        .get('#checkout')
+        .click()
+
+        .intercept('POST', '/checkout/manage*?_data=routes*')
+        .as('removeParticipant')
+
+        .get('button[name=remove]')
+        .click()
+
+        .wait('@removeParticipant')
+
+        .get('[data-cy=participant]')
+        .should('have.length', 1);
+    });
+
+    it('should redirect to registration if last race participant is removed', () => {
+      cy.intercept('GET', '*?_data=routes*checkout*')
+        .as('selectRace')
+
+        .visitAndWaitForHydration(
+          '/checkout/registrations/MY4bvgxDbMtGv8rbYe5d'
+        )
+
+        .get('#add-race-AhowRdNWCBQWSuivSt7h')
+        .click()
+
+        .wait('@selectRace')
+
+        .get('#checkout')
+        .click()
+
+        .wait('@selectRace')
+
+        .intercept('POST', '/checkout/manage*?_data=routes*')
+        .as('removeParticipant')
+
+        .get('button[name=remove]')
+        .click()
+
+        .wait('@removeParticipant')
+
+        .url()
+        .should(
+          'eq',
+          `${
+            Cypress.config().baseUrl
+          }/checkout/registrations/MY4bvgxDbMtGv8rbYe5d`
+        );
+    });
+
+    it('should show validation error if there are missing participants', () => {
+      cy.intercept('GET', '/checkout/registrations/*?_data=routes*checkout*')
+        .as('selectRace')
+
+        .intercept('GET', '/checkout/info/*?_data=routes*checkout*')
+        .as('checkout')
+
+        .visitAndWaitForHydration(
+          '/checkout/registrations/MY4bvgxDbMtGv8rbYe5d'
+        )
+
+        .get('#add-race-AhowRdNWCBQWSuivSt7h')
+        .click()
+
+        .wait('@selectRace')
+
+        .get('#checkout')
+        .click()
+
+        .wait('@checkout')
+
+        .get('#checkout')
+        .click()
+
+        .wait('@checkout')
+
+        .get('#checkout-error')
+        .should('exist');
+    });
   });
 });
 
@@ -104,6 +206,11 @@ function registerParticipant() {
     .as('selectRace')
 
     .visitAndWaitForHydration('/checkout/registrations/MY4bvgxDbMtGv8rbYe5d')
+
+    .get('#add-race-AhowRdNWCBQWSuivSt7h')
+    .click()
+
+    .wait('@selectRace')
 
     .get('#add-race-AhowRdNWCBQWSuivSt7h')
     .click()
