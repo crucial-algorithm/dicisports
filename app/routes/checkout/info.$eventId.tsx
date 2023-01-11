@@ -461,8 +461,8 @@ export default function CheckoutInfoRoute() {
         </div>
       </div>
 
-      <div className="flex flex-col md:flex-row">
-        <div className="flex-col w-full md:w-[50%] mt-8">
+      <div className="flex flex-col md:flex-row mt-8">
+        <div className="flex-col w-full md:w-[calc(100%-(480px))] md:pr-4">
           <ParticipantForm
             participant={participant}
             hash={hash}
@@ -480,7 +480,7 @@ export default function CheckoutInfoRoute() {
             {message}
           </Notification>
         </div>
-        <div className="w-full mt-8 md:w-[50%] md:mt-0 md:pl-48">
+        <div className="w-full md:w-[480px]">
           <DisplayCart
             cart={cart}
             event={event}

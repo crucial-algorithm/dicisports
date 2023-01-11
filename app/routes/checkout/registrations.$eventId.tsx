@@ -146,15 +146,15 @@ export default function CheckoutRegistrationsRoute() {
         </H6>
         <H6>{event.address}</H6>
       </div>
-      <div className="flex flex-col md:flex-row">
-        <div className="flex-col w-full md:w-[50%]">
+      <div className="flex flex-col md:flex-row mt-8">
+        <div className="flex-col w-full md:w-[calc(100%-(480px))] md:pr-4">
           {races
             .sort((a: Race, b: Race) => a.displayOrder - b.displayOrder)
             .map((r: RaceQtd) => (
               <DisplayRace race={r} key={r.id} />
             ))}
         </div>
-        <div className="w-full mt-8 md:w-[50%] md:mt-0 md:pl-48">
+        <div className="w-full md:w-[480px]">
           <DisplayCart
             cart={userCheckoutRaces}
             event={event}
@@ -171,7 +171,7 @@ function DisplayRace({ race }: { race: RaceQtd }) {
   const raceTime = displayTimeOfDay(race.startTime);
 
   return (
-    <div className="flex flex-col mt-8 w-full">
+    <div className="flex flex-col mb-8 w-full">
       <div className="flex flex-row items-center justify-between">
         <H4>{race.name}</H4>
         <H5>{race.price + '€'}</H5>

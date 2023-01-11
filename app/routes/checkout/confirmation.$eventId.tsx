@@ -69,7 +69,7 @@ export default function CheckoutConfirmationRoute() {
 
   return (
     <Main>
-      <div className="flex flex-col justify-start space-y-1">
+      <div className="flex flex-col justify-start space-y-1 mb-8">
         <H2>
           <b data-cy="name" className="break-words w-full">
             {event.name}
@@ -91,7 +91,7 @@ export default function CheckoutConfirmationRoute() {
       )}
 
       <div className="flex flex-col md:flex-row">
-        <div className="flex-col w-full md:w-[50%]">
+        <div className="flex-col w-full md:w-[calc(100%-(480px))] md:pr-4">
           <H4>{t('Thanks For Buying')}</H4>
 
           <div className="text-center">
@@ -120,7 +120,7 @@ export default function CheckoutConfirmationRoute() {
             </Button>
           </div>
         </div>
-        <div className="w-full mt-8 md:w-[50%] md:mt-0 md:pl-48">
+        <div className="w-full md:w-[480px]">
           <DisplayCart cart={cart} event={event} fetcher={fetcher} />
         </div>
       </div>

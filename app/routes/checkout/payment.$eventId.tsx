@@ -102,14 +102,14 @@ export default function CheckoutPaymentRoute() {
         </H6>
         <H6>{event.address}</H6>
       </div>
-      <div className="flex flex-col md:flex-row">
+      <div className="flex flex-col md:flex-row mt-8">
         {/*Payment Form*/}
-        <div className="flex-col w-full md:w-[50%] mt-8">
+        <div className="flex-col w-full md:w-[calc(100%-(480px))] md:pr-4">
           <Form method="post">
             <Button type="submit">{t('Pay')}</Button>
           </Form>
         </div>
-        <div className="w-full mt-8 md:w-[50%] md:mt-0 md:pl-48">
+        <div className="w-full md:w-[480px]">
           <DisplayCart cart={cart} event={event} fetcher={fetcher} />
         </div>
       </div>
