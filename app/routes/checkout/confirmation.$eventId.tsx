@@ -19,6 +19,7 @@ import DisplayDate from '~/components/shared/DIsplayDate';
 import DisplayCart from '~/components/shared/DisplayCart';
 import TextField from '~/components/shared/form/TextField';
 import Button from '~/components/shared/Button';
+import { getUser } from '~/server/auth/session.server';
 
 type LoaderData = {
   registration: Booking;
@@ -29,8 +30,10 @@ type LoaderData = {
 export const loader: LoaderFunction = async ({ request, params }) => {
   const eventId = params.eventId as string;
   const clientSession = await getClientSession(request);
+  const authClient = await getUser(request);
 
-  const clientId = clientSession.getClientId();
+  const clientId =
+    authClient !== null ? authClient.id : clientSession.getClientId();
   const raceParticipants = await findUserRaceParticipants(clientId, eventId);
   const booking = await findBooking(clientId, eventId);
 

@@ -52,6 +52,7 @@ import i18n from '~/server/i18n.server';
 import { badRequest, displayTimeOfDay } from '~/utils/misc';
 import { Notification } from '~/components/shared/NotificationMessage';
 import ButtonGroup from '~/components/shared/ButtonGroup';
+import { getUser } from '~/server/auth/session.server';
 
 const actions = {
   add: 'add',
@@ -75,9 +76,10 @@ export const action: ActionFunction = async ({ request, params }) => {
   const t = await i18n.getFixedT(request, 'checkout');
   const form = await request.formData();
   const clientSession = await getClientSession(request);
+  const authClient = await getUser(request);
   const eventId = params.eventId as string;
 
-  const clientId = clientSession.getClientId();
+  const clientId = authClient !== null ? authClient.id : clientSession.getClientId();
   const actionId = form.get('actionId');
   const hash = form.get('hash') as string;
 
@@ -201,8 +203,10 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   const t = await i18n.getFixedT(request, 'checkout');
   const eventId = params.eventId as string;
   const clientSession = await getClientSession(request);
+  const authClient = await getUser(request);
 
-  const clientId = clientSession.getClientId();
+  const clientId =
+    authClient !== null ? authClient.id : clientSession.getClientId();
   const event = await findEvent(eventId);
   const cart = await getUserCheckoutRaces(clientId, eventId);
   const raceParticipants = await findUserRaceParticipants(clientId, eventId);
@@ -412,7 +416,11 @@ export default function CheckoutInfoRoute() {
               <div className="h-[28px]">
                 {p.participantId === participant?.id &&
                   p.race.id === selectedRace && (
-                    <button type="button" onClick={handleRemoveRaceParticipant} name="remove">
+                    <button
+                      type="button"
+                      onClick={handleRemoveRaceParticipant}
+                      name="remove"
+                    >
                       <H6 className="dark:text-blueGray-500">{t('Remove')}</H6>
                     </button>
                   )}
@@ -582,7 +590,7 @@ function ParticipantForm({
       {participant && userSavedParticipants && (
         <div className="mb-8">
           <FormField
-            label=""
+            label={t('Select Participant')}
             error={errors?.selectedParticipant}
             className="w-full"
           >
@@ -646,7 +654,12 @@ function ParticipantForm({
       </FormField>
 
       <div className="flex flex-col md:flex-row md:space-x-2">
-        <FormField label={''} id="birthday" error={errors?.birthday} dataCy="birthday">
+        <FormField
+          label={''}
+          id="birthday"
+          error={errors?.birthday}
+          dataCy="birthday"
+        >
           <BasicDatePicker
             label={t('Birthday')}
             name="birthday"
@@ -707,7 +720,11 @@ function ParticipantForm({
         </FormField>
       </div>
 
-      <FormField label={t('Shirt Size')} error={errors?.shirtSize} dataCy="shirtSize">
+      <FormField
+        label={t('Shirt Size')}
+        error={errors?.shirtSize}
+        dataCy="shirtSize"
+      >
         <ComboBox
           name="shirt"
           placeholder=""

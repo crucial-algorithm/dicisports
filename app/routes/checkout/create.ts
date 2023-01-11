@@ -8,12 +8,15 @@ import {
   createRegistration,
   getCheckoutByUserAndRace
 } from '~/server/db/checkout.server';
+import { getUser } from '~/server/auth/session.server';
 
 export const action: ActionFunction = async ({ request }) => {
   const form = await request.formData();
   const clientSession = await getClientSession(request);
+  const authClient = await getUser(request);
 
-  const clientId = clientSession.getClientId();
+  const clientId =
+    authClient !== null ? authClient.id : clientSession.getClientId();
   const raceId = form.get('raceId') as string;
   const eventId = form.get('eventId') as string;
 

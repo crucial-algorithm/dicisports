@@ -21,6 +21,7 @@ import DisplayCart from '~/components/shared/DisplayCart';
 import Button from '~/components/shared/Button';
 import { badRequest } from '~/utils/misc';
 import i18n from '~/server/i18n.server';
+import { getUser } from '~/server/auth/session.server';
 
 type LoaderData = {
   event: Event;
@@ -31,8 +32,10 @@ export const action: ActionFunction = async ({ request, params }) => {
   const t = await i18n.getFixedT(request, 'checkout');
   const eventId = params.eventId as string;
   const clientSession = await getClientSession(request);
+  const authClient = await getUser(request);
 
-  const clientId = clientSession.getClientId();
+  const clientId =
+    authClient !== null ? authClient.id : clientSession.getClientId();
 
   const raceParticipants = await findUserRaceParticipants(clientId, eventId);
 
@@ -53,8 +56,9 @@ export const action: ActionFunction = async ({ request, params }) => {
 export const loader: LoaderFunction = async ({ request, params }) => {
   const eventId = params.eventId as string;
   const clientSession = await getClientSession(request);
+  const authClient = await getUser(request);
 
-  const clientId = clientSession.getClientId();
+  const clientId = authClient !== null ? authClient.id : clientSession.getClientId();
   const event = await findEvent(eventId);
   const cart = await getUserCheckoutRaces(clientId, eventId);
   const raceParticipants = await findUserRaceParticipants(clientId, eventId);

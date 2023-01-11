@@ -6,7 +6,7 @@
 
   "First Name": "Primeiro Nome",
   "Last Name": "Último Nome",
-  "Gender": "Gênero",
+  "Gender": "Género",
   "Phone Number": "Número de telemóvel",
   "Shirt Size": "Tamanho da camisola",
   "Nationality": "Nacionalidade",
@@ -42,6 +42,7 @@
   "Participant Reset": "Participante redefinido",
   "Participant Removed": "Participante removido",
   "Add Race": "Adicionar inscrição",
+  "Select Participant": "Escolhe um participante existente",
 
   "Participant Not Filled": "participante(s) não inscrito(s) !",
   "New Participant First Name": "Novo",

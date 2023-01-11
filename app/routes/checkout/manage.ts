@@ -14,6 +14,7 @@ import {
 } from '~/server/db/checkout.server';
 import { findRace } from '~/server/db/races.server';
 import i18n from '~/server/i18n.server';
+import { getUser } from '~/server/auth/session.server';
 
 const actions = {
   removeParticipant: 'removeParticipant',
@@ -26,8 +27,10 @@ export const action: ActionFunction = async ({ request }) => {
   const t = await i18n.getFixedT(request, 'checkout');
   const form = await request.formData();
   const clientSession = await getClientSession(request);
+  const authClient = await getUser(request);
 
-  const clientId = clientSession.getClientId();
+  const clientId =
+    authClient !== null ? authClient.id : clientSession.getClientId();
   const actionId = form.get('actionId') as string;
 
   if (actionId === actions.selectParticipant) {
