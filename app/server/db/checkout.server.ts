@@ -384,6 +384,12 @@ async function findBooking(
   });
 }
 
+async function findBookings(userSessionId: string): Promise<Booking[] | null> {
+  return db.booking.findMany({
+    where: { userId: userSessionId }
+  });
+}
+
 async function createBooking(
   pin: number,
   eventId: string,
@@ -435,6 +441,43 @@ async function findShirtSizes(): Promise<Array<ShirtSize>> {
   return shirtSizes.map((ss) => dbShirtSizeToShirtSize(ss));
 }
 
+async function checkoutAuthenticate(
+  authUser: string,
+  oldUser: string
+): Promise<void> {
+  return prisma.$transaction(async (prisma) => {
+    await findUserParticipants(oldUser);
+    await findBookings(oldUser);
+
+    await prisma.booking.updateMany({
+      where: {
+        userId: oldUser
+      },
+      data: {
+        userId: authUser
+      }
+    });
+
+    await prisma.participant.updateMany({
+      where: {
+        userId: oldUser
+      },
+      data: {
+        userId: authUser
+      }
+    });
+
+    await prisma.raceCheckout.updateMany({
+      where: {
+        userId: oldUser
+      },
+      data: {
+        userId: authUser
+      }
+    });
+  });
+}
+
 export {
   createRegistration,
   getUserEventRegistrations,
@@ -457,5 +500,6 @@ export {
   findBooking,
   createBooking,
   findShirtSizes,
-  removeBooking
+  removeBooking,
+  checkoutAuthenticate
 };

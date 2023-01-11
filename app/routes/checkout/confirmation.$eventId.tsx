@@ -25,6 +25,7 @@ type LoaderData = {
   registration: Booking;
   event: Event;
   cart: Cart;
+  isAuth: boolean;
 };
 
 export const loader: LoaderFunction = async ({ request, params }) => {
@@ -56,12 +57,13 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   return json({
     registration,
     event,
-    cart
+    cart,
+    isAuth: !!authClient
   });
 };
 
 export default function CheckoutConfirmationRoute() {
-  const { registration, event, cart } = useLoaderData<LoaderData>();
+  const { registration, event, cart, isAuth } = useLoaderData<LoaderData>();
   const { t } = useTranslation('checkout');
   const fetcher = useFetcher();
 
@@ -79,8 +81,17 @@ export default function CheckoutConfirmationRoute() {
         <H6>{event.address}</H6>
       </div>
 
+      {!isAuth && (
+        <div className="flex flex-row items-center justify-end gap-x-2">
+          <H6>{t('Already Have An Account ?')}</H6>
+          <a href={`/login?a=checkoutAuth&u=${registration.userId}`}>
+            <H6 className="dark:text-blueGray-500">{t('Login')}</H6>
+          </a>
+        </div>
+      )}
+
       <div className="flex flex-col md:flex-row">
-        <div className="flex-col w-full md:w-[50%] mt-8">
+        <div className="flex-col w-full md:w-[50%]">
           <H4>{t('Thanks For Buying')}</H4>
 
           <div className="text-center">

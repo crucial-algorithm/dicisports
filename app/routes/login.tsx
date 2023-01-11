@@ -31,6 +31,7 @@ import type { LoginAction } from '~/types';
 import { loginUser } from '~/server/db/users.server';
 import Main from '~/components/shared/Main';
 import { CanonicalMeta } from '~/utils/seo';
+import { checkoutAuthenticate } from '~/server/db/checkout.server';
 
 type LoaderData = {
   email?: string;
@@ -40,12 +41,14 @@ type LoaderData = {
 const actions = {
   login: 'login',
   joinWhatsAppGroup: 'ws',
-  addToFavorites: 'favorite'
+  addToFavorites: 'favorite',
+  checkoutAuth: 'checkoutAuth'
 };
 
 type QueryStringArgs = {
   group: null | string;
   redirectTo: null | string;
+  user: null | string;
   action: LoginAction;
 };
 
@@ -60,6 +63,7 @@ function queryStringArgs(searchParams: URLSearchParams): QueryStringArgs {
   return {
     group: searchParams.get('g'),
     redirectTo: searchParams.get('l'),
+    user: searchParams.get('u'),
     action
   };
 }
@@ -206,8 +210,15 @@ export const action: ActionFunction = async ({ request }) => {
       }
     }
 
-    return redirect('/', { headers });
+    if (postLoginAction === actions.checkoutAuth) {
+      try {
+        await checkoutAuthenticate(user.id, searchParams.get('u') as string);
+      } catch (e) {
+        console.error(e);
+      }
+    }
 
+    return redirect('/', { headers });
   } catch (e) {
     if (!(e instanceof ZodError)) {
       console.error(e);
@@ -250,7 +261,6 @@ export default function Login() {
       password.current.value = '';
     }
   }
-
 
   return (
     <Main className="w-5/6 m-auto md:w-144">
@@ -325,7 +335,6 @@ function CreateAccount({
   cta: string;
   queryString: string;
 }) {
-
   return (
     <p className="dark:text-blueGray-500 text-gray-500 mt-8">
       {text} &nbsp;
