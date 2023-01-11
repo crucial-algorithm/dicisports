@@ -23,6 +23,7 @@ import { verifyEmailAddress } from '~/server/auth/verifier.server';
 import { addGroupToFavorites } from '~/server/db/groups.server';
 import InputError from '~/components/shared/form/InputError';
 import { CanonicalMeta } from '~/utils/seo';
+import { checkoutAuthenticate } from '~/server/db/checkout.server';
 
 type ActionData = {
   fields: {
@@ -85,9 +86,10 @@ export const action: ActionFunction = async ({ request }) => {
   try {
     await Schema.parseAsync(data);
     // split functional validations, so they don't override syntactic ones in schema
-    await z.object({
-      email: z.string()
-    })
+    await z
+      .object({
+        email: z.string()
+      })
       .refine(async (data) => !(await findUserByEmail(data.email)), {
         message: t('User Already Exists'),
         path: ['email']
@@ -95,7 +97,8 @@ export const action: ActionFunction = async ({ request }) => {
       .refine(async (data) => verifyEmailAddress(data.email), {
         message: t('Fake email'),
         path: ['email']
-      }).parseAsync(data);
+      })
+      .parseAsync(data);
 
     const { email, name, password } = data as {
       email: string;
@@ -118,6 +121,14 @@ export const action: ActionFunction = async ({ request }) => {
       } catch (err) {
         console.error(err);
         // do nothing
+      }
+    }
+
+    if (postSignUpAction === 'checkoutAuth') {
+      try {
+        await checkoutAuthenticate(user.id, searchParams.get('u') as string);
+      } catch (e) {
+        console.error(e);
       }
     }
 
@@ -195,17 +206,29 @@ export default function SignUp() {
         <FormField label={t('Email')} error={errors?.email} dataCy="email">
           <TextField name="signup-email" defaultValue={fields?.name} />
         </FormField>
-        <FormField label={t('Confirm Email')} error={errors?.confirmation} dataCy="confirmation">
+        <FormField
+          label={t('Confirm Email')}
+          error={errors?.confirmation}
+          dataCy="confirmation"
+        >
           <TextField name="confirmation" autoComplete="off" />
         </FormField>
         <FormField label={t('Name')} error={errors?.name} dataCy="name">
           <TextField name="name" defaultValue={fields?.name} />
         </FormField>
-        <FormField label={t('Password')} error={errors?.password} dataCy="password">
+        <FormField
+          label={t('Password')}
+          error={errors?.password}
+          dataCy="password"
+        >
           <TextField name="password" type="password" />
         </FormField>
         <ButtonGroup>
-          <ButtonLink variant="secondary" to="/" className="hidden md:inline-flex">
+          <ButtonLink
+            variant="secondary"
+            to="/"
+            className="hidden md:inline-flex"
+          >
             {t('Cancel')}
           </ButtonLink>
           <Button name="create">{t('Create Profile')}</Button>
