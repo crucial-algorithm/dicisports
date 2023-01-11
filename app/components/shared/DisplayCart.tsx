@@ -17,13 +17,15 @@ export default function DisplayCart({
   event,
   error,
   fetcher,
-  hash
+  hash,
+  isConfirmation
 }: {
   cart: Cart[];
   event: Event;
   error?: string;
   fetcher: FetcherWithComponents<any>;
   hash?: number;
+  isConfirmation?: boolean;
 }) {
   const { t } = useTranslation('checkout');
   let totalPrice = 0;
@@ -72,24 +74,26 @@ export default function DisplayCart({
             </div>
           )}
 
-        <div className="flex flex-col items-center w-full">
-          <input type="hidden" name="hash" value={hash} />
-          <Button
-            type="submit"
-            name="actionId"
-            value={actions.checkout}
-            disabled={cart.length === 0}
-            className="mt-4 w-full"
-            id="checkout"
-          >
-            {t('Checkout now')}
-          </Button>
-          {error && (
-            <InputError id="checkout-error" className="mt-2">
-              {error}
-            </InputError>
-          )}
-        </div>
+        {!isConfirmation && (
+          <div className="flex flex-col items-center w-full">
+            <input type="hidden" name="hash" value={hash} />
+            <Button
+              type="submit"
+              name="actionId"
+              value={actions.checkout}
+              disabled={cart.length === 0}
+              className="mt-4 w-full"
+              id="checkout"
+            >
+              {t('Checkout now')}
+            </Button>
+            {error && (
+              <InputError id="checkout-error" className="mt-2">
+                {error}
+              </InputError>
+            )}
+          </div>
+        )}
       </div>
     </fetcher.Form>
   );
