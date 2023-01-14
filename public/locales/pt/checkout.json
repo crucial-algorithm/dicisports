@@ -54,5 +54,7 @@
   "PIN": "PIN",
   "Mail Confirmation Details": "Envia-me os detalhes da confirmação para o e-mail:",
   "Email Address": "E-mail",
-  "Send": "Enviar"
+  "Send": "Enviar",
+  "Reset": "Limpar",
+  "Save and Update": "Guardar e atualizar"
 }

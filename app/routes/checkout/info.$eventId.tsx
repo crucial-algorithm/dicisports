@@ -57,6 +57,7 @@ import { getUser } from '~/server/auth/session.server';
 const actions = {
   add: 'add',
   update: 'update',
+  updateAndSave: 'updateAndSave',
   checkout: 'checkout',
   selectParticipant: 'selectParticipant',
   resetParticipant: 'resetParticipant',
@@ -79,7 +80,8 @@ export const action: ActionFunction = async ({ request, params }) => {
   const authClient = await getUser(request);
   const eventId = params.eventId as string;
 
-  const clientId = authClient !== null ? authClient.id : clientSession.getClientId();
+  const clientId =
+    authClient !== null ? authClient.id : clientSession.getClientId();
   const actionId = form.get('actionId');
   const hash = form.get('hash') as string;
 
@@ -200,7 +202,6 @@ export const action: ActionFunction = async ({ request, params }) => {
 };
 
 export const loader: LoaderFunction = async ({ request, params }) => {
-  const t = await i18n.getFixedT(request, 'checkout');
   const eventId = params.eventId as string;
   const clientSession = await getClientSession(request);
   const authClient = await getUser(request);
@@ -222,28 +223,6 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   const userParticipants = await findUserParticipants(clientId);
   const userSavedParticipants = await findUserSavedParticipants(clientId);
   const shirtSizes = await findShirtSizes();
-
-  if (userSavedParticipants?.length !== 0) {
-    const draftParticipant: Participant = {
-      id: '0',
-      firstName: t('New Participant First Name'),
-      lastName: t('New Participant Last Name'),
-      birthday: null,
-      federationNumber: null,
-      postalCode: null,
-      shirtSize: null,
-      gender: null,
-      phoneNumber: null,
-      nationality: null,
-      identityCard: null,
-      userId: 'a',
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      status: 'auto'
-    };
-
-    userSavedParticipants?.push(draftParticipant);
-  }
 
   return json({
     event,
@@ -284,9 +263,8 @@ export default function CheckoutInfoRoute() {
   let showNotification: any = null;
   const [showAddRacesDialog, setShowAddRacesDialog] = useState<boolean>(false);
   const [isReset, setIsReset] = useState<boolean>(false);
-  const [selectedParticipant, setSelectedParticipant] = useState<
-    string | number | null
-  >(null);
+  const [selectedParticipant, setSelectedParticipant] =
+    useState<Participant | null>(null);
 
   const reset = useCallback(() => {
     setErrors({});
@@ -338,7 +316,13 @@ export default function CheckoutInfoRoute() {
   }
 
   function handleSetSelectedParticipant(v: string | number) {
-    setSelectedParticipant(v);
+    const participant: Participant =
+      userSavedParticipants[
+        userSavedParticipants.findIndex((p: Participant) => p.id === v)
+      ];
+
+    setHash(Date.now());
+    setSelectedParticipant(participant);
   }
 
   useEffect(() => {
@@ -462,7 +446,7 @@ export default function CheckoutInfoRoute() {
       </div>
 
       <div className="flex flex-col md:flex-row mt-8">
-        <div className="flex-col w-full md:w-[calc(100%-(480px))] md:pr-4">
+        <div className="flex-col w-full md:w-[calc(100%-(480px))] md:pr-48">
           <ParticipantForm
             participant={participant}
             hash={hash}
@@ -533,7 +517,7 @@ function ParticipantForm({
   userSavedParticipants: Participant[] | null;
   raceId: string | null;
   fetcher: FetcherWithComponents<any>;
-  selectedParticipant: string | number | null;
+  selectedParticipant: Participant | null;
   setSelectedParticipant: (v: string | number) => void;
   shirtSizes: ShirtSize[];
 }) {
@@ -544,42 +528,6 @@ function ParticipantForm({
     { value: 'F', label: t('Female') },
     { value: 'M', label: t('Male') }
   ];
-
-  function handleOnSelectSavedParticipant() {
-    if (selectedParticipant === '0') {
-      handleResetParticipant();
-    } else {
-      if (selectedParticipant) {
-        fetcher.submit(
-          {
-            actionId: 'selectParticipant',
-            newUser: selectedParticipant as string,
-            oldUser: participant?.id as string,
-            raceId: raceId as string,
-            hash: String(hash)
-          },
-          {
-            method: 'post',
-            action: '/checkout/manage'
-          }
-        );
-      }
-    }
-  }
-
-  function handleResetParticipant() {
-    fetcher.submit(
-      {
-        actionId: 'resetParticipant',
-        participantId: participant?.id as string,
-        raceId: raceId as string
-      },
-      {
-        method: 'post',
-        action: '/checkout/manage'
-      }
-    );
-  }
 
   return (
     <fetcher.Form
@@ -606,11 +554,6 @@ function ParticipantForm({
                 defaultValue={participant.id}
                 className="w-[50%] mr-2"
               />
-              {selectedParticipant && (
-                <button type="button" onClick={handleOnSelectSavedParticipant}>
-                  <H6 className="dark:text-blueGray-500">{t('Fill')}</H6>
-                </button>
-              )}
             </div>
           </FormField>
         </div>
@@ -626,7 +569,10 @@ function ParticipantForm({
             data-cy="first-name"
             name="first-name"
             placeholder={t('First Name')}
-            defaultValue={participant?.firstName as string}
+            defaultValue={
+              (selectedParticipant?.firstName as string) ||
+              (participant?.firstName as string)
+            }
           />
         </FormField>
 
@@ -639,7 +585,10 @@ function ParticipantForm({
           <TextField
             name="last-name"
             placeholder={t('Last Name')}
-            defaultValue={participant?.lastName as string}
+            defaultValue={
+              (selectedParticipant?.lastName as string) ||
+              (participant?.lastName as string)
+            }
           />
         </FormField>
       </div>
@@ -649,7 +598,10 @@ function ParticipantForm({
           name="gender"
           placeholder=""
           options={genderOptions}
-          defaultValue={participant?.gender ? participant.gender : undefined}
+          defaultValue={
+            (selectedParticipant?.gender as string) ||
+            (participant?.gender as string)
+          }
         />
       </FormField>
 
@@ -664,7 +616,9 @@ function ParticipantForm({
             label={t('Birthday')}
             name="birthday"
             date={
-              participant?.birthday
+              selectedParticipant?.birthday
+                ? new Date(selectedParticipant.birthday)
+                : participant?.birthday
                 ? new Date(participant.birthday)
                 : new Date()
             }
@@ -682,7 +636,8 @@ function ParticipantForm({
             name="phone-number"
             placeholder={t('Phone Number')}
             defaultValue={
-              participant?.phoneNumber ? participant?.phoneNumber : undefined
+              (selectedParticipant?.phoneNumber as number) ||
+              (participant?.phoneNumber as number)
             }
           />
         </FormField>
@@ -696,11 +651,11 @@ function ParticipantForm({
           dataCy="identityCard"
         >
           <TextField
-            type="number"
             name="identity-card"
             placeholder={t('Identity Card')}
             defaultValue={
-              participant?.identityCard ? participant.identityCard : undefined
+              (selectedParticipant?.identityCard as string) ||
+              (participant?.identityCard as string)
             }
           />
         </FormField>
@@ -715,7 +670,10 @@ function ParticipantForm({
             type="number"
             name="federation-number"
             placeholder={t('National Federation Number')}
-            defaultValue={participant?.federationNumber as number}
+            defaultValue={
+              (selectedParticipant?.federationNumber as number) ||
+              (participant?.federationNumber as number)
+            }
           />
         </FormField>
       </div>
@@ -732,7 +690,10 @@ function ParticipantForm({
           options={shirtSizes.map((ss: ShirtSize) => {
             return { value: ss.id, label: ss.name as string };
           })}
-          defaultValue={participant?.shirtSize as number}
+          defaultValue={
+            (selectedParticipant?.shirtSize as number) ||
+            (participant?.shirtSize as number)
+          }
         />
       </FormField>
 
@@ -745,7 +706,10 @@ function ParticipantForm({
         <TextField
           name="nationality"
           placeholder={t('Nationality')}
-          defaultValue={participant?.nationality as string}
+          defaultValue={
+            (selectedParticipant?.nationality as string) ||
+            (participant?.nationality as string)
+          }
         />
       </FormField>
 
@@ -758,7 +722,10 @@ function ParticipantForm({
         <TextField
           name="postal-code"
           placeholder={t('Postal Code')}
-          defaultValue={participant?.postalCode as string}
+          defaultValue={
+            (selectedParticipant?.postalCode as string) ||
+            (participant?.postalCode as string)
+          }
         />
       </FormField>
 
@@ -767,15 +734,36 @@ function ParticipantForm({
       )}
 
       <input type="hidden" name="hash" value={hash} />
-      <Button
-        type="submit"
-        value={actions.update}
-        name="actionId"
-        disabled={!participant}
-        id="save-button"
-      >
-        {t('Save')}
-      </Button>
+      <ButtonGroup>
+        <Button
+          type="submit"
+          value={actions.update}
+          name="actionId"
+          disabled={!participant}
+          id="save-button"
+        >
+          {t('Save')}
+        </Button>
+        {selectedParticipant && (
+          <Button
+            type="submit"
+            value={actions.updateAndSave}
+            name="actionId"
+            disabled={!participant}
+            id="save-button"
+            variant="secondary"
+          >
+            {t('Save and Update') +
+              ' ' +
+              selectedParticipant.firstName +
+              ' ' +
+              selectedParticipant.lastName}
+          </Button>
+        )}
+        <Button type="reset" variant="secondary">
+          {t('Reset')}
+        </Button>
+      </ButtonGroup>
     </fetcher.Form>
   );
 }
