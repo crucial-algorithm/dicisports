@@ -25,7 +25,8 @@ import {
   findUserSavedParticipants,
   getUserCheckoutRaces,
   updateParticipant,
-  updateRaceParticipantStatus
+  updateRaceParticipantStatus,
+  updateToSelectedParticipant
 } from '~/server/db/checkout.server';
 import Main from '~/components/shared/Main';
 import { findEvent } from '~/server/db/events.server';
@@ -123,66 +124,79 @@ export const action: ActionFunction = async ({ request, params }) => {
   }
 
   try {
-    if (actionId === actions.update) {
-      const phoneNumber = form.get('phone-number') as string;
-      const data: ParticipantInput = {
-        id: form.get('participant-id') as string,
-        firstName: form.get('first-name') as string,
-        lastName: form.get('last-name') as string,
-        gender: form.get('gender') as string,
-        birthday: new Date(form.get('birthday') as string),
-        phoneNumber: parseInt(phoneNumber),
-        identityCard: (form.get('identity-card') as string) || null,
-        federationNumber:
-          parseInt(form.get('federation-number') as string) || null,
-        shirtSize: parseInt(form.get('shirt') as string),
-        nationality: (form.get('nationality') as string) || null,
-        postalCode: form.get('postal-code') as string
-      };
+    const phoneNumber = form.get('phone-number') as string;
+    const data: ParticipantInput = {
+      id: form.get('participant-id') as string,
+      firstName: form.get('first-name') as string,
+      lastName: form.get('last-name') as string,
+      gender: form.get('gender') as string,
+      birthday: new Date(form.get('birthday') as string),
+      phoneNumber: parseInt(phoneNumber),
+      identityCard: (form.get('identity-card') as string) || null,
+      federationNumber:
+        parseInt(form.get('federation-number') as string) || null,
+      shirtSize: parseInt(form.get('shirt') as string),
+      nationality: (form.get('nationality') as string) || null,
+      postalCode: form.get('postal-code') as string
+    };
 
-      const ParticipantSchema = z.object({
-        firstName: z
-          .string({ required_error: t('Field Required') })
-          .min(2, { message: t('Min 2 Chars') }),
-        lastName: z
-          .string({ required_error: t('Field Required') })
-          .min(2, { message: t('Min 2 Chars') }),
-        gender: z.string({
+    const ParticipantSchema = z.object({
+      firstName: z
+        .string({ required_error: t('Field Required') })
+        .min(2, { message: t('Min 2 Chars') }),
+      lastName: z
+        .string({ required_error: t('Field Required') })
+        .min(2, { message: t('Min 2 Chars') }),
+      gender: z.string({
+        required_error: t('Field Required'),
+        invalid_type_error: t('Invalid Type')
+      }),
+      birthday: z
+        .date({ required_error: t('Field Required') })
+        .max(new Date(), t('Past Date')),
+      phoneNumber: z
+        .number({
           required_error: t('Field Required'),
           invalid_type_error: t('Invalid Type')
-        }),
-        birthday: z
-          .date({ required_error: t('Field Required') })
-          .max(new Date(), t('Past Date')),
-        phoneNumber: z
-          .number({
-            required_error: t('Field Required'),
-            invalid_type_error: t('Invalid Type')
-          })
-          .refine((val) => val.toString().length === 9, t('9 Digits'))
-          .refine(
-            (val) =>
-              val.toString().startsWith('91') ||
-              val.toString().startsWith('92') ||
-              val.toString().startsWith('93') ||
-              val.toString().startsWith('96'),
-            t('Invalid number')
-          ),
-        identityCard: z.string().nullable(),
-        federationNumber: z.number().nullable(),
-        shirtSize: z.number({
-          required_error: t('Field Required'),
-          invalid_type_error: t('Invalid Type')
-        }),
-        nationality: z.string().nullable(),
-        postalCode: z.string({ required_error: t('Field Required') })
-      });
+        })
+        .refine((val) => val.toString().length === 9, t('9 Digits'))
+        .refine(
+          (val) =>
+            val.toString().startsWith('91') ||
+            val.toString().startsWith('92') ||
+            val.toString().startsWith('93') ||
+            val.toString().startsWith('96'),
+          t('Invalid number')
+        ),
+      identityCard: z.string().nullable(),
+      federationNumber: z.number().nullable(),
+      shirtSize: z.number({
+        required_error: t('Field Required'),
+        invalid_type_error: t('Invalid Type')
+      }),
+      nationality: z.string().nullable(),
+      postalCode: z.string({ required_error: t('Field Required') })
+    });
 
+    if (actionId === actions.updateAndSave) {
+      const selectedParticipantId = form.get(
+        'selected-participant-id'
+      ) as string;
+      const raceId = form.get('raceId') as string;
+
+      await updateToSelectedParticipant(data.id, selectedParticipantId, raceId);
+
+      data.id = selectedParticipantId;
       ParticipantSchema.parse(data);
       await updateParticipant(data);
     }
 
-    return json({ ok: true });
+    if (actionId === actions.update) {
+      ParticipantSchema.parse(data);
+      await updateParticipant(data);
+    }
+
+    return json({ ok: true, hash });
   } catch (e) {
     if (!(e instanceof ZodError)) {
       console.error(e);
@@ -733,6 +747,17 @@ function ParticipantForm({
         <input type="hidden" name="participant-id" value={participant.id} />
       )}
 
+      {selectedParticipant && (
+        <>
+          <input
+            type="hidden"
+            name="selected-participant-id"
+            value={selectedParticipant.id}
+          />
+          <input type="hidden" name="raceId" value={raceId as string} />
+        </>
+      )}
+
       <input type="hidden" name="hash" value={hash} />
       <ButtonGroup>
         <Button
@@ -750,7 +775,7 @@ function ParticipantForm({
             value={actions.updateAndSave}
             name="actionId"
             disabled={!participant}
-            id="save-button"
+            id="save-update-button"
             variant="secondary"
           >
             {t('Save and Update') +

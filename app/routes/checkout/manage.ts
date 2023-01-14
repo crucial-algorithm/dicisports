@@ -9,8 +9,7 @@ import {
   findBooking,
   findUserRaceParticipants,
   removeBooking,
-  removeRaceParticipant,
-  resetParticipant
+  removeRaceParticipant
 } from '~/server/db/checkout.server';
 import { findRace } from '~/server/db/races.server';
 import i18n from '~/server/i18n.server';
@@ -80,13 +79,6 @@ export const action: ActionFunction = async ({ request }) => {
       ).then((p) => p?.id);
 
       await addRaceParticipants(races, clientId, registrationId as string);
-    }
-
-    if (actionId === actions.resetParticipant) {
-      const participantId = form.get('participantId') as string;
-      const raceId = form.get('raceId') as string;
-
-      await resetParticipant(participantId, clientId, raceId);
     }
 
     return json({ ok: true, action: actionId });

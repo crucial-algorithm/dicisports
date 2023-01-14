@@ -1,10 +1,10 @@
-import type { Prisma } from '@prisma/client';
+import type { CheckoutStatus, Prisma } from '@prisma/client';
 import { PrismaClient } from '@prisma/client';
-import type { CheckoutStatus } from '@prisma/client';
 
 import { db } from '~/server/db.server';
 import Id from '~/server/utils/Id.server';
 import type {
+  Booking,
   Cart,
   DBRawCart,
   DBRawRaceCheckout,
@@ -16,7 +16,6 @@ import type {
   RaceCheckoutInput,
   RaceParticipant,
   RaceQtd,
-  Booking,
   ShirtSize
 } from '~/types';
 import {
@@ -295,29 +294,18 @@ async function changeToSelectedRaceParticipant(
   });
 }
 
-async function resetParticipant(
+async function updateToSelectedParticipant(
   oldParticipant: string,
-  userSessionId: string,
+  savedParticipant: string,
   raceId: string
 ): Promise<void> {
-  return await prisma.$transaction(async (prisma) => {
-    const newParticipant = await prisma.participant.create({
-      data: {
-        id: Id(),
-        userId: userSessionId,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      }
-    });
-
-    await prisma.raceParticipant.update({
-      where: {
-        participantId_raceId: { participantId: oldParticipant, raceId }
-      },
-      data: {
-        participantId: newParticipant.id
-      }
-    });
+  await prisma.raceParticipant.update({
+    where: {
+      participantId_raceId: { participantId: oldParticipant, raceId }
+    },
+    data: {
+      participantId: savedParticipant
+    }
   });
 }
 
@@ -493,7 +481,7 @@ export {
   findUserSavedParticipants,
   updateParticipant,
   changeToSelectedRaceParticipant,
-  resetParticipant,
+  updateToSelectedParticipant,
   removeRaceParticipant,
   addRaceParticipants,
   updateRaceParticipantStatus,
