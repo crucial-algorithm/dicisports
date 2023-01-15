@@ -339,6 +339,11 @@ export default function CheckoutInfoRoute() {
     setSelectedParticipant(participant);
   }
 
+  function handleResetForm() {
+    setHash(Date.now());
+    setSelectedParticipant(null);
+  }
+
   useEffect(() => {
     if (
       fetcher.type === 'actionReload' &&
@@ -473,6 +478,7 @@ export default function CheckoutInfoRoute() {
             selectedParticipant={selectedParticipant}
             setSelectedParticipant={handleSetSelectedParticipant}
             shirtSizes={shirtSizes}
+            resetForm={handleResetForm}
           />
           <Notification show={handlerSetShowNotificationFunction}>
             {message}
@@ -523,7 +529,8 @@ function ParticipantForm({
   fetcher,
   selectedParticipant,
   setSelectedParticipant,
-  shirtSizes
+  shirtSizes,
+  resetForm
 }: {
   participant: Participant | null;
   hash: number;
@@ -534,6 +541,7 @@ function ParticipantForm({
   selectedParticipant: Participant | null;
   setSelectedParticipant: (v: string | number) => void;
   shirtSizes: ShirtSize[];
+  resetForm: () => void;
 }) {
   const { t, i18n } = useTranslation('checkout');
   const language = i18n.language as Language;
@@ -565,7 +573,7 @@ function ParticipantForm({
                   return { value: u.id, label: u.firstName + ' ' + u.lastName };
                 })}
                 onChange={setSelectedParticipant}
-                defaultValue={participant.id}
+                defaultValue={selectedParticipant?.id || participant.id}
                 className="w-[50%] mr-2"
               />
             </div>
@@ -785,7 +793,7 @@ function ParticipantForm({
               selectedParticipant.lastName}
           </Button>
         )}
-        <Button type="reset" variant="secondary">
+        <Button type="button" variant="secondary" onClick={resetForm}>
           {t('Reset')}
         </Button>
       </ButtonGroup>
