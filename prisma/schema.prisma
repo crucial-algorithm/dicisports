@@ -290,7 +290,7 @@ model Participant {
     federationNumber    Int?                    @map("federation_number")
     shirtSize           Int?                    @map("shirt_size")
     shirt               ShirtSize?              @relation(fields: [shirtSize], references: [id])
-    nationality         String?
+    nationality         Int?
     postalCode          String?                 @map("postal_code")
     status              ParticipantStatus       @default(auto)
     createdAt           DateTime                @default(now()) @map("created_at")

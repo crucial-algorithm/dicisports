@@ -12,7 +12,8 @@ import { z, ZodError } from 'zod';
 import {
   ChevronDownIcon,
   ChevronUpIcon,
-  PlusIcon
+  PlusIcon,
+  XMarkIcon
 } from '@heroicons/react/24/outline';
 
 import DisplayDate from '~/components/shared/DIsplayDate';
@@ -54,6 +55,8 @@ import { badRequest, displayTimeOfDay } from '~/utils/misc';
 import { Notification } from '~/components/shared/NotificationMessage';
 import ButtonGroup from '~/components/shared/ButtonGroup';
 import { getUser } from '~/server/auth/session.server';
+
+import countries from '~/server/db/countries.json';
 
 const actions = {
   add: 'add',
@@ -134,7 +137,7 @@ export const action: ActionFunction = async ({ request, params }) => {
       federationNumber:
         parseInt(form.get('federation-number') as string) || null,
       shirtSize: parseInt(form.get('shirt') as string),
-      nationality: (form.get('nationality') as string) || null,
+      nationality: parseInt(form.get('nationality') as string) || null,
       postalCode: form.get('postal-code') as string
     };
 
@@ -172,16 +175,22 @@ export const action: ActionFunction = async ({ request, params }) => {
         required_error: t('Field Required'),
         invalid_type_error: t('Invalid Type')
       }),
-      nationality: z.string().nullable(),
+      nationality: z.number().nullable(),
       postalCode: z.string({ required_error: t('Field Required') })
     });
 
     if (actionId === actions.updateAndSave) {
-      const selectedParticipantId = form.get('selected-participant-id') as string;
+      const selectedParticipantId = form.get(
+        'selected-participant-id'
+      ) as string;
       const raceId = form.get('raceId') as string;
 
       try {
-        await updateToSelectedParticipant(data.id, selectedParticipantId, raceId);
+        await updateToSelectedParticipant(
+          data.id,
+          selectedParticipantId,
+          raceId
+        );
       } catch (e) {
         console.log(e);
 
@@ -413,19 +422,6 @@ export default function CheckoutInfoRoute() {
           )
           .map((p: RaceParticipant, index: number) => (
             <div className="flex flex-col items-center" key={p.id}>
-              <div className="h-[28px]">
-                {p.participantId === participant?.id &&
-                  p.race.id === selectedRace && (
-                    <button
-                      type="button"
-                      onClick={handleRemoveRaceParticipant}
-                      name="remove"
-                    >
-                      <H6 className="dark:text-blueGray-500">{t('Remove')}</H6>
-                    </button>
-                  )}
-              </div>
-
               <div
                 className={clsx(
                   'flex flex-col gap-y-2 border-2 border-b border-gray-500 p-2 mx-2 items-center w-[200px] snap-center cursor-pointer',
@@ -438,7 +434,19 @@ export default function CheckoutInfoRoute() {
                 onClick={handleSetParticipant}
                 data-cy={`participant-${index + 1}`}
               >
-                <H5 data-cy="participant">{p.race.name}</H5>
+                <div className="flex flex-row">
+                  <H5 data-cy="participant">{p.race.name}</H5>
+                  {p.participantId === participant?.id &&
+                    p.race.id === selectedRace && (
+                      <button
+                        type="button"
+                        onClick={handleRemoveRaceParticipant}
+                        name="remove"
+                      >
+                        <XMarkIcon className="dark:text-blueGray-500 md:h-6 w-6 m-0 inline-block" />
+                      </button>
+                    )}
+                </div>
                 <H6
                   className="dark:text-blueGray-500"
                   data-cy={`participant-name-${index + 1}`}
@@ -452,7 +460,7 @@ export default function CheckoutInfoRoute() {
           ))}
         <div className="flex flex-col items-center snap-center">
           <div
-            className="flex flex-col gap-y-2 border-2 border-b border-gray-500 p-2 mx-2 items-center w-[200px] mt-[28px]"
+            className="flex flex-col gap-y-2 border-2 border-b border-gray-500 p-2 mx-2 items-center w-[200px]"
             onClick={handleOpenAddRaces}
           >
             <PlusIcon className="h-7 w-7 dark:text-blueGray-500" />
@@ -561,18 +569,16 @@ function ParticipantForm({
             error={errors?.selectedParticipant}
             className="w-full"
           >
-            <div className="flex flex-row items-center mt-2">
-              <ComboBox
-                id="saved-participants"
-                name="userSavedParticipants"
-                placeholder=""
-                options={userSavedParticipants.map((u) => {
-                  return { value: u.id, label: u.firstName + ' ' + u.lastName };
-                })}
-                onChange={setSelectedParticipant}
-                className="w-[50%] mr-2"
-              />
-            </div>
+            <ComboBox
+              id="saved-participants"
+              name="userSavedParticipants"
+              placeholder=""
+              options={userSavedParticipants.map((u) => {
+                return { value: u.id, label: u.firstName + ' ' + u.lastName };
+              })}
+              onChange={setSelectedParticipant}
+              className="w-[50%] mr-2"
+            />
           </FormField>
         </div>
       )}
@@ -616,6 +622,7 @@ function ParticipantForm({
           name="gender"
           placeholder=""
           options={genderOptions}
+          lang={language}
           defaultValue={
             (selectedParticipant?.gender as string) ||
             (participant?.gender as string)
@@ -716,17 +723,21 @@ function ParticipantForm({
       </FormField>
 
       <FormField
-        label={t('Nationality')}
+        label={t('Native From')}
         id="nationality"
         error={errors?.nationality}
         dataCy="nationality"
       >
-        <TextField
+        <ComboBox
           name="nationality"
-          placeholder={t('Nationality')}
+          placeholder=""
+          lang={language}
+          options={countries.map((c) => {
+            return { value: c.id, label: c.name };
+          })}
           defaultValue={
-            (selectedParticipant?.nationality as string) ||
-            (participant?.nationality as string)
+            (selectedParticipant?.nationality as number) ||
+            (participant?.nationality as number)
           }
         />
       </FormField>

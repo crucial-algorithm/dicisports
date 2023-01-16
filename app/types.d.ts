@@ -358,7 +358,7 @@ type ParticipantInput = {
   identityCard?: string | null;
   federationNumber?: number | null;
   shirtSize: number;
-  nationality?: string | null;
+  nationality?: number | null;
   postalCode: string;
   createdAt?: Date;
   updatedAt?: Date;

@@ -28,7 +28,7 @@ CREATE TABLE "participants" (
     "identity_card" TEXT,
     "federation_number" INTEGER,
     "shirt_size" INTEGER,
-    "nationality" TEXT,
+    "nationality" INTEGER,
     "postal_code" TEXT,
     "status" "ParticipantStatus" NOT NULL DEFAULT E'auto',
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
