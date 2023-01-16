@@ -60,8 +60,6 @@ const actions = {
   update: 'update',
   updateAndSave: 'updateAndSave',
   checkout: 'checkout',
-  selectParticipant: 'selectParticipant',
-  resetParticipant: 'resetParticipant',
   removeParticipant: 'removeParticipant',
   addParticipants: 'addParticipants'
 };
@@ -287,9 +285,14 @@ export default function CheckoutInfoRoute() {
   const [selectedParticipant, setSelectedParticipant] =
     useState<Participant | null>(null);
 
-  const reset = useCallback(() => {
+  const resetForm = useCallback(() => {
     setErrors({});
     setHash(Date.now());
+    setSelectedParticipant(null);
+  }, []);
+
+  const reset = useCallback(() => {
+    setErrors({});
     setSelectedParticipant(null);
   }, []);
 
@@ -349,28 +352,6 @@ export default function CheckoutInfoRoute() {
     if (
       fetcher.type === 'actionReload' &&
       fetcher.data.ok &&
-      fetcher.data.action === actions.selectParticipant
-    ) {
-      setMessage(t('Participant Selected'));
-      showNotification();
-
-      return reset;
-    }
-
-    if (
-      fetcher.type === 'actionReload' &&
-      fetcher.data.ok &&
-      fetcher.data.action === actions.resetParticipant
-    ) {
-      setMessage(t('Participant Reset'));
-      showNotification();
-
-      return reset;
-    }
-
-    if (
-      fetcher.type === 'actionReload' &&
-      fetcher.data.ok &&
       fetcher.data.action === actions.removeParticipant
     ) {
       setMessage(t('Participant Removed'));
@@ -408,7 +389,7 @@ export default function CheckoutInfoRoute() {
     ) {
       return setErrors(fetcher.data.errors as FormErrors);
     }
-  }, [reset, fetcher, t, showNotification, hash, errors, setErrors]);
+  }, [reset, resetForm, fetcher, t, showNotification, hash, errors, setErrors]);
 
   return (
     <Main>
@@ -447,7 +428,7 @@ export default function CheckoutInfoRoute() {
 
               <div
                 className={clsx(
-                  'flex flex-col gap-y-2 border-2 border-b border-gray-500 p-2 mx-2 items-center w-[200px] snap-center',
+                  'flex flex-col gap-y-2 border-2 border-b border-gray-500 p-2 mx-2 items-center w-[200px] snap-center cursor-pointer',
                   p.participantId === participant?.id &&
                     p.race.id === selectedRace
                     ? 'opacity-100'
@@ -494,7 +475,7 @@ export default function CheckoutInfoRoute() {
             selectedParticipant={selectedParticipant}
             setSelectedParticipant={handleSetSelectedParticipant}
             shirtSizes={shirtSizes}
-            resetForm={reset}
+            resetForm={resetForm}
           />
           <Notification show={handlerSetShowNotificationFunction}>
             {message}
@@ -589,7 +570,6 @@ function ParticipantForm({
                   return { value: u.id, label: u.firstName + ' ' + u.lastName };
                 })}
                 onChange={setSelectedParticipant}
-                defaultValue={selectedParticipant?.id || participant.id}
                 className="w-[50%] mr-2"
               />
             </div>

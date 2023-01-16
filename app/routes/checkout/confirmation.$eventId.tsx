@@ -85,7 +85,7 @@ export default function CheckoutConfirmationRoute() {
         <div className="flex flex-row items-center justify-end gap-x-2">
           <H6>{t('Already Have An Account ?')}</H6>
           <a href={`/login?a=checkoutAuth&u=${registration.userId}`} data-cy="authenticate">
-            <H6 className="dark:text-blueGray-500">{t('Login')}</H6>
+            <H6 className="dark:text-blueGray-500 cursor-pointer">{t('Login')}</H6>
           </a>
         </div>
       )}
