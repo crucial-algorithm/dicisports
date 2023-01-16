@@ -106,7 +106,7 @@ export default function CheckoutPaymentRoute() {
         {/*Payment Form*/}
         <div className="flex-col w-full md:w-[calc(100%-(480px))] md:pr-4">
           <Form method="post">
-            <Button type="submit">{t('Pay')}</Button>
+            <Button type="submit" name="pay">{t('Pay')}</Button>
           </Form>
         </div>
         <div className="w-full md:w-[480px]">

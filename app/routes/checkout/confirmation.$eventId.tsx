@@ -84,7 +84,7 @@ export default function CheckoutConfirmationRoute() {
       {!isAuth && (
         <div className="flex flex-row items-center justify-end gap-x-2">
           <H6>{t('Already Have An Account ?')}</H6>
-          <a href={`/login?a=checkoutAuth&u=${registration.userId}`}>
+          <a href={`/login?a=checkoutAuth&u=${registration.userId}`} data-cy="authenticate">
             <H6 className="dark:text-blueGray-500">{t('Login')}</H6>
           </a>
         </div>
@@ -92,7 +92,7 @@ export default function CheckoutConfirmationRoute() {
 
       <div className="flex flex-col md:flex-row">
         <div className="flex-col w-full md:w-[calc(100%-(480px))] md:pr-4">
-          <H4>{t('Thanks For Buying')}</H4>
+          <H4 data-cy="confirmation-label">{t('Thanks For Buying')}</H4>
 
           <div className="text-center">
             <div className="mt-8">

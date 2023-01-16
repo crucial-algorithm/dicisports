@@ -276,24 +276,6 @@ async function updateParticipant(
   });
 }
 
-async function changeToSelectedRaceParticipant(
-  newUser: string,
-  oldUser: string,
-  raceId: string
-): Promise<void> {
-  await db.raceParticipant.update({
-    where: {
-      participantId_raceId: {
-        participantId: oldUser,
-        raceId
-      }
-    },
-    data: {
-      participantId: newUser
-    }
-  });
-}
-
 async function updateToSelectedParticipant(
   oldParticipant: string,
   savedParticipant: string,
@@ -480,7 +462,6 @@ export {
   findUserParticipants,
   findUserSavedParticipants,
   updateParticipant,
-  changeToSelectedRaceParticipant,
   updateToSelectedParticipant,
   removeRaceParticipant,
   addRaceParticipants,

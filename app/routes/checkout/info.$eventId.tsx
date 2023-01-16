@@ -179,12 +179,19 @@ export const action: ActionFunction = async ({ request, params }) => {
     });
 
     if (actionId === actions.updateAndSave) {
-      const selectedParticipantId = form.get(
-        'selected-participant-id'
-      ) as string;
+      const selectedParticipantId = form.get('selected-participant-id') as string;
       const raceId = form.get('raceId') as string;
 
-      await updateToSelectedParticipant(data.id, selectedParticipantId, raceId);
+      try {
+        await updateToSelectedParticipant(data.id, selectedParticipantId, raceId);
+      } catch (e) {
+        console.log(e);
+
+        return badRequest({
+          errors: { selectedParticipant: t('Existing Race Participant') },
+          hash: parseInt(hash)
+        });
+      }
 
       data.id = selectedParticipantId;
       ParticipantSchema.parse(data);
@@ -196,7 +203,7 @@ export const action: ActionFunction = async ({ request, params }) => {
       await updateParticipant(data);
     }
 
-    return json({ ok: true, hash });
+    return json({ ok: true, action: actionId });
   } catch (e) {
     if (!(e instanceof ZodError)) {
       console.error(e);
@@ -283,8 +290,7 @@ export default function CheckoutInfoRoute() {
   const reset = useCallback(() => {
     setErrors({});
     setHash(Date.now());
-    setSelectedRace(null);
-    setParticipant(null);
+    setSelectedParticipant(null);
   }, []);
 
   function handleSetParticipant(e: React.MouseEvent) {
@@ -339,11 +345,6 @@ export default function CheckoutInfoRoute() {
     setSelectedParticipant(participant);
   }
 
-  function handleResetForm() {
-    setHash(Date.now());
-    setSelectedParticipant(null);
-  }
-
   useEffect(() => {
     if (
       fetcher.type === 'actionReload' &&
@@ -378,11 +379,26 @@ export default function CheckoutInfoRoute() {
       return reset;
     }
 
-    if (fetcher.type === 'actionReload' && fetcher.data.ok) {
+    if (
+      fetcher.type === 'actionReload' &&
+      fetcher.data.ok &&
+      fetcher.data.action === actions.update
+    ) {
       setMessage(t('Participant Saved'));
       showNotification();
 
-      return setErrors({});
+      return reset;
+    }
+
+    if (
+      fetcher.type === 'actionReload' &&
+      fetcher.data.ok &&
+      fetcher.data.action === actions.updateAndSave
+    ) {
+      setMessage(t('Participant Saved and Updated'));
+      showNotification();
+
+      return reset;
     }
 
     if (
@@ -478,13 +494,13 @@ export default function CheckoutInfoRoute() {
             selectedParticipant={selectedParticipant}
             setSelectedParticipant={handleSetSelectedParticipant}
             shirtSizes={shirtSizes}
-            resetForm={handleResetForm}
+            resetForm={reset}
           />
           <Notification show={handlerSetShowNotificationFunction}>
             {message}
           </Notification>
         </div>
-        <div className="w-full md:w-[480px]">
+        <div className="w-full md:w-[480px] mt-8">
           <DisplayCart
             cart={cart}
             event={event}
