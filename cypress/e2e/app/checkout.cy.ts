@@ -119,11 +119,20 @@ describe('Checkout', () => {
 
         .wait('@selectRace')
 
+        .intercept('GET', '*?data=routes*info*')
+        .as('registrationsCheckout')
+
         .get('#checkout')
         .click()
 
+        .wait('@registrationsCheckout')
+
         .intercept('POST', '/checkout/manage*?_data=routes*')
         .as('removeParticipant')
+
+        .get('[data-cy=participant]')
+        .first()
+        .click()
 
         .get('button[name=remove]')
         .click()
@@ -211,7 +220,7 @@ describe('Checkout', () => {
         .click()
 
         .url()
-        .should('include', '/login')
+        .should('include', 'login?a=checkoutAuth&u=')
 
         .get('[name=email]')
         .type('regular@gmail.com', { delay: 1 })
@@ -244,42 +253,42 @@ describe('Checkout', () => {
 
     it('Should redirect and add race to cart from event page', () => {
       cy.intercept('GET', '*?_data=routes*checkout*')
-          .as('selectRace')
+        .as('selectRace')
 
-          .visitAndWaitForHydration('/event/love-tiles-douro-granfondo-2023')
+        .visitAndWaitForHydration('/event/love-tiles-douro-granfondo-2023')
 
-          .get('button[name=race-AhowRdNWCBQWSuivSt7h]')
-          .click()
+        .get('button[name=race-AhowRdNWCBQWSuivSt7h]')
+        .click()
 
-          .wait('@selectRace')
+        .wait('@selectRace')
 
-          .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qtd]')
-          .contains('1');
+        .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qtd]')
+        .contains('1');
     });
 
     it('Should add/remove race', () => {
       cy.intercept('GET', '*?_data=routes*checkout*')
-          .as('selectRace')
+        .as('selectRace')
 
-          .visitAndWaitForHydration(
-              '/checkout/registrations/MY4bvgxDbMtGv8rbYe5d'
-          )
+        .visitAndWaitForHydration(
+          '/checkout/registrations/MY4bvgxDbMtGv8rbYe5d'
+        )
 
-          .get('#add-race-AhowRdNWCBQWSuivSt7h')
-          .click()
+        .get('#add-race-AhowRdNWCBQWSuivSt7h')
+        .click()
 
-          .wait('@selectRace')
+        .wait('@selectRace')
 
-          .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qtd]')
-          .contains('1')
+        .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qtd]')
+        .contains('1')
 
-          .get('#remove-race-AhowRdNWCBQWSuivSt7h')
-          .click()
+        .get('#remove-race-AhowRdNWCBQWSuivSt7h')
+        .click()
 
-          .wait('@selectRace')
+        .wait('@selectRace')
 
-          .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qtd]')
-          .contains('0');
+        .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qtd]')
+        .contains('0');
     });
 
     it('Should fill form and save participant', () => {
@@ -288,35 +297,35 @@ describe('Checkout', () => {
 
     it('should contain right amount of races', () => {
       cy.login()
-          .intercept('GET', '*?_data=routes*checkout*')
-          .as('selectRace')
+        .intercept('GET', '*?_data=routes*checkout*')
+        .as('selectRace')
 
-          .intercept('POST', '*?_data=route*checkout*registrations*')
-          .as('addRace')
+        .intercept('POST', '*?_data=route*checkout*registrations*')
+        .as('addRace')
 
-          .visitAndWaitForHydration(
-              '/checkout/registrations/MY4bvgxDbMtGv8rbYe5d'
-          )
+        .visitAndWaitForHydration(
+          '/checkout/registrations/MY4bvgxDbMtGv8rbYe5d'
+        )
 
-          .get('#add-race-AhowRdNWCBQWSuivSt7h')
-          .click()
+        .get('#add-race-AhowRdNWCBQWSuivSt7h')
+        .click()
 
-          .wait('@addRace')
-          .wait('@selectRace')
+        .wait('@addRace')
+        .wait('@selectRace')
 
-          .get('#add-race-AhowRdNWCBQWSuivSt7h')
-          .click()
+        .get('#add-race-AhowRdNWCBQWSuivSt7h')
+        .click()
 
-          .wait('@addRace')
-          .wait('@selectRace')
+        .wait('@addRace')
+        .wait('@selectRace')
 
-          .get('#checkout')
-          .click()
+        .get('#checkout')
+        .click()
 
-          .wait('@selectRace')
+        .wait('@selectRace')
 
-          .get('[data-cy=participant]')
-          .should('have.length', 2);
+        .get('[data-cy=participant]')
+        .should('have.length', 2);
     });
 
     it('should fill form with saved participant info', () => {
@@ -324,47 +333,14 @@ describe('Checkout', () => {
 
       cy.visitAndWaitForHydration('/checkout/info/MY4bvgxDbMtGv8rbYe5d')
 
-          .get('div[data-cy=participant-1]')
-          .click()
+        .get('div[data-cy=participant-1]')
+        .click()
 
-          .get('[data-cy=participant-name-1]')
-          .contains('Nuno')
+        .get('[data-cy=participant-name-1]')
+        .contains('Nuno')
 
-          .get('input[name=first-name]')
-          .should('have.value', 'Nuno');
-    });
-
-    it('should remove race participant', () => {
-      cy.intercept('GET', '*?_data=routes*checkout*')
-          .as('selectRace')
-
-          .visitAndWaitForHydration(
-              '/checkout/registrations/MY4bvgxDbMtGv8rbYe5d'
-          )
-
-          .get('#add-race-AhowRdNWCBQWSuivSt7h')
-          .click()
-
-          .wait('@selectRace')
-
-          .get('#add-race-AhowRdNWCBQWSuivSt7h')
-          .click()
-
-          .wait('@selectRace')
-
-          .get('#checkout')
-          .click()
-
-          .intercept('POST', '/checkout/manage*?_data=routes*')
-          .as('removeParticipant')
-
-          .get('button[name=remove]')
-          .click()
-
-          .wait('@removeParticipant')
-
-          .get('[data-cy=participant]')
-          .should('have.length', 1);
+        .get('input[name=first-name]')
+        .should('have.value', 'Nuno');
     });
 
     it('should book a race', () => {
@@ -419,8 +395,7 @@ function registerParticipant() {
 
     .pickOptionFromSelect('shirt', 2)
 
-    .get('input[name=nationality]')
-    .type('Português')
+    .pickOptionFromSelect('nationality', 188)
 
     .get('input[name=postal-code]')
     .type('4730-454')
@@ -478,8 +453,7 @@ function bookParticipant() {
 
     .pickOptionFromSelect('shirt', 2)
 
-    .get('input[name=nationality]')
-    .type('Português')
+    .pickOptionFromSelect('nationality', 188)
 
     .get('input[name=postal-code]')
     .type('4730-454')

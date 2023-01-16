@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import type { Cart, Event } from '~/types';
 import { H4, H5, H6 } from '~/components/shared/typography';
 import DisplayDate from '~/components/shared/DIsplayDate';
-import Button from '~/components/shared/Button';
+import Button, { ButtonLink } from '~/components/shared/Button';
 import InputError from '~/components/shared/form/InputError';
 
 const actions = {
@@ -18,14 +18,16 @@ export default function DisplayCart({
   error,
   fetcher,
   hash,
-  isConfirmation
+  isConfirmationRoute,
+  isPaymentRoute
 }: {
   cart: Cart[];
   event: Event;
   error?: string;
   fetcher: FetcherWithComponents<any>;
   hash?: number;
-  isConfirmation?: boolean;
+  isConfirmationRoute?: boolean;
+  isPaymentRoute?: boolean;
 }) {
   const { t } = useTranslation('checkout');
   let totalPrice = 0;
@@ -74,7 +76,7 @@ export default function DisplayCart({
             </div>
           )}
 
-        {!isConfirmation && (
+        {!isConfirmationRoute && !isPaymentRoute && (
           <div className="flex flex-col items-center w-full">
             <input type="hidden" name="hash" value={hash} />
             <Button
@@ -92,6 +94,17 @@ export default function DisplayCart({
                 {error}
               </InputError>
             )}
+          </div>
+        )}
+
+        {isPaymentRoute && (
+          <div>
+            <ButtonLink
+              className="mt-4 w-full"
+              to={`/checkout/info/${event.id}`}
+            >
+              {t('Edit info')}
+            </ButtonLink>
           </div>
         )}
       </div>

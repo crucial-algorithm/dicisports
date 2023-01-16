@@ -73,6 +73,7 @@ type LoaderData = {
   raceParticipants: RaceParticipant[] | null;
   userParticipants: Participant[];
   userSavedParticipants: Participant[] | null;
+  isAuth: boolean;
 };
 
 export const action: ActionFunction = async ({ request, params }) => {
@@ -104,13 +105,21 @@ export const action: ActionFunction = async ({ request, params }) => {
     if (verifiedRaceParticipants.length !== raceParticipants?.length) {
       const missingFilledParticipants =
         raceParticipants?.length - verifiedRaceParticipants.length;
+      const missingParticipants: RaceParticipant[] = [];
+
+      for (const rc of raceParticipants) {
+        if (rc.participant.firstName === null) {
+          missingParticipants.push(rc);
+        }
+      }
 
       return badRequest({
         errors: {
           missingFilledParticipants:
             missingFilledParticipants + ' ' + t('Participant Not Filled')
         },
-        hash: parseInt(hash)
+        hash: parseInt(hash),
+        missingParticipants: JSON.stringify(missingParticipants)
       });
     }
 
@@ -258,7 +267,9 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     raceParticipants,
     userParticipants,
     userSavedParticipants,
-    shirtSizes
+    shirtSizes,
+    isAuth: !!authClient,
+    clientId
   });
 };
 
@@ -271,7 +282,9 @@ export default function CheckoutInfoRoute() {
     raceParticipants,
     userParticipants,
     userSavedParticipants,
-    shirtSizes
+    shirtSizes,
+    isAuth,
+    clientId
   } = useLoaderData<LoaderData>();
   const defaultSelectedParticipant =
     userParticipants[
@@ -293,6 +306,9 @@ export default function CheckoutInfoRoute() {
   const [isReset, setIsReset] = useState<boolean>(false);
   const [selectedParticipant, setSelectedParticipant] =
     useState<Participant | null>(null);
+  const [missingParticipants, setMissingParticipants] = useState<
+    RaceParticipant[]
+  >([]);
 
   const resetForm = useCallback(() => {
     setErrors({});
@@ -303,6 +319,7 @@ export default function CheckoutInfoRoute() {
   const reset = useCallback(() => {
     setErrors({});
     setSelectedParticipant(null);
+    setMissingParticipants([]);
   }, []);
 
   function handleSetParticipant(e: React.MouseEvent) {
@@ -392,6 +409,17 @@ export default function CheckoutInfoRoute() {
     }
 
     if (
+      fetcher.type === 'actionReload' &&
+      fetcher.data?.errors &&
+      fetcher.data?.hash === hash &&
+      fetcher.data?.missingParticipants
+    ) {
+      setMissingParticipants(JSON.parse(fetcher.data.missingParticipants));
+
+      return setErrors(fetcher.data.errors as FormErrors);
+    }
+
+    if (
       fetcher.type === 'done' &&
       fetcher.data?.errors &&
       fetcher.data?.hash === hash
@@ -424,29 +452,33 @@ export default function CheckoutInfoRoute() {
             <div className="flex flex-col items-center" key={p.id}>
               <div
                 className={clsx(
-                  'flex flex-col gap-y-2 border-2 border-b border-gray-500 p-2 mx-2 items-center w-[200px] snap-center cursor-pointer',
+                  'flex flex-col gap-y-2 border-2 border-b p-2 mx-2 items-center w-[200px] snap-center cursor-pointer relative',
                   p.participantId === participant?.id &&
                     p.race.id === selectedRace
                     ? 'opacity-100'
-                    : 'opacity-50'
+                    : 'opacity-50',
+                  missingParticipants.find(
+                    (v) => v.participant.id === p.participant.id
+                  )
+                    ? 'border-red-500'
+                    : 'border-gray-500'
                 )}
                 id={p.participantId + '|' + p.race.id}
                 onClick={handleSetParticipant}
                 data-cy={`participant-${index + 1}`}
               >
-                <div className="flex flex-row">
-                  <H5 data-cy="participant">{p.race.name}</H5>
-                  {p.participantId === participant?.id &&
-                    p.race.id === selectedRace && (
-                      <button
-                        type="button"
-                        onClick={handleRemoveRaceParticipant}
-                        name="remove"
-                      >
-                        <XMarkIcon className="dark:text-blueGray-500 md:h-6 w-6 m-0 inline-block" />
-                      </button>
-                    )}
-                </div>
+                {p.participantId === participant?.id &&
+                  p.race.id === selectedRace && (
+                    <button
+                      type="button"
+                      onClick={handleRemoveRaceParticipant}
+                      name="remove"
+                      className="absolute top-[6px] right-[6px]"
+                    >
+                      <XMarkIcon className="dark:text-blueGray-500 md:h-6 w-6 m-0 inline-block" />
+                    </button>
+                  )}
+                <H5 data-cy="participant">{p.race.name}</H5>
                 <H6
                   className="dark:text-blueGray-500"
                   data-cy={`participant-name-${index + 1}`}
@@ -469,7 +501,21 @@ export default function CheckoutInfoRoute() {
         </div>
       </div>
 
-      <div className="flex flex-col md:flex-row mt-8">
+      {!isAuth && (
+        <div className="flex flex-row items-center justify-end gap-x-2">
+          <H6>{t('Already Have An Account ?')}</H6>
+          <a
+            href={`/login?a=checkoutAuth&u=${clientId}`}
+            data-cy="authenticate"
+          >
+            <H6 className="dark:text-blueGray-500 cursor-pointer">
+              {t('Login')}
+            </H6>
+          </a>
+        </div>
+      )}
+
+      <div className="flex flex-col md:flex-row">
         <div className="flex-col w-full md:w-[calc(100%-(480px))] md:pr-48">
           <ParticipantForm
             participant={participant}
@@ -489,7 +535,7 @@ export default function CheckoutInfoRoute() {
             {message}
           </Notification>
         </div>
-        <div className="w-full md:w-[480px] mt-8">
+        <div className="w-full md:w-[480px]">
           <DisplayCart
             cart={cart}
             event={event}

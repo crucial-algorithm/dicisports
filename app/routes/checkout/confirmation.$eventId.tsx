@@ -121,7 +121,7 @@ export default function CheckoutConfirmationRoute() {
           </div>
         </div>
         <div className="w-full md:w-[480px] mt-4 md:mt-0">
-          <DisplayCart cart={cart} event={event} fetcher={fetcher} isConfirmation={true} />
+          <DisplayCart cart={cart} event={event} fetcher={fetcher} isConfirmationRoute={true} />
         </div>
       </div>
     </Main>

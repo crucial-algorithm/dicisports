@@ -110,7 +110,7 @@ export default function CheckoutPaymentRoute() {
           </Form>
         </div>
         <div className="w-full md:w-[480px]">
-          <DisplayCart cart={cart} event={event} fetcher={fetcher} />
+          <DisplayCart cart={cart} event={event} fetcher={fetcher} isPaymentRoute={true} />
         </div>
       </div>
     </Main>
