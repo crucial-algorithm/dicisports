@@ -15,7 +15,7 @@ import {
   findBooking,
   findUserRaceParticipants,
   getUserCheckoutRaces,
-  updateRaceParticipantStatus
+  updateBookingStatus
 } from '~/server/db/checkout.server';
 import DisplayCart from '~/components/shared/DisplayCart';
 import Button from '~/components/shared/Button';
@@ -43,7 +43,7 @@ export const action: ActionFunction = async ({ request, params }) => {
     return badRequest({ error: t('No Race Participants') });
   }
 
-  await updateRaceParticipantStatus(
+  await updateBookingStatus(
     raceParticipants,
     CheckoutStatus.confirmed,
     clientId,
@@ -110,7 +110,7 @@ export default function CheckoutPaymentRoute() {
           </Form>
         </div>
         <div className="w-full md:w-[480px]">
-          <DisplayCart cart={cart} event={event} fetcher={fetcher} isPaymentRoute={true} />
+          <DisplayCart cart={cart} event={event} fetcher={fetcher} showEditInfoButton={true} />
         </div>
       </div>
     </Main>

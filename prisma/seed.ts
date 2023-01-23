@@ -84,7 +84,7 @@ function groupTypes() {
 }
 
 function shirtSizes() {
-  return shirtSizesSeed.map((ss) => ss);
+  return shirtSizesSeed;
 }
 
 function groupsSpirit() {

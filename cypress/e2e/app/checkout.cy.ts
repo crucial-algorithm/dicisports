@@ -220,13 +220,13 @@ describe('Checkout', () => {
         .click()
 
         .url()
-        .should('include', 'login?a=checkoutAuth&u=')
+        .should('include', 'login?a=checkout')
 
         .get('[name=email]')
-        .type('regular@gmail.com', { delay: 1 })
+        .type('regular@gmail.com', { delay: 10 })
 
         .get('[name=password]')
-        .type('Password1', { delay: 1 })
+        .type('Password1', { delay: 10 })
 
         .intercept('GET', '/?_data=routes*')
         .as('login')

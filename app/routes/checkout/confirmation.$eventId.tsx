@@ -84,7 +84,7 @@ export default function CheckoutConfirmationRoute() {
       {!isAuth && (
         <div className="flex flex-row items-center justify-end gap-x-2">
           <H6>{t('Already Have An Account ?')}</H6>
-          <a href={`/login?a=checkoutAuth&u=${registration.userId}`} data-cy="authenticate">
+          <a href="/login?a=checkout" data-cy="authenticate">
             <H6 className="dark:text-blueGray-500 cursor-pointer">{t('Login')}</H6>
           </a>
         </div>
@@ -121,7 +121,7 @@ export default function CheckoutConfirmationRoute() {
           </div>
         </div>
         <div className="w-full md:w-[480px] mt-4 md:mt-0">
-          <DisplayCart cart={cart} event={event} fetcher={fetcher} isConfirmationRoute={true} />
+          <DisplayCart cart={cart} event={event} fetcher={fetcher} hideCheckoutButton={true} />
         </div>
       </div>
     </Main>

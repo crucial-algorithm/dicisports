@@ -23,7 +23,8 @@ import { verifyEmailAddress } from '~/server/auth/verifier.server';
 import { addGroupToFavorites } from '~/server/db/groups.server';
 import InputError from '~/components/shared/form/InputError';
 import { CanonicalMeta } from '~/utils/seo';
-import { checkoutAuthenticate } from '~/server/db/checkout.server';
+import { changeCheckoutToAuthUser } from '~/server/db/checkout.server';
+import { getClientSession } from '~/server/auth/client.server';
 
 type ActionData = {
   fields: {
@@ -124,9 +125,11 @@ export const action: ActionFunction = async ({ request }) => {
       }
     }
 
-    if (postSignUpAction === 'checkoutAuth') {
+    if (postSignUpAction === 'checkout') {
       try {
-        await checkoutAuthenticate(user.id, searchParams.get('u') as string);
+        const clientSession = await getClientSession(request);
+
+        await changeCheckoutToAuthUser(user.id, clientSession.getClientId());
       } catch (e) {
         console.error(e);
       }

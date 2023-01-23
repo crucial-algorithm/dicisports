@@ -23,10 +23,9 @@ import {
   findShirtSizes,
   findUserParticipants,
   findUserRaceParticipants,
-  findUserSavedParticipants,
   getUserCheckoutRaces,
   updateParticipant,
-  updateRaceParticipantStatus,
+  updateBookingStatus,
   updateToSelectedParticipant
 } from '~/server/db/checkout.server';
 import Main from '~/components/shared/Main';
@@ -90,28 +89,19 @@ export const action: ActionFunction = async ({ request, params }) => {
 
   if (actionId === actions.checkout) {
     const raceParticipants = await findUserRaceParticipants(clientId, eventId);
-    const verifiedRaceParticipants: RaceParticipant[] = [];
 
     if (!raceParticipants) {
       return badRequest({ error: t('No Race Participants') });
     }
 
-    for (const rc of raceParticipants) {
-      if (rc.participant.firstName !== null) {
-        verifiedRaceParticipants.push(rc);
-      }
-    }
+    const verifiedRaceParticipants: RaceParticipant[] = raceParticipants.filter(
+      (rp) => rp.participant.firstName !== null
+    );
 
     if (verifiedRaceParticipants.length !== raceParticipants?.length) {
       const missingFilledParticipants =
         raceParticipants?.length - verifiedRaceParticipants.length;
-      const missingParticipants: RaceParticipant[] = [];
-
-      for (const rc of raceParticipants) {
-        if (rc.participant.firstName === null) {
-          missingParticipants.push(rc);
-        }
-      }
+      const missingParticipants: RaceParticipant[] = raceParticipants.filter(rp => rp.participant.firstName === null);
 
       return badRequest({
         errors: {
@@ -123,7 +113,7 @@ export const action: ActionFunction = async ({ request, params }) => {
       });
     }
 
-    await updateRaceParticipantStatus(
+    await updateBookingStatus(
       raceParticipants,
       CheckoutStatus.pending,
       clientId,
@@ -258,7 +248,6 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   }
 
   const userParticipants = await findUserParticipants(clientId);
-  const userSavedParticipants = await findUserSavedParticipants(clientId);
   const shirtSizes = await findShirtSizes();
 
   return json({
@@ -266,10 +255,8 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     cart,
     raceParticipants,
     userParticipants,
-    userSavedParticipants,
     shirtSizes,
-    isAuth: !!authClient,
-    clientId
+    isAuth: !!authClient
   });
 };
 
@@ -281,10 +268,8 @@ export default function CheckoutInfoRoute() {
     cart,
     raceParticipants,
     userParticipants,
-    userSavedParticipants,
     shirtSizes,
-    isAuth,
-    clientId
+    isAuth
   } = useLoaderData<LoaderData>();
   const defaultSelectedParticipant =
     userParticipants[
@@ -366,8 +351,8 @@ export default function CheckoutInfoRoute() {
 
   function handleSetSelectedParticipant(v: string | number) {
     const participant: Participant =
-      userSavedParticipants[
-        userSavedParticipants.findIndex((p: Participant) => p.id === v)
+      userParticipants[
+        userParticipants.findIndex((p: Participant) => p.id === v)
       ];
 
     setHash(Date.now());
@@ -504,10 +489,7 @@ export default function CheckoutInfoRoute() {
       {!isAuth && (
         <div className="flex flex-row items-center justify-end gap-x-2">
           <H6>{t('Already Have An Account ?')}</H6>
-          <a
-            href={`/login?a=checkoutAuth&u=${clientId}`}
-            data-cy="authenticate"
-          >
+          <a href="/login?a=checkout" data-cy="authenticate">
             <H6 className="dark:text-blueGray-500 cursor-pointer">
               {t('Login')}
             </H6>
@@ -521,9 +503,9 @@ export default function CheckoutInfoRoute() {
             participant={participant}
             hash={hash}
             errors={errors}
-            userSavedParticipants={
-              userSavedParticipants.length !== 0 ? userSavedParticipants : null
-            }
+            userSavedParticipants={userParticipants.filter(
+              (p: Participant) => p.firstName !== null
+            )}
             raceId={selectedRace}
             fetcher={fetcher}
             selectedParticipant={selectedParticipant}
@@ -608,26 +590,28 @@ function ParticipantForm({
       className={clsx('w-full', participant ? 'opacity-100' : 'opacity-50')}
       key={hash}
     >
-      {participant && userSavedParticipants && (
-        <div className="mb-8">
-          <FormField
-            label={t('Select Participant')}
-            error={errors?.selectedParticipant}
-            className="w-full"
-          >
-            <ComboBox
-              id="saved-participants"
-              name="userSavedParticipants"
-              placeholder=""
-              options={userSavedParticipants.map((u) => {
-                return { value: u.id, label: u.firstName + ' ' + u.lastName };
-              })}
-              onChange={setSelectedParticipant}
-              className="w-[50%] mr-2"
-            />
-          </FormField>
-        </div>
-      )}
+      {participant &&
+        userSavedParticipants &&
+        userSavedParticipants.length !== 0 && (
+          <div className="mb-8">
+            <FormField
+              label={t('Select Participant')}
+              error={errors?.selectedParticipant}
+              className="w-full"
+            >
+              <ComboBox
+                id="saved-participants"
+                name="userSavedParticipants"
+                placeholder=""
+                options={userSavedParticipants.map((u) => {
+                  return { value: u.id, label: u.firstName + ' ' + u.lastName };
+                })}
+                onChange={setSelectedParticipant}
+                className="w-[50%] mr-2"
+              />
+            </FormField>
+          </div>
+        )}
       <div className="flex flex-col md:flex-row md:space-x-2">
         <FormField
           label={t('First Name')}

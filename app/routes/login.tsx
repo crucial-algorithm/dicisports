@@ -31,7 +31,8 @@ import type { LoginAction } from '~/types';
 import { loginUser } from '~/server/db/users.server';
 import Main from '~/components/shared/Main';
 import { CanonicalMeta } from '~/utils/seo';
-import { checkoutAuthenticate } from '~/server/db/checkout.server';
+import { changeCheckoutToAuthUser } from '~/server/db/checkout.server';
+import { getClientSession } from '~/server/auth/client.server';
 
 type LoaderData = {
   email?: string;
@@ -42,7 +43,7 @@ const actions = {
   login: 'login',
   joinWhatsAppGroup: 'ws',
   addToFavorites: 'favorite',
-  checkoutAuth: 'checkoutAuth'
+  checkout: 'checkout'
 };
 
 type QueryStringArgs = {
@@ -100,14 +101,14 @@ export const loader: LoaderFunction = async ({ request }) => {
 
 type ActionData = {
   fields: {
-    email: string
-  },
+    email: string;
+  };
   errors: {
-    email: string | null,
-    password: string | null
-    submit: string | null
-  }
-}
+    email: string | null;
+    password: string | null;
+    submit: string | null;
+  };
+};
 
 async function sendWhatsAppLinkFlow(request: Request, params: URLSearchParams) {
   const t = await i18n.getFixedT(request, 'login');
@@ -210,9 +211,11 @@ export const action: ActionFunction = async ({ request }) => {
       }
     }
 
-    if (postLoginAction === actions.checkoutAuth) {
+    if (postLoginAction === actions.checkout) {
       try {
-        await checkoutAuthenticate(user.id, searchParams.get('u') as string);
+        const clientSession = await getClientSession(request);
+
+        await changeCheckoutToAuthUser(user.id, clientSession.getClientId());
       } catch (e) {
         console.error(e);
       }
@@ -301,7 +304,9 @@ export default function Login() {
             />
           </FormField>
         )}
-        <Button name="login">{t(action === 'ws' ? 'Email WhatsApp Link' : 'Login')}</Button>
+        <Button name="login">
+          {t(action === 'ws' ? 'Email WhatsApp Link' : 'Login')}
+        </Button>
         {errors.submit && (
           <InputError className="mt-4" id="error-message">
             {errors.submit}
@@ -338,20 +343,17 @@ function CreateAccount({
   return (
     <p className="dark:text-blueGray-500 text-gray-500 mt-8">
       {text} &nbsp;
-      <Link to={`/signup${queryString ? `?${queryString}` : '' }`} id="create-account">
+      <Link
+        to={`/signup${queryString ? `?${queryString}` : ''}`}
+        id="create-account"
+      >
         {cta}
       </Link>
     </p>
   );
 }
 
-function RecoverPassword({
-  text,
-  cta
-}: {
-  text: string;
-  cta: string
-}) {
+function RecoverPassword({ text, cta }: { text: string; cta: string }) {
   return (
     <p className="dark:text-blueGray-500 text-gray-500 mt-2">
       {text} &nbsp;

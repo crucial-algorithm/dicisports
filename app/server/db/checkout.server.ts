@@ -170,7 +170,7 @@ async function findEventRacesCheckoutQtd(
   return results.map(dbEventRaceCheckoutQtdToEventRaceCheckoutQtd);
 }
 
-async function getDistinctUserEventRegistrations(
+async function getDistinctUserEventCheckoutRaces(
   userSessionId: string,
   eventId: string
 ): Promise<Array<Partial<RaceCheckout>> | null> {
@@ -244,17 +244,6 @@ async function findUserRaceParticipants(
   });
 }
 
-async function findUserSavedParticipants(
-  userSessionId: string
-): Promise<Participant[] | null> {
-  return await db.participant.findMany({
-    where: {
-      userId: userSessionId,
-      firstName: { not: null }
-    }
-  });
-}
-
 async function updateParticipant(
   participant: ParticipantInput
 ): Promise<Participant> {
@@ -320,28 +309,17 @@ async function addRaceParticipants(
   });
 }
 
-async function updateRaceParticipantStatus(
+async function updateBookingStatus(
   raceParticipants: RaceParticipant[],
   status: CheckoutStatus,
   userSessionId: string,
   eventId: string
-): Promise<void> {
-  return await prisma.$transaction(async (prisma) => {
-    for (const r of raceParticipants) {
-      await prisma.raceParticipant.update({
-        where: {
-          participantId_raceId: {
-            participantId: r.participant.id,
-            raceId: r.race.id
-          }
-        },
-        data: {
-          status
-        }
-      });
+): Promise<Booking> {
+  return await db.booking.update({
+    where: { eventId_userId: { eventId, userId: userSessionId } },
+    data: {
+      status
     }
-
-    await updateBookingStatus(userSessionId, eventId, status, prisma);
   });
 }
 
@@ -377,20 +355,6 @@ async function createBooking(
   });
 }
 
-async function updateBookingStatus(
-  userSessionId: string,
-  eventId: string,
-  status: CheckoutStatus,
-  tx?: Prisma.TransactionClient
-): Promise<Booking> {
-  return await (tx || db).booking.update({
-    where: { eventId_userId: { eventId, userId: userSessionId } },
-    data: {
-      status
-    }
-  });
-}
-
 async function removeBooking(
   userSessionId: string,
   eventId: string,
@@ -408,10 +372,10 @@ async function findShirtSizes(): Promise<Array<ShirtSize>> {
     }
   });
 
-  return shirtSizes.map((ss) => dbShirtSizeToShirtSize(ss));
+  return shirtSizes.map(dbShirtSizeToShirtSize);
 }
 
-async function checkoutAuthenticate(
+async function changeCheckoutToAuthUser(
   authUser: string,
   oldUser: string
 ): Promise<void> {
@@ -457,18 +421,17 @@ export {
   findEventRacesCheckoutQtd,
   getCheckoutByUserAndRace,
   addParticipantToRace,
-  getDistinctUserEventRegistrations,
+  getDistinctUserEventCheckoutRaces,
   findUserRaceParticipants,
   findUserParticipants,
-  findUserSavedParticipants,
   updateParticipant,
   updateToSelectedParticipant,
   removeRaceParticipant,
   addRaceParticipants,
-  updateRaceParticipantStatus,
+  updateBookingStatus,
   findBooking,
   createBooking,
   findShirtSizes,
   removeBooking,
-  checkoutAuthenticate
+  changeCheckoutToAuthUser
 };

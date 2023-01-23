@@ -19,7 +19,7 @@ import {
   createBooking,
   findBooking,
   findEventRacesCheckoutQtd,
-  getDistinctUserEventRegistrations,
+  getDistinctUserEventCheckoutRaces,
   getUserCheckoutRaces,
   removeRegistration
 } from '~/server/db/checkout.server';
@@ -62,23 +62,27 @@ export const action: ActionFunction = async ({ request, params }) => {
     }
 
     if (actionId === actions.checkout) {
-      const userCheckoutRace = await getDistinctUserEventRegistrations(
+      const userCheckoutRaces = await getDistinctUserEventCheckoutRaces(
         clientId,
         eventId
       );
 
-      if (!userCheckoutRace) {
+      if (!userCheckoutRaces) {
         return badRequest({ error: t('No Races In Checkout') });
       }
 
       const pin = Math.floor(1000 + Math.random() * 9000);
-      const registration = await createBooking(pin, eventId, clientId);
+      const booking = await createBooking(pin, eventId, clientId);
 
-      for (const uc of userCheckoutRace) {
+      if (!booking) {
+        return badRequest({ error: t('Can\'t Create Booking') });
+      }
+
+      for (const uc of userCheckoutRaces) {
         await addParticipantToRace(
           uc.raceId as string,
           clientId,
-          registration?.id
+          booking?.id
         );
       }
 

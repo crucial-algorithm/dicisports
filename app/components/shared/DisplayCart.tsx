@@ -8,26 +8,22 @@ import DisplayDate from '~/components/shared/DIsplayDate';
 import Button, { ButtonLink } from '~/components/shared/Button';
 import InputError from '~/components/shared/form/InputError';
 
-const actions = {
-  checkout: 'checkout'
-};
-
 export default function DisplayCart({
   cart,
   event,
   error,
   fetcher,
   hash,
-  isConfirmationRoute,
-  isPaymentRoute
+  hideCheckoutButton,
+  showEditInfoButton
 }: {
   cart: Cart[];
   event: Event;
   error?: string;
   fetcher: FetcherWithComponents<any>;
   hash?: number;
-  isConfirmationRoute?: boolean;
-  isPaymentRoute?: boolean;
+  hideCheckoutButton?: boolean;
+  showEditInfoButton?: boolean;
 }) {
   const { t } = useTranslation('checkout');
   let totalPrice = 0;
@@ -76,13 +72,13 @@ export default function DisplayCart({
             </div>
           )}
 
-        {!isConfirmationRoute && !isPaymentRoute && (
+        {!hideCheckoutButton && !showEditInfoButton && (
           <div className="flex flex-col items-center w-full">
             <input type="hidden" name="hash" value={hash} />
             <Button
               type="submit"
               name="actionId"
-              value={actions.checkout}
+              value="checkout"
               disabled={cart.length === 0}
               className="mt-4 w-full"
               id="checkout"
@@ -97,7 +93,7 @@ export default function DisplayCart({
           </div>
         )}
 
-        {isPaymentRoute && (
+        {showEditInfoButton && (
           <div>
             <ButtonLink
               className="mt-4 w-full"
