@@ -9,12 +9,14 @@ import type {
   DBRawCart,
   DBRawRaceCheckout,
   DBRawRaceQtd,
+  PartialRaceCheckout,
   Participant,
   ParticipantInput,
   Race,
   RaceCheckout,
   RaceCheckoutInput,
   RaceParticipant,
+  RaceParticipantInput,
   RaceQtd,
   ShirtSize
 } from '~/types';
@@ -71,30 +73,26 @@ async function getCheckoutByUserAndRace(
 }
 
 async function addRegistration(
-  userSessionId: string,
+  clientId: string,
   raceId: string,
   tx?: Prisma.TransactionClient
 ): Promise<RaceCheckout> {
-  const existingCheckout = await getCheckoutByUserAndRace(
-    userSessionId,
-    raceId
-  );
+  const now = new Date();
 
-  if (!existingCheckout) {
-    return await createRegistration(
-      {
-        userId: userSessionId,
-        raceId: raceId,
-        qtd: 1
-      },
-      tx
-    );
-  }
-
-  return await (tx || db).raceCheckout.update({
-    where: { id: existingCheckout.id },
-    data: {
-      qtd: existingCheckout.qtd + 1
+  return await (tx || db).raceCheckout.upsert({
+    where: {
+      userId_raceId: { userId: clientId, raceId }
+    },
+    update: {
+      qtd: { increment: 1 }
+    },
+    create: {
+      id: Id(),
+      raceId: raceId,
+      userId: clientId,
+      qtd: 1,
+      createdAt: now,
+      updatedAt: now
     }
   });
 }
@@ -173,7 +171,7 @@ async function findEventRacesCheckoutQtd(
 async function getDistinctUserEventCheckoutRaces(
   userSessionId: string,
   eventId: string
-): Promise<Array<Partial<RaceCheckout>> | null> {
+): Promise<Array<PartialRaceCheckout> | null> {
   const query = `
         SELECT id, race_id, user_id, created_at, updated_at
         FROM race_checkout, generate_series(1, qtd)
@@ -186,31 +184,47 @@ async function getDistinctUserEventCheckoutRaces(
   return results.map(dbRaceCheckoutToRaceCheckout);
 }
 
-async function addParticipantToRace(
-  raceId: string,
-  userSessionId: string,
+async function createParticipant(
+  clientId: string,
+  tx?: Prisma.TransactionClient
+): Promise<Participant> {
+  return await (tx || db).participant.create({
+    data: {
+      id: Id(),
+      userId: clientId,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    }
+  });
+}
+
+async function addParticipantsToRace(
+  raceIds: string[],
+  clientId: string,
   bookingId: string,
   tx?: Prisma.TransactionClient
 ): Promise<void> {
   return await prisma.$transaction(async (prisma) => {
-    const participant = await (tx || prisma).participant.create({
-      data: {
-        id: Id(),
-        userId: userSessionId,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      }
-    });
+    const raceParticipants: RaceParticipantInput[] = [];
 
-    await (tx || prisma).raceParticipant.create({
-      data: {
-        id: Id(),
+    for (const r of raceIds) {
+      const id = Id();
+      const now = new Date();
+
+      const participant = await createParticipant(clientId, tx || prisma);
+
+      raceParticipants.push({
+        id: id,
         participantId: participant.id,
-        raceId: raceId,
-        bookingId,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      }
+        raceId: r,
+        bookingId: bookingId,
+        createdAt: now,
+        updatedAt: now
+      });
+    }
+
+    await (tx || prisma).raceParticipant.createMany({
+      data: raceParticipants
     });
   });
 }
@@ -297,13 +311,14 @@ async function removeRaceParticipant(
 }
 
 async function addRaceParticipants(
-  races: Array<string>,
+  raceIds: string[],
   userSessionId: string,
   registrationId: string
 ): Promise<void> {
   return await prisma.$transaction(async (prisma) => {
-    for (const r of races) {
-      await addParticipantToRace(r, userSessionId, registrationId, prisma);
+    await addParticipantsToRace(raceIds, userSessionId, registrationId, prisma);
+
+    for (const r of raceIds) {
       await addRegistration(userSessionId, r, prisma);
     }
   });
@@ -420,7 +435,7 @@ export {
   getUserCheckoutRaces,
   findEventRacesCheckoutQtd,
   getCheckoutByUserAndRace,
-  addParticipantToRace,
+  addParticipantsToRace,
   getDistinctUserEventCheckoutRaces,
   findUserRaceParticipants,
   findUserParticipants,

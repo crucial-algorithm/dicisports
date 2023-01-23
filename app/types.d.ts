@@ -284,7 +284,7 @@ type Ticket = {
   numberOfTickets: number;
 };
 
-type RaceCheckout = {} & DBRaceCheckout;
+type RaceCheckout = { raceId: string } & DBRaceCheckout;
 
 type RaceCheckoutInput = {
   id?: string;
@@ -294,6 +294,14 @@ type RaceCheckoutInput = {
   createdAt?: Date;
   updatedAt?: Date;
 };
+
+type PartialRaceCheckout = {
+  id: string;
+  raceId: string;
+  userId: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
 
 type DBRawRaceCheckout = {
   id: string;
@@ -344,6 +352,15 @@ type RaceParticipant = {
   race: Race;
   participant: Participant;
 } & DBRaceParticipant;
+
+type RaceParticipantInput = {
+  id?: string;
+  participantId: string;
+  raceId: string;
+  bookingId: string;
+  createdAt: Date;
+  updatedAt: Date;
+};
 
 type Participant = {} & DBParticipant;
 
@@ -411,6 +428,8 @@ export {
   RaceQtd,
   DBRawRaceCheckout,
   RaceParticipant,
+  RaceParticipantInput,
+  PartialRaceCheckout,
   Participant,
   ParticipantInput,
   Booking,

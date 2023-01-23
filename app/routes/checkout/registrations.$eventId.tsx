@@ -14,7 +14,7 @@ import type { Cart, Event, Race, RaceQtd } from '~/types';
 import { badRequest, displayTimeOfDay } from '~/utils/misc';
 import { getClientSession } from '~/server/auth/client.server';
 import {
-  addParticipantToRace,
+  addParticipantsToRace,
   addRegistration,
   createBooking,
   findBooking,
@@ -75,16 +75,14 @@ export const action: ActionFunction = async ({ request, params }) => {
       const booking = await createBooking(pin, eventId, clientId);
 
       if (!booking) {
-        return badRequest({ error: t('Can\'t Create Booking') });
+        return badRequest({ error: t("Can't Create Booking") });
       }
 
-      for (const uc of userCheckoutRaces) {
-        await addParticipantToRace(
-          uc.raceId as string,
-          clientId,
-          booking?.id
-        );
-      }
+      await addParticipantsToRace(
+        userCheckoutRaces.map((u) => u.raceId),
+        clientId,
+        booking?.id
+      );
 
       return redirect(`/checkout/info/${eventId}`);
     }

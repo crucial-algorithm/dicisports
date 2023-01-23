@@ -20,7 +20,7 @@ import type {
   Group,
   GroupInput,
   GroupSpirit,
-  GroupType,
+  GroupType, PartialRaceCheckout,
   Perk,
   RaceCheckout,
   RaceQtd,
@@ -194,7 +194,7 @@ function dbEventRaceCheckoutQtdToEventRaceCheckoutQtd(
 
 function dbRaceCheckoutToRaceCheckout(
   raceCheckout: DBRawRaceCheckout
-): Partial<RaceCheckout> {
+): PartialRaceCheckout {
   return {
     id: raceCheckout.id,
     raceId: raceCheckout.race_id,

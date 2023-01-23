@@ -15,6 +15,7 @@ import shirtSizesSeed from './data/shirtSizes.json';
 import sportsSeed from './data/sports.json';
 
 const db = new PrismaClient();
+const now = new Date();
 
 async function persist(name: string, list: Array<any>, entity: any) {
   await Promise.all(
@@ -116,15 +117,15 @@ function documents() {
 function races() {
   return racesSeed.map((r) => ({
     ...r,
-    createdAt: new Date(),
-    updatedAt: new Date()
+    createdAt: now,
+    updatedAt: now
   }));
 }
 
 function perks() {
   return perksSeed.map((p) => ({
     ...p,
-    createdAt: new Date()
+    createdAt: now
   }));
 }
 
@@ -209,8 +210,8 @@ function favoriteGroup() {
   return favoriteGroupsSeed.map((f) => {
     return {
       ...f,
-      createdAt: new Date(),
-      updatedAt: new Date()
+      createdAt: now,
+      updatedAt: now
     };
   });
 }
