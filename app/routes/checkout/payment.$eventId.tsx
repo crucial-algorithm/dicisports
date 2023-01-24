@@ -30,12 +30,15 @@ type LoaderData = {
 
 export const action: ActionFunction = async ({ request, params }) => {
   const t = await i18n.getFixedT(request, 'checkout');
+  const anonymousClient = await getClientSession(request);
+  const authenticatedClient = await getUser(request);
   const eventId = params.eventId as string;
-  const clientSession = await getClientSession(request);
-  const authClient = await getUser(request);
 
+  // We check if user is authenticated -> authenticatedClient, if not, we use the client session -> anonymousClient
   const clientId =
-    authClient !== null ? authClient.id : clientSession.getClientId();
+    authenticatedClient !== null
+      ? authenticatedClient.id
+      : anonymousClient.getClientId();
 
   const raceParticipants = await findUserRaceParticipants(clientId, eventId);
 
@@ -54,11 +57,16 @@ export const action: ActionFunction = async ({ request, params }) => {
 };
 
 export const loader: LoaderFunction = async ({ request, params }) => {
+  const anonymousClient = await getClientSession(request);
+  const authenticatedClient = await getUser(request);
   const eventId = params.eventId as string;
-  const clientSession = await getClientSession(request);
-  const authClient = await getUser(request);
 
-  const clientId = authClient !== null ? authClient.id : clientSession.getClientId();
+  // We check if user is authenticated -> authenticatedClient, if not, we use the client session -> anonymousClient
+  const clientId =
+    authenticatedClient !== null
+      ? authenticatedClient.id
+      : anonymousClient.getClientId();
+
   const event = await findEvent(eventId);
   const cart = await getUserCheckoutRaces(clientId, eventId);
   const raceParticipants = await findUserRaceParticipants(clientId, eventId);
@@ -106,11 +114,18 @@ export default function CheckoutPaymentRoute() {
         {/*Payment Form*/}
         <div className="flex-col w-full md:w-[calc(100%-(480px))] md:pr-4">
           <Form method="post">
-            <Button type="submit" name="pay">{t('Pay')}</Button>
+            <Button type="submit" name="pay">
+              {t('Pay')}
+            </Button>
           </Form>
         </div>
         <div className="w-full md:w-[480px]">
-          <DisplayCart cart={cart} event={event} fetcher={fetcher} showEditInfoButton={true} />
+          <DisplayCart
+            cart={cart}
+            event={event}
+            fetcher={fetcher}
+            showEditInfoButton={true}
+          />
         </div>
       </div>
     </Main>

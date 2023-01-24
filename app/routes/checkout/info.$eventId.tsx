@@ -78,12 +78,15 @@ type LoaderData = {
 export const action: ActionFunction = async ({ request, params }) => {
   const t = await i18n.getFixedT(request, 'checkout');
   const form = await request.formData();
-  const clientSession = await getClientSession(request);
-  const authClient = await getUser(request);
+  const anonymousClient = await getClientSession(request);
+  const authenticatedClient = await getUser(request);
   const eventId = params.eventId as string;
 
+  // We check if user is authenticated -> authenticatedClient, if not, we use the client session -> anonymousClient
   const clientId =
-    authClient !== null ? authClient.id : clientSession.getClientId();
+    authenticatedClient !== null
+      ? authenticatedClient.id
+      : anonymousClient.getClientId();
   const actionId = form.get('actionId');
   const hash = form.get('hash') as string;
 
@@ -94,22 +97,20 @@ export const action: ActionFunction = async ({ request, params }) => {
       return badRequest({ error: t('No Race Participants') });
     }
 
-    const verifiedRaceParticipants: RaceParticipant[] = raceParticipants.filter(
-      (rp) => rp.participant.firstName !== null
+    // Draft participants are empty; Save participants are validated ensuring all required is filed in
+    // Testing for firstName === null finds participants that haven't yet been saved successfully
+    const draftParticipants = raceParticipants.filter(
+      (rp) => rp.participant.firstName === null
     );
 
-    if (verifiedRaceParticipants.length !== raceParticipants?.length) {
-      const missingFilledParticipants =
-        raceParticipants?.length - verifiedRaceParticipants.length;
-      const missingParticipants: RaceParticipant[] = raceParticipants.filter(rp => rp.participant.firstName === null);
-
+    if (draftParticipants.length) {
       return badRequest({
         errors: {
           missingFilledParticipants:
-            missingFilledParticipants + ' ' + t('Participant Not Filled')
+            draftParticipants.length + ' ' + t('Participant Not Filled')
         },
         hash: parseInt(hash),
-        missingParticipants: JSON.stringify(missingParticipants)
+        missingParticipants: JSON.stringify(draftParticipants)
       });
     }
 
@@ -229,12 +230,15 @@ export const action: ActionFunction = async ({ request, params }) => {
 };
 
 export const loader: LoaderFunction = async ({ request, params }) => {
+  const anonymousClient = await getClientSession(request);
+  const authenticatedClient = await getUser(request);
   const eventId = params.eventId as string;
-  const clientSession = await getClientSession(request);
-  const authClient = await getUser(request);
 
+  // We check if user is authenticated -> authenticatedClient, if not, we use the client session -> anonymousClient
   const clientId =
-    authClient !== null ? authClient.id : clientSession.getClientId();
+      authenticatedClient !== null
+          ? authenticatedClient.id
+          : anonymousClient.getClientId();
   const event = await findEvent(eventId);
   const cart = await getUserCheckoutRaces(clientId, eventId);
   const raceParticipants = await findUserRaceParticipants(clientId, eventId);
@@ -256,7 +260,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     raceParticipants,
     userParticipants,
     shirtSizes,
-    isAuth: !!authClient
+    isAuth: !!authenticatedClient
   });
 };
 

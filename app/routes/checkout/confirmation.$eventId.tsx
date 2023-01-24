@@ -29,12 +29,16 @@ type LoaderData = {
 };
 
 export const loader: LoaderFunction = async ({ request, params }) => {
+  const anonymousClient = await getClientSession(request);
+  const authenticatedClient = await getUser(request);
   const eventId = params.eventId as string;
-  const clientSession = await getClientSession(request);
-  const authClient = await getUser(request);
 
+  // We check if user is authenticated -> authenticatedClient, if not, we use the client session -> anonymousClient
   const clientId =
-    authClient !== null ? authClient.id : clientSession.getClientId();
+    authenticatedClient !== null
+      ? authenticatedClient.id
+      : anonymousClient.getClientId();
+
   const raceParticipants = await findUserRaceParticipants(clientId, eventId);
   const booking = await findBooking(clientId, eventId);
 
@@ -58,7 +62,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     registration,
     event,
     cart,
-    isAuth: !!authClient
+    isAuth: !!authenticatedClient
   });
 };
 
@@ -85,7 +89,9 @@ export default function CheckoutConfirmationRoute() {
         <div className="flex flex-row items-center justify-end gap-x-2">
           <H6>{t('Already Have An Account ?')}</H6>
           <a href="/login?a=checkout" data-cy="authenticate">
-            <H6 className="dark:text-blueGray-500 cursor-pointer">{t('Login')}</H6>
+            <H6 className="dark:text-blueGray-500 cursor-pointer">
+              {t('Login')}
+            </H6>
           </a>
         </div>
       )}
@@ -121,7 +127,12 @@ export default function CheckoutConfirmationRoute() {
           </div>
         </div>
         <div className="w-full md:w-[480px] mt-4 md:mt-0">
-          <DisplayCart cart={cart} event={event} fetcher={fetcher} hideCheckoutButton={true} />
+          <DisplayCart
+            cart={cart}
+            event={event}
+            fetcher={fetcher}
+            hideCheckoutButton={true}
+          />
         </div>
       </div>
     </Main>

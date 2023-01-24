@@ -222,6 +222,8 @@ describe('Checkout', () => {
         .url()
         .should('include', 'login?a=checkout')
 
+        .get('body[data-cy=ready]')
+
         .get('[name=email]')
         .type('regular@gmail.com', { delay: 10 })
 

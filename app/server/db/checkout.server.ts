@@ -205,23 +205,21 @@ async function addParticipantsToRace(
   tx?: Prisma.TransactionClient
 ): Promise<void> {
   return await prisma.$transaction(async (prisma) => {
-    const raceParticipants: RaceParticipantInput[] = [];
-
-    for (const r of raceIds) {
+    const raceParticipants: RaceParticipantInput[] = await Promise.all(raceIds.map(async (r) => {
       const id = Id();
       const now = new Date();
 
       const participant = await createParticipant(clientId, tx || prisma);
 
-      raceParticipants.push({
+      return {
         id: id,
         participantId: participant.id,
         raceId: r,
         bookingId: bookingId,
         createdAt: now,
         updatedAt: now
-      });
-    }
+      };
+    }));
 
     await (tx || prisma).raceParticipant.createMany({
       data: raceParticipants
