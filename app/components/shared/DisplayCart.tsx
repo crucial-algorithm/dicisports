@@ -15,7 +15,8 @@ export default function DisplayCart({
   fetcher,
   hash,
   hideCheckoutButton,
-  showEditInfoButton
+  showEditInfoButton,
+  showContinueLabel
 }: {
   cart: Cart[];
   event: Event;
@@ -24,6 +25,7 @@ export default function DisplayCart({
   hash?: number;
   hideCheckoutButton?: boolean;
   showEditInfoButton?: boolean;
+  showContinueLabel?: boolean;
 }) {
   const { t } = useTranslation('checkout');
   let totalPrice = 0;
@@ -83,7 +85,7 @@ export default function DisplayCart({
               className="mt-4 w-full"
               id="checkout"
             >
-              {t('Checkout now')}
+              {showContinueLabel ? t('Continue') : t('Checkout now')}
             </Button>
             {error && (
               <InputError id="checkout-error" className="mt-2">

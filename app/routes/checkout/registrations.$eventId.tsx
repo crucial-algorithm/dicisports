@@ -84,7 +84,7 @@ export const action: ActionFunction = async ({ request, params }) => {
       await addParticipantsToRace(
         userCheckoutRaces.map((u) => u.raceId),
         clientId,
-        booking?.id
+        booking.id
       );
 
       return redirect(`/checkout/info/${eventId}`);

@@ -528,6 +528,7 @@ export default function CheckoutInfoRoute() {
             error={errors.missingFilledParticipants}
             fetcher={fetcher}
             hash={hash}
+            showContinueLabel={true}
           />
         </div>
       </div>
