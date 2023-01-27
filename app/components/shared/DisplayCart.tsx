@@ -16,7 +16,8 @@ export default function DisplayCart({
   hash,
   hideCheckoutButton,
   showEditInfoButton,
-  showContinueLabel
+  showContinueLabel,
+  action
 }: {
   cart: Cart[];
   event: Event;
@@ -26,12 +27,13 @@ export default function DisplayCart({
   hideCheckoutButton?: boolean;
   showEditInfoButton?: boolean;
   showContinueLabel?: boolean;
+  action?: string;
 }) {
   const { t } = useTranslation('checkout');
   let totalPrice = 0;
 
   return (
-    <fetcher.Form method="post">
+    <fetcher.Form method="post" action={action}>
       <div className="flex flex-col border-2 border-b border-gray-500 rounded-md w-full h-full p-8 lg:p-12 md:ml-4">
         <H4>{t('Your Tickets')}</H4>
         <div className="mt-4 space-y-1">
@@ -77,6 +79,14 @@ export default function DisplayCart({
         {!hideCheckoutButton && !showEditInfoButton && (
           <div className="flex flex-col items-center w-full">
             <input type="hidden" name="hash" value={hash} />
+            {showContinueLabel && (
+              <a href={`/checkout/registrations/${event.id}?a=update`} data-cy="update-cart">
+                <H6 className="justify-end dark:text-blueGray-500 cursor-pointer">
+                  {t('Update Cart')}
+                </H6>
+              </a>
+            )}
+
             <Button
               type="submit"
               name="actionId"

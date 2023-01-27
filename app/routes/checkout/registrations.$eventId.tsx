@@ -1,6 +1,11 @@
 import type { ActionFunction, LoaderFunction } from 'remix';
 import { json, redirect } from 'remix';
-import { Form, useFetcher, useLoaderData } from '@remix-run/react';
+import {
+  Form,
+  useFetcher,
+  useLoaderData,
+  useSearchParams
+} from '@remix-run/react';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 import { ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline';
@@ -46,6 +51,7 @@ export const action: ActionFunction = async ({ request, params }) => {
   const anonymousClient = await getClientSession(request);
   const authenticatedClient = await getUser(request);
   const eventId = params.eventId as string;
+  const { searchParams } = new URL(request.url);
 
   // We check if user is authenticated -> authenticatedClient, if not, we use the client session -> anonymousClient
   const clientId =
@@ -54,6 +60,10 @@ export const action: ActionFunction = async ({ request, params }) => {
       : anonymousClient.getClientId();
   const actionId = form.get('actionId') as string;
   const raceId = form.get('raceId') as string;
+
+  if (searchParams.get('a') === 'update') {
+    return null;
+  }
 
   try {
     if (actionId === actions.add) {
@@ -101,6 +111,7 @@ export const action: ActionFunction = async ({ request, params }) => {
 export const loader: LoaderFunction = async ({ request, params }) => {
   const anonymousClient = await getClientSession(request);
   const authenticatedClient = await getUser(request);
+  const { searchParams } = new URL(request.url);
 
   // We check if user is authenticated -> authenticatedClient, if not, we use the client session -> anonymousClient
   const clientId =
@@ -113,7 +124,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   const userCheckoutRaces = await getUserCheckoutRaces(clientId, eventId);
   const booking = await findBooking(clientId, eventId);
 
-  if (booking) {
+  if (booking && !(searchParams.get('a') === 'update')) {
     return redirect(
       `/checkout/${
         booking.status === CheckoutStatus.checkout
@@ -141,6 +152,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 export default function CheckoutRegistrationsRoute() {
   const { event, races, userCheckoutRaces } = useLoaderData<LoaderData>();
   const fetcher = useFetcher();
+  const [searchParams] = useSearchParams();
 
   return (
     <Main>
@@ -160,7 +172,7 @@ export default function CheckoutRegistrationsRoute() {
           {races
             .sort((a: Race, b: Race) => a.displayOrder - b.displayOrder)
             .map((r: RaceQtd) => (
-              <DisplayRace race={r} key={r.id} />
+              <DisplayRace race={r} eventId={event.id} key={r.id} />
             ))}
         </div>
         <div className="w-full md:w-[480px]">
@@ -168,6 +180,9 @@ export default function CheckoutRegistrationsRoute() {
             cart={userCheckoutRaces}
             event={event}
             fetcher={fetcher}
+            action={`/checkout/registrations/${event.id}${
+              searchParams.toString().length ? `?${searchParams}` : ''
+            }`}
           />
         </div>
       </div>
@@ -175,7 +190,7 @@ export default function CheckoutRegistrationsRoute() {
   );
 }
 
-function DisplayRace({ race }: { race: RaceQtd }) {
+function DisplayRace({ race, eventId }: { race: RaceQtd; eventId: string }) {
   const { t } = useTranslation('checkout');
   const raceTime = displayTimeOfDay(race.startTime);
 

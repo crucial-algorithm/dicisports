@@ -150,7 +150,7 @@ export const action: ActionFunction = async ({ request, params }) => {
         .min(2, { message: t('Min 2 Chars') }),
       gender: z.number({
         required_error: t('Field Required'),
-        invalid_type_error: t('Invalid Type')
+        invalid_type_error: t('Field Required')
       }),
       birthday: z
         .date({ required_error: t('Field Required') })
@@ -158,7 +158,7 @@ export const action: ActionFunction = async ({ request, params }) => {
       phoneNumber: z
         .number({
           required_error: t('Field Required'),
-          invalid_type_error: t('Invalid Type')
+          invalid_type_error: t('Field Required')
         })
         .refine((val) => val.toString().length === 9, t('9 Digits'))
         .refine(
@@ -173,7 +173,7 @@ export const action: ActionFunction = async ({ request, params }) => {
       federationNumber: z.number().nullable(),
       shirtSize: z.number({
         required_error: t('Field Required'),
-        invalid_type_error: t('Invalid Type')
+        invalid_type_error: t('Field Required')
       }),
       nationality: z.number().nullable(),
       postalCode: z.string({ required_error: t('Field Required') })

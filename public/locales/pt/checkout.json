@@ -21,8 +21,8 @@
 
   "First Name Placeholder": "John",
   "Last Name Placeholder": "Doe",
-  "Gender Placeholder": "Selecione o seu género",
-  "Shirt Placeholder": "Selecione o seu tamanho",
+  "Gender Placeholder": "Seleciona o teu género",
+  "Shirt Placeholder": "Seleciona o tamanho da tua camisola",
 
   "Optional": "(Opcional)",
   "Required": "(Obrigatório)",
@@ -37,7 +37,7 @@
   "Discard": "Cancelar",
 
   "Field Required": "Campo obrigatório",
-  "Min 2 Chars": "Insira no mínimo 2 caracteres",
+  "Min 2 Chars": "Insere no mínimo 2 caracteres",
   "Past Date": "Data tem que estar no passado",
   "9 Digits": "Número tem de conter 9 dígitos",
   "Invalid number": "Número inválido",
