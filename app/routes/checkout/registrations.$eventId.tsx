@@ -21,6 +21,7 @@ import { getClientSession } from '~/server/auth/client.server';
 import {
   addParticipantsToRace,
   addRegistration,
+  addRegistrationOnUpdateCart,
   createBooking,
   findBooking,
   findEventRacesCheckoutQtd,
@@ -61,12 +62,18 @@ export const action: ActionFunction = async ({ request, params }) => {
   const actionId = form.get('actionId') as string;
   const raceId = form.get('raceId') as string;
 
-  if (searchParams.get('a') === 'update') {
-    return null;
-  }
-
   try {
     if (actionId === actions.add) {
+      if (searchParams.get('a') === 'update') {
+        const booking = await findBooking(clientId, eventId);
+
+        return await addRegistrationOnUpdateCart(
+          clientId,
+          raceId,
+          booking?.id as string
+        );
+      }
+
       return await addRegistration(clientId, raceId);
     }
 
@@ -75,6 +82,10 @@ export const action: ActionFunction = async ({ request, params }) => {
     }
 
     if (actionId === actions.checkout) {
+      if (searchParams.get('a') === 'update') {
+        return redirect(`/checkout/info/${eventId}`);
+      }
+
       const userCheckoutRaces = await getDistinctUserEventCheckoutRaces(
         clientId,
         eventId
@@ -172,7 +183,12 @@ export default function CheckoutRegistrationsRoute() {
           {races
             .sort((a: Race, b: Race) => a.displayOrder - b.displayOrder)
             .map((r: RaceQtd) => (
-              <DisplayRace race={r} eventId={event.id} key={r.id} />
+              <DisplayRace
+                race={r}
+                eventId={event.id}
+                searchParams={searchParams}
+                key={r.id}
+              />
             ))}
         </div>
         <div className="w-full md:w-[480px]">
@@ -190,7 +206,15 @@ export default function CheckoutRegistrationsRoute() {
   );
 }
 
-function DisplayRace({ race, eventId }: { race: RaceQtd; eventId: string }) {
+function DisplayRace({
+  race,
+  eventId,
+  searchParams
+}: {
+  race: RaceQtd;
+  eventId: string;
+  searchParams: URLSearchParams;
+}) {
   const { t } = useTranslation('checkout');
   const raceTime = displayTimeOfDay(race.startTime);
 
@@ -233,7 +257,12 @@ function DisplayRace({ race, eventId }: { race: RaceQtd; eventId: string }) {
           >
             {race.qtd}
           </H6>
-          <Form method="post">
+          <Form
+            method="post"
+            action={`/checkout/registrations/${eventId}${
+              searchParams.toString().length ? `?${searchParams}` : ''
+            }`}
+          >
             <input type="hidden" name="raceId" value={race.id as string} />
             <button
               id={`add-race-${race.id}`}

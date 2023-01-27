@@ -97,6 +97,17 @@ async function addRegistration(
   });
 }
 
+async function addRegistrationOnUpdateCart(
+  clientId: string,
+  raceId: string,
+  bookingId: string
+): Promise<RaceCheckout> {
+  return await prisma.$transaction(async (prisma) => {
+    await addParticipantToRace(clientId, raceId, bookingId, prisma);
+    return await addRegistration(clientId, raceId, prisma);
+  });
+}
+
 async function removeRegistration(
   userSessionId: string,
   raceId: string,
@@ -205,24 +216,50 @@ async function addParticipantsToRace(
   tx?: Prisma.TransactionClient
 ): Promise<void> {
   return await prisma.$transaction(async (prisma) => {
-    const raceParticipants: RaceParticipantInput[] = await Promise.all(raceIds.map(async (r) => {
-      const id = Id();
-      const now = new Date();
+    const raceParticipants: RaceParticipantInput[] = await Promise.all(
+      raceIds.map(async (r) => {
+        const id = Id();
+        const now = new Date();
 
-      const participant = await createParticipant(clientId, tx || prisma);
+        const participant = await createParticipant(clientId, tx || prisma);
 
-      return {
-        id: id,
-        participantId: participant.id,
-        raceId: r,
-        bookingId: bookingId,
-        createdAt: now,
-        updatedAt: now
-      };
-    }));
+        return {
+          id: id,
+          participantId: participant.id,
+          raceId: r,
+          bookingId: bookingId,
+          createdAt: now,
+          updatedAt: now
+        };
+      })
+    );
 
     await (tx || prisma).raceParticipant.createMany({
       data: raceParticipants
+    });
+  });
+}
+
+async function addParticipantToRace(
+  clientId: string,
+  raceId: string,
+  bookingId: string,
+  tx?: Prisma.TransactionClient
+): Promise<void> {
+  return await prisma.$transaction(async (prisma) => {
+    const now = new Date();
+
+    const participant = await createParticipant(clientId, tx || prisma);
+
+    await (tx || prisma).raceParticipant.create({
+      data: {
+        id: Id(),
+        participantId: participant.id,
+        raceId,
+        bookingId,
+        createdAt: now,
+        updatedAt: now
+      }
     });
   });
 }
@@ -446,5 +483,6 @@ export {
   createBooking,
   findShirtSizes,
   removeBooking,
-  changeCheckoutToAuthUser
+  changeCheckoutToAuthUser,
+  addRegistrationOnUpdateCart
 };
