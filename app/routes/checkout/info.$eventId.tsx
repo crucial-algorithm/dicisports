@@ -148,7 +148,7 @@ export const action: ActionFunction = async ({ request, params }) => {
       lastName: z
         .string({ required_error: t('Field Required') })
         .min(2, { message: t('Min 2 Chars') }),
-      gender: z.string({
+      gender: z.number({
         required_error: t('Field Required'),
         invalid_type_error: t('Invalid Type')
       }),
@@ -177,6 +177,7 @@ export const action: ActionFunction = async ({ request, params }) => {
       }),
       nationality: z.number().nullable(),
       postalCode: z.string({ required_error: t('Field Required') })
+          .min(1, { message: t('Field Required') })
     });
 
     if (actionId === actions.updateAndSave) {
@@ -553,7 +554,7 @@ type FormErrors = {
   federationNumber?: string;
   shirtSize?: string;
   nationality?: string;
-  postalcode?: string;
+  postalCode?: string;
   selectedParticipant?: string;
   missingFilledParticipants?: string;
 };
@@ -627,7 +628,7 @@ function ParticipantForm({
           <TextField
             data-cy="first-name"
             name="first-name"
-            placeholder={t('First Name')}
+            placeholder={t('First Name Placeholder')}
             defaultValue={
               (selectedParticipant?.firstName as string) ||
               (participant?.firstName as string)
@@ -643,7 +644,7 @@ function ParticipantForm({
         >
           <TextField
             name="last-name"
-            placeholder={t('Last Name')}
+            placeholder={t('Last Name Placeholder')}
             defaultValue={
               (selectedParticipant?.lastName as string) ||
               (participant?.lastName as string)
@@ -655,7 +656,7 @@ function ParticipantForm({
       <FormField label={t('Gender')} error={errors?.gender} dataCy="gender">
         <ComboBox
           name="gender"
-          placeholder=""
+          placeholder={t('Gender Placeholder')}
           options={genderOptions}
           lang={language}
           defaultValue={
@@ -694,7 +695,7 @@ function ParticipantForm({
           <TextField
             type="number"
             name="phone-number"
-            placeholder={t('Phone Number')}
+            placeholder={t('Required')}
             defaultValue={
               (selectedParticipant?.phoneNumber as number) ||
               (participant?.phoneNumber as number)
@@ -712,7 +713,7 @@ function ParticipantForm({
         >
           <TextField
             name="identity-card"
-            placeholder={t('Identity Card')}
+            placeholder={t('Optional')}
             defaultValue={
               (selectedParticipant?.identityCard as string) ||
               (participant?.identityCard as string)
@@ -729,7 +730,7 @@ function ParticipantForm({
           <TextField
             type="number"
             name="federation-number"
-            placeholder={t('National Federation Number')}
+            placeholder={t('Optional')}
             defaultValue={
               (selectedParticipant?.federationNumber as number) ||
               (participant?.federationNumber as number)
@@ -745,7 +746,7 @@ function ParticipantForm({
       >
         <ComboBox
           name="shirt"
-          placeholder=""
+          placeholder={t('Shirt Placeholder')}
           lang={language}
           options={shirtSizes.map((ss: ShirtSize) => {
             return { value: ss.id, label: ss.name as string };
@@ -765,7 +766,7 @@ function ParticipantForm({
       >
         <ComboBox
           name="nationality"
-          placeholder=""
+          placeholder={t('Optional')}
           lang={language}
           options={countries.map((c) => {
             return { value: c.id, label: c.name };
@@ -780,12 +781,12 @@ function ParticipantForm({
       <FormField
         label={t('Postal Code')}
         id="postal-code"
-        error={errors?.postalcode}
+        error={errors?.postalCode}
         dataCy="postalCode"
       >
         <TextField
           name="postal-code"
-          placeholder={t('Postal Code')}
+          placeholder={t('Required')}
           defaultValue={
             (selectedParticipant?.postalCode as string) ||
             (participant?.postalCode as string)

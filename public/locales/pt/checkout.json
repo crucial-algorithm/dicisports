@@ -19,6 +19,14 @@
   "National Federation Number": "Número da Federação",
   "Participant": "Participante",
 
+  "First Name Placeholder": "John",
+  "Last Name Placeholder": "Doe",
+  "Gender Placeholder": "Selecione o seu género",
+  "Shirt Placeholder": "Selecione o seu tamanho",
+
+  "Optional": "(Opcional)",
+  "Required": "(Obrigatório)",
+
   "Female": "Feminino",
   "Male": "Masculino",
   "Other": "Outro",
