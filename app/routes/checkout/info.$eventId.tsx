@@ -148,10 +148,8 @@ export const action: ActionFunction = async ({ request, params }) => {
       lastName: z
         .string({ required_error: t('Field Required') })
         .min(2, { message: t('Min 2 Chars') }),
-      gender: z.number({
-        required_error: t('Field Required'),
-        invalid_type_error: t('Field Required')
-      }),
+      gender: z.string({ required_error: t('Field Required') })
+          .min(1, { message: t('Field Required') }),
       birthday: z
         .date({ required_error: t('Field Required') })
         .max(new Date(), t('Past Date')),
