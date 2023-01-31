@@ -17,6 +17,7 @@ export default function DisplayCart({
   hideCheckoutButton,
   showEditInfoButton,
   showContinueLabel,
+  showUpdateCartButton,
   action
 }: {
   cart: Cart[];
@@ -27,6 +28,7 @@ export default function DisplayCart({
   hideCheckoutButton?: boolean;
   showEditInfoButton?: boolean;
   showContinueLabel?: boolean;
+  showUpdateCartButton?: boolean;
   action?: string;
 }) {
   const { t } = useTranslation('checkout');
@@ -79,8 +81,11 @@ export default function DisplayCart({
         {!hideCheckoutButton && !showEditInfoButton && (
           <div className="flex flex-col items-center w-full">
             <input type="hidden" name="hash" value={hash} />
-            {showContinueLabel && (
-              <a href={`/checkout/registrations/${event.id}?a=update`} data-cy="update-cart">
+            {showUpdateCartButton && (
+              <a
+                href={`/checkout/registrations/${event.id}?a=update`}
+                data-cy="update-cart"
+              >
                 <H6 className="justify-end dark:text-blueGray-500 cursor-pointer">
                   {t('Update Cart')}
                 </H6>

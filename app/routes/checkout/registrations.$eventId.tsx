@@ -25,8 +25,12 @@ import {
   createBooking,
   findBooking,
   findEventRacesCheckoutQtd,
+  findUserEventRaceParticipants,
+  findUserRaceParticipants,
   getDistinctUserEventCheckoutRaces,
   getUserCheckoutRaces,
+  removeBooking,
+  removeRaceParticipant,
   removeRegistration
 } from '~/server/db/checkout.server';
 import i18n from '~/server/i18n.server';
@@ -78,6 +82,35 @@ export const action: ActionFunction = async ({ request, params }) => {
     }
 
     if (actionId === actions.remove) {
+      if (searchParams.get('a') === 'update') {
+        const raceParticipants = await findUserRaceParticipants(
+          clientId,
+          raceId
+        );
+
+        if (!raceParticipants?.length) {
+          return badRequest({ error: t('No Race Participants') });
+        }
+
+        const draftRaceParticipants = raceParticipants?.filter(
+          (rp) => rp.participant.status === 'auto'
+        );
+
+        if (draftRaceParticipants?.length) {
+          return await removeRaceParticipant(
+            draftRaceParticipants[0].participantId,
+            raceId,
+            clientId
+          );
+        }
+
+        return await removeRaceParticipant(
+          raceParticipants[0].participantId as string,
+          raceId,
+          clientId
+        );
+      }
+
       return await removeRegistration(clientId, raceId);
     }
 
@@ -147,6 +180,19 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     );
   }
 
+  if (searchParams.get('a') === 'update') {
+    const userEventRaceParticipants = await findUserEventRaceParticipants(
+      clientId,
+      eventId
+    );
+
+    if (!userEventRaceParticipants?.length) {
+      await removeBooking(clientId, eventId);
+
+      return redirect(`/checkout/registrations/${eventId}`);
+    }
+  }
+
   if (!event || event.status !== Status.published) {
     return redirect('/');
   }
@@ -199,6 +245,7 @@ export default function CheckoutRegistrationsRoute() {
             action={`/checkout/registrations/${event.id}${
               searchParams.toString().length ? `?${searchParams}` : ''
             }`}
+            showContinueLabel={searchParams.get('a') === 'update'}
           />
         </div>
       </div>
@@ -238,7 +285,12 @@ function DisplayRace({
         </div>
 
         <div className="flex flex-row items-center dark:text-blueGray-500 w-[80px] justify-between">
-          <Form method="post">
+          <Form
+            method="post"
+            action={`/checkout/registrations/${eventId}${
+              searchParams.toString().length ? `?${searchParams}` : ''
+            }`}
+          >
             <input type="hidden" name="raceId" value={race.id as string} />
             <button
               id={`remove-race-${race.id}`}

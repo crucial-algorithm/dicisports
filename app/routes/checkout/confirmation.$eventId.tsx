@@ -8,7 +8,7 @@ import { CheckoutStatus } from '@prisma/client';
 import { getClientSession } from '~/server/auth/client.server';
 import {
   findBooking,
-  findUserRaceParticipants,
+  findUserEventRaceParticipants,
   getUserCheckoutRaces
 } from '~/server/db/checkout.server';
 import { findEvent } from '~/server/db/events.server';
@@ -39,7 +39,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
       ? authenticatedClient.id
       : anonymousClient.getClientId();
 
-  const raceParticipants = await findUserRaceParticipants(clientId, eventId);
+  const raceParticipants = await findUserEventRaceParticipants(clientId, eventId);
   const booking = await findBooking(clientId, eventId);
 
   if (!raceParticipants || raceParticipants?.length === 0) {

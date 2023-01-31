@@ -109,14 +109,11 @@ async function addRegistrationOnUpdateCart(
 }
 
 async function removeRegistration(
-  userSessionId: string,
+  clientId: string,
   raceId: string,
   tx?: Prisma.TransactionClient
 ): Promise<RaceCheckout | null> {
-  const existingCheckout = await getCheckoutByUserAndRace(
-    userSessionId,
-    raceId
-  );
+  const existingCheckout = await getCheckoutByUserAndRace(clientId, raceId);
 
   if (!existingCheckout || existingCheckout.qtd === 0) {
     return null;
@@ -124,12 +121,12 @@ async function removeRegistration(
 
   if (existingCheckout.qtd === 1) {
     return await (tx || db).raceCheckout.delete({
-      where: { userId_raceId: { userId: userSessionId, raceId } }
+      where: { userId_raceId: { userId: clientId, raceId } }
     });
   }
 
   return await (tx || db).raceCheckout.update({
-    where: { userId_raceId: { userId: userSessionId, raceId } },
+    where: { userId_raceId: { userId: clientId, raceId } },
     data: {
       qtd: existingCheckout.qtd - 1
     }
@@ -274,7 +271,7 @@ async function findUserParticipants(
   });
 }
 
-async function findUserRaceParticipants(
+async function findUserEventRaceParticipants(
   userSessionId: string,
   eventId: string
 ): Promise<RaceParticipant[] | null> {
@@ -285,6 +282,24 @@ async function findUserRaceParticipants(
     where: {
       participantId: { in: userParticipants.map((p) => p.id) },
       raceId: { in: eventRaces?.map((e) => e.id) }
+    },
+    include: {
+      race: true,
+      participant: true
+    }
+  });
+}
+
+async function findUserRaceParticipants(
+  clientId: string,
+  raceId: string
+): Promise<RaceParticipant[] | null> {
+  const userParticipants = await findUserParticipants(clientId);
+
+  return await db.raceParticipant.findMany({
+    where: {
+      participantId: { in: userParticipants.map((p) => p.id) },
+      raceId
     },
     include: {
       race: true,
@@ -332,8 +347,8 @@ async function updateToSelectedParticipant(
 async function removeRaceParticipant(
   participantId: string,
   raceId: string,
-  userSessionId: string
-): Promise<void> {
+  clientId: string
+): Promise<RaceCheckout | null> {
   return await prisma.$transaction(async (prisma) => {
     await prisma.raceParticipant.delete({
       where: {
@@ -341,7 +356,7 @@ async function removeRaceParticipant(
       }
     });
 
-    await removeRegistration(userSessionId, raceId, prisma);
+    return await removeRegistration(clientId, raceId, prisma);
   });
 }
 
@@ -472,7 +487,7 @@ export {
   getCheckoutByUserAndRace,
   addParticipantsToRace,
   getDistinctUserEventCheckoutRaces,
-  findUserRaceParticipants,
+  findUserEventRaceParticipants,
   findUserParticipants,
   updateParticipant,
   updateToSelectedParticipant,
@@ -484,5 +499,6 @@ export {
   findShirtSizes,
   removeBooking,
   changeCheckoutToAuthUser,
-  addRegistrationOnUpdateCart
+  addRegistrationOnUpdateCart,
+  findUserRaceParticipants
 };

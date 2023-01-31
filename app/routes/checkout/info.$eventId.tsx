@@ -22,7 +22,7 @@ import { getClientSession } from '~/server/auth/client.server';
 import {
   findShirtSizes,
   findUserParticipants,
-  findUserRaceParticipants,
+  findUserEventRaceParticipants,
   getUserCheckoutRaces,
   updateParticipant,
   updateBookingStatus,
@@ -91,7 +91,7 @@ export const action: ActionFunction = async ({ request, params }) => {
   const hash = form.get('hash') as string;
 
   if (actionId === actions.checkout) {
-    const raceParticipants = await findUserRaceParticipants(clientId, eventId);
+    const raceParticipants = await findUserEventRaceParticipants(clientId, eventId);
 
     if (!raceParticipants) {
       return badRequest({ error: t('No Race Participants') });
@@ -240,7 +240,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
           : anonymousClient.getClientId();
   const event = await findEvent(eventId);
   const cart = await getUserCheckoutRaces(clientId, eventId);
-  const raceParticipants = await findUserRaceParticipants(clientId, eventId);
+  const raceParticipants = await findUserEventRaceParticipants(clientId, eventId);
 
   if (!event) {
     return redirect('/');
@@ -528,6 +528,7 @@ export default function CheckoutInfoRoute() {
             fetcher={fetcher}
             hash={hash}
             showContinueLabel={true}
+            showUpdateCartButton={true}
           />
         </div>
       </div>

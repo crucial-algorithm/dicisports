@@ -13,7 +13,7 @@ import type { Cart, Event } from '~/types';
 import { getClientSession } from '~/server/auth/client.server';
 import {
   findBooking,
-  findUserRaceParticipants,
+  findUserEventRaceParticipants,
   getUserCheckoutRaces,
   updateBookingStatus
 } from '~/server/db/checkout.server';
@@ -40,7 +40,7 @@ export const action: ActionFunction = async ({ request, params }) => {
       ? authenticatedClient.id
       : anonymousClient.getClientId();
 
-  const raceParticipants = await findUserRaceParticipants(clientId, eventId);
+  const raceParticipants = await findUserEventRaceParticipants(clientId, eventId);
 
   if (!raceParticipants) {
     return badRequest({ error: t('No Race Participants') });
@@ -69,7 +69,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 
   const event = await findEvent(eventId);
   const cart = await getUserCheckoutRaces(clientId, eventId);
-  const raceParticipants = await findUserRaceParticipants(clientId, eventId);
+  const raceParticipants = await findUserEventRaceParticipants(clientId, eventId);
   const booking = await findBooking(clientId, eventId);
 
   if (!raceParticipants || raceParticipants?.length === 0) {
@@ -80,7 +80,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     return redirect(
       `/checkout/${
         booking?.status === CheckoutStatus.checkout
-          ? 'registrations'
+          ? 'info'
           : 'confirmation'
       }/${eventId}`
     );

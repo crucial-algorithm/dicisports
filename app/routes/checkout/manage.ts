@@ -6,7 +6,7 @@ import { badRequest } from '~/utils/misc';
 import {
   addRaceParticipants,
   findBooking,
-  findUserRaceParticipants,
+  findUserEventRaceParticipants,
   removeBooking,
   removeRaceParticipant
 } from '~/server/db/checkout.server';
@@ -36,7 +36,7 @@ export const action: ActionFunction = async ({ request }) => {
 
       await removeRaceParticipant(participantId, raceId, clientId);
 
-      const raceParticipants = await findUserRaceParticipants(
+      const raceParticipants = await findUserEventRaceParticipants(
         clientId,
         eventId as string
       );
