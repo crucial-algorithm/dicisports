@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import type { Cart, Event } from '~/types';
 import { H4, H5, H6 } from '~/components/shared/typography';
 import DisplayDate from '~/components/shared/DIsplayDate';
-import Button, { ButtonLink } from '~/components/shared/Button';
+import Button from '~/components/shared/Button';
 import InputError from '~/components/shared/form/InputError';
 
 export default function DisplayCart({
@@ -81,17 +81,6 @@ export default function DisplayCart({
         {!hideCheckoutButton && !showEditInfoButton && (
           <div className="flex flex-col items-center w-full">
             <input type="hidden" name="hash" value={hash} />
-            {showUpdateCartButton && (
-              <a
-                href={`/checkout/registrations/${event.id}?a=update`}
-                data-cy="update-cart"
-              >
-                <H6 className="justify-end dark:text-blueGray-500 cursor-pointer">
-                  {t('Update Cart')}
-                </H6>
-              </a>
-            )}
-
             <Button
               type="submit"
               name="actionId"
@@ -110,14 +99,24 @@ export default function DisplayCart({
           </div>
         )}
 
+        {showUpdateCartButton && (
+          <div className="flex justify-end mt-4">
+            <a
+              href={`/checkout/registrations/${event.id}?a=update`}
+              data-cy="update-cart"
+            >
+              <H6 className="dark:text-blueGray-500 cursor-pointer">
+                {t('Update Cart')}
+              </H6>
+            </a>
+          </div>
+        )}
+
         {showEditInfoButton && (
           <div>
-            <ButtonLink
-              className="mt-4 w-full"
-              to={`/checkout/info/${event.id}`}
-            >
+            <Button name="actionId" className="mt-4 w-full" type="submit" value="update-info">
               {t('Edit info')}
-            </ButtonLink>
+            </Button>
           </div>
         )}
       </div>

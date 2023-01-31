@@ -91,7 +91,10 @@ export const action: ActionFunction = async ({ request, params }) => {
   const hash = form.get('hash') as string;
 
   if (actionId === actions.checkout) {
-    const raceParticipants = await findUserEventRaceParticipants(clientId, eventId);
+    const raceParticipants = await findUserEventRaceParticipants(
+      clientId,
+      eventId
+    );
 
     if (!raceParticipants) {
       return badRequest({ error: t('No Race Participants') });
@@ -114,12 +117,7 @@ export const action: ActionFunction = async ({ request, params }) => {
       });
     }
 
-    await updateBookingStatus(
-      raceParticipants,
-      CheckoutStatus.pending,
-      clientId,
-      eventId
-    );
+    await updateBookingStatus(CheckoutStatus.pending, clientId, eventId);
 
     return redirect(`/checkout/payment/${eventId}`);
   }
@@ -148,8 +146,9 @@ export const action: ActionFunction = async ({ request, params }) => {
       lastName: z
         .string({ required_error: t('Field Required') })
         .min(2, { message: t('Min 2 Chars') }),
-      gender: z.string({ required_error: t('Field Required') })
-          .min(1, { message: t('Field Required') }),
+      gender: z
+        .string({ required_error: t('Field Required') })
+        .min(1, { message: t('Field Required') }),
       birthday: z
         .date({ required_error: t('Field Required') })
         .max(new Date(), t('Past Date')),
@@ -174,8 +173,9 @@ export const action: ActionFunction = async ({ request, params }) => {
         invalid_type_error: t('Field Required')
       }),
       nationality: z.number().nullable(),
-      postalCode: z.string({ required_error: t('Field Required') })
-          .min(1, { message: t('Field Required') })
+      postalCode: z
+        .string({ required_error: t('Field Required') })
+        .min(1, { message: t('Field Required') })
     });
 
     if (actionId === actions.updateAndSave) {
@@ -235,12 +235,15 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 
   // We check if user is authenticated -> authenticatedClient, if not, we use the client session -> anonymousClient
   const clientId =
-      authenticatedClient !== null
-          ? authenticatedClient.id
-          : anonymousClient.getClientId();
+    authenticatedClient !== null
+      ? authenticatedClient.id
+      : anonymousClient.getClientId();
   const event = await findEvent(eventId);
   const cart = await getUserCheckoutRaces(clientId, eventId);
-  const raceParticipants = await findUserEventRaceParticipants(clientId, eventId);
+  const raceParticipants = await findUserEventRaceParticipants(
+    clientId,
+    eventId
+  );
 
   if (!event) {
     return redirect('/');

@@ -19,8 +19,6 @@ import {
 } from '~/server/db/checkout.server';
 import DisplayCart from '~/components/shared/DisplayCart';
 import Button from '~/components/shared/Button';
-import { badRequest } from '~/utils/misc';
-import i18n from '~/server/i18n.server';
 import { getUser } from '~/server/auth/session.server';
 
 type LoaderData = {
@@ -29,7 +27,7 @@ type LoaderData = {
 };
 
 export const action: ActionFunction = async ({ request, params }) => {
-  const t = await i18n.getFixedT(request, 'checkout');
+  const form = await request.formData();
   const anonymousClient = await getClientSession(request);
   const authenticatedClient = await getUser(request);
   const eventId = params.eventId as string;
@@ -40,18 +38,15 @@ export const action: ActionFunction = async ({ request, params }) => {
       ? authenticatedClient.id
       : anonymousClient.getClientId();
 
-  const raceParticipants = await findUserEventRaceParticipants(clientId, eventId);
+  const actionId = form.get('actionId');
 
-  if (!raceParticipants) {
-    return badRequest({ error: t('No Race Participants') });
+  if (actionId === 'update-info') {
+    await updateBookingStatus(CheckoutStatus.checkout, clientId, eventId);
+
+    return redirect(`/checkout/info/${eventId}`);
   }
 
-  await updateBookingStatus(
-    raceParticipants,
-    CheckoutStatus.confirmed,
-    clientId,
-    eventId
-  );
+  await updateBookingStatus(CheckoutStatus.confirmed, clientId, eventId);
 
   return redirect(`/checkout/confirmation/${eventId}`);
 };
@@ -69,7 +64,10 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 
   const event = await findEvent(eventId);
   const cart = await getUserCheckoutRaces(clientId, eventId);
-  const raceParticipants = await findUserEventRaceParticipants(clientId, eventId);
+  const raceParticipants = await findUserEventRaceParticipants(
+    clientId,
+    eventId
+  );
   const booking = await findBooking(clientId, eventId);
 
   if (!raceParticipants || raceParticipants?.length === 0) {
@@ -79,9 +77,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   if (booking?.status !== CheckoutStatus.pending) {
     return redirect(
       `/checkout/${
-        booking?.status === CheckoutStatus.checkout
-          ? 'info'
-          : 'confirmation'
+        booking?.status === CheckoutStatus.checkout ? 'info' : 'confirmation'
       }/${eventId}`
     );
   }

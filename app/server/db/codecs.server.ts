@@ -2,8 +2,8 @@ import type {
   Difficulty as DBDifficulty,
   GroupSpirit as DBGroupSpirit,
   GroupType as DBGroupType,
-  ShirtSize as DBShirtSize,
   Perk as DBPerk,
+  ShirtSize as DBShirtSize,
   Sport as DBSport,
   Status
 } from '@prisma/client';
@@ -20,9 +20,9 @@ import type {
   Group,
   GroupInput,
   GroupSpirit,
-  GroupType, PartialRaceCheckout,
+  GroupType,
+  PartialRaceCheckout,
   Perk,
-  RaceCheckout,
   RaceQtd,
   ShirtSize,
   Sport,

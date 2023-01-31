@@ -375,7 +375,6 @@ async function addRaceParticipants(
 }
 
 async function updateBookingStatus(
-  raceParticipants: RaceParticipant[],
   status: CheckoutStatus,
   userSessionId: string,
   eventId: string
@@ -500,5 +499,6 @@ export {
   removeBooking,
   changeCheckoutToAuthUser,
   addRegistrationOnUpdateCart,
-  findUserRaceParticipants
+  findUserRaceParticipants,
+  addParticipantToRace
 };
