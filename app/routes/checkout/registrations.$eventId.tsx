@@ -284,13 +284,13 @@ function DisplayRace({
           </div>
         </div>
 
-        <div className="flex flex-row items-center dark:text-blueGray-500 w-[80px] justify-between">
-          <Form
-            method="post"
-            action={`/checkout/registrations/${eventId}${
-              searchParams.toString().length ? `?${searchParams}` : ''
-            }`}
-          >
+        <Form
+          method="post"
+          action={`/checkout/registrations/${eventId}${
+            searchParams.toString().length ? `?${searchParams}` : ''
+          }`}
+        >
+          <div className="flex flex-row items-center dark:text-blueGray-500 w-[80px] justify-between">
             <input type="hidden" name="raceId" value={race.id as string} />
             <button
               id={`remove-race-${race.id}`}
@@ -301,21 +301,13 @@ function DisplayRace({
             >
               <ChevronDownIcon className="md:h-6 w-6 m-0 inline-block" />
             </button>
-          </Form>
 
-          <H6
-            className="dark:text-blueGray-500"
-            data-cy={`race-${race.id}-qtd`}
-          >
-            {race.qtd}
-          </H6>
-          <Form
-            method="post"
-            action={`/checkout/registrations/${eventId}${
-              searchParams.toString().length ? `?${searchParams}` : ''
-            }`}
-          >
-            <input type="hidden" name="raceId" value={race.id as string} />
+            <H6
+              className="dark:text-blueGray-500"
+              data-cy={`race-${race.id}-qtd`}
+            >
+              {race.qtd}
+            </H6>
             <button
               id={`add-race-${race.id}`}
               type="submit"
@@ -325,8 +317,8 @@ function DisplayRace({
             >
               <ChevronUpIcon className="md:h-6 w-6 m-0 inline-block" />
             </button>
-          </Form>
-        </div>
+          </div>
+        </Form>
       </div>
     </div>
   );
