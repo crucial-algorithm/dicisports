@@ -385,6 +385,13 @@ type Booking = {} & DBBooking;
 
 type ShirtSize = {} & DBShirtSize;
 
+type RaceRevenueRegistrations = {
+  id: string;
+  name: string;
+  registrations: number;
+  revenue: number;
+};
+
 export {
   NonNullProperties,
   MemberProfile,
@@ -433,5 +440,6 @@ export {
   Participant,
   ParticipantInput,
   Booking,
-  ShirtSize
+  ShirtSize,
+  RaceRevenueRegistrations
 };
