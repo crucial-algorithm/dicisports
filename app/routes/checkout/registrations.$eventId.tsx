@@ -71,10 +71,14 @@ export const action: ActionFunction = async ({ request, params }) => {
       if (searchParams.get('a') === 'update') {
         const booking = await findBooking(clientId, eventId);
 
+        if (!booking) {
+          return badRequest({ error: t('No Booking') });
+        }
+
         return await addRegistrationOnUpdateCart(
           clientId,
           raceId,
-          booking?.id as string
+          booking.id as string
         );
       }
 
@@ -116,6 +120,17 @@ export const action: ActionFunction = async ({ request, params }) => {
 
     if (actionId === actions.checkout) {
       if (searchParams.get('a') === 'update') {
+        const userEventRaceParticipants = await findUserEventRaceParticipants(
+            clientId,
+            eventId
+        );
+
+        if (!userEventRaceParticipants?.length) {
+          await removeBooking(clientId, eventId);
+
+          return redirect(`/checkout/registrations/${eventId}`);
+        }
+
         return redirect(`/checkout/info/${eventId}`);
       }
 
@@ -178,19 +193,6 @@ export const loader: LoaderFunction = async ({ request, params }) => {
           : 'confirmation'
       }/${eventId}`
     );
-  }
-
-  if (searchParams.get('a') === 'update') {
-    const userEventRaceParticipants = await findUserEventRaceParticipants(
-      clientId,
-      eventId
-    );
-
-    if (!userEventRaceParticipants?.length) {
-      await removeBooking(clientId, eventId);
-
-      return redirect(`/checkout/registrations/${eventId}`);
-    }
   }
 
   if (!event || event.status !== Status.published) {
