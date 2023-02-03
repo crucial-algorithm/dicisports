@@ -1,7 +1,6 @@
 import type { LoaderFunction } from 'remix';
-import * as React from 'react';
-
 import { json, redirect } from 'remix';
+import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLoaderData } from '@remix-run/react';
 import {
@@ -16,11 +15,13 @@ import { requireUser } from '~/server/auth/session.server';
 import { findEvent } from '~/server/db/events.server';
 import { findRevenueAndRegistrationsPerRace } from '~/server/db/dashboard.server';
 import DisplayImg from '~/components/shared/DisplayImg';
-import { H2, H4, H6 } from '~/components/shared/typography';
+import { H2, H3, H4, H5, H6 } from '~/components/shared/typography';
 import DisplayDate from '~/components/shared/DIsplayDate';
 import I18nText from '~/components/I18nText';
 import Main from '~/components/shared/Main';
 import type { Race, RaceRevenueRegistrations } from '~/types';
+
+import WhenListEmpty from '~/components/shared/Empty';
 
 export const loader: LoaderFunction = async ({ request, params }) => {
   const user = await requireUser(request);
@@ -149,7 +150,7 @@ export default function DashboardRoute() {
         </H2>
       </div>
 
-      <div className="flex flex-col md:flex-row mt-4">
+      <div className="flex flex-col md:flex-row mt-4 mb-8">
         <div className="w-full md:w-144">
           {images.length > 1 ? (
             <Carousel statusFormatter={cleanStatus}>
@@ -190,6 +191,58 @@ export default function DashboardRoute() {
           <EventStats />
         </div>
       </div>
+
+      <H3>{t('Race Stats')}</H3>
+      <div className="flex flex-col mt-2 scroll-mx-2 items-center md:items-start md:flex-row md:flex-nowrap md:overflow-x-auto pb-10 hide-scrollbar">
+        {racesRevenueAndRegistrations.map((r: RaceRevenueRegistrations) => (
+          <DisplayRaceStats
+            name={r.name}
+            registrations={r.registrations}
+            revenue={r.revenue}
+            key={r.id}
+          />
+        ))}
+        <WhenListEmpty list={racesRevenueAndRegistrations}>
+          <H6
+            className="text-center p-12"
+            variant="secondary"
+            as="p"
+            data-cy="no-stats"
+          >
+            {t('No Stats')}
+          </H6>
+        </WhenListEmpty>
+      </div>
     </Main>
+  );
+}
+
+function DisplayRaceStats({
+  name,
+  registrations,
+  revenue
+}: {
+  name: string;
+  registrations: number;
+  revenue: number;
+}) {
+  const { t } = useTranslation('dashboard');
+
+  return (
+    <div className="flex flex-col mr-4" data-cy="race">
+      <div className="gap-y-2 text-center items-center border border-black dark:border-white rounded-2xl outline-offset-1 w-[280px] md:overflow-hidden">
+        <div className="mt-4">
+          <H4>{name}</H4>
+        </div>
+        <div className="mt-4">
+          <H4>{t('Registrations')}</H4>
+          <H5 className="dark:text-blueGray-500">{`${registrations} /200`}</H5>
+        </div>
+        <div className="my-4">
+          <H4>{t('Revenue')}</H4>
+          <H5 className="dark:text-blueGray-500">{revenue + '€'}</H5>
+        </div>
+      </div>
+    </div>
   );
 }
