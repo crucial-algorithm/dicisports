@@ -2,5 +2,18 @@
   "Registrations": "Registos",
   "Revenue": "Receita",
   "From": "Desde",
-  "Race Stats": "Estatísticas"
+  "Race Stats": "Estatísticas",
+
+  "Athlete": "Atleta",
+  "Team": "Equipa",
+  "Age Group": "Escalão",
+  "Booking Date": "Data de Booking",
+  "Status": "Estado",
+  "Dorsal": "Dorsal",
+  "Race": "Distância",
+
+  "confirmed": "Confirmado",
+  "pending": "Pendente",
+  "canceled": "Cancelado",
+  "checkout": "Carrinho"
 }

@@ -10,16 +10,25 @@ import {
 } from '@heroicons/react/24/outline';
 
 import { Carousel } from 'react-responsive-carousel';
+import { EllipsisVerticalIcon } from '@heroicons/react/20/solid';
 
 import { requireUser } from '~/server/auth/session.server';
 import { findEvent } from '~/server/db/events.server';
-import { findRevenueAndRegistrationsPerRace } from '~/server/db/dashboard.server';
+import {
+  findRaceParticipants,
+  findRevenueAndRegistrationsPerRace
+} from '~/server/db/dashboard.server';
 import DisplayImg from '~/components/shared/DisplayImg';
 import { H2, H3, H4, H5, H6 } from '~/components/shared/typography';
 import DisplayDate from '~/components/shared/DIsplayDate';
 import I18nText from '~/components/I18nText';
 import Main from '~/components/shared/Main';
-import type { Race, RaceRevenueRegistrations } from '~/types';
+import type {
+  Event,
+  Race,
+  RaceParticipant,
+  RaceRevenueRegistrations
+} from '~/types';
 
 import WhenListEmpty from '~/components/shared/Empty';
 
@@ -27,7 +36,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   const user = await requireUser(request);
   const eventId = params.eventId;
 
-  const event = await findEvent(eventId as string);
+  const event = (await findEvent(eventId as string)) as Event;
   const racesRevenueAndRegistrations = await findRevenueAndRegistrationsPerRace(
     eventId as string
   );
@@ -42,12 +51,14 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 
   return json({
     event,
-    racesRevenueAndRegistrations
+    racesRevenueAndRegistrations,
+    raceParticipants: await findRaceParticipants(event.races as Race[])
   });
 };
 
 export default function DashboardRoute() {
-  const { event, racesRevenueAndRegistrations } = useLoaderData();
+  const { event, racesRevenueAndRegistrations, raceParticipants } =
+    useLoaderData();
   const { t } = useTranslation('dashboard');
 
   const images: string[] = [
@@ -126,7 +137,7 @@ export default function DashboardRoute() {
         <div className="flex-col">
           <H6>{t('Registrations')}</H6>
           <H4>
-            <b>{registrations + '/200'}</b>
+            <b>{registrations}</b>
           </H4>
         </div>
 
@@ -213,6 +224,84 @@ export default function DashboardRoute() {
           </H6>
         </WhenListEmpty>
       </div>
+
+      <div className="flex flex-col">
+        <div className="overflow-x-auto sm:-mx-6 lg:-mx-8">
+          <div className="py-2 inline-block min-w-full sm:px-6 lg:px-8">
+            <div className="overflow-hidden">
+              <table className="table-auto min-w-full">
+                <thead className="border-b">
+                  <tr>
+                    <th className="text-sm font-medium text-black dark:text-white px-6 py-4 text-left">
+                      {t('Athlete')}
+                    </th>
+                    <th className="text-sm font-medium text-black dark:text-white px-6 py-4 text-left">
+                      {t('Team')}
+                    </th>
+                    <th className="text-sm font-medium text-black dark:text-white px-6 py-4 text-left">
+                      {t('Age Group')}
+                    </th>
+                    <th className="text-sm font-medium text-black dark:text-white px-6 py-4 text-left">
+                      {t('Booking Date')}
+                    </th>
+                    <th className="text-sm font-medium text-black dark:text-white px-6 py-4 text-left">
+                      {t('Status')}
+                    </th>
+                    <th className="text-sm font-medium text-black dark:text-white px-6 py-4 text-left">
+                      {t('Dorsal')}
+                    </th>
+                    <th className="text-sm font-medium text-black dark:text-white px-6 py-4 text-left">
+                      {t('Race')}
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {raceParticipants
+                    .filter(
+                      (rp: RaceParticipant) => rp.participant.status === 'saved'
+                    )
+                    .map((rp: RaceParticipant) => (
+                      <tr
+                        className="border-b transition duration-300 ease-in-out hover:bg-red"
+                        key={rp.id}
+                      >
+                        <td className="text-sm text-black dark:text-white font-light px-6 py-4 whitespace-nowrap">
+                          {`${rp.participant.firstName} ${rp.participant.lastName}`}
+                        </td>
+                        <td className="text-sm text-black dark:text-white font-light px-6 py-4 whitespace-nowrap">
+                          {'-'}
+                        </td>
+                        <td className="text-sm text-black dark:text-white font-light px-6 py-4 whitespace-nowrap">
+                          {rp.participant.gender}
+                        </td>
+                        <td className="text-sm text-black dark:text-white font-light px-6 py-4 whitespace-nowrap">
+                          {String(rp.booking?.createdAt).split('T')[0]}
+                        </td>
+                        <td className="text-sm text-black dark:text-white font-light px-6 py-4 whitespace-nowrap">
+                          {t(rp.booking?.status as string)}
+                        </td>
+                        <td className="text-sm text-black dark:text-white font-light px-6 py-4 whitespace-nowrap">
+                          {'-'}
+                        </td>
+                        <td className="text-sm text-black dark:text-white font-light px-6 py-4 whitespace-nowrap">
+                          {rp.race.name}
+                        </td>
+                        <td>
+                          <button
+                            type="button"
+                            className="w-[24px] h-[24px] dark:text-blueGray-500"
+                          >
+                            <EllipsisVerticalIcon className="md:h-6 w-6 m-0 inline-block" />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
     </Main>
   );
 }
@@ -236,7 +325,7 @@ function DisplayRaceStats({
         </div>
         <div className="mt-4">
           <H4>{t('Registrations')}</H4>
-          <H5 className="dark:text-blueGray-500">{`${registrations} /200`}</H5>
+          <H5 className="dark:text-blueGray-500">{`${registrations}`}</H5>
         </div>
         <div className="my-4">
           <H4>{t('Revenue')}</H4>

@@ -123,7 +123,7 @@ type GroupInput = {
   description: string | null;
 } & DBGroup;
 
-type Event = {} & DBEvent;
+type Event = { races: Race[] } & DBEvent;
 
 type CreateEventInput = {
   id: string;
@@ -301,7 +301,7 @@ type PartialRaceCheckout = {
   userId: string;
   createdAt: Date;
   updatedAt: Date;
-}
+};
 
 type DBRawRaceCheckout = {
   id: string;
@@ -351,6 +351,7 @@ type RaceQtd = {
 type RaceParticipant = {
   race: Race;
   participant: Participant;
+  booking?: Booking;
 } & DBRaceParticipant;
 
 type RaceParticipantInput = {

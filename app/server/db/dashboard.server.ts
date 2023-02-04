@@ -1,7 +1,7 @@
 import { CheckoutStatus } from '@prisma/client';
 
 import { db } from '~/server/db.server';
-import type { RaceRevenueRegistrations } from '~/types';
+import type { Race, RaceParticipant, RaceRevenueRegistrations } from '~/types';
 
 async function findRevenueAndRegistrationsPerRace(
   eventId: string
@@ -23,4 +23,19 @@ async function findRevenueAndRegistrationsPerRace(
   return await db.$queryRawUnsafe(query);
 }
 
-export { findRevenueAndRegistrationsPerRace };
+async function findRaceParticipants(
+  eventRaces: Race[]
+): Promise<RaceParticipant[]> {
+  return await db.raceParticipant.findMany({
+    where: {
+      raceId: { in: eventRaces.map((r) => r.id) }
+    },
+    include: {
+      participant: true,
+      race: true,
+      booking: true
+    }
+  });
+}
+
+export { findRevenueAndRegistrationsPerRace, findRaceParticipants };
