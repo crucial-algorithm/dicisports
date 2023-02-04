@@ -1,6 +1,7 @@
 import type { LoaderFunction } from 'remix';
 import { json, redirect } from 'remix';
 import * as React from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLoaderData } from '@remix-run/react';
 import {
@@ -10,7 +11,11 @@ import {
 } from '@heroicons/react/24/outline';
 
 import { Carousel } from 'react-responsive-carousel';
-import { EllipsisVerticalIcon } from '@heroicons/react/20/solid';
+import {
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  EllipsisVerticalIcon
+} from '@heroicons/react/20/solid';
 
 import { requireUser } from '~/server/auth/session.server';
 import { findEvent } from '~/server/db/events.server';
@@ -31,6 +36,13 @@ import type {
 } from '~/types';
 
 import WhenListEmpty from '~/components/shared/Empty';
+import ButtonGroup from '~/components/shared/ButtonGroup';
+
+type LoaderData = {
+  event: Event;
+  racesRevenueAndRegistrations: RaceRevenueRegistrations[];
+  raceParticipants: RaceParticipant[];
+};
 
 export const loader: LoaderFunction = async ({ request, params }) => {
   const user = await requireUser(request);
@@ -58,8 +70,29 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 
 export default function DashboardRoute() {
   const { event, racesRevenueAndRegistrations, raceParticipants } =
-    useLoaderData();
+    useLoaderData<LoaderData>();
   const { t } = useTranslation('dashboard');
+
+  const registeredParticipants = raceParticipants.filter(
+    (rp: RaceParticipant) => rp.participant.status === 'saved'
+  );
+
+  // Pagination variables
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [participantsPerPage, setParticipantsPerPage] = useState<number>(10);
+
+  const indexOfLastParticipant = currentPage * participantsPerPage;
+  const indexOfFirstParticipant = indexOfLastParticipant - participantsPerPage;
+  const currentParticipants = registeredParticipants.slice(
+    indexOfFirstParticipant,
+    indexOfLastParticipant
+  );
+  const totalParticipants = registeredParticipants.length;
+  const paginationInfo = `${indexOfFirstParticipant + 1}-${
+    indexOfLastParticipant > totalParticipants
+      ? totalParticipants
+      : indexOfLastParticipant
+  } ${t('of')} ${totalParticipants}`;
 
   const images: string[] = [
     event.image1,
@@ -79,6 +112,14 @@ export default function DashboardRoute() {
 
   function cleanStatus() {
     return '';
+  }
+
+  function handleNextPage() {
+    setCurrentPage(currentPage + 1);
+  }
+
+  function handlePreviousPage() {
+    setCurrentPage(currentPage - 1);
   }
 
   function EventInformation() {
@@ -256,51 +297,69 @@ export default function DashboardRoute() {
                   </tr>
                 </thead>
                 <tbody>
-                  {raceParticipants
-                    .filter(
-                      (rp: RaceParticipant) => rp.participant.status === 'saved'
-                    )
-                    .map((rp: RaceParticipant) => (
-                      <tr
-                        className="border-b transition duration-300 ease-in-out hover:bg-red"
-                        key={rp.id}
-                      >
-                        <td className="text-sm text-black dark:text-white font-light px-6 py-4 whitespace-nowrap">
-                          {`${rp.participant.firstName} ${rp.participant.lastName}`}
-                        </td>
-                        <td className="text-sm text-black dark:text-white font-light px-6 py-4 whitespace-nowrap">
-                          {'-'}
-                        </td>
-                        <td className="text-sm text-black dark:text-white font-light px-6 py-4 whitespace-nowrap">
-                          {rp.participant.gender}
-                        </td>
-                        <td className="text-sm text-black dark:text-white font-light px-6 py-4 whitespace-nowrap">
-                          {String(rp.booking?.createdAt).split('T')[0]}
-                        </td>
-                        <td className="text-sm text-black dark:text-white font-light px-6 py-4 whitespace-nowrap">
-                          {t(rp.booking?.status as string)}
-                        </td>
-                        <td className="text-sm text-black dark:text-white font-light px-6 py-4 whitespace-nowrap">
-                          {'-'}
-                        </td>
-                        <td className="text-sm text-black dark:text-white font-light px-6 py-4 whitespace-nowrap">
-                          {rp.race.name}
-                        </td>
-                        <td>
-                          <button
-                            type="button"
-                            className="w-[24px] h-[24px] dark:text-blueGray-500"
-                          >
-                            <EllipsisVerticalIcon className="md:h-6 w-6 m-0 inline-block" />
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
+                  {currentParticipants.map((rp: RaceParticipant) => (
+                    <tr
+                      className="border-b transition duration-300 ease-in-out hover:bg-red"
+                      key={rp.id}
+                    >
+                      <td className="text-sm text-black dark:text-white font-light px-6 py-4 whitespace-nowrap">
+                        {`${rp.participant.firstName} ${rp.participant.lastName}`}
+                      </td>
+                      <td className="text-sm text-black dark:text-white font-light px-6 py-4 whitespace-nowrap">
+                        {'-'}
+                      </td>
+                      <td className="text-sm text-black dark:text-white font-light px-6 py-4 whitespace-nowrap">
+                        {rp.participant.gender}
+                      </td>
+                      <td className="text-sm text-black dark:text-white font-light px-6 py-4 whitespace-nowrap">
+                        {String(rp.booking?.createdAt).split('T')[0]}
+                      </td>
+                      <td className="text-sm text-black dark:text-white font-light px-6 py-4 whitespace-nowrap">
+                        {t(rp.booking?.status as string)}
+                      </td>
+                      <td className="text-sm text-black dark:text-white font-light px-6 py-4 whitespace-nowrap">
+                        {'-'}
+                      </td>
+                      <td className="text-sm text-black dark:text-white font-light px-6 py-4 whitespace-nowrap">
+                        {rp.race.name}
+                      </td>
+                      <td>
+                        <button
+                          type="button"
+                          className="w-[24px] h-[24px] dark:text-blueGray-500"
+                        >
+                          <EllipsisVerticalIcon className="md:h-6 w-6 m-0 inline-block" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             </div>
           </div>
         </div>
+        <ButtonGroup className="justify-end">
+          {currentPage !== 1 && (
+            <button
+              type="button"
+              className="w-[24px] h-[24px] dark:text-blueGray-500"
+              onClick={handlePreviousPage}
+            >
+              <ChevronLeftIcon className="md:h-6 w-6 m-0 inline-block" />
+            </button>
+          )}
+
+          <H6 className="dark:text-blueGray-500">{paginationInfo}</H6>
+          {!(indexOfLastParticipant >= totalParticipants) && (
+            <button
+              type="button"
+              className="w-[24px] h-[24px] dark:text-blueGray-500"
+              onClick={handleNextPage}
+            >
+              <ChevronRightIcon className="md:h-6 w-6 m-0 inline-block" />
+            </button>
+          )}
+        </ButtonGroup>
       </div>
     </Main>
   );
