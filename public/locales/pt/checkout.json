@@ -45,6 +45,9 @@
   "Invalid Option": "Opção inválida",
   "Invalid Type": "Tipo inválido",
 
+  "No Races In Checkout": "Nenhuma distância no carrinho !",
+  "Can't Create Booking": "Não foi possível criar o booking",
+
   "Update Cart": "Atualizar carrinho",
   "Existing Race Participant": "Upss.. Este participante já está a participar nesta distância !",
   "Participant Selected": "Participante selecionado",
