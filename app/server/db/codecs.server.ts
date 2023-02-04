@@ -1,23 +1,32 @@
 import type {
+  Difficulty as DBDifficulty,
   GroupSpirit as DBGroupSpirit,
   GroupType as DBGroupType,
   Perk as DBPerk,
+  ShirtSize as DBShirtSize,
   Sport as DBSport,
-  Difficulty as DBDifficulty,
   Status
 } from '@prisma/client';
 import { Role } from '@prisma/client';
 
 import type {
+  Cart,
   DaysOfWeek,
+  DBRawCart,
   DBRawGroup,
+  DBRawRaceCheckout,
+  DBRawRaceQtd,
+  Difficulty,
   Group,
+  GroupInput,
   GroupSpirit,
   GroupType,
+  PartialRaceCheckout,
   Perk,
+  RaceQtd,
+  ShirtSize,
   Sport,
-  TranslationObject,
-  GroupInput, Difficulty
+  TranslationObject
 } from '~/types';
 
 function dbSportToSport(sport: DBSport): Sport {
@@ -44,9 +53,18 @@ function dbDifficultyToDifficulty(difficulty: DBDifficulty): Difficulty {
 }
 
 function dbPerkToPerk(perk: DBPerk): Perk {
-  const { id, name, createdAt, isDefault, isEnabled, eventId, displayOrder } = perk;
+  const { id, name, createdAt, isDefault, isEnabled, eventId, displayOrder } =
+    perk;
 
-  return { id, name, createdAt: new Date(createdAt), isDefault, isEnabled, eventId, displayOrder };
+  return {
+    id,
+    name,
+    createdAt: new Date(createdAt),
+    isDefault,
+    isEnabled,
+    eventId,
+    displayOrder
+  };
 }
 
 function dbGroupSpiritToGroupSpirit(group: DBGroupSpirit): GroupSpirit {
@@ -68,6 +86,17 @@ function dbGroupTypeToGroupType(group: DBGroupType): GroupType {
     createdAt,
     updatedAt,
     name: name as TranslationObject
+  };
+}
+
+function dbShirtSizeToShirtSize(shirt: DBShirtSize): ShirtSize {
+  const { id, name, createdAt, updatedAt } = shirt;
+
+  return {
+    id,
+    name: name as TranslationObject,
+    createdAt,
+    updatedAt
   };
 }
 
@@ -129,8 +158,49 @@ function dbRawGroupToGroup(group: DBRawGroup): Group {
     schedules: group.schedules.map((s) => {
       const [id, day, hour] = s.split(':').map(String);
 
-      return { timeOfDay: Number(hour), dayOfWeek: Number(day), groupId: group.id, id };
+      return {
+        timeOfDay: Number(hour),
+        dayOfWeek: Number(day),
+        groupId: group.id,
+        id
+      };
     })
+  };
+}
+
+function dbCartToCart(cart: DBRawCart): Cart {
+  return {
+    id: cart.checkout_id,
+    qtd: cart.qtd,
+    raceName: cart.race_name,
+    racePrice: cart.race_price,
+    displayOrder: cart.display_order
+  };
+}
+
+function dbEventRaceCheckoutQtdToEventRaceCheckoutQtd(
+  race: DBRawRaceQtd
+): RaceQtd {
+  return {
+    id: race.id,
+    name: race.name,
+    distance: race.distance,
+    startTime: race.start_time,
+    price: race.price,
+    displayOrder: race.display_order,
+    qtd: race.qtd
+  };
+}
+
+function dbRaceCheckoutToRaceCheckout(
+  raceCheckout: DBRawRaceCheckout
+): PartialRaceCheckout {
+  return {
+    id: raceCheckout.id,
+    raceId: raceCheckout.race_id,
+    userId: raceCheckout.user_id,
+    createdAt: raceCheckout.created_at,
+    updatedAt: raceCheckout.updated_at
   };
 }
 
@@ -141,5 +211,9 @@ export {
   dbGroupToGroup,
   dbPerkToPerk,
   dbRawGroupToGroup,
-  dbDifficultyToDifficulty
+  dbDifficultyToDifficulty,
+  dbCartToCart,
+  dbEventRaceCheckoutQtdToEventRaceCheckoutQtd,
+  dbRaceCheckoutToRaceCheckout,
+  dbShirtSizeToShirtSize
 };

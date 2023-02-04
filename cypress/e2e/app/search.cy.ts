@@ -419,6 +419,8 @@ describe('Search', () => {
 
           .wait('@search')
 
+          .get('body[data-cy=ready]')
+
           .get('button[name=filters]')
           .click()
 
@@ -430,6 +432,8 @@ describe('Search', () => {
 
           .wait('@search')
           .reload()
+
+          .get('body[data-cy=ready]')
 
           .get('div[data-cy=group-spirit]')
           .should('contain', 'Convívio');
@@ -445,6 +449,8 @@ describe('Search', () => {
 
           .wait('@search')
 
+          .get('body[data-cy=ready]')
+
           .get('button[name=filters]')
           .click()
 
@@ -456,6 +462,8 @@ describe('Search', () => {
 
           .wait('@search')
           .reload()
+
+          .get('body[data-cy=ready]')
 
           .get('div[data-cy=group-spirit]')
           .should('contain', 'Desportivo');
@@ -470,6 +478,7 @@ describe('Search', () => {
           .click()
 
           .wait('@search')
+          .get('body[data-cy=ready]')
 
           .get('button[name=filters]')
           .click()
@@ -482,6 +491,8 @@ describe('Search', () => {
 
           .wait('@search')
           .reload()
+
+          .get('body[data-cy=ready]')
 
           .get('div[data-cy=group-spirit]')
           .should('contain', 'Treino');
@@ -496,6 +507,7 @@ describe('Search', () => {
           .click()
 
           .wait('@search')
+          .get('body[data-cy=ready]')
 
           .get('button[name=filters]')
           .click()
@@ -508,6 +520,8 @@ describe('Search', () => {
 
           .wait('@search')
           .reload()
+
+          .get('body[data-cy=ready]')
 
           .get('div[data-cy=group-spirit]')
           .should('contain', 'Amizade');
@@ -522,6 +536,7 @@ describe('Search', () => {
           .click()
 
           .wait('@search')
+          .get('body[data-cy=ready]')
 
           .get('button[name=filters]')
           .click()
@@ -534,6 +549,7 @@ describe('Search', () => {
 
           .wait('@search')
           .reload()
+          .get('body[data-cy=ready]')
 
           .get('div[data-cy=group-spirit]')
           .should('contain', 'Turismo');

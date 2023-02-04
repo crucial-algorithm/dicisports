@@ -42,7 +42,8 @@ async function findEvent(id: string): Promise<Event | null> {
           }
         }
       },
-      difficulty: true
+      difficulty: true,
+      races: true
     }
   });
 }

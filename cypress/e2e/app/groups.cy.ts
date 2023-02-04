@@ -79,6 +79,8 @@ describe('Groups', () => {
         .should('include', '/m/group/')
 
         .reload()
+
+        .get('body[data-cy=ready]')
         // fill the form
         .get('input[name=name]')
         .type('a new group')
