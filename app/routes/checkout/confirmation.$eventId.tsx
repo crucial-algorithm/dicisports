@@ -9,8 +9,8 @@ import { getClientSession } from '~/server/auth/client.server';
 import {
   findBooking,
   findUserEventRaceParticipants,
-  getUserCheckoutRaces
-} from '~/server/db/checkout.server';
+  getUserCartRaces
+} from '~/server/db/cart.server';
 import { findEvent } from '~/server/db/events.server';
 import type { Booking, UICartRow, Event } from '~/types';
 import Main from '~/components/shared/Main';
@@ -56,7 +56,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 
   const registration = await findBooking(clientId, eventId);
   const event = await findEvent(registration?.eventId as string);
-  const cart = await getUserCheckoutRaces(clientId, eventId);
+  const cart = await getUserCartRaces(clientId, eventId);
 
   return json({
     registration,

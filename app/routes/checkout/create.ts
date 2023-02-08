@@ -3,13 +3,12 @@ import { redirect } from 'remix';
 import { CheckoutStatus } from '@prisma/client';
 
 import { getClientSession } from '~/server/auth/client.server';
-import type { CartInput } from '~/types';
 import {
-  createRegistration,
-  findBooking,
-  getCheckoutByUserAndRace
-} from '~/server/db/checkout.server';
+  addRegistration,
+  getCartByUserAndRace
+} from '~/server/db/cart.server';
 import { getUser } from '~/server/auth/session.server';
+import { findBooking } from '~/server/db/booking.server';
 
 export const action: ActionFunction = async ({ request }) => {
   const form = await request.formData();
@@ -21,14 +20,8 @@ export const action: ActionFunction = async ({ request }) => {
   const raceId = form.get('raceId') as string;
   const eventId = form.get('eventId') as string;
 
-  const checkout = await getCheckoutByUserAndRace(clientId, raceId);
+  const checkout = await getCartByUserAndRace(clientId, raceId);
   const booking = await findBooking(clientId, eventId);
-
-  const data: CartInput = {
-    raceId: raceId,
-    userId: clientId as string,
-    qtd: 1
-  };
 
   try {
     if (checkout) {
@@ -44,7 +37,7 @@ export const action: ActionFunction = async ({ request }) => {
         }/${eventId}`
       );
     } else {
-      await createRegistration(data);
+      await addRegistration(clientId as string, raceId);
     }
   } catch (e) {
     console.log(e);

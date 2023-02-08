@@ -14,7 +14,7 @@ import { findEventRaces } from '~/server/db/races.server';
 import {
   addRegistration,
   removeRegistration
-} from '~/server/db/checkout.server';
+} from '~/server/db/cart.server';
 
 const prisma = new PrismaClient();
 

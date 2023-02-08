@@ -290,12 +290,12 @@ type CartInput = {
   id?: string;
   raceId: string;
   userId: string;
-  qtd: number;
+  qtd?: number;
   createdAt?: Date;
   updatedAt?: Date;
 };
 
-type PartialRaceCheckout = {
+type PartialCart = {
   id: string;
   raceId: string;
   userId: string;
@@ -437,7 +437,7 @@ export {
   DBRawCart,
   RaceParticipant,
   RaceParticipantInput,
-  PartialRaceCheckout,
+  PartialCart,
   Participant,
   ParticipantInput,
   Booking,

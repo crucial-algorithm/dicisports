@@ -21,7 +21,7 @@ import type {
   GroupInput,
   GroupSpirit,
   GroupType,
-  PartialRaceCheckout,
+  PartialCart,
   Perk,
   RaceQtd,
   ShirtSize,
@@ -194,7 +194,7 @@ function dbEventRaceCheckoutQtdToEventRaceCheckoutQtd(
 
 function dbCartToCart(
   cart: DBRawCart
-): PartialRaceCheckout {
+): PartialCart {
   return {
     id: cart.id,
     raceId: cart.race_id,

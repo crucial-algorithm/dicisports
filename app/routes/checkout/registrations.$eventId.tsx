@@ -24,15 +24,15 @@ import {
   addRegistrationOnUpdateCart,
   createBooking,
   findBooking,
-  findEventRacesCheckoutQtd,
+  findEventRacesCartQtd,
   findUserEventRaceParticipants,
   findUserRaceParticipants,
-  getDistinctUserEventCheckoutRaces,
-  getUserCheckoutRaces,
+  getDistinctUserEventCartRaces,
+  getUserCartRaces,
   removeBooking,
   removeRaceParticipant,
   removeRegistration
-} from '~/server/db/checkout.server';
+} from '~/server/db/cart.server';
 import i18n from '~/server/i18n.server';
 import DisplayCart from '~/components/shared/DisplayCart';
 import { getUser } from '~/server/auth/session.server';
@@ -134,7 +134,7 @@ export const action: ActionFunction = async ({ request, params }) => {
         return redirect(`/checkout/info/${eventId}`);
       }
 
-      const userCheckoutRaces = await getDistinctUserEventCheckoutRaces(
+      const userCheckoutRaces = await getDistinctUserEventCartRaces(
         clientId,
         eventId
       );
@@ -180,7 +180,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 
   const eventId = params.eventId as string;
   const event = await findEvent(eventId);
-  const userCheckoutRaces = await getUserCheckoutRaces(clientId, eventId);
+  const userCheckoutRaces = await getUserCartRaces(clientId, eventId);
   const booking = await findBooking(clientId, eventId);
 
   if (booking && !(searchParams.get('a') === 'update')) {
@@ -199,7 +199,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     return redirect('/');
   }
 
-  const races = await findEventRacesCheckoutQtd(eventId, clientId);
+  const races = await findEventRacesCartQtd(eventId, clientId);
 
   return json({
     event,

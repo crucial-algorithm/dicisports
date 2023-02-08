@@ -9,7 +9,7 @@ import {
   findUserEventRaceParticipants,
   removeBooking,
   removeRaceParticipant
-} from '~/server/db/checkout.server';
+} from '~/server/db/cart.server';
 import { findRace } from '~/server/db/races.server';
 import { getUser } from '~/server/auth/session.server';
 

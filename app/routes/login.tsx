@@ -31,7 +31,7 @@ import type { LoginAction } from '~/types';
 import { loginUser } from '~/server/db/users.server';
 import Main from '~/components/shared/Main';
 import { CanonicalMeta } from '~/utils/seo';
-import { changeRegistrationToAuthUser } from '~/server/db/checkout.server';
+import { changeRegistrationToAuthUser } from '~/server/db/cart.server';
 import { getClientSession } from '~/server/auth/client.server';
 
 type LoaderData = {

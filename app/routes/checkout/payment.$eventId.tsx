@@ -14,9 +14,9 @@ import { getClientSession } from '~/server/auth/client.server';
 import {
   findBooking,
   findUserEventRaceParticipants,
-  getUserCheckoutRaces,
+  getUserCartRaces,
   updateBookingStatus
-} from '~/server/db/checkout.server';
+} from '~/server/db/cart.server';
 import DisplayCart from '~/components/shared/DisplayCart';
 import Button from '~/components/shared/Button';
 import { getUser } from '~/server/auth/session.server';
@@ -63,7 +63,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
       : anonymousClient.getClientId();
 
   const event = await findEvent(eventId);
-  const cart = await getUserCheckoutRaces(clientId, eventId);
+  const cart = await getUserCartRaces(clientId, eventId);
   const raceParticipants = await findUserEventRaceParticipants(
     clientId,
     eventId

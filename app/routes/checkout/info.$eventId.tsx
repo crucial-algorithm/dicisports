@@ -19,28 +19,20 @@ import {
 import DisplayDate from '~/components/shared/DIsplayDate';
 
 import { getClientSession } from '~/server/auth/client.server';
-import {
-  findShirtSizes,
-  findUserParticipants,
-  findUserEventRaceParticipants,
-  getUserCheckoutRaces,
-  updateParticipant,
-  updateBookingStatus,
-  updateToSelectedParticipant
-} from '~/server/db/checkout.server';
+import { getUserCartRaces } from '~/server/db/cart.server';
 import Main from '~/components/shared/Main';
 import { findEvent } from '~/server/db/events.server';
 import { H2, H4, H5, H6 } from '~/components/shared/typography';
 
 import type {
-  UICartRow,
   Event,
   Language,
   Participant,
   ParticipantInput,
   Race,
   RaceParticipant,
-  ShirtSize
+  ShirtSize,
+  UICartRow
 } from '~/types';
 import DisplayCart from '~/components/shared/DisplayCart';
 import TextField from '~/components/shared/form/TextField';
@@ -56,6 +48,13 @@ import ButtonGroup from '~/components/shared/ButtonGroup';
 import { getUser } from '~/server/auth/session.server';
 
 import countries from '~/server/db/countries.json';
+import { findShirtSizes } from '~/server/db/reference.server';
+import {
+  findUserEventRaceParticipants, findUserParticipants,
+  updateParticipant,
+  updateToSelectedParticipant
+} from '~/server/db/participant.server';
+import { updateBookingStatus } from '~/server/db/booking.server';
 
 const actions = {
   add: 'add',
@@ -239,7 +238,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
       ? authenticatedClient.id
       : anonymousClient.getClientId();
   const event = await findEvent(eventId);
-  const cart = await getUserCheckoutRaces(clientId, eventId);
+  const cart = await getUserCartRaces(clientId, eventId);
   const raceParticipants = await findUserEventRaceParticipants(
     clientId,
     eventId
