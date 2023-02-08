@@ -27,7 +27,7 @@ import Main from '~/components/shared/Main';
 import { H2, H3, Paragraph } from '~/components/shared/typography';
 
 import { requireUser } from '~/server/auth/session.server';
-import { findSports } from '~/server/db/sports.server';
+import { findSports } from '~/server/db/reference.server';
 import { deleteGroup, findGroup, updateGroup } from '~/server/db/groups.server';
 
 import Button from '~/components/shared/Button';
@@ -44,9 +44,9 @@ import type {
   Sport
 } from '~/types';
 import ComboBox from '~/components/shared/form/ComboBox';
-import { findGroupTypes } from '~/server/db/groupTypes.server';
+import { findGroupTypes } from '~/server/db/reference.server';
 import HourOfDay from '~/components/HourOfDay';
-import { findGroupsSpirit } from '~/server/db/groupsSpirit.server';
+import { findGroupsSpirit } from '~/server/db/reference.server';
 
 import { MapDialog } from '~/components/shared/Map';
 import Config from '~/server/config.server';

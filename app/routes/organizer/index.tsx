@@ -20,7 +20,7 @@ import WhenListEmpty from '~/components/shared/Empty';
 import type { Sport } from '~/types';
 import DisplayImg from '~/components/shared/DisplayImg';
 
-import { findSports } from '~/server/db/sports.server';
+import { findSports } from '~/server/db/reference.server';
 import { requireAdminUser } from '~/server/auth/session.server';
 
 type LoaderData = {

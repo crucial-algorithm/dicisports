@@ -1,7 +1,6 @@
 import type { LoaderFunction } from 'remix';
 import { json, redirect } from 'remix';
 import * as React from 'react';
-import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLoaderData } from '@remix-run/react';
 import {
@@ -11,11 +10,6 @@ import {
 } from '@heroicons/react/24/outline';
 
 import { Carousel } from 'react-responsive-carousel';
-import {
-  ChevronLeftIcon,
-  ChevronRightIcon,
-  EllipsisVerticalIcon
-} from '@heroicons/react/20/solid';
 
 import { requireUser } from '~/server/auth/session.server';
 import { findEvent } from '~/server/db/events.server';
@@ -36,8 +30,6 @@ import type {
 } from '~/types';
 
 import WhenListEmpty from '~/components/shared/Empty';
-import ButtonGroup from '~/components/shared/ButtonGroup';
-import ComboBox from '~/components/shared/form/ComboBox';
 
 type LoaderData = {
   event: Event;
@@ -268,9 +260,7 @@ export default function DashboardRoute() {
                     </th>
                   </tr>
                 </thead>
-                <tbody>
-                  {/*table*/}
-                </tbody>
+                <tbody>{/*table*/}</tbody>
               </table>
             </div>
           </div>

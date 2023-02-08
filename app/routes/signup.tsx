@@ -23,7 +23,7 @@ import { verifyEmailAddress } from '~/server/auth/verifier.server';
 import { addGroupToFavorites } from '~/server/db/groups.server';
 import InputError from '~/components/shared/form/InputError';
 import { CanonicalMeta } from '~/utils/seo';
-import { changeCheckoutToAuthUser } from '~/server/db/checkout.server';
+import { changeRegistrationToAuthUser } from '~/server/db/checkout.server';
 import { getClientSession } from '~/server/auth/client.server';
 
 type ActionData = {
@@ -129,7 +129,7 @@ export const action: ActionFunction = async ({ request }) => {
       try {
         const clientSession = await getClientSession(request);
 
-        await changeCheckoutToAuthUser(user.id, clientSession.getClientId());
+        await changeRegistrationToAuthUser(user.id, clientSession.getClientId());
       } catch (e) {
         console.error(e);
       }

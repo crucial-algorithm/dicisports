@@ -2,7 +2,7 @@ import type { LoaderFunction } from 'remix';
 
 import type { SitemapEntry } from '~/types';
 import { getDomainUrl } from '~/utils/misc';
-import { findSports } from '~/server/db/sports.server';
+import { findSports } from '~/server/db/reference.server';
 import { findGroups } from '~/server/db/groups.server';
 
 // keeping it easy for now... statically define "site" routes

@@ -46,7 +46,7 @@ import Config from '~/server/config.server';
 import { LocationProvider } from '~/utils/LocationProvider';
 import { getLocationSession } from '~/routes/action/set-my-location';
 
-import { findSports } from '~/server/db/sports.server';
+import { findSports } from '~/server/db/reference.server';
 
 import vendorsCss from './styles/vendors.css';
 import mainCss from './styles/main.css';

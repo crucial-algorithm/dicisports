@@ -56,8 +56,8 @@ import Button, { ButtonLink } from '~/components/shared/Button';
 
 import { inputBaseClasses } from '~/components/shared/form/InputBase';
 import Config from '~/server/config.server';
-import { findSports } from '~/server/db/sports.server';
-import { findDifficulties } from '~/server/db/difficulties.server';
+import { findSports } from '~/server/db/reference.server';
+import { findDifficulties } from '~/server/db/reference.server';
 import {
   findEvent,
   publishEvent,

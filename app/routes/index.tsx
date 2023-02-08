@@ -47,8 +47,8 @@ import ButtonGroup from '~/components/shared/ButtonGroup';
 import { H3, Paragraph } from '~/components/shared/typography';
 import FormField from '~/components/shared/form/FormField';
 import CheckBox from '~/components/shared/form/CheckBox';
-import { findGroupsSpirit } from '~/server/db/groupsSpirit.server';
-import { findSports } from '~/server/db/sports.server';
+import { findGroupsSpirit } from '~/server/db/reference.server';
+import { findSports } from '~/server/db/reference.server';
 import type { Option } from '~/components/shared/form/ComboBox';
 import ComboBox from '~/components/shared/form/ComboBox';
 

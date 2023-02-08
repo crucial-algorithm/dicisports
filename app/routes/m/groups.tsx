@@ -10,7 +10,7 @@ import { PencilSquareIcon } from '@heroicons/react/24/outline';
 
 import { HeartIcon as HeartIconActive } from '@heroicons/react/24/solid';
 
-import { findSports } from '~/server/db/sports.server';
+import { findSports } from '~/server/db/reference.server';
 import type { Group, Sport } from '~/types';
 import Button, { ButtonLink } from '~/components/shared/Button';
 
