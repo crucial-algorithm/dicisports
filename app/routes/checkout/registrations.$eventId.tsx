@@ -15,7 +15,7 @@ import Main from '~/components/shared/Main';
 import { findEvent } from '~/server/db/events.server';
 import { H2, H4, H5, H6 } from '~/components/shared/typography';
 import DisplayDate from '~/components/shared/DIsplayDate';
-import type { Cart, Event, Race, RaceQtd } from '~/types';
+import type { UICartRow, Event, Race, RaceQtd } from '~/types';
 import { badRequest, displayTimeOfDay } from '~/utils/misc';
 import { getClientSession } from '~/server/auth/client.server';
 import {
@@ -40,7 +40,7 @@ import { getUser } from '~/server/auth/session.server';
 type LoaderData = {
   event: Event;
   races: Race[];
-  userCheckoutRaces: Cart[];
+  userCheckoutRaces: UICartRow[];
   hasCheckout: boolean;
 };
 

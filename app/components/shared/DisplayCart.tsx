@@ -2,7 +2,7 @@ import type { FetcherWithComponents } from '@remix-run/react';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import type { Cart, Event } from '~/types';
+import type { UICartRow, Event } from '~/types';
 import { H4, H5, H6 } from '~/components/shared/typography';
 import DisplayDate from '~/components/shared/DIsplayDate';
 import Button from '~/components/shared/Button';
@@ -20,7 +20,7 @@ export default function DisplayCart({
   showUpdateCartButton,
   action
 }: {
-  cart: Cart[];
+  cart: UICartRow[];
   event: Event;
   error?: string;
   fetcher: FetcherWithComponents<any>;

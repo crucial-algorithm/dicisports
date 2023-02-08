@@ -12,7 +12,7 @@ import {
   getUserCheckoutRaces
 } from '~/server/db/checkout.server';
 import { findEvent } from '~/server/db/events.server';
-import type { Booking, Cart, Event } from '~/types';
+import type { Booking, UICartRow, Event } from '~/types';
 import Main from '~/components/shared/Main';
 import { H2, H4, H6 } from '~/components/shared/typography';
 import DisplayDate from '~/components/shared/DIsplayDate';
@@ -24,7 +24,7 @@ import { getUser } from '~/server/auth/session.server';
 type LoaderData = {
   registration: Booking;
   event: Event;
-  cart: Cart;
+  cart: UICartRow;
   isAuth: boolean;
 };
 

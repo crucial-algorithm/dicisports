@@ -58,7 +58,7 @@ async function clear() {
   await db.raceParticipant.deleteMany();
   await db.booking.deleteMany();
   await db.participant.deleteMany();
-  await db.raceCheckout.deleteMany();
+  await db.cart.deleteMany();
   await db.race.deleteMany();
   await db.perk.deleteMany();
   await db.favoriteEvent.deleteMany();

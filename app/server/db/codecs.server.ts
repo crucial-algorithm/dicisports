@@ -10,11 +10,11 @@ import type {
 import { Role } from '@prisma/client';
 
 import type {
-  Cart,
+  UICartRow,
   DaysOfWeek,
-  DBRawCart,
+  DBRawUICartRow,
   DBRawGroup,
-  DBRawRaceCheckout,
+  DBRawCart,
   DBRawRaceQtd,
   Difficulty,
   Group,
@@ -168,7 +168,7 @@ function dbRawGroupToGroup(group: DBRawGroup): Group {
   };
 }
 
-function dbCartToCart(cart: DBRawCart): Cart {
+function dbUICartToUICart(cart: DBRawUICartRow): UICartRow {
   return {
     id: cart.checkout_id,
     qtd: cart.qtd,
@@ -192,15 +192,15 @@ function dbEventRaceCheckoutQtdToEventRaceCheckoutQtd(
   };
 }
 
-function dbRaceCheckoutToRaceCheckout(
-  raceCheckout: DBRawRaceCheckout
+function dbCartToCart(
+  cart: DBRawCart
 ): PartialRaceCheckout {
   return {
-    id: raceCheckout.id,
-    raceId: raceCheckout.race_id,
-    userId: raceCheckout.user_id,
-    createdAt: raceCheckout.created_at,
-    updatedAt: raceCheckout.updated_at
+    id: cart.id,
+    raceId: cart.race_id,
+    userId: cart.user_id,
+    createdAt: cart.created_at,
+    updatedAt: cart.updated_at
   };
 }
 
@@ -212,8 +212,8 @@ export {
   dbPerkToPerk,
   dbRawGroupToGroup,
   dbDifficultyToDifficulty,
-  dbCartToCart,
+  dbUICartToUICart,
   dbEventRaceCheckoutQtdToEventRaceCheckoutQtd,
-  dbRaceCheckoutToRaceCheckout,
+  dbCartToCart,
   dbShirtSizeToShirtSize
 };

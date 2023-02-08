@@ -232,8 +232,8 @@ model Race {
   track             String?
   eventId           String          @map("event_id")
   event             Event           @relation(fields: [eventId], references: [id])
-  raceCheckout      RaceCheckout[]
-  raceParticipant   RaceParticipant[]
+  carts             Cart[]
+  raceParticipant  RaceParticipant[]
 
   @@map("races")
 }
@@ -260,7 +260,7 @@ model FavoriteEvent {
   @@map("favorite_events")
 }
 
-model RaceCheckout {
+model Cart {
     id          String      @id @default(uuid())
     raceId      String      @map("race_id")
     race        Race        @relation(fields: [raceId], references: [id])
@@ -270,7 +270,7 @@ model RaceCheckout {
     updatedAt   DateTime    @updatedAt @map("updated_at")
 
     @@unique([userId, raceId])
-    @@map("race_checkout")
+    @@map("carts")
 }
 
 enum ParticipantStatus {

@@ -9,7 +9,7 @@ import Main from '~/components/shared/Main';
 import { H2, H6 } from '~/components/shared/typography';
 import DisplayDate from '~/components/shared/DIsplayDate';
 import { findEvent } from '~/server/db/events.server';
-import type { Cart, Event } from '~/types';
+import type { UICartRow, Event } from '~/types';
 import { getClientSession } from '~/server/auth/client.server';
 import {
   findBooking,
@@ -23,7 +23,7 @@ import { getUser } from '~/server/auth/session.server';
 
 type LoaderData = {
   event: Event;
-  cart: Cart[];
+  cart: UICartRow[];
 };
 
 export const action: ActionFunction = async ({ request, params }) => {

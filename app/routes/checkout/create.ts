@@ -3,7 +3,7 @@ import { redirect } from 'remix';
 import { CheckoutStatus } from '@prisma/client';
 
 import { getClientSession } from '~/server/auth/client.server';
-import type { RaceCheckoutInput } from '~/types';
+import type { CartInput } from '~/types';
 import {
   createRegistration,
   findBooking,
@@ -24,7 +24,7 @@ export const action: ActionFunction = async ({ request }) => {
   const checkout = await getCheckoutByUserAndRace(clientId, raceId);
   const booking = await findBooking(clientId, eventId);
 
-  const data: RaceCheckoutInput = {
+  const data: CartInput = {
     raceId: raceId,
     userId: clientId as string,
     qtd: 1

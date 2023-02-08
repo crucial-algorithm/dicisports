@@ -33,7 +33,7 @@ import { findEvent } from '~/server/db/events.server';
 import { H2, H4, H5, H6 } from '~/components/shared/typography';
 
 import type {
-  Cart,
+  UICartRow,
   Event,
   Language,
   Participant,
@@ -68,7 +68,7 @@ const actions = {
 
 type LoaderData = {
   event: Event;
-  cart: Cart[];
+  cart: UICartRow[];
   raceParticipants: RaceParticipant[] | null;
   userParticipants: Participant[];
   userSavedParticipants: Participant[] | null;

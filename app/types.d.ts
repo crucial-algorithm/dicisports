@@ -10,7 +10,7 @@ import type {
   Race as DBRace,
   GroupSchedule as DBGroupSchedule,
   Difficulty as DBDifficulty,
-  RaceCheckout as DBRaceCheckout,
+  Cart as DBCart,
   RaceParticipant as DBRaceParticipant,
   Participant as DBParticipant,
   Booking as DBBooking,
@@ -284,9 +284,9 @@ type Ticket = {
   numberOfTickets: number;
 };
 
-type RaceCheckout = { raceId: string } & DBRaceCheckout;
+type Cart = { raceId: string } & DBCart;
 
-type RaceCheckoutInput = {
+type CartInput = {
   id?: string;
   raceId: string;
   userId: string;
@@ -303,7 +303,7 @@ type PartialRaceCheckout = {
   updatedAt: Date;
 };
 
-type DBRawRaceCheckout = {
+type DBRawCart = {
   id: string;
   race_id: string;
   user_id: string;
@@ -312,7 +312,7 @@ type DBRawRaceCheckout = {
   updated_at: Date;
 };
 
-type Cart = {
+type UICartRow = {
   id: string;
   qtd: number;
   raceName: string;
@@ -320,7 +320,7 @@ type Cart = {
   displayOrder: number;
 };
 
-type DBRawCart = {
+type DBRawUICartRow = {
   checkout_id: string;
   qtd: number;
   race_name: string;
@@ -428,13 +428,13 @@ export {
   FavoriteEvent,
   Difficulty,
   Ticket,
-  RaceCheckout,
-  RaceCheckoutInput,
   Cart,
-  DBRawCart,
+  CartInput,
+  UICartRow,
+  DBRawUICartRow,
   DBRawRaceQtd,
   RaceQtd,
-  DBRawRaceCheckout,
+  DBRawCart,
   RaceParticipant,
   RaceParticipantInput,
   PartialRaceCheckout,

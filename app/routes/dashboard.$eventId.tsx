@@ -37,6 +37,7 @@ import type {
 
 import WhenListEmpty from '~/components/shared/Empty';
 import ButtonGroup from '~/components/shared/ButtonGroup';
+import ComboBox from '~/components/shared/form/ComboBox';
 
 type LoaderData = {
   event: Event;
@@ -73,27 +74,6 @@ export default function DashboardRoute() {
     useLoaderData<LoaderData>();
   const { t } = useTranslation('dashboard');
 
-  const registeredParticipants = raceParticipants.filter(
-    (rp: RaceParticipant) => rp.participant.status === 'saved'
-  );
-
-  // Pagination variables
-  const [currentPage, setCurrentPage] = useState<number>(1);
-  const [participantsPerPage, setParticipantsPerPage] = useState<number>(10);
-
-  const indexOfLastParticipant = currentPage * participantsPerPage;
-  const indexOfFirstParticipant = indexOfLastParticipant - participantsPerPage;
-  const currentParticipants = registeredParticipants.slice(
-    indexOfFirstParticipant,
-    indexOfLastParticipant
-  );
-  const totalParticipants = registeredParticipants.length;
-  const paginationInfo = `${indexOfFirstParticipant + 1}-${
-    indexOfLastParticipant > totalParticipants
-      ? totalParticipants
-      : indexOfLastParticipant
-  } ${t('of')} ${totalParticipants}`;
-
   const images: string[] = [
     event.image1,
     event.image2,
@@ -112,14 +92,6 @@ export default function DashboardRoute() {
 
   function cleanStatus() {
     return '';
-  }
-
-  function handleNextPage() {
-    setCurrentPage(currentPage + 1);
-  }
-
-  function handlePreviousPage() {
-    setCurrentPage(currentPage - 1);
   }
 
   function EventInformation() {
@@ -297,69 +269,12 @@ export default function DashboardRoute() {
                   </tr>
                 </thead>
                 <tbody>
-                  {currentParticipants.map((rp: RaceParticipant) => (
-                    <tr
-                      className="border-b transition duration-300 ease-in-out hover:bg-red"
-                      key={rp.id}
-                    >
-                      <td className="text-sm text-black dark:text-white font-light px-6 py-4 whitespace-nowrap">
-                        {`${rp.participant.firstName} ${rp.participant.lastName}`}
-                      </td>
-                      <td className="text-sm text-black dark:text-white font-light px-6 py-4 whitespace-nowrap">
-                        {'-'}
-                      </td>
-                      <td className="text-sm text-black dark:text-white font-light px-6 py-4 whitespace-nowrap">
-                        {rp.participant.gender}
-                      </td>
-                      <td className="text-sm text-black dark:text-white font-light px-6 py-4 whitespace-nowrap">
-                        {String(rp.booking?.createdAt).split('T')[0]}
-                      </td>
-                      <td className="text-sm text-black dark:text-white font-light px-6 py-4 whitespace-nowrap">
-                        {t(rp.booking?.status as string)}
-                      </td>
-                      <td className="text-sm text-black dark:text-white font-light px-6 py-4 whitespace-nowrap">
-                        {'-'}
-                      </td>
-                      <td className="text-sm text-black dark:text-white font-light px-6 py-4 whitespace-nowrap">
-                        {rp.race.name}
-                      </td>
-                      <td>
-                        <button
-                          type="button"
-                          className="w-[24px] h-[24px] dark:text-blueGray-500"
-                        >
-                          <EllipsisVerticalIcon className="md:h-6 w-6 m-0 inline-block" />
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
+                  {/*table*/}
                 </tbody>
               </table>
             </div>
           </div>
         </div>
-        <ButtonGroup className="justify-end">
-          {currentPage !== 1 && (
-            <button
-              type="button"
-              className="w-[24px] h-[24px] dark:text-blueGray-500"
-              onClick={handlePreviousPage}
-            >
-              <ChevronLeftIcon className="md:h-6 w-6 m-0 inline-block" />
-            </button>
-          )}
-
-          <H6 className="dark:text-blueGray-500">{paginationInfo}</H6>
-          {!(indexOfLastParticipant >= totalParticipants) && (
-            <button
-              type="button"
-              className="w-[24px] h-[24px] dark:text-blueGray-500"
-              onClick={handleNextPage}
-            >
-              <ChevronRightIcon className="md:h-6 w-6 m-0 inline-block" />
-            </button>
-          )}
-        </ButtonGroup>
       </div>
     </Main>
   );
