@@ -3,15 +3,14 @@ import { json } from 'remix';
 
 import { getClientSession } from '~/server/auth/client.server';
 import { badRequest } from '~/utils/misc';
-import {
-  addRaceParticipants,
-  findBooking,
-  findUserEventRaceParticipants,
-  removeBooking,
-  removeRaceParticipant
-} from '~/server/db/cart.server';
 import { findRace } from '~/server/db/races.server';
 import { getUser } from '~/server/auth/session.server';
+import {
+  addRaceParticipants,
+  findUserEventRaceParticipants,
+  removeRaceParticipant
+} from '~/server/db/participant.server';
+import { findBooking, removeBooking } from '~/server/db/booking.server';
 
 const actions = {
   removeParticipant: 'removeParticipant',

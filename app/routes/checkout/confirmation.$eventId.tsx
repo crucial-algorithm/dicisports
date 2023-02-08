@@ -6,13 +6,9 @@ import { useTranslation } from 'react-i18next';
 import { CheckoutStatus } from '@prisma/client';
 
 import { getClientSession } from '~/server/auth/client.server';
-import {
-  findBooking,
-  findUserEventRaceParticipants,
-  getUserCartRaces
-} from '~/server/db/cart.server';
+import { getUserCartRaces } from '~/server/db/cart.server';
 import { findEvent } from '~/server/db/events.server';
-import type { Booking, UICartRow, Event } from '~/types';
+import type { Booking, Event, UICartRow } from '~/types';
 import Main from '~/components/shared/Main';
 import { H2, H4, H6 } from '~/components/shared/typography';
 import DisplayDate from '~/components/shared/DIsplayDate';
@@ -20,6 +16,8 @@ import DisplayCart from '~/components/shared/DisplayCart';
 import TextField from '~/components/shared/form/TextField';
 import Button from '~/components/shared/Button';
 import { getUser } from '~/server/auth/session.server';
+import { findUserEventRaceParticipants } from '~/server/db/participant.server';
+import { findBooking } from '~/server/db/booking.server';
 
 type LoaderData = {
   registration: Booking;
@@ -39,7 +37,10 @@ export const loader: LoaderFunction = async ({ request, params }) => {
       ? authenticatedClient.id
       : anonymousClient.getClientId();
 
-  const raceParticipants = await findUserEventRaceParticipants(clientId, eventId);
+  const raceParticipants = await findUserEventRaceParticipants(
+    clientId,
+    eventId
+  );
   const booking = await findBooking(clientId, eventId);
 
   if (!raceParticipants || raceParticipants?.length === 0) {

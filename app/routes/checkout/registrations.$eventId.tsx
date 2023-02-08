@@ -15,27 +15,31 @@ import Main from '~/components/shared/Main';
 import { findEvent } from '~/server/db/events.server';
 import { H2, H4, H5, H6 } from '~/components/shared/typography';
 import DisplayDate from '~/components/shared/DIsplayDate';
-import type { UICartRow, Event, Race, RaceQtd } from '~/types';
+import type { Event, Race, RaceQtd, UICartRow } from '~/types';
 import { badRequest, displayTimeOfDay } from '~/utils/misc';
 import { getClientSession } from '~/server/auth/client.server';
 import {
-  addParticipantsToRace,
   addRegistration,
   addRegistrationOnUpdateCart,
-  createBooking,
-  findBooking,
   findEventRacesCartQtd,
-  findUserEventRaceParticipants,
-  findUserRaceParticipants,
   getDistinctUserEventCartRaces,
   getUserCartRaces,
-  removeBooking,
-  removeRaceParticipant,
   removeRegistration
 } from '~/server/db/cart.server';
 import i18n from '~/server/i18n.server';
 import DisplayCart from '~/components/shared/DisplayCart';
 import { getUser } from '~/server/auth/session.server';
+import {
+  addParticipantsToRace,
+  findUserEventRaceParticipants,
+  findUserRaceParticipants,
+  removeRaceParticipant
+} from '~/server/db/participant.server';
+import {
+  createBooking,
+  findBooking,
+  removeBooking
+} from '~/server/db/booking.server';
 
 type LoaderData = {
   event: Event;
@@ -121,8 +125,8 @@ export const action: ActionFunction = async ({ request, params }) => {
     if (actionId === actions.checkout) {
       if (searchParams.get('a') === 'update') {
         const userEventRaceParticipants = await findUserEventRaceParticipants(
-            clientId,
-            eventId
+          clientId,
+          eventId
         );
 
         if (!userEventRaceParticipants?.length) {

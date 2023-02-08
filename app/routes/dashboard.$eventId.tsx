@@ -9,14 +9,9 @@ import {
   MapPinIcon
 } from '@heroicons/react/24/outline';
 
-import { Carousel } from 'react-responsive-carousel';
-
 import { requireUser } from '~/server/auth/session.server';
 import { findEvent } from '~/server/db/events.server';
-import {
-  findRaceParticipants,
-  findRevenueAndRegistrationsPerRace
-} from '~/server/db/dashboard.server';
+import { findRaceParticipants } from '~/server/db/dashboard.server';
 import DisplayImg from '~/components/shared/DisplayImg';
 import { H2, H3, H4, H5, H6 } from '~/components/shared/typography';
 import DisplayDate from '~/components/shared/DIsplayDate';
@@ -30,6 +25,7 @@ import type {
 } from '~/types';
 
 import WhenListEmpty from '~/components/shared/Empty';
+import { findRevenueAndRegistrationsPerRace } from '~/server/db/races.server';
 
 type LoaderData = {
   event: Event;
@@ -66,13 +62,6 @@ export default function DashboardRoute() {
     useLoaderData<LoaderData>();
   const { t } = useTranslation('dashboard');
 
-  const images: string[] = [
-    event.image1,
-    event.image2,
-    event.image3,
-    event.image4,
-    event.image5
-  ].filter(Boolean) as string[];
   const [lat, lng] = event.location.split(',');
   let minPrice = 0;
 
@@ -81,10 +70,6 @@ export default function DashboardRoute() {
     .map((a: Race) => a.price);
 
   minPrice = sortedRaces[0];
-
-  function cleanStatus() {
-    return '';
-  }
 
   function EventInformation() {
     return (
@@ -152,6 +137,13 @@ export default function DashboardRoute() {
             <b>{revenue + '€'}</b>
           </H4>
         </div>
+
+        <div className="flex-col">
+          <H6>{t('Clicks')}</H6>
+          <H4>
+            <b>{raceParticipants.length}</b>
+          </H4>
+        </div>
       </div>
     );
   }
@@ -168,38 +160,18 @@ export default function DashboardRoute() {
 
       <div className="flex flex-col md:flex-row mt-4 mb-8">
         <div className="w-full md:w-144">
-          {images.length > 1 ? (
-            <Carousel statusFormatter={cleanStatus}>
-              {images.map((image, idx) => (
-                <DisplayImg
-                  key={idx}
-                  dataCy={`image${idx}`}
-                  imageId={image}
-                  className="w-[500px]"
-                  transformations={{
-                    resize: {
-                      type: 'fill',
-                      width: 400,
-                      height: 400
-                    }
-                  }}
-                />
-              ))}
-            </Carousel>
-          ) : (
-            <DisplayImg
-              dataCy="image0"
-              imageId={images[0]}
-              className="w-[500px]"
-              transformations={{
-                resize: {
-                  type: 'fill',
-                  width: 400,
-                  height: 400
-                }
-              }}
-            />
-          )}
+          <DisplayImg
+            dataCy="image0"
+            imageId={event.image1}
+            className="w-[500px]"
+            transformations={{
+              resize: {
+                type: 'fill',
+                width: 400,
+                height: 400
+              }
+            }}
+          />
         </div>
 
         <div className="flex flex-row justify-between w-full">

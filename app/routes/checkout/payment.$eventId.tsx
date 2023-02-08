@@ -9,17 +9,14 @@ import Main from '~/components/shared/Main';
 import { H2, H6 } from '~/components/shared/typography';
 import DisplayDate from '~/components/shared/DIsplayDate';
 import { findEvent } from '~/server/db/events.server';
-import type { UICartRow, Event } from '~/types';
+import type { Event, UICartRow } from '~/types';
 import { getClientSession } from '~/server/auth/client.server';
-import {
-  findBooking,
-  findUserEventRaceParticipants,
-  getUserCartRaces,
-  updateBookingStatus
-} from '~/server/db/cart.server';
+import { getUserCartRaces } from '~/server/db/cart.server';
 import DisplayCart from '~/components/shared/DisplayCart';
 import Button from '~/components/shared/Button';
 import { getUser } from '~/server/auth/session.server';
+import { findUserEventRaceParticipants } from '~/server/db/participant.server';
+import { findBooking, updateBookingStatus } from '~/server/db/booking.server';
 
 type LoaderData = {
   event: Event;
