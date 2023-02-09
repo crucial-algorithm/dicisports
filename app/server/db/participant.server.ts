@@ -220,13 +220,11 @@ async function findRaceParticipants(
                        INNER JOIN races r on r.id = rp.race_id
               WHERE p.status = 'saved'
                 and rp.race_id IN
-                    (SELECT id FROM races WHERE event_id = '${eventId}')) as P LIMIT ${pageSize}
+                    (SELECT id FROM races WHERE event_id = $1)) as P LIMIT ${pageSize}
         OFFSET ${page * pageSize};
     `;
 
-  const results: Array<DBRawUIRaceParticipant> = await db.$queryRawUnsafe(
-    query
-  );
+  const results: Array<DBRawUIRaceParticipant> = await db.$queryRawUnsafe(query, eventId);
   const mapped = results.map(dbUIRaceParticipantToUIRaceParticipant);
   const total = results.length === 0 ? 0 : results[0].records;
 

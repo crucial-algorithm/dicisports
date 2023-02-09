@@ -32,16 +32,19 @@ import type {
 } from '~/types';
 
 import WhenListEmpty from '~/components/shared/Empty';
-import { findRevenueAndRegistrationsPerRace } from '~/server/db/races.server';
+import {
+  findRegistrationsAddedToCart,
+  findRevenueAndRegistrationsPerRace
+} from '~/server/db/races.server';
 import { findRaceParticipants } from '~/server/db/participant.server';
-import ButtonGroup from '~/components/shared/ButtonGroup';
 
 type LoaderData = {
   event: Event;
   racesRevenueAndRegistrations: RaceRevenueRegistrations[];
   raceParticipants: UIRaceParticipant[];
-  clicks: number;
+  totalRaceParticipants: number;
   pageNumber: number;
+  statsPerRace: Array<{ id: string; total: number }>;
 };
 
 export const loader: LoaderFunction = async ({ request, params }) => {
@@ -72,8 +75,9 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     event,
     racesRevenueAndRegistrations,
     raceParticipants: results,
-    clicks: total,
-    pageNumber: page || 0
+    totalRaceParticipants: total,
+    statsPerRace: await findRegistrationsAddedToCart(eventId),
+    pageNumber: Number(page) || 0
   });
 };
 
@@ -82,28 +86,38 @@ export default function DashboardRoute() {
     event,
     racesRevenueAndRegistrations,
     raceParticipants,
-    clicks,
-    pageNumber
+    totalRaceParticipants,
+    pageNumber,
+    statsPerRace
   } = useLoaderData<LoaderData>() as LoaderData;
   const { t } = useTranslation('dashboard');
 
   const [page, setPage] = useState<number>(pageNumber || 0);
-
   const [lat, lng] = event?.location?.split(',') || [0, 0];
   let minPrice = 0;
+  let totalClicks = 0;
 
   const sortedRaces = event.races
     .sort((a: Race, b: Race) => a.price - b.price)
     .map((a: Race) => a.price);
 
+  statsPerRace.map((r) => (totalClicks += r.total));
   minPrice = sortedRaces[0];
 
   function handlePreviousPage() {
-    setPage(page - 1);
+    if (page !== 0) {
+      setPage(page - 1);
+    }
   }
 
   function handleNextPage() {
-    setPage(page + 1);
+    if ((page + 1) !== Math.ceil(totalRaceParticipants / 10)) {
+      setPage(page + 1);
+    }
+  }
+
+  function handleSetPage(e: React.MouseEvent) {
+    setPage(Number(e.currentTarget.id));
   }
 
   function EventInformation() {
@@ -176,7 +190,7 @@ export default function DashboardRoute() {
         <div className="flex-col">
           <H6>{t('Clicks')}</H6>
           <H4>
-            <b>{clicks}</b>
+            <b>{totalClicks}</b>
           </H4>
         </div>
       </div>
@@ -222,6 +236,7 @@ export default function DashboardRoute() {
             name={r.name}
             registrations={r.registrations}
             revenue={r.revenue}
+            clicks={statsPerRace.find((cr) => cr.id === r.id)?.total || 0}
             key={r.id}
           />
         ))}
@@ -237,76 +252,98 @@ export default function DashboardRoute() {
         </WhenListEmpty>
       </div>
 
-      <div className="flex flex-col">
-        <div className="overflow-x-auto sm:-mx-6 lg:-mx-8">
-          <div className="py-2 inline-block min-w-full sm:px-6 lg:px-8">
-            <div className="overflow-hidden">
-              <table className="table-auto min-w-full">
-                <thead className="border-b">
-                  <tr>
-                    <TH name={t('Athlete')} />
-                    <TH name={t('Team')} />
-                    <TH name={t('Age Group')} />
-                    <TH name={t('Booking Date')} />
-                    <TH name={t('Status')} />
-                    <TH name={t('Dorsal')} />
-                    <TH name={t('Race')} />
-                  </tr>
-                </thead>
-                <tbody>
-                  {raceParticipants.map((rp) => (
-                    <tr
-                      className="border-b transition duration-300 ease-in-out hover:bg-red"
-                      key={rp.id}
-                    >
-                      <TD value={`${rp.name}`} />
-                      <TD value={'-'} />
-                      <TD value={rp.gender} />
-                      <TD value={String(rp.bookingAt).split('T')[0]} />
-                      <TD value={t(rp.status)} />
-                      <TD value={'-'} />
-                      <TD value={rp.raceName} />
-                      <td>
-                        <button
-                          type="button"
-                          className="w-[24px] h-[24px] dark:text-blueGray-500"
-                        >
-                          <EllipsisVerticalIcon className="md:h-6 w-6 m-0 inline-block" />
-                        </button>
-                      </td>
+      <Form method="get">
+        <input type="hidden" value={page} name="page" />
+
+        <div className="flex flex-col">
+          <div className="overflow-x-auto sm:-mx-6 lg:-mx-8">
+            <div className="py-2 inline-block min-w-full sm:px-6 lg:px-8">
+              <div className="overflow-hidden">
+                <table className="table-auto min-w-full">
+                  <thead className="border-b">
+                    <tr>
+                      <TH name={t('Athlete')} />
+                      <TH name={t('Team')} />
+                      <TH name={t('Age Group')} />
+                      <TH name={t('Booking Date')} />
+                      <TH name={t('Status')} />
+                      <TH name={t('Dorsal')} />
+                      <TH name={t('Race')} />
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-              <Form method="get">
-                <input type="hidden" value={page} name="page" />
-                <ButtonGroup className="justify-end">
-                  <button
-                    type="submit"
-                    className={clsx(
-                      'w-[24px] h-[24px] dark:text-blueGray-500',
-                      page === 0 ? 'hidden' : ''
-                    )}
-                    onClick={handlePreviousPage}
-                  >
-                    <ChevronLeftIcon className="md:h-6 w-6 m-0 inline-block" />
-                  </button>
-                  <button
-                    type="submit"
-                    className={clsx(
-                      'w-[24px] h-[24px] dark:text-blueGray-500',
-                      (page + 1) * 10 < clicks ? '' : 'hidden'
-                    )}
-                    onClick={handleNextPage}
-                  >
-                    <ChevronRightIcon className="md:h-6 w-6 m-0 inline-block" />
-                  </button>
-                </ButtonGroup>
-              </Form>
+                  </thead>
+                  <tbody>
+                    {raceParticipants.map((rp) => (
+                      <tr
+                        className="border-b transition duration-300 ease-in-out hover:bg-red"
+                        key={rp.id}
+                      >
+                        <TD value={`${rp.name}`} />
+                        <TD value={'-'} />
+                        <TD value={rp.gender} />
+                        <TD value={String(rp.bookingAt).split('T')[0]} />
+                        <TD value={t(rp.status)} />
+                        <TD value={'-'} />
+                        <TD value={rp.raceName} />
+                        <td>
+                          <button
+                            type="button"
+                            className="w-[24px] h-[24px] dark:text-blueGray-500"
+                          >
+                            <EllipsisVerticalIcon className="md:h-6 w-6 m-0 inline-block" />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                <div className="flex justify-end mt-2">
+                  <nav aria-label="Page navigation example">
+                    <ul className="inline-flex items-center -space-x-px">
+                      <li>
+                        <button
+                          type="submit"
+                          onClick={handlePreviousPage}
+                          className="block px-3 py-2 ml-0 leading-tight text-gray-500 bg-white border border-gray-300 rounded-l-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
+                        >
+                          <ChevronLeftIcon className="h-5 w-5" />
+                        </button>
+                      </li>
+
+                      {Array(Math.ceil(totalRaceParticipants / 10))
+                        .fill(0)
+                        .map((r, index) => (
+                          <li key={index}>
+                            <button
+                              id={String(index)}
+                              onClick={handleSetPage}
+                              className={clsx({
+                                'px-3 py-2 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white':
+                                  index !== page,
+                                'z-10 px-3 py-2 leading-tight text-blue-600 border border-blue-300 bg-blue-50 hover:bg-blue-100 hover:text-blue-700 dark:border-gray-700 dark:bg-gray-700 dark:text-white':
+                                  index === page
+                              })}
+                            >
+                              {index + 1}
+                            </button>
+                          </li>
+                        ))}
+                      <li>
+                        <button
+                          type="submit"
+                          onClick={handleNextPage}
+                          className="block px-3 py-2 leading-tight text-gray-500 bg-white border border-gray-300 rounded-r-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
+                        >
+                          <ChevronRightIcon className="h-5 w-5" />
+                        </button>
+                      </li>
+                    </ul>
+                  </nav>
+                </div>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      </Form>
     </Main>
   );
 }
@@ -330,11 +367,13 @@ function TD({ value }: { value: string | null }) {
 function DisplayRaceStats({
   name,
   registrations,
-  revenue
+  revenue,
+  clicks
 }: {
   name: string;
   registrations: number;
   revenue: number;
+  clicks: number;
 }) {
   const { t } = useTranslation('dashboard');
 
@@ -351,6 +390,10 @@ function DisplayRaceStats({
         <div className="my-4">
           <H4>{t('Revenue')}</H4>
           <H5 className="dark:text-blueGray-500">{revenue + '€'}</H5>
+        </div>
+        <div className="my-4">
+          <H4>{t('Added To Cart/ Clicks')}</H4>
+          <H5 className="dark:text-blueGray-500">{clicks}</H5>
         </div>
       </div>
     </div>

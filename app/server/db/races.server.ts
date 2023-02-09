@@ -151,6 +151,18 @@ async function findRevenueAndRegistrationsPerRace(
   return await db.$queryRawUnsafe(query);
 }
 
+async function findRegistrationsAddedToCart(
+  eventId: string
+): Promise<{ id: string; total: number }> {
+  return await db.$queryRaw`
+        SELECT r.id, sum(c.qtd) as total
+        FROM carts c
+                 INNER JOIN races r on c.race_id = r.id
+            and r.event_id = ${eventId}
+        GROUP BY r.id;
+    `;
+}
+
 export {
   createRace,
   findEventRaces,
@@ -159,5 +171,6 @@ export {
   updateDisplayOrderUp,
   updateDisplayOrderDown,
   deleteRace,
-  findRevenueAndRegistrationsPerRace
+  findRevenueAndRegistrationsPerRace,
+  findRegistrationsAddedToCart
 };
