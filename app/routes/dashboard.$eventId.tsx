@@ -1,17 +1,23 @@
 import type { LoaderFunction } from 'remix';
 import { json, redirect } from 'remix';
 import * as React from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useLoaderData } from '@remix-run/react';
+import { Form, useLoaderData } from '@remix-run/react';
 import {
   ArrowTrendingUpIcon,
   CalendarDaysIcon,
   MapPinIcon
 } from '@heroicons/react/24/outline';
+import {
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  EllipsisVerticalIcon
+} from '@heroicons/react/20/solid';
+import clsx from 'clsx';
 
 import { requireUser } from '~/server/auth/session.server';
 import { findEvent } from '~/server/db/events.server';
-import { findRaceParticipants } from '~/server/db/dashboard.server';
 import DisplayImg from '~/components/shared/DisplayImg';
 import { H2, H3, H4, H5, H6 } from '~/components/shared/typography';
 import DisplayDate from '~/components/shared/DIsplayDate';
@@ -20,24 +26,30 @@ import Main from '~/components/shared/Main';
 import type {
   Event,
   Race,
-  RaceParticipant,
-  RaceRevenueRegistrations
+  RaceRevenueRegistrations,
+  TranslationObject,
+  UIRaceParticipant
 } from '~/types';
 
 import WhenListEmpty from '~/components/shared/Empty';
 import { findRevenueAndRegistrationsPerRace } from '~/server/db/races.server';
+import { findRaceParticipants } from '~/server/db/participant.server';
+import ButtonGroup from '~/components/shared/ButtonGroup';
 
 type LoaderData = {
   event: Event;
   racesRevenueAndRegistrations: RaceRevenueRegistrations[];
-  raceParticipants: RaceParticipant[];
+  raceParticipants: UIRaceParticipant[];
+  clicks: number;
+  pageNumber: number;
 };
 
 export const loader: LoaderFunction = async ({ request, params }) => {
   const user = await requireUser(request);
-  const eventId = params.eventId;
+  const eventId = params.eventId as string;
+  const { searchParams } = new URL(request.url);
 
-  const event = (await findEvent(eventId as string)) as Event;
+  const event = (await findEvent(eventId)) as Event;
   const racesRevenueAndRegistrations = await findRevenueAndRegistrationsPerRace(
     eventId as string
   );
@@ -50,19 +62,34 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     return redirect('/');
   }
 
+  const page = searchParams.get('page');
+  const { results, total } = await findRaceParticipants(
+    eventId,
+    page?.length ? Number(page) : 0
+  );
+
   return json({
     event,
     racesRevenueAndRegistrations,
-    raceParticipants: await findRaceParticipants(event.races as Race[])
+    raceParticipants: results,
+    clicks: total,
+    pageNumber: page || 0
   });
 };
 
 export default function DashboardRoute() {
-  const { event, racesRevenueAndRegistrations, raceParticipants } =
-    useLoaderData<LoaderData>();
+  const {
+    event,
+    racesRevenueAndRegistrations,
+    raceParticipants,
+    clicks,
+    pageNumber
+  } = useLoaderData<LoaderData>() as LoaderData;
   const { t } = useTranslation('dashboard');
 
-  const [lat, lng] = event.location.split(',');
+  const [page, setPage] = useState<number>(pageNumber || 0);
+
+  const [lat, lng] = event?.location?.split(',') || [0, 0];
   let minPrice = 0;
 
   const sortedRaces = event.races
@@ -71,13 +98,21 @@ export default function DashboardRoute() {
 
   minPrice = sortedRaces[0];
 
+  function handlePreviousPage() {
+    setPage(page - 1);
+  }
+
+  function handleNextPage() {
+    setPage(page + 1);
+  }
+
   function EventInformation() {
     return (
       <div className="flex flex-auto flex-col ml-4">
         <div className="flex flex-row items-center mb-2">
           <CalendarDaysIcon className="h-6 w-6 m-0 inline-block text-primary" />
           <H6 data-cy="date" className="ml-4 md:ml-2">
-            <DisplayDate date={new Date(event.startAt)} />
+            <DisplayDate date={new Date(event?.startAt || 0)} />
           </H6>
         </div>
         <div className="flex flex-row items-center mb-2">
@@ -96,7 +131,7 @@ export default function DashboardRoute() {
         <div className="flex flex-row items-center mb-2">
           <ArrowTrendingUpIcon className="h-6 w-6 m-0 inline-block text-primary" />
           <H6 data-cy="difficulty" className="ml-4 md:ml-2">
-            <I18nText text={event.difficulty.name} />
+            <I18nText text={event.difficulty.name as TranslationObject} />
           </H6>
         </div>
         <div className="flex flex-col justify-start mt-16">
@@ -141,7 +176,7 @@ export default function DashboardRoute() {
         <div className="flex-col">
           <H6>{t('Clicks')}</H6>
           <H4>
-            <b>{raceParticipants.length}</b>
+            <b>{clicks}</b>
           </H4>
         </div>
       </div>
@@ -209,36 +244,86 @@ export default function DashboardRoute() {
               <table className="table-auto min-w-full">
                 <thead className="border-b">
                   <tr>
-                    <th className="text-sm font-medium text-black dark:text-white px-6 py-4 text-left">
-                      {t('Athlete')}
-                    </th>
-                    <th className="text-sm font-medium text-black dark:text-white px-6 py-4 text-left">
-                      {t('Team')}
-                    </th>
-                    <th className="text-sm font-medium text-black dark:text-white px-6 py-4 text-left">
-                      {t('Age Group')}
-                    </th>
-                    <th className="text-sm font-medium text-black dark:text-white px-6 py-4 text-left">
-                      {t('Booking Date')}
-                    </th>
-                    <th className="text-sm font-medium text-black dark:text-white px-6 py-4 text-left">
-                      {t('Status')}
-                    </th>
-                    <th className="text-sm font-medium text-black dark:text-white px-6 py-4 text-left">
-                      {t('Dorsal')}
-                    </th>
-                    <th className="text-sm font-medium text-black dark:text-white px-6 py-4 text-left">
-                      {t('Race')}
-                    </th>
+                    <TH name={t('Athlete')} />
+                    <TH name={t('Team')} />
+                    <TH name={t('Age Group')} />
+                    <TH name={t('Booking Date')} />
+                    <TH name={t('Status')} />
+                    <TH name={t('Dorsal')} />
+                    <TH name={t('Race')} />
                   </tr>
                 </thead>
-                <tbody>{/*table*/}</tbody>
+                <tbody>
+                  {raceParticipants.map((rp) => (
+                    <tr
+                      className="border-b transition duration-300 ease-in-out hover:bg-red"
+                      key={rp.id}
+                    >
+                      <TD value={`${rp.name}`} />
+                      <TD value={'-'} />
+                      <TD value={rp.gender} />
+                      <TD value={String(rp.bookingAt).split('T')[0]} />
+                      <TD value={t(rp.status)} />
+                      <TD value={'-'} />
+                      <TD value={rp.raceName} />
+                      <td>
+                        <button
+                          type="button"
+                          className="w-[24px] h-[24px] dark:text-blueGray-500"
+                        >
+                          <EllipsisVerticalIcon className="md:h-6 w-6 m-0 inline-block" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
               </table>
+              <Form method="get">
+                <input type="hidden" value={page} name="page" />
+                <ButtonGroup className="justify-end">
+                  <button
+                    type="submit"
+                    className={clsx(
+                      'w-[24px] h-[24px] dark:text-blueGray-500',
+                      page === 0 ? 'hidden' : ''
+                    )}
+                    onClick={handlePreviousPage}
+                  >
+                    <ChevronLeftIcon className="md:h-6 w-6 m-0 inline-block" />
+                  </button>
+                  <button
+                    type="submit"
+                    className={clsx(
+                      'w-[24px] h-[24px] dark:text-blueGray-500',
+                      (page + 1) * 10 < clicks ? '' : 'hidden'
+                    )}
+                    onClick={handleNextPage}
+                  >
+                    <ChevronRightIcon className="md:h-6 w-6 m-0 inline-block" />
+                  </button>
+                </ButtonGroup>
+              </Form>
             </div>
           </div>
         </div>
       </div>
     </Main>
+  );
+}
+
+function TH({ name }: { name: string }) {
+  return (
+    <th className="text-sm font-medium text-black dark:text-white px-6 py-4 text-left">
+      {name}
+    </th>
+  );
+}
+
+function TD({ value }: { value: string | null }) {
+  return (
+    <td className="text-sm text-black dark:text-white font-light px-6 py-4 whitespace-nowrap">
+      {value}
+    </td>
   );
 }
 

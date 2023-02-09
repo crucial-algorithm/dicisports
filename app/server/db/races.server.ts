@@ -3,7 +3,7 @@ import { CheckoutStatus, PrismaClient } from '@prisma/client';
 import { db } from '~/server/db.server';
 import Id from '~/server/utils/Id.server';
 import type { CreateRaceInput, Race } from '~/types';
-import { RaceRevenueRegistrations } from '~/types';
+import type { RaceRevenueRegistrations } from '~/types';
 
 const prisma = new PrismaClient();
 

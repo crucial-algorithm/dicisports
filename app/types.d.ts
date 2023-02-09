@@ -123,7 +123,7 @@ type GroupInput = {
   description: string | null;
 } & DBGroup;
 
-type Event = { races: Race[] } & DBEvent;
+type Event = { races: Race[], difficulty: Difficulty } & DBEvent;
 
 type CreateEventInput = {
   id: string;
@@ -363,6 +363,27 @@ type RaceParticipantInput = {
   updatedAt: Date;
 };
 
+type UIRaceParticipant = {
+  id: string;
+  name: string;
+  birthday: Date;
+  gender: string;
+  bookingAt: Date;
+  status: string;
+  raceName: string;
+}
+
+type DBRawUIRaceParticipant = {
+  id: string;
+  name: string;
+  birthday: Date;
+  gender: string;
+  booking_at: Date;
+  status: string;
+  race_name: string;
+  records: number;
+};
+
 type Participant = {} & DBParticipant;
 
 type ParticipantInput = {
@@ -437,6 +458,8 @@ export {
   DBRawCart,
   RaceParticipant,
   RaceParticipantInput,
+  DBRawUIRaceParticipant,
+  UIRaceParticipant,
   PartialCart,
   Participant,
   ParticipantInput,

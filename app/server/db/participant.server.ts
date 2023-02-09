@@ -3,18 +3,18 @@ import { PrismaClient } from '@prisma/client';
 
 import type {
   Cart,
+  DBRawUIRaceParticipant,
   Participant,
   ParticipantInput,
   RaceParticipant,
-  RaceParticipantInput
+  RaceParticipantInput,
+  UIRaceParticipant
 } from '~/types';
 import { db } from '~/server/db.server';
 import Id from '~/server/utils/Id.server';
 import { findEventRaces } from '~/server/db/races.server';
-import {
-  addRegistration,
-  removeRegistration
-} from '~/server/db/cart.server';
+import { addRegistration, removeRegistration } from '~/server/db/cart.server';
+import { dbUIRaceParticipantToUIRaceParticipant } from '~/server/db/codecs.server';
 
 const prisma = new PrismaClient();
 
@@ -31,7 +31,6 @@ async function createParticipant(
     }
   });
 }
-
 
 async function addParticipantsToRace(
   raceIds: string[],
@@ -64,7 +63,6 @@ async function addParticipantsToRace(
   });
 }
 
-
 async function addParticipantToRace(
   clientId: string,
   raceId: string,
@@ -89,7 +87,6 @@ async function addParticipantToRace(
   });
 }
 
-
 async function findUserParticipants(
   userSessionId: string
 ): Promise<Participant[]> {
@@ -99,7 +96,6 @@ async function findUserParticipants(
     }
   });
 }
-
 
 async function findUserEventRaceParticipants(
   userSessionId: string,
@@ -120,7 +116,6 @@ async function findUserEventRaceParticipants(
   });
 }
 
-
 async function findUserRaceParticipants(
   clientId: string,
   raceId: string
@@ -138,7 +133,6 @@ async function findUserRaceParticipants(
     }
   });
 }
-
 
 async function updateParticipant(
   participant: ParticipantInput
@@ -161,7 +155,6 @@ async function updateParticipant(
   });
 }
 
-
 async function updateToSelectedParticipant(
   oldParticipant: string,
   savedParticipant: string,
@@ -176,7 +169,6 @@ async function updateToSelectedParticipant(
     }
   });
 }
-
 
 async function removeRaceParticipant(
   participantId: string,
@@ -194,7 +186,6 @@ async function removeRaceParticipant(
   });
 }
 
-
 async function addRaceParticipants(
   raceIds: string[],
   userSessionId: string,
@@ -209,6 +200,39 @@ async function addRaceParticipants(
   });
 }
 
+async function findRaceParticipants(
+  eventId: string,
+  page: number,
+  pageSize = 10
+): Promise<{ results: UIRaceParticipant[]; total: number }> {
+  const query = `
+        SELECT *, count(1) over () as records
+        FROM (SELECT rp.id,
+                     concat(p.first_name, ' ', p.last_name) as name,
+                     p.birthday,
+                     p.gender,
+                     b.created_at                           as booking_at,
+                     b.status,
+                     r.name                                 as race_name
+              FROM race_participants rp
+                       INNER JOIN participants p on p.id = rp.participant_id
+                       INNER JOIN bookings b on rp.booking_id = b.id
+                       INNER JOIN races r on r.id = rp.race_id
+              WHERE p.status = 'saved'
+                and rp.race_id IN
+                    (SELECT id FROM races WHERE event_id = '${eventId}')) as P LIMIT ${pageSize}
+        OFFSET ${page * pageSize};
+    `;
+
+  const results: Array<DBRawUIRaceParticipant> = await db.$queryRawUnsafe(
+    query
+  );
+  const mapped = results.map(dbUIRaceParticipantToUIRaceParticipant);
+  const total = results.length === 0 ? 0 : results[0].records;
+
+  return { results: mapped, total };
+}
+
 export {
   addParticipantsToRace,
   findUserEventRaceParticipants,
@@ -218,5 +242,6 @@ export {
   removeRaceParticipant,
   addRaceParticipants,
   findUserRaceParticipants,
-  addParticipantToRace
+  addParticipantToRace,
+  findRaceParticipants
 };

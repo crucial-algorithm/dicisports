@@ -10,12 +10,12 @@ import type {
 import { Role } from '@prisma/client';
 
 import type {
-  UICartRow,
   DaysOfWeek,
-  DBRawUICartRow,
-  DBRawGroup,
   DBRawCart,
+  DBRawGroup,
   DBRawRaceQtd,
+  DBRawUICartRow,
+  DBRawUIRaceParticipant,
   Difficulty,
   Group,
   GroupInput,
@@ -26,7 +26,9 @@ import type {
   RaceQtd,
   ShirtSize,
   Sport,
-  TranslationObject
+  TranslationObject,
+  UICartRow,
+  UIRaceParticipant
 } from '~/types';
 
 function dbSportToSport(sport: DBSport): Sport {
@@ -178,6 +180,20 @@ function dbUICartToUICart(cart: DBRawUICartRow): UICartRow {
   };
 }
 
+function dbUIRaceParticipantToUIRaceParticipant(
+  raceParticipant: DBRawUIRaceParticipant
+): UIRaceParticipant {
+  return {
+    id: raceParticipant.id,
+    name: raceParticipant.name,
+    birthday: raceParticipant.birthday,
+    gender: raceParticipant.gender,
+    bookingAt: raceParticipant.booking_at,
+    status: raceParticipant.status,
+    raceName: raceParticipant.race_name
+  };
+}
+
 function dbEventRaceCheckoutQtdToEventRaceCheckoutQtd(
   race: DBRawRaceQtd
 ): RaceQtd {
@@ -192,9 +208,7 @@ function dbEventRaceCheckoutQtdToEventRaceCheckoutQtd(
   };
 }
 
-function dbCartToCart(
-  cart: DBRawCart
-): PartialCart {
+function dbCartToCart(cart: DBRawCart): PartialCart {
   return {
     id: cart.id,
     raceId: cart.race_id,
@@ -215,5 +229,6 @@ export {
   dbUICartToUICart,
   dbEventRaceCheckoutQtdToEventRaceCheckoutQtd,
   dbCartToCart,
-  dbShirtSizeToShirtSize
+  dbShirtSizeToShirtSize,
+  dbUIRaceParticipantToUIRaceParticipant
 };
