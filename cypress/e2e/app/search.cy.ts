@@ -302,7 +302,7 @@ describe('Search', () => {
           .click()
 
           .wait('@applyFilters')
-          .reload()
+          .waitForHydration()
 
           .get('[data-cy=group-schedule]')
           .each((text) => {
@@ -336,7 +336,7 @@ describe('Search', () => {
           .click()
 
           .wait('@search')
-          .reload()
+          .waitForHydration()
 
           .get('[data-cy=group-schedule]')
           .each((text) => {
@@ -367,7 +367,7 @@ describe('Search', () => {
           .click()
 
           .wait('@search')
-          .reload()
+          .waitForHydration()
 
           .get('[data-cy=group-schedule]')
           .each((text) => {
@@ -418,6 +418,7 @@ describe('Search', () => {
           .click()
 
           .wait('@search')
+          .waitForHydration()
 
           .get('button[name=filters]')
           .click()
@@ -429,7 +430,7 @@ describe('Search', () => {
           .click()
 
           .wait('@search')
-          .reload()
+          .waitForHydration()
 
           .get('div[data-cy=group-spirit]')
           .should('contain', 'Convívio');
@@ -444,6 +445,7 @@ describe('Search', () => {
           .click()
 
           .wait('@search')
+          .waitForHydration()
 
           .get('button[name=filters]')
           .click()
@@ -455,7 +457,7 @@ describe('Search', () => {
           .click()
 
           .wait('@search')
-          .reload()
+          .waitForHydration()
 
           .get('div[data-cy=group-spirit]')
           .should('contain', 'Desportivo');
@@ -470,6 +472,7 @@ describe('Search', () => {
           .click()
 
           .wait('@search')
+          .waitForHydration()
 
           .get('button[name=filters]')
           .click()
@@ -481,7 +484,7 @@ describe('Search', () => {
           .click()
 
           .wait('@search')
-          .reload()
+          .waitForHydration()
 
           .get('div[data-cy=group-spirit]')
           .should('contain', 'Treino');
@@ -496,6 +499,7 @@ describe('Search', () => {
           .click()
 
           .wait('@search')
+          .waitForHydration()
 
           .get('button[name=filters]')
           .click()
@@ -507,7 +511,7 @@ describe('Search', () => {
           .click()
 
           .wait('@search')
-          .reload()
+          .waitForHydration()
 
           .get('div[data-cy=group-spirit]')
           .should('contain', 'Amizade');
@@ -522,6 +526,7 @@ describe('Search', () => {
           .click()
 
           .wait('@search')
+          .waitForHydration()
 
           .get('button[name=filters]')
           .click()
@@ -533,7 +538,7 @@ describe('Search', () => {
           .click()
 
           .wait('@search')
-          .reload()
+          .waitForHydration()
 
           .get('div[data-cy=group-spirit]')
           .should('contain', 'Turismo');
@@ -567,6 +572,7 @@ function verifyDayOfWeek(filterOption: number, dayOfWeek: string) {
     .click()
 
     .wait('@search')
+    .waitForHydration()
 
     .get('[data-cy=group-schedule]')
     .should('contain', dayOfWeek);
@@ -613,6 +619,7 @@ function checkGroupsBySport(sport: number, length: number) {
       .click()
 
       .wait('@applyFilter')
+      .waitForHydration()
 
       .get('#see-more')
       .click()
@@ -651,6 +658,7 @@ function checkGroupsBySport(sport: number, length: number) {
       .click()
 
       .wait('@search')
+      .waitForHydration()
 
       .get('div[data-cy=group-entry]')
       .should('have.length', length)

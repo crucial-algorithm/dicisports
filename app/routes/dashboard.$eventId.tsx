@@ -291,15 +291,16 @@ export default function DashboardRoute() {
             </div>
             <input
               type="search"
-              id="default-search"
               className="block w-full p-4 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
               placeholder={t('Search')}
               onChange={handleSearchedName}
               defaultValue={searchedName}
+              data-cy="search"
             />
             <button
               type="submit"
               className="text-white absolute right-2.5 bottom-2.5 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+              data-cy="search-participant"
             >
               {t('Search')}
             </button>
@@ -339,6 +340,7 @@ export default function DashboardRoute() {
                       <tr
                         className="border-b transition duration-300 ease-in-out hover:bg-red"
                         key={rp.id}
+                        data-cy="participant-row"
                       >
                         <TD value={`${rp.name}`} />
                         <TD value={'-'} />
@@ -360,12 +362,6 @@ export default function DashboardRoute() {
                   </tbody>
                 </table>
 
-                <WhenListEmpty list={raceParticipants}>
-                  <H6 className="text-center p-12" variant="secondary" as="p">
-                    {t('No Races')}
-                  </H6>
-                </WhenListEmpty>
-
                 <div className="flex justify-end mt-2">
                   <nav aria-label="Page navigation example">
                     <ul className="inline-flex items-center -space-x-px">
@@ -374,6 +370,7 @@ export default function DashboardRoute() {
                           type="submit"
                           onClick={handlePreviousPage}
                           className="block px-3 py-2 ml-0 leading-tight text-gray-500 bg-white border border-gray-300 rounded-l-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
+                          data-cy="previous-page"
                         >
                           <ChevronLeftIcon className="h-5 w-5" />
                         </button>
@@ -392,6 +389,7 @@ export default function DashboardRoute() {
                                 'z-10 px-3 py-2 leading-tight text-blue-600 border border-blue-300 bg-blue-50 hover:bg-blue-100 hover:text-blue-700 dark:border-gray-700 dark:bg-gray-700 dark:text-white':
                                   index === page
                               })}
+                              data-cy="page-number"
                             >
                               {index + 1}
                             </button>
@@ -402,6 +400,7 @@ export default function DashboardRoute() {
                           type="submit"
                           onClick={handleNextPage}
                           className="block px-3 py-2 leading-tight text-gray-500 bg-white border border-gray-300 rounded-r-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
+                          data-cy="next-page"
                         >
                           <ChevronRightIcon className="h-5 w-5" />
                         </button>

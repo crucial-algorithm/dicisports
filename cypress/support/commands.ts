@@ -16,6 +16,8 @@ declare global {
 
       getRecoverPasswordUrl(): Chainable<string>;
 
+      waitForHydration(): Chainable<void>;
+
       visitAndWaitForHydration(
         url: string,
         options?: Partial<VisitOptions>
@@ -94,6 +96,11 @@ function visitAndWaitForHydration(
   cy.visit(url, options).get('body[data-cy=ready]');
 }
 
+function waitForHydration(
+) {
+  cy.get('body[data-cy=ready]');
+}
+
 function getRecoverPasswordUrl() {
   function extractUrl(text: string) {
     const urlRegex = /(https?:\/\/[^\s]+)/g;
@@ -134,6 +141,7 @@ Cypress.Commands.add('pickOptionFromSelect', pickOptionFromSelect);
 Cypress.Commands.add('pickLocationInMap', pickLocationInMap);
 Cypress.Commands.add('wasImageLoaded', wasImageLoaded);
 Cypress.Commands.add('visitAndWaitForHydration', visitAndWaitForHydration);
+Cypress.Commands.add('waitForHydration', waitForHydration);
 Cypress.Commands.add('getRecoverPasswordUrl', getRecoverPasswordUrl);
 Cypress.Commands.add('assertValueCopiedToClipboard', assertValueCopiedToClipboard);
 
