@@ -200,12 +200,15 @@ async function addRaceParticipants(
   });
 }
 
+// TODO: Shouldn't be always using LIKE when there is no need
 async function findRaceParticipants(
   eventId: string,
   page: number,
-  pageSize = 10
+  pageSize = 10,
+  searchedName?: string
 ): Promise<{ results: UIRaceParticipant[]; total: number }> {
-  const query = `
+  const name = `%${searchedName?.length ? searchedName : ''}%`;
+  const results: Array<DBRawUIRaceParticipant> = await db.$queryRaw`
         SELECT *, count(1) over () as records
         FROM (SELECT rp.id,
                      concat(p.first_name, ' ', p.last_name) as name,
@@ -218,13 +221,11 @@ async function findRaceParticipants(
                        INNER JOIN participants p on p.id = rp.participant_id
                        INNER JOIN bookings b on rp.booking_id = b.id
                        INNER JOIN races r on r.id = rp.race_id
-              WHERE p.status = 'saved'
-                and rp.race_id IN
-                    (SELECT id FROM races WHERE event_id = $1)) as P LIMIT ${pageSize}
+              WHERE p.status = 'saved' AND first_name LIKE ${name}
+                and rp.race_id IN 
+                    (SELECT id FROM races WHERE event_id = ${eventId})) as P LIMIT ${pageSize}
         OFFSET ${page * pageSize};
     `;
-
-  const results: Array<DBRawUIRaceParticipant> = await db.$queryRawUnsafe(query, eventId);
   const mapped = results.map(dbUIRaceParticipantToUIRaceParticipant);
   const total = results.length === 0 ? 0 : results[0].records;
 
