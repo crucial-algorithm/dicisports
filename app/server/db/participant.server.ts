@@ -200,7 +200,7 @@ async function addRaceParticipants(
   });
 }
 
-// TODO: Shouldn't be always using LIKE when there is no need
+// TODO: Shouldn't always be using LIKE when there is no need
 async function findRaceParticipants(
   eventId: string,
   page: number,
@@ -223,7 +223,7 @@ async function findRaceParticipants(
                        INNER JOIN bookings b on rp.booking_id = b.id
                        INNER JOIN races r on r.id = rp.race_id
               WHERE p.status = 'saved'
-                AND first_name || last_name ILIKE ${name}
+                AND first_name || ' ' || last_name ILIKE ${name}
                 AND r.event_id = ${eventId}) as P LIMIT ${pageSize}
         OFFSET ${page * pageSize};
     `;

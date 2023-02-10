@@ -255,16 +255,6 @@ export default function DashboardRoute() {
             key={r.id}
           />
         ))}
-        <WhenListEmpty list={racesRevenueAndRegistrations}>
-          <H6
-            className="text-center p-12"
-            variant="secondary"
-            as="p"
-            data-cy="no-stats"
-          >
-            {t('No Stats')}
-          </H6>
-        </WhenListEmpty>
       </div>
 
       <Form method="get">

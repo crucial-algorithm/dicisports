@@ -3,10 +3,7 @@ import { redirect } from 'remix';
 import { CheckoutStatus } from '@prisma/client';
 
 import { getClientSession } from '~/server/auth/client.server';
-import {
-  addRegistration,
-  getCartByUserAndRace
-} from '~/server/db/cart.server';
+import { addRegistration } from '~/server/db/cart.server';
 import { getUser } from '~/server/auth/session.server';
 import { findBooking } from '~/server/db/booking.server';
 
@@ -20,20 +17,17 @@ export const action: ActionFunction = async ({ request }) => {
   const raceId = form.get('raceId') as string;
   const eventId = form.get('eventId') as string;
 
-  const checkout = await getCartByUserAndRace(clientId, raceId);
   const booking = await findBooking(clientId, eventId);
 
   try {
-    if (checkout) {
+    if (booking) {
       return redirect(
         `/checkout/${
-          booking
-            ? booking.status === CheckoutStatus.checkout
-              ? 'info'
-              : booking.status === CheckoutStatus.pending
-              ? 'payment'
-              : 'confirmation'
-            : 'registrations'
+          booking.status === CheckoutStatus.checkout
+            ? 'info'
+            : booking.status === CheckoutStatus.pending
+            ? 'payment'
+            : 'confirmation'
         }/${eventId}`
       );
     } else {
