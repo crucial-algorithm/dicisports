@@ -205,9 +205,10 @@ async function findRaceParticipants(
   eventId: string,
   page: number,
   pageSize = 10,
-  searchedName?: string
+  searchedName: string | null
 ): Promise<{ results: UIRaceParticipant[]; total: number }> {
   const name = `%${searchedName?.length ? searchedName : ''}%`;
+
   const results: Array<DBRawUIRaceParticipant> = await db.$queryRaw`
         SELECT *, count(1) over () as records
         FROM (SELECT rp.id,
@@ -221,9 +222,9 @@ async function findRaceParticipants(
                        INNER JOIN participants p on p.id = rp.participant_id
                        INNER JOIN bookings b on rp.booking_id = b.id
                        INNER JOIN races r on r.id = rp.race_id
-              WHERE p.status = 'saved' AND first_name LIKE ${name}
-                and rp.race_id IN 
-                    (SELECT id FROM races WHERE event_id = ${eventId})) as P LIMIT ${pageSize}
+              WHERE p.status = 'saved'
+                AND first_name || last_name ILIKE ${name}
+                AND r.event_id = ${eventId}) as P LIMIT ${pageSize}
         OFFSET ${page * pageSize};
     `;
   const mapped = results.map(dbUIRaceParticipantToUIRaceParticipant);

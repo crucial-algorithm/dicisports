@@ -1,7 +1,8 @@
 import type { LoaderFunction } from 'remix';
 import { json, redirect } from 'remix';
 import * as React from 'react';
-import { ChangeEvent, useState } from 'react';
+import { useState } from 'react';
+import type { ChangeEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Form, useLoaderData } from '@remix-run/react';
 import {
@@ -45,6 +46,7 @@ type LoaderData = {
   totalRaceParticipants: number;
   pageNumber: number;
   statsPerRace: Array<{ id: string; total: number }>;
+  searchedName: string;
 };
 
 export const loader: LoaderFunction = async ({ request, params }) => {
@@ -66,9 +68,13 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   }
 
   const page = searchParams.get('page');
+  const searchedName = searchParams.get('searched-name');
+
   const { results, total } = await findRaceParticipants(
     eventId,
-    page?.length ? Number(page) : 0
+    page?.length ? Number(page) : 0,
+    10,
+    searchedName?.length ? searchedName : null
   );
 
   return json({
@@ -77,7 +83,8 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     raceParticipants: results,
     totalRaceParticipants: total,
     statsPerRace: await findRegistrationsAddedToCart(eventId),
-    pageNumber: Number(page) || 0
+    pageNumber: Number(page) || 0,
+    searchedName: searchedName || ''
   });
 };
 
@@ -88,15 +95,18 @@ export default function DashboardRoute() {
     raceParticipants,
     totalRaceParticipants,
     pageNumber,
-    statsPerRace
+    statsPerRace,
+    searchedName
   } = useLoaderData<LoaderData>() as LoaderData;
   const { t } = useTranslation('dashboard');
 
-  const [page, setPage] = useState<number>(pageNumber || 0);
-  const [searchedName, setSearchedName] = useState<string>('');
+  const [page, setPage] = useState<number>(pageNumber);
+  const [searchedParticipantName, setSearchedParticipantName] =
+    useState<string>(searchedName);
   const [lat, lng] = event?.location?.split(',') || [0, 0];
   let minPrice = 0;
   let totalClicks = 0;
+  const numberOfPages = Math.ceil(totalRaceParticipants / 10);
 
   const sortedRaces = event.races
     .sort((a: Race, b: Race) => a.price - b.price)
@@ -106,13 +116,13 @@ export default function DashboardRoute() {
   minPrice = sortedRaces[0];
 
   function handlePreviousPage() {
-    if (page !== 0) {
+    if (page !== 0 && numberOfPages !== 0) {
       setPage(page - 1);
     }
   }
 
   function handleNextPage() {
-    if (page + 1 !== Math.ceil(totalRaceParticipants / 10)) {
+    if (page + 1 < numberOfPages && numberOfPages !== 0) {
       setPage(page + 1);
     }
   }
@@ -122,7 +132,7 @@ export default function DashboardRoute() {
   }
 
   function handleSearchedName(e: ChangeEvent<HTMLInputElement>) {
-    setSearchedName(e.target.value);
+    setSearchedParticipantName(e.target.value);
   }
 
   function EventInformation() {
@@ -258,49 +268,65 @@ export default function DashboardRoute() {
       </div>
 
       <Form method="get">
-        <input type="hidden" value={page} name="page" />
-        <input type="hidden" value={searchedName} name="searched-name" />
+        <input
+          type="hidden"
+          value={searchedParticipantName}
+          name="searched-name"
+        />
 
         <div className="flex justify-end">
           <label
-              htmlFor="default-search"
-              className="mb-2 text-sm font-medium text-gray-900 sr-only dark:text-white"
+            htmlFor="default-search"
+            className="mb-2 text-sm font-medium text-gray-900 sr-only dark:text-white"
           >
             {t('Search')}
           </label>
           <div className="relative w-[400px]">
             <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
               <svg
-                  aria-hidden="true"
-                  className="w-5 h-5 text-gray-500 dark:text-gray-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  xmlns="http://www.w3.org/2000/svg"
+                aria-hidden="true"
+                className="w-5 h-5 text-gray-500 dark:text-gray-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
               >
                 <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                ></path>
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                />
               </svg>
             </div>
             <input
-                type="search"
-                id="default-search"
-                className="block w-full p-4 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                placeholder={t('Search')}
-                onChange={handleSearchedName}
+              type="search"
+              id="default-search"
+              className="block w-full p-4 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+              placeholder={t('Search')}
+              onChange={handleSearchedName}
+              defaultValue={searchedName}
             />
             <button
-                type="submit"
-                className="text-white absolute right-2.5 bottom-2.5 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+              type="submit"
+              className="text-white absolute right-2.5 bottom-2.5 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
             >
               {t('Search')}
             </button>
           </div>
         </div>
+      </Form>
+
+      <Form method="get">
+        <input type="hidden" value={page} name="page" />
+
+        {searchedName.length > 0 && (
+          <input
+            type="hidden"
+            value={searchedParticipantName}
+            name="searched-name"
+          />
+        )}
 
         <div className="flex flex-col">
           <div className="overflow-x-auto sm:-mx-6 lg:-mx-8">
@@ -344,6 +370,12 @@ export default function DashboardRoute() {
                   </tbody>
                 </table>
 
+                <WhenListEmpty list={raceParticipants}>
+                  <H6 className="text-center p-12" variant="secondary" as="p">
+                    {t('No Races')}
+                  </H6>
+                </WhenListEmpty>
+
                 <div className="flex justify-end mt-2">
                   <nav aria-label="Page navigation example">
                     <ul className="inline-flex items-center -space-x-px">
@@ -357,7 +389,7 @@ export default function DashboardRoute() {
                         </button>
                       </li>
 
-                      {Array(Math.ceil(totalRaceParticipants / 10))
+                      {Array(numberOfPages)
                         .fill(0)
                         .map((r, index) => (
                           <li key={index}>
