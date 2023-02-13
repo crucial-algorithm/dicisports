@@ -557,19 +557,69 @@ describe('Search', () => {
           .should('contain', 'Turismo');
       });
 
-      it('should return groups from each sport', () => {
-        cy.intercept('GET', '/?actionId=search*_data=routes*')
-          .as('selectSport')
-          .intercept('GET', '/?index=&coords=*_data=routes*')
-          .as('search');
+      context('should return groups from each sport', () => {
+        it('Running', () => {
+          cy.intercept('GET', '/?actionId=search*_data=routes*')
+            .as('selectSport')
+            .intercept('GET', '/?index=&coords=*_data=routes*')
+            .as('search');
 
-        checkGroupsBySport(1, 3);
-        checkGroupsBySport(2, 12);
-        checkGroupsBySport(3, 5);
-        checkGroupsBySport(4, 7);
-        checkGroupsBySport(5, 3);
-        checkGroupsBySport(6, 5);
-        checkGroupsBySport(7, 4);
+          checkGroupsBySport(1, 3);
+        });
+
+        it('Trail', () => {
+          cy.intercept('GET', '/?actionId=search*_data=routes*')
+            .as('selectSport')
+            .intercept('GET', '/?index=&coords=*_data=routes*')
+            .as('search');
+
+          checkGroupsBySport(2, 12);
+        });
+
+        it('Road', () => {
+          cy.intercept('GET', '/?actionId=search*_data=routes*')
+            .as('selectSport')
+            .intercept('GET', '/?index=&coords=*_data=routes*')
+            .as('search');
+
+          checkGroupsBySport(3, 5);
+        });
+
+        it('BTT', () => {
+          cy.intercept('GET', '/?actionId=search*_data=routes*')
+            .as('selectSport')
+            .intercept('GET', '/?index=&coords=*_data=routes*')
+            .as('search');
+
+          checkGroupsBySport(4, 7);
+        });
+
+        it('E-Bike', () => {
+          cy.intercept('GET', '/?actionId=search*_data=routes*')
+            .as('selectSport')
+            .intercept('GET', '/?index=&coords=*_data=routes*')
+            .as('search');
+
+          checkGroupsBySport(5, 3);
+        });
+
+        it('Gravel', () => {
+          cy.intercept('GET', '/?actionId=search*_data=routes*')
+            .as('selectSport')
+            .intercept('GET', '/?index=&coords=*_data=routes*')
+            .as('search');
+
+          checkGroupsBySport(6, 5);
+        });
+
+        it('Enduro', () => {
+          cy.intercept('GET', '/?actionId=search*_data=routes*')
+            .as('selectSport')
+            .intercept('GET', '/?index=&coords=*_data=routes*')
+            .as('search');
+
+          checkGroupsBySport(7, 4);
+        });
       });
     });
   });
