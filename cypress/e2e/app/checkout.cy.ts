@@ -178,7 +178,7 @@ describe('Checkout', () => {
         );
     });
 
-    it('should show validation error if there are missing participants', () => {
+    it('should show validation error If there are registrations with empty participant info', () => {
       cy.intercept('GET', '/checkout/registrations/*?_data=routes*checkout*')
         .as('selectRace')
 
