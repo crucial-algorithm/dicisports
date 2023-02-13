@@ -361,16 +361,19 @@ function registerParticipant() {
     .click()
 
     .wait('@selectRace')
+    .waitForHydration()
 
     .get('#add-race-AhowRdNWCBQWSuivSt7h')
     .click()
 
     .wait('@selectRace')
+    .waitForHydration()
 
     .get('#checkout')
     .click()
 
     .wait('@selectRace')
+    .waitForHydration()
 
     .get('div[data-cy=participant-1]')
     .click()
@@ -409,6 +412,7 @@ function registerParticipant() {
     .click()
 
     .wait('@selectRace')
+    .waitForHydration()
 
     .get('#select-userSavedParticipants')
     .should('exist');

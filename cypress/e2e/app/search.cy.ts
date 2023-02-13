@@ -285,7 +285,7 @@ describe('Search', () => {
 
     context('Test all filters', () => {
       it('should return Morning groups', () => {
-        cy.intercept('GET', '/?index=&coords=*_data=routes*')
+        cy.intercept('GET', '/?index=&coords=*&daypart=Morning*_data=routes*')
           .as('applyFilters')
           .visitAndWaitForHydration(
             '/?index=&coords=&search=&page=0&sport=&dow=&value=&actionId=search'
@@ -302,6 +302,7 @@ describe('Search', () => {
           .click()
 
           .wait('@applyFilters')
+          .reload()
           .waitForHydration()
 
           .get('[data-cy=group-schedule]')
@@ -336,6 +337,7 @@ describe('Search', () => {
           .click()
 
           .wait('@search')
+          .reload()
           .waitForHydration()
 
           .get('[data-cy=group-schedule]')
@@ -367,6 +369,7 @@ describe('Search', () => {
           .click()
 
           .wait('@search')
+          .reload()
           .waitForHydration()
 
           .get('[data-cy=group-schedule]')
@@ -418,18 +421,20 @@ describe('Search', () => {
           .click()
 
           .wait('@search')
+          .reload()
           .waitForHydration()
 
           .get('button[name=filters]')
           .click()
 
-          .get('#35')
+          .get('#8')
           .click()
 
           .get('#apply-filters')
           .click()
 
           .wait('@search')
+          .reload()
           .waitForHydration()
 
           .get('div[data-cy=group-spirit]')
@@ -445,18 +450,20 @@ describe('Search', () => {
           .click()
 
           .wait('@search')
+          .reload()
           .waitForHydration()
 
           .get('button[name=filters]')
           .click()
 
-          .get('#36')
+          .get('#9')
           .click()
 
           .get('#apply-filters')
           .click()
 
           .wait('@search')
+          .reload()
           .waitForHydration()
 
           .get('div[data-cy=group-spirit]')
@@ -472,18 +479,20 @@ describe('Search', () => {
           .click()
 
           .wait('@search')
+          .reload()
           .waitForHydration()
 
           .get('button[name=filters]')
           .click()
 
-          .get('#37')
+          .get('#10')
           .click()
 
           .get('#apply-filters')
           .click()
 
           .wait('@search')
+          .reload()
           .waitForHydration()
 
           .get('div[data-cy=group-spirit]')
@@ -499,18 +508,20 @@ describe('Search', () => {
           .click()
 
           .wait('@search')
+          .reload()
           .waitForHydration()
 
           .get('button[name=filters]')
           .click()
 
-          .get('#38')
+          .get('#11')
           .click()
 
           .get('#apply-filters')
           .click()
 
           .wait('@search')
+          .reload()
           .waitForHydration()
 
           .get('div[data-cy=group-spirit]')
@@ -526,18 +537,20 @@ describe('Search', () => {
           .click()
 
           .wait('@search')
+          .reload()
           .waitForHydration()
 
           .get('button[name=filters]')
           .click()
 
-          .get('#39')
+          .get('#12')
           .click()
 
           .get('#apply-filters')
           .click()
 
           .wait('@search')
+          .reload()
           .waitForHydration()
 
           .get('div[data-cy=group-spirit]')
@@ -587,6 +600,7 @@ function checkGroupsBySport(sport: number, length: number) {
       .click()
 
       .wait('@selectSport')
+      .waitForHydration()
 
       .intercept('GET', '/?index=&coords=*_data=routes*')
       .as('seeMore')
@@ -595,6 +609,7 @@ function checkGroupsBySport(sport: number, length: number) {
       .click()
 
       .wait('@seeMore')
+      .waitForHydration()
 
       .get('#see-more')
       .should('not.exist')
@@ -625,6 +640,7 @@ function checkGroupsBySport(sport: number, length: number) {
       .click()
 
       .wait('@seeMore')
+      .waitForHydration()
 
       .get('div[data-cy=group-entry]')
       .should('have.length', length)
@@ -638,6 +654,7 @@ function checkGroupsBySport(sport: number, length: number) {
       .click()
 
       .wait('@selectSport')
+      .waitForHydration()
 
       .get('div[data-cy=group-entry]')
       .should('have.length', length)
