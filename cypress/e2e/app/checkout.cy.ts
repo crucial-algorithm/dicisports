@@ -199,10 +199,14 @@ describe('Checkout', () => {
 
         .wait('@checkout')
 
+        .reload()
+        .waitForHydration()
+
         .get('#checkout')
         .click()
 
         .wait('@checkout')
+        .waitForHydration()
 
         .get('#checkout-error')
         .should('exist');
