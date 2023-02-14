@@ -423,7 +423,7 @@ export default function CheckoutInfoRoute() {
 
   return (
     <Main>
-      <div className="flex flex-col justify-start space-y-1">
+      <div className="flex flex-col justify-start space-y-1 mb-8">
         <H2>
           <b data-cy="name" className="break-words w-full">
             {event.name}
@@ -436,7 +436,7 @@ export default function CheckoutInfoRoute() {
       </div>
 
       {raceParticipants.length > 1 && (
-        <div className="w-full my-8 flex flex-row scroll-mx-2 items-center items-start flex-nowrap overflow-x-auto snap-x">
+        <div className="w-full mb-8 flex flex-row scroll-mx-2 items-center items-start flex-nowrap overflow-x-auto snap-x">
           {raceParticipants
             .sort(
               (a: RaceParticipant, b: RaceParticipant) =>
@@ -532,7 +532,6 @@ export default function CheckoutInfoRoute() {
             error={errors.missingFilledParticipants}
             fetcher={fetcher}
             hash={hash}
-            showContinueLabel={true}
             showUpdateCartButton={true}
           />
         </div>

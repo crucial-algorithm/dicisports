@@ -244,7 +244,7 @@ async function findUserSavedParticipants(
         SELECT *
         FROM participants p
         WHERE EXISTS(SELECT 1 FROM bookings b WHERE p.user_id = b.user_id AND b.status = 'confirmed')
-          AND user_id = ${userId};
+          AND user_id = ${userId} AND status = 'saved';
     `;
 
   return results.map(dbParticipantToParticipant);
