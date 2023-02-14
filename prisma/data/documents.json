@@ -14,5 +14,13 @@
     "label": "Circuito",
     "eventId": "MY4bvgxDbMtGv8rbYe5d",
     "status": "auto"
+  },
+  {
+    "id": "6vNXDeC5P6RdBAKHWi7a",
+    "path": "bQmGXYkbhJetjk6mniMt/hK7S6Yb932cppSpnknDk.pdf",
+    "position": 4,
+    "label": "Regulamento",
+    "eventId": "bQmGXYkbhJetjk6mniMt",
+    "status": "auto"
   }
 ]

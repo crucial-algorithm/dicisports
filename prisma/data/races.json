@@ -31,5 +31,16 @@
     "price": 10,
     "displayOrder": 1,
     "eventId": "MY4bvgxDbMtGv8rbYe5d"
+  },
+  {
+    "id": "syB7tHiq5rRyeDM9CCdw",
+    "name": "5K",
+    "distance": 5,
+    "startTime": 900,
+    "elevationGain": 1237,
+    "elevationLoss": 928,
+    "price": 30,
+    "displayOrder": 4,
+    "eventId": "bQmGXYkbhJetjk6mniMt"
   }
 ]
