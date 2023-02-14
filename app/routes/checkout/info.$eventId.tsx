@@ -50,7 +50,9 @@ import { getUser } from '~/server/auth/session.server';
 import countries from '~/server/db/countries.json';
 import { findShirtSizes } from '~/server/db/reference.server';
 import {
-  findUserEventRaceParticipants, findUserParticipants,
+  findUserEventRaceParticipants,
+  findUserParticipants,
+  findUserSavedParticipants,
   updateParticipant,
   updateToSelectedParticipant
 } from '~/server/db/participant.server';
@@ -68,9 +70,10 @@ const actions = {
 type LoaderData = {
   event: Event;
   cart: UICartRow[];
-  raceParticipants: RaceParticipant[] | null;
+  raceParticipants: RaceParticipant[];
   userParticipants: Participant[];
-  userSavedParticipants: Participant[] | null;
+  savedParticipants: Participant[] | null;
+  shirtSizes: ShirtSize[];
   isAuth: boolean;
 };
 
@@ -253,6 +256,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   }
 
   const userParticipants = await findUserParticipants(clientId);
+  const savedParticipants = await findUserSavedParticipants(clientId);
   const shirtSizes = await findShirtSizes();
 
   return json({
@@ -260,6 +264,8 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     cart,
     raceParticipants,
     userParticipants,
+    savedParticipants:
+      savedParticipants?.length !== 0 ? savedParticipants : null,
     shirtSizes,
     isAuth: !!authenticatedClient
   });
@@ -273,17 +279,12 @@ export default function CheckoutInfoRoute() {
     cart,
     raceParticipants,
     userParticipants,
+    savedParticipants,
     shirtSizes,
     isAuth
-  } = useLoaderData<LoaderData>();
-  const defaultSelectedParticipant =
-    userParticipants[
-      userParticipants.findIndex(
-        (p: Participant) => p.id === raceParticipants[0].participantId
-      )
-    ];
+  } = useLoaderData<LoaderData>() as LoaderData;
   const [participant, setParticipant] = useState<Participant | null>(
-    defaultSelectedParticipant
+    raceParticipants[0].participant
   );
   const [selectedRace, setSelectedRace] = useState<string | null>(
     raceParticipants[0].raceId
@@ -310,12 +311,13 @@ export default function CheckoutInfoRoute() {
     setErrors({});
     setSelectedParticipant(null);
     setMissingParticipants([]);
-  }, []);
+    setParticipant(raceParticipants[0].participant);
+  }, [raceParticipants]);
 
   function handleSetParticipant(e: React.MouseEvent) {
     const newParticipant = e.currentTarget.id.split('|')[0];
     const index = userParticipants.findIndex(
-      (a: RaceParticipant) => a.id === newParticipant
+      (a: Participant) => a.id === newParticipant
     );
     const participant = userParticipants[index];
 
@@ -352,6 +354,7 @@ export default function CheckoutInfoRoute() {
   function handleCloseAddRaces() {
     setShowAddRacesDialog(false);
     setIsReset(true);
+    setParticipant(raceParticipants[0].participant);
   }
 
   function handleSetSelectedParticipant(v: string | number) {
@@ -427,69 +430,71 @@ export default function CheckoutInfoRoute() {
           </b>
         </H2>
         <H6>
-          <DisplayDate date={new Date(event.startAt)} />
+          <DisplayDate date={new Date(event.startAt || 0)} />
         </H6>
         <H6>{event.address}</H6>
       </div>
 
-      <div className="w-full my-8 flex flex-row scroll-mx-2 items-center items-start flex-nowrap overflow-x-auto snap-x">
-        {raceParticipants
-          .sort(
-            (a: RaceParticipant, b: RaceParticipant) =>
-              a.displayOrder - b.displayOrder
-          )
-          .map((p: RaceParticipant, index: number) => (
-            <div className="flex flex-col items-center" key={p.id}>
-              <div
-                className={clsx(
-                  'flex flex-col gap-y-2 border-2 border-b p-2 mx-2 items-center w-[200px] snap-center cursor-pointer relative',
-                  p.participantId === participant?.id &&
-                    p.race.id === selectedRace
-                    ? 'opacity-100'
-                    : 'opacity-50',
-                  missingParticipants.find(
-                    (v) => v.participant.id === p.participant.id
-                  )
-                    ? 'border-red-500'
-                    : 'border-gray-500'
-                )}
-                id={p.participantId + '|' + p.race.id}
-                onClick={handleSetParticipant}
-                data-cy={`participant-${index + 1}`}
-              >
-                {p.participantId === participant?.id &&
-                  p.race.id === selectedRace && (
-                    <button
-                      type="button"
-                      onClick={handleRemoveRaceParticipant}
-                      name="remove"
-                      className="absolute top-[6px] right-[6px]"
-                    >
-                      <XMarkIcon className="dark:text-blueGray-500 md:h-6 w-6 m-0 inline-block" />
-                    </button>
+      {raceParticipants.length > 1 && (
+        <div className="w-full my-8 flex flex-row scroll-mx-2 items-center items-start flex-nowrap overflow-x-auto snap-x">
+          {raceParticipants
+            .sort(
+              (a: RaceParticipant, b: RaceParticipant) =>
+                a.displayOrder - b.displayOrder
+            )
+            .map((p: RaceParticipant, index: number) => (
+              <div className="flex flex-col items-center" key={p.id}>
+                <div
+                  className={clsx(
+                    'flex flex-col gap-y-2 border-2 border-b p-2 mx-2 items-center w-[200px] snap-center cursor-pointer relative',
+                    p.participantId === participant?.id &&
+                      p.race.id === selectedRace
+                      ? 'opacity-100'
+                      : 'opacity-50',
+                    missingParticipants.find(
+                      (v) => v.participant.id === p.participant.id
+                    )
+                      ? 'border-red-500'
+                      : 'border-gray-500'
                   )}
-                <H5 data-cy="participant">{p.race.name}</H5>
-                <H6
-                  className="dark:text-blueGray-500"
-                  data-cy={`participant-name-${index + 1}`}
+                  id={p.participantId + '|' + p.race.id}
+                  onClick={handleSetParticipant}
+                  data-cy={`participant-${index + 1}`}
                 >
-                  {p.participant.firstName
-                    ? p.participant.firstName
-                    : t('Participant') + ' ' + (index + 1)}
-                </H6>
+                  {p.participantId === participant?.id &&
+                    p.race.id === selectedRace && (
+                      <button
+                        type="button"
+                        onClick={handleRemoveRaceParticipant}
+                        name="remove"
+                        className="absolute top-[6px] right-[6px]"
+                      >
+                        <XMarkIcon className="dark:text-blueGray-500 md:h-6 w-6 m-0 inline-block" />
+                      </button>
+                    )}
+                  <H5 data-cy="participant">{p.race.name}</H5>
+                  <H6
+                    className="dark:text-blueGray-500"
+                    data-cy={`participant-name-${index + 1}`}
+                  >
+                    {p.participant.firstName
+                      ? p.participant.firstName
+                      : t('Participant') + ' ' + (index + 1)}
+                  </H6>
+                </div>
               </div>
+            ))}
+          <div className="flex flex-col items-center snap-center">
+            <div
+              className="flex flex-col gap-y-2 border-2 border-b border-gray-500 p-2 mx-2 items-center w-[200px]"
+              onClick={handleOpenAddRaces}
+            >
+              <PlusIcon className="h-7 w-7 dark:text-blueGray-500" />
+              <H6 className="dark:text-blueGray-500">{t('Add Race')}</H6>
             </div>
-          ))}
-        <div className="flex flex-col items-center snap-center">
-          <div
-            className="flex flex-col gap-y-2 border-2 border-b border-gray-500 p-2 mx-2 items-center w-[200px]"
-            onClick={handleOpenAddRaces}
-          >
-            <PlusIcon className="h-7 w-7 dark:text-blueGray-500" />
-            <H6 className="dark:text-blueGray-500">{t('Add Race')}</H6>
           </div>
         </div>
-      </div>
+      )}
 
       {!isAuth && (
         <div className="flex flex-row items-center justify-end gap-x-2">
@@ -508,9 +513,7 @@ export default function CheckoutInfoRoute() {
             participant={participant}
             hash={hash}
             errors={errors}
-            userSavedParticipants={userParticipants.filter(
-              (p: Participant) => p.firstName !== null
-            )}
+            userSavedParticipants={savedParticipants}
             raceId={selectedRace}
             fetcher={fetcher}
             selectedParticipant={selectedParticipant}
@@ -812,15 +815,6 @@ function ParticipantForm({
 
       <input type="hidden" name="hash" value={hash} />
       <ButtonGroup>
-        <Button
-          type="submit"
-          value={actions.update}
-          name="actionId"
-          disabled={!participant}
-          id="save-button"
-        >
-          {t('Save')}
-        </Button>
         {selectedParticipant && (
           <Button
             type="submit"
@@ -828,7 +822,6 @@ function ParticipantForm({
             name="actionId"
             disabled={!participant}
             id="save-update-button"
-            variant="secondary"
           >
             {t('Save and Update') +
               ' ' +
@@ -837,6 +830,17 @@ function ParticipantForm({
               selectedParticipant.lastName}
           </Button>
         )}
+        <Button
+          type="submit"
+          value={actions.update}
+          name="actionId"
+          disabled={!participant}
+          id="save-button"
+          variant="secondary"
+        >
+          {t('Save')}
+        </Button>
+
         <Button type="button" variant="secondary" onClick={resetForm}>
           {t('Reset')}
         </Button>

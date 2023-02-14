@@ -3,6 +3,7 @@ import { PrismaClient } from '@prisma/client';
 
 import type {
   Cart,
+  DBRawParticipant,
   DBRawUIRaceParticipant,
   Participant,
   ParticipantInput,
@@ -14,7 +15,10 @@ import { db } from '~/server/db.server';
 import Id from '~/server/utils/Id.server';
 import { findEventRaces } from '~/server/db/races.server';
 import { addRegistration, removeRegistration } from '~/server/db/cart.server';
-import { dbUIRaceParticipantToUIRaceParticipant } from '~/server/db/codecs.server';
+import {
+  dbParticipantToParticipant,
+  dbUIRaceParticipantToUIRaceParticipant
+} from '~/server/db/codecs.server';
 
 const prisma = new PrismaClient();
 
@@ -233,6 +237,19 @@ async function findRaceParticipants(
   return { results: mapped, total };
 }
 
+async function findUserSavedParticipants(
+  userId: string
+): Promise<Participant[] | null> {
+  const results: Array<DBRawParticipant> = await db.$queryRaw`
+        SELECT *
+        FROM participants p
+        WHERE EXISTS(SELECT 1 FROM bookings b WHERE p.user_id = b.user_id AND b.status = 'confirmed')
+          AND user_id = ${userId};
+    `;
+
+  return results.map(dbParticipantToParticipant);
+}
+
 export {
   addParticipantsToRace,
   findUserEventRaceParticipants,
@@ -243,5 +260,6 @@ export {
   addRaceParticipants,
   findUserRaceParticipants,
   addParticipantToRace,
-  findRaceParticipants
+  findRaceParticipants,
+  findUserSavedParticipants
 };

@@ -13,6 +13,7 @@ import type {
   DaysOfWeek,
   DBRawCart,
   DBRawGroup,
+  DBRawParticipant,
   DBRawRaceQtd,
   DBRawUICartRow,
   DBRawUIRaceParticipant,
@@ -22,6 +23,7 @@ import type {
   GroupSpirit,
   GroupType,
   PartialCart,
+  Participant,
   Perk,
   RaceQtd,
   ShirtSize,
@@ -218,6 +220,28 @@ function dbCartToCart(cart: DBRawCart): PartialCart {
   };
 }
 
+function dbParticipantToParticipant(
+  participant: DBRawParticipant
+): Participant {
+  return {
+    id: participant.id,
+    userId: participant.user_id,
+    firstName: participant.first_name,
+    lastName: participant.last_name,
+    gender: participant.gender,
+    birthday: participant.birthday,
+    phoneNumber: participant.phone_number,
+    identityCard: participant.identity_card,
+    federationNumber: participant.federation_number,
+    shirtSize: participant.shirt_size,
+    nationality: participant.nationality,
+    postalCode: participant.postal_code,
+    status: participant.status,
+    createdAt: participant.created_at,
+    updatedAt: participant.updated_at
+  };
+}
+
 export {
   dbSportToSport,
   dbGroupSpiritToGroupSpirit,
@@ -230,5 +254,6 @@ export {
   dbEventRaceCheckoutQtdToEventRaceCheckoutQtd,
   dbCartToCart,
   dbShirtSizeToShirtSize,
-  dbUIRaceParticipantToUIRaceParticipant
+  dbUIRaceParticipantToUIRaceParticipant,
+  dbParticipantToParticipant
 };

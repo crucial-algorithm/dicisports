@@ -7,6 +7,7 @@
     "gender": "M",
     "birthday": "2001-09-21 00:00:00.000",
     "phoneNumber": 917493827,
+    "shirtSize": 1,
     "postalCode": "4730-000",
     "status": "saved"
   },
@@ -18,6 +19,7 @@
     "gender": "M",
     "birthday": "1982-09-13 00:00:00.000",
     "phoneNumber": 969283740,
+    "shirtSize": 1,
     "postalCode": "4730-000",
     "status": "saved"
   },
@@ -29,6 +31,7 @@
     "gender": "M",
     "birthday": "1992-11-12 00:00:00.000",
     "phoneNumber": 969102096,
+    "shirtSize": 1,
     "postalCode": "4730-000",
     "status": "saved"
   },
@@ -54,6 +57,7 @@
     "gender": "M",
     "birthday": "1992-11-12 00:00:00.000",
     "phoneNumber": 939203458,
+    "shirtSize": 1,
     "postalCode": "4730-000",
     "status": "saved"
   }
