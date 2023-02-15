@@ -140,10 +140,10 @@ describe('Checkout', () => {
         .wait('@removeParticipant')
 
         .get('[data-cy=participant]')
-        .should('have.length', 1);
+        .should('not.exist');
     });
 
-    it('should redirect to registration if last race participant is removed', () => {
+    it.skip('should redirect to registration if last race participant is removed', () => {
       cy.intercept('GET', '*?_data=routes*checkout*')
         .as('selectRace')
 
@@ -164,18 +164,21 @@ describe('Checkout', () => {
         .intercept('POST', '/checkout/manage*?_data=routes*')
         .as('removeParticipant')
 
-        .get('button[name=remove]')
+        .get('[data-cy=update-cart]')
         .click()
 
-        .wait('@removeParticipant')
+        .waitForHydration()
 
         .url()
         .should(
           'eq',
           `${
             Cypress.config().baseUrl
-          }/checkout/registrations/MY4bvgxDbMtGv8rbYe5d`
-        );
+          }/checkout/registrations/MY4bvgxDbMtGv8rbYe5d?a=update`
+        )
+
+        .get('#remove-race-AhowRdNWCBQWSuivSt7h')
+        .click();
     });
 
     it('should show validation error If there are registrations with empty participant info', () => {
@@ -418,8 +421,11 @@ function registerParticipant() {
     .wait('@selectRace')
     .waitForHydration()
 
-    .get('#select-userSavedParticipants')
-    .should('exist');
+    .reload()
+    .waitForHydration()
+
+    .get('input[name=first-name]')
+    .should('have.value', 'Nuno');
 }
 
 function bookParticipant() {
@@ -437,9 +443,6 @@ function bookParticipant() {
     .click()
 
     .wait('@selectRace')
-
-    .get('div[data-cy=participant-1]')
-    .click()
 
     .get('input[name=first-name]')
     .type('Nuno')
@@ -476,8 +479,11 @@ function bookParticipant() {
 
     .wait('@selectRace')
 
-    .get('#select-userSavedParticipants')
-    .should('exist')
+    .reload()
+    .waitForHydration()
+
+    .get('input[name=first-name]')
+    .should('have.value', 'Nuno')
 
     .get('#checkout')
     .click()

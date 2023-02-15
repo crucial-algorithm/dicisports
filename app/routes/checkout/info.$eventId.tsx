@@ -56,7 +56,7 @@ import {
   updateParticipant,
   updateToSelectedParticipant
 } from '~/server/db/participant.server';
-import { updateBookingStatus } from '~/server/db/booking.server';
+import { findBooking, removeBooking, updateBookingStatus } from '~/server/db/booking.server';
 
 const actions = {
   add: 'add',
@@ -252,6 +252,12 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   }
 
   if (raceParticipants?.length === 0) {
+    const booking = await findBooking(clientId, eventId);
+    
+    if (booking) {
+      await removeBooking(clientId, eventId);
+    }
+
     return redirect(`/checkout/registrations/${eventId}`);
   }
 
