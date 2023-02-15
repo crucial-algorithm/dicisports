@@ -56,7 +56,11 @@ import {
   updateParticipant,
   updateToSelectedParticipant
 } from '~/server/db/participant.server';
-import { findBooking, removeBooking, updateBookingStatus } from '~/server/db/booking.server';
+import {
+  findBooking,
+  removeBooking,
+  updateBookingStatus
+} from '~/server/db/booking.server';
 
 const actions = {
   add: 'add',
@@ -253,7 +257,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 
   if (raceParticipants?.length === 0) {
     const booking = await findBooking(clientId, eventId);
-    
+
     if (booking) {
       await removeBooking(clientId, eventId);
     }
@@ -306,19 +310,20 @@ export default function CheckoutInfoRoute() {
   const [missingParticipants, setMissingParticipants] = useState<
     RaceParticipant[]
   >([]);
+  const [visitedParticipants, setVisitedParticipants] = useState<Participant[]>(
+    [raceParticipants[0].participant]
+  );
 
   const resetForm = useCallback(() => {
     setErrors({});
     setHash(Date.now());
-    setSelectedParticipant(null);
   }, []);
 
   const reset = useCallback(() => {
     setErrors({});
     setSelectedParticipant(null);
     setMissingParticipants([]);
-    setParticipant(raceParticipants[0].participant);
-  }, [raceParticipants]);
+  }, []);
 
   function handleSetParticipant(e: React.MouseEvent) {
     const newParticipant = e.currentTarget.id.split('|')[0];
@@ -326,12 +331,17 @@ export default function CheckoutInfoRoute() {
       (a: Participant) => a.id === newParticipant
     );
     const participant = userParticipants[index];
+    const isVisited = visitedParticipants.some((v) => v.id === participant.id);
 
     setParticipant(participant);
     setSelectedRace(e.currentTarget.id.split('|')[1]);
     setErrors({});
     setHash(Date.now());
     setSelectedParticipant(null);
+
+    if (!isVisited) {
+      setVisitedParticipants((p) => [...p, participant]);
+    }
   }
 
   function handlerSetShowNotificationFunction(callback: () => void) {
@@ -360,7 +370,6 @@ export default function CheckoutInfoRoute() {
   function handleCloseAddRaces() {
     setShowAddRacesDialog(false);
     setIsReset(true);
-    setParticipant(raceParticipants[0].participant);
   }
 
   function handleSetSelectedParticipant(v: string | number) {
@@ -449,7 +458,7 @@ export default function CheckoutInfoRoute() {
                 a.displayOrder - b.displayOrder
             )
             .map((p: RaceParticipant, index: number) => (
-              <div className="flex flex-col items-center" key={p.id}>
+              <div className="flex flex-col items-center mt-4" key={p.id}>
                 <div
                   className={clsx(
                     'flex flex-col gap-y-2 border-2 border-b p-2 mx-2 items-center w-[200px] snap-center cursor-pointer relative',
@@ -457,8 +466,8 @@ export default function CheckoutInfoRoute() {
                       p.race.id === selectedRace
                       ? 'opacity-100'
                       : 'opacity-50',
-                    missingParticipants.find(
-                      (v) => v.participant.id === p.participant.id
+                    missingParticipants.some(
+                      (v) => v.participantId === p.participantId
                     )
                       ? 'border-red-500'
                       : 'border-gray-500'
@@ -467,6 +476,15 @@ export default function CheckoutInfoRoute() {
                   onClick={handleSetParticipant}
                   data-cy={`participant-${index + 1}`}
                 >
+                  {!visitedParticipants.some(
+                    (v) => v.id === p.participantId
+                  ) && (
+                    <span className="flex absolute h-4 w-4 top-0 right-0 -mt-[0.3rem] -mr-[0.7rem]">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+                    </span>
+                  )}
+
                   {p.participantId === participant?.id &&
                     p.race.id === selectedRace && (
                       <button
@@ -490,7 +508,7 @@ export default function CheckoutInfoRoute() {
                 </div>
               </div>
             ))}
-          <div className="flex flex-col items-center snap-center">
+          <div className="flex flex-col items-center snap-center mt-4">
             <div
               className="flex flex-col gap-y-2 border-2 border-b border-gray-500 p-2 mx-2 items-center w-[200px]"
               onClick={handleOpenAddRaces}
