@@ -33,14 +33,14 @@
     "eventId": "MY4bvgxDbMtGv8rbYe5d"
   },
   {
-    "id": "syB7tHiq5rRyeDM9CCdw",
-    "name": "5K",
-    "distance": 5,
+    "id": "LoDjLz7dWQTWk6Th4dRC",
+    "name": "Trilho Dos Moinhos",
+    "distance": 45,
     "startTime": 900,
-    "elevationGain": 1237,
-    "elevationLoss": 928,
-    "price": 30,
-    "displayOrder": 4,
-    "eventId": "bQmGXYkbhJetjk6mniMt"
+    "elevationGain": 800,
+    "price": 13,
+    "displayOrder": 5,
+    "status": "auto",
+    "eventId": "gLqrDfMx6qkTHn6hoZqA"
   }
 ]
