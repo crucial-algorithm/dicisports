@@ -1,8 +1,8 @@
 import type { LoaderFunction } from 'remix';
 import { json, redirect } from 'remix';
+import type { ChangeEvent } from 'react';
 import * as React from 'react';
 import { useState } from 'react';
-import type { ChangeEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Form, useLoaderData } from '@remix-run/react';
 import {
@@ -31,8 +31,6 @@ import type {
   TranslationObject,
   UIRaceParticipant
 } from '~/types';
-
-import WhenListEmpty from '~/components/shared/Empty';
 import {
   findRegistrationsAddedToCart,
   findRevenueAndRegistrationsPerRace

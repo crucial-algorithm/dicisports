@@ -86,6 +86,82 @@ describe('Checkout', () => {
         .should('have.length', 2);
     });
 
+    it('should not exist list of participants if there is only one', () => {
+      cy.intercept('GET', '*?_data=routes*checkout*')
+        .as('selectRace')
+
+        .visitAndWaitForHydration(
+          '/checkout/registrations/MY4bvgxDbMtGv8rbYe5d'
+        )
+
+        .get('#add-race-AhowRdNWCBQWSuivSt7h')
+        .click()
+
+        .wait('@selectRace')
+
+        .get('#checkout')
+        .click()
+
+        .wait('@selectRace')
+        .waitForHydration()
+
+        .get('[data-cy=participant]')
+        .should('not.exist');
+    });
+
+    it('should be able to update cart', () => {
+      cy.intercept('GET', '*?_data=routes*checkout*')
+        .as('selectRace')
+
+        .visitAndWaitForHydration(
+          '/checkout/registrations/MY4bvgxDbMtGv8rbYe5d'
+        )
+
+        .get('#add-race-AhowRdNWCBQWSuivSt7h')
+        .click()
+
+        .wait('@selectRace')
+
+        .get('#checkout')
+        .click()
+
+        .wait('@selectRace')
+        .waitForHydration()
+
+        .intercept(
+          'POST',
+          '/checkout/registrations/MY4bvgxDbMtGv8rbYe5d?a=update*?_data=routes*'
+        )
+        .as('addParticipant')
+
+        .get('[data-cy=update-cart]')
+        .click()
+
+        .waitForHydration()
+
+        .url()
+        .should(
+          'eq',
+          `${
+            Cypress.config().baseUrl
+          }/checkout/registrations/MY4bvgxDbMtGv8rbYe5d?a=update`
+        )
+
+        .get('#add-race-AhowRdNWCBQWSuivSt7h')
+        .click()
+
+        .wait('@addParticipant')
+
+        .get('#checkout')
+        .click()
+
+        .waitForHydration()
+
+        .get('[data-cy=participant]')
+        .should('exist')
+        .and('have.length', 2);
+    });
+
     it('should fill form with saved participant info', () => {
       registerParticipant();
 
@@ -143,7 +219,7 @@ describe('Checkout', () => {
         .should('not.exist');
     });
 
-    it.skip('should redirect to registration if last race participant is removed', () => {
+    it('should redirect to registration if last race participant is removed', () => {
       cy.intercept('GET', '*?_data=routes*checkout*')
         .as('selectRace')
 
@@ -161,7 +237,10 @@ describe('Checkout', () => {
 
         .wait('@selectRace')
 
-        .intercept('POST', '/checkout/manage*?_data=routes*')
+        .intercept(
+          'POST',
+          '/checkout/registrations/MY4bvgxDbMtGv8rbYe5d?a=update*?_data=routes*'
+        )
         .as('removeParticipant')
 
         .get('[data-cy=update-cart]')
@@ -178,7 +257,22 @@ describe('Checkout', () => {
         )
 
         .get('#remove-race-AhowRdNWCBQWSuivSt7h')
-        .click();
+        .click()
+
+        .wait('@removeParticipant')
+
+        .get('#checkout')
+        .should('be.disabled')
+
+        .visitAndWaitForHydration('/checkout/info/MY4bvgxDbMtGv8rbYe5d')
+
+        .url()
+        .should(
+          'eq',
+          `${
+            Cypress.config().baseUrl
+          }/checkout/registrations/MY4bvgxDbMtGv8rbYe5d`
+        );
     });
 
     it('should show validation error If there are registrations with empty participant info', () => {
