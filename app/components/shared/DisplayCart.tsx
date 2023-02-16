@@ -18,6 +18,7 @@ export default function DisplayCart({
   showEditInfoButton,
   showContinueLabel,
   showUpdateCartButton,
+  showFinishRegistrationLabel,
   action
 }: {
   cart: UICartRow[];
@@ -29,6 +30,7 @@ export default function DisplayCart({
   showEditInfoButton?: boolean;
   showContinueLabel?: boolean;
   showUpdateCartButton?: boolean;
+  showFinishRegistrationLabel?: boolean;
   action?: string;
 }) {
   const { t } = useTranslation('checkout');
@@ -89,7 +91,11 @@ export default function DisplayCart({
               className="mt-4 w-full"
               id="checkout"
             >
-              {showContinueLabel ? t('Continue') : t('Checkout now')}
+              {showContinueLabel
+                ? t('Continue')
+                : showFinishRegistrationLabel
+                ? t('Finish Registration')
+                : t('Checkout now')}
             </Button>
             {error && (
               <InputError id="checkout-error" className="mt-2">
@@ -114,7 +120,12 @@ export default function DisplayCart({
 
         {showEditInfoButton && (
           <div>
-            <Button name="actionId" className="mt-4 w-full" type="submit" value="update-info">
+            <Button
+              name="actionId"
+              className="mt-4 w-full"
+              type="submit"
+              value="update-info"
+            >
               {t('Edit info')}
             </Button>
           </div>

@@ -2,7 +2,7 @@ import type { ActionFunction, LoaderFunction } from 'remix';
 import { json, redirect } from 'remix';
 import * as React from 'react';
 import { useCallback, useEffect, useState } from 'react';
-import { CheckoutStatus } from '@prisma/client';
+import { CheckoutStatus, ParticipantStatus } from '@prisma/client';
 
 import type { FetcherWithComponents } from '@remix-run/react';
 import { useFetcher, useLoaderData } from '@remix-run/react';
@@ -68,7 +68,8 @@ const actions = {
   updateAndSave: 'updateAndSave',
   checkout: 'checkout',
   removeParticipant: 'removeParticipant',
-  addParticipants: 'addParticipants'
+  addParticipants: 'addParticipants',
+  updateAndCheckout: 'updateAndCheckout'
 };
 
 type LoaderData = {
@@ -95,38 +96,6 @@ export const action: ActionFunction = async ({ request, params }) => {
       : anonymousClient.getClientId();
   const actionId = form.get('actionId');
   const hash = form.get('hash') as string;
-
-  if (actionId === actions.checkout) {
-    const raceParticipants = await findUserEventRaceParticipants(
-      clientId,
-      eventId
-    );
-
-    if (!raceParticipants) {
-      return badRequest({ error: t('No Race Participants') });
-    }
-
-    // Draft participants are empty; Save participants are validated ensuring all required is filed in
-    // Testing for firstName === null finds participants that haven't yet been saved successfully
-    const draftParticipants = raceParticipants.filter(
-      (rp) => rp.participant.firstName === null
-    );
-
-    if (draftParticipants.length) {
-      return badRequest({
-        errors: {
-          missingFilledParticipants:
-            draftParticipants.length + ' ' + t('Participant Not Filled')
-        },
-        hash: parseInt(hash),
-        missingParticipants: JSON.stringify(draftParticipants)
-      });
-    }
-
-    await updateBookingStatus(CheckoutStatus.pending, clientId, eventId);
-
-    return redirect(`/checkout/payment/${eventId}`);
-  }
 
   try {
     const phoneNumber = form.get('phone-number') as string;
@@ -210,9 +179,44 @@ export const action: ActionFunction = async ({ request, params }) => {
       await updateParticipant(data);
     }
 
-    if (actionId === actions.update) {
+    if (actionId === actions.update || actionId === actions.updateAndCheckout) {
       ParticipantSchema.parse(data);
       await updateParticipant(data);
+    }
+
+    if (
+      actionId === actions.checkout ||
+      actionId === actions.updateAndCheckout
+    ) {
+      const raceParticipants = await findUserEventRaceParticipants(
+        clientId,
+        eventId
+      );
+
+      if (!raceParticipants) {
+        return badRequest({ error: t('No Race Participants') });
+      }
+
+      // Draft participants are empty; Save participants are validated ensuring all required is filed in
+      // Testing for firstName === null finds participants that haven't yet been saved successfully
+      const draftParticipants = raceParticipants.filter(
+        (rp) => rp.participant.status !== ParticipantStatus.saved
+      );
+
+      if (draftParticipants.length) {
+        return badRequest({
+          errors: {
+            missingFilledParticipants:
+              draftParticipants.length + ' ' + t('Participant Not Filled')
+          },
+          hash: parseInt(hash),
+          missingParticipants: JSON.stringify(draftParticipants)
+        });
+      }
+
+      await updateBookingStatus(CheckoutStatus.pending, clientId, eventId);
+
+      return redirect(`/checkout/payment/${eventId}`);
     }
 
     return json({ ok: true, action: actionId });
@@ -311,17 +315,19 @@ export default function CheckoutInfoRoute() {
     RaceParticipant[]
   >([]);
   const initialVisitedParticipants = raceParticipants
-      .filter((p) => p.participant.status === 'saved')
-      .map((p) => p.participant);
+    .filter((p) => p.participant.status === 'saved')
+    .map((p) => p.participant);
   const isFirstParticipantVisited = initialVisitedParticipants.some(
-      (p) => p.id === raceParticipants[0].participantId
+    (p) => p.id === raceParticipants[0].participantId
   );
 
   if (!isFirstParticipantVisited) {
     initialVisitedParticipants.push(raceParticipants[0].participant);
   }
 
-  const [visitedParticipants, setVisitedParticipants] = useState<Participant[]>(initialVisitedParticipants);
+  const [visitedParticipants, setVisitedParticipants] = useState<Participant[]>(
+    initialVisitedParticipants
+  );
 
   const resetForm = useCallback(() => {
     setErrors({});
@@ -553,6 +559,7 @@ export default function CheckoutInfoRoute() {
             setSelectedParticipant={handleSetSelectedParticipant}
             shirtSizes={shirtSizes}
             resetForm={resetForm}
+            isSingleParticipant={raceParticipants.length === 1}
           />
           <Notification show={handlerSetShowNotificationFunction}>
             {message}
@@ -566,6 +573,7 @@ export default function CheckoutInfoRoute() {
             fetcher={fetcher}
             hash={hash}
             showUpdateCartButton={true}
+            showFinishRegistrationLabel={true}
           />
         </div>
       </div>
@@ -605,7 +613,8 @@ function ParticipantForm({
   selectedParticipant,
   setSelectedParticipant,
   shirtSizes,
-  resetForm
+  resetForm,
+  isSingleParticipant
 }: {
   participant: Participant | null;
   hash: number;
@@ -617,6 +626,7 @@ function ParticipantForm({
   setSelectedParticipant: (v: string | number) => void;
   shirtSizes: ShirtSize[];
   resetForm: () => void;
+  isSingleParticipant: boolean;
 }) {
   const { t, i18n } = useTranslation('checkout');
   const language = i18n.language as Language;
@@ -664,7 +674,6 @@ function ParticipantForm({
           <TextField
             data-cy="first-name"
             name="first-name"
-            placeholder={t('First Name Placeholder')}
             defaultValue={
               (selectedParticipant?.firstName as string) ||
               (participant?.firstName as string)
@@ -680,7 +689,6 @@ function ParticipantForm({
         >
           <TextField
             name="last-name"
-            placeholder={t('Last Name Placeholder')}
             defaultValue={
               (selectedParticipant?.lastName as string) ||
               (participant?.lastName as string)
@@ -864,7 +872,7 @@ function ParticipantForm({
         )}
         <Button
           type="submit"
-          value={actions.update}
+          value={isSingleParticipant ? actions.updateAndCheckout : actions.update}
           name="actionId"
           disabled={!participant}
           id="save-button"

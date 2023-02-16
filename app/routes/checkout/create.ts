@@ -1,13 +1,21 @@
 import type { ActionFunction } from 'remix';
 import { redirect } from 'remix';
 import { CheckoutStatus } from '@prisma/client';
+import type { TFunction } from 'i18next';
 
 import { getClientSession } from '~/server/auth/client.server';
-import { addRegistration } from '~/server/db/cart.server';
+import {
+  addRegistration,
+  getDistinctUserEventCartRaces
+} from '~/server/db/cart.server';
 import { getUser } from '~/server/auth/session.server';
-import { findBooking } from '~/server/db/booking.server';
+import { createBooking, findBooking } from '~/server/db/booking.server';
+import { badRequest } from '~/utils/misc';
+import { addParticipantsToRace } from '~/server/db/participant.server';
+import i18n from '~/server/i18n.server';
 
 export const action: ActionFunction = async ({ request }) => {
+  const t = await i18n.getFixedT(request, 'checkout');
   const form = await request.formData();
   const clientSession = await getClientSession(request);
   const authClient = await getUser(request);
@@ -32,6 +40,7 @@ export const action: ActionFunction = async ({ request }) => {
       );
     } else {
       await addRegistration(clientId as string, raceId);
+      await createInitialBookingFlow(clientId, eventId, t);
     }
   } catch (e) {
     console.log(e);
@@ -39,5 +48,35 @@ export const action: ActionFunction = async ({ request }) => {
     return redirect('/');
   }
 
-  return redirect(`/checkout/registrations/${eventId}`);
+  return redirect(`/checkout/info/${eventId}`);
 };
+
+export async function createInitialBookingFlow(
+  clientId: string,
+  eventId: string,
+  t: TFunction
+) {
+  const userCheckoutRaces = await getDistinctUserEventCartRaces(
+    clientId,
+    eventId
+  );
+
+  if (!userCheckoutRaces) {
+    return badRequest({ error: t('No Races In Checkout') });
+  }
+
+  const pin = Math.floor(1000 + Math.random() * 9000);
+  const booking = await createBooking(pin, eventId, clientId);
+
+  if (!booking) {
+    return badRequest({ error: t("Can't Create Booking") });
+  }
+
+  await addParticipantsToRace(
+    userCheckoutRaces.map((u) => u.raceId),
+    clientId,
+    booking.id
+  );
+
+  return redirect(`/checkout/info/${eventId}`);
+}

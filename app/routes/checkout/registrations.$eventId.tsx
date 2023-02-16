@@ -22,7 +22,6 @@ import {
   addRegistration,
   addRegistrationOnUpdateCart,
   findEventRacesCartQtd,
-  getDistinctUserEventCartRaces,
   getUserCartRaces,
   removeRegistration
 } from '~/server/db/cart.server';
@@ -30,16 +29,12 @@ import i18n from '~/server/i18n.server';
 import DisplayCart from '~/components/shared/DisplayCart';
 import { getUser } from '~/server/auth/session.server';
 import {
-  addParticipantsToRace,
   findUserEventRaceParticipants,
   findUserRaceParticipants,
   removeRaceParticipant
 } from '~/server/db/participant.server';
-import {
-  createBooking,
-  findBooking,
-  removeBooking
-} from '~/server/db/booking.server';
+import { findBooking, removeBooking } from '~/server/db/booking.server';
+import { createInitialBookingFlow } from '~/routes/checkout/create';
 
 type LoaderData = {
   event: Event;
@@ -138,29 +133,7 @@ export const action: ActionFunction = async ({ request, params }) => {
         return redirect(`/checkout/info/${eventId}`);
       }
 
-      const userCheckoutRaces = await getDistinctUserEventCartRaces(
-        clientId,
-        eventId
-      );
-
-      if (!userCheckoutRaces) {
-        return badRequest({ error: t('No Races In Checkout') });
-      }
-
-      const pin = Math.floor(1000 + Math.random() * 9000);
-      const booking = await createBooking(pin, eventId, clientId);
-
-      if (!booking) {
-        return badRequest({ error: t("Can't Create Booking") });
-      }
-
-      await addParticipantsToRace(
-        userCheckoutRaces.map((u) => u.raceId),
-        clientId,
-        booking.id
-      );
-
-      return redirect(`/checkout/info/${eventId}`);
+      await createInitialBookingFlow(clientId, eventId, t);
     }
 
     return json({});
