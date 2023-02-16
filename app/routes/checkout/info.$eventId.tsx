@@ -310,9 +310,18 @@ export default function CheckoutInfoRoute() {
   const [missingParticipants, setMissingParticipants] = useState<
     RaceParticipant[]
   >([]);
-  const [visitedParticipants, setVisitedParticipants] = useState<Participant[]>(
-    [raceParticipants[0].participant]
+  const initialVisitedParticipants = raceParticipants
+      .filter((p) => p.participant.status === 'saved')
+      .map((p) => p.participant);
+  const isFirstParticipantVisited = initialVisitedParticipants.some(
+      (p) => p.id === raceParticipants[0].participantId
   );
+
+  if (!isFirstParticipantVisited) {
+    initialVisitedParticipants.push(raceParticipants[0].participant);
+  }
+
+  const [visitedParticipants, setVisitedParticipants] = useState<Participant[]>(initialVisitedParticipants);
 
   const resetForm = useCallback(() => {
     setErrors({});
