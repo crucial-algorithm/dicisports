@@ -1,6 +1,6 @@
 import * as React from 'react';
-import type { ActionFunction, LoaderFunction } from 'remix';
-import { json, redirect } from 'remix';
+import type { ActionFunction, LoaderFunction } from '@remix-run/node';
+import { json, redirect } from '@remix-run/node';
 import { Form, useFetcher, useLoaderData } from '@remix-run/react';
 import { useTranslation } from 'react-i18next';
 import { CheckoutStatus } from '@prisma/client';

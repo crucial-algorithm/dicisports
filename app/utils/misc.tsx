@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-import { json } from 'remix';
+import { json } from '@remix-run/node';
 
 import { useTranslation } from 'react-i18next';
 

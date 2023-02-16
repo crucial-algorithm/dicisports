@@ -1,5 +1,5 @@
-import type { LoaderFunction } from 'remix';
-import { json, redirect } from 'remix';
+import type { LoaderFunction } from '@remix-run/node';
+import { json, redirect } from '@remix-run/node';
 import { Form, Link, useFetcher, useLoaderData } from '@remix-run/react';
 
 import type { User } from '@prisma/client';

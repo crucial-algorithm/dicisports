@@ -1,11 +1,11 @@
 import { useActionData, useFetcher, useLoaderData } from '@remix-run/react';
-import type { ActionFunction, LinksFunction, LoaderFunction } from 'remix';
+import type { ActionFunction, LinksFunction, LoaderFunction } from '@remix-run/node';
 import {
   json,
   redirect,
   unstable_createMemoryUploadHandler,
   unstable_parseMultipartFormData
-} from 'remix';
+} from '@remix-run/node';
 
 import * as React from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -242,7 +242,9 @@ export const action: ActionFunction = async ({ request, params }) => {
         .number()
         .nonnegative({ message: t('Nonexistent Sport') })
         .lte(7, { message: t('Nonexistent Sport') }),
-      startAt: z.date().min(new Date(), { message: t('Future Date') }),
+      startAt: z.date()
+        // @ts-ignore
+        .min(new Date(), { message: t('Future Date') }),
       address: z.string({ required_error: t('Field required') }),
       useExternalBooking: z.boolean({
         invalid_type_error: t('Invalid Type')

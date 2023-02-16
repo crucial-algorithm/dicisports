@@ -1,6 +1,6 @@
 import { Form, Link, useActionData, useSearchParams } from '@remix-run/react';
-import type { ActionFunction, LoaderFunction, MetaFunction } from 'remix';
-import { json, redirect } from 'remix';
+import type { ActionFunction, LoaderFunction, MetaFunction } from '@remix-run/node';
+import { json, redirect } from '@remix-run/node';
 
 import { z, ZodError } from 'zod';
 

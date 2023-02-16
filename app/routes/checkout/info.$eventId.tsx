@@ -1,5 +1,5 @@
-import type { ActionFunction, LoaderFunction } from 'remix';
-import { json, redirect } from 'remix';
+import type { ActionFunction, LoaderFunction } from '@remix-run/node';
+import { json, redirect } from '@remix-run/node';
 import * as React from 'react';
 import { useCallback, useEffect, useState } from 'react';
 import { CheckoutStatus } from '@prisma/client';
@@ -150,6 +150,7 @@ export const action: ActionFunction = async ({ request, params }) => {
         .min(1, { message: t('Field Required') }),
       birthday: z
         .date({ required_error: t('Field Required') })
+        // @ts-ignore
         .max(new Date(), t('Past Date')),
       phoneNumber: z
         .number({

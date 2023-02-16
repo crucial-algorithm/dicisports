@@ -1,5 +1,5 @@
-import type { LoaderFunction } from 'remix';
-import { json, redirect } from 'remix';
+import type { LoaderFunction } from '@remix-run/node';
+import { json, redirect } from '@remix-run/node';
 import { useFetcher, useLoaderData } from '@remix-run/react';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';

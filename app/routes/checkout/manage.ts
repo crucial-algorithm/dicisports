@@ -1,5 +1,5 @@
-import type { ActionFunction } from 'remix';
-import { json } from 'remix';
+import type { ActionFunction } from '@remix-run/node';
+import { json } from '@remix-run/node';
 
 import { getClientSession } from '~/server/auth/client.server';
 import { badRequest } from '~/utils/misc';

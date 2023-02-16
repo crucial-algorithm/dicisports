@@ -72,7 +72,7 @@ async function findGroups(
 
   const results: Array<DBRawGroup> = await db.$queryRawUnsafe(query);
   const mapped = results.map(dbRawGroupToGroup);
-  const total = results.length === 0 ? 0 : results[0].records;
+  const total = results.length === 0 ? 0 : Number(results[0].records);
 
   // console.log('----->', query);
   return { results: mapped, total };

@@ -13,6 +13,12 @@
 // https://on.cypress.io/configuration
 // ***********************************************************
 
+Cypress.on('uncaught:exception', (err, runnable) => {
+  // Check https://github.com/remix-run/remix/issues/2947 and https://github.com/remix-run/remix/issues/2570
+  // for details
+  return false;
+});
+
 // Import commands.js using ES2015 syntax:
 import './commands';
 

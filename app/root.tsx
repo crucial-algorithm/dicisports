@@ -1,6 +1,6 @@
 import * as React from 'react';
-import type { LinksFunction, LoaderFunction } from 'remix';
-import { json } from 'remix';
+import type { LinksFunction, LoaderFunction } from '@remix-run/node';
+import { json } from '@remix-run/node';
 import {
   Links,
   LiveReload,
@@ -21,8 +21,6 @@ import { useSpinDelay } from 'spin-delay';
 import clsx from 'clsx';
 
 import { setConfig } from 'cloudinary-build-url';
-
-import { useChangeLanguage } from 'remix-i18next';
 
 import type { KCDHandle, Sport } from '~/types';
 import type { Timings } from '~/server/metrics.server';
@@ -247,7 +245,7 @@ function Html({
   const data = useLoaderData<RootLoaderData>() as RootLoaderData;
   const analyticsUrl = 'https://plausible.io/js/plausible.js';
 
-  useChangeLanguage(lang);
+  // useChangeLanguage(lang);
   // script bellow setting window.ENV is not actually being used; Just keeping
   // in case we need other vars to be available and for debugging in production
   setConfig({
@@ -259,7 +257,8 @@ function Html({
     (
       document.getElementsByTagName('body').item(0) as HTMLBodyElement
     ).setAttribute('data-cy', 'ready');
-  }, []);
+    i18n.changeLanguage(lang).then();
+  }, [i18n, lang]);
 
   return (
     <html

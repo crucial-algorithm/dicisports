@@ -1,6 +1,6 @@
 import { Form, Link, useLoaderData } from '@remix-run/react';
-import type { LinksFunction, LoaderFunction } from 'remix';
-import { json } from 'remix';
+import type { LinksFunction, LoaderFunction } from '@remix-run/node';
+import { json } from '@remix-run/node';
 import { useTranslation } from 'react-i18next';
 
 import type { Event } from '@prisma/client';
