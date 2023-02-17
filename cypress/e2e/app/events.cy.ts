@@ -308,6 +308,7 @@ describe('Event', () => {
         .click()
 
         .wait('@EventRequests')
+        .reload()
 
         .get('div[data-cy=document-index-0]')
         .contains('Circuito')

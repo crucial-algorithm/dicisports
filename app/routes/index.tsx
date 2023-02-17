@@ -1,8 +1,8 @@
 import type { SyntheticEvent } from 'react';
 import * as React from 'react';
 import { useEffect, useRef, useState } from 'react';
-import type { LoaderFunction, MetaFunction } from 'remix';
-import { json } from 'remix';
+import type { LoaderFunction, MetaFunction } from '@remix-run/node';
+import { json } from '@remix-run/node';
 import {
   Form,
   Link,
@@ -23,8 +23,6 @@ import { HeartIcon, XCircleIcon } from '@heroicons/react/24/outline';
 import clsx from 'clsx';
 
 import type { TFunction } from 'i18next';
-
-import { Dialog } from '@reach/dialog';
 
 import Main from '~/components/shared/Main';
 import { Spacer } from '~/components/shared/Spacer';
@@ -47,13 +45,14 @@ import ButtonGroup from '~/components/shared/ButtonGroup';
 import { H3, Paragraph } from '~/components/shared/typography';
 import FormField from '~/components/shared/form/FormField';
 import CheckBox from '~/components/shared/form/CheckBox';
-import { findGroupsSpirit } from '~/server/db/groupsSpirit.server';
-import { findSports } from '~/server/db/sports.server';
+import { findGroupsSpirit } from '~/server/db/reference.server';
+import { findSports } from '~/server/db/reference.server';
 import type { Option } from '~/components/shared/form/ComboBox';
 import ComboBox from '~/components/shared/form/ComboBox';
 
 import { getLocalizedText, PeekDayOfWeek } from '~/utils/misc';
 
+import Dialog, { ActionsBar } from '~/components/shared/Dialog';
 import HomeLogo from '~/components/shared/HomeLogo';
 import DisplayImg from '~/components/shared/DisplayImg';
 import { findUserFavoriteGroups } from '~/server/db/groups.server';
@@ -472,7 +471,13 @@ export default function Index() {
           sports={sports}
           groupsSpirit={groupsSpirit}
           triggerModalClose={handleCloseFilters}
+          onSubmit={handleOnSubmit}
+          // we need to pass all the filters because filters dialog will submit it's own form
           filters={filters}
+          coords={selection ? selection.coords : ''}
+          search={selection ? selection.address : ''}
+          page={result?.page || 0}
+          order={orderBy}
         />
         {searchPerformed ? (
           <>
@@ -556,7 +561,7 @@ export default function Index() {
           {groups.map((group, index: number) => (
             <GroupResult
               group={group}
-              key={`${group.id}-${group.position}`}
+              key={`${group.id}`}
               isUserFavorite={
                 favorites.find((g: Group) => g.id === group.id) !== undefined
               }
@@ -583,24 +588,21 @@ export default function Index() {
       ) : null}
 
       <Dialog
-        onDismiss={handleCloseLocationFailedWarning}
+        onClose={handleCloseLocationFailedWarning}
         isOpen={isLocationFailedWarningOpened}
-        aria-label="Delete your account"
-        className="w-11/12 dark:bg-gray-900 border-2 border-black dark:border-white rounded-lg lg:px-24 lg:py-14 lg:max-w-screen-lg"
+        aria-label="Location Failed"
+        SecondaryAction={(<Button
+          variant="danger"
+          size="medium"
+          type="button"
+          onClick={handleCloseLocationFailedWarning}
+        >
+          {t('Failed to find Your Location Close')}
+        </Button>)}
       >
         <H3 className="mb-4">{t('Failed to find Your Location Title')}</H3>
         <Paragraph>{t('Failed to find Your Location Hint')}</Paragraph>
-        <Spacer size="2xs" />
-        <div className="flex flex-wrap gap-4 justify-end">
-          <Button
-            variant="danger"
-            size="medium"
-            type="button"
-            onClick={handleCloseLocationFailedWarning}
-          >
-            {t('Failed to find Your Location Close')}
-          </Button>
-        </div>
+        <Spacer size="2xs"/>
       </Dialog>
     </Main>
   );
@@ -827,10 +829,16 @@ function FiltersDialog(props: {
   groupsSpirit: GroupSpirit[];
   triggerModalClose: () => void;
   filters: FilterParams | null;
+  onSubmit: () => void;
+  coords?: string;
+  search?: string;
+  page: number;
+  order: SortMethod;
 }) {
   const { t, i18n } = useTranslation('home');
-  const { isOpen, sports, groupsSpirit, triggerModalClose, filters } = props;
+  const { isOpen, sports, groupsSpirit, triggerModalClose, filters, onSubmit, coords, search, page, order } = props;
   const sportsOptions: Option[] = [];
+  const form = useRef<HTMLFormElement>(null);
 
   sports
     .sort((a, b) => a.id - b.id)
@@ -841,34 +849,16 @@ function FiltersDialog(props: {
       });
       return s;
     });
+
   return (
-    <div
-      data-reach-dialog-overlay={true}
-      className={clsx({
-        'hidden ': !isOpen,
-        'z-50 flex h-screen': isOpen
-      })}
-    >
-      <div
-        aria-modal={true}
-        aria-label={t('Filters')}
-        className={clsx(
-          'w-5/6 max-w-lg',
-          'bg-white dark:bg-gray-900 border-2 border-black dark:border-white rounded-lg font-extrabold',
-          {
-            'hidden ': !isOpen,
-            'm-auto': isOpen
-          }
-        )}
-      >
+    <Dialog isOpen={isOpen}
+            onClose={triggerModalClose}>
+      <Form method="get" onSubmit={onSubmit} ref={form}>
+        <input type="hidden" name="coords" value={coords} />
+        <input type="hidden" name="search" value={search} />
+        <input type="hidden" name="page" value={page} />
+        <input type="hidden" name="order" value={order} />
         <div className="relative">
-          <button
-            type="button"
-            className="absolute top-2 right-2"
-            onClick={triggerModalClose}
-          >
-            <XCircleIcon className="w-8" />
-          </button>
           <div className="px-6 py-2 flex flex-col items-center lg:px-24 lg:py-14">
             <H3 className="w-full md:w-112 text-left">{t('Filters')}</H3>
             <Spacer size="2xs" />
@@ -906,6 +896,7 @@ function FiltersDialog(props: {
             >
               <CheckBox
                 name="daypart"
+                id={`daypart-${dayParts.morning}`}
                 label={t('Morning')}
                 value={dayParts.morning}
                 checked={filters?.dayParts?.includes(dayParts.morning)}
@@ -913,6 +904,7 @@ function FiltersDialog(props: {
               />
               <CheckBox
                 name="daypart"
+                id={`daypart-${dayParts.afternoon}`}
                 label={t('Afternoon')}
                 value={dayParts.afternoon}
                 checked={filters?.dayParts?.includes(dayParts.afternoon)}
@@ -920,6 +912,7 @@ function FiltersDialog(props: {
               />
               <CheckBox
                 name="daypart"
+                id={`daypart-${dayParts.evening}`}
                 label={t('Evening')}
                 value={dayParts.evening}
                 checked={filters?.dayParts?.includes(dayParts.evening)}
@@ -934,6 +927,7 @@ function FiltersDialog(props: {
               {groupsSpirit.map((gs) => (
                 <CheckBox
                   key={gs.id}
+                  id={`spirit-${gs.id}`}
                   name="spirit"
                   label={gs.name}
                   value={gs.id}
@@ -942,30 +936,31 @@ function FiltersDialog(props: {
                 />
               ))}
             </FormField>
-            <div className="w-full md:w-112 flex flex-wrap gap-4 justify-end">
-              <Button
-                variant="secondary"
-                type="button"
-                onClick={triggerModalClose}
-              >
-                {t('Cancel')}
-              </Button>
-              <Button
-                id="apply-filters"
-                variant="primary"
-                size="medium"
-                type="submit"
-                name="actionId"
-                value={actions.search}
-              >
-                {t('Apply Filters')}
-              </Button>
-            </div>
           </div>
         </div>
-      </div>
-    </div>
+        <ActionsBar>
+          <Button
+            variant="secondary"
+            type="button"
+            onClick={triggerModalClose}
+          >
+            {t('Cancel')}
+          </Button>
+          <Button
+            id="apply-filters"
+            variant="primary"
+            size="medium"
+            name="actionId"
+            type="submit"
+            value={actions.search}
+          >
+            {t('Apply Filters')}
+          </Button>
+        </ActionsBar>
+      </Form>
+    </Dialog>
   );
+
 }
 
 function DisplayFilters(props: {

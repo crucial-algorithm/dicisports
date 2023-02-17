@@ -115,6 +115,7 @@ model Event {
   documents          Document[]
   perks              Perk[]
   races              Race[]
+  bookings           Booking[]
 
   favEvents          FavoriteEvent[]
   @@map("events")
@@ -231,6 +232,8 @@ model Race {
   track             String?
   eventId           String          @map("event_id")
   event             Event           @relation(fields: [eventId], references: [id])
+  carts             Cart[]
+  raceParticipant  RaceParticipant[]
 
   @@map("races")
 }
@@ -255,4 +258,93 @@ model FavoriteEvent {
 
   @@unique([userId, eventId])
   @@map("favorite_events")
+}
+
+model Cart {
+    id          String      @id @default(uuid())
+    raceId      String      @map("race_id")
+    race        Race        @relation(fields: [raceId], references: [id])
+    userId      String      @map("user_id")
+    qtd         Int
+    createdAt   DateTime    @default(now()) @map("created_at")
+    updatedAt   DateTime    @updatedAt @map("updated_at")
+
+    @@unique([userId, raceId])
+    @@map("carts")
+}
+
+enum ParticipantStatus {
+    auto
+    saved
+}
+
+model Participant {
+    id                  String                  @id @default(uuid())
+    userId              String                  @map("user_id")
+    firstName           String?                 @map("first_name")
+    lastName            String?                 @map("last_name")
+    gender              String?                 @db.Char(1)
+    birthday            DateTime?
+    phoneNumber         Int?                    @map("phone_number")
+    identityCard        String?                 @map("identity_card")
+    federationNumber    Int?                    @map("federation_number")
+    shirtSize           Int?                    @map("shirt_size")
+    shirt               ShirtSize?              @relation(fields: [shirtSize], references: [id])
+    nationality         Int?
+    postalCode          String?                 @map("postal_code")
+    status              ParticipantStatus       @default(auto)
+    createdAt           DateTime                @default(now()) @map("created_at")
+    updatedAt           DateTime                @updatedAt @map("updated_at")
+    raceParticipant     RaceParticipant[]
+
+    @@map("participants")
+}
+
+enum CheckoutStatus {
+    checkout
+    pending
+    confirmed
+}
+
+model RaceParticipant {
+    id                  String          @id @default(uuid())
+    participantId       String          @map("participant_id")
+    participant         Participant     @relation(fields: [participantId], references: [id])
+    raceId              String          @map("race_id")
+    race                Race            @relation(fields: [raceId], references: [id])
+    status              CheckoutStatus  @default(checkout)
+    displayOrder        Int             @default(autoincrement()) @map("display_order")
+    bookingId           String          @map("booking_id")
+    booking             Booking         @relation(fields: [bookingId], references: [id])
+
+    createdAt           DateTime        @default(now()) @map("created_at")
+    updatedAt           DateTime        @updatedAt @map("updated_at")
+
+    @@unique([participantId, raceId])
+    @@map("race_participants")
+}
+
+model Booking {
+    id                  String              @id @default(uuid())
+    status              CheckoutStatus      @default(checkout)
+    pin                 Int
+    eventId             String              @map("event_id")
+    event               Event               @relation(fields: [eventId], references: [id])
+    userId              String              @map("user_id")
+    createdAt           DateTime            @default(now()) @map("created_at")
+    updatedAt           DateTime            @updatedAt @map("updated_at")
+    raceParticipant     RaceParticipant[]
+
+    @@unique([eventId, userId])
+    @@map("bookings")
+}
+
+model ShirtSize {
+    id              Int                 @id @default(autoincrement())
+    name            Json
+    createdAt       DateTime            @default(now()) @map("created_at")
+    updatedAt       DateTime            @updatedAt @map("updated_at")
+    participants    Participant[]
+
+    @@map("shirt_size")
 }

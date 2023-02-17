@@ -1,4 +1,4 @@
-import type { LoaderFunction } from 'remix';
+import type { LoaderFunction } from '@remix-run/node';
 
 import { getUser } from '~/server/auth/session.server';
 import { findEvent } from '~/server/db/events.server';

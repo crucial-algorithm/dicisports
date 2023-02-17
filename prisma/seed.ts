@@ -11,9 +11,11 @@ import documentsSeed from './data/documents.json';
 import eventsSeed from './data/events.json';
 import groupSpiritSeed from './data/groupSpirit.json';
 import groupTypesSeed from './data/groupTypes.json';
+import shirtSizesSeed from './data/shirtSizes.json';
 import sportsSeed from './data/sports.json';
 
 const db = new PrismaClient();
+const now = new Date();
 
 async function persist(name: string, list: Array<any>, entity: any) {
   await Promise.all(
@@ -38,6 +40,7 @@ async function seed() {
   await persist('difficulties', difficulties(), db.difficulty);
   await persist('group types', groupTypes(), db.groupType);
   await persist('group spirit', groupsSpirit(), db.groupSpirit);
+  await persist('shirt sizes', shirtSizes(), db.shirtSize);
 
   await persist('users', users(), db.user);
   await persist('groups', groups(), db.group);
@@ -52,6 +55,10 @@ async function seed() {
 
 async function clear() {
   await db.document.deleteMany();
+  await db.raceParticipant.deleteMany();
+  await db.booking.deleteMany();
+  await db.participant.deleteMany();
+  await db.cart.deleteMany();
   await db.race.deleteMany();
   await db.perk.deleteMany();
   await db.favoriteEvent.deleteMany();
@@ -62,6 +69,7 @@ async function clear() {
   await db.user.deleteMany();
   await db.groupSpirit.deleteMany();
   await db.groupType.deleteMany();
+  await db.shirtSize.deleteMany();
   await db.sport.deleteMany();
   await db.difficulty.deleteMany();
 }
@@ -74,6 +82,10 @@ function sports() {
 
 function groupTypes() {
   return groupTypesSeed.map((gt) => gt);
+}
+
+function shirtSizes() {
+  return shirtSizesSeed;
 }
 
 function groupsSpirit() {
@@ -105,15 +117,15 @@ function documents() {
 function races() {
   return racesSeed.map((r) => ({
     ...r,
-    createdAt: new Date(),
-    updatedAt: new Date()
+    createdAt: now,
+    updatedAt: now
   }));
 }
 
 function perks() {
   return perksSeed.map((p) => ({
     ...p,
-    createdAt: new Date()
+    createdAt: now
   }));
 }
 
@@ -198,12 +210,10 @@ function favoriteGroup() {
   return favoriteGroupsSeed.map((f) => {
     return {
       ...f,
-      createdAt: new Date(),
-      updatedAt: new Date()
+      createdAt: now,
+      updatedAt: now
     };
-  })
-
-  ;
+  });
 }
 
 function groupsSchedules() {

@@ -2,8 +2,8 @@ import { Form, Link, useActionData, useSearchParams } from '@remix-run/react';
 
 import { z, ZodError } from 'zod';
 
-import type { ActionFunction, LoaderFunction, MetaFunction } from 'remix';
-import { json, redirect } from 'remix';
+import type { ActionFunction, LoaderFunction, MetaFunction } from '@remix-run/node';
+import { json, redirect } from '@remix-run/node';
 
 import { useRef } from 'react';
 
@@ -31,6 +31,8 @@ import type { LoginAction } from '~/types';
 import { loginUser } from '~/server/db/users.server';
 import Main from '~/components/shared/Main';
 import { CanonicalMeta } from '~/utils/seo';
+import { changeRegistrationToAuthUser } from '~/server/db/cart.server';
+import { getClientSession } from '~/server/auth/client.server';
 
 type LoaderData = {
   email?: string;
@@ -40,12 +42,14 @@ type LoaderData = {
 const actions = {
   login: 'login',
   joinWhatsAppGroup: 'ws',
-  addToFavorites: 'favorite'
+  addToFavorites: 'favorite',
+  checkout: 'checkout'
 };
 
 type QueryStringArgs = {
   group: null | string;
   redirectTo: null | string;
+  user: null | string;
   action: LoginAction;
 };
 
@@ -60,6 +64,7 @@ function queryStringArgs(searchParams: URLSearchParams): QueryStringArgs {
   return {
     group: searchParams.get('g'),
     redirectTo: searchParams.get('l'),
+    user: searchParams.get('u'),
     action
   };
 }
@@ -96,14 +101,14 @@ export const loader: LoaderFunction = async ({ request }) => {
 
 type ActionData = {
   fields: {
-    email: string
-  },
+    email: string;
+  };
   errors: {
-    email: string | null,
-    password: string | null
-    submit: string | null
-  }
-}
+    email: string | null;
+    password: string | null;
+    submit: string | null;
+  };
+};
 
 async function sendWhatsAppLinkFlow(request: Request, params: URLSearchParams) {
   const t = await i18n.getFixedT(request, 'login');
@@ -206,8 +211,17 @@ export const action: ActionFunction = async ({ request }) => {
       }
     }
 
-    return redirect('/', { headers });
+    if (postLoginAction === actions.checkout) {
+      try {
+        const clientSession = await getClientSession(request);
 
+        await changeRegistrationToAuthUser(user.id, clientSession.getClientId());
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    return redirect('/', { headers });
   } catch (e) {
     if (!(e instanceof ZodError)) {
       console.error(e);
@@ -251,7 +265,6 @@ export default function Login() {
     }
   }
 
-
   return (
     <Main className="w-5/6 m-auto md:w-144">
       {action === 'ws' ? (
@@ -273,8 +286,9 @@ export default function Login() {
         <input type="hidden" value={action || ''} name="action" />
         <input type="hidden" value={group || ''} name="group" />
         <input type="hidden" value={redirectTo || ''} name="location" />
-        <FormField label={t('Email')} error={errors.email}>
+        <FormField label={t('Email')} error={errors.email} id="email">
           <TextField
+            id="email"
             name="email"
             className="w-full text-sm h-14 md:text-2xl md:h-20"
             defaultValue={fields.email}
@@ -282,8 +296,9 @@ export default function Login() {
           />
         </FormField>
         {action !== actions.joinWhatsAppGroup && (
-          <FormField label={t('Password')} error={errors.password}>
+          <FormField label={t('Password')} error={errors.password} id="password">
             <TextField
+              id="password"
               type="password"
               name="password"
               className="w-full text-sm h-14 md:text-2xl md:h-20"
@@ -291,7 +306,9 @@ export default function Login() {
             />
           </FormField>
         )}
-        <Button name="login">{t(action === 'ws' ? 'Email WhatsApp Link' : 'Login')}</Button>
+        <Button name="login">
+          {t(action === 'ws' ? 'Email WhatsApp Link' : 'Login')}
+        </Button>
         {errors.submit && (
           <InputError className="mt-4" id="error-message">
             {errors.submit}
@@ -325,24 +342,20 @@ function CreateAccount({
   cta: string;
   queryString: string;
 }) {
-
   return (
     <p className="dark:text-blueGray-500 text-gray-500 mt-8">
       {text} &nbsp;
-      <Link to={`/signup${queryString ? `?${queryString}` : '' }`} id="create-account">
+      <Link
+        to={`/signup${queryString ? `?${queryString}` : ''}`}
+        id="create-account"
+      >
         {cta}
       </Link>
     </p>
   );
 }
 
-function RecoverPassword({
-  text,
-  cta
-}: {
-  text: string;
-  cta: string
-}) {
+function RecoverPassword({ text, cta }: { text: string; cta: string }) {
   return (
     <p className="dark:text-blueGray-500 text-gray-500 mt-2">
       {text} &nbsp;

@@ -2,7 +2,6 @@ import * as React from 'react';
 
 import Label from '~/components/shared/form/Label';
 import InputBase from '~/components/shared/form/InputBase';
-import HTMLId from '~/utils/HTMLId';
 
 type DatePickerOptions = {
   name: string;
@@ -20,7 +19,6 @@ export default function BasicDatePicker({
   const [value, setValue] = React.useState<string>(
     date ? date.toISOString().split('T')[0] : ''
   );
-  const id = HTMLId();
 
   function handleOnChange(date: any) {
     const str: string = new Date(date).toISOString();
@@ -30,9 +28,9 @@ export default function BasicDatePicker({
 
   return (
     <>
-      <Label htmlFor={id}>{label}</Label>
+      <Label htmlFor="date-picker">{label}</Label>
       <InputBase
-        id={id}
+        id="date-picker"
         name={name}
         type="date"
         placeholder={label}

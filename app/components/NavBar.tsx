@@ -1,15 +1,6 @@
 import * as React from 'react';
-import type { PRect } from '@reach/rect';
 import { Link, useLocation } from '@remix-run/react';
 import clsx from 'clsx';
-import {
-  Menu,
-  MenuButton,
-  MenuItems,
-  MenuLink,
-  MenuPopover,
-  useMenuButtonContext
-} from '@reach/menu-button';
 import { useEffect, useState } from 'react';
 import {
   AnimatePresence,
@@ -28,10 +19,11 @@ import { Theme, Themed, useTheme } from '~/utils/theme-provider';
 
 import Logo from '~/components/shared/Logo';
 
+import { useElementState } from '~/components/hooks';
+
 import { SunIcon } from './shared/icons/SunIcon';
 import { MoonIcon } from './shared/icons/MoonIcon';
 import { TeamCircle } from './shared/icons/TeamCircle';
-import { useElementState } from './hooks/useElementState';
 
 
 const LINKS = [
@@ -54,10 +46,7 @@ const links = (
   );
 };
 
-function NavLink({
-  to,
-  ...rest
-}: Omit<Parameters<typeof Link>['0'], 'to'> & { to: string }) {
+function NavLink({ to, ...rest }: Omit<Parameters<typeof Link>['0'], 'to'> & { to: string }) {
   const location = useLocation();
   const isSelected =
     to === location.pathname || location.pathname.startsWith(`${to}/`);
@@ -82,15 +71,12 @@ function NavLink({
 
 const iconTransformOrigin = { transformOrigin: '50% 100px' };
 
-function DarkModeToggle({
-  variant = 'icon'
-}: {
-  variant?: 'icon' | 'labelled'
-}) {
+function DarkModeToggle({ variant = 'icon', onToggle }: { variant?: 'icon' | 'labelled', onToggle?: () => void }) {
   const [, setTheme] = useTheme();
   const { t } = useTranslation('common');
 
   function handleOnClick() {
+    onToggle && onToggle();
     setTheme((previousTheme) =>
       previousTheme === Theme.DARK ? Theme.LIGHT : Theme.DARK
     );
@@ -136,9 +122,8 @@ function DarkModeToggle({
   );
 }
 
-function MobileMenuList() {
+function MobileMenuList({ isExpanded, linkClicked }: { isExpanded: boolean, linkClicked: () => void }) {
   const { t } = useTranslation('common');
-  const { isExpanded } = useMenuButtonContext();
   const shouldReduceMotion = useReducedMotion();
   const { user } = useRootData();
 
@@ -156,20 +141,11 @@ function MobileMenuList() {
     }
   }, [isExpanded]);
 
-  function handlePosition(r: PRect | null) {
-    return {
-      top: `calc(${Number(r?.top) + Number(r?.height)}px + 2.25rem)`, // 2.25 rem = py-9 from navbar
-      left: 0,
-      bottom: 0,
-      right: 0
-    };
-  }
-
   return (
+    // @ts-ignore
     <AnimatePresence>
-      {isExpanded ? (
-        // @ts-ignore
-        <MenuPopover position={handlePosition} style={{ display: 'block' }} className="z-50">
+      {isExpanded && (
+        <div className="fixed top-28 left-0 z-50 w-full h-[calc(100vh-7rem)]">
           <motion.div
             initial={{ y: -50, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
@@ -180,24 +156,24 @@ function MobileMenuList() {
             }}
             className="bg-primary flex flex-col pb-12 h-full border-t border-gray-200 dark:border-gray-600 overflow-y-scroll"
           >
-            <MenuItems className="p-0 bg-transparent border-none">
+            <div className="p-0 bg-transparent border-none flex flex-col">
               {links(MOBILE_LINKS, user).map((link) => (
-                <MenuLink
+                <Link
                   className="hover:bg-secondary focus:bg-secondary text-primary px-5vw py-9 hover:text-team-current border-b border-gray-200 dark:border-gray-600"
                   key={link.to}
-                  as={Link}
                   to={link.to}
+                  onClick={linkClicked}
                 >
                   {t(link.name)}
-                </MenuLink>
+                </Link>
               ))}
               <div className="noscript-hidden py-9 text-center">
-                <DarkModeToggle variant="labelled" />
+                <DarkModeToggle variant="labelled" onToggle={linkClicked} />
               </div>
-            </MenuItems>
+            </div>
           </motion.div>
-        </MenuPopover>
-      ) : null}
+        </div>
+      )}
     </AnimatePresence>
   );
 }
@@ -220,63 +196,70 @@ const bottomVariants = {
 function MobileMenu() {
   const shouldReduceMotion = useReducedMotion();
   const transition = shouldReduceMotion ? { duration: 0 } : {};
+  const [opened, setOpened] = useState(false);
+
+  function handleTriggerMenu(e: unknown) {
+    setOpened(!opened);
+  }
+
+  function handleLinkClicked() {
+    setOpened(false);
+  }
+
+  const state = opened ? 'open' : 'closed';
 
   return (
-    <Menu>
-      {({ isExpanded }) => {
-        const state = isExpanded ? 'open' : 'closed';
-
-        return (
-          <>
-            <MenuButton className="focus:border-primary hover:border-primary border-secondary text-primary inline-flex items-center justify-center p-1 w-14 h-14 border-2 rounded-full focus:outline-none transition">
-              <svg
-                width="32"
-                height="32"
-                viewBox="0 0 32 32"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <motion.rect
-                  animate={state}
-                  variants={topVariants}
-                  transition={transition}
-                  x="6"
-                  y="9"
-                  width="20"
-                  height="2"
-                  rx="1"
-                  fill="currentColor"
-                />
-                <motion.rect
-                  animate={state}
-                  variants={centerVariants}
-                  transition={transition}
-                  x="6"
-                  y="15"
-                  width="20"
-                  height="2"
-                  rx="1"
-                  fill="currentColor"
-                />
-                <motion.rect
-                  animate={state}
-                  variants={bottomVariants}
-                  transition={transition}
-                  x="6"
-                  y="21"
-                  width="20"
-                  height="2"
-                  rx="1"
-                  fill="currentColor"
-                />
-              </svg>
-            </MenuButton>
-
-            <MobileMenuList />
-          </>
-        );
-      }}
-    </Menu>
+    <>
+      <button className={clsx(
+        'w-14 h-14 p-1 rounded-full border-2 border-secondary text-primary transition',
+        'inline-flex items-center justify-center',
+        'focus:border-primary focus:outline-none hover:border-primary'
+      )}
+              onClick={handleTriggerMenu}>
+        <svg
+          width="32"
+          height="32"
+          viewBox="0 0 32 32"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <motion.rect
+            animate={state}
+            variants={topVariants}
+            transition={transition}
+            x="6"
+            y="9"
+            width="20"
+            height="2"
+            rx="1"
+            fill="currentColor"
+          />
+          <motion.rect
+            animate={state}
+            variants={centerVariants}
+            transition={transition}
+            x="6"
+            y="15"
+            width="20"
+            height="2"
+            rx="1"
+            fill="currentColor"
+          />
+          <motion.rect
+            animate={state}
+            variants={bottomVariants}
+            transition={transition}
+            x="6"
+            y="21"
+            width="20"
+            height="2"
+            rx="1"
+            fill="currentColor"
+          />
+        </svg>
+      </button>
+      <MobileMenuList isExpanded={opened} linkClicked={handleLinkClicked} />
+    </>
   );
 }
 
@@ -289,13 +272,7 @@ const durations = {
   active: 0.25
 };
 
-function ProfileButton({
-  user,
-  magicLinkVerified
-}: {
-  user: User | null
-  magicLinkVerified: boolean | undefined
-}) {
+function ProfileButton({ user, magicLinkVerified }: { user: User | null, magicLinkVerified: boolean | undefined }) {
   const controls = useAnimation();
   const [ref, state] = useElementState();
   const shouldReduceMotion = useReducedMotion();

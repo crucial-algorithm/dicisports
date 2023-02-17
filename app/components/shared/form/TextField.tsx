@@ -1,6 +1,5 @@
 import React from 'react';
 
-import HTMLId from '~/utils/HTMLId';
 import InputBase from '~/components/shared/form/InputBase';
 
 type Props = {
@@ -28,7 +27,7 @@ const TextField: React.FC<Props> = ({
   input,
   autoComplete
 }) => {
-  id = id || HTMLId();
+  id = id || '';
   if (!adornment) {
     return (
       <InputBase

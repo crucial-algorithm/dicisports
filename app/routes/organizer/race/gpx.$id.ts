@@ -1,4 +1,4 @@
-import type { LoaderFunction } from 'remix';
+import type { LoaderFunction } from '@remix-run/node';
 import { Status } from '@prisma/client';
 
 import { requireAdminUser } from '~/server/auth/session.server';

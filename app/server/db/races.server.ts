@@ -1,8 +1,9 @@
-import { PrismaClient } from '@prisma/client';
+import { CheckoutStatus, PrismaClient } from '@prisma/client';
 
 import { db } from '~/server/db.server';
 import Id from '~/server/utils/Id.server';
 import type { CreateRaceInput, Race } from '~/types';
+import type { RaceRevenueRegistrations } from '~/types';
 
 const prisma = new PrismaClient();
 
@@ -43,7 +44,10 @@ async function findRace(raceId: string): Promise<Race | null> {
   });
 }
 
-async function updateRace(race: CreateRaceInput, clearTrack = false): Promise<void> {
+async function updateRace(
+  race: CreateRaceInput,
+  clearTrack = false
+): Promise<void> {
   const raceAt = new Date();
 
   const update = {
@@ -127,6 +131,38 @@ async function deleteRace(id: string) {
   });
 }
 
+async function findRevenueAndRegistrationsPerRace(
+  eventId: string
+): Promise<RaceRevenueRegistrations[]> {
+  const query = `
+        SELECT r.id,
+               r.name                 as name,
+               count(rp.id)           as registrations,
+               r.price * count(rp.id) as revenue
+        FROM races r
+                 LEFT JOIN (SELECT rp.id, event_id, race_id
+                            FROM race_participants rp
+                                     INNER JOIN bookings b on rp.booking_id = b.id
+                            WHERE b.status = '${CheckoutStatus.confirmed}'
+                              AND b.event_id = '${eventId}') as rp on r.id = rp.race_id
+        GROUP BY r.id;
+    `;
+
+  return await db.$queryRawUnsafe(query);
+}
+
+async function findRegistrationsAddedToCart(
+  eventId: string
+): Promise<{ id: string; total: number }> {
+  return await db.$queryRaw`
+        SELECT r.id, sum(c.qtd) as total
+        FROM carts c
+                 INNER JOIN races r on c.race_id = r.id
+            and r.event_id = ${eventId}
+        GROUP BY r.id;
+    `;
+}
+
 export {
   createRace,
   findEventRaces,
@@ -134,5 +170,7 @@ export {
   updateRace,
   updateDisplayOrderUp,
   updateDisplayOrderDown,
-  deleteRace
+  deleteRace,
+  findRevenueAndRegistrationsPerRace,
+  findRegistrationsAddedToCart
 };

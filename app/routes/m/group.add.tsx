@@ -1,5 +1,5 @@
-import type { ActionFunction } from 'remix';
-import { redirect } from 'remix';
+import type { ActionFunction } from '@remix-run/node';
+import { redirect } from '@remix-run/node';
 
 import Id from '~/server/utils/Id.server';
 import { createDraftGroup } from '~/server/db/groups.server';

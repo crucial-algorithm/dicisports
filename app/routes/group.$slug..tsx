@@ -1,6 +1,6 @@
 import React from 'react';
-import type { LoaderFunction, MetaFunction } from 'remix';
-import { json, redirect } from 'remix';
+import type { LoaderFunction, MetaFunction } from '@remix-run/node';
+import { json, redirect } from '@remix-run/node';
 import { useTranslation } from 'react-i18next';
 import type { TransformerOption } from '@cld-apis/types';
 

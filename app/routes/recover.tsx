@@ -1,8 +1,8 @@
 import { useTranslation } from 'react-i18next';
 import { Form, useActionData } from '@remix-run/react';
 
-import type { ActionFunction, LoaderFunction, MetaFunction } from 'remix';
-import { json, redirect } from 'remix';
+import type { ActionFunction, LoaderFunction, MetaFunction } from '@remix-run/node';
+import { json, redirect } from '@remix-run/node';
 
 import { z } from 'zod';
 

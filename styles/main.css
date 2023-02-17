@@ -253,3 +253,82 @@ table.privacy-policy td {
 .z-150 {
     z-index: 150;
 }
+
+[data-reach-dialog-overlay] {
+    background: hsla(0, 0%, 0%, 0.33);
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    overflow: auto;
+}
+
+
+.dialog-overlay {
+    inset: 0;
+    @apply bg-gray-500 opacity-50 fixed
+}
+
+.dialog-content {
+    box-shadow: hsl(206 22% 7% / 35%) 0px 10px 38px -10px, hsl(206 22% 7% / 20%) 0px 10px 20px -15px;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    animation: contentShow 150ms cubic-bezier(0.16, 1, 0.3, 1);
+    min-height: 200px;
+
+    @apply w-5/6 p-3 m-auto max-w-lg bg-white dark:bg-gray-900 border-2 border-black dark:border-white rounded-lg
+        dark:text-white text-gray-500
+        font-medium
+    ;
+}
+.dialog-content:focus {
+    outline: none;
+}
+
+.dialog-title {
+    @apply font-extrabold mb-2
+}
+
+.dialog-description {
+    @apply mt-2.5 mb-2.5 mr-5 ml-5
+}
+
+
+@keyframes overlayShow {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes contentShow {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -48%) scale(0.96);
+    }
+    to {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
+}
+
+.dialog-close-btn {
+    font-family: inherit;
+    border-radius: 100%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+
+    @apply w-8 h-8
+        dark:text-gray-100 dark:hover:text-gray-300 dark:focus:text-gray-300 dark:focus-visible:outline-0
+        text-gray-700 hover:text-gray-500 focus:text-gray-500 focus-visible:outline-0
+    ;
+}
