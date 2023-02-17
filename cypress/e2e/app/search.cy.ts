@@ -285,7 +285,7 @@ describe('Search', () => {
 
     context('Test all filters', () => {
       it('should return Morning groups', () => {
-        cy.intercept('GET', '/?index=&coords=*_data=routes*')
+        cy.intercept('GET', '/?index=&coords=*&daypart=Morning*_data=routes*')
           .as('applyFilters')
           .visitAndWaitForHydration(
             '/?index=&coords=&search=&page=0&sport=&dow=&value=&actionId=search'
@@ -303,6 +303,7 @@ describe('Search', () => {
 
           .wait('@applyFilters')
           .reload()
+          .waitForHydration()
 
           .get('[data-cy=group-schedule]')
           .each((text) => {
@@ -337,6 +338,7 @@ describe('Search', () => {
 
           .wait('@search')
           .reload()
+          .waitForHydration()
 
           .get('[data-cy=group-schedule]')
           .each((text) => {
@@ -368,6 +370,7 @@ describe('Search', () => {
 
           .wait('@search')
           .reload()
+          .waitForHydration()
 
           .get('[data-cy=group-schedule]')
           .each((text) => {
@@ -418,11 +421,13 @@ describe('Search', () => {
           .click()
 
           .wait('@search')
+          .reload()
+          .waitForHydration()
 
           .get('button[name=filters]')
           .click()
 
-          .get('#35')
+          .get('#8')
           .click()
 
           .get('#apply-filters')
@@ -430,6 +435,7 @@ describe('Search', () => {
 
           .wait('@search')
           .reload()
+          .waitForHydration()
 
           .get('div[data-cy=group-spirit]')
           .should('contain', 'Convívio');
@@ -444,11 +450,13 @@ describe('Search', () => {
           .click()
 
           .wait('@search')
+          .reload()
+          .waitForHydration()
 
           .get('button[name=filters]')
           .click()
 
-          .get('#36')
+          .get('#9')
           .click()
 
           .get('#apply-filters')
@@ -456,6 +464,7 @@ describe('Search', () => {
 
           .wait('@search')
           .reload()
+          .waitForHydration()
 
           .get('div[data-cy=group-spirit]')
           .should('contain', 'Desportivo');
@@ -470,11 +479,13 @@ describe('Search', () => {
           .click()
 
           .wait('@search')
+          .reload()
+          .waitForHydration()
 
           .get('button[name=filters]')
           .click()
 
-          .get('#37')
+          .get('#10')
           .click()
 
           .get('#apply-filters')
@@ -482,6 +493,7 @@ describe('Search', () => {
 
           .wait('@search')
           .reload()
+          .waitForHydration()
 
           .get('div[data-cy=group-spirit]')
           .should('contain', 'Treino');
@@ -496,11 +508,13 @@ describe('Search', () => {
           .click()
 
           .wait('@search')
+          .reload()
+          .waitForHydration()
 
           .get('button[name=filters]')
           .click()
 
-          .get('#38')
+          .get('#11')
           .click()
 
           .get('#apply-filters')
@@ -508,6 +522,7 @@ describe('Search', () => {
 
           .wait('@search')
           .reload()
+          .waitForHydration()
 
           .get('div[data-cy=group-spirit]')
           .should('contain', 'Amizade');
@@ -522,11 +537,13 @@ describe('Search', () => {
           .click()
 
           .wait('@search')
+          .reload()
+          .waitForHydration()
 
           .get('button[name=filters]')
           .click()
 
-          .get('#39')
+          .get('#12')
           .click()
 
           .get('#apply-filters')
@@ -534,24 +551,75 @@ describe('Search', () => {
 
           .wait('@search')
           .reload()
+          .waitForHydration()
 
           .get('div[data-cy=group-spirit]')
           .should('contain', 'Turismo');
       });
 
-      it('should return groups from each sport', () => {
-        cy.intercept('GET', '/?actionId=search*_data=routes*')
-          .as('selectSport')
-          .intercept('GET', '/?index=&coords=*_data=routes*')
-          .as('search');
+      context('should return groups from each sport', () => {
+        it('Running', () => {
+          cy.intercept('GET', '/?actionId=search*_data=routes*')
+            .as('selectSport')
+            .intercept('GET', '/?index=&coords=*_data=routes*')
+            .as('search');
 
-        checkGroupsBySport(1, 3);
-        checkGroupsBySport(2, 12);
-        checkGroupsBySport(3, 5);
-        checkGroupsBySport(4, 7);
-        checkGroupsBySport(5, 3);
-        checkGroupsBySport(6, 5);
-        checkGroupsBySport(7, 4);
+          checkGroupsBySport(1, 3);
+        });
+
+        it('Trail', () => {
+          cy.intercept('GET', '/?actionId=search*_data=routes*')
+            .as('selectSport')
+            .intercept('GET', '/?index=&coords=*_data=routes*')
+            .as('search');
+
+          checkGroupsBySport(2, 12);
+        });
+
+        it('Road', () => {
+          cy.intercept('GET', '/?actionId=search*_data=routes*')
+            .as('selectSport')
+            .intercept('GET', '/?index=&coords=*_data=routes*')
+            .as('search');
+
+          checkGroupsBySport(3, 5);
+        });
+
+        it('BTT', () => {
+          cy.intercept('GET', '/?actionId=search*_data=routes*')
+            .as('selectSport')
+            .intercept('GET', '/?index=&coords=*_data=routes*')
+            .as('search');
+
+          checkGroupsBySport(4, 7);
+        });
+
+        it('E-Bike', () => {
+          cy.intercept('GET', '/?actionId=search*_data=routes*')
+            .as('selectSport')
+            .intercept('GET', '/?index=&coords=*_data=routes*')
+            .as('search');
+
+          checkGroupsBySport(5, 3);
+        });
+
+        it('Gravel', () => {
+          cy.intercept('GET', '/?actionId=search*_data=routes*')
+            .as('selectSport')
+            .intercept('GET', '/?index=&coords=*_data=routes*')
+            .as('search');
+
+          checkGroupsBySport(6, 5);
+        });
+
+        it('Enduro', () => {
+          cy.intercept('GET', '/?actionId=search*_data=routes*')
+            .as('selectSport')
+            .intercept('GET', '/?index=&coords=*_data=routes*')
+            .as('search');
+
+          checkGroupsBySport(7, 4);
+        });
       });
     });
   });
@@ -567,6 +635,7 @@ function verifyDayOfWeek(filterOption: number, dayOfWeek: string) {
     .click()
 
     .wait('@search')
+    .waitForHydration()
 
     .get('[data-cy=group-schedule]')
     .should('contain', dayOfWeek);
@@ -581,6 +650,7 @@ function checkGroupsBySport(sport: number, length: number) {
       .click()
 
       .wait('@selectSport')
+      .waitForHydration()
 
       .intercept('GET', '/?index=&coords=*_data=routes*')
       .as('seeMore')
@@ -589,6 +659,7 @@ function checkGroupsBySport(sport: number, length: number) {
       .click()
 
       .wait('@seeMore')
+      .waitForHydration()
 
       .get('#see-more')
       .should('not.exist')
@@ -613,11 +684,13 @@ function checkGroupsBySport(sport: number, length: number) {
       .click()
 
       .wait('@applyFilter')
+      .waitForHydration()
 
       .get('#see-more')
       .click()
 
       .wait('@seeMore')
+      .waitForHydration()
 
       .get('div[data-cy=group-entry]')
       .should('have.length', length)
@@ -631,6 +704,7 @@ function checkGroupsBySport(sport: number, length: number) {
       .click()
 
       .wait('@selectSport')
+      .waitForHydration()
 
       .get('div[data-cy=group-entry]')
       .should('have.length', length)
@@ -651,6 +725,7 @@ function checkGroupsBySport(sport: number, length: number) {
       .click()
 
       .wait('@search')
+      .waitForHydration()
 
       .get('div[data-cy=group-entry]')
       .should('have.length', length)

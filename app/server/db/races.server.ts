@@ -148,19 +148,35 @@ async function findRevenueAndRegistrationsPerRace(
         GROUP BY r.id;
     `;
 
-  return await db.$queryRawUnsafe(query);
+  const results: Array<RaceRevenueRegistrations> = await db.$queryRawUnsafe(
+    query
+  );
+
+  return results.map(({ id, name, registrations, revenue }) => {
+    return {
+      id,
+      name,
+      registrations: Number(registrations),
+      revenue: Number(revenue)
+    };
+  });
 }
 
 async function findRegistrationsAddedToCart(
   eventId: string
-): Promise<{ id: string; total: number }> {
-  return await db.$queryRaw`
+): Promise<Array<{ id: string; total: number }>> {
+  const results: Array<{ id: string; total: number }> = await db.$queryRaw`
         SELECT r.id, sum(c.qtd) as total
         FROM carts c
                  INNER JOIN races r on c.race_id = r.id
             and r.event_id = ${eventId}
         GROUP BY r.id;
     `;
+
+  return results.map(({ id, total }) => ({
+    id,
+    total: Number(total)
+  }));
 }
 
 export {

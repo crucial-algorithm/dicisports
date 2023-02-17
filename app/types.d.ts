@@ -15,6 +15,7 @@ import type {
   Participant as DBParticipant,
   Booking as DBBooking,
   ShirtSize as DBShirtSize,
+  ParticipantStatus,
   Status
 } from '@prisma/client';
 
@@ -123,7 +124,7 @@ type GroupInput = {
   description: string | null;
 } & DBGroup;
 
-type Event = { races: Race[], difficulty: Difficulty } & DBEvent;
+type Event = { races: Race[]; difficulty: Difficulty } & DBEvent;
 
 type CreateEventInput = {
   id: string;
@@ -371,7 +372,7 @@ type UIRaceParticipant = {
   bookingAt: Date;
   status: string;
   raceName: string;
-}
+};
 
 type DBRawUIRaceParticipant = {
   id: string;
@@ -401,6 +402,24 @@ type ParticipantInput = {
   postalCode: string;
   createdAt?: Date;
   updatedAt?: Date;
+};
+
+type DBRawParticipant = {
+  id: string;
+  user_id: string;
+  first_name: string;
+  last_name: string;
+  gender: string;
+  birthday: Date;
+  phone_number: number;
+  identity_card: string | null;
+  federation_number: number | null;
+  shirt_size: number;
+  nationality: number | null;
+  postal_code: string;
+  status: ParticipantStatus;
+  created_at: Date;
+  updated_at: Date;
 };
 
 type Booking = {} & DBBooking;
@@ -463,6 +482,7 @@ export {
   PartialCart,
   Participant,
   ParticipantInput,
+  DBRawParticipant,
   Booking,
   ShirtSize,
   RaceRevenueRegistrations

@@ -3,6 +3,7 @@ import { PrismaClient } from '@prisma/client';
 
 import type {
   Cart,
+  DBRawParticipant,
   DBRawUIRaceParticipant,
   Participant,
   ParticipantInput,
@@ -14,7 +15,10 @@ import { db } from '~/server/db.server';
 import Id from '~/server/utils/Id.server';
 import { findEventRaces } from '~/server/db/races.server';
 import { addRegistration, removeRegistration } from '~/server/db/cart.server';
-import { dbUIRaceParticipantToUIRaceParticipant } from '~/server/db/codecs.server';
+import {
+  dbParticipantToParticipant,
+  dbUIRaceParticipantToUIRaceParticipant
+} from '~/server/db/codecs.server';
 
 const prisma = new PrismaClient();
 
@@ -200,12 +204,16 @@ async function addRaceParticipants(
   });
 }
 
+// TODO: Shouldn't always be using LIKE when there is no need
 async function findRaceParticipants(
   eventId: string,
   page: number,
-  pageSize = 10
+  pageSize = 10,
+  searchedName: string | null
 ): Promise<{ results: UIRaceParticipant[]; total: number }> {
-  const query = `
+  const name = `%${searchedName?.length ? searchedName : ''}%`;
+
+  const results: Array<DBRawUIRaceParticipant> = await db.$queryRaw`
         SELECT *, count(1) over () as records
         FROM (SELECT rp.id,
                      concat(p.first_name, ' ', p.last_name) as name,
@@ -219,16 +227,28 @@ async function findRaceParticipants(
                        INNER JOIN bookings b on rp.booking_id = b.id
                        INNER JOIN races r on r.id = rp.race_id
               WHERE p.status = 'saved'
-                and rp.race_id IN
-                    (SELECT id FROM races WHERE event_id = $1)) as P LIMIT ${pageSize}
+                AND first_name || ' ' || last_name ILIKE ${name}
+                AND r.event_id = ${eventId}) as P LIMIT ${pageSize}
         OFFSET ${page * pageSize};
     `;
-
-  const results: Array<DBRawUIRaceParticipant> = await db.$queryRawUnsafe(query, eventId);
   const mapped = results.map(dbUIRaceParticipantToUIRaceParticipant);
-  const total = results.length === 0 ? 0 : results[0].records;
+  const total = results.length === 0 ? 0 : Number(results[0].records);
 
   return { results: mapped, total };
+}
+
+async function findUserSavedParticipants(
+  userId: string
+): Promise<Participant[] | null> {
+  const results: Array<DBRawParticipant> = await db.$queryRaw`
+        SELECT *
+        FROM participants p
+        WHERE EXISTS(SELECT 1 FROM bookings b WHERE p.user_id = b.user_id AND b.status = 'confirmed')
+          AND user_id = ${userId}
+          AND status = 'saved';
+    `;
+
+  return results.map(dbParticipantToParticipant);
 }
 
 export {
@@ -241,5 +261,6 @@ export {
   addRaceParticipants,
   findUserRaceParticipants,
   addParticipantToRace,
-  findRaceParticipants
+  findRaceParticipants,
+  findUserSavedParticipants
 };

@@ -2,7 +2,7 @@ import type { ActionFunction, LoaderFunction } from '@remix-run/node';
 import { json, redirect } from '@remix-run/node';
 import * as React from 'react';
 import { useCallback, useEffect, useState } from 'react';
-import { CheckoutStatus } from '@prisma/client';
+import { CheckoutStatus, ParticipantStatus } from '@prisma/client';
 
 import type { FetcherWithComponents } from '@remix-run/react';
 import { useFetcher, useLoaderData } from '@remix-run/react';
@@ -50,11 +50,17 @@ import { getUser } from '~/server/auth/session.server';
 import countries from '~/server/db/countries.json';
 import { findShirtSizes } from '~/server/db/reference.server';
 import {
-  findUserEventRaceParticipants, findUserParticipants,
+  findUserEventRaceParticipants,
+  findUserParticipants,
+  findUserSavedParticipants,
   updateParticipant,
   updateToSelectedParticipant
 } from '~/server/db/participant.server';
-import { updateBookingStatus } from '~/server/db/booking.server';
+import {
+  findBooking,
+  removeBooking,
+  updateBookingStatus
+} from '~/server/db/booking.server';
 
 const actions = {
   add: 'add',
@@ -62,15 +68,17 @@ const actions = {
   updateAndSave: 'updateAndSave',
   checkout: 'checkout',
   removeParticipant: 'removeParticipant',
-  addParticipants: 'addParticipants'
+  addParticipants: 'addParticipants',
+  updateAndCheckout: 'updateAndCheckout'
 };
 
 type LoaderData = {
   event: Event;
   cart: UICartRow[];
-  raceParticipants: RaceParticipant[] | null;
+  raceParticipants: RaceParticipant[];
   userParticipants: Participant[];
-  userSavedParticipants: Participant[] | null;
+  savedParticipants: Participant[] | null;
+  shirtSizes: ShirtSize[];
   isAuth: boolean;
 };
 
@@ -88,38 +96,6 @@ export const action: ActionFunction = async ({ request, params }) => {
       : anonymousClient.getClientId();
   const actionId = form.get('actionId');
   const hash = form.get('hash') as string;
-
-  if (actionId === actions.checkout) {
-    const raceParticipants = await findUserEventRaceParticipants(
-      clientId,
-      eventId
-    );
-
-    if (!raceParticipants) {
-      return badRequest({ error: t('No Race Participants') });
-    }
-
-    // Draft participants are empty; Save participants are validated ensuring all required is filed in
-    // Testing for firstName === null finds participants that haven't yet been saved successfully
-    const draftParticipants = raceParticipants.filter(
-      (rp) => rp.participant.firstName === null
-    );
-
-    if (draftParticipants.length) {
-      return badRequest({
-        errors: {
-          missingFilledParticipants:
-            draftParticipants.length + ' ' + t('Participant Not Filled')
-        },
-        hash: parseInt(hash),
-        missingParticipants: JSON.stringify(draftParticipants)
-      });
-    }
-
-    await updateBookingStatus(CheckoutStatus.pending, clientId, eventId);
-
-    return redirect(`/checkout/payment/${eventId}`);
-  }
 
   try {
     const phoneNumber = form.get('phone-number') as string;
@@ -204,9 +180,44 @@ export const action: ActionFunction = async ({ request, params }) => {
       await updateParticipant(data);
     }
 
-    if (actionId === actions.update) {
+    if (actionId === actions.update || actionId === actions.updateAndCheckout) {
       ParticipantSchema.parse(data);
       await updateParticipant(data);
+    }
+
+    if (
+      actionId === actions.checkout ||
+      actionId === actions.updateAndCheckout
+    ) {
+      const raceParticipants = await findUserEventRaceParticipants(
+        clientId,
+        eventId
+      );
+
+      if (!raceParticipants) {
+        return badRequest({ error: t('No Race Participants') });
+      }
+
+      // Draft participants are empty; Save participants are validated ensuring all required is filed in
+      // Testing for firstName === null finds participants that haven't yet been saved successfully
+      const draftParticipants = raceParticipants.filter(
+        (rp) => rp.participant.status !== ParticipantStatus.saved
+      );
+
+      if (draftParticipants.length) {
+        return badRequest({
+          errors: {
+            missingFilledParticipants:
+              draftParticipants.length + ' ' + t('Participant Not Filled')
+          },
+          hash: parseInt(hash),
+          missingParticipants: JSON.stringify(draftParticipants)
+        });
+      }
+
+      await updateBookingStatus(CheckoutStatus.pending, clientId, eventId);
+
+      return redirect(`/checkout/payment/${eventId}`);
     }
 
     return json({ ok: true, action: actionId });
@@ -250,10 +261,17 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   }
 
   if (raceParticipants?.length === 0) {
+    const booking = await findBooking(clientId, eventId);
+
+    if (booking) {
+      await removeBooking(clientId, eventId);
+    }
+
     return redirect(`/checkout/registrations/${eventId}`);
   }
 
   const userParticipants = await findUserParticipants(clientId);
+  const savedParticipants = await findUserSavedParticipants(clientId);
   const shirtSizes = await findShirtSizes();
 
   return json({
@@ -261,6 +279,8 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     cart,
     raceParticipants,
     userParticipants,
+    savedParticipants:
+      savedParticipants?.length !== 0 ? savedParticipants : null,
     shirtSizes,
     isAuth: !!authenticatedClient
   });
@@ -274,17 +294,12 @@ export default function CheckoutInfoRoute() {
     cart,
     raceParticipants,
     userParticipants,
+    savedParticipants,
     shirtSizes,
     isAuth
-  } = useLoaderData<LoaderData>();
-  const defaultSelectedParticipant =
-    userParticipants[
-      userParticipants.findIndex(
-        (p: Participant) => p.id === raceParticipants[0].participantId
-      )
-    ];
+  } = useLoaderData<LoaderData>() as LoaderData;
   const [participant, setParticipant] = useState<Participant | null>(
-    defaultSelectedParticipant
+    raceParticipants[0].participant
   );
   const [selectedRace, setSelectedRace] = useState<string | null>(
     raceParticipants[0].raceId
@@ -300,11 +315,24 @@ export default function CheckoutInfoRoute() {
   const [missingParticipants, setMissingParticipants] = useState<
     RaceParticipant[]
   >([]);
+  const initialVisitedParticipants = raceParticipants
+    .filter((p) => p.participant.status === 'saved')
+    .map((p) => p.participant);
+  const isFirstParticipantVisited = initialVisitedParticipants.some(
+    (p) => p.id === raceParticipants[0].participantId
+  );
+
+  if (!isFirstParticipantVisited) {
+    initialVisitedParticipants.push(raceParticipants[0].participant);
+  }
+
+  const [visitedParticipants, setVisitedParticipants] = useState<Participant[]>(
+    initialVisitedParticipants
+  );
 
   const resetForm = useCallback(() => {
     setErrors({});
     setHash(Date.now());
-    setSelectedParticipant(null);
   }, []);
 
   const reset = useCallback(() => {
@@ -316,15 +344,20 @@ export default function CheckoutInfoRoute() {
   function handleSetParticipant(e: React.MouseEvent) {
     const newParticipant = e.currentTarget.id.split('|')[0];
     const index = userParticipants.findIndex(
-      (a: RaceParticipant) => a.id === newParticipant
+      (a: Participant) => a.id === newParticipant
     );
     const participant = userParticipants[index];
+    const isVisited = visitedParticipants.some((v) => v.id === participant.id);
 
     setParticipant(participant);
     setSelectedRace(e.currentTarget.id.split('|')[1]);
     setErrors({});
     setHash(Date.now());
     setSelectedParticipant(null);
+
+    if (!isVisited) {
+      setVisitedParticipants((p) => [...p, participant]);
+    }
   }
 
   function handlerSetShowNotificationFunction(callback: () => void) {
@@ -421,76 +454,87 @@ export default function CheckoutInfoRoute() {
 
   return (
     <Main>
-      <div className="flex flex-col justify-start space-y-1">
+      <div className="flex flex-col justify-start space-y-1 mb-8">
         <H2>
           <b data-cy="name" className="break-words w-full">
             {event.name}
           </b>
         </H2>
         <H6>
-          <DisplayDate date={new Date(event.startAt)} />
+          <DisplayDate date={new Date(event.startAt || 0)} />
         </H6>
         <H6>{event.address}</H6>
       </div>
 
-      <div className="w-full my-8 flex flex-row scroll-mx-2 items-center items-start flex-nowrap overflow-x-auto snap-x">
-        {raceParticipants
-          .sort(
-            (a: RaceParticipant, b: RaceParticipant) =>
-              a.displayOrder - b.displayOrder
-          )
-          .map((p: RaceParticipant, index: number) => (
-            <div className="flex flex-col items-center" key={p.id}>
-              <div
-                className={clsx(
-                  'flex flex-col gap-y-2 border-2 border-b p-2 mx-2 items-center w-[200px] snap-center cursor-pointer relative',
-                  p.participantId === participant?.id &&
-                    p.race.id === selectedRace
-                    ? 'opacity-100'
-                    : 'opacity-50',
-                  missingParticipants.find(
-                    (v) => v.participant.id === p.participant.id
-                  )
-                    ? 'border-red-500'
-                    : 'border-gray-500'
-                )}
-                id={p.participantId + '|' + p.race.id}
-                onClick={handleSetParticipant}
-                data-cy={`participant-${index + 1}`}
-              >
-                {p.participantId === participant?.id &&
-                  p.race.id === selectedRace && (
-                    <button
-                      type="button"
-                      onClick={handleRemoveRaceParticipant}
-                      name="remove"
-                      className="absolute top-[6px] right-[6px]"
-                    >
-                      <XMarkIcon className="dark:text-blueGray-500 md:h-6 w-6 m-0 inline-block" />
-                    </button>
+      {raceParticipants.length > 1 && (
+        <div className="w-full mb-8 flex flex-row scroll-mx-2 items-center items-start flex-nowrap overflow-x-auto snap-x">
+          {raceParticipants
+            .sort(
+              (a: RaceParticipant, b: RaceParticipant) =>
+                a.displayOrder - b.displayOrder
+            )
+            .map((p: RaceParticipant, index: number) => (
+              <div className="flex flex-col items-center mt-4" key={p.id}>
+                <div
+                  className={clsx(
+                    'flex flex-col gap-y-2 border-2 border-b p-2 mx-2 items-center w-[200px] snap-center cursor-pointer relative',
+                    p.participantId === participant?.id &&
+                      p.race.id === selectedRace
+                      ? 'opacity-100'
+                      : 'opacity-50',
+                    missingParticipants.some(
+                      (v) => v.participantId === p.participantId
+                    )
+                      ? 'border-red-500'
+                      : 'border-gray-500'
                   )}
-                <H5 data-cy="participant">{p.race.name}</H5>
-                <H6
-                  className="dark:text-blueGray-500"
-                  data-cy={`participant-name-${index + 1}`}
+                  id={p.participantId + '|' + p.race.id}
+                  onClick={handleSetParticipant}
+                  data-cy={`participant-${index + 1}`}
                 >
-                  {p.participant.firstName
-                    ? p.participant.firstName
-                    : t('Participant') + ' ' + (index + 1)}
-                </H6>
+                  {!visitedParticipants.some(
+                    (v) => v.id === p.participantId
+                  ) && (
+                    <span className="flex absolute h-4 w-4 top-0 right-0 -mt-[0.3rem] -mr-[0.7rem]">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+                    </span>
+                  )}
+
+                  {p.participantId === participant?.id &&
+                    p.race.id === selectedRace && (
+                      <button
+                        type="button"
+                        onClick={handleRemoveRaceParticipant}
+                        name="remove"
+                        className="absolute top-[6px] right-[6px]"
+                      >
+                        <XMarkIcon className="dark:text-blueGray-500 md:h-6 w-6 m-0 inline-block" />
+                      </button>
+                    )}
+                  <H5 data-cy="participant">{p.race.name}</H5>
+                  <H6
+                    className="dark:text-blueGray-500"
+                    data-cy={`participant-name-${index + 1}`}
+                  >
+                    {p.participant.firstName
+                      ? p.participant.firstName
+                      : t('Participant') + ' ' + (index + 1)}
+                  </H6>
+                </div>
               </div>
+            ))}
+          <div className="flex flex-col items-center snap-center mt-4">
+            <div
+              className="flex flex-col gap-y-2 border-2 border-b border-gray-500 p-2 mx-2 items-center w-[200px]"
+              onClick={handleOpenAddRaces}
+            >
+              <PlusIcon className="h-7 w-7 dark:text-blueGray-500" />
+              <H6 className="dark:text-blueGray-500">{t('Add Race')}</H6>
             </div>
-          ))}
-        <div className="flex flex-col items-center snap-center">
-          <div
-            className="flex flex-col gap-y-2 border-2 border-b border-gray-500 p-2 mx-2 items-center w-[200px]"
-            onClick={handleOpenAddRaces}
-          >
-            <PlusIcon className="h-7 w-7 dark:text-blueGray-500" />
-            <H6 className="dark:text-blueGray-500">{t('Add Race')}</H6>
           </div>
         </div>
-      </div>
+      )}
 
       {!isAuth && (
         <div className="flex flex-row items-center justify-end gap-x-2">
@@ -509,15 +553,14 @@ export default function CheckoutInfoRoute() {
             participant={participant}
             hash={hash}
             errors={errors}
-            userSavedParticipants={userParticipants.filter(
-              (p: Participant) => p.firstName !== null
-            )}
+            userSavedParticipants={savedParticipants}
             raceId={selectedRace}
             fetcher={fetcher}
             selectedParticipant={selectedParticipant}
             setSelectedParticipant={handleSetSelectedParticipant}
             shirtSizes={shirtSizes}
             resetForm={resetForm}
+            isSingleParticipant={raceParticipants.length === 1}
           />
           <Notification show={handlerSetShowNotificationFunction}>
             {message}
@@ -530,8 +573,8 @@ export default function CheckoutInfoRoute() {
             error={errors.missingFilledParticipants}
             fetcher={fetcher}
             hash={hash}
-            showContinueLabel={true}
             showUpdateCartButton={true}
+            showFinishRegistrationLabel={true}
           />
         </div>
       </div>
@@ -571,7 +614,8 @@ function ParticipantForm({
   selectedParticipant,
   setSelectedParticipant,
   shirtSizes,
-  resetForm
+  resetForm,
+  isSingleParticipant
 }: {
   participant: Participant | null;
   hash: number;
@@ -583,6 +627,7 @@ function ParticipantForm({
   setSelectedParticipant: (v: string | number) => void;
   shirtSizes: ShirtSize[];
   resetForm: () => void;
+  isSingleParticipant: boolean;
 }) {
   const { t, i18n } = useTranslation('checkout');
   const language = i18n.language as Language;
@@ -630,7 +675,6 @@ function ParticipantForm({
           <TextField
             data-cy="first-name"
             name="first-name"
-            placeholder={t('First Name Placeholder')}
             defaultValue={
               (selectedParticipant?.firstName as string) ||
               (participant?.firstName as string)
@@ -646,7 +690,6 @@ function ParticipantForm({
         >
           <TextField
             name="last-name"
-            placeholder={t('Last Name Placeholder')}
             defaultValue={
               (selectedParticipant?.lastName as string) ||
               (participant?.lastName as string)
@@ -813,15 +856,6 @@ function ParticipantForm({
 
       <input type="hidden" name="hash" value={hash} />
       <ButtonGroup>
-        <Button
-          type="submit"
-          value={actions.update}
-          name="actionId"
-          disabled={!participant}
-          id="save-button"
-        >
-          {t('Save')}
-        </Button>
         {selectedParticipant && (
           <Button
             type="submit"
@@ -829,7 +863,6 @@ function ParticipantForm({
             name="actionId"
             disabled={!participant}
             id="save-update-button"
-            variant="secondary"
           >
             {t('Save and Update') +
               ' ' +
@@ -838,6 +871,17 @@ function ParticipantForm({
               selectedParticipant.lastName}
           </Button>
         )}
+        <Button
+          type="submit"
+          value={isSingleParticipant ? actions.updateAndCheckout : actions.update}
+          name="actionId"
+          disabled={!participant}
+          id="save-button"
+          variant="secondary"
+        >
+          {t('Save')}
+        </Button>
+
         <Button type="button" variant="secondary" onClick={resetForm}>
           {t('Reset')}
         </Button>

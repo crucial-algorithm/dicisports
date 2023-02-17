@@ -3,6 +3,7 @@
   "Hour": "Hora",
   "Your Tickets": "Os teus bilhetes",
   "Checkout now": "Completa a tua inscrição",
+  "Finish Registration": "Finalizar inscrição",
   "Edit info": "Alterar inscrição",
   "Pay": "Pagar",
   "Continue": "Continuar",
@@ -19,8 +20,6 @@
   "National Federation Number": "Número da Federação",
   "Participant": "Participante",
 
-  "First Name Placeholder": "John",
-  "Last Name Placeholder": "Doe",
   "Gender Placeholder": "Seleciona o teu género",
   "Shirt Placeholder": "Seleciona o tamanho da tua camisola",
 
@@ -44,6 +43,9 @@
   "Max 9 Number": "Apenas permitidos 9 dígitos",
   "Invalid Option": "Opção inválida",
   "Invalid Type": "Tipo inválido",
+
+  "No Races In Checkout": "Nenhuma distância no carrinho !",
+  "Can't Create Booking": "Não foi possível criar o booking",
 
   "Update Cart": "Atualizar carrinho",
   "Existing Race Participant": "Upss.. Este participante já está a participar nesta distância !",

@@ -9,7 +9,7 @@ describe('Checkout', () => {
       cy.task('db:reset');
     });
 
-    it('Should redirect and add race to cart from event page', () => {
+    it('Should add race to cart and redirect to form route from event page', () => {
       cy.intercept('GET', '*?_data=routes*checkout*')
         .as('selectRace')
 
@@ -20,8 +20,11 @@ describe('Checkout', () => {
 
         .wait('@selectRace')
 
-        .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qtd]')
-        .contains('1');
+        .url()
+        .should(
+          'eq',
+          `${Cypress.config().baseUrl}/checkout/info/MY4bvgxDbMtGv8rbYe5d`
+        );
     });
 
     it('Should add/remove race', () => {
@@ -86,6 +89,82 @@ describe('Checkout', () => {
         .should('have.length', 2);
     });
 
+    it('should not exist list of participants if there is only one', () => {
+      cy.intercept('GET', '*?_data=routes*checkout*')
+        .as('selectRace')
+
+        .visitAndWaitForHydration(
+          '/checkout/registrations/MY4bvgxDbMtGv8rbYe5d'
+        )
+
+        .get('#add-race-AhowRdNWCBQWSuivSt7h')
+        .click()
+
+        .wait('@selectRace')
+
+        .get('#checkout')
+        .click()
+
+        .wait('@selectRace')
+        .waitForHydration()
+
+        .get('[data-cy=participant]')
+        .should('not.exist');
+    });
+
+    it('should be able to update cart', () => {
+      cy.intercept('GET', '*?_data=routes*checkout*')
+        .as('selectRace')
+
+        .visitAndWaitForHydration(
+          '/checkout/registrations/MY4bvgxDbMtGv8rbYe5d'
+        )
+
+        .get('#add-race-AhowRdNWCBQWSuivSt7h')
+        .click()
+
+        .wait('@selectRace')
+
+        .get('#checkout')
+        .click()
+
+        .wait('@selectRace')
+        .waitForHydration()
+
+        .intercept(
+          'POST',
+          '/checkout/registrations/MY4bvgxDbMtGv8rbYe5d?a=update*?_data=routes*'
+        )
+        .as('addParticipant')
+
+        .get('[data-cy=update-cart]')
+        .click()
+
+        .waitForHydration()
+
+        .url()
+        .should(
+          'eq',
+          `${
+            Cypress.config().baseUrl
+          }/checkout/registrations/MY4bvgxDbMtGv8rbYe5d?a=update`
+        )
+
+        .get('#add-race-AhowRdNWCBQWSuivSt7h')
+        .click()
+
+        .wait('@addParticipant')
+
+        .get('#checkout')
+        .click()
+
+        .waitForHydration()
+
+        .get('[data-cy=participant]')
+        .should('exist')
+        .and('have.length', 2);
+    });
+
     it('should fill form with saved participant info', () => {
       registerParticipant();
 
@@ -140,7 +219,7 @@ describe('Checkout', () => {
         .wait('@removeParticipant')
 
         .get('[data-cy=participant]')
-        .should('have.length', 1);
+        .should('not.exist');
     });
 
     it('should redirect to registration if last race participant is removed', () => {
@@ -161,13 +240,34 @@ describe('Checkout', () => {
 
         .wait('@selectRace')
 
-        .intercept('POST', '/checkout/manage*?_data=routes*')
+        .intercept(
+          'POST',
+          '/checkout/registrations/MY4bvgxDbMtGv8rbYe5d?a=update*?_data=routes*'
+        )
         .as('removeParticipant')
 
-        .get('button[name=remove]')
+        .get('[data-cy=update-cart]')
+        .click()
+
+        .waitForHydration()
+
+        .url()
+        .should(
+          'eq',
+          `${
+            Cypress.config().baseUrl
+          }/checkout/registrations/MY4bvgxDbMtGv8rbYe5d?a=update`
+        )
+
+        .get('#remove-race-AhowRdNWCBQWSuivSt7h')
         .click()
 
         .wait('@removeParticipant')
+
+        .get('#checkout')
+        .should('be.disabled')
+
+        .visitAndWaitForHydration('/checkout/info/MY4bvgxDbMtGv8rbYe5d')
 
         .url()
         .should(
@@ -178,7 +278,7 @@ describe('Checkout', () => {
         );
     });
 
-    it('should show validation error if there are missing participants', () => {
+    it('should show validation error If there are registrations with empty participant info', () => {
       cy.intercept('GET', '/checkout/registrations/*?_data=routes*checkout*')
         .as('selectRace')
 
@@ -199,10 +299,14 @@ describe('Checkout', () => {
 
         .wait('@checkout')
 
+        .reload()
+        .waitForHydration()
+
         .get('#checkout')
         .click()
 
         .wait('@checkout')
+        .waitForHydration()
 
         .get('#checkout-error')
         .should('exist');
@@ -253,7 +357,7 @@ describe('Checkout', () => {
       cy.login();
     });
 
-    it('Should redirect and add race to cart from event page', () => {
+    it('Should  add race to cart  and redirect to form route from event page', () => {
       cy.intercept('GET', '*?_data=routes*checkout*')
         .as('selectRace')
 
@@ -264,8 +368,11 @@ describe('Checkout', () => {
 
         .wait('@selectRace')
 
-        .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qtd]')
-        .contains('1');
+        .url()
+        .should(
+          'eq',
+          `${Cypress.config().baseUrl}/checkout/info/MY4bvgxDbMtGv8rbYe5d`
+        );
     });
 
     it('Should add/remove race', () => {
@@ -361,16 +468,19 @@ function registerParticipant() {
     .click()
 
     .wait('@selectRace')
+    .waitForHydration()
 
     .get('#add-race-AhowRdNWCBQWSuivSt7h')
     .click()
 
     .wait('@selectRace')
+    .waitForHydration()
 
     .get('#checkout')
     .click()
 
     .wait('@selectRace')
+    .waitForHydration()
 
     .get('div[data-cy=participant-1]')
     .click()
@@ -408,10 +518,14 @@ function registerParticipant() {
     .get('#save-button')
     .click()
 
-    .wait('@selectRace')
+    .wait('@saveParticipant')
+    .waitForHydration()
 
-    .get('#select-userSavedParticipants')
-    .should('exist');
+    .reload()
+    .waitForHydration()
+
+    .get('input[name=first-name]')
+    .should('have.value', 'Nuno');
 }
 
 function bookParticipant() {
@@ -430,9 +544,6 @@ function bookParticipant() {
 
     .wait('@selectRace')
 
-    .get('div[data-cy=participant-1]')
-    .click()
-
     .get('input[name=first-name]')
     .type('Nuno')
 
@@ -466,13 +577,10 @@ function bookParticipant() {
     .get('#save-button')
     .click()
 
-    .wait('@selectRace')
+    .wait('@saveParticipant')
 
-    .get('#select-userSavedParticipants')
-    .should('exist')
-
-    .get('#checkout')
-    .click()
+    .reload()
+    .waitForHydration()
 
     .get('button[name=pay]')
     .click()
