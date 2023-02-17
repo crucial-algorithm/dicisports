@@ -9,7 +9,7 @@ describe('Checkout', () => {
       cy.task('db:reset');
     });
 
-    it('Should redirect and add race to cart from event page', () => {
+    it('Should add race to cart and redirect to form route from event page', () => {
       cy.intercept('GET', '*?_data=routes*checkout*')
         .as('selectRace')
 
@@ -20,8 +20,11 @@ describe('Checkout', () => {
 
         .wait('@selectRace')
 
-        .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qtd]')
-        .contains('1');
+        .url()
+        .should(
+          'eq',
+          `${Cypress.config().baseUrl}/checkout/info/MY4bvgxDbMtGv8rbYe5d`
+        );
     });
 
     it('Should add/remove race', () => {
@@ -354,7 +357,7 @@ describe('Checkout', () => {
       cy.login();
     });
 
-    it('Should redirect and add race to cart from event page', () => {
+    it('Should  add race to cart  and redirect to form route from event page', () => {
       cy.intercept('GET', '*?_data=routes*checkout*')
         .as('selectRace')
 
@@ -365,8 +368,11 @@ describe('Checkout', () => {
 
         .wait('@selectRace')
 
-        .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qtd]')
-        .contains('1');
+        .url()
+        .should(
+          'eq',
+          `${Cypress.config().baseUrl}/checkout/info/MY4bvgxDbMtGv8rbYe5d`
+        );
     });
 
     it('Should add/remove race', () => {
@@ -512,7 +518,7 @@ function registerParticipant() {
     .get('#save-button')
     .click()
 
-    .wait('@selectRace')
+    .wait('@saveParticipant')
     .waitForHydration()
 
     .reload()
@@ -571,16 +577,10 @@ function bookParticipant() {
     .get('#save-button')
     .click()
 
-    .wait('@selectRace')
+    .wait('@saveParticipant')
 
     .reload()
     .waitForHydration()
-
-    .get('input[name=first-name]')
-    .should('have.value', 'Nuno')
-
-    .get('#checkout')
-    .click()
 
     .get('button[name=pay]')
     .click()
