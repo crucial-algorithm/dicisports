@@ -287,7 +287,7 @@ export default function Login() {
               type="password"
               name="password"
               className="w-full text-sm h-14 md:text-2xl md:h-20"
-              autoComplete="off"
+              autoComplete="current-password"
             />
           </FormField>
         )}
