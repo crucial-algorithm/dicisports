@@ -1,4 +1,4 @@
-import type { ActionFunction } from '@remix-run/node';
+import type { LoaderFunction } from '@remix-run/node';
 import { redirect } from '@remix-run/node';
 import { CheckoutStatus } from '@prisma/client';
 import type { TFunction } from 'i18next';
@@ -14,16 +14,16 @@ import { badRequest } from '~/utils/misc';
 import { addParticipantsToRace } from '~/server/db/participant.server';
 import i18n from '~/server/i18n.server';
 
-export const action: ActionFunction = async ({ request }) => {
+export const loader: LoaderFunction = async ({ request }) => {
   const t = await i18n.getFixedT(request, 'checkout');
-  const form = await request.formData();
   const clientSession = await getClientSession(request);
   const authClient = await getUser(request);
+  const { searchParams } = new URL(request.url);
 
   const clientId =
     authClient !== null ? authClient.id : clientSession.getClientId();
-  const raceId = form.get('raceId') as string;
-  const eventId = form.get('eventId') as string;
+  const raceId = searchParams.get('raceId') as string;
+  const eventId = searchParams.get('eventId') as string;
 
   const booking = await findBooking(clientId, eventId);
 

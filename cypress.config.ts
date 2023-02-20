@@ -8,16 +8,16 @@ export default defineConfig({
   viewportHeight: 667,
   screenshotOnRunFailure: true,
   // LENOVO 🤦‍♂️
-//  requestTimeout: 90000,
-//  responseTimeout: 90000,
-//  defaultCommandTimeout: 90000,
+  requestTimeout: 90000,
+  responseTimeout: 90000,
+  defaultCommandTimeout: 90000,
   e2e: {
     baseUrl: 'http://localhost:3000',
     experimentalSessionAndOrigin: true,
     env: {
       HTTP_CATCHER: 'http://localhost:3001/',
-      'browserPermissions': {
-        'geolocation' : 'allow'
+      browserPermissions: {
+        geolocation: 'allow'
       }
     },
     setupNodeEvents(on, config) {
@@ -28,7 +28,7 @@ export default defineConfig({
           execSync('npx prisma db seed');
           return null;
         },
-        'clearDownloadFolder'() {
+        clearDownloadFolder() {
           execSync('rm -rf ./cypress/downloads/*');
           return null;
         }

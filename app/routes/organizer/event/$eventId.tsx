@@ -243,7 +243,6 @@ export const action: ActionFunction = async ({ request, params }) => {
         .nonnegative({ message: t('Nonexistent Sport') })
         .lte(7, { message: t('Nonexistent Sport') }),
       startAt: z.date()
-        // @ts-ignore
         .min(new Date(), { message: t('Future Date') }),
       address: z.string({ required_error: t('Field required') }),
       useExternalBooking: z.boolean({

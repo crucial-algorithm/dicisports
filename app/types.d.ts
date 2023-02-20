@@ -124,7 +124,7 @@ type GroupInput = {
   description: string | null;
 } & DBGroup;
 
-type Event = { races: Race[]; difficulty: Difficulty } & DBEvent;
+type Event = { races: Race[]; difficulty: Difficulty, documents: Document[] } & DBEvent;
 
 type CreateEventInput = {
   id: string;

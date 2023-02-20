@@ -126,7 +126,6 @@ export const action: ActionFunction = async ({ request, params }) => {
         .min(1, { message: t('Field Required') }),
       birthday: z
         .date({ required_error: t('Field Required') })
-        // @ts-ignore
         .max(new Date(), t('Past Date')),
       phoneNumber: z
         .number({
@@ -873,7 +872,9 @@ function ParticipantForm({
         )}
         <Button
           type="submit"
-          value={isSingleParticipant ? actions.updateAndCheckout : actions.update}
+          value={
+            isSingleParticipant ? actions.updateAndCheckout : actions.update
+          }
           name="actionId"
           disabled={!participant}
           id="save-button"

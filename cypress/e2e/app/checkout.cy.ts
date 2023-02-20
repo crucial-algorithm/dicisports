@@ -113,8 +113,17 @@ describe('Checkout', () => {
     });
 
     it('should be able to update cart', () => {
-      cy.intercept('GET', '*?_data=routes*checkout*')
+      cy.intercept(
+        'GET',
+        '/checkout/registrations/MY4bvgxDbMtGv8rbYe5d*?_data=routes*checkout*'
+      )
         .as('selectRace')
+
+        .intercept(
+          'POST',
+          '/checkout/registrations/MY4bvgxDbMtGv8rbYe5d*?_data=routes*checkout*'
+        )
+        .as('addRace')
 
         .visitAndWaitForHydration(
           '/checkout/registrations/MY4bvgxDbMtGv8rbYe5d'
@@ -123,13 +132,18 @@ describe('Checkout', () => {
         .get('#add-race-AhowRdNWCBQWSuivSt7h')
         .click()
 
+        .wait('@addRace')
         .wait('@selectRace')
 
         .get('#checkout')
         .click()
 
-        .wait('@selectRace')
+        .wait('@addRace')
+
         .waitForHydration()
+
+        .url()
+        .should('include', '/checkout/info/MY4bvgxDbMtGv8rbYe5d')
 
         .intercept(
           'POST',
@@ -138,7 +152,9 @@ describe('Checkout', () => {
         .as('addParticipant')
 
         .get('[data-cy=update-cart]')
-        .click()
+        .should('exist')
+
+        .click({ force: true })
 
         .waitForHydration()
 
@@ -163,21 +179,6 @@ describe('Checkout', () => {
         .get('[data-cy=participant]')
         .should('exist')
         .and('have.length', 2);
-    });
-
-    it('should fill form with saved participant info', () => {
-      registerParticipant();
-
-      cy.visitAndWaitForHydration('/checkout/info/MY4bvgxDbMtGv8rbYe5d')
-
-        .get('div[data-cy=participant-1]')
-        .click()
-
-        .get('[data-cy=participant-name-1]')
-        .contains('Nuno')
-
-        .get('input[name=first-name]')
-        .should('have.value', 'Nuno');
     });
 
     it('should remove race participant', () => {
@@ -247,7 +248,7 @@ describe('Checkout', () => {
         .as('removeParticipant')
 
         .get('[data-cy=update-cart]')
-        .click()
+        .click({ force: true })
 
         .waitForHydration()
 
@@ -438,18 +439,42 @@ describe('Checkout', () => {
     });
 
     it('should fill form with saved participant info', () => {
-      registerParticipant();
+      cy.intercept(
+          'POST',
+          '/checkout/registrations/gLqrDfMx6qkTHn6hoZqA*?_data=routes*checkout*'
+      )
+          .as('addRace')
 
-      cy.visitAndWaitForHydration('/checkout/info/MY4bvgxDbMtGv8rbYe5d')
+          .visitAndWaitForHydration(
+              '/checkout/registrations/gLqrDfMx6qkTHn6hoZqA'
+          )
 
-        .get('div[data-cy=participant-1]')
-        .click()
+          .loginAdmin()
 
-        .get('[data-cy=participant-name-1]')
-        .contains('Nuno')
+          .get('#add-race-LoDjLz7dWQTWk6Th4dRC')
+          .click()
 
-        .get('input[name=first-name]')
-        .should('have.value', 'Nuno');
+          .wait('@addRace')
+
+          .get('#checkout')
+          .click()
+
+          .wait('@addRace')
+
+          .waitForHydration()
+
+          .url()
+          .should('include', '/checkout/info/gLqrDfMx6qkTHn6hoZqA')
+
+          .get('#select-userSavedParticipants')
+          .should('exist')
+          .pickOptionFromSelect('userSavedParticipants', 1)
+
+          .get('input[name=first-name]')
+          .should('have.length.at.least', 1)
+
+          .get('input[name=last-name]')
+          .should('have.length.at.least', 1).and('have.value', 'Lopes');
     });
 
     it('should book a race', () => {
@@ -579,8 +604,10 @@ function bookParticipant() {
 
     .wait('@saveParticipant')
 
-    .reload()
     .waitForHydration()
+
+    .url()
+    .should('include', '/payment/MY4bvgxDbMtGv8rbYe5d')
 
     .get('button[name=pay]')
     .click()

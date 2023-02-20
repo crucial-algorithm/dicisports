@@ -1,6 +1,8 @@
 import type { LoaderFunction } from '@remix-run/node';
 import { json, redirect } from '@remix-run/node';
+import type { FetcherWithComponents } from '@remix-run/react';
 import { Form, Link, useFetcher, useLoaderData } from '@remix-run/react';
+import type { TFunction } from 'i18next';
 
 import type { User } from '@prisma/client';
 import { Status } from '@prisma/client';
@@ -12,6 +14,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { HeartIcon as Favorite } from '@heroicons/react/24/solid';
 import * as React from 'react';
+import type { Dispatch, SetStateAction } from 'react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Carousel } from 'react-responsive-carousel';
@@ -31,7 +34,7 @@ import Button, { ButtonLink } from '~/components/shared/Button';
 import { getUser } from '~/server/auth/session.server';
 import { Notification } from '~/components/shared/NotificationMessage';
 import DisplayImg from '~/components/shared/DisplayImg';
-import type { Document, Event, Perk, Race } from '~/types';
+import type { Document, Event, Perk, Race, TranslationObject } from '~/types';
 import { findEventRaces } from '~/server/db/races.server';
 import DisplayDate from '~/components/shared/DIsplayDate';
 import { displayTimeOfDay } from '~/utils/misc';
@@ -92,206 +95,8 @@ export default function EventDisplayRoute() {
   const { event, isUserFavorite, races, perks } = useLoaderData<LoaderData>();
   const { t } = useTranslation('event');
 
-  const favoriteAddedMessage = t('Favorite Added');
-  const favoriteRemovedMessage = t('Favorite Removed');
-  const copiedToClipMessage = t('Copied to Clipboard');
-
-  const [isFavorite, setIsFavorite] = useState<boolean>(isUserFavorite);
-  const [message, setMessage] = useState<string>(favoriteAddedMessage);
-  const [address, setAddress] = useState<string>('');
-  let showFavoriteAddedNotification: any = null;
-  let showCopiedToClipboardNotification: any = null;
   let minPrice = 0;
   const [visiblePriceTag, setVisiblePriceTag] = useState<boolean>(true);
-
-  function PriceTag() {
-    return (
-      <InView onChange={setVisiblePriceTag}>
-        <div className="flex flex-col md:flex-row mt-4">
-          <div className="w-full md:w-144">
-            {images.length > 1 ? (
-              <Carousel statusFormatter={cleanStatus}>
-                {images.map((image, idx) => (
-                  <DisplayImg
-                    key={idx}
-                    dataCy={`image${idx}`}
-                    imageId={image}
-                    className="w-[500px]"
-                    transformations={{
-                      resize: {
-                        type: 'fill',
-                        width: 400,
-                        height: 400
-                      }
-                    }}
-                  />
-                ))}
-              </Carousel>
-            ) : (
-              <DisplayImg
-                dataCy="image0"
-                imageId={images[0]}
-                className="w-[500px]"
-                transformations={{
-                  resize: {
-                    type: 'fill',
-                    width: 400,
-                    height: 400
-                  }
-                }}
-              />
-            )}
-          </div>
-
-          <div className="flex flex-auto flex-col mt-4 ml-4">
-            <div className="flex flex-row justify-end mb-2">
-              <H2 className="text-sp-light-blue-900 mb-8 w-[calc(100%-(40px+40px+8px))]">
-                <b data-cy="name" className="break-words w-full">
-                  {event.name}
-                </b>
-              </H2>
-              <favorite.Form
-                method="post"
-                action={`/organizer/event/fav/${event.id}`}
-              >
-                {isFavorite ? (
-                  <Button
-                    size="tiny"
-                    name="action"
-                    value={actions.remove}
-                    className="w-[40px] h-[40px]"
-                  >
-                    <Favorite className="h-6 w-6 m-0 inline-block" />
-                  </Button>
-                ) : (
-                  <Button
-                    size="tiny"
-                    name="action"
-                    value={actions.add}
-                    className="w-[40px] h-[40px]"
-                  >
-                    <HeartIcon className="h-6 w-6 m-0 inline-block" />
-                  </Button>
-                )}
-              </favorite.Form>
-              <CopyToClipboard
-                text={`${address}/group/${event.slug}`}
-                id={event.id}
-                successMessage={handlerClickToCopy}
-                className="w-[40px] h-[40px] ml-2"
-              />
-              <Notification show={handlerSetShowNotificationFunction}>
-                {message}
-              </Notification>
-              <Notification show={handlerSetShowNotificationCopyToClipboard}>
-                {copiedToClipMessage}
-              </Notification>
-            </div>
-            <div className="flex flex-row items-center mb-2">
-              <CalendarDaysIcon className="h-6 w-6 m-0 inline-block text-primary" />
-              <H6 data-cy="date" className="ml-4 md:ml-2">
-                <DisplayDate date={new Date(event.startAt)} />
-              </H6>
-            </div>
-            <div className="flex flex-row items-center mb-2">
-              <MapPinIcon className="h-6 w-6 m-0 inline-block text-primary" />
-              <a
-                href={`https://www.google.com/maps/search/?api=1&query=${lat}%2C${lng}`}
-                target="_blank"
-                rel="noreferrer"
-                data-cy="location-link"
-              >
-                <H6 className="ml-4 mr-2 md:ml-2" data-cy="location">
-                  {event.address}
-                </H6>
-              </a>
-            </div>
-            <div className="flex flex-row items-center mb-2">
-              <ArrowTrendingUpIcon className="h-6 w-6 m-0 inline-block text-primary" />
-              <H6 data-cy="difficulty" className="ml-4 md:ml-2">
-                <I18nText text={event.difficulty.name} />
-              </H6>
-            </div>
-            <div className="flex flex-row justify-between items-center mt-16 dark:bg-gray-900 bg-white">
-              <div className="flex flex-col justify-start">
-                <H6 className="md:ml-2">{t('From')}</H6>
-                <H2
-                  data-cy="price"
-                  className="text-sp-light-blue-900 w-full md:ml-2"
-                >
-                  <b className="break-words">{`${
-                    minPrice ? minPrice : t('Undefined')
-                  }€`}</b>
-                </H2>
-              </div>
-              <ButtonLink to="#races-list">{t('Races Anchor')}</ButtonLink>
-            </div>
-          </div>
-        </div>
-      </InView>
-    );
-  }
-
-  function StickyPriceTag() {
-    return (
-      <div className="flex flex-row justify-between items-center mt-16 top-0 p-4 sticky dark:bg-gray-900 bg-white dark:border-gray-500 drop-shadow-md z-10">
-        <H3 data-cy="price" className="text-sp-light-blue-900 w-full md:ml-2">
-          <b className="break-words">{event.name}</b>
-        </H3>
-        <div className="flex flex-col md:flex-row items-center">
-          <div className="flex flex-col md:justify-start">
-            <H6 className="md:ml-2">{t('From')}</H6>
-            <H2
-              data-cy="price"
-              className="text-sp-light-blue-900 w-full md:ml-2"
-            >
-              <b className="break-words">{`${minPrice}€`}</b>
-            </H2>
-          </div>
-          <ButtonLink className="md:ml-16" to="#races-list">
-            {t('Races Anchor')}
-          </ButtonLink>
-        </div>
-      </div>
-    );
-  }
-
-  function handlerSetShowNotificationFunction(callback: () => void) {
-    showFavoriteAddedNotification = callback;
-  }
-
-  function handlerSetShowNotificationCopyToClipboard(callback: () => void) {
-    showCopiedToClipboardNotification = callback;
-  }
-
-  function handlerClickToCopy() {
-    showCopiedToClipboardNotification();
-  }
-
-  function cleanStatus() {
-    return '';
-  }
-
-  useEffect(() => {
-    if (favorite.type === 'actionReload' && favorite.data.ok) {
-      setMessage(
-        favorite.data.action === actions.add
-          ? favoriteAddedMessage
-          : favoriteRemovedMessage
-      );
-      setIsFavorite(favorite.data.action === actions.add);
-      showFavoriteAddedNotification();
-    }
-
-    const url = new URL(window.location.href);
-
-    setAddress(url.origin);
-  }, [
-    favorite,
-    showFavoriteAddedNotification,
-    favoriteAddedMessage,
-    favoriteRemovedMessage
-  ]);
 
   if (!event) {
     return (
@@ -310,21 +115,25 @@ export default function EventDisplayRoute() {
     minPrice = sortedRaces[0];
   }
 
-  const images: string[] = [
-    event.image1,
-    event.image2,
-    event.image3,
-    event.image4,
-    event.image5
-  ].filter(Boolean) as string[];
-  const [lat, lng] = event.location.split(',');
-
   return (
     <>
-      {!visiblePriceTag && <StickyPriceTag />}
+      {!visiblePriceTag && (
+        <StickyPriceTag
+          eventName={event.name as string}
+          minPrice={minPrice}
+          t={t}
+        />
+      )}
 
       <Main>
-        <PriceTag />
+        <PriceTag
+          event={event}
+          favorite={favorite}
+          minPrice={minPrice}
+          setVisiblePriceTag={setVisiblePriceTag}
+          t={t}
+          isUserFavorite={isUserFavorite}
+        />
         <div className="my-8">
           <H3>{t('About')}</H3>
           <div
@@ -538,7 +347,7 @@ function DisplayRace(props: { race: Race; index: number }) {
           </label>
         </div>
         <div className="my-4">
-          <Form method="post" action="/checkout/create">
+          <Form method="get" action="/checkout/create">
             <input type="hidden" value={race.id} name="raceId" />
             <input type="hidden" value={race.eventId} name="eventId" />
             <Button name={`race-${race.id}`}>{t('Book')}</Button>
@@ -574,6 +383,233 @@ function DisplayDocument(props: { document: Document; index: number }) {
       >
         {document.label}
       </a>
+    </div>
+  );
+}
+
+function PriceTag({
+  event,
+  favorite,
+  minPrice,
+  setVisiblePriceTag,
+  t,
+  isUserFavorite
+}: {
+  event: Event;
+  favorite: FetcherWithComponents<any>;
+  minPrice: number;
+  setVisiblePriceTag: Dispatch<SetStateAction<boolean>>;
+  t: TFunction;
+  isUserFavorite: boolean;
+}) {
+  const favoriteAddedMessage = t('Favorite Added');
+  const favoriteRemovedMessage = t('Favorite Removed');
+  const copiedToClipMessage = t('Copied to Clipboard');
+
+  const [isFavorite, setIsFavorite] = useState<boolean>(isUserFavorite);
+  const [message, setMessage] = useState<string>(favoriteAddedMessage);
+  const [address, setAddress] = useState<string>('');
+  let showFavoriteAddedNotification: any = null;
+  let showCopiedToClipboardNotification: any = null;
+
+  const images: string[] = [
+    event.image1,
+    event.image2,
+    event.image3,
+    event.image4,
+    event.image5
+  ].filter(Boolean) as string[];
+  const [lat, lng] = event?.location?.split(',') || [0, 0];
+
+  function handlerSetShowNotificationFunction(callback: () => void) {
+    showFavoriteAddedNotification = callback;
+  }
+
+  function handlerSetShowNotificationCopyToClipboard(callback: () => void) {
+    showCopiedToClipboardNotification = callback;
+  }
+
+  function handlerClickToCopy() {
+    showCopiedToClipboardNotification();
+  }
+
+  function cleanStatus() {
+    return '';
+  }
+
+  useEffect(() => {
+    if (favorite.type === 'actionReload' && favorite.data.ok) {
+      setMessage(
+        favorite.data.action === actions.add
+          ? favoriteAddedMessage
+          : favoriteRemovedMessage
+      );
+      setIsFavorite(favorite.data.action === actions.add);
+      showFavoriteAddedNotification();
+    }
+
+    const url = new URL(window.location.href);
+
+    setAddress(url.origin);
+  }, [
+    favorite,
+    showFavoriteAddedNotification,
+    favoriteAddedMessage,
+    favoriteRemovedMessage
+  ]);
+
+  return (
+    <InView onChange={setVisiblePriceTag}>
+      <div className="flex flex-col md:flex-row mt-4">
+        <div className="w-full md:w-144">
+          {images.length > 1 ? (
+            <Carousel statusFormatter={cleanStatus}>
+              {images.map((image, idx) => (
+                <DisplayImg
+                  key={idx}
+                  dataCy={`image${idx}`}
+                  imageId={image}
+                  className="w-[500px]"
+                  transformations={{
+                    resize: {
+                      type: 'fill',
+                      width: 400,
+                      height: 400
+                    }
+                  }}
+                />
+              ))}
+            </Carousel>
+          ) : (
+            <DisplayImg
+              dataCy="image0"
+              imageId={images[0]}
+              className="w-[500px]"
+              transformations={{
+                resize: {
+                  type: 'fill',
+                  width: 400,
+                  height: 400
+                }
+              }}
+            />
+          )}
+        </div>
+
+        <div className="flex flex-auto flex-col mt-4 ml-4">
+          <div className="flex flex-row justify-end mb-2">
+            <H2 className="text-sp-light-blue-900 mb-8 w-[calc(100%-(40px+40px+8px))]">
+              <b data-cy="name" className="break-words w-full">
+                {event.name}
+              </b>
+            </H2>
+            <favorite.Form
+              method="post"
+              action={`/organizer/event/fav/${event.id}`}
+            >
+              {isFavorite ? (
+                <Button
+                  size="tiny"
+                  name="action"
+                  value={actions.remove}
+                  className="w-[40px] h-[40px]"
+                >
+                  <Favorite className="h-6 w-6 m-0 inline-block" />
+                </Button>
+              ) : (
+                <Button
+                  size="tiny"
+                  name="action"
+                  value={actions.add}
+                  className="w-[40px] h-[40px]"
+                >
+                  <HeartIcon className="h-6 w-6 m-0 inline-block" />
+                </Button>
+              )}
+            </favorite.Form>
+            <CopyToClipboard
+              text={`${address}/group/${event.slug}`}
+              id={event.id}
+              successMessage={handlerClickToCopy}
+              className="w-[40px] h-[40px] ml-2"
+            />
+            <Notification show={handlerSetShowNotificationFunction}>
+              {message}
+            </Notification>
+            <Notification show={handlerSetShowNotificationCopyToClipboard}>
+              {copiedToClipMessage}
+            </Notification>
+          </div>
+          <div className="flex flex-row items-center mb-2">
+            <CalendarDaysIcon className="h-6 w-6 m-0 inline-block text-primary" />
+            <H6 data-cy="date" className="ml-4 md:ml-2">
+              <DisplayDate date={new Date(event.startAt || 0)} />
+            </H6>
+          </div>
+          <div className="flex flex-row items-center mb-2">
+            <MapPinIcon className="h-6 w-6 m-0 inline-block text-primary" />
+            <a
+              href={`https://www.google.com/maps/search/?api=1&query=${lat}%2C${lng}`}
+              target="_blank"
+              rel="noreferrer"
+              data-cy="location-link"
+            >
+              <H6 className="ml-4 mr-2 md:ml-2" data-cy="location">
+                {event.address}
+              </H6>
+            </a>
+          </div>
+          <div className="flex flex-row items-center mb-2">
+            <ArrowTrendingUpIcon className="h-6 w-6 m-0 inline-block text-primary" />
+            <H6 data-cy="difficulty" className="ml-4 md:ml-2">
+              <I18nText text={event.difficulty.name as TranslationObject} />
+            </H6>
+          </div>
+          <div className="flex flex-row justify-between items-center mt-16 dark:bg-gray-900 bg-white">
+            <div className="flex flex-col justify-start">
+              <H6 className="md:ml-2">{t('From')}</H6>
+              <H2
+                data-cy="price"
+                className="text-sp-light-blue-900 w-full md:ml-2"
+              >
+                <b className="break-words">{`${
+                  minPrice ? minPrice : t('Undefined')
+                }€`}</b>
+              </H2>
+            </div>
+            <ButtonLink to="#races-list">{t('Races Anchor')}</ButtonLink>
+          </div>
+        </div>
+      </div>
+    </InView>
+  );
+}
+
+function StickyPriceTag({
+  eventName,
+  minPrice,
+  t
+}: {
+  eventName: string;
+  minPrice: number;
+  t: TFunction;
+}) {
+  return (
+    <div className="flex flex-row justify-between items-center mt-16 top-0 p-4 sticky dark:bg-gray-900 bg-white dark:border-gray-500 drop-shadow-md z-10">
+      <H3 data-cy="price" className="text-sp-light-blue-900 w-full md:ml-2">
+        <b className="break-words">{eventName}</b>
+      </H3>
+      <div className="flex flex-col md:flex-row items-center">
+        <div className="flex flex-col md:justify-start">
+          <H6 className="md:ml-2">{t('From')}</H6>
+          <H2 data-cy="price" className="text-sp-light-blue-900 w-full md:ml-2">
+            <b className="break-words">{`${minPrice}€`}</b>
+          </H2>
+        </div>
+        <ButtonLink className="md:ml-16" to="#races-list">
+          {t('Races Anchor')}
+        </ButtonLink>
+      </div>
     </div>
   );
 }
