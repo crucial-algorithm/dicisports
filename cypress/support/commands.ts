@@ -8,7 +8,7 @@ declare global {
 
       loginAdmin(): Chainable<void>;
 
-      pickOptionFromSelect(name: string, position: number): Chainable<void>;
+      pickOptionFromSelect(name: string, position: number, focused?: boolean): Chainable<void>;
 
       pickLocationInMap(triggerOpenMapButtonName: string): Chainable<void>;
 
@@ -42,7 +42,23 @@ function loginAdmin() {
   );
 }
 
-function pickOptionFromSelect(name: string, position: number) {
+function pickOptionFromSelect(
+  name: string,
+  position: number,
+  focused = false
+) {
+  // A workaround until we fix the Combo Box's. Ex:
+  // When opening the filter's Dialog, the first combo is already focused, so it wasn't doing anything when
+  // cypress clicked it
+  if (focused) {
+    cy.get(`#select-${name}`)
+      .focused()
+      .click()
+
+      .get(`[class*="-menu"] [class*="-option"]:nth-child(${position})`)
+      .click();
+  }
+
   cy.get(`#select-${name}`)
     .click()
 
@@ -76,7 +92,7 @@ function pickLocationInMap(triggerOpenMapButtonName: string) {
 
     .wait('@mapBoxFindAddressFromCoords', { timeout: 10000 })
     .get('button[name=pick-location]:enabled', { timeout: 10000 })
-    .click({ force:true })
+    .click({ force: true })
 
     .get('input[name=discard-location]')
     .should('have.value', 'Estrada De Torres Novas');
@@ -96,8 +112,7 @@ function visitAndWaitForHydration(
   cy.visit(url, options).get('body[data-cy=ready]');
 }
 
-function waitForHydration(
-) {
+function waitForHydration() {
   cy.get('body[data-cy=ready]');
 }
 
@@ -113,11 +128,11 @@ function getRecoverPasswordUrl() {
     return loginLink;
   }
 
-  return cy.request({ method: 'GET', url: Cypress.env('HTTP_CATCHER') })
-    .then(
-      ({ body }) => {
-        const url = extractUrl(body.text);
-        const start = url.search('/magic');
+  return cy
+    .request({ method: 'GET', url: Cypress.env('HTTP_CATCHER') })
+    .then(({ body }) => {
+      const url = extractUrl(body.text);
+      const start = url.search('/magic');
 
       return url.substr(start);
     });
@@ -132,7 +147,6 @@ function assertValueCopiedToClipboard(value: string) {
       });
     });
   });
-
 }
 
 Cypress.Commands.add('login', login);
@@ -143,6 +157,9 @@ Cypress.Commands.add('wasImageLoaded', wasImageLoaded);
 Cypress.Commands.add('visitAndWaitForHydration', visitAndWaitForHydration);
 Cypress.Commands.add('waitForHydration', waitForHydration);
 Cypress.Commands.add('getRecoverPasswordUrl', getRecoverPasswordUrl);
-Cypress.Commands.add('assertValueCopiedToClipboard', assertValueCopiedToClipboard);
+Cypress.Commands.add(
+  'assertValueCopiedToClipboard',
+  assertValueCopiedToClipboard
+);
 
 export {};

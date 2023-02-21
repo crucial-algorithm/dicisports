@@ -860,7 +860,7 @@ function FiltersDialog(props: {
         <input type="hidden" name="order" value={order} />
         <div className="relative">
           <div className="px-6 py-2 flex flex-col items-center lg:px-24 lg:py-14">
-            <H3 className="w-full md:w-112 text-left">{t('Filters')}</H3>
+            <H3 data-cy="dialog-title" className="w-full md:w-112 text-left">{t('Filters')}</H3>
             <Spacer size="2xs" />
 
             <FormField

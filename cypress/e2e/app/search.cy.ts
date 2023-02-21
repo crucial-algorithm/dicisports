@@ -18,7 +18,7 @@ describe('Search', () => {
         .should('exist');
     });
     it('should return groups from Porto', () => {
-      cy.intercept('GET', '/?index=*_data=routes*')
+      cy.intercept('GET', '*coords=*&search=*&page=*&actionId=search*')
         .as('search')
         .visitAndWaitForHydration('/')
 
@@ -33,7 +33,7 @@ describe('Search', () => {
 
         .wait('@mapBoxSearchResult')
 
-        .get('#react-select-2-listbox')
+        .get('#react-select-3-option-0')
         .contains('Porto, Porto, Portugal')
         .click()
 
@@ -159,26 +159,16 @@ describe('Search', () => {
     });
 
     it('should copy to clipboard', { browser: 'chrome' }, () => {
-      cy.wrap(
-        Cypress.automation('remote:debugger:protocol', {
-          command: 'Browser.grantPermissions',
-          params: {
-            permissions: ['clipboardReadWrite', 'clipboardSanitizedWrite'],
-            origin: window.location.origin
-          }
-        })
-      ).then(() => {
-        cy.visit('/?actionId=search&sport=5')
+      cy.visitAndWaitForHydration('/?actionId=search&sport=5')
 
-          .get('button[name=share-334a3081b9dd416e384d]')
-          .focus()
-          .click()
-          .then(() => {
-            cy.assertValueCopiedToClipboard(
-              '/group/associaco-recreativa-alfandega-da-fe'
-            );
-          });
-      });
+        .get('button[name=share-334a3081b9dd416e384d]')
+        .focus()
+        .click()
+        .then(() => {
+          cy.assertValueCopiedToClipboard(
+            '/group/associaco-recreativa-alfandega-da-fe'
+          );
+        });
     });
 
     it('should have whatsapp link', () => {
@@ -285,7 +275,10 @@ describe('Search', () => {
 
     context('Test all filters', () => {
       it('should return Morning groups', () => {
-        cy.intercept('GET', '/?index=&coords=*&daypart=Morning*_data=routes*')
+        cy.intercept(
+          'GET',
+          '*coords=&search=&page=0&order=recent&sport=&dow=&value=&daypart=*&actionId=search&_data=routes*'
+        )
           .as('applyFilters')
           .visitAndWaitForHydration(
             '/?index=&coords=&search=&page=0&sport=&dow=&value=&actionId=search'
@@ -295,14 +288,16 @@ describe('Search', () => {
           .get('button[name=filters]')
           .click()
 
-          .get('#4')
+          .get('#daypart-Morning')
           .click()
 
           .get('#apply-filters')
-          .click()
+          .click({ force: true })
 
           .wait('@applyFilters')
-          .reload()
+
+          .url()
+          .should('include', '&daypart=Morning')
           .waitForHydration()
 
           .get('[data-cy=group-schedule]')
@@ -320,8 +315,11 @@ describe('Search', () => {
       });
 
       it('should return Afternoon groups', () => {
-        cy.intercept('GET', '/?index=&coords=*_data=routes*')
-          .as('search')
+        cy.intercept(
+          'GET',
+          '*coords=&search=&page=0&order=recent&sport=&dow=&value=&daypart=*&actionId=search&_data=routes*'
+        )
+          .as('applyFilters')
           .visitAndWaitForHydration(
             '/?index=&coords=&search=&page=0&sport=&dow=&value=&actionId=search'
           )
@@ -330,14 +328,16 @@ describe('Search', () => {
           .get('button[name=filters]')
           .click()
 
-          .get('#5')
+          .get('#daypart-Afternoon')
           .click()
 
           .get('#apply-filters')
-          .click()
+          .click({ force: true })
 
-          .wait('@search')
-          .reload()
+          .wait('@applyFilters')
+
+          .url()
+          .should('include', '&daypart=Afternoon')
           .waitForHydration()
 
           .get('[data-cy=group-schedule]')
@@ -351,9 +351,12 @@ describe('Search', () => {
           });
       });
 
-      it('should return Noon groups', () => {
-        cy.intercept('GET', '/?index=&coords=*_data=routes*')
-          .as('search')
+      it('should return Evening groups', () => {
+        cy.intercept(
+          'GET',
+          '*coords=&search=&page=0&order=recent&sport=&dow=&value=&daypart=*&actionId=search&_data=routes*'
+        )
+          .as('applyFilters')
           .visitAndWaitForHydration(
             '/?index=&coords=&search=&page=0&sport=&dow=&value=&actionId=search'
           )
@@ -362,14 +365,16 @@ describe('Search', () => {
           .get('button[name=filters]')
           .click()
 
-          .get('#6')
+          .get('#daypart-Evening')
           .click()
 
           .get('#apply-filters')
-          .click()
+          .click({ force: true })
 
-          .wait('@search')
-          .reload()
+          .wait('@applyFilters')
+
+          .url()
+          .should('include', '&daypart=Evening')
           .waitForHydration()
 
           .get('[data-cy=group-schedule]')
@@ -384,177 +389,55 @@ describe('Search', () => {
       });
 
       it('should return groups from each day of the week', () => {
-        cy.intercept('GET', '/?index=&coords=*_data=routes*')
+        cy.intercept(
+          'GET',
+          '*coords=&search=&page=0&order=recent&sport=*&dow=*&value=*&actionId=search&_data=root*'
+        )
           .as('search')
           .visitAndWaitForHydration(
             '/?index=&coords=&search=&page=0&sport=&dow=&value=&actionId=search'
           );
 
         // Sunday
-        verifyDayOfWeek(1, 'Domingo');
+        verifyDayOfWeek(1, 'Domingo', 6);
 
         // Monday
-        verifyDayOfWeek(2, 'Segunda-Feira');
+        verifyDayOfWeek(2, 'Segunda-Feira', 0);
 
         // Tuesday
-        verifyDayOfWeek(3, 'Terça-Feira');
+        verifyDayOfWeek(3, 'Terça-Feira', 1);
 
         // Wednesday
-        verifyDayOfWeek(4, 'Quarta-Feira');
+        verifyDayOfWeek(4, 'Quarta-Feira', 2);
 
         // Thursday
-        verifyDayOfWeek(5, 'Quinta-Feira');
+        verifyDayOfWeek(5, 'Quinta-Feira', 3);
 
         // Friday
-        verifyDayOfWeek(6, 'Sexta-Feira');
+        verifyDayOfWeek(6, 'Sexta-Feira', 4);
 
         // Saturday
-        verifyDayOfWeek(7, 'Sábado');
+        verifyDayOfWeek(7, 'Sábado', 5);
       });
 
-      it('should return Convivio groups', () => {
-        cy.intercept('GET', '/*?coords=*_data=routes*')
-          .as('search')
-          .visitAndWaitForHydration('/')
-
-          .get('#search-button')
-          .click()
-
-          .wait('@search')
-          .reload()
-          .waitForHydration()
-
-          .get('button[name=filters]')
-          .click()
-
-          .get('#8')
-          .click()
-
-          .get('#apply-filters')
-          .click()
-
-          .wait('@search')
-          .reload()
-          .waitForHydration()
-
-          .get('div[data-cy=group-spirit]')
-          .should('contain', 'Convívio');
+      it('should return Convívio groups', () => {
+        checkGroupsBySpirit(1, 'Convívio');
       });
 
       it('should return Desportivo groups', () => {
-        cy.intercept('GET', '/*?coords=*_data=routes*')
-          .as('search')
-          .visitAndWaitForHydration('/')
-
-          .get('#search-button')
-          .click()
-
-          .wait('@search')
-          .reload()
-          .waitForHydration()
-
-          .get('button[name=filters]')
-          .click()
-
-          .get('#9')
-          .click()
-
-          .get('#apply-filters')
-          .click()
-
-          .wait('@search')
-          .reload()
-          .waitForHydration()
-
-          .get('div[data-cy=group-spirit]')
-          .should('contain', 'Desportivo');
+        checkGroupsBySpirit(2, 'Desportivo');
       });
 
       it('should return Treino groups', () => {
-        cy.intercept('GET', '/*?coords=*_data=routes*')
-          .as('search')
-          .visitAndWaitForHydration('/')
-
-          .get('#search-button')
-          .click()
-
-          .wait('@search')
-          .reload()
-          .waitForHydration()
-
-          .get('button[name=filters]')
-          .click()
-
-          .get('#10')
-          .click()
-
-          .get('#apply-filters')
-          .click()
-
-          .wait('@search')
-          .reload()
-          .waitForHydration()
-
-          .get('div[data-cy=group-spirit]')
-          .should('contain', 'Treino');
+        checkGroupsBySpirit(3, 'Treino');
       });
 
       it('should return Amizade groups', () => {
-        cy.intercept('GET', '/*?coords=*_data=routes*')
-          .as('search')
-          .visitAndWaitForHydration('/')
-
-          .get('#search-button')
-          .click()
-
-          .wait('@search')
-          .reload()
-          .waitForHydration()
-
-          .get('button[name=filters]')
-          .click()
-
-          .get('#11')
-          .click()
-
-          .get('#apply-filters')
-          .click()
-
-          .wait('@search')
-          .reload()
-          .waitForHydration()
-
-          .get('div[data-cy=group-spirit]')
-          .should('contain', 'Amizade');
+        checkGroupsBySpirit(4, 'Amizade');
       });
 
       it('should return Turismo groups', () => {
-        cy.intercept('GET', '/*?coords=*_data=routes*')
-          .as('search')
-          .visitAndWaitForHydration('/')
-
-          .get('#search-button')
-          .click()
-
-          .wait('@search')
-          .reload()
-          .waitForHydration()
-
-          .get('button[name=filters]')
-          .click()
-
-          .get('#12')
-          .click()
-
-          .get('#apply-filters')
-          .click()
-
-          .wait('@search')
-          .reload()
-          .waitForHydration()
-
-          .get('div[data-cy=group-spirit]')
-          .should('contain', 'Turismo');
+        checkGroupsBySpirit(5, 'Turismo');
       });
 
       context('should return groups from each sport', () => {
@@ -562,7 +445,12 @@ describe('Search', () => {
           cy.intercept('GET', '/?actionId=search*_data=routes*')
             .as('selectSport')
             .intercept('GET', '/?index=&coords=*_data=routes*')
-            .as('search');
+            .as('search')
+            .intercept(
+              'GET',
+              '*coords=&search=&page=*&order=*&sport=*&dow=&value=&actionId=search&_data=routes*'
+            )
+            .as('applyFilters');
 
           checkGroupsBySport(1, 3);
         });
@@ -625,16 +513,19 @@ describe('Search', () => {
   });
 });
 
-function verifyDayOfWeek(filterOption: number, dayOfWeek: string) {
+function verifyDayOfWeek(filterOption: number, dayOfWeek: string, dow: number) {
   cy.get('button[name=filters]')
     .click()
 
     .pickOptionFromSelect('dow', filterOption)
 
     .get('#apply-filters')
-    .click()
+    .click({ force: true })
 
     .wait('@search')
+
+    .url()
+    .should('include', `dow=${dow}`)
     .waitForHydration()
 
     .get('[data-cy=group-schedule]')
@@ -652,7 +543,10 @@ function checkGroupsBySport(sport: number, length: number) {
       .wait('@selectSport')
       .waitForHydration()
 
-      .intercept('GET', '/?index=&coords=*_data=routes*')
+      .intercept(
+        'GET',
+        '*coords=&search=&page=*&order=recent&actionId=more&_data=routes*'
+      )
       .as('seeMore')
 
       .get('#see-more')
@@ -675,15 +569,12 @@ function checkGroupsBySport(sport: number, length: number) {
       .get('button[name=filters]')
       .click()
 
-      .pickOptionFromSelect('sport', sport)
-
-      .intercept('GET', `/?index=&coords*sport=${sport}*`)
-      .as('applyFilter')
+      .pickOptionFromSelect('sport', sport, true)
 
       .get('#apply-filters')
-      .click()
+      .click({ force: true })
 
-      .wait('@applyFilter')
+      .wait('@applyFilters')
       .waitForHydration()
 
       .get('#see-more')
@@ -719,12 +610,12 @@ function checkGroupsBySport(sport: number, length: number) {
       .get('button[name=filters]')
       .click()
 
-      .pickOptionFromSelect('sport', sport)
+      .pickOptionFromSelect('sport', sport, true)
 
       .get('#apply-filters')
-      .click()
+      .click({ force: true })
 
-      .wait('@search')
+      .wait('@applyFilters')
       .waitForHydration()
 
       .get('div[data-cy=group-entry]')
@@ -733,4 +624,34 @@ function checkGroupsBySport(sport: number, length: number) {
       .get('#see-more')
       .should('not.exist');
   }
+}
+
+function checkGroupsBySpirit(filterOption: number, spirit: string) {
+  cy.intercept('GET', '/*?coords=*_data=routes*')
+    .as('search')
+    .visitAndWaitForHydration('/')
+
+    .get('#search-button')
+    .click()
+
+    .wait('@search')
+    .waitForHydration()
+
+    .get('button[name=filters]')
+    .click()
+
+    .get(`#spirit-${filterOption}`)
+    .click({ force: true })
+
+    .get('#apply-filters')
+    .click({ force: true })
+
+    .wait('@search')
+
+    .url()
+    .should('include', `spirit=${filterOption}`)
+    .waitForHydration()
+
+    .get('div[data-cy=group-spirit]')
+    .should('contain', spirit);
 }
