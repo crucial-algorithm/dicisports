@@ -1,4 +1,8 @@
-import type { ActionFunction, LinksFunction, LoaderFunction } from '@remix-run/node';
+import type {
+  ActionFunction,
+  LinksFunction,
+  LoaderFunction
+} from '@remix-run/node';
 import {
   json,
   redirect,
@@ -593,7 +597,12 @@ export default function GroupRoute() {
               </div>
             </FormField>
 
-            <Button name="save-group" className="mt-8" type="submit" form="profile-form">
+            <Button
+              name="save-group"
+              className="mt-8"
+              type="submit"
+              form="profile-form"
+            >
               {isUpdate ? t('Update Group') : t('Create Group')}
             </Button>
             <InputError id="global-error" className="mt-4">
@@ -635,10 +644,11 @@ export default function GroupRoute() {
         onClose={handleDiscardDelete}
         isOpen={deleteModalOpen}
         aria-label="Delete your account"
-        data-cy="delete-dialog"
         title={t('Delete Group X', { name: group?.name })}
       >
-        <Paragraph>{t('Are you sure you want to delete group?')}</Paragraph>
+        <Paragraph data-cy="delete-dialog">
+          {t('Are you sure you want to delete group?')}
+        </Paragraph>
         <Spacer size="2xs" />
         <Form
           id="profile-form"
@@ -651,7 +661,12 @@ export default function GroupRoute() {
             <Button type="button" onClick={handleDiscardDelete}>
               {t("No, I don't want to delete")}
             </Button>
-            <Button variant="danger" size="medium" type="submit" name="confirm-delete">
+            <Button
+              variant="danger"
+              size="medium"
+              type="submit"
+              name="confirm-delete"
+            >
               {t('Delete Group')}
             </Button>
           </ActionsBar>

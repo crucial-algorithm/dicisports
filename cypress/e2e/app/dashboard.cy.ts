@@ -57,7 +57,7 @@ describe('Dashboard', () => {
         .should('exist')
         .and('have.length', 10)
 
-        .get('button[data-cy=next-page]')
+        .get('button[data-cy=page-number]').eq(1)
         .click()
         .wait('@dashboardRequests')
 
@@ -76,7 +76,7 @@ describe('Dashboard', () => {
 
         .get('[data-cy=search]')
         .should('exist')
-        .type('Joaquim Rego')
+        .type('Joaquim Lopes')
 
         .get('button[data-cy=search-participant]')
         .click()
@@ -87,7 +87,7 @@ describe('Dashboard', () => {
         .should('exist')
         .and('have.length', 3)
         .first()
-        .contains('Joaquim Rego');
+        .contains('Joaquim Lopes');
     });
 
     it('should not retrieve results if there is no matching participant name', () => {
@@ -97,7 +97,7 @@ describe('Dashboard', () => {
 
         .get('[data-cy=search]')
         .should('exist')
-        .type('Joaquim Lopes')
+        .type('Joaquim Afonso')
 
         .get('button[data-cy=search-participant]')
         .click()

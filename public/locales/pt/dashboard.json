@@ -20,5 +20,6 @@
   "pending": "Pendente",
   "canceled": "Cancelado",
   "checkout": "Carrinho",
-  "Search": "Procurar"
+  "Search": "Procurar",
+  "Search Placeholder": "Procure atleta por nome"
 }

@@ -143,8 +143,8 @@ async function findRevenueAndRegistrationsPerRace(
                  LEFT JOIN (SELECT rp.id, event_id, race_id
                             FROM race_participants rp
                                      INNER JOIN bookings b on rp.booking_id = b.id
-                            WHERE b.status = '${CheckoutStatus.confirmed}'
-                              AND b.event_id = '${eventId}') as rp on r.id = rp.race_id
+                            WHERE b.status = '${CheckoutStatus.confirmed}') as rp on r.id = rp.race_id
+        WHERE r.event_id = '${eventId}'
         GROUP BY r.id;
     `;
 

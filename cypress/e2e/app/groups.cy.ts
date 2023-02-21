@@ -15,7 +15,7 @@ describe('Groups', () => {
       cy.intercept('GET', '/*?coords=*')
         .as('search')
         .login()
-        .visit('/')
+        .visitAndWaitForHydration('/')
 
         .get('#search-button')
         .click()
@@ -99,7 +99,6 @@ describe('Groups', () => {
 
         .pickOptionFromSelect('dayOfWeek', 3)
         .pickOptionFromSelect('hour', 11)
-        .pickOptionFromSelect('minute', 31)
 
         .get('input[name=whatsapp]')
         .type('https://...')
@@ -125,20 +124,24 @@ describe('Groups', () => {
         .visit('/group/a-new-group')
         .wasImageLoaded('img[data-cy=image1]')
         .get('p[data-cy=schedule]')
-        .contains('Terça-Feira, 10:30 | Domingo, 09:00');
+        .contains('Terça-Feira, 10:00 | Domingo, 09:00');
     });
 
     it('should update group', () => {
       const description = 'Grupo organizado pela bikebrothers';
 
-      cy.visit('/m/group/FkoxmH5db6RXqBpExion')
-        .get('textarea')
+      cy.visitAndWaitForHydration('/m/group/FkoxmH5db6RXqBpExion')
+        .get('textarea[name=description]')
         .type(description)
         .intercept('GET', '/m/groups?message=*')
         .as('createGroup')
         .get('button[name=save-group]')
         .click()
         .wait('@createGroup')
+
+        .url()
+        .should('include', '/m/groups')
+
         .visit('/group/bike-brothers-domingueira')
         .get('[data-cy=description]')
         .contains(description);
