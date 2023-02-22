@@ -23,14 +23,10 @@ describe('Dashboard', () => {
         .wait('@dashboardRequests')
 
         .url()
-        .should('include', 'page=1')
+        .should('include', 'actionId=nextPage')
 
         .get('button[data-cy=next-page]')
-        .click()
-        .wait('@dashboardRequests')
-
-        .url()
-        .should('include', 'page=1')
+        .should('have.prop', 'disabled')
 
         .get('button[data-cy=page-number]')
         .first()
@@ -38,14 +34,10 @@ describe('Dashboard', () => {
         .wait('@dashboardRequests')
 
         .url()
-        .should('include', 'page=0')
+        .should('include', 'set-page=0')
 
         .get('button[data-cy=previous-page]')
-        .click()
-        .wait('@dashboardRequests')
-
-        .url()
-        .should('include', 'page=0');
+        .should('have.prop', 'disabled');
     });
 
     it('should have correct number of participants', () => {
@@ -62,7 +54,7 @@ describe('Dashboard', () => {
         .wait('@dashboardRequests')
 
         .url()
-        .should('include', 'page=1')
+        .should('include', 'set-page=1')
 
         .get('[data-cy=participant-row]')
         .should('exist')

@@ -8,7 +8,11 @@ declare global {
 
       loginAdmin(): Chainable<void>;
 
-      pickOptionFromSelect(name: string, position: number, focused?: boolean): Chainable<void>;
+      pickOptionFromSelect(
+        name: string,
+        position: number,
+        focused?: boolean
+      ): Chainable<void>;
 
       pickLocationInMap(triggerOpenMapButtonName: string): Chainable<void>;
 
@@ -42,11 +46,7 @@ function loginAdmin() {
   );
 }
 
-function pickOptionFromSelect(
-  name: string,
-  position: number,
-  focused = false
-) {
+function pickOptionFromSelect(name: string, position: number, focused = false) {
   // A workaround until we fix the Combo Box's. Ex:
   // When opening the filter's Dialog, the first combo is already focused, so it wasn't doing anything when
   // cypress clicked it
@@ -57,13 +57,13 @@ function pickOptionFromSelect(
 
       .get(`[class*="-menu"] [class*="-option"]:nth-child(${position})`)
       .click();
+  } else {
+    cy.get(`#select-${name}`)
+      .click()
+
+      .get(`[class*="-menu"] [class*="-option"]:nth-child(${position})`)
+      .click();
   }
-
-  cy.get(`#select-${name}`)
-    .click()
-
-    .get(`[class*="-menu"] [class*="-option"]:nth-child(${position})`)
-    .click();
 }
 
 function pickLocationInMap(triggerOpenMapButtonName: string) {

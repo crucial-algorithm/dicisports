@@ -47,10 +47,16 @@ type LoaderData = {
   searchedName: string;
 };
 
+const actionsId = {
+  nextPage: 'nextPage',
+  previousPage: 'previousPage'
+};
+
 export const loader: LoaderFunction = async ({ request, params }) => {
   const user = await requireUser(request);
   const eventId = params.eventId as string;
   const { searchParams } = new URL(request.url);
+  let page = searchParams.get('page')?.length ? Number(searchParams.get('page')) : 0;
 
   const event = (await findEvent(eventId)) as Event;
   const racesRevenueAndRegistrations = await findRevenueAndRegistrationsPerRace(
@@ -65,12 +71,31 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     return redirect('/');
   }
 
-  const page = searchParams.get('page');
   const searchedName = searchParams.get('searched-name');
+
+  // In order to make pagination work on Cypress, we are now doing it server side
+  const actionId = searchParams.get('actionId');
+  const setPage = searchParams.get('set-page');
+
+  // If user presses next/previous page button
+  if (actionId) {
+    if (actionId === actionsId.nextPage) {
+      page += 1;
+    }
+
+    if (actionId === actionsId.previousPage) {
+      page -= 1;
+    }
+  }
+
+  // If user presses specific page button
+  if (setPage?.length) {
+    page = Number(setPage);
+  }
 
   const { results, total } = await findRaceParticipants(
     eventId,
-    page?.length ? Number(page) : 0,
+    page,
     10,
     searchedName?.length ? searchedName : null
   );
@@ -81,7 +106,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     raceParticipants: results,
     totalRaceParticipants: total,
     statsPerRace: await findRegistrationsAddedToCart(eventId),
-    pageNumber: Number(page) || 0,
+    pageNumber: page,
     searchedName: searchedName || ''
   });
 };
@@ -98,7 +123,6 @@ export default function DashboardRoute() {
   } = useLoaderData<LoaderData>() as LoaderData;
   const { t } = useTranslation('dashboard');
 
-  const [page, setPage] = useState<number>(pageNumber);
   const [searchedParticipantName, setSearchedParticipantName] =
     useState<string>(searchedName);
   const [lat, lng] = event?.location?.split(',') || [0, 0];
@@ -112,22 +136,6 @@ export default function DashboardRoute() {
 
   statsPerRace.map((r) => (totalClicks += r.total));
   minPrice = sortedRaces[0];
-
-  function handlePreviousPage() {
-    if (page !== 0 && numberOfPages !== 0) {
-      setPage(page - 1);
-    }
-  }
-
-  function handleNextPage() {
-    if (page + 1 < numberOfPages && numberOfPages !== 0) {
-      setPage(page + 1);
-    }
-  }
-
-  function handleSetPage(e: React.MouseEvent) {
-    setPage(Number(e.currentTarget.id));
-  }
 
   function handleSearchedName(e: ChangeEvent<HTMLInputElement>) {
     setSearchedParticipantName(e.target.value);
@@ -307,7 +315,7 @@ export default function DashboardRoute() {
       </Form>
 
       <Form method="get">
-        <input type="hidden" value={page} name="page" />
+        <input type="hidden" value={pageNumber} name="page" />
 
         {searchedName.length > 0 && (
           <input
@@ -366,9 +374,12 @@ export default function DashboardRoute() {
                       <li>
                         <button
                           type="submit"
-                          onClick={handlePreviousPage}
+                          // onClick={handlePreviousPage}
                           className="block px-3 py-2 ml-0 leading-tight text-gray-500 bg-white border border-gray-300 rounded-l-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
                           data-cy="previous-page"
+                          name="actionId"
+                          value={actionsId.previousPage}
+                          disabled={pageNumber === 0}
                         >
                           <ChevronLeftIcon className="h-5 w-5" />
                         </button>
@@ -380,13 +391,14 @@ export default function DashboardRoute() {
                           <li key={index}>
                             <button
                               id={String(index)}
-                              onClick={handleSetPage}
                               className={clsx({
                                 'px-3 py-2 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white':
-                                  index !== page,
+                                  index !== pageNumber,
                                 'z-10 px-3 py-2 leading-tight text-blue-600 border border-blue-300 bg-blue-50 hover:bg-blue-100 hover:text-blue-700 dark:border-gray-700 dark:bg-gray-700 dark:text-white':
-                                  index === page
+                                  index === pageNumber
                               })}
+                              name="set-page"
+                              value={index}
                               data-cy="page-number"
                             >
                               {index + 1}
@@ -396,9 +408,12 @@ export default function DashboardRoute() {
                       <li>
                         <button
                           type="submit"
-                          onClick={handleNextPage}
+                          // onClick={handleNextPage}
                           className="block px-3 py-2 leading-tight text-gray-500 bg-white border border-gray-300 rounded-r-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
                           data-cy="next-page"
+                          name="actionId"
+                          value={actionsId.nextPage}
+                          disabled={pageNumber + 1 === numberOfPages}
                         >
                           <ChevronRightIcon className="h-5 w-5" />
                         </button>
