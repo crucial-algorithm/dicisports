@@ -468,11 +468,13 @@ export default function OrganizerEventRoute() {
                 (isPublished ? (
                   <div className="flex flex-col justify-center md:flex-row">
                     <Button
+                      id="unpublish"
                       className="mb-4 md:mb-0"
-                      onClick={handleUnpublish}
+                      name="actionId"
                       type="submit"
                       size="medium"
-                      name="unpublish"
+                      data-cy="unpublish"
+                      value={actionIds.unpublish}
                     >
                       {t('Unpublish Button')}
                     </Button>
@@ -490,11 +492,13 @@ export default function OrganizerEventRoute() {
                 ) : (
                   <div className="flex flex-col justify-center md:flex-row">
                     <Button
+                      id="publish"
                       className="mb-4 md:mb-0"
-                      onClick={handlePublish}
+                      name="actionId"
                       type="submit"
                       size="medium"
-                      name="publish"
+                      data-cy="publish"
+                      value={actionIds.publish}
                     >
                       {t('Publish Button')}
                     </Button>
@@ -511,7 +515,6 @@ export default function OrganizerEventRoute() {
                   </div>
                 ))}
 
-              <input type="hidden" name="actionId" value={actionId || ''} />
             </div>
           </div>
           <FormField

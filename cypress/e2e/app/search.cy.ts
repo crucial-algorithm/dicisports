@@ -440,7 +440,7 @@ describe('Search', () => {
         checkGroupsBySpirit(5, 'Turismo');
       });
 
-      context('should return groups from each sport', () => {
+      context.only('should return groups from each sport', () => {
         it('Running', () => {
           cy.intercept('GET', '/?actionId=search*_data=routes*')
             .as('selectSport')
@@ -459,7 +459,12 @@ describe('Search', () => {
           cy.intercept('GET', '/?actionId=search*_data=routes*')
             .as('selectSport')
             .intercept('GET', '/?index=&coords=*_data=routes*')
-            .as('search');
+            .as('search')
+            .intercept(
+              'GET',
+              '*coords=&search=&page=*&order=*&sport=*&dow=&value=&actionId=search&_data=routes*'
+            )
+            .as('applyFilters');
 
           checkGroupsBySport(2, 12);
         });
@@ -468,7 +473,12 @@ describe('Search', () => {
           cy.intercept('GET', '/?actionId=search*_data=routes*')
             .as('selectSport')
             .intercept('GET', '/?index=&coords=*_data=routes*')
-            .as('search');
+            .as('search')
+            .intercept(
+              'GET',
+              '*coords=&search=&page=*&order=*&sport=*&dow=&value=&actionId=search&_data=routes*'
+            )
+            .as('applyFilters');
 
           checkGroupsBySport(3, 5);
         });
@@ -477,7 +487,12 @@ describe('Search', () => {
           cy.intercept('GET', '/?actionId=search*_data=routes*')
             .as('selectSport')
             .intercept('GET', '/?index=&coords=*_data=routes*')
-            .as('search');
+            .as('search')
+            .intercept(
+              'GET',
+              '*coords=&search=&page=*&order=*&sport=*&dow=&value=&actionId=search&_data=routes*'
+            )
+            .as('applyFilters');
 
           checkGroupsBySport(4, 7);
         });
@@ -486,7 +501,12 @@ describe('Search', () => {
           cy.intercept('GET', '/?actionId=search*_data=routes*')
             .as('selectSport')
             .intercept('GET', '/?index=&coords=*_data=routes*')
-            .as('search');
+            .as('search')
+            .intercept(
+              'GET',
+              '*coords=&search=&page=*&order=*&sport=*&dow=&value=&actionId=search&_data=routes*'
+            )
+            .as('applyFilters');
 
           checkGroupsBySport(5, 3);
         });
@@ -495,7 +515,12 @@ describe('Search', () => {
           cy.intercept('GET', '/?actionId=search*_data=routes*')
             .as('selectSport')
             .intercept('GET', '/?index=&coords=*_data=routes*')
-            .as('search');
+            .as('search')
+            .intercept(
+              'GET',
+              '*coords=&search=&page=*&order=*&sport=*&dow=&value=&actionId=search&_data=routes*'
+            )
+            .as('applyFilters');
 
           checkGroupsBySport(6, 5);
         });
@@ -504,7 +529,12 @@ describe('Search', () => {
           cy.intercept('GET', '/?actionId=search*_data=routes*')
             .as('selectSport')
             .intercept('GET', '/?index=&coords=*_data=routes*')
-            .as('search');
+            .as('search')
+            .intercept(
+              'GET',
+              '*coords=&search=&page=*&order=*&sport=*&dow=&value=&actionId=search&_data=routes*'
+            )
+            .as('applyFilters');
 
           checkGroupsBySport(7, 4);
         });

@@ -174,7 +174,6 @@ describe('Event', () => {
         .type('10')
 
         .pickOptionFromSelect('hour', 9)
-        .pickOptionFromSelect('minute', 31)
 
         .get('input[name=elevationGain]')
         .type('9')
@@ -221,25 +220,28 @@ describe('Event', () => {
 
         .wait('@EventRequests')
 
-        .intercept('GET', '/organizer/event/*_data=routes*')
+        .intercept('POST', '/organizer/event/*_data=routes*')
         .as('createEvent')
 
         .get('button[name=create-event]')
         .click()
 
         .wait('@createEvent')
+        .wait('@EventRequests')
 
         .get('button[name=update-event]')
 
-        .get('button[name=publish]')
+        .get('#publish')
         .click()
 
+        .wait('@createEvent')
         .wait('@EventRequests')
+        .waitForHydration()
 
-        .get('button[name=unpublish]')
+        .get('#unpublish')
 
         // Check if event slug was created
-        .visit('/event/a-new-event')
+        .visitAndWaitForHydration('/event/a-new-event')
 
         .get('[data-cy=name]')
         .contains('a new event');

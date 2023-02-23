@@ -1,6 +1,6 @@
-import type { SyntheticEvent } from 'react';
+import type { MutableRefObject, SyntheticEvent } from 'react';
 import * as React from 'react';
-import { useEffect, useRef, useState } from 'react';
+import { ChangeEvent, useEffect, useRef, useState } from 'react';
 import type { LoaderFunction, MetaFunction } from '@remix-run/node';
 import { json } from '@remix-run/node';
 import {
@@ -8,7 +8,8 @@ import {
   Link,
   useFetcher,
   useLoaderData,
-  useLocation
+  useLocation,
+  useSearchParams
 } from '@remix-run/react';
 import { useTranslation } from 'react-i18next';
 
@@ -215,6 +216,17 @@ const dayPartToTimeInterval = (dayPart: string): [number, number] => {
   }
 };
 
+const timeOfDayToDayPart = (timeOfDay: number) => {
+  switch (true) {
+    case (timeOfDay >= 0) && (timeOfDay <= 1159):
+      return dayParts.morning;
+    case timeOfDay >= 1200 && timeOfDay <= 1959:
+      return dayParts.afternoon;
+    case timeOfDay >= 2000 && timeOfDay <= 2359:
+      return dayParts.evening;
+  }
+};
+
 const reduceDayParts = (parts: [number, number][]): [number, number] => {
   const flattened: number[] = [];
 
@@ -285,7 +297,6 @@ export default function Index() {
     useLoaderData<LoaderData>();
   const [selection, setSelection] = useState<DiciLocation | undefined>();
   const data = result;
-  const [page, setPage] = useState<number>(data?.page || 0);
   const [groups, setGroups] = useState<Array<Group & { position: number }>>([]);
   const [filtersModalOpen, setFiltersModalOpen] = useState<boolean>(false);
   const [searchPerformed, setSearchPerformed] = useState<boolean>(false);
@@ -322,12 +333,10 @@ export default function Index() {
 
     const { reset, results } = result as ActionData;
 
-    if (reset) {
-      setPage(0);
-    }
     if (!results) {
       return;
     }
+
     const list = reset ? [] : [...groups];
 
     results.map((r, index) => list.push({ ...r, position: index }));
@@ -366,9 +375,9 @@ export default function Index() {
     setFiltersModalOpen(false);
   }
 
-  function handleLoadNextPage() {
-    setPage(page + 1);
-  }
+  // function handleLoadNextPage() {
+  //   setPage(page + 1);
+  // }
 
   function handleResetSearchPerformed() {
     setSearchPerformed(false);
@@ -422,6 +431,8 @@ export default function Index() {
     );
   }
 
+  const selectedDayParts = data.results.filters.timeOfDay.map((v: number) => timeOfDayToDayPart(v));
+
   return (
     <Main className="dark:text-blueGray-500 relative mb-8">
       <TransitionIndicator
@@ -440,6 +451,11 @@ export default function Index() {
           name="search"
         />
         <input type="hidden" name="page" value={result?.page || 0} />
+        {/*<input type="hidden" name="datOfWeek" value={String(selectedDOW)} />*/}
+        {selectedDayParts &&
+          selectedDayParts.map((p: string) => (
+            <input key={p} type="hidden" name="daypart" value={p} />
+          ))}
         <div className="flex align-middle justify-center">
           <Link to="/" onClick={handleResetSearchPerformed}>
             <HomeLogo className="w-80 h-16 md:w-96 lg:w-144" />
@@ -476,7 +492,6 @@ export default function Index() {
           filters={filters}
           coords={selection ? selection.coords : ''}
           search={selection ? selection.address : ''}
-          page={result?.page || 0}
           order={orderBy}
         />
         {searchPerformed ? (
@@ -513,7 +528,7 @@ export default function Index() {
                 id="see-more"
                 name="actionId"
                 value={actions.more}
-                onClick={handleLoadNextPage}
+                formMethod="get"
               >
                 <ChevronDownIcon width="22" /> {t('Load More')}
               </Button>
@@ -591,18 +606,20 @@ export default function Index() {
         onClose={handleCloseLocationFailedWarning}
         isOpen={isLocationFailedWarningOpened}
         aria-label="Location Failed"
-        SecondaryAction={(<Button
-          variant="danger"
-          size="medium"
-          type="button"
-          onClick={handleCloseLocationFailedWarning}
-        >
-          {t('Failed to find Your Location Close')}
-        </Button>)}
+        SecondaryAction={
+          <Button
+            variant="danger"
+            size="medium"
+            type="button"
+            onClick={handleCloseLocationFailedWarning}
+          >
+            {t('Failed to find Your Location Close')}
+          </Button>
+        }
       >
         <H3 className="mb-4">{t('Failed to find Your Location Title')}</H3>
         <Paragraph>{t('Failed to find Your Location Hint')}</Paragraph>
-        <Spacer size="2xs"/>
+        <Spacer size="2xs" />
       </Dialog>
     </Main>
   );
@@ -750,7 +767,10 @@ function GroupResult({
           </ButtonGroup>
         }
         footer={
-          <div className="font-medium text-gray-500 dark:text-white flex items-center justify-center" data-cy="distance">
+          <div
+            className="font-medium text-gray-500 dark:text-white flex items-center justify-center"
+            data-cy="distance"
+          >
             {userLocation && showLocation && (
               <span>{Math.ceil(group.distance || 0)} km</span>
             )}
@@ -832,11 +852,20 @@ function FiltersDialog(props: {
   onSubmit: () => void;
   coords?: string;
   search?: string;
-  page: number;
   order: SortMethod;
 }) {
   const { t, i18n } = useTranslation('home');
-  const { isOpen, sports, groupsSpirit, triggerModalClose, filters, onSubmit, coords, search, page, order } = props;
+  const {
+    isOpen,
+    sports,
+    groupsSpirit,
+    triggerModalClose,
+    filters,
+    onSubmit,
+    coords,
+    search,
+    order
+  } = props;
   const sportsOptions: Option[] = [];
   const form = useRef<HTMLFormElement>(null);
 
@@ -851,16 +880,16 @@ function FiltersDialog(props: {
     });
 
   return (
-    <Dialog isOpen={isOpen}
-            onClose={triggerModalClose}>
+    <Dialog isOpen={isOpen} onClose={triggerModalClose}>
       <Form method="get" onSubmit={onSubmit} ref={form}>
         <input type="hidden" name="coords" value={coords} />
         <input type="hidden" name="search" value={search} />
-        <input type="hidden" name="page" value={page} />
         <input type="hidden" name="order" value={order} />
         <div className="relative">
           <div className="px-6 py-2 flex flex-col items-center lg:px-24 lg:py-14">
-            <H3 data-cy="dialog-title" className="w-full md:w-112 text-left">{t('Filters')}</H3>
+            <H3 data-cy="dialog-title" className="w-full md:w-112 text-left">
+              {t('Filters')}
+            </H3>
             <Spacer size="2xs" />
 
             <FormField
@@ -939,11 +968,7 @@ function FiltersDialog(props: {
           </div>
         </div>
         <ActionsBar>
-          <Button
-            variant="secondary"
-            type="button"
-            onClick={triggerModalClose}
-          >
+          <Button variant="secondary" type="button" onClick={triggerModalClose}>
             {t('Cancel')}
           </Button>
           <Button
@@ -960,7 +985,6 @@ function FiltersDialog(props: {
       </Form>
     </Dialog>
   );
-
 }
 
 function DisplayFilters(props: {
