@@ -1,8 +1,14 @@
 import { useActionData, useFetcher, useLoaderData } from '@remix-run/react';
-import type { ActionFunction, LinksFunction, LoaderFunction } from '@remix-run/node';
+import type {
+  ActionFunction,
+  LinksFunction,
+  LoaderFunction,
+  UploadHandler
+} from '@remix-run/node';
 import {
   json,
   redirect,
+  unstable_composeUploadHandlers,
   unstable_createMemoryUploadHandler,
   unstable_parseMultipartFormData
 } from '@remix-run/node';
@@ -13,9 +19,6 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { z, ZodError } from 'zod';
 
 import mapBoxGlCss from 'mapbox-gl/dist/mapbox-gl.css';
-
-import type { UploadHandler } from '@remix-run/node';
-import { unstable_composeUploadHandlers } from '@remix-run/node';
 
 import { useTranslation } from 'react-i18next';
 
@@ -56,8 +59,7 @@ import Button, { ButtonLink } from '~/components/shared/Button';
 
 import { inputBaseClasses } from '~/components/shared/form/InputBase';
 import Config from '~/server/config.server';
-import { findSports } from '~/server/db/reference.server';
-import { findDifficulties } from '~/server/db/reference.server';
+import { findDifficulties, findSports } from '~/server/db/reference.server';
 import {
   findEvent,
   publishEvent,
@@ -365,7 +367,6 @@ export default function OrganizerEventRoute() {
     show: false,
     hash: 0
   });
-  const [actionId, setActionId] = useState<string | null>(null);
   const inputEl = useRef(null);
   const isPublished = event.status === Status.published;
 
@@ -419,14 +420,6 @@ export default function OrganizerEventRoute() {
     setSowDocumentsDialog({ show: false, hash: 0 });
   }
 
-  function handlePublish() {
-    setActionId(actionIds.publish);
-  }
-
-  function handleUnpublish() {
-    setActionId(actionIds.unpublish);
-  }
-
   function handleUpdateRace(e: React.MouseEvent) {
     const race = races.find((r) => r.id === e.currentTarget.id);
 
@@ -452,7 +445,6 @@ export default function OrganizerEventRoute() {
 
   useEffect(() => {
     setRaces(dbRaces);
-    setActionId('');
   }, [dbRaces]);
 
   return (

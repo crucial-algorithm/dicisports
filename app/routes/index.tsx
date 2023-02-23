@@ -1,6 +1,6 @@
-import type { MutableRefObject, SyntheticEvent } from 'react';
+import type { SyntheticEvent } from 'react';
 import * as React from 'react';
-import { ChangeEvent, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { LoaderFunction, MetaFunction } from '@remix-run/node';
 import { json } from '@remix-run/node';
 import {
@@ -8,8 +8,7 @@ import {
   Link,
   useFetcher,
   useLoaderData,
-  useLocation,
-  useSearchParams
+  useLocation
 } from '@remix-run/react';
 import { useTranslation } from 'react-i18next';
 
@@ -19,7 +18,7 @@ import {
   HeartIcon as Favorite
 } from '@heroicons/react/24/solid';
 
-import { HeartIcon, XCircleIcon } from '@heroicons/react/24/outline';
+import { HeartIcon } from '@heroicons/react/24/outline';
 
 import clsx from 'clsx';
 
@@ -46,8 +45,7 @@ import ButtonGroup from '~/components/shared/ButtonGroup';
 import { H3, Paragraph } from '~/components/shared/typography';
 import FormField from '~/components/shared/form/FormField';
 import CheckBox from '~/components/shared/form/CheckBox';
-import { findGroupsSpirit } from '~/server/db/reference.server';
-import { findSports } from '~/server/db/reference.server';
+import { findGroupsSpirit, findSports } from '~/server/db/reference.server';
 import type { Option } from '~/components/shared/form/ComboBox';
 import ComboBox from '~/components/shared/form/ComboBox';
 
@@ -140,6 +138,7 @@ export const loader: LoaderFunction = async ({ request, params, context }) => {
     const locationSession = await getLocationSession(request);
     const [lat, lng] = locationSession.getLocation() || [];
 
+    console.log(data);
     result = await search(
       data.dayParts,
       data.spirit,
@@ -162,7 +161,8 @@ export const loader: LoaderFunction = async ({ request, params, context }) => {
     groupsSpirit: await findGroupsSpirit(),
     favorites,
     result,
-    mapToken: MAPBOX_TOKEN
+    mapToken: MAPBOX_TOKEN,
+    selectedDayParts: data.dayParts
   });
 };
 
@@ -213,17 +213,6 @@ const dayPartToTimeInterval = (dayPart: string): [number, number] => {
       return [2000, 2359];
     default:
       return [0, 2400];
-  }
-};
-
-const timeOfDayToDayPart = (timeOfDay: number) => {
-  switch (true) {
-    case (timeOfDay >= 0) && (timeOfDay <= 1159):
-      return dayParts.morning;
-    case timeOfDay >= 1200 && timeOfDay <= 1959:
-      return dayParts.afternoon;
-    case timeOfDay >= 2000 && timeOfDay <= 2359:
-      return dayParts.evening;
   }
 };
 
@@ -293,8 +282,14 @@ export default function Index() {
   const { user } = useRootData();
   const lang = i18n.language as Language;
   const tc = useTranslation('common').t;
-  const { sports, groupsSpirit, result, favorites, mapToken } =
-    useLoaderData<LoaderData>();
+  const {
+    sports,
+    groupsSpirit,
+    result,
+    favorites,
+    mapToken,
+    selectedDayParts
+  } = useLoaderData<LoaderData>();
   const [selection, setSelection] = useState<DiciLocation | undefined>();
   const data = result;
   const [groups, setGroups] = useState<Array<Group & { position: number }>>([]);
@@ -431,7 +426,9 @@ export default function Index() {
     );
   }
 
-  const selectedDayParts = data.results.filters.timeOfDay.map((v: number) => timeOfDayToDayPart(v));
+  const selectedDayOfWeek: string = data?.filters?.dayOfWeek || '';
+  const selectedSport: string = data?.filters?.sport || '';
+  const selectedSpirit: string[] = data?.filters?.spirit || [];
 
   return (
     <Main className="dark:text-blueGray-500 relative mb-8">
@@ -451,10 +448,15 @@ export default function Index() {
           name="search"
         />
         <input type="hidden" name="page" value={result?.page || 0} />
-        {/*<input type="hidden" name="datOfWeek" value={String(selectedDOW)} />*/}
+        <input type="hidden" name="dow" value={selectedDayOfWeek} />
+        <input type="hidden" name="sport" value={selectedSport} />
         {selectedDayParts &&
           selectedDayParts.map((p: string) => (
             <input key={p} type="hidden" name="daypart" value={p} />
+          ))}
+        {selectedSpirit &&
+          selectedSpirit.map((v) => (
+            <input key={v} type="hidden" name="spirit" value={v} />
           ))}
         <div className="flex align-middle justify-center">
           <Link to="/" onClick={handleResetSearchPerformed}>

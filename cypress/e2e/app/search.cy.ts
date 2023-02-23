@@ -50,14 +50,13 @@ describe('Search', () => {
       cy.intercept('GET', '/*?coords=*')
         .as('search')
         .login()
-        .visit('/')
+        .visitAndWaitForHydration('/')
 
         .get('#search-button')
         .click()
 
         .wait('@search')
 
-        .reload()
         .get('button[name=create-your-group]')
         .click()
 
@@ -275,11 +274,10 @@ describe('Search', () => {
 
     context('Test all filters', () => {
       it('should return Morning groups', () => {
-        cy.intercept(
-          'GET',
-          '*coords=&search=&page=0&order=recent&sport=&dow=&value=&daypart=*&actionId=search&_data=routes*'
-        )
+        cy.intercept('GET', '*coords*&daypart=*&actionId=search&_data=routes*')
           .as('applyFilters')
+          .intercept('GET', '/?coords=*&page=*&daypart=*&actionId=more&_data=routes*')
+          .as('seeMore')
           .visitAndWaitForHydration(
             '/?index=&coords=&search=&page=0&sport=&dow=&value=&actionId=search'
           )
@@ -296,30 +294,37 @@ describe('Search', () => {
 
           .wait('@applyFilters')
 
+          .waitForHydration()
+
           .url()
-          .should('include', '&daypart=Morning')
+          .should(
+            'eq',
+            `${
+              Cypress.config().baseUrl
+            }/?coords=&search=&order=recent&sport=&dow=&value=&daypart=Morning&actionId=search`
+          )
+
+          .get('#see-more')
+          .click()
+
+          .wait('@seeMore')
+          .waitForHydration()
+
+          .get('#see-more')
+          .click()
+
+          .wait('@seeMore')
           .waitForHydration()
 
           .get('[data-cy=group-schedule]')
-          .each((text) => {
-            // Get text from JQuery object and split day of the week and hour
-            const schedule = Cypress.$(text).text().split(',');
-            // Get time of the day from schedule
-            const time = schedule[1];
-            // Split time of the day and trim to get hour
-            const hour = time.split(':')[0].trim();
-
-            // Cast string to number and compare
-            expect(Number(hour)).to.be.lessThan(12);
-          });
+          .should('have.length', 21);
       });
 
       it('should return Afternoon groups', () => {
-        cy.intercept(
-          'GET',
-          '*coords=&search=&page=0&order=recent&sport=&dow=&value=&daypart=*&actionId=search&_data=routes*'
-        )
+        cy.intercept('GET', '*coords*&daypart=*&actionId=search&_data=routes*')
           .as('applyFilters')
+          .intercept('GET', '/?coords=*&page=*&daypart=*&actionId=more&_data=routes*')
+          .as('seeMore')
           .visitAndWaitForHydration(
             '/?index=&coords=&search=&page=0&sport=&dow=&value=&actionId=search'
           )
@@ -336,26 +341,28 @@ describe('Search', () => {
 
           .wait('@applyFilters')
 
+          .waitForHydration()
+
           .url()
-          .should('include', '&daypart=Afternoon')
+          .should(
+            'eq',
+            `${
+              Cypress.config().baseUrl
+            }/?coords=&search=&order=recent&sport=&dow=&value=&daypart=Afternoon&actionId=search`
+          )
+
+          .get('#see-more')
+          .click()
+
+          .wait('@seeMore')
           .waitForHydration()
 
           .get('[data-cy=group-schedule]')
-          .each((text) => {
-            const schedule = Cypress.$(text).text().split(',');
-            const time = schedule[1];
-            const hour = time.split(':')[0].trim();
-
-            expect(Number(hour)).to.be.lessThan(20);
-            expect(Number(hour)).to.be.greaterThan(11);
-          });
+          .should('have.length', 13);
       });
 
       it('should return Evening groups', () => {
-        cy.intercept(
-          'GET',
-          '*coords=&search=&page=0&order=recent&sport=&dow=&value=&daypart=*&actionId=search&_data=routes*'
-        )
+        cy.intercept('GET', '*coords*&daypart=*&actionId=search&_data=routes*')
           .as('applyFilters')
           .visitAndWaitForHydration(
             '/?index=&coords=&search=&page=0&sport=&dow=&value=&actionId=search'
@@ -373,26 +380,22 @@ describe('Search', () => {
 
           .wait('@applyFilters')
 
-          .url()
-          .should('include', '&daypart=Evening')
           .waitForHydration()
 
-          .get('[data-cy=group-schedule]')
-          .each((text) => {
-            const schedule = Cypress.$(text).text().split(',');
-            const time = schedule[1];
-            const hour = time.split(':')[0].trim();
+          .url()
+          .should(
+            'eq',
+            `${
+              Cypress.config().baseUrl
+            }/?coords=&search=&order=recent&sport=&dow=&value=&daypart=Evening&actionId=search`
+          )
 
-            expect(Number(hour)).to.be.lessThan(24);
-            expect(Number(hour)).to.be.greaterThan(19);
-          });
+          .get('[data-cy=group-schedule]')
+          .should('have.length', 5);
       });
 
       it('should return groups from each day of the week', () => {
-        cy.intercept(
-          'GET',
-          '*coords=&search=&page=0&order=recent&sport=*&dow=*&value=*&actionId=search&_data=root*'
-        )
+        cy.intercept('GET', '*coords=*&dow=*&_data=routes%2Findex')
           .as('search')
           .visitAndWaitForHydration(
             '/?index=&coords=&search=&page=0&sport=&dow=&value=&actionId=search'
@@ -440,102 +443,41 @@ describe('Search', () => {
         checkGroupsBySpirit(5, 'Turismo');
       });
 
-      context.only('should return groups from each sport', () => {
-        it('Running', () => {
+      context('should return groups from each sport', () => {
+        beforeEach(() => {
           cy.intercept('GET', '/?actionId=search*_data=routes*')
             .as('selectSport')
             .intercept('GET', '/?index=&coords=*_data=routes*')
             .as('search')
-            .intercept(
-              'GET',
-              '*coords=&search=&page=*&order=*&sport=*&dow=&value=&actionId=search&_data=routes*'
-            )
+            .intercept('GET', '?coords=*&sport=*&actionId=search*')
             .as('applyFilters');
+        });
 
+        it('Running', () => {
           checkGroupsBySport(1, 3);
         });
 
         it('Trail', () => {
-          cy.intercept('GET', '/?actionId=search*_data=routes*')
-            .as('selectSport')
-            .intercept('GET', '/?index=&coords=*_data=routes*')
-            .as('search')
-            .intercept(
-              'GET',
-              '*coords=&search=&page=*&order=*&sport=*&dow=&value=&actionId=search&_data=routes*'
-            )
-            .as('applyFilters');
-
           checkGroupsBySport(2, 12);
         });
 
         it('Road', () => {
-          cy.intercept('GET', '/?actionId=search*_data=routes*')
-            .as('selectSport')
-            .intercept('GET', '/?index=&coords=*_data=routes*')
-            .as('search')
-            .intercept(
-              'GET',
-              '*coords=&search=&page=*&order=*&sport=*&dow=&value=&actionId=search&_data=routes*'
-            )
-            .as('applyFilters');
-
           checkGroupsBySport(3, 5);
         });
 
         it('BTT', () => {
-          cy.intercept('GET', '/?actionId=search*_data=routes*')
-            .as('selectSport')
-            .intercept('GET', '/?index=&coords=*_data=routes*')
-            .as('search')
-            .intercept(
-              'GET',
-              '*coords=&search=&page=*&order=*&sport=*&dow=&value=&actionId=search&_data=routes*'
-            )
-            .as('applyFilters');
-
           checkGroupsBySport(4, 7);
         });
 
         it('E-Bike', () => {
-          cy.intercept('GET', '/?actionId=search*_data=routes*')
-            .as('selectSport')
-            .intercept('GET', '/?index=&coords=*_data=routes*')
-            .as('search')
-            .intercept(
-              'GET',
-              '*coords=&search=&page=*&order=*&sport=*&dow=&value=&actionId=search&_data=routes*'
-            )
-            .as('applyFilters');
-
           checkGroupsBySport(5, 3);
         });
 
         it('Gravel', () => {
-          cy.intercept('GET', '/?actionId=search*_data=routes*')
-            .as('selectSport')
-            .intercept('GET', '/?index=&coords=*_data=routes*')
-            .as('search')
-            .intercept(
-              'GET',
-              '*coords=&search=&page=*&order=*&sport=*&dow=&value=&actionId=search&_data=routes*'
-            )
-            .as('applyFilters');
-
           checkGroupsBySport(6, 5);
         });
 
         it('Enduro', () => {
-          cy.intercept('GET', '/?actionId=search*_data=routes*')
-            .as('selectSport')
-            .intercept('GET', '/?index=&coords=*_data=routes*')
-            .as('search')
-            .intercept(
-              'GET',
-              '*coords=&search=&page=*&order=*&sport=*&dow=&value=&actionId=search&_data=routes*'
-            )
-            .as('applyFilters');
-
           checkGroupsBySport(7, 4);
         });
       });
@@ -584,6 +526,9 @@ function checkGroupsBySport(sport: number, length: number) {
 
       .wait('@seeMore')
       .waitForHydration()
+
+      .url()
+      .should('include', 'actionId=more')
 
       .get('#see-more')
       .should('not.exist')
