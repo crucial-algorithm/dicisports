@@ -1,18 +1,38 @@
 describe('Dashboard', () => {
   beforeEach(() => {
     cy.task('db:reset');
-    cy.loginAdmin();
+  });
+
+  context('Security', () => {
+    it('should not be able to access dashboard: unauthenticated', () => {
+      cy.visitAndWaitForHydration('/organizer/dashboard/MY4bvgxDbMtGv8rbYe5d')
+
+        .url()
+        .should('equal', Cypress.config().baseUrl + '/login');
+    });
+
+    it('should not be able to access non-owned event dashboard: authenticated', () => {
+      cy.login()
+        .visitAndWaitForHydration('/organizer/dashboard/MY4bvgxDbMtGv8rbYe5d')
+
+        .url()
+        .should('equal', Cypress.config().baseUrl + '/');
+    });
   });
 
   context('General', () => {
+    beforeEach(() => {
+      cy.loginAdmin();
+    });
+
     it('should have correct number of pages', () => {
-      cy.visitAndWaitForHydration('/dashboard/MY4bvgxDbMtGv8rbYe5d')
+      cy.visitAndWaitForHydration('/organizer/dashboard/MY4bvgxDbMtGv8rbYe5d')
         .get('button[data-cy=page-number]')
         .should('exist')
         .and('have.length', 2);
     });
     it('should change pages and stop when its the last/first page', () => {
-      cy.visitAndWaitForHydration('/dashboard/MY4bvgxDbMtGv8rbYe5d')
+      cy.visitAndWaitForHydration('/organizer/dashboard/MY4bvgxDbMtGv8rbYe5d')
         .intercept('GET', '*?page=*_data=routes*')
         .as('dashboardRequests')
 
@@ -41,7 +61,7 @@ describe('Dashboard', () => {
     });
 
     it('should have correct number of participants', () => {
-      cy.visitAndWaitForHydration('/dashboard/MY4bvgxDbMtGv8rbYe5d')
+      cy.visitAndWaitForHydration('/organizer/dashboard/MY4bvgxDbMtGv8rbYe5d')
         .intercept('GET', '*?page=*_data=routes*')
         .as('dashboardRequests')
 
@@ -49,7 +69,8 @@ describe('Dashboard', () => {
         .should('exist')
         .and('have.length', 10)
 
-        .get('button[data-cy=page-number]').eq(1)
+        .get('button[data-cy=page-number]')
+        .eq(1)
         .click()
         .wait('@dashboardRequests')
 
@@ -62,7 +83,7 @@ describe('Dashboard', () => {
     });
 
     it('should search participant by name', () => {
-      cy.visitAndWaitForHydration('/dashboard/MY4bvgxDbMtGv8rbYe5d')
+      cy.visitAndWaitForHydration('/organizer/dashboard/MY4bvgxDbMtGv8rbYe5d')
         .intercept('GET', '*?searched-name=*_data=routes*')
         .as('dashboardRequests')
 
@@ -83,7 +104,7 @@ describe('Dashboard', () => {
     });
 
     it('should not retrieve results if there is no matching participant name', () => {
-      cy.visitAndWaitForHydration('/dashboard/MY4bvgxDbMtGv8rbYe5d')
+      cy.visitAndWaitForHydration('/organizer/dashboard/MY4bvgxDbMtGv8rbYe5d')
         .intercept('GET', '*?searched-name=*_data=routes*')
         .as('dashboardRequests')
 
