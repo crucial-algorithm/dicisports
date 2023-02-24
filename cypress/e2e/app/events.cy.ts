@@ -357,9 +357,9 @@ describe('Event', () => {
         .click()
 
         .wait('@EventRequests')
+        .waitForHydration()
 
         .visitAndWaitForHydration('/event/love-tiles-douro-granfondo-2023')
-        .reload()
 
         .get('label[data-cy=perk-9]')
         .contains('a new perk');
