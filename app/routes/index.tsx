@@ -138,7 +138,6 @@ export const loader: LoaderFunction = async ({ request, params, context }) => {
     const locationSession = await getLocationSession(request);
     const [lat, lng] = locationSession.getLocation() || [];
 
-    console.log(data);
     result = await search(
       data.dayParts,
       data.spirit,

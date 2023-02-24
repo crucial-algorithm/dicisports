@@ -158,16 +158,26 @@ describe('Search', () => {
     });
 
     it('should copy to clipboard', { browser: 'chrome' }, () => {
-      cy.visitAndWaitForHydration('/?actionId=search&sport=5')
+      cy.wrap(
+        Cypress.automation('remote:debugger:protocol', {
+          command: 'Browser.grantPermissions',
+          params: {
+            permissions: ['clipboardReadWrite', 'clipboardSanitizedWrite'],
+            origin: window.location.origin
+          }
+        })
+      ).then(() => {
+        cy.visitAndWaitForHydration('/?actionId=search&sport=5')
 
-        .get('button[name=share-334a3081b9dd416e384d]')
-        .focus()
-        .click()
-        .then(() => {
-          cy.assertValueCopiedToClipboard(
-            '/group/associaco-recreativa-alfandega-da-fe'
-          );
-        });
+          .get('button[name=share-334a3081b9dd416e384d]')
+          .focus()
+          .click()
+          .then(() => {
+            cy.assertValueCopiedToClipboard(
+              '/group/associaco-recreativa-alfandega-da-fe'
+            );
+          });
+      });
     });
 
     it('should have whatsapp link', () => {
@@ -276,7 +286,10 @@ describe('Search', () => {
       it('should return Morning groups', () => {
         cy.intercept('GET', '*coords*&daypart=*&actionId=search&_data=routes*')
           .as('applyFilters')
-          .intercept('GET', '/?coords=*&page=*&daypart=*&actionId=more&_data=routes*')
+          .intercept(
+            'GET',
+            '/?coords=*&page=*&daypart=*&actionId=more&_data=routes*'
+          )
           .as('seeMore')
           .visitAndWaitForHydration(
             '/?index=&coords=&search=&page=0&sport=&dow=&value=&actionId=search'
@@ -323,7 +336,10 @@ describe('Search', () => {
       it('should return Afternoon groups', () => {
         cy.intercept('GET', '*coords*&daypart=*&actionId=search&_data=routes*')
           .as('applyFilters')
-          .intercept('GET', '/?coords=*&page=*&daypart=*&actionId=more&_data=routes*')
+          .intercept(
+            'GET',
+            '/?coords=*&page=*&daypart=*&actionId=more&_data=routes*'
+          )
           .as('seeMore')
           .visitAndWaitForHydration(
             '/?index=&coords=&search=&page=0&sport=&dow=&value=&actionId=search'
