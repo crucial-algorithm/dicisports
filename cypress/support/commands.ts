@@ -1,5 +1,4 @@
 import VisitOptions = Cypress.VisitOptions;
-import AUTWindow = Cypress.AUTWindow;
 
 declare global {
   namespace Cypress {
@@ -140,11 +139,8 @@ function getRecoverPasswordUrl() {
 
 function assertValueCopiedToClipboard(value: string) {
   cy.window().then((win) => {
-    return new Cypress.Promise((resolve) => {
-      win.navigator.clipboard.readText().then((text) => {
-        expect(text).to.eq(Cypress.config().baseUrl + value);
-        resolve();
-      });
+    return win.navigator.clipboard.readText().then((text) => {
+      expect(text).to.eq(Cypress.config().baseUrl + value);
     });
   });
 }
