@@ -1,4 +1,5 @@
 import VisitOptions = Cypress.VisitOptions;
+import AUTWindow = Cypress.AUTWindow;
 
 declare global {
   namespace Cypress {
