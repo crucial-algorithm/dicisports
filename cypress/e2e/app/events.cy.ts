@@ -138,7 +138,7 @@ describe('Event', () => {
         .pickOptionFromSelect('difficulty', 1)
 
         .get('input[name=event-date]')
-        .type('2030-11-30')
+        .type(new Date(Date.now() + 86400 * 1000).toISOString().split('T')[0])
 
         .pickLocationInMap('open-map')
 
@@ -188,7 +188,7 @@ describe('Event', () => {
         .type('15')
 
         .get('input[name=race-date]')
-        .type('2030-11-30')
+        .type(new Date(Date.now() + 86400 * 1000).toISOString().split('T')[0])
 
         .get('textarea[name=race-description]')
         .type('10km run')

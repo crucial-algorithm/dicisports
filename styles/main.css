@@ -246,6 +246,14 @@ table.privacy-policy td {
     border: none;
 }
 
+.z-100 {
+    z-index: 100;
+}
+
+.z-150 {
+    z-index: 150;
+}
+
 [data-reach-dialog-overlay] {
     background: hsla(0, 0%, 0%, 0.33);
     position: fixed;

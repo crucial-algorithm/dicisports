@@ -183,7 +183,7 @@ function parseQueryString(url: string): FilterParams {
     search,
     page,
     sport,
-    dayOfWeek,
+    dayOfWeek: dayOfWeek === null || dayOfWeek < 0 ? null : dayOfWeek,
     dayParts: dayParts,
     orderBy: (orderBy as SortMethod) || SortMethod.recency,
     spirit: spirit.map((v) => parseInt(v))
@@ -901,7 +901,7 @@ function FiltersDialog(props: {
               <ComboBox
                 options={sportsOptions}
                 name="sport"
-                defaultValue={filters?.sport || -1}
+                defaultValue={filters?.sport || ''}
                 placeholder={t('All Sports')}
                 lang={i18n.language as Language}
               />

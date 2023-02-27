@@ -560,7 +560,7 @@ function checkGroupsBySport(sport: number, length: number) {
       .get('button[name=filters]')
       .click()
 
-      .pickOptionFromSelect('sport', sport, true)
+      .pickOptionFromSelect('sport', sport)
 
       .get('#apply-filters')
       .click({ force: true })
@@ -601,7 +601,7 @@ function checkGroupsBySport(sport: number, length: number) {
       .get('button[name=filters]')
       .click()
 
-      .pickOptionFromSelect('sport', sport, true)
+      .pickOptionFromSelect('sport', sport)
 
       .get('#apply-filters')
       .click({ force: true })

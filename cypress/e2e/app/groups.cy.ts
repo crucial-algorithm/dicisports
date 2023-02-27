@@ -6,7 +6,7 @@ describe('Groups', () => {
   context('General', () => {
     it('should load groups', () => {
       cy.login()
-        .visit('/m/groups')
+        .visitAndWaitForHydration('/m/groups')
         .get('button[name=create-group]')
         .should('exist');
     });

@@ -1,19 +1,21 @@
 import * as React from 'react';
-import { useEffect, useState } from 'react';
-
-import Select from 'react-select';
 import clsx from 'clsx';
+import { useTranslation } from 'react-i18next';
+import { Fragment, useEffect, useRef, useState } from 'react';
 
-import { inputBaseClasses } from '~/components/shared/form/InputBase';
+import { Combobox, Transition, Listbox } from '@headlessui/react';
+import { CheckIcon, ChevronUpDownIcon } from '@heroicons/react/20/solid';
+
 import type { Language, TranslationObject } from '~/types';
 import { getLocalizedText } from '~/utils/misc';
 
 import { useTheme } from '~/utils/theme-provider';
+import { inputBaseClasses } from '~/components/shared/form/InputBase';
+import { getI18nText } from '~/components/I18nText';
 
 export type Option = {
   value: string | number;
   label: string | TranslationObject;
-  extra?: object;
 };
 
 type Props = {
@@ -24,7 +26,7 @@ type Props = {
   onChange?: (value: string | number) => void;
 } & Omit<React.ComponentProps<'select'>, 'onChange'>;
 
-export default function ComboBox({
+export function AsyncComboBox({
   name,
   defaultValue,
   className,
@@ -33,7 +35,12 @@ export default function ComboBox({
   placeholder,
   onChange
 }: Props) {
-  const [value, setValue] = useState<Option | undefined>(undefined);
+  const { i18n } = useTranslation();
+  const [value, setValue] = useState<Option | undefined>(
+    options.find((o) => o.value === defaultValue) || undefined
+  );
+  const dropdownButton = useRef<HTMLButtonElement | null>(null);
+  const [query, setQuery] = useState('');
   const [theme] = useTheme();
   const inDarkMode = theme === 'dark';
 
@@ -65,91 +72,238 @@ export default function ComboBox({
     }
   }
 
-  function NoOptionsMessage() {
-    return <div style={{ textAlign: 'start' }}>&nbsp;</div>;
+  function handleInputChange(event: React.ChangeEvent<HTMLInputElement>) {
+    setQuery(event.target.value);
+  }
+
+  function handleOptionStyle({ active }: { active: boolean }) {
+    return clsx('relative cursor-default select-none py-2 pl-10 pr-4', {
+      'bg-gray-300 text-gray-700': active && !inDarkMode,
+      'bg-gray-600 text-gray-100': active && inDarkMode
+    });
+  }
+
+  function display(o: Option | number | string | undefined): string {
+    if (typeof o === 'undefined') {
+      return placeholder || '';
+    }
+
+    if (['number', 'string'].includes(typeof o)) {
+      const c = values.find((v) => v.value === o);
+
+      return c?.label || placeholder || 'label not found';
+    }
+
+    const option = o as Option;
+
+    if (typeof option.label === 'string') {
+      return option.label;
+    }
+
+    return getI18nText(option.label, i18n.language as Language);
+  }
+
+  const filteredValues =
+    query === ''
+      ? values
+      : values.filter(({ label }) => {
+          return label.toLowerCase().includes(query.toLowerCase());
+        });
+
+  // trigger open of dropdown when user focus input
+  function handleOpenOnFocus(e: FocusEvent) {
+    // Discard if user clicks in dropdown button
+    // Without this, dropdown would open and close immediately
+    if (e.relatedTarget) {
+      return;
+    }
+    dropdownButton.current?.click();
   }
 
   return (
-    <>
-      <input type="hidden" name={name} value={value?.value || ''} />
-      <Select
-        aria-label=""
-        id={`select-${name}`}
-        className={clsx(inputBaseClasses('py-2.5'), className)}
-        value={value}
-        isClearable={false}
-        isSearchable={true}
-        backspaceRemovesValue={true}
-        noOptionsMessage={NoOptionsMessage}
-        placeholder={placeholder}
-        components={{
-          DropdownIndicator: () => null,
-          IndicatorSeparator: () => null
-        }}
-        // @ts-ignore
-        options={values}
-        // @ts-ignore
-        onChange={handleSelectChange}
-        styles={{
-          control: (base) => {
-            return {
-              ...base,
-              backgroundColor: undefined,
-              border: 0,
-              boxShadow: 'none'
-            };
-          },
-          input: (base) => {
-            return {
-              padding: 10,
-              ...base,
-              color: 'var(--color-blueGray-500)',
-              outline: 'none'
-            };
-          },
-          menu: (base) => {
-            return {
-              ...base,
-              left: 0,
-              borderRadius: 0,
-              borderTopLeftRadius: 4,
-              backgroundColor: inDarkMode
-                ? 'var(--color-gray-800)'
-                : 'var(--color-gray-100)'
-            };
-          },
-          option: (base, { isFocused }) => {
-            return {
-              ...base,
-              color: inDarkMode
-                ? 'var(--color-blueGray-500)'
-                : 'var(--color-gray-500)',
-              backgroundColor: !isFocused
-                ? undefined
-                : inDarkMode
-                ? 'var(--color-gray-600)'
-                : 'var(--color-gray-200)'
-            };
-          },
-          singleValue: (base) => {
-            return {
-              ...base,
-              color: inDarkMode
-                ? 'var(--color-blueGray-500)'
-                : 'var(--color-gray-500)'
-            };
-          },
-          clearIndicator: (base) => {
-            return {
-              ...base,
-              cursor: 'pointer',
-              ':hover': {
-                color: inDarkMode ? 'var(--color-gray-200)' : 'initial'
-              }
-            };
-          }
-        }}
-      />
-    </>
+    <div className={clsx('top-16', className)}>
+      <Combobox defaultValue={value} onChange={handleSelectChange}>
+        <div className="relative mt-1">
+          <div className="z-100">
+            <Combobox.Input
+              className={inputBaseClasses('py-2.5')}
+              displayValue={display}
+              onChange={handleInputChange}
+              // @ts-ignore
+              onFocus={handleOpenOnFocus}
+            />
+            <Combobox.Button
+              ref={dropdownButton}
+              className="absolute inset-y-0 right-0 flex items-center pr-2"
+            >
+              <ChevronUpDownIcon
+                className="h-5 w-5 text-gray-400"
+                aria-hidden="true"
+              />
+            </Combobox.Button>
+          </div>
+          <Transition
+            as={Fragment}
+            leave="transition ease-in duration-100"
+            leaveFrom="opacity-100"
+            leaveTo="opacity-0"
+          >
+            <Combobox.Options
+              className={clsx(
+                'absolute w-full overflow-auto z-10 mt-1 max-h-60 py-1',
+                'rounded-md shadow-lg',
+                'ring-1 ring-black ring-opacity-5',
+                'focus:outline-none sm:text-sm',
+                {
+                  'bg-gray-800 text-gray-100': inDarkMode,
+                  'bg-white text-base': !inDarkMode
+                }
+              )}
+              static
+            >
+              {filteredValues.length === 0 ? (
+                <div className="relative cursor-default select-none py-2 px-4 text-gray-700">
+                  Nothing found.
+                </div>
+              ) : (
+                filteredValues.map(({ value, label }, index) => (
+                  <Combobox.Option
+                    key={`${index}-${value}`}
+                    className={handleOptionStyle}
+                    value={value}
+                  >
+                    {({ selected, active }) => (
+                      <>
+                        <span
+                          className={`block truncate ${
+                            selected ? 'font-medium' : 'font-normal'
+                          }`}
+                        >
+                          {label}
+                        </span>
+                        {selected && (
+                          <span
+                            className={`absolute inset-y-0 left-0 flex items-center pl-3 ${
+                              active ? 'text-white' : 'text-teal-600'
+                            }`}
+                          >
+                            <CheckIcon className="h-5 w-5" aria-hidden="true" />
+                          </span>
+                        )}
+                      </>
+                    )}
+                  </Combobox.Option>
+                ))
+              )}
+            </Combobox.Options>
+          </Transition>
+        </div>
+      </Combobox>
+    </div>
+  );
+}
+
+type SelectProps = {
+  name: string;
+  options: Array<Option>;
+  lang?: Language;
+  defaultValue?: string | number;
+  placeholder: string;
+  onChange?: (value: string | number) => void;
+} & Omit<React.ComponentProps<'select'>, 'onChange' | 'defaultValue'>;
+
+export default function ComboBox({
+  name,
+  className,
+  options: paramOptions,
+  defaultValue,
+  lang,
+  onChange
+}: SelectProps) {
+  const options = paramOptions.map((o) => {
+    return {
+      value: o.value,
+      label:
+        typeof o.label === 'string'
+          ? o.label
+          : getLocalizedText(lang as Language, o.label)
+    };
+  });
+
+  const [selected, setSelected] = useState(defaultValue);
+
+  function StyleOption({ active }: { active: boolean }) {
+    return clsx('relative cursor-default select-none py-2 pl-10 pr-4', {
+      'bg-gray-100 text-gray-800': active,
+      'bg-white text-base dark:bg-gray-800 dark:text-gray-100': !active
+    });
+  }
+
+  function onChangedInternal(value: string | number) {
+    setSelected(value);
+    onChange && onChange(value);
+  }
+
+  return (
+    <Listbox value={selected} onChange={onChangedInternal}>
+      <div className={clsx('relative mt-1', className)}>
+        <Listbox.Button className={inputBaseClasses('text-left min-h-[60px]')} name={'select-' + name}>
+          <span className="block truncate">{(options.find((o) => o.value === selected))?.label || ''}</span>
+          <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+            <ChevronUpDownIcon
+              className="h-5 w-5 text-gray-400"
+              aria-hidden="true"
+            />
+          </span>
+        </Listbox.Button>
+        <Transition
+          as={Fragment}
+          leave="transition ease-in duration-100"
+          leaveFrom="opacity-100"
+          leaveTo="opacity-0"
+        >
+          <Listbox.Options
+            className={clsx(
+              'absolute w-full overflow-auto py-1 mt-2 max-h-60 z-150',
+              'rounded-md shadow-lg ring-1 ring-black ring-opacity-5',
+              'text-base sm:text-sm',
+              'bg-white text-base dark:bg-gray-800 dark:text-gray-100',
+              'focus:outline-none'
+            )}
+          >
+            {options.map((option, idx) => (
+              <Listbox.Option key={idx} className={StyleOption} value={option.value}>
+                {({ selected, active }) => (
+                  <>
+                    <span
+                      className={clsx('block truncate', {
+                        'font-medium': selected,
+                        'font-normal': !selected
+                      })}
+                    >
+                      {option.label}
+                    </span>
+                    {selected && (
+                      <span
+                        className={clsx(
+                          'absolute inset-y-0 left-0 flex items-center pl-3',
+                          {
+                            'text-grey-600 dark:text-gray-800': active,
+                            'text-grey-600 dark:text-gray-100': !active
+                          }
+                        )}
+                      >
+                        <CheckIcon className="h-5 w-5" aria-hidden="true" />
+                      </span>
+                    )}
+                  </>
+                )}
+              </Listbox.Option>
+            ))}
+          </Listbox.Options>
+        </Transition>
+      </div>
+      <input type="hidden" name={name} value={selected} />
+    </Listbox>
   );
 }
