@@ -241,7 +241,6 @@ function Html({
   lang: string;
 }) {
   const [theme] = useTheme();
-  const { i18n } = useTranslation();
   const data = useLoaderData<RootLoaderData>() as RootLoaderData;
   const analyticsUrl = 'https://plausible.io/js/plausible.js';
 
@@ -257,14 +256,13 @@ function Html({
     (
       document.getElementsByTagName('body').item(0) as HTMLBodyElement
     ).setAttribute('data-cy', 'ready');
-    i18n.changeLanguage(lang).then();
-  }, [i18n, lang]);
+  }, [lang]);
 
   return (
     <html
       lang={lang}
       className={clsx(theme, 'set-color-team-current-red')}
-      dir={i18n.dir()}
+      dir="ltr"
     >
       <head>
         {process.env.NODE_ENV === 'production' && (
