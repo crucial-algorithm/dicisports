@@ -8,6 +8,8 @@ import { useState } from 'react';
 
 import { useSearchParams } from '@remix-run/react';
 
+import { AutoComplete } from '~/components/shared/form/ComboBox';
+
 import { inputBaseClasses } from '~/components/shared/form/InputBase';
 import type { DiciLocation } from '~/types';
 
@@ -39,29 +41,35 @@ export default function SearchLocations({
   const mapUtils = new MapUtils(mapToken);
   const [params] = useSearchParams();
   const search = params.get('search');
+  const [context, setContext] = useState<{
+    search: string;
+    results: { value: string; label: string; extra: DiciLocation }[];
+  } | null>(null);
 
   async function handlerLoadLocations(searchTerm: string) {
     const results = await mapUtils.searchCityInMapBox(searchTerm);
 
     setSearchTerm(searchTerm);
-    if (results === null) {return [];}
-    return results.map((l: DiciLocation) => {
-      return {
-        value: `${l.coords}|${l.address}`,
-        label: l.address,
-        extra: l
-      };
-    });
+    if (results === null) {
+      return [];
+    }
+    return results.map((l: DiciLocation) => ({
+      value: `${l.coords}|${l.address}`,
+      label: l.address || `${l.coords}|${l.address}`,
+      extra: l
+    }));
   }
 
   function handlerLocationChanged(v: {
-    value: number
-    label: string
-    extra: DiciLocation
+    value: number;
+    label: string;
+    extra: DiciLocation;
   }) {
     const { extra } = v;
 
-    if (!extra) {return;}
+    if (!extra) {
+      return;
+    }
     onSelect(extra);
     setSearchTerm('');
   }
@@ -72,6 +80,31 @@ export default function SearchLocations({
         {searchTerm.length > 2 ? t('No Cities') : t('Keep Typing')}
       </div>
     );
+  }
+
+  async function handleOnComplete(needle: string) {
+    const results = await handlerLoadLocations(needle);
+
+    setContext({ search: needle, results });
+  }
+
+  if (Math.random() < 1) {
+    return (
+      <AutoComplete
+        options={context?.results.map(({ label, value }) => ({ value, label }))}
+        placeholder={placeholder || ''}
+        completeMethod={handleOnComplete}
+        onChange={handleOnChange}
+      />
+    );
+  }
+
+  function handleOnChange(v: string | number) {
+    const option = context?.results.find((o) => o.value === v);
+
+    if (option) {
+      onSelect(option.extra);
+    }
   }
 
   return (

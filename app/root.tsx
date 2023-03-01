@@ -12,7 +12,6 @@ import {
   useLoaderData,
   useTransition
 } from '@remix-run/react';
-import { useTranslation } from 'react-i18next';
 
 import type { User } from '@prisma/client';
 

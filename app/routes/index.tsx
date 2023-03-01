@@ -427,7 +427,7 @@ export default function Index() {
         visible={searchingLocation}
         action={t('Searching Location')}
       />
-      <Form method="get" onSubmit={handleOnSubmit}>
+      <Form method="get" onSubmit={handleOnSubmit} autoComplete="off">
         <input
           type="hidden"
           value={selection ? selection.coords : ''}
@@ -487,7 +487,8 @@ export default function Index() {
           search={selection ? selection.address : ''}
           order={orderBy}
         />
-        {searchPerformed ? (
+
+        {searchPerformed && (
           <>
             <Spacer size="xs" />
             <div className="pl-6 flex align-middle">
@@ -513,8 +514,9 @@ export default function Index() {
               />
             </div>
           </>
-        ) : null}
-        {showMoreResults ? (
+        )}
+
+        {showMoreResults && (
           <>
             <div className="mb-8 flex align-middle justify-center absolute bottom-0 w-full">
               <Button
@@ -527,7 +529,7 @@ export default function Index() {
               </Button>
             </div>
           </>
-        ) : null}
+        )}
 
         {searchPerformed && (
           <div className="flex flex-col justify-center">
@@ -829,13 +831,6 @@ function SportsGrid({
   );
 }
 
-/**
- * Not using @reach/dialog in order to inline form controls and keep
- * all state in a single form
- *
- * @param props
- * @constructor
- */
 function FiltersDialog(props: {
   isOpen: boolean;
   sports: Sport[];
@@ -859,18 +854,13 @@ function FiltersDialog(props: {
     search,
     order
   } = props;
-  const sportsOptions: Option[] = [];
-  const form = useRef<HTMLFormElement>(null);
-
-  sports
+  const sportsOptions: Option[] = sports
     .sort((a, b) => a.id - b.id)
-    .map((s) => {
-      sportsOptions.push({
-        value: s.id,
-        label: s.name
-      });
-      return s;
-    });
+    .map((s) => ({
+      value: s.id,
+      label: s.name
+    }));
+  const form = useRef<HTMLFormElement>(null);
 
   return (
     <Dialog isOpen={isOpen} onClose={triggerModalClose}>

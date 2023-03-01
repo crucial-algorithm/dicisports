@@ -19,28 +19,29 @@ export type Option = {
 };
 
 type Props = {
-  options: Array<Option>;
+  options?: Array<Option>;
   lang?: Language;
   defaultValue?: string | number;
   placeholder: string;
   onChange?: (value: string | number) => void;
+  completeMethod: (value: string) => Promise<void>
 } & Omit<React.ComponentProps<'select'>, 'onChange'>;
 
-export function AsyncComboBox({
+export function AutoComplete({
   name,
   defaultValue,
   className,
-  options,
+  options = [],
   lang,
   placeholder,
-  onChange
+  onChange,
+  completeMethod
 }: Props) {
   const { i18n } = useTranslation();
   const [value, setValue] = useState<Option | undefined>(
     options.find((o) => o.value === defaultValue) || undefined
   );
   const dropdownButton = useRef<HTMLButtonElement | null>(null);
-  const [query, setQuery] = useState('');
   const [theme] = useTheme();
   const inDarkMode = theme === 'dark';
 
@@ -65,15 +66,14 @@ export function AsyncComboBox({
     setValue(pickOption(defaultValue));
   }, [defaultValue]);
 
-  function handleSelectChange(o: Option) {
-    setValue(o);
+  function handleSelectChange(value: string) {
     if (onChange) {
-      onChange(o.value);
+      onChange(value as string);
     }
   }
 
-  function handleInputChange(event: React.ChangeEvent<HTMLInputElement>) {
-    setQuery(event.target.value);
+  async function handleInputChange(event: React.ChangeEvent<HTMLInputElement>) {
+    await completeMethod(event.target.value);
   }
 
   function handleOptionStyle({ active }: { active: boolean }) {
@@ -102,13 +102,6 @@ export function AsyncComboBox({
 
     return getI18nText(option.label, i18n.language as Language);
   }
-
-  const filteredValues =
-    query === ''
-      ? values
-      : values.filter(({ label }) => {
-          return label.toLowerCase().includes(query.toLowerCase());
-        });
 
   // trigger open of dropdown when user focus input
   function handleOpenOnFocus(e: FocusEvent) {
@@ -161,12 +154,12 @@ export function AsyncComboBox({
               )}
               static
             >
-              {filteredValues.length === 0 ? (
+              {values.length === 0 ? (
                 <div className="relative cursor-default select-none py-2 px-4 text-gray-700">
                   Nothing found.
                 </div>
               ) : (
-                filteredValues.map(({ value, label }, index) => (
+                values.map(({ value, label }, index) => (
                   <Combobox.Option
                     key={`${index}-${value}`}
                     className={handleOptionStyle}
