@@ -41,6 +41,7 @@ describe('Search', () => {
         .click()
 
         .wait('@search')
+        .waitForHydration()
 
         .get('div[data-cy=group-entry]')
         .should('have.length', 2);
@@ -56,9 +57,12 @@ describe('Search', () => {
         .click()
 
         .wait('@search')
+        .waitForHydration()
 
         .get('button[name=create-your-group]')
         .click()
+
+        .waitForHydration()
 
         .url()
         .should('include', `${Cypress.config().baseUrl}/m/group/`);
@@ -73,6 +77,7 @@ describe('Search', () => {
         .click()
 
         .wait('@search')
+        .waitForHydration()
 
         .intercept('GET', '/login?a=favorite&g=*_data=routes*')
         .as('loadLoginPage')
@@ -81,6 +86,7 @@ describe('Search', () => {
         .click()
 
         .wait('@loadLoginPage')
+        .waitForHydration()
 
         .get('[name=email]')
         .type('regular@gmail.com', { delay: 1 })
@@ -95,11 +101,12 @@ describe('Search', () => {
         .click()
 
         .wait('@login')
+        .waitForHydration()
 
         .url()
         .should('eq', `${Cypress.config().baseUrl}/`)
 
-        .visit('/m/groups')
+        .visitAndWaitForHydration('/m/groups')
 
         .get('button[name=groupId]')
         .should('have.length', 2);
@@ -108,12 +115,13 @@ describe('Search', () => {
     it('should favorite a group unauthenticated: signup', () => {
       cy.intercept('GET', '/*?coords=*')
         .as('search')
-        .visit('/')
+        .visitAndWaitForHydration('/')
 
         .get('#search-button')
         .click()
 
         .wait('@search')
+        .waitForHydration()
 
         .intercept('GET', '/login?*_data=routes*')
         .as('loginPage')
@@ -130,6 +138,7 @@ describe('Search', () => {
         .click()
 
         .wait('@signupPage')
+        .waitForHydration()
 
         .get('input[name=signup-email]')
         .type('a@gmail.com')
@@ -150,8 +159,9 @@ describe('Search', () => {
         .click()
 
         .wait('@signup')
+        .waitForHydration()
 
-        .visit('/m/groups')
+        .visitAndWaitForHydration('/m/groups')
 
         .get('button[name=groupId]')
         .should('have.length', 1);
@@ -189,6 +199,7 @@ describe('Search', () => {
         .click()
 
         .wait('@selectSport')
+        .waitForHydration()
 
         .get('#whatsapp-GkoxmH5db6RXqBpExion')
         .should('be.visible');
@@ -203,6 +214,7 @@ describe('Search', () => {
         .click()
 
         .wait('@selectSport')
+        .waitForHydration()
 
         .intercept('GET', '/login?a=*_data=routes*')
         .as('whatsappLink')
@@ -212,6 +224,7 @@ describe('Search', () => {
         .click()
 
         .wait('@whatsappLink')
+        .waitForHydration()
 
         .get('input[name=email]')
         .type('abcd@gmail.com')
@@ -254,17 +267,19 @@ describe('Search', () => {
         .click()
 
         .wait('@setLocation')
+        .waitForHydration()
 
         .get('#sort-location')
         .click()
 
         .wait('@order')
+        .waitForHydration()
 
         .get('#sort-location')
         .click()
 
         .wait('@order')
-        .reload()
+        .waitForHydration()
 
         .get('div[data-cy=distance]')
         .should('exist')
@@ -459,68 +474,37 @@ describe('Search', () => {
         checkGroupsBySpirit(5, 'Turismo');
       });
 
-      it('should keep filters after new search', () => {
-        cy.intercept('GET', '/*?coords=*_data=routes*')
-          .as('search')
-          .visitAndWaitForHydration('/')
-
-          .get('#search-button')
-          .click()
-
-          .wait('@search')
-          .waitForHydration()
-
-          .get('button[name=filters]')
-          .click()
-
-          // Initial selection of filters
-          .pickOptionFromSelect('dow', 1)
-          .pickOptionFromSelect('sport', 1)
-
-          .get('#daypart-Morning')
-          .click()
-          .get('#daypart-Afternoon')
-          .click()
-          .get('#daypart-Evening')
-          .click()
-
-          .get('#spirit-1')
-          .click({ force: true })
-          .get('#spirit-2')
-          .click({ force: true })
-          .get('#spirit-3')
-          .click({ force: true })
-          .get('#spirit-4')
-          .click({ force: true })
-          .get('#spirit-5')
-          .click({ force: true })
-
-          .get('#apply-filters')
-          .click({ force: true })
-
-          .wait('@search')
-
-          .get('#search-button')
-          .click()
-
-          .wait('@search')
-
-          // After a new search, check URL to see if it all previous selected filters
-          .url()
-          .should(
-            'include',
-            '/?coords=&search=&page=0&dow=6&sport=1&daypart=Morning&daypart=Afternoon' +
-              '&daypart=Evening&spirit=1&spirit=2&spirit=3&spirit=4&spirit=5'
-          );
-
+      context('should keep filters after new search', () => {
         // Switch Day of the Week and Sport, since they are combo box's and need to be tested 1 by 1
         // and repeat the process all over again
-        selectDOWAndSport(2, 0);
-        selectDOWAndSport(3, 1);
-        selectDOWAndSport(4, 2);
-        selectDOWAndSport(5, 3);
-        selectDOWAndSport(6, 4);
-        selectDOWAndSport(7, 5);
+
+        it('Sunday - Running', () => {
+          checkAllFiltersAndSelectDOWAndSport(1, 6);
+        });
+
+        it('Monday - Trail', () => {
+          checkAllFiltersAndSelectDOWAndSport(2, 0);
+        });
+
+        it('Tuesday - Road', () => {
+          checkAllFiltersAndSelectDOWAndSport(3, 1);
+        });
+
+        it('Wednesday - BTT', () => {
+          checkAllFiltersAndSelectDOWAndSport(4, 2);
+        });
+
+        it('Thursday - E-Bike', () => {
+          checkAllFiltersAndSelectDOWAndSport(5, 3);
+        });
+
+        it('Friday - Gravel', () => {
+          checkAllFiltersAndSelectDOWAndSport(6, 4);
+        });
+
+        it('Saturday - Enduro', () => {
+          checkAllFiltersAndSelectDOWAndSport(7, 5);
+        });
       });
 
       context('should return groups from each sport', () => {
@@ -711,22 +695,54 @@ function checkGroupsBySpirit(filterOption: number, spirit: string) {
     .should('contain', spirit);
 }
 
-function selectDOWAndSport(filterOption: number, dow: number) {
-  cy.get('button[name=filters]')
-    .click()
-
-    .pickOptionFromSelect('dow', filterOption)
-    .pickOptionFromSelect('sport', filterOption)
-
-    .get('#apply-filters')
-    .click({ force: true })
-
-    .wait('@search')
+function checkAllFiltersAndSelectDOWAndSport(filterOption: number, dow: number) {
+  cy.intercept('GET', '/*?coords=*_data=routes*')
+    .as('search')
+    .visitAndWaitForHydration('/')
 
     .get('#search-button')
     .click()
 
     .wait('@search')
+    .waitForHydration()
+
+    .get('button[name=filters]')
+    .click()
+
+    .pickOptionFromSelect('dow', filterOption)
+    .pickOptionFromSelect('sport', filterOption)
+
+    .get('#daypart-Morning')
+    .click()
+    .get('#daypart-Afternoon')
+    .click()
+    .get('#daypart-Evening')
+    .click()
+
+    .get('#spirit-1')
+    .click({ force: true })
+    .get('#spirit-2')
+    .click({ force: true })
+    .get('#spirit-3')
+    .click({ force: true })
+    .get('#spirit-4')
+    .click({ force: true })
+    .get('#spirit-5')
+    .click({ force: true })
+
+    .get('#apply-filters')
+    .click({ force: true })
+
+    .wait('@search')
+    .waitForHydration()
+
+    .get('#search-button')
+    .click()
+
+    .wait('@search')
+    .waitForHydration()
+
+    // After a new search, check URL to see if it all previous selected filters
     .url()
     .should(
       'include',
