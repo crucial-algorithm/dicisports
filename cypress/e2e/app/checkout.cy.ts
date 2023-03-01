@@ -466,7 +466,7 @@ describe('Checkout', () => {
           .url()
           .should('include', '/checkout/info/gLqrDfMx6qkTHn6hoZqA')
 
-          .get('#select-userSavedParticipants')
+          .get('button[name=select-userSavedParticipants]')
           .should('exist')
           .pickOptionFromSelect('userSavedParticipants', 1)
 

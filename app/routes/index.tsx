@@ -369,10 +369,6 @@ export default function Index() {
     setFiltersModalOpen(false);
   }
 
-  // function handleLoadNextPage() {
-  //   setPage(page + 1);
-  // }
-
   function handleResetSearchPerformed() {
     setSearchPerformed(false);
   }
@@ -425,10 +421,6 @@ export default function Index() {
     );
   }
 
-  const selectedDayOfWeek: string = data?.filters?.dayOfWeek || '';
-  const selectedSport: string = data?.filters?.sport || '';
-  const selectedSpirit: string[] = data?.filters?.spirit || [];
-
   return (
     <Main className="dark:text-blueGray-500 relative mb-8">
       <TransitionIndicator
@@ -447,14 +439,14 @@ export default function Index() {
           name="search"
         />
         <input type="hidden" name="page" value={result?.page || 0} />
-        <input type="hidden" name="dow" value={selectedDayOfWeek} />
-        <input type="hidden" name="sport" value={selectedSport} />
+        <input type="hidden" name="dow" value={filters?.dayOfWeek as DaysOfWeek} />
+        <input type="hidden" name="sport" value={filters?.sport || ''} />
         {selectedDayParts &&
           selectedDayParts.map((p: string) => (
             <input key={p} type="hidden" name="daypart" value={p} />
           ))}
-        {selectedSpirit &&
-          selectedSpirit.map((v) => (
+        {filters?.spirit &&
+          filters.spirit.map((v) => (
             <input key={v} type="hidden" name="spirit" value={v} />
           ))}
         <div className="flex align-middle justify-center">

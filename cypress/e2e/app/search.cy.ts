@@ -459,6 +459,70 @@ describe('Search', () => {
         checkGroupsBySpirit(5, 'Turismo');
       });
 
+      it('should keep filters after new search', () => {
+        cy.intercept('GET', '/*?coords=*_data=routes*')
+          .as('search')
+          .visitAndWaitForHydration('/')
+
+          .get('#search-button')
+          .click()
+
+          .wait('@search')
+          .waitForHydration()
+
+          .get('button[name=filters]')
+          .click()
+
+          // Initial selection of filters
+          .pickOptionFromSelect('dow', 1)
+          .pickOptionFromSelect('sport', 1)
+
+          .get('#daypart-Morning')
+          .click()
+          .get('#daypart-Afternoon')
+          .click()
+          .get('#daypart-Evening')
+          .click()
+
+          .get('#spirit-1')
+          .click({ force: true })
+          .get('#spirit-2')
+          .click({ force: true })
+          .get('#spirit-3')
+          .click({ force: true })
+          .get('#spirit-4')
+          .click({ force: true })
+          .get('#spirit-5')
+          .click({ force: true })
+
+          .get('#apply-filters')
+          .click({ force: true })
+
+          .wait('@search')
+
+          .get('#search-button')
+          .click()
+
+          .wait('@search')
+
+          // After a new search, check URL to see if it all previous selected filters
+          .url()
+          .should(
+            'include',
+            '/?coords=&search=&page=0&dow=6&sport=1&daypart=Morning&daypart=Afternoon' +
+              '&daypart=Evening&spirit=1&spirit=2&spirit=3&spirit=4&spirit=5'
+          );
+
+        // Switch Day of the Week and Sport, since they are combo box's and need to be tested 1 by 1
+        // and repeat the process all over again
+        selectDOWAndSport(2, 0);
+        selectDOWAndSport(3, 1);
+        selectDOWAndSport(4, 2);
+        selectDOWAndSport(5, 3);
+        selectDOWAndSport(6, 4);
+        selectDOWAndSport(7, 5);
+      });
+
       context('should return groups from each sport', () => {
         beforeEach(() => {
           cy.intercept('GET', '/?actionId=search*_data=routes*')
@@ -645,4 +709,27 @@ function checkGroupsBySpirit(filterOption: number, spirit: string) {
 
     .get('div[data-cy=group-spirit]')
     .should('contain', spirit);
+}
+
+function selectDOWAndSport(filterOption: number, dow: number) {
+  cy.get('button[name=filters]')
+    .click()
+
+    .pickOptionFromSelect('dow', filterOption)
+    .pickOptionFromSelect('sport', filterOption)
+
+    .get('#apply-filters')
+    .click({ force: true })
+
+    .wait('@search')
+
+    .get('#search-button')
+    .click()
+
+    .wait('@search')
+    .url()
+    .should(
+      'include',
+      `/?coords=&search=&page=0&dow=${dow}&sport=${filterOption}&daypart=Morning&daypart=Afternoon&daypart=Evening&spirit=1&spirit=2&spirit=3&spirit=4&spirit=5`
+    );
 }
