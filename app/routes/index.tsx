@@ -1,6 +1,6 @@
 import type { SyntheticEvent } from 'react';
 import * as React from 'react';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { LoaderFunction, MetaFunction } from '@remix-run/node';
 import { json } from '@remix-run/node';
 import {
@@ -314,6 +314,13 @@ export default function Index() {
     Date.now()
   );
 
+  const handleSearchLocations = useCallback(
+    (o: DiciLocation | SyntheticEvent<HTMLSelectElement>) => {
+      setSelection(o as DiciLocation);
+    },
+    []
+  );
+
   useEffect(() => {
     if (!result) {
       if (groups.length > 0) {
@@ -353,12 +360,6 @@ export default function Index() {
     setSearchPerformed(true);
     setFiltersModalOpen(false);
     setFiltersCacheBurst(Date.now());
-  }
-
-  function handleSearchLocations(
-    o: DiciLocation | SyntheticEvent<HTMLSelectElement>
-  ) {
-    setSelection(o as DiciLocation);
   }
 
   function handleOpenFilters() {
@@ -458,7 +459,6 @@ export default function Index() {
         <div className="flex align-middle justify-center items-center">
           <div className="flex flex-col w-full md:w-160 lg:flex-row">
             <SearchLocations
-              ariaLabel={t('Search')}
               onSelect={handleSearchLocations}
               placeholder={t('Search Placeholder')}
               className="px-0 mr-4 w-full search-select"

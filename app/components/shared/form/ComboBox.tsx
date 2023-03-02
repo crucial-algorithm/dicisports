@@ -3,6 +3,7 @@ import type { ReactElement } from 'react';
 import { Fragment, useEffect, useRef, useState } from 'react';
 import clsx from 'clsx';
 import { useTranslation } from 'react-i18next';
+import { useDebounce } from 'ahooks';
 
 import { Combobox, Listbox, Transition } from '@headlessui/react';
 import { CheckIcon, ChevronUpDownIcon } from '@heroicons/react/20/solid';
@@ -23,28 +24,25 @@ type Props = {
   name: string;
   options?: Array<Option>;
   lang?: Language;
-  defaultValue?: string | number;
   placeholder: string;
   onChange?: (value: string | number) => void;
   completeMethod: (value: string) => Promise<void>;
-  OptionsMessage: () => ReactElement;
+  noOptionsMessage: () => ReactElement;
 } & Omit<React.ComponentProps<'select'>, 'onChange'>;
 
 export function AutoComplete({
   name,
-  defaultValue,
   className,
   options = [],
   lang,
   placeholder,
   onChange,
   completeMethod,
-  OptionsMessage
+  noOptionsMessage: NoOptionsMessage
 }: Props) {
   const { i18n } = useTranslation();
-  const [value, setValue] = useState<Option | undefined>(
-    options.find((o) => o.value === defaultValue) || undefined
-  );
+  const [value, setQuery] = useState<string | undefined>();
+  const debouncedValue = useDebounce(value, { wait: 800 });
   const dropdownButton = useRef<HTMLButtonElement | null>(null);
   const [theme] = useTheme();
   const inDarkMode = theme === 'dark';
@@ -59,25 +57,16 @@ export function AutoComplete({
     };
   });
 
-  function pickOption(value: string | number): Option {
-    return values.find((o) => o.value === value) as Option;
-  }
-
   useEffect(() => {
-    if (!defaultValue) {
-      return;
-    }
-    setValue(pickOption(defaultValue));
-  }, [defaultValue]);
+    debouncedValue && completeMethod(debouncedValue);
+  }, [completeMethod, debouncedValue]);
 
   function handleSelectChange(value: string) {
-    if (onChange) {
-      onChange(value as string);
-    }
+    onChange && onChange(value as string);
   }
 
   async function handleInputChange(event: React.ChangeEvent<HTMLInputElement>) {
-    await completeMethod(event.target.value);
+    setQuery(event.target.value);
   }
 
   function handleOptionStyle({ active }: { active: boolean }) {
@@ -115,7 +104,6 @@ export function AutoComplete({
 
   return (
     <div className={clsx('top-16', className)}>
-      {/*@ts-ignore*/}
       <Combobox defaultValue={value} onChange={handleSelectChange}>
         <div className="relative mt-1">
           <div className="z-100">
@@ -159,7 +147,7 @@ export function AutoComplete({
             >
               {values.length === 0 ? (
                 <div className="relative cursor-default select-none py-2 px-4 text-gray-700 text-center">
-                  <OptionsMessage />
+                  <NoOptionsMessage />
                 </div>
               ) : (
                 values.map(({ value, label }, index) => (
