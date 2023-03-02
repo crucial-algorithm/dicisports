@@ -1,5 +1,6 @@
+import { useSearchParams } from '@remix-run/react';
 import * as React from 'react';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { AutoComplete } from '~/components/shared/form/ComboBox';
@@ -26,6 +27,8 @@ export default function SearchLocations({
     search: string;
     results: { value: string; label: string; extra: DiciLocation }[];
   } | null>(null);
+  const [params] = useSearchParams();
+  const search = params.get('search');
 
   const NoOptionsMessage = useCallback(() => {
     return (
@@ -55,6 +58,10 @@ export default function SearchLocations({
 
     option && onSelect(option.extra);
   }, [context?.results, onSelect]);
+
+  useEffect(() => {
+    !search && setContext(null);
+  }, [search]);
 
   return (
     <AutoComplete
