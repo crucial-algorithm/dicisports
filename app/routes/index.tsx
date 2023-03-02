@@ -25,6 +25,7 @@ import clsx from 'clsx';
 import type { TFunction } from 'i18next';
 
 import Main from '~/components/shared/Main';
+import PeekDayOfWeek from '~/components/shared/PeekDayOfWeek';
 import { Spacer } from '~/components/shared/Spacer';
 import Button, { ButtonLink } from '~/components/shared/Button';
 import type {
@@ -49,7 +50,7 @@ import { findGroupsSpirit, findSports } from '~/server/db/reference.server';
 import type { Option } from '~/components/shared/form/ComboBox';
 import ComboBox from '~/components/shared/form/ComboBox';
 
-import { getLocalizedText, PeekDayOfWeek } from '~/utils/misc';
+import { getLocalizedText } from '~/utils/misc';
 
 import Dialog, { ActionsBar } from '~/components/shared/Dialog';
 import HomeLogo from '~/components/shared/HomeLogo';

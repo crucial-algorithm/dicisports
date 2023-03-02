@@ -1,9 +1,9 @@
 import * as React from 'react';
 import type { ReactElement } from 'react';
-import { Fragment, useEffect, useRef, useState } from 'react';
+import { Fragment, useRef, useState } from 'react';
 import clsx from 'clsx';
 import { useTranslation } from 'react-i18next';
-import { useDebounce } from 'ahooks';
+import { useDebounceFn } from 'ahooks';
 
 import { Combobox, Listbox, Transition } from '@headlessui/react';
 import { CheckIcon, ChevronUpDownIcon } from '@heroicons/react/20/solid';
@@ -41,11 +41,15 @@ export function AutoComplete({
   noOptionsMessage: NoOptionsMessage
 }: Props) {
   const { i18n } = useTranslation();
-  const [value, setQuery] = useState<string | undefined>();
-  const debouncedValue = useDebounce(value, { wait: 800 });
   const dropdownButton = useRef<HTMLButtonElement | null>(null);
   const [theme] = useTheme();
   const inDarkMode = theme === 'dark';
+  const { run: handleInputChange } = useDebounceFn(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      event.target.value && completeMethod(event.target.value);
+    },
+    { wait: 500 }
+  );
 
   const values = options.map((o) => {
     return {
@@ -57,16 +61,8 @@ export function AutoComplete({
     };
   });
 
-  useEffect(() => {
-    debouncedValue && completeMethod(debouncedValue);
-  }, [completeMethod, debouncedValue]);
-
   function handleSelectChange(value: string) {
     onChange && onChange(value as string);
-  }
-
-  async function handleInputChange(event: React.ChangeEvent<HTMLInputElement>) {
-    setQuery(event.target.value);
   }
 
   function handleOptionStyle({ active }: { active: boolean }) {
@@ -104,7 +100,7 @@ export function AutoComplete({
 
   return (
     <div className={clsx('top-16', className)}>
-      <Combobox defaultValue={value} onChange={handleSelectChange}>
+      <Combobox onChange={handleSelectChange}>
         <div className="relative mt-1">
           <div className="z-100">
             <Combobox.Input

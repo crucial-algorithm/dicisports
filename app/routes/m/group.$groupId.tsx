@@ -27,6 +27,7 @@ import { TrashIcon } from '@heroicons/react/24/outline';
 
 import Dialog, { ActionsBar } from '~/components/shared/Dialog';
 import Main from '~/components/shared/Main';
+import PeekDayOfWeek from '~/components/shared/PeekDayOfWeek';
 import { H2, H3, Paragraph } from '~/components/shared/typography';
 
 import { requireUser } from '~/server/auth/session.server';
@@ -58,7 +59,6 @@ import UploadImage from '~/components/shared/form/UploadImage';
 import {
   badRequest,
   hoursMinutesToTimeOfDay,
-  PeekDayOfWeek,
   timeOfDayToHoursMinutes
 } from '~/utils/misc';
 import UploadForm from '~/components/shared/form/UploadForm';
