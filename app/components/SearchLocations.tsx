@@ -26,6 +26,7 @@ export default function SearchLocations({
     search: string;
     results: { value: string; label: string; extra: DiciLocation }[];
   } | null>(null);
+
   const NoOptionsMessage = useCallback(() => {
     return (
       <div className="text-start">
@@ -35,6 +36,7 @@ export default function SearchLocations({
       </div>
     );
   }, [context?.search, noCitiesLabel, keepTypingLabel]);
+
   const handleOnComplete = useCallback(async (search: string) => {
     const mapUtils = new MapUtils(mapToken);
     const results = await mapUtils.searchCityInMapBox(search);
@@ -45,9 +47,9 @@ export default function SearchLocations({
       extra: l
     }));
 
-
     setContext({ search, results: mapped });
   }, [mapToken]);
+
   const handleOnChange = useCallback((v: string | number) => {
     const option = context?.results.find((o) => o.value === v);
 
