@@ -4,7 +4,7 @@ import * as React from 'react';
 
 import Select from 'react-select/async';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { useSearchParams } from '@remix-run/react';
 
@@ -88,12 +88,18 @@ export default function SearchLocations({
     setContext({ search: needle, results });
   }
 
+  useEffect(() => {
+    if (!search) {
+      setContext(null);
+    }
+  }, [search]);
+
   if (Math.random() < 1) {
     return (
       <AutoComplete
         name="search-box"
         options={context?.results.map(({ label, value }) => ({ value, label }))}
-        placeholder={placeholder || ''}
+        placeholder={search || placeholder || ''}
         completeMethod={handleOnComplete}
         onChange={handleOnChange}
         OptionsMessage={NoOptionsMessage}

@@ -120,13 +120,13 @@ export function AutoComplete({
         <div className="relative mt-1">
           <div className="z-100">
             <Combobox.Input
+              id={name}
               className={inputBaseClasses()}
               displayValue={display}
               placeholder={placeholder}
               onChange={handleInputChange}
               // @ts-ignore
               onFocus={handleOpenOnFocus}
-              name={name}
             />
             <Combobox.Button
               ref={dropdownButton}

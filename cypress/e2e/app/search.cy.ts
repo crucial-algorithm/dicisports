@@ -28,7 +28,7 @@ describe('Search', () => {
         )
         .as('mapBoxSearchResult')
 
-        .get('input[name=search-box]')
+        .get('#search-box')
         .type('Porto, Porto, Portugal', { delay: 1 })
 
         .wait('@mapBoxSearchResult')
@@ -59,7 +59,7 @@ describe('Search', () => {
         .waitForHydration()
 
         .url()
-        .should('include', '/?coords=&search=&page=0&dow=&sport=&search-box=&actionId=search')
+        .should('include', '/?coords=&search=&page=0&dow=&sport=&actionId=search')
 
         .get('button[name=create-your-group]')
         .click()
