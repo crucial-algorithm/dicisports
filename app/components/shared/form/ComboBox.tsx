@@ -1,9 +1,10 @@
 import * as React from 'react';
+import type { ReactElement } from 'react';
+import { Fragment, useEffect, useRef, useState } from 'react';
 import clsx from 'clsx';
 import { useTranslation } from 'react-i18next';
-import { Fragment, useEffect, useRef, useState } from 'react';
 
-import { Combobox, Transition, Listbox } from '@headlessui/react';
+import { Combobox, Listbox, Transition } from '@headlessui/react';
 import { CheckIcon, ChevronUpDownIcon } from '@heroicons/react/20/solid';
 
 import type { Language, TranslationObject } from '~/types';
@@ -19,12 +20,14 @@ export type Option = {
 };
 
 type Props = {
+  name: string;
   options?: Array<Option>;
   lang?: Language;
   defaultValue?: string | number;
   placeholder: string;
   onChange?: (value: string | number) => void;
-  completeMethod: (value: string) => Promise<void>
+  completeMethod: (value: string) => Promise<void>;
+  OptionsMessage: () => ReactElement;
 } & Omit<React.ComponentProps<'select'>, 'onChange'>;
 
 export function AutoComplete({
@@ -35,7 +38,8 @@ export function AutoComplete({
   lang,
   placeholder,
   onChange,
-  completeMethod
+  completeMethod,
+  OptionsMessage
 }: Props) {
   const { i18n } = useTranslation();
   const [value, setValue] = useState<Option | undefined>(
@@ -84,14 +88,10 @@ export function AutoComplete({
   }
 
   function display(o: Option | number | string | undefined): string {
-    if (typeof o === 'undefined') {
-      return placeholder || '';
-    }
-
     if (['number', 'string'].includes(typeof o)) {
       const c = values.find((v) => v.value === o);
 
-      return c?.label || placeholder || 'label not found';
+      return c?.label || '';
     }
 
     const option = o as Option;
@@ -115,15 +115,18 @@ export function AutoComplete({
 
   return (
     <div className={clsx('top-16', className)}>
+      {/*@ts-ignore*/}
       <Combobox defaultValue={value} onChange={handleSelectChange}>
         <div className="relative mt-1">
           <div className="z-100">
             <Combobox.Input
-              className={inputBaseClasses('py-2.5')}
+              className={inputBaseClasses()}
               displayValue={display}
+              placeholder={placeholder}
               onChange={handleInputChange}
               // @ts-ignore
               onFocus={handleOpenOnFocus}
+              name={name}
             />
             <Combobox.Button
               ref={dropdownButton}
@@ -155,8 +158,8 @@ export function AutoComplete({
               static
             >
               {values.length === 0 ? (
-                <div className="relative cursor-default select-none py-2 px-4 text-gray-700">
-                  Nothing found.
+                <div className="relative cursor-default select-none py-2 px-4 text-gray-700 text-center">
+                  <OptionsMessage />
                 </div>
               ) : (
                 values.map(({ value, label }, index) => (
@@ -174,15 +177,6 @@ export function AutoComplete({
                         >
                           {label}
                         </span>
-                        {selected && (
-                          <span
-                            className={`absolute inset-y-0 left-0 flex items-center pl-3 ${
-                              active ? 'text-white' : 'text-teal-600'
-                            }`}
-                          >
-                            <CheckIcon className="h-5 w-5" aria-hidden="true" />
-                          </span>
-                        )}
                       </>
                     )}
                   </Combobox.Option>

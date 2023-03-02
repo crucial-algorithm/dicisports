@@ -91,10 +91,13 @@ export default function SearchLocations({
   if (Math.random() < 1) {
     return (
       <AutoComplete
+        name="search-box"
         options={context?.results.map(({ label, value }) => ({ value, label }))}
         placeholder={placeholder || ''}
         completeMethod={handleOnComplete}
         onChange={handleOnChange}
+        OptionsMessage={NoOptionsMessage}
+        className={className}
       />
     );
   }

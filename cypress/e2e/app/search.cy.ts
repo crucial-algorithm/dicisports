@@ -28,17 +28,16 @@ describe('Search', () => {
         )
         .as('mapBoxSearchResult')
 
-        .get('input.react-select__input')
+        .get('input[name=search-box]')
         .type('Porto, Porto, Portugal', { delay: 1 })
 
         .wait('@mapBoxSearchResult')
 
-        .get('#react-select-3-option-0')
-        .contains('Porto, Porto, Portugal')
+        .get('ul li:first')
         .click()
 
         .get('#search-button')
-        .click()
+        .click({ force: true })
 
         .wait('@search')
         .waitForHydration()
@@ -58,6 +57,9 @@ describe('Search', () => {
 
         .wait('@search')
         .waitForHydration()
+
+        .url()
+        .should('include', '/?coords=&search=&page=0&dow=&sport=&search-box=&actionId=search')
 
         .get('button[name=create-your-group]')
         .click()

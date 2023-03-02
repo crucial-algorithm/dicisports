@@ -455,7 +455,7 @@ export default function Index() {
           </Link>
         </div>
         <Spacer size="2xs" />
-        <div className="flex align-middle justify-center">
+        <div className="flex align-middle justify-center items-center">
           <div className="flex flex-col w-full md:w-160 lg:flex-row">
             <SearchLocations
               ariaLabel={t('Search')}
