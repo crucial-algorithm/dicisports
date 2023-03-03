@@ -461,7 +461,15 @@ export default function Index() {
           name="search"
         />
         <input type="hidden" name="page" value={searchResult?.page || 0} />
-        <input type="hidden" name="dow" value={filters?.dayOfWeek as DaysOfWeek} />
+        <input
+          type="hidden"
+          name="dow"
+          value={
+            filters?.dayOfWeek === null
+              ? ''
+              : (filters?.dayOfWeek as DaysOfWeek)
+          }
+        />
         <input type="hidden" name="sport" value={filters?.sport || ''} />
         {selectedDayParts &&
           selectedDayParts.map((p: string) => (
