@@ -38,32 +38,22 @@ export const loader: LoaderFunction = async ({ request }) => {
             : 'confirmation'
         }/${eventId}`
       );
-    } else {
-      await addRegistration(clientId as string, raceId);
-      await createInitialBookingFlow(clientId, eventId, t);
     }
+
+    return await createInitialBookingFlow(clientId, eventId, raceId, t);
   } catch (e) {
     console.log(e);
 
     return redirect('/');
   }
-
-  return redirect(`/checkout/info/${eventId}`);
 };
 
 export async function createInitialBookingFlow(
   clientId: string,
   eventId: string,
+  raceId: string,
   t: TFunction
 ) {
-  const userCheckoutRaces = await getDistinctUserEventCartRaces(
-    clientId,
-    eventId
-  );
-
-  if (!userCheckoutRaces) {
-    return badRequest({ error: t('No Races In Checkout') });
-  }
 
   const pin = Math.floor(1000 + Math.random() * 9000);
   const booking = await createBooking(pin, eventId, clientId);
@@ -72,11 +62,7 @@ export async function createInitialBookingFlow(
     return badRequest({ error: t("Can't Create Booking") });
   }
 
-  await addParticipantsToRace(
-    userCheckoutRaces.map((u) => u.raceId),
-    clientId,
-    booking.id
-  );
+  await addParticipantsToRace([raceId], clientId, booking.id);
 
   return redirect(`/checkout/info/${eventId}`);
 }

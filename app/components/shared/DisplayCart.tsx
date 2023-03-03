@@ -47,22 +47,22 @@ export default function DisplayCart({
           </H6>
         </div>
         {cart
-          .sort((a, b) => a.displayOrder - b.displayOrder)
+          .sort((a, b) => a.order - b.order)
           .map((ticket, index: number) => (
             <div
               className="flex flex-col mt-8 w-full"
               key={ticket.id + ' - ' + index}
             >
               <div className="flex flex-row items-center justify-between">
-                <H6>{ticket.raceName}</H6>
+                <H6>{ticket.name}</H6>
                 <H6>{'x' + ticket.qtd}</H6>
               </div>
               <div className="flex flex-row items-center justify-between">
                 <H6 className="dark:text-blueGray-500">
-                  {ticket.racePrice + '€'}
+                  {ticket.price + '€'}
                 </H6>
                 <H6 className="dark:text-blueGray-500">
-                  {ticket.racePrice * ticket.qtd + '€'}
+                  {ticket.price * ticket.qtd + '€'}
                 </H6>
               </div>
             </div>
@@ -70,7 +70,7 @@ export default function DisplayCart({
 
         {cart.length !== 0 &&
           cart.map((c) => {
-            totalPrice += c.racePrice * c.qtd;
+            totalPrice += c.price * c.qtd;
 
             return totalPrice;
           }) && (

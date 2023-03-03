@@ -315,18 +315,24 @@ type DBRawCart = {
 
 type UICartRow = {
   id: string;
+  raceId: string;
   qtd: number;
-  raceName: string;
-  racePrice: number;
-  displayOrder: number;
+  name: string;
+  price: number;
+  order: number;
+  distance: number;
+  startTime: number;
 };
 
 type DBRawUICartRow = {
-  checkout_id: string;
-  qtd: number;
-  race_name: string;
-  race_price: number;
+  id: string;
+  race_id: string;
+  name: string;
+  price: number;
+  distance: number;
+  start_time: number;
   display_order: number;
+  qtd: number;
 };
 
 type DBRawRaceQtd = {

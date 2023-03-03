@@ -58,6 +58,7 @@ import {
 } from '~/server/db/participant.server';
 import {
   findBooking,
+  findBookingCart,
   removeBooking,
   updateBookingStatus
 } from '~/server/db/booking.server';
@@ -249,7 +250,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
       ? authenticatedClient.id
       : anonymousClient.getClientId();
   const event = await findEvent(eventId);
-  const cart = await getUserCartRaces(clientId, eventId);
+  const cart = await findBookingCart(clientId, eventId);
   const raceParticipants = await findUserEventRaceParticipants(
     clientId,
     eventId

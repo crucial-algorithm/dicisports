@@ -174,11 +174,14 @@ function dbRawGroupToGroup(group: DBRawGroup): Group {
 
 function dbUICartToUICart(cart: DBRawUICartRow): UICartRow {
   return {
-    id: cart.checkout_id,
-    qtd: cart.qtd,
-    raceName: cart.race_name,
-    racePrice: cart.race_price,
-    displayOrder: cart.display_order
+    id: cart.id,
+    raceId: cart.race_id,
+    name: cart.name,
+    price: cart.price,
+    distance: cart.distance,
+    startTime: cart.start_time,
+    order: cart.display_order,
+    qtd: Number(cart.qtd)
   };
 }
 

@@ -232,7 +232,6 @@ model Race {
   track             String?
   eventId           String          @map("event_id")
   event             Event           @relation(fields: [eventId], references: [id])
-  carts             Cart[]
   raceParticipant  RaceParticipant[]
 
   @@map("races")
@@ -258,19 +257,6 @@ model FavoriteEvent {
 
   @@unique([userId, eventId])
   @@map("favorite_events")
-}
-
-model Cart {
-    id          String      @id @default(uuid())
-    raceId      String      @map("race_id")
-    race        Race        @relation(fields: [raceId], references: [id])
-    userId      String      @map("user_id")
-    qtd         Int
-    createdAt   DateTime    @default(now()) @map("created_at")
-    updatedAt   DateTime    @updatedAt @map("updated_at")
-
-    @@unique([userId, raceId])
-    @@map("carts")
 }
 
 enum ParticipantStatus {
@@ -324,6 +310,8 @@ model RaceParticipant {
     @@map("race_participants")
 }
 
+// Booking represents the act of a specific user of registering 1+ participants in an event;
+// It holds the state of the overall registration in the event
 model Booking {
     id                  String              @id @default(uuid())
     status              CheckoutStatus      @default(checkout)

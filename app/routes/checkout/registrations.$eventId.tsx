@@ -15,6 +15,7 @@ import Main from '~/components/shared/Main';
 import { findEvent } from '~/server/db/events.server';
 import { H2, H4, H5, H6 } from '~/components/shared/typography';
 import DisplayDate from '~/components/shared/DIsplayDate';
+import { findEventRaces } from '~/server/db/races.server';
 import type { Event, Race, RaceQtd, UICartRow } from '~/types';
 import { badRequest, displayTimeOfDay } from '~/utils/misc';
 import { getClientSession } from '~/server/auth/client.server';
@@ -33,7 +34,7 @@ import {
   findUserRaceParticipants,
   removeRaceParticipant
 } from '~/server/db/participant.server';
-import { findBooking, removeBooking } from '~/server/db/booking.server';
+import { findBooking, findBookingCart, removeBooking } from '~/server/db/booking.server';
 import { createInitialBookingFlow } from '~/routes/checkout/create';
 
 type LoaderData = {
@@ -157,8 +158,9 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 
   const eventId = params.eventId as string;
   const event = await findEvent(eventId);
-  const userCheckoutRaces = await getUserCartRaces(clientId, eventId);
+  const userCheckoutRaces = await findBookingCart(clientId, eventId);
   const booking = await findBooking(clientId, eventId);
+  const races = await findEventRaces(eventId);
 
   if (booking && !(searchParams.get('a') === 'update')) {
     return redirect(
@@ -176,7 +178,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     return redirect('/');
   }
 
-  const races = await findEventRacesCartQtd(eventId, clientId);
+  // const races = await findEventRacesCartQtd(eventId, clientId);
 
   return json({
     event,
@@ -186,9 +188,17 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 };
 
 export default function CheckoutRegistrationsRoute() {
-  const { event, races, userCheckoutRaces } = useLoaderData<LoaderData>();
+  const { event, races, userCheckoutRaces } = useLoaderData<LoaderData>() as LoaderData;
   const fetcher = useFetcher();
   const [searchParams] = useSearchParams();
+  const raceQtds: RaceQtd[] = races.map((r) => {
+    const raceInCart = userCheckoutRaces.find((c) => (c.raceId === r.id));
+
+    return {
+      ...r,
+      qtd: raceInCart ? raceInCart.qtd : 0
+    };
+  });
 
   return (
     <Main>
@@ -199,14 +209,14 @@ export default function CheckoutRegistrationsRoute() {
           </b>
         </H2>
         <H6>
-          <DisplayDate date={new Date(event.startAt)} />
+          <DisplayDate date={new Date(event.startAt || 0)} />
         </H6>
         <H6>{event.address}</H6>
       </div>
       <div className="flex flex-col md:flex-row mt-8">
         <div className="flex-col w-full md:w-[calc(100%-(480px))] md:pr-4">
-          {races
-            .sort((a: Race, b: Race) => a.displayOrder - b.displayOrder)
+          {raceQtds
+            .sort((a, b) => a.displayOrder - b.displayOrder)
             .map((r: RaceQtd) => (
               <DisplayRace
                 race={r}
