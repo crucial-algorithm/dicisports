@@ -1,3 +1,4 @@
+import { useCreation } from 'ahooks';
 import type { SyntheticEvent } from 'react';
 import * as React from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -84,9 +85,10 @@ type FilterParams = {
 type LoaderData = {
   sports: Sport[];
   groupsSpirit: GroupSpirit[];
-  result: ActionData;
+  searchResult: ActionData;
   favorites: Group[];
   mapToken: string;
+  selectedDayParts: string[] | null
 };
 
 type ActionData = {
@@ -160,7 +162,7 @@ export const loader: LoaderFunction = async ({ request, params, context }) => {
     sports: await findSports(),
     groupsSpirit: await findGroupsSpirit(),
     favorites,
-    result,
+    searchResult: result,
     mapToken: MAPBOX_TOKEN,
     selectedDayParts: data.dayParts
   });
@@ -266,7 +268,6 @@ async function search(
     results: results.map((g, index) => {
       return {
         ...g,
-        position: index,
         distance: Math.floor(g.distance || 0) // save some bandwidth
       };
     }),
@@ -277,6 +278,14 @@ async function search(
   };
 }
 
+function useQueryString() {
+  const searchString = useLocation()?.search;
+
+  // parse the string in a useCreation so that the searchParse
+  // object is not recreated on every render if the searchString doesn't change
+  return  useCreation(() => parseQueryString(`https://a.com/?${searchString}`), [searchString]);
+}
+
 export default function Index() {
   const { t, i18n } = useTranslation('home');
   const { user } = useRootData();
@@ -285,19 +294,19 @@ export default function Index() {
   const {
     sports,
     groupsSpirit,
-    result,
+    searchResult,
     favorites,
     mapToken,
     selectedDayParts
-  } = useLoaderData<LoaderData>();
+  } = useLoaderData<LoaderData>() as LoaderData;
   const [selection, setSelection] = useState<DiciLocation | undefined>();
-  const data = result;
-  const [groups, setGroups] = useState<Array<Group & { position: number }>>([]);
+  const data = searchResult;
+  const [groups, setGroups] = useState<Array<Group>>(data?.results || []);
   const [filtersModalOpen, setFiltersModalOpen] = useState<boolean>(false);
-  const [searchPerformed, setSearchPerformed] = useState<boolean>(false);
+  const [searchPerformed, setSearchPerformed] = useState<boolean>(groups.length > 0);
   const [address, setAddress] = useState<string>('');
   const location = useLocation();
-  const filters = parseQueryString(`https://a.com/${location.search}`);
+  const filters = useQueryString();
   const [userLocation, setUserLocation] = useUserLocation();
   const locationFetcher = useFetcher();
   const [searchingLocation, setSearchingLocation] = useState<boolean>(false);
@@ -322,9 +331,21 @@ export default function Index() {
     []
   );
 
+  const handleOnSubmit = useCallback(() => {
+    setSearchPerformed(true);
+    setFiltersModalOpen(false);
+    setFiltersCacheBurst(Date.now());
+  }, []);
+
+  const handleCloseFilters = useCallback(() => {
+    setFiltersModalOpen(false);
+  }, []);
+
   useEffect(() => {
-    if (!result) {
+    if (!searchResult) {
       if (groups.length > 0) {
+        // we get here when a user navigates back to the home page (by clicking dicisports, for instance)
+        // after having performed a query with results
         setGroups([]);
         setSearchPerformed(false);
         setFiltersModalOpen(false);
@@ -333,15 +354,16 @@ export default function Index() {
     }
     setSearchPerformed(true);
 
-    const { reset, results } = result as ActionData;
+    const { reset, results } = searchResult;
 
     if (!results) {
       return;
     }
 
+    // reset is used to keep previous groups when "load more results" is used
     const list = reset ? [] : [...groups];
 
-    results.map((r, index) => list.push({ ...r, position: index }));
+    results.map((r, index) => list.push(r));
     setGroups(list);
     const url = new URL(window.location.href);
 
@@ -353,22 +375,12 @@ export default function Index() {
     return () => {
       window.onpopstate = null;
     };
-  }, [result, location]);
+  }, [searchResult]);
 
   const showMoreResults = !!data && groups.length < data.total;
 
-  function handleOnSubmit() {
-    setSearchPerformed(true);
-    setFiltersModalOpen(false);
-    setFiltersCacheBurst(Date.now());
-  }
-
   function handleOpenFilters() {
     setFiltersModalOpen(true);
-  }
-
-  function handleCloseFilters() {
-    setFiltersModalOpen(false);
   }
 
   function handleResetSearchPerformed() {
@@ -440,7 +452,7 @@ export default function Index() {
           value={selection ? `${selection.address}` : ''}
           name="search"
         />
-        <input type="hidden" name="page" value={result?.page || 0} />
+        <input type="hidden" name="page" value={searchResult?.page || 0} />
         <input type="hidden" name="dow" value={filters?.dayOfWeek as DaysOfWeek} />
         <input type="hidden" name="sport" value={filters?.sport || ''} />
         {selectedDayParts &&
@@ -482,7 +494,7 @@ export default function Index() {
           groupsSpirit={groupsSpirit}
           triggerModalClose={handleCloseFilters}
           onSubmit={handleOnSubmit}
-          // we need to pass all the filters because filters dialog will submit it's own form
+          // we need to pass all the filters because filters dialog will submit its own form
           filters={filters}
           coords={selection ? selection.coords : ''}
           search={selection ? selection.address : ''}
@@ -567,9 +579,10 @@ export default function Index() {
           </div>
         )}
       </Form>
+
       {searchPerformed && (
         <>
-          {groups.map((group, index: number) => (
+          {groups.map((group) => (
             <GroupResult
               group={group}
               key={`${group.id}`}
@@ -585,18 +598,17 @@ export default function Index() {
               isLoggedIn={user !== null}
               userLocation={userLocation}
               showLocation={orderBy === SortMethod.proximity}
-              index={index}
             />
           ))}
         </>
       )}
 
-      {!searchPerformed ? (
+      {!searchPerformed && (
         <>
           <Spacer size="3xs" />
           <SportsGrid sports={sports} lang={lang} t={t} />
         </>
-      ) : null}
+      )}
 
       <Dialog
         onClose={handleCloseLocationFailedWarning}
@@ -629,18 +641,14 @@ function CallToActionToCreateGroup({
   className?: string;
 }) {
   return (
-    <Form method="post" action="/m/group/add">
-      <input type="hidden" name="actionId" value="create" />
-      <button
-        className={clsx(
-          'background-transparent text-orange-600 dark:text-blueGray-500 font-medium',
-          className
-        )}
-        name="create-your-group"
-      >
-        {label}
-      </button>
-    </Form>
+    <Link to="/m/group/add"
+          className={clsx(
+            'background-transparent text-orange-600 dark:text-blueGray-500 font-medium',
+            className
+          )}
+    >
+      {label}
+    </Link>
   );
 }
 
@@ -655,8 +663,7 @@ function GroupResult({
   location,
   isLoggedIn,
   userLocation,
-  showLocation,
-  index
+  showLocation
 }: {
   group: Group;
   img?: string;
@@ -669,7 +676,6 @@ function GroupResult({
   isLoggedIn: boolean;
   userLocation: [number, number] | null;
   showLocation: boolean;
-  index: number;
 }) {
   const favorite = useFetcher();
   const ref = useRef();
@@ -748,7 +754,7 @@ function GroupResult({
                   size="tiny"
                   name="action"
                   value="add"
-                  id={`add-favorite-${index}`}
+                  id={`add-favorite-${group.id}`}
                 >
                   <HeartIcon className="h-6 w-6 m-0 inline-block" />
                 </Button>
