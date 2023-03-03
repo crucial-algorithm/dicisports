@@ -88,7 +88,7 @@ type LoaderData = {
   searchResult: ActionData;
   favorites: Group[];
   mapToken: string;
-  selectedDayParts: string[] | null
+  selectedDayParts: string[] | null;
 };
 
 type ActionData = {
@@ -124,7 +124,7 @@ enum SortMethod {
 
 export const meta: MetaFunction = CanonicalMeta;
 
-export const loader: LoaderFunction = async ({ request, params, context }) => {
+export const loader: LoaderFunction = async ({ request }) => {
   const data = parseQueryString(request.url);
   // Initial load
   const user = await getUser(request);
@@ -283,7 +283,10 @@ function useQueryString() {
 
   // parse the string in a useCreation so that the searchParse
   // object is not recreated on every render if the searchString doesn't change
-  return  useCreation(() => parseQueryString(`https://a.com/?${searchString}`), [searchString]);
+  return useCreation(
+    () => parseQueryString(`https://a.com/?${searchString}`),
+    [searchString]
+  );
 }
 
 export default function Index() {
@@ -441,7 +444,12 @@ export default function Index() {
         visible={searchingLocation}
         action={t('Searching Location')}
       />
-      <Form method="get" onSubmit={handleOnSubmit} autoComplete="off">
+      <Form
+        method="get"
+        onSubmit={handleOnSubmit}
+        autoComplete="off"
+        preventScrollReset={true}
+      >
         <input
           type="hidden"
           value={selection ? selection.coords : ''}
@@ -582,10 +590,10 @@ export default function Index() {
 
       {searchPerformed && (
         <>
-          {groups.map((group) => (
+          {groups.map((group, index) => (
             <GroupResult
               group={group}
-              key={`${group.id}`}
+              key={`${group.id}-${index}`}
               isUserFavorite={
                 favorites.find((g: Group) => g.id === group.id) !== undefined
               }
@@ -641,11 +649,13 @@ function CallToActionToCreateGroup({
   className?: string;
 }) {
   return (
-    <Link to="/m/group/add"
-          className={clsx(
-            'background-transparent text-orange-600 dark:text-blueGray-500 font-medium',
-            className
-          )}
+    <Link
+      to="/m/group/add"
+      className={clsx(
+        'background-transparent text-orange-600 dark:text-blueGray-500 font-medium',
+        className
+      )}
+      id="create-your-group"
     >
       {label}
     </Link>

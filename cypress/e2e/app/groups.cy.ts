@@ -21,13 +21,14 @@ describe('Groups', () => {
         .click()
 
         .wait('@search')
+        .waitForHydration()
 
-        .get('#add-favorite-0')
+        .get('#add-favorite-2632486059874a0b03d9')
         .click()
 
         .wait('@search')
 
-        .visit('/m/groups')
+        .visitAndWaitForHydration('/m/groups')
 
         .get('button[name=groupId]')
         .should('have.length', 2);
@@ -38,7 +39,7 @@ describe('Groups', () => {
         .as('removeFavorite')
 
         .login()
-        .visit('/m/groups')
+        .visitAndWaitForHydration('/m/groups')
 
         .get('#remove-favorite-0')
         .click()
@@ -53,14 +54,14 @@ describe('Groups', () => {
 
   context('Security', () => {
     it('should not access /m/groups when not authenticated', () => {
-      cy.visit('/m/groups')
+      cy.visitAndWaitForHydration('/m/groups')
         .url()
         .should('eq', `${Cypress.config().baseUrl}/login`);
     });
 
     it('should not allow a user from editing another user group', () => {
       cy.login()
-        .visit('/m/group/d888b22b730daaf3b70e')
+        .visitAndWaitForHydration('/m/group/d888b22b730daaf3b70e')
 
         .url()
         .should('eq', `${Cypress.config().baseUrl}/m/groups`);
@@ -71,7 +72,7 @@ describe('Groups', () => {
     beforeEach(() => cy.login());
 
     it('should create a group', () => {
-      cy.visit('/m/groups')
+      cy.visitAndWaitForHydration('/m/groups')
         .get('button[name=create-group]')
         .click()
 
@@ -121,7 +122,7 @@ describe('Groups', () => {
         .get('div[data-cy="group-entry"]')
         .should('exist')
 
-        .visit('/group/a-new-group')
+        .visitAndWaitForHydration('/group/a-new-group')
         .wasImageLoaded('img[data-cy=image1]')
         .get('p[data-cy=schedule]')
         .contains('Terça-Feira, 10:00 | Domingo, 09:00');
@@ -142,7 +143,7 @@ describe('Groups', () => {
         .url()
         .should('include', '/m/groups')
 
-        .visit('/group/bike-brothers-domingueira')
+        .visitAndWaitForHydration('/group/bike-brothers-domingueira')
         .get('[data-cy=description]')
         .contains(description);
     });
@@ -162,7 +163,7 @@ describe('Groups', () => {
 
         .wait('@deleteGroup')
 
-        .visit('/group/bike-brothers-domingueira')
+        .visitAndWaitForHydration('/group/bike-brothers-domingueira')
         .get('p[data-cy=group-not-found]');
     });
   });

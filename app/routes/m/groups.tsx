@@ -74,7 +74,7 @@ export default function Groups() {
       <div className="col-span-full mb-12 lg:mb-12">
         <div className="flex flex-col-reverse items-start justify-between lg:flex-row lg:items-center">
           <div />
-          <Form method="post" action="/m/group/add">
+          <Form method="get" action="/m/group/add">
             <input type="hidden" name="actionId" value={actionIds.create} />
             <Button variant="secondary" name="create-group">
               <H6 as="span">{t('Create')}</H6>

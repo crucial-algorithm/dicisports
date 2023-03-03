@@ -87,17 +87,17 @@ describe('Event', () => {
     });
 
     it('Should show an handled message when accessing an unpublished event', () => {
-      cy.visit('/event/trail-do-zezere').get('p[data-cy=event-not-found]');
+      cy.visitAndWaitForHydration('/event/trail-do-zezere').get('p[data-cy=event-not-found]');
     });
 
     it('Should show error message when accessing an non existing event', () => {
-      cy.visit('/event/non-existing-event').get('p[data-cy=event-not-found');
+      cy.visitAndWaitForHydration('/event/non-existing-event').get('p[data-cy=event-not-found');
     });
   });
 
   context('Security', () => {
     it('should not access /organizer/event/create when not authenticated', () => {
-      cy.visit('/organizer/event/create')
+      cy.visitAndWaitForHydration('/organizer/event/create')
 
         .url()
         .should('eq', `${Cypress.config().baseUrl}/login`);
@@ -105,7 +105,7 @@ describe('Event', () => {
 
     it('should not allow a user from editing another user event', () => {
       cy.login()
-        .visit('/organizer/event/MY4bvgxDbMtGv8rbYe5d')
+        .visitAndWaitForHydration('/organizer/event/MY4bvgxDbMtGv8rbYe5d')
 
         .url()
         .should('eq', `${Cypress.config().baseUrl}/`);
@@ -366,7 +366,7 @@ describe('Event', () => {
     });
 
     it('should display event preview', () => {
-      cy.visit('/organizer/event/MY4bvgxDbMtGv8rbYe5d')
+      cy.visitAndWaitForHydration('/organizer/event/MY4bvgxDbMtGv8rbYe5d')
         .get('#preview-button')
         .should('exist')
         .then((link) => {

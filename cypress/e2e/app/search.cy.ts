@@ -7,7 +7,7 @@ describe('Search', () => {
     it('should load groups', () => {
       cy.intercept('GET', '/*?coords=*')
         .as('search')
-        .visit('/')
+        .visitAndWaitForHydration('/')
 
         .get('#search-button')
         .click()
@@ -61,7 +61,7 @@ describe('Search', () => {
         .url()
         .should('include', '/?coords=&search=&page=0&dow=&sport=&actionId=search')
 
-        .get('button[name=create-your-group]')
+        .get('#create-your-group')
         .click()
 
         .waitForHydration()
@@ -73,7 +73,7 @@ describe('Search', () => {
     it('should favorite a group unauthenticated: login', () => {
       cy.intercept('GET', '/*?coords=*')
         .as('search')
-        .visit('/')
+        .visitAndWaitForHydration('/')
 
         .get('#search-button')
         .click()
@@ -84,7 +84,7 @@ describe('Search', () => {
         .intercept('GET', '/login?a=favorite&g=*_data=routes*')
         .as('loadLoginPage')
 
-        .get('#add-favorite-0')
+        .get('#add-favorite-2632486059874a0b03d9')
         .click()
 
         .wait('@loadLoginPage')
@@ -128,7 +128,7 @@ describe('Search', () => {
         .intercept('GET', '/login?*_data=routes*')
         .as('loginPage')
 
-        .get('#add-favorite-0')
+        .get('#add-favorite-2632486059874a0b03d9')
         .click()
 
         .wait('@loginPage')

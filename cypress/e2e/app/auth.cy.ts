@@ -5,21 +5,21 @@ describe('Authentication / Authorization', () => {
 
   context('When user not authenticated', () => {
     it('should redirect to login when accessing groups', () => {
-      cy.visit('/m/groups')
+      cy.visitAndWaitForHydration('/m/groups')
 
         .url()
         .should('eq', `${Cypress.config().baseUrl}/login`);
     });
 
     it('should redirect to login when accessing events', () => {
-      cy.visit('/organizer/')
+      cy.visitAndWaitForHydration('/organizer/')
 
         .url()
         .should('eq', `${Cypress.config().baseUrl}/login`);
     });
 
     it('should allow to navigate to create a new account', () => {
-      cy.visit('/signup')
+      cy.visitAndWaitForHydration('/signup')
 
         .url()
         .should('eq', `${Cypress.config().baseUrl}/signup`);
@@ -93,11 +93,11 @@ describe('Authentication / Authorization', () => {
     beforeEach(() => cy.login());
 
     it('should redirect to profile when accessing login', () => {
-      cy.visit('/login').url().should('eq', `${Cypress.config().baseUrl}/me`);
+      cy.visitAndWaitForHydration('/login').url().should('eq', `${Cypress.config().baseUrl}/me`);
     });
 
     it('should be able to access it\'s profile', () => {
-      cy.visit('/me').url().should('eq', `${Cypress.config().baseUrl}/me`);
+      cy.visitAndWaitForHydration('/me').url().should('eq', `${Cypress.config().baseUrl}/me`);
     });
   });
 
@@ -133,7 +133,7 @@ describe('Authentication / Authorization', () => {
     });
 
     it('should require all fields', () => {
-      cy.visit('/signup')
+      cy.visitAndWaitForHydration('/signup')
 
         .url()
         .should('eq', `${Cypress.config().baseUrl}/signup`)

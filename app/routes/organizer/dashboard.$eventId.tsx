@@ -263,7 +263,7 @@ export default function DashboardRoute() {
         ))}
       </div>
 
-      <Form method="get">
+      <Form method="get" preventScrollReset={true}>
         <input
           type="hidden"
           value={searchedParticipantName}
@@ -314,7 +314,7 @@ export default function DashboardRoute() {
         </div>
       </Form>
 
-      <Form method="get">
+      <Form method="get" preventScrollReset={true}>
         <input type="hidden" value={pageNumber} name="page" />
 
         {searchedName.length > 0 && (

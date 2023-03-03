@@ -21,7 +21,7 @@ export type Option = {
 };
 
 type Props = {
-  name: string;
+  id: string;
   options?: Array<Option>;
   lang?: Language;
   placeholder: string;
@@ -31,7 +31,7 @@ type Props = {
 } & Omit<React.ComponentProps<'select'>, 'onChange'>;
 
 export function AutoComplete({
-  name,
+  id,
   className,
   options = [],
   lang,
@@ -104,7 +104,7 @@ export function AutoComplete({
         <div className="relative mt-1">
           <div className="z-100">
             <Combobox.Input
-              id={name}
+              id={id}
               className={inputBaseClasses()}
               displayValue={display}
               placeholder={placeholder}
@@ -133,7 +133,7 @@ export function AutoComplete({
               static
             >
               {values.length === 0 ? (
-                <div className="relative cursor-default select-none py-2 px-4 text-gray-700 text-center">
+                <div className="relative cursor-default select-none py-2 px-4 text-blueGray-500 text-center">
                   <NoOptionsMessage />
                 </div>
               ) : (
@@ -209,8 +209,13 @@ export default function ComboBox({
   return (
     <Listbox value={selected} onChange={onChangedInternal}>
       <div className={clsx('relative mt-1', className)}>
-        <Listbox.Button className={inputBaseClasses('text-left min-h-[60px]')} name={'select-' + name}>
-          <span className="block truncate">{(options.find((o) => o.value === selected))?.label || ''}</span>
+        <Listbox.Button
+          className={inputBaseClasses('text-left min-h-[60px]')}
+          name={'select-' + name}
+        >
+          <span className="block truncate">
+            {options.find((o) => o.value === selected)?.label || ''}
+          </span>
           <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
             <ChevronUpDownIcon
               className="h-5 w-5 text-gray-400"
@@ -234,7 +239,11 @@ export default function ComboBox({
             )}
           >
             {options.map((option, idx) => (
-              <Listbox.Option key={idx} className={StyleOption} value={option.value}>
+              <Listbox.Option
+                key={idx}
+                className={StyleOption}
+                value={option.value}
+              >
                 {({ selected, active }) => (
                   <>
                     <span
