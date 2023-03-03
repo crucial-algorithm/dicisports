@@ -67,7 +67,7 @@ export default function SearchLocations({
     <AutoComplete
       name="search-box"
       options={context?.results.map(({ label, value }) => ({ value, label }))}
-      placeholder={placeholder || ''}
+      placeholder={search || placeholder || ''}
       completeMethod={handleOnComplete}
       onChange={handleOnChange}
       noOptionsMessage={NoOptionsMessage}
