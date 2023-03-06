@@ -1,3 +1,5 @@
+import { ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline';
+import { CheckoutStatus, Status } from '@prisma/client';
 import type { ActionFunction, LoaderFunction } from '@remix-run/node';
 import { json, redirect } from '@remix-run/node';
 import {
@@ -8,34 +10,26 @@ import {
 } from '@remix-run/react';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
-import { ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline';
-import { CheckoutStatus, Status } from '@prisma/client';
+
+import DisplayCart from '~/components/shared/DisplayCart';
+import DisplayDate from '~/components/shared/DIsplayDate';
 
 import Main from '~/components/shared/Main';
-import { findEvent } from '~/server/db/events.server';
 import { H2, H4, H5, H6 } from '~/components/shared/typography';
-import DisplayDate from '~/components/shared/DIsplayDate';
-import { findEventRaces } from '~/server/db/races.server';
-import type { Event, Race, RaceQtd, UICartRow } from '~/types';
-import { badRequest, displayTimeOfDay } from '~/utils/misc';
+import { createInitialBookingFlow } from '~/routes/checkout/create';
 import { getClientSession } from '~/server/auth/client.server';
-import {
-  addRegistration,
-  addRegistrationOnUpdateCart,
-  findEventRacesCartQtd,
-  getUserCartRaces,
-  removeRegistration
-} from '~/server/db/cart.server';
-import i18n from '~/server/i18n.server';
-import DisplayCart from '~/components/shared/DisplayCart';
 import { getUser } from '~/server/auth/session.server';
+import { findBooking, findBookingCart, removeBooking } from '~/server/db/booking.server';
+import { findEvent } from '~/server/db/events.server';
 import {
-  findUserEventRaceParticipants,
+  addParticipantToRace, findUserEventRaceParticipants,
   findUserRaceParticipants,
   removeRaceParticipant
 } from '~/server/db/participant.server';
-import { findBooking, findBookingCart, removeBooking } from '~/server/db/booking.server';
-import { createInitialBookingFlow } from '~/routes/checkout/create';
+import { findEventRaces } from '~/server/db/races.server';
+import i18n from '~/server/i18n.server';
+import type { Booking, Event, Race, RaceQtd, UICartRow } from '~/types';
+import { badRequest, displayTimeOfDay } from '~/utils/misc';
 
 type LoaderData = {
   event: Event;
@@ -67,57 +61,8 @@ export const action: ActionFunction = async ({ request, params }) => {
   const raceId = form.get('raceId') as string;
 
   try {
-    if (actionId === actions.add) {
-      if (searchParams.get('a') === 'update') {
-        const booking = await findBooking(clientId, eventId);
 
-        if (!booking) {
-          return badRequest({ error: t('No Booking') });
-        }
-
-        return await addRegistrationOnUpdateCart(
-          clientId,
-          raceId,
-          booking.id as string
-        );
-      }
-
-      return await addRegistration(clientId, raceId);
-    }
-
-    if (actionId === actions.remove) {
-      if (searchParams.get('a') === 'update') {
-        const raceParticipants = await findUserRaceParticipants(
-          clientId,
-          raceId
-        );
-
-        if (!raceParticipants?.length) {
-          return badRequest({ error: t('No Race Participants') });
-        }
-
-        const draftRaceParticipants = raceParticipants?.filter(
-          (rp) => rp.participant.status === 'auto'
-        );
-
-        if (draftRaceParticipants?.length) {
-          return await removeRaceParticipant(
-            draftRaceParticipants[0].participantId,
-            raceId,
-            clientId
-          );
-        }
-
-        return await removeRaceParticipant(
-          raceParticipants[0].participantId as string,
-          raceId,
-          clientId
-        );
-      }
-
-      return await removeRegistration(clientId, raceId);
-    }
-
+    // Triggered when user clicks continue in the cart screen
     if (actionId === actions.checkout) {
       if (searchParams.get('a') === 'update') {
         const userEventRaceParticipants = await findUserEventRaceParticipants(
@@ -128,13 +73,46 @@ export const action: ActionFunction = async ({ request, params }) => {
         if (!userEventRaceParticipants?.length) {
           await removeBooking(clientId, eventId);
 
-          return redirect(`/checkout/registrations/${eventId}`);
+          return redirect(`/checkout/cart/${eventId}`);
         }
 
         return redirect(`/checkout/info/${eventId}`);
       }
 
-      await createInitialBookingFlow(clientId, eventId, t);
+      await createInitialBookingFlow(clientId, eventId, raceId, t);
+    }
+
+    if (actionId === actions.add) {
+      const booking: Booking | null = await findBooking(clientId, eventId);
+
+      if (!booking) {
+        return badRequest({ error: t('No Booking') });
+      }
+
+      await addParticipantToRace(clientId, raceId, booking.id);
+
+    }
+
+    if (actionId === actions.remove) {
+      const raceParticipants = await findUserRaceParticipants(
+        clientId,
+        raceId
+      );
+
+      if (!raceParticipants?.length) {
+        return badRequest({ error: t('No Race Participants') });
+      }
+
+      const draftRaceParticipants = raceParticipants?.filter(
+        (rp) => rp.participant.status === 'auto'
+      );
+
+      await removeRaceParticipant(
+        draftRaceParticipants[0]
+          ? draftRaceParticipants[0].participantId
+          : raceParticipants[0].participantId,
+        raceId
+      );
     }
 
     return json({});
@@ -231,7 +209,7 @@ export default function CheckoutRegistrationsRoute() {
             cart={userCheckoutRaces}
             event={event}
             fetcher={fetcher}
-            action={`/checkout/registrations/${event.id}${
+            action={`/checkout/cart/${event.id}${
               searchParams.toString().length ? `?${searchParams}` : ''
             }`}
             showContinueLabel={searchParams.get('a') === 'update'}
@@ -275,7 +253,7 @@ function DisplayRace({
 
         <Form
           method="post"
-          action={`/checkout/registrations/${eventId}${
+          action={`/checkout/cart/${eventId}${
             searchParams.toString().length ? `?${searchParams}` : ''
           }`}
         >

@@ -23,7 +23,7 @@ import { verifyEmailAddress } from '~/server/auth/verifier.server';
 import { addGroupToFavorites } from '~/server/db/groups.server';
 import InputError from '~/components/shared/form/InputError';
 import { CanonicalMeta } from '~/utils/seo';
-import { changeRegistrationToAuthUser } from '~/server/db/cart.server';
+import { changeRegistrationToAuthUser } from '~/server/db/booking.server';
 import { getClientSession } from '~/server/auth/client.server';
 
 type ActionData = {

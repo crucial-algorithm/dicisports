@@ -1,11 +1,11 @@
+import { PrismaClient } from '@prisma/client';
 import type { CheckoutStatus, Prisma } from '@prisma/client';
 
-import { dbUICartToUICart } from '~/server/db/codecs.server';
-import type { DBRawUICartRow, UICartRow } from '~/types';
-
-import type { Booking } from '~/types';
 import { db } from '~/server/db.server';
+
+import { dbUICartToUICart } from '~/server/db/codecs.server';
 import Id from '~/server/utils/Id.server';
+import type { Booking, DBRawUICartRow, UICartRow } from '~/types';
 
 async function updateBookingStatus(
   status: CheckoutStatus,
@@ -82,4 +82,40 @@ async function removeBooking(
   });
 }
 
-export { updateBookingStatus, findBooking, createBooking, removeBooking, findBookingCart };
+async function changeRegistrationToAuthUser(
+  authUser: string,
+  oldUser: string
+): Promise<void> {
+  const prisma = new PrismaClient();
+
+  return prisma.$transaction(async (prisma) => {
+    await prisma.booking.updateMany({
+      where: {
+        userId: oldUser
+      },
+      data: {
+        userId: authUser
+      }
+    });
+
+    await prisma.participant.updateMany({
+      where: {
+        userId: oldUser
+      },
+      data: {
+        userId: authUser
+      }
+    });
+
+  });
+}
+
+
+export {
+  updateBookingStatus,
+  findBooking,
+  createBooking,
+  removeBooking,
+  findBookingCart,
+  changeRegistrationToAuthUser
+};

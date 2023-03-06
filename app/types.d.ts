@@ -10,7 +10,6 @@ import type {
   Race as DBRace,
   GroupSchedule as DBGroupSchedule,
   Difficulty as DBDifficulty,
-  Cart as DBCart,
   RaceParticipant as DBRaceParticipant,
   Participant as DBParticipant,
   Booking as DBBooking,
@@ -285,17 +284,6 @@ type Ticket = {
   numberOfTickets: number;
 };
 
-type Cart = { raceId: string } & DBCart;
-
-type CartInput = {
-  id?: string;
-  raceId: string;
-  userId: string;
-  qtd?: number;
-  createdAt?: Date;
-  updatedAt?: Date;
-};
-
 type PartialCart = {
   id: string;
   raceId: string;
@@ -474,8 +462,6 @@ export {
   FavoriteEvent,
   Difficulty,
   Ticket,
-  Cart,
-  CartInput,
   UICartRow,
   DBRawUICartRow,
   DBRawRaceQtd,

@@ -1,22 +1,26 @@
-import * as React from 'react';
+import { CheckoutStatus } from '@prisma/client';
 import type { ActionFunction, LoaderFunction } from '@remix-run/node';
 import { json, redirect } from '@remix-run/node';
 import { Form, useFetcher, useLoaderData } from '@remix-run/react';
+import * as React from 'react';
 import { useTranslation } from 'react-i18next';
-import { CheckoutStatus } from '@prisma/client';
+
+import Button from '~/components/shared/Button';
+import DisplayCart from '~/components/shared/DisplayCart';
+import DisplayDate from '~/components/shared/DIsplayDate';
 
 import Main from '~/components/shared/Main';
 import { H2, H6 } from '~/components/shared/typography';
-import DisplayDate from '~/components/shared/DIsplayDate';
-import { findEvent } from '~/server/db/events.server';
-import type { Event, UICartRow } from '~/types';
 import { getClientSession } from '~/server/auth/client.server';
-import { getUserCartRaces } from '~/server/db/cart.server';
-import DisplayCart from '~/components/shared/DisplayCart';
-import Button from '~/components/shared/Button';
 import { getUser } from '~/server/auth/session.server';
+import {
+  findBooking,
+  findBookingCart,
+  updateBookingStatus
+} from '~/server/db/booking.server';
+import { findEvent } from '~/server/db/events.server';
 import { findUserEventRaceParticipants } from '~/server/db/participant.server';
-import { findBooking, updateBookingStatus } from '~/server/db/booking.server';
+import type { Event, UICartRow } from '~/types';
 
 type LoaderData = {
   event: Event;
@@ -60,7 +64,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
       : anonymousClient.getClientId();
 
   const event = await findEvent(eventId);
-  const cart = await getUserCartRaces(clientId, eventId);
+  const cart = await findBookingCart(clientId, eventId);
   const raceParticipants = await findUserEventRaceParticipants(
     clientId,
     eventId

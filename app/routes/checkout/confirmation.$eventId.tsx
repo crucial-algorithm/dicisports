@@ -1,23 +1,23 @@
+import { CheckoutStatus } from '@prisma/client';
 import type { LoaderFunction } from '@remix-run/node';
 import { json, redirect } from '@remix-run/node';
 import { useFetcher, useLoaderData } from '@remix-run/react';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
-import { CheckoutStatus } from '@prisma/client';
 
-import { getClientSession } from '~/server/auth/client.server';
-import { getUserCartRaces } from '~/server/db/cart.server';
-import { findEvent } from '~/server/db/events.server';
-import type { Booking, Event, UICartRow } from '~/types';
+import Button from '~/components/shared/Button';
+import DisplayCart from '~/components/shared/DisplayCart';
+import DisplayDate from '~/components/shared/DIsplayDate';
+import TextField from '~/components/shared/form/TextField';
 import Main from '~/components/shared/Main';
 import { H2, H4, H6 } from '~/components/shared/typography';
-import DisplayDate from '~/components/shared/DIsplayDate';
-import DisplayCart from '~/components/shared/DisplayCart';
-import TextField from '~/components/shared/form/TextField';
-import Button from '~/components/shared/Button';
+
+import { getClientSession } from '~/server/auth/client.server';
 import { getUser } from '~/server/auth/session.server';
+import { findBooking, findBookingCart } from '~/server/db/booking.server';
+import { findEvent } from '~/server/db/events.server';
 import { findUserEventRaceParticipants } from '~/server/db/participant.server';
-import { findBooking } from '~/server/db/booking.server';
+import type { Booking, Event, UICartRow } from '~/types';
 
 type LoaderData = {
   registration: Booking;
@@ -57,7 +57,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 
   const registration = await findBooking(clientId, eventId);
   const event = await findEvent(registration?.eventId as string);
-  const cart = await getUserCartRaces(clientId, eventId);
+  const cart = await findBookingCart(clientId, eventId);
 
   return json({
     registration,

@@ -108,7 +108,7 @@ export default function DisplayCart({
         {showUpdateCartButton && (
           <div className="flex justify-end mt-4">
             <a
-              href={`/checkout/registrations/${event.id}?a=update`}
+              href={`/checkout/cart/${event.id}?a=update`}
               data-cy="update-cart"
             >
               <H6 className="dark:text-blueGray-500 cursor-pointer">

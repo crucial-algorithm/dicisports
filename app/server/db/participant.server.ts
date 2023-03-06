@@ -2,7 +2,6 @@ import type { Prisma } from '@prisma/client';
 import { PrismaClient } from '@prisma/client';
 
 import type {
-  Cart,
   DBRawParticipant,
   DBRawUIRaceParticipant,
   Participant,
@@ -14,7 +13,6 @@ import type {
 import { db } from '~/server/db.server';
 import Id from '~/server/utils/Id.server';
 import { findEventRaces } from '~/server/db/races.server';
-import { addRegistration, removeRegistration } from '~/server/db/cart.server';
 import {
   dbParticipantToParticipant,
   dbUIRaceParticipantToUIRaceParticipant
@@ -176,17 +174,12 @@ async function updateToSelectedParticipant(
 
 async function removeRaceParticipant(
   participantId: string,
-  raceId: string,
-  clientId: string
-): Promise<Cart | null> {
-  return await prisma.$transaction(async (prisma) => {
-    await prisma.raceParticipant.delete({
-      where: {
-        participantId_raceId: { participantId, raceId }
-      }
-    });
-
-    return await removeRegistration(clientId, raceId, prisma);
+  raceId: string
+): Promise<void> {
+  await prisma.raceParticipant.delete({
+    where: {
+      participantId_raceId: { participantId, raceId }
+    }
   });
 }
 
@@ -197,10 +190,6 @@ async function addRaceParticipants(
 ): Promise<void> {
   return await prisma.$transaction(async (prisma) => {
     await addParticipantsToRace(raceIds, userSessionId, registrationId, prisma);
-
-    for (const r of raceIds) {
-      await addRegistration(userSessionId, r, prisma);
-    }
   });
 }
 

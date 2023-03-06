@@ -1,54 +1,42 @@
-import type { ActionFunction, LoaderFunction } from '@remix-run/node';
-import { json, redirect } from '@remix-run/node';
-import * as React from 'react';
-import { useCallback, useEffect, useState } from 'react';
-import { CheckoutStatus, ParticipantStatus } from '@prisma/client';
-
-import type { FetcherWithComponents } from '@remix-run/react';
-import { useFetcher, useLoaderData } from '@remix-run/react';
-import { useTranslation } from 'react-i18next';
-import clsx from 'clsx';
-import { z, ZodError } from 'zod';
 import {
   ChevronDownIcon,
   ChevronUpIcon,
   PlusIcon,
   XMarkIcon
 } from '@heroicons/react/24/outline';
+import { CheckoutStatus, ParticipantStatus } from '@prisma/client';
+import type { ActionFunction, LoaderFunction } from '@remix-run/node';
+import { json, redirect } from '@remix-run/node';
+
+import { useFetcher, useLoaderData } from '@remix-run/react';
+import clsx from 'clsx';
+import * as React from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { z, ZodError } from 'zod';
+
+import { CheckoutInfoActions } from '~/action.keys';
+
+import type { FormErrors } from '~/components/shared/ParticipantForm';
+import ParticipantForm from '~/components/shared/ParticipantForm';
+import Button from '~/components/shared/Button';
+import ButtonGroup from '~/components/shared/ButtonGroup';
+import DisplayCart from '~/components/shared/DisplayCart';
 
 import DisplayDate from '~/components/shared/DIsplayDate';
-
-import { getClientSession } from '~/server/auth/client.server';
-import { getUserCartRaces } from '~/server/db/cart.server';
 import Main from '~/components/shared/Main';
-import { findEvent } from '~/server/db/events.server';
+import { Notification } from '~/components/shared/NotificationMessage';
 import { H2, H4, H5, H6 } from '~/components/shared/typography';
 
-import type {
-  Event,
-  Language,
-  Participant,
-  ParticipantInput,
-  Race,
-  RaceParticipant,
-  ShirtSize,
-  UICartRow
-} from '~/types';
-import DisplayCart from '~/components/shared/DisplayCart';
-import TextField from '~/components/shared/form/TextField';
-import FormField from '~/components/shared/form/FormField';
-
-import ComboBox from '~/components/shared/form/ComboBox';
-import BasicDatePicker from '~/components/shared/form/DatePicker';
-import Button from '~/components/shared/Button';
-import i18n from '~/server/i18n.server';
-import { badRequest, displayTimeOfDay } from '~/utils/misc';
-import { Notification } from '~/components/shared/NotificationMessage';
-import ButtonGroup from '~/components/shared/ButtonGroup';
+import { getClientSession } from '~/server/auth/client.server';
 import { getUser } from '~/server/auth/session.server';
-
-import countries from '~/server/db/countries.json';
-import { findShirtSizes } from '~/server/db/reference.server';
+import {
+  findBooking,
+  findBookingCart,
+  removeBooking,
+  updateBookingStatus
+} from '~/server/db/booking.server';
+import { findEvent } from '~/server/db/events.server';
 import {
   findUserEventRaceParticipants,
   findUserParticipants,
@@ -56,22 +44,19 @@ import {
   updateParticipant,
   updateToSelectedParticipant
 } from '~/server/db/participant.server';
-import {
-  findBooking,
-  findBookingCart,
-  removeBooking,
-  updateBookingStatus
-} from '~/server/db/booking.server';
+import { findShirtSizes } from '~/server/db/reference.server';
+import i18n from '~/server/i18n.server';
 
-const actions = {
-  add: 'add',
-  update: 'update',
-  updateAndSave: 'updateAndSave',
-  checkout: 'checkout',
-  removeParticipant: 'removeParticipant',
-  addParticipants: 'addParticipants',
-  updateAndCheckout: 'updateAndCheckout'
-};
+import type {
+  Event,
+  Participant,
+  ParticipantInput,
+  Race,
+  RaceParticipant,
+  ShirtSize,
+  UICartRow
+} from '~/types';
+import { badRequest, displayTimeOfDay } from '~/utils/misc';
 
 type LoaderData = {
   event: Event;
@@ -154,7 +139,7 @@ export const action: ActionFunction = async ({ request, params }) => {
         .min(1, { message: t('Field Required') })
     });
 
-    if (actionId === actions.updateAndSave) {
+    if (actionId === CheckoutInfoActions.updateAndSave) {
       const selectedParticipantId = form.get(
         'selected-participant-id'
       ) as string;
@@ -180,14 +165,14 @@ export const action: ActionFunction = async ({ request, params }) => {
       await updateParticipant(data);
     }
 
-    if (actionId === actions.update || actionId === actions.updateAndCheckout) {
+    if (actionId === CheckoutInfoActions.update || actionId === CheckoutInfoActions.updateAndCheckout) {
       ParticipantSchema.parse(data);
       await updateParticipant(data);
     }
 
     if (
-      actionId === actions.checkout ||
-      actionId === actions.updateAndCheckout
+      actionId === CheckoutInfoActions.checkout ||
+      actionId === CheckoutInfoActions.updateAndCheckout
     ) {
       const raceParticipants = await findUserEventRaceParticipants(
         clientId,
@@ -207,8 +192,7 @@ export const action: ActionFunction = async ({ request, params }) => {
       if (draftParticipants.length) {
         return badRequest({
           errors: {
-            missingFilledParticipants:
-              draftParticipants.length + ' ' + t('Participant Not Filled')
+            missingFilledParticipants: t('Participant Not Filled')
           },
           hash: parseInt(hash),
           missingParticipants: JSON.stringify(draftParticipants)
@@ -267,7 +251,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
       await removeBooking(clientId, eventId);
     }
 
-    return redirect(`/checkout/registrations/${eventId}`);
+    return redirect(`/checkout/cart/${eventId}`);
   }
 
   const userParticipants = await findUserParticipants(clientId);
@@ -367,7 +351,7 @@ export default function CheckoutInfoRoute() {
   function handleRemoveRaceParticipant() {
     fetcher.submit(
       {
-        actionId: actions.removeParticipant,
+        actionId: CheckoutInfoActions.removeParticipant,
         participantId: participant?.id as string,
         raceId: selectedRace as string
       },
@@ -402,7 +386,7 @@ export default function CheckoutInfoRoute() {
     if (
       fetcher.type === 'actionReload' &&
       fetcher.data.ok &&
-      fetcher.data.action === actions.removeParticipant
+      fetcher.data.action === CheckoutInfoActions.removeParticipant
     ) {
       setMessage(t('Participant Removed'));
       showNotification();
@@ -413,7 +397,7 @@ export default function CheckoutInfoRoute() {
     if (
       fetcher.type === 'actionReload' &&
       fetcher.data.ok &&
-      fetcher.data.action === actions.update
+      fetcher.data.action === CheckoutInfoActions.update
     ) {
       setMessage(t('Participant Saved'));
       showNotification();
@@ -424,7 +408,7 @@ export default function CheckoutInfoRoute() {
     if (
       fetcher.type === 'actionReload' &&
       fetcher.data.ok &&
-      fetcher.data.action === actions.updateAndSave
+      fetcher.data.action === CheckoutInfoActions.updateAndSave
     ) {
       setMessage(t('Participant Saved and Updated'));
       showNotification();
@@ -589,309 +573,6 @@ export default function CheckoutInfoRoute() {
   );
 }
 
-type FormErrors = {
-  firstName?: string;
-  lastName?: string;
-  gender?: string;
-  birthday?: string;
-  phoneNumber?: string;
-  identityCard?: string;
-  federationNumber?: string;
-  shirtSize?: string;
-  nationality?: string;
-  postalCode?: string;
-  selectedParticipant?: string;
-  missingFilledParticipants?: string;
-};
-
-function ParticipantForm({
-  participant,
-  hash,
-  errors,
-  userSavedParticipants,
-  raceId,
-  fetcher,
-  selectedParticipant,
-  setSelectedParticipant,
-  shirtSizes,
-  resetForm,
-  isSingleParticipant
-}: {
-  participant: Participant | null;
-  hash: number;
-  errors?: FormErrors;
-  userSavedParticipants: Participant[] | null;
-  raceId: string | null;
-  fetcher: FetcherWithComponents<any>;
-  selectedParticipant: Participant | null;
-  setSelectedParticipant: (v: string | number) => void;
-  shirtSizes: ShirtSize[];
-  resetForm: () => void;
-  isSingleParticipant: boolean;
-}) {
-  const { t, i18n } = useTranslation('checkout');
-  const language = i18n.language as Language;
-
-  const genderOptions = [
-    { value: 'F', label: t('Female') },
-    { value: 'M', label: t('Male') }
-  ];
-
-  return (
-    <fetcher.Form
-      method="post"
-      className={clsx('w-full', participant ? 'opacity-100' : 'opacity-50')}
-      key={hash}
-    >
-      {participant &&
-        userSavedParticipants &&
-        userSavedParticipants.length !== 0 && (
-          <div className="mb-8">
-            <FormField
-              label={t('Select Participant')}
-              error={errors?.selectedParticipant}
-              className="w-full"
-            >
-              <ComboBox
-                id="saved-participants"
-                name="userSavedParticipants"
-                placeholder=""
-                options={userSavedParticipants.map((u) => {
-                  return { value: u.id, label: u.firstName + ' ' + u.lastName };
-                })}
-                onChange={setSelectedParticipant}
-                className="w-[50%] mr-2"
-              />
-            </FormField>
-          </div>
-        )}
-      <div className="flex flex-col md:flex-row md:space-x-2">
-        <FormField
-          label={t('First Name')}
-          id="first-name"
-          error={errors?.firstName}
-          dataCy="firstName"
-        >
-          <TextField
-            data-cy="first-name"
-            name="first-name"
-            defaultValue={
-              (selectedParticipant?.firstName as string) ||
-              (participant?.firstName as string)
-            }
-          />
-        </FormField>
-
-        <FormField
-          label={t('Last Name')}
-          id="last-name"
-          error={errors?.lastName}
-          dataCy="lastName"
-        >
-          <TextField
-            name="last-name"
-            defaultValue={
-              (selectedParticipant?.lastName as string) ||
-              (participant?.lastName as string)
-            }
-          />
-        </FormField>
-      </div>
-
-      <FormField label={t('Gender')} error={errors?.gender} dataCy="gender">
-        <ComboBox
-          name="gender"
-          placeholder={t('Gender Placeholder')}
-          options={genderOptions}
-          lang={language}
-          defaultValue={
-            (selectedParticipant?.gender as string) ||
-            (participant?.gender as string)
-          }
-        />
-      </FormField>
-
-      <div className="flex flex-col md:flex-row md:space-x-2">
-        <FormField
-          label={''}
-          id="birthday"
-          error={errors?.birthday}
-          dataCy="birthday"
-        >
-          <BasicDatePicker
-            label={t('Birthday')}
-            name="birthday"
-            date={
-              selectedParticipant?.birthday
-                ? new Date(selectedParticipant.birthday)
-                : participant?.birthday
-                ? new Date(participant.birthday)
-                : new Date()
-            }
-          />
-        </FormField>
-
-        <FormField
-          label={t('Phone Number')}
-          id="phone-number"
-          error={errors?.phoneNumber}
-          dataCy="phoneNumber"
-        >
-          <TextField
-            type="number"
-            name="phone-number"
-            placeholder={t('Required')}
-            defaultValue={
-              (selectedParticipant?.phoneNumber as number) ||
-              (participant?.phoneNumber as number)
-            }
-          />
-        </FormField>
-      </div>
-
-      <div className="flex flex-col md:flex-row md:space-x-2">
-        <FormField
-          label={t('Identity Card')}
-          id="identity-card"
-          error={errors?.identityCard}
-          dataCy="identityCard"
-        >
-          <TextField
-            name="identity-card"
-            placeholder={t('Optional')}
-            defaultValue={
-              (selectedParticipant?.identityCard as string) ||
-              (participant?.identityCard as string)
-            }
-          />
-        </FormField>
-
-        <FormField
-          label={t('National Federation Number')}
-          id="federation-number"
-          error={errors?.federationNumber}
-          dataCy="federationNumber"
-        >
-          <TextField
-            type="number"
-            name="federation-number"
-            placeholder={t('Optional')}
-            defaultValue={
-              (selectedParticipant?.federationNumber as number) ||
-              (participant?.federationNumber as number)
-            }
-          />
-        </FormField>
-      </div>
-
-      <FormField
-        label={t('Shirt Size')}
-        error={errors?.shirtSize}
-        dataCy="shirtSize"
-      >
-        <ComboBox
-          name="shirt"
-          placeholder={t('Shirt Placeholder')}
-          lang={language}
-          options={shirtSizes.map((ss: ShirtSize) => {
-            return { value: ss.id, label: ss.name as string };
-          })}
-          defaultValue={
-            (selectedParticipant?.shirtSize as number) ||
-            (participant?.shirtSize as number)
-          }
-        />
-      </FormField>
-
-      <FormField
-        label={t('Native From')}
-        id="nationality"
-        error={errors?.nationality}
-        dataCy="nationality"
-      >
-        <ComboBox
-          name="nationality"
-          placeholder={t('Optional')}
-          lang={language}
-          options={countries.map((c) => {
-            return { value: c.id, label: c.name };
-          })}
-          defaultValue={
-            (selectedParticipant?.nationality as number) ||
-            (participant?.nationality as number)
-          }
-        />
-      </FormField>
-
-      <FormField
-        label={t('Postal Code')}
-        id="postal-code"
-        error={errors?.postalCode}
-        dataCy="postalCode"
-      >
-        <TextField
-          name="postal-code"
-          placeholder={t('Required')}
-          defaultValue={
-            (selectedParticipant?.postalCode as string) ||
-            (participant?.postalCode as string)
-          }
-        />
-      </FormField>
-
-      {participant && (
-        <input type="hidden" name="participant-id" value={participant.id} />
-      )}
-
-      {selectedParticipant && (
-        <>
-          <input
-            type="hidden"
-            name="selected-participant-id"
-            value={selectedParticipant.id}
-          />
-          <input type="hidden" name="raceId" value={raceId as string} />
-        </>
-      )}
-
-      <input type="hidden" name="hash" value={hash} />
-      <ButtonGroup>
-        {selectedParticipant && (
-          <Button
-            type="submit"
-            value={actions.updateAndSave}
-            name="actionId"
-            disabled={!participant}
-            id="save-update-button"
-          >
-            {t('Save and Update') +
-              ' ' +
-              selectedParticipant.firstName +
-              ' ' +
-              selectedParticipant.lastName}
-          </Button>
-        )}
-        <Button
-          type="submit"
-          value={
-            isSingleParticipant ? actions.updateAndCheckout : actions.update
-          }
-          name="actionId"
-          disabled={!participant}
-          id="save-button"
-          variant="secondary"
-        >
-          {t('Save')}
-        </Button>
-
-        <Button type="button" variant="secondary" onClick={resetForm}>
-          {t('Reset')}
-        </Button>
-      </ButtonGroup>
-    </fetcher.Form>
-  );
-}
-
 function AddRacesDialog({
   isOpen,
   triggerModalClose,
@@ -930,7 +611,7 @@ function AddRacesDialog({
     if (
       fetcher.type === 'actionReload' &&
       fetcher.data.ok &&
-      fetcher.data?.action === actions.addParticipants
+      fetcher.data?.action === CheckoutInfoActions.addParticipants
     ) {
       return close;
     }
@@ -976,7 +657,7 @@ function AddRacesDialog({
             <Button
               type="submit"
               name="actionId"
-              value={actions.addParticipants}
+              value={CheckoutInfoActions.addParticipants}
             >
               {t('Add')}
             </Button>

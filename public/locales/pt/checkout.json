@@ -57,9 +57,9 @@
   "Participant Removed": "Participante removido",
   "Add Race": "Adicionar inscrição",
   "Select Participant": "Escolhe um participante existente",
-  "Already Have An Account ?": "Já tens uma conta ?",
+  "Already Have An Account ?": "Já tens uma conta?",
 
-  "Participant Not Filled": "participante(s) não inscrito(s) !",
+  "Participant Not Filled": "Completa a informação em falta",
   "New Participant First Name": "Novo",
   "New Participant Last Name": "Participante",
 
@@ -70,5 +70,5 @@
   "Email Address": "E-mail",
   "Send": "Enviar",
   "Reset": "Limpar",
-  "Save and Update": "Guardar e atualizar"
+  "Save and Update": "Guardar e atualizar {{first}} {{last}}"
 }
