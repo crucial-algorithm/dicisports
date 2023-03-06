@@ -13,7 +13,6 @@ import groupSpiritSeed from './data/groupSpirit.json';
 import groupTypesSeed from './data/groupTypes.json';
 import shirtSizesSeed from './data/shirtSizes.json';
 import sportsSeed from './data/sports.json';
-import cartsSeed from './data/cart.json';
 import bookingsSeed from './data/booking.json';
 import participantsSeed from './data/participants.json';
 import raceParticipantsSeed from './data/raceParticipants.json';
@@ -53,7 +52,6 @@ async function seed() {
   await persist('races', races(), db.race);
   await persist('perks', perks(), db.perk);
   await persist('sessions', sessions(), db.session);
-  await persist('carts', carts(), db.cart);
   await persist('bookings', bookings(), db.booking);
   await persist('participants', participants(), db.participant);
   await persist('raceParticipants', raceParticipants(), db.raceParticipant);
@@ -66,7 +64,6 @@ async function clear() {
   await db.raceParticipant.deleteMany();
   await db.booking.deleteMany();
   await db.participant.deleteMany();
-  await db.cart.deleteMany();
   await db.race.deleteMany();
   await db.perk.deleteMany();
   await db.favoriteEvent.deleteMany();
@@ -231,16 +228,6 @@ function groupsSchedules() {
       dayOfWeek: g.dayOfWeek,
       timeOfDay: g.timeOfDay,
       groupId: g.id
-    };
-  });
-}
-
-function carts() {
-  return cartsSeed.map((c) => {
-    return {
-      ...c,
-      createdAt: now,
-      updatedAt: now
     };
   });
 }
