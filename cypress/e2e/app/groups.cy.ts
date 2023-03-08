@@ -79,10 +79,11 @@ describe('Groups', () => {
         .get('button[name=create-group]')
         .click()
 
+        .waitForHydration()
+
         .url()
         .should('include', '/m/group/')
 
-        .waitForHydration()
         // fill the form
         .get('input[name=name]')
         .type('a new group')
