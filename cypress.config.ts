@@ -16,43 +16,6 @@ const defaultCommandTimeout = CY_DEFAULT_COMMAND_TIMEOUT
   ? Number(CY_DEFAULT_COMMAND_TIMEOUT)
   : undefined;
 
-
-console.log({
-  viewportWidth: 375,
-  viewportHeight: 667,
-  screenshotOnRunFailure: true,
-  requestTimeout,
-  responseTimeout,
-  defaultCommandTimeout,
-  e2e: {
-    baseUrl: 'http://localhost:3000',
-    experimentalSessionAndOrigin: true,
-    env: {
-      HTTP_CATCHER: 'http://localhost:3001/',
-      browserPermissions: {
-        geolocation: 'allow'
-      }
-    },
-    setupNodeEvents(
-      on: Cypress.PluginEvents,
-      config: Cypress.PluginConfigOptions
-    ) {
-      config = cypressBrowserPermissionsPlugin(on, config);
-      // implement node event listeners here
-      on('task', {
-        'db:reset'() {
-          execSync('npx prisma db seed');
-          return null;
-        },
-        clearDownloadFolder() {
-          execSync('rm -rf ./cypress/downloads/*');
-          return null;
-        }
-      });
-    }
-  }
-});
-
 export default defineConfig({
   viewportWidth: 375,
   viewportHeight: 667,

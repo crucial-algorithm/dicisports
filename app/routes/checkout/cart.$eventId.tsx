@@ -50,7 +50,6 @@ export const action: ActionFunction = async ({ request, params }) => {
   const anonymousClient = await getClientSession(request);
   const authenticatedClient = await getUser(request);
   const eventId = params.eventId as string;
-  const { searchParams } = new URL(request.url);
 
   // We check if user is authenticated -> authenticatedClient, if not, we use the client session -> anonymousClient
   const clientId =
@@ -64,32 +63,27 @@ export const action: ActionFunction = async ({ request, params }) => {
 
     // Triggered when user clicks continue in the cart screen
     if (actionId === actions.checkout) {
-      if (searchParams.get('a') === 'update') {
-        const userEventRaceParticipants = await findUserEventRaceParticipants(
-          clientId,
-          eventId
-        );
+      const userEventRaceParticipants = await findUserEventRaceParticipants(
+        clientId,
+        eventId
+      );
 
-        if (!userEventRaceParticipants?.length) {
-          await removeBooking(clientId, eventId);
+      if (!userEventRaceParticipants?.length) {
+        await removeBooking(clientId, eventId);
 
-          return redirect(`/checkout/cart/${eventId}`);
-        }
-
-        return redirect(`/checkout/info/${eventId}`);
+        return redirect(`/checkout/cart/${eventId}`);
       }
 
-      await createInitialBookingFlow(clientId, eventId, raceId, t);
+      return redirect(`/checkout/info/${eventId}`);
     }
-
     if (actionId === actions.add) {
       const booking: Booking | null = await findBooking(clientId, eventId);
 
       if (!booking) {
-        return badRequest({ error: t('No Booking') });
+        await createInitialBookingFlow(clientId, eventId, raceId, t);
+      } else {
+        await addParticipantToRace(clientId, raceId, booking.id);
       }
-
-      await addParticipantToRace(clientId, raceId, booking.id);
 
     }
 
@@ -126,7 +120,6 @@ export const action: ActionFunction = async ({ request, params }) => {
 export const loader: LoaderFunction = async ({ request, params }) => {
   const anonymousClient = await getClientSession(request);
   const authenticatedClient = await getUser(request);
-  const { searchParams } = new URL(request.url);
 
   // We check if user is authenticated -> authenticatedClient, if not, we use the client session -> anonymousClient
   const clientId =
@@ -137,20 +130,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   const eventId = params.eventId as string;
   const event = await findEvent(eventId);
   const userCheckoutRaces = await findBookingCart(clientId, eventId);
-  const booking = await findBooking(clientId, eventId);
   const races = await findEventRaces(eventId);
-
-  if (booking && !(searchParams.get('a') === 'update')) {
-    return redirect(
-      `/checkout/${
-        booking.status === CheckoutStatus.checkout
-          ? 'info'
-          : booking.status === CheckoutStatus.pending
-          ? 'payment'
-          : 'confirmation'
-      }/${eventId}`
-    );
-  }
 
   if (!event || event.status !== Status.published) {
     return redirect('/');

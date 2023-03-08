@@ -36,7 +36,8 @@ export const loader: LoaderFunction = async ({ request }) => {
       );
     }
 
-    return await createInitialBookingFlow(clientId, eventId, raceId, t);
+    await createInitialBookingFlow(clientId, eventId, raceId, t);
+    return redirect(`/checkout/info/${eventId}`);
   } catch (e) {
     console.log(e);
 
@@ -59,6 +60,4 @@ export async function createInitialBookingFlow(
   }
 
   await addParticipantsToRace([raceId], clientId, booking.id);
-
-  return redirect(`/checkout/info/${eventId}`);
 }
