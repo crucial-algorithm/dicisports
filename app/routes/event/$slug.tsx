@@ -528,7 +528,7 @@ function PriceTag({
               )}
             </favorite.Form>
             <CopyToClipboard
-              text={`${address}/group/${event.slug}`}
+              text={`${address}/event/${event.slug}`}
               id={event.id}
               successMessage={handlerClickToCopy}
               className="w-[40px] h-[40px] ml-2"

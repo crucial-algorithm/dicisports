@@ -764,7 +764,7 @@ function GroupResult({
               action={`/m/group/fav/${group.id}`}
             >
               {isUserFavorite ? (
-                <Button size="tiny" name="action" value="remove">
+                <Button size="tiny" name="action" value="remove" id="remove-favorite">
                   <Favorite className="h-6 w-6 m-0 inline-block" />
                 </Button>
               ) : (

@@ -166,11 +166,10 @@ async function findRegistrationsAddedToCart(
   eventId: string
 ): Promise<Array<{ id: string; total: number }>> {
   const results: Array<{ id: string; total: number }> = await db.$queryRaw`
-        SELECT r.id, sum(c.qtd) as total
-        FROM carts c
-                 INNER JOIN races r on c.race_id = r.id
-            and r.event_id = ${eventId}
-        GROUP BY r.id;
+        SELECT race_id as id, count(race_id) as total
+        FROM race_participants
+        WHERE race_id IN (SELECT id FROM races WHERE event_id = ${eventId})
+        GROUP BY race_id;
     `;
 
   return results.map(({ id, total }) => ({

@@ -1326,7 +1326,7 @@ function RacesList(props: {
               </div>
 
               <div
-                className="text-lg font-extrabold pl-3 dark:text-white w-[calc(100%-(24px+24px))]"
+                className="text-lg font-extrabold pl-3 dark:text-white w-[calc(100%-(24px+24px))] cursor-pointer"
                 id={r.id}
                 onClick={handleUpdateRace}
                 data-cy={`race-index-${index}`}
@@ -1678,7 +1678,7 @@ function DocumentsList(props: {
               </div>
 
               <div
-                className="text-lg text-left font-extrabold pl-3 dark:text-white w-[calc(100%-(24px+24px+24px))]"
+                className="text-lg text-left font-extrabold pl-3 dark:text-white w-[calc(100%-(24px+24px+24px))] cursor-pointer"
                 id={d.id}
                 onClick={handleUpdateDocument}
                 data-cy={`document-index-${index}`}

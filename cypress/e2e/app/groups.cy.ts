@@ -28,6 +28,9 @@ describe('Groups', () => {
 
         .wait('@search')
 
+        .get('#remove-favorite')
+        .should('exist')
+
         .visitAndWaitForHydration('/m/groups')
 
         .get('button[name=groupId]')
