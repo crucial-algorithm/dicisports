@@ -45,17 +45,6 @@ export default defineConfig({
           return null;
         }
       });
-
-      on('before:browser:launch', (browser, launchOptions) => {
-        if (browser.name === 'chrome' && browser.isHeadless) {
-          launchOptions.args = launchOptions.args.filter(
-            (a) => a !== '--disable-gpu'
-          );
-          launchOptions.args.push('--ignore-gpu-blacklist');
-
-          return launchOptions;
-        }
-      });
     }
   }
 });
