@@ -462,15 +462,22 @@ export default function CheckoutInfoRoute() {
                 <div
                   className={clsx(
                     'flex flex-col gap-y-2 border-2 border-b p-2 mx-2 items-center w-[200px] snap-center cursor-pointer relative',
-                    p.participantId === participant?.id &&
-                      p.race.id === selectedRace
-                      ? 'opacity-100'
-                      : 'opacity-50',
-                    missingParticipants.some(
-                      (v) => v.participantId === p.participantId
-                    )
-                      ? 'border-red-500'
-                      : 'border-gray-500'
+
+                    {
+                      'opacity-100':
+                        p.participantId === participant?.id &&
+                        p.race.id === selectedRace,
+                      'opacity-50': !(
+                        p.participantId === participant?.id &&
+                        p.race.id === selectedRace
+                      ),
+                      'border-red-500': missingParticipants.some(
+                        (v) => v.participantId === p.participantId
+                      ),
+                      'border-gray-500': !missingParticipants.some(
+                        (v) => v.participantId === p.participantId
+                      )
+                    }
                   )}
                   id={p.participantId + '|' + p.race.id}
                   onClick={handleSetParticipant}

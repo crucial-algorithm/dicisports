@@ -50,7 +50,10 @@ export default function ParticipantForm({
   return (
     <fetcher.Form
       method="post"
-      className={clsx('w-full', participant ? 'opacity-100' : 'opacity-50')}
+      className={clsx('w-full', {
+        'opacity-100': participant,
+        'opacity-50': !participant
+      })}
       key={hash}
     >
       {participant &&
