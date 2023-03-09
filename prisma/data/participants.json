@@ -1,0 +1,64 @@
+[
+  {
+    "id": "6vdS7DhmzFoAKvQ7Daqb",
+    "userId": "3beca472138d6d234d3f",
+    "firstName": "Nuno",
+    "lastName": "Lopes",
+    "gender": "M",
+    "birthday": "2001-09-21 00:00:00.000",
+    "phoneNumber": 917493827,
+    "shirtSize": 1,
+    "postalCode": "4730-000",
+    "status": "saved"
+  },
+  {
+    "id": "3REnDGXqkCekehnPiLkG",
+    "userId": "3beca472138d6d234d3f",
+    "firstName": "Joaquim",
+    "lastName": "Lopes",
+    "gender": "M",
+    "birthday": "1982-09-13 00:00:00.000",
+    "phoneNumber": 969283740,
+    "shirtSize": 1,
+    "postalCode": "4730-000",
+    "status": "saved"
+  },
+  {
+    "id": "7Qh7mDMFHybSsfTaySNA",
+    "userId": "HmYkkLPRTETEvcCrJznj",
+    "firstName": "André",
+    "lastName": "Silva",
+    "gender": "M",
+    "birthday": "1992-11-12 00:00:00.000",
+    "phoneNumber": 969102096,
+    "shirtSize": 1,
+    "postalCode": "4730-000",
+    "status": "saved"
+  },
+  {
+    "id": "GJpxcRjamQyYWQjdPF24",
+    "userId": "HmYkkLPRTETEvcCrJznj",
+    "birthday": "1992-11-12 00:00:00.000",
+    "postalCode": "4730-000",
+    "status": "auto"
+  },
+  {
+    "id": "SXmQqm6gpyvnHzbsjzZD",
+    "userId": "HmYkkLPRTETEvcCrJznj",
+    "birthday": "1992-11-12 00:00:00.000",
+    "postalCode": "4730-000",
+    "status": "auto"
+  },
+  {
+    "id": "L6TMRhStPAAF55Rc4Xts",
+    "userId": "HmYkkLPRTETEvcCrJznj",
+    "firstName": "Rui",
+    "lastName": "Cunha",
+    "gender": "M",
+    "birthday": "1992-11-12 00:00:00.000",
+    "phoneNumber": 939203458,
+    "shirtSize": 1,
+    "postalCode": "4730-000",
+    "status": "saved"
+  }
+]

@@ -1,17 +1,16 @@
-import type { ActionFunction } from 'remix';
-import { json } from 'remix';
+import type { ActionFunction } from '@remix-run/node';
+import { json } from '@remix-run/node';
 
 import { getClientSession } from '~/server/auth/client.server';
 import { badRequest } from '~/utils/misc';
-import {
-  addRaceParticipants,
-  findBooking,
-  findUserEventRaceParticipants,
-  removeBooking,
-  removeRaceParticipant
-} from '~/server/db/checkout.server';
 import { findRace } from '~/server/db/races.server';
 import { getUser } from '~/server/auth/session.server';
+import {
+  addRaceParticipants,
+  findUserEventRaceParticipants,
+  removeRaceParticipant
+} from '~/server/db/participant.server';
+import { findBooking, removeBooking } from '~/server/db/booking.server';
 
 const actions = {
   removeParticipant: 'removeParticipant',
@@ -34,7 +33,7 @@ export const action: ActionFunction = async ({ request }) => {
       const raceId = form.get('raceId') as string;
       const eventId = await findRace(raceId).then((p) => p?.eventId);
 
-      await removeRaceParticipant(participantId, raceId, clientId);
+      await removeRaceParticipant(participantId, raceId);
 
       const raceParticipants = await findUserEventRaceParticipants(
         clientId,

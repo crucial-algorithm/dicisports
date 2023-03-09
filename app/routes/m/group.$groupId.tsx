@@ -1,10 +1,14 @@
-import type { ActionFunction, LinksFunction, LoaderFunction } from 'remix';
+import type {
+  ActionFunction,
+  LinksFunction,
+  LoaderFunction
+} from '@remix-run/node';
 import {
   json,
   redirect,
   unstable_createMemoryUploadHandler,
   unstable_parseMultipartFormData
-} from 'remix';
+} from '@remix-run/node';
 
 import clsx from 'clsx';
 
@@ -19,15 +23,15 @@ import { unstable_composeUploadHandlers } from '@remix-run/node';
 
 import { z, ZodError } from 'zod';
 
-import { Dialog } from '@reach/dialog';
-
 import { TrashIcon } from '@heroicons/react/24/outline';
 
+import Dialog, { ActionsBar } from '~/components/shared/Dialog';
 import Main from '~/components/shared/Main';
+import PeekDayOfWeek from '~/components/shared/PeekDayOfWeek';
 import { H2, H3, Paragraph } from '~/components/shared/typography';
 
 import { requireUser } from '~/server/auth/session.server';
-import { findSports } from '~/server/db/sports.server';
+import { findSports } from '~/server/db/reference.server';
 import { deleteGroup, findGroup, updateGroup } from '~/server/db/groups.server';
 
 import Button from '~/components/shared/Button';
@@ -44,9 +48,9 @@ import type {
   Sport
 } from '~/types';
 import ComboBox from '~/components/shared/form/ComboBox';
-import { findGroupTypes } from '~/server/db/groupTypes.server';
+import { findGroupTypes } from '~/server/db/reference.server';
 import HourOfDay from '~/components/HourOfDay';
-import { findGroupsSpirit } from '~/server/db/groupsSpirit.server';
+import { findGroupsSpirit } from '~/server/db/reference.server';
 
 import { MapDialog } from '~/components/shared/Map';
 import Config from '~/server/config.server';
@@ -55,7 +59,6 @@ import UploadImage from '~/components/shared/form/UploadImage';
 import {
   badRequest,
   hoursMinutesToTimeOfDay,
-  PeekDayOfWeek,
   timeOfDayToHoursMinutes
 } from '~/utils/misc';
 import UploadForm from '~/components/shared/form/UploadForm';
@@ -594,7 +597,12 @@ export default function GroupRoute() {
               </div>
             </FormField>
 
-            <Button name="save-group" className="mt-8" type="submit" form="profile-form">
+            <Button
+              name="save-group"
+              className="mt-8"
+              type="submit"
+              form="profile-form"
+            >
               {isUpdate ? t('Update Group') : t('Create Group')}
             </Button>
             <InputError id="global-error" className="mt-4">
@@ -633,14 +641,14 @@ export default function GroupRoute() {
       />
 
       <Dialog
-        onDismiss={handleDiscardDelete}
+        onClose={handleDiscardDelete}
         isOpen={deleteModalOpen}
         aria-label="Delete your account"
-        data-cy="delete-dialog"
-        className="w-11/12 dark:bg-gray-900 border-2 border-black dark:border-white rounded-lg lg:px-24 lg:py-14 lg:max-w-screen-lg"
+        title={t('Delete Group X', { name: group?.name })}
       >
-        <H3>{t('Delete Group X', { name: group?.name })}</H3>
-        <Paragraph>{t('Are you sure you want to delete group?')}</Paragraph>
+        <Paragraph data-cy="delete-dialog">
+          {t('Are you sure you want to delete group?')}
+        </Paragraph>
         <Spacer size="2xs" />
         <Form
           id="profile-form"
@@ -649,14 +657,19 @@ export default function GroupRoute() {
           aria-describedby="general-error"
         >
           <input type="hidden" name="actionId" value={actionIds.delete} />
-          <div className="flex flex-wrap gap-4">
+          <ActionsBar>
             <Button type="button" onClick={handleDiscardDelete}>
               {t("No, I don't want to delete")}
             </Button>
-            <Button variant="danger" size="medium" type="submit" name="confirm-delete">
+            <Button
+              variant="danger"
+              size="medium"
+              type="submit"
+              name="confirm-delete"
+            >
               {t('Delete Group')}
             </Button>
-          </div>
+          </ActionsBar>
         </Form>
       </Dialog>
     </Main>

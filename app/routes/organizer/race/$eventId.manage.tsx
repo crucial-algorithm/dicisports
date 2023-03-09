@@ -5,12 +5,12 @@ import { Readable } from 'stream';
 import type { UploadHandler } from '@remix-run/node';
 import { unstable_composeUploadHandlers } from '@remix-run/node';
 
-import type { ActionFunction } from 'remix';
+import type { ActionFunction } from '@remix-run/node';
 import {
   json,
   unstable_createMemoryUploadHandler,
   unstable_parseMultipartFormData
-} from 'remix';
+} from '@remix-run/node';
 
 import { z, ZodError } from 'zod';
 

@@ -87,17 +87,17 @@ describe('Event', () => {
     });
 
     it('Should show an handled message when accessing an unpublished event', () => {
-      cy.visit('/event/trail-do-zezere').get('p[data-cy=event-not-found]');
+      cy.visitAndWaitForHydration('/event/trail-do-zezere').get('p[data-cy=event-not-found]');
     });
 
     it('Should show error message when accessing an non existing event', () => {
-      cy.visit('/event/non-existing-event').get('p[data-cy=event-not-found');
+      cy.visitAndWaitForHydration('/event/non-existing-event').get('p[data-cy=event-not-found');
     });
   });
 
   context('Security', () => {
     it('should not access /organizer/event/create when not authenticated', () => {
-      cy.visit('/organizer/event/create')
+      cy.visitAndWaitForHydration('/organizer/event/create')
 
         .url()
         .should('eq', `${Cypress.config().baseUrl}/login`);
@@ -105,7 +105,7 @@ describe('Event', () => {
 
     it('should not allow a user from editing another user event', () => {
       cy.login()
-        .visit('/organizer/event/MY4bvgxDbMtGv8rbYe5d')
+        .visitAndWaitForHydration('/organizer/event/MY4bvgxDbMtGv8rbYe5d')
 
         .url()
         .should('eq', `${Cypress.config().baseUrl}/`);
@@ -138,7 +138,7 @@ describe('Event', () => {
         .pickOptionFromSelect('difficulty', 1)
 
         .get('input[name=event-date]')
-        .type('2030-11-30')
+        .type(new Date(Date.now() + 86400 * 1000).toISOString().split('T')[0])
 
         .pickLocationInMap('open-map')
 
@@ -174,7 +174,6 @@ describe('Event', () => {
         .type('10')
 
         .pickOptionFromSelect('hour', 9)
-        .pickOptionFromSelect('minute', 31)
 
         .get('input[name=elevationGain]')
         .type('9')
@@ -189,7 +188,7 @@ describe('Event', () => {
         .type('15')
 
         .get('input[name=race-date]')
-        .type('2030-11-30')
+        .type(new Date(Date.now() + 86400 * 1000).toISOString().split('T')[0])
 
         .get('textarea[name=race-description]')
         .type('10km run')
@@ -221,25 +220,28 @@ describe('Event', () => {
 
         .wait('@EventRequests')
 
-        .intercept('GET', '/organizer/event/*_data=routes*')
+        .intercept('POST', '/organizer/event/*_data=routes*')
         .as('createEvent')
 
         .get('button[name=create-event]')
         .click()
 
         .wait('@createEvent')
+        .wait('@EventRequests')
 
         .get('button[name=update-event]')
 
-        .get('button[name=publish]')
+        .get('#publish')
         .click()
 
+        .wait('@createEvent')
         .wait('@EventRequests')
+        .waitForHydration()
 
-        .get('button[name=unpublish]')
+        .get('#unpublish')
 
         // Check if event slug was created
-        .visit('/event/a-new-event')
+        .visitAndWaitForHydration('/event/a-new-event')
 
         .get('[data-cy=name]')
         .contains('a new event');
@@ -355,16 +357,16 @@ describe('Event', () => {
         .click()
 
         .wait('@EventRequests')
+        .waitForHydration()
 
         .visitAndWaitForHydration('/event/love-tiles-douro-granfondo-2023')
-        .reload()
 
         .get('label[data-cy=perk-9]')
         .contains('a new perk');
     });
 
     it('should display event preview', () => {
-      cy.visit('/organizer/event/MY4bvgxDbMtGv8rbYe5d')
+      cy.visitAndWaitForHydration('/organizer/event/MY4bvgxDbMtGv8rbYe5d')
         .get('#preview-button')
         .should('exist')
         .then((link) => {

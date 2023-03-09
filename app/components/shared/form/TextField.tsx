@@ -1,6 +1,5 @@
 import React from 'react';
 
-import HTMLId from '~/utils/HTMLId';
 import InputBase from '~/components/shared/form/InputBase';
 
 type Props = {
@@ -25,9 +24,10 @@ const TextField: React.FC<Props> = ({
   disabled,
   id,
   type = 'text',
-  input
+  input,
+  autoComplete
 }) => {
-  id = id || HTMLId();
+  id = id || '';
   if (!adornment) {
     return (
       <InputBase
@@ -42,6 +42,7 @@ const TextField: React.FC<Props> = ({
         readOnly={readOnly}
         disabled={disabled}
         input={input}
+        autoComplete={autoComplete}
       />
     );
   }
@@ -60,6 +61,7 @@ const TextField: React.FC<Props> = ({
           readOnly={readOnly}
           disabled={disabled}
           input={input}
+          autoComplete={autoComplete}
         />
         <div className="absolute inset-y-0 right-1 flex items-center">
           {adornment}

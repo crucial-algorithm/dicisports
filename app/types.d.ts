@@ -10,11 +10,11 @@ import type {
   Race as DBRace,
   GroupSchedule as DBGroupSchedule,
   Difficulty as DBDifficulty,
-  RaceCheckout as DBRaceCheckout,
   RaceParticipant as DBRaceParticipant,
   Participant as DBParticipant,
   Booking as DBBooking,
   ShirtSize as DBShirtSize,
+  ParticipantStatus,
   Status
 } from '@prisma/client';
 
@@ -123,7 +123,7 @@ type GroupInput = {
   description: string | null;
 } & DBGroup;
 
-type Event = {} & DBEvent;
+type Event = { races: Race[]; difficulty: Difficulty, documents: Document[] } & DBEvent;
 
 type CreateEventInput = {
   id: string;
@@ -284,26 +284,15 @@ type Ticket = {
   numberOfTickets: number;
 };
 
-type RaceCheckout = { raceId: string } & DBRaceCheckout;
-
-type RaceCheckoutInput = {
-  id?: string;
-  raceId: string;
-  userId: string;
-  qtd: number;
-  createdAt?: Date;
-  updatedAt?: Date;
-};
-
-type PartialRaceCheckout = {
+type PartialCart = {
   id: string;
   raceId: string;
   userId: string;
   createdAt: Date;
   updatedAt: Date;
-}
+};
 
-type DBRawRaceCheckout = {
+type DBRawCart = {
   id: string;
   race_id: string;
   user_id: string;
@@ -312,20 +301,26 @@ type DBRawRaceCheckout = {
   updated_at: Date;
 };
 
-type Cart = {
+type UICartRow = {
   id: string;
+  raceId: string;
   qtd: number;
-  raceName: string;
-  racePrice: number;
-  displayOrder: number;
+  name: string;
+  price: number;
+  order: number;
+  distance: number;
+  startTime: number;
 };
 
-type DBRawCart = {
-  checkout_id: string;
-  qtd: number;
-  race_name: string;
-  race_price: number;
+type DBRawUICartRow = {
+  id: string;
+  race_id: string;
+  name: string;
+  price: number;
+  distance: number;
+  start_time: number;
   display_order: number;
+  qtd: number;
 };
 
 type DBRawRaceQtd = {
@@ -351,6 +346,7 @@ type RaceQtd = {
 type RaceParticipant = {
   race: Race;
   participant: Participant;
+  booking?: Booking;
 } & DBRaceParticipant;
 
 type RaceParticipantInput = {
@@ -360,6 +356,27 @@ type RaceParticipantInput = {
   bookingId: string;
   createdAt: Date;
   updatedAt: Date;
+};
+
+type UIRaceParticipant = {
+  id: string;
+  name: string;
+  birthday: Date;
+  gender: string;
+  bookingAt: Date;
+  status: string;
+  raceName: string;
+};
+
+type DBRawUIRaceParticipant = {
+  id: string;
+  name: string;
+  birthday: Date;
+  gender: string;
+  booking_at: Date;
+  status: string;
+  race_name: string;
+  records: number;
 };
 
 type Participant = {} & DBParticipant;
@@ -381,9 +398,34 @@ type ParticipantInput = {
   updatedAt?: Date;
 };
 
+type DBRawParticipant = {
+  id: string;
+  user_id: string;
+  first_name: string;
+  last_name: string;
+  gender: string;
+  birthday: Date;
+  phone_number: number;
+  identity_card: string | null;
+  federation_number: number | null;
+  shirt_size: number;
+  nationality: number | null;
+  postal_code: string;
+  status: ParticipantStatus;
+  created_at: Date;
+  updated_at: Date;
+};
+
 type Booking = {} & DBBooking;
 
 type ShirtSize = {} & DBShirtSize;
+
+type RaceRevenueRegistrations = {
+  id: string;
+  name: string;
+  registrations: number;
+  revenue: number;
+};
 
 export {
   NonNullProperties,
@@ -420,18 +462,28 @@ export {
   FavoriteEvent,
   Difficulty,
   Ticket,
-  RaceCheckout,
-  RaceCheckoutInput,
-  Cart,
-  DBRawCart,
+  UICartRow,
+  DBRawUICartRow,
   DBRawRaceQtd,
   RaceQtd,
-  DBRawRaceCheckout,
+  DBRawCart,
   RaceParticipant,
   RaceParticipantInput,
-  PartialRaceCheckout,
+  DBRawUIRaceParticipant,
+  UIRaceParticipant,
+  PartialCart,
   Participant,
   ParticipantInput,
+  DBRawParticipant,
   Booking,
-  ShirtSize
+  ShirtSize,
+  RaceRevenueRegistrations
 };
+
+
+// https://www.i18next.com/overview/typescript#argument-of-type-defaulttfuncreturn-is-not-assignable-to-parameter-of-type-xyz
+declare module 'i18next' {
+  interface CustomTypeOptions {
+    returnNull: false;
+  }
+}

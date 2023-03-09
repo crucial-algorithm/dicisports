@@ -1,11 +1,17 @@
 import { useActionData, useFetcher, useLoaderData } from '@remix-run/react';
-import type { ActionFunction, LinksFunction, LoaderFunction } from 'remix';
+import type {
+  ActionFunction,
+  LinksFunction,
+  LoaderFunction,
+  UploadHandler
+} from '@remix-run/node';
 import {
   json,
   redirect,
+  unstable_composeUploadHandlers,
   unstable_createMemoryUploadHandler,
   unstable_parseMultipartFormData
-} from 'remix';
+} from '@remix-run/node';
 
 import * as React from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -13,9 +19,6 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { z, ZodError } from 'zod';
 
 import mapBoxGlCss from 'mapbox-gl/dist/mapbox-gl.css';
-
-import type { UploadHandler } from '@remix-run/node';
-import { unstable_composeUploadHandlers } from '@remix-run/node';
 
 import { useTranslation } from 'react-i18next';
 
@@ -56,8 +59,7 @@ import Button, { ButtonLink } from '~/components/shared/Button';
 
 import { inputBaseClasses } from '~/components/shared/form/InputBase';
 import Config from '~/server/config.server';
-import { findSports } from '~/server/db/sports.server';
-import { findDifficulties } from '~/server/db/difficulties.server';
+import { findDifficulties, findSports } from '~/server/db/reference.server';
 import {
   findEvent,
   publishEvent,
@@ -242,7 +244,8 @@ export const action: ActionFunction = async ({ request, params }) => {
         .number()
         .nonnegative({ message: t('Nonexistent Sport') })
         .lte(7, { message: t('Nonexistent Sport') }),
-      startAt: z.date().min(new Date(), { message: t('Future Date') }),
+      startAt: z.date()
+        .min(new Date(), { message: t('Future Date') }),
       address: z.string({ required_error: t('Field required') }),
       useExternalBooking: z.boolean({
         invalid_type_error: t('Invalid Type')
@@ -364,7 +367,6 @@ export default function OrganizerEventRoute() {
     show: false,
     hash: 0
   });
-  const [actionId, setActionId] = useState<string | null>(null);
   const inputEl = useRef(null);
   const isPublished = event.status === Status.published;
 
@@ -418,14 +420,6 @@ export default function OrganizerEventRoute() {
     setSowDocumentsDialog({ show: false, hash: 0 });
   }
 
-  function handlePublish() {
-    setActionId(actionIds.publish);
-  }
-
-  function handleUnpublish() {
-    setActionId(actionIds.unpublish);
-  }
-
   function handleUpdateRace(e: React.MouseEvent) {
     const race = races.find((r) => r.id === e.currentTarget.id);
 
@@ -451,7 +445,6 @@ export default function OrganizerEventRoute() {
 
   useEffect(() => {
     setRaces(dbRaces);
-    setActionId('');
   }, [dbRaces]);
 
   return (
@@ -467,11 +460,13 @@ export default function OrganizerEventRoute() {
                 (isPublished ? (
                   <div className="flex flex-col justify-center md:flex-row">
                     <Button
+                      id="unpublish"
                       className="mb-4 md:mb-0"
-                      onClick={handleUnpublish}
+                      name="actionId"
                       type="submit"
                       size="medium"
-                      name="unpublish"
+                      data-cy="unpublish"
+                      value={actionIds.unpublish}
                     >
                       {t('Unpublish Button')}
                     </Button>
@@ -489,11 +484,13 @@ export default function OrganizerEventRoute() {
                 ) : (
                   <div className="flex flex-col justify-center md:flex-row">
                     <Button
+                      id="publish"
                       className="mb-4 md:mb-0"
-                      onClick={handlePublish}
+                      name="actionId"
                       type="submit"
                       size="medium"
-                      name="publish"
+                      data-cy="publish"
+                      value={actionIds.publish}
                     >
                       {t('Publish Button')}
                     </Button>
@@ -510,7 +507,6 @@ export default function OrganizerEventRoute() {
                   </div>
                 ))}
 
-              <input type="hidden" name="actionId" value={actionId || ''} />
             </div>
           </div>
           <FormField
@@ -1330,7 +1326,7 @@ function RacesList(props: {
               </div>
 
               <div
-                className="text-lg font-extrabold pl-3 dark:text-white w-[calc(100%-(24px+24px))]"
+                className="text-lg font-extrabold pl-3 dark:text-white w-[calc(100%-(24px+24px))] cursor-pointer"
                 id={r.id}
                 onClick={handleUpdateRace}
                 data-cy={`race-index-${index}`}
@@ -1682,7 +1678,7 @@ function DocumentsList(props: {
               </div>
 
               <div
-                className="text-lg text-left font-extrabold pl-3 dark:text-white w-[calc(100%-(24px+24px+24px))]"
+                className="text-lg text-left font-extrabold pl-3 dark:text-white w-[calc(100%-(24px+24px+24px))] cursor-pointer"
                 id={d.id}
                 onClick={handleUpdateDocument}
                 data-cy={`document-index-${index}`}

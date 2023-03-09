@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 
-import type { ActionFunction, LoaderFunction } from 'remix';
-import { json, redirect } from 'remix';
+import type { ActionFunction, LoaderFunction } from '@remix-run/node';
+import { json, redirect } from '@remix-run/node';
 import * as React from 'react';
 
 import { Form, useLoaderData } from '@remix-run/react';
@@ -10,7 +10,7 @@ import { PencilSquareIcon } from '@heroicons/react/24/outline';
 
 import { HeartIcon as HeartIconActive } from '@heroicons/react/24/solid';
 
-import { findSports } from '~/server/db/sports.server';
+import { findSports } from '~/server/db/reference.server';
 import type { Group, Sport } from '~/types';
 import Button, { ButtonLink } from '~/components/shared/Button';
 
@@ -74,7 +74,7 @@ export default function Groups() {
       <div className="col-span-full mb-12 lg:mb-12">
         <div className="flex flex-col-reverse items-start justify-between lg:flex-row lg:items-center">
           <div />
-          <Form method="post" action="/m/group/add">
+          <Form method="get" action="/m/group/add">
             <input type="hidden" name="actionId" value={actionIds.create} />
             <Button variant="secondary" name="create-group">
               <H6 as="span">{t('Create')}</H6>

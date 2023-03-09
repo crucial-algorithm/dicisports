@@ -1,5 +1,5 @@
-import type { ActionFunction } from 'remix';
-import { json } from 'remix';
+import type { ActionFunction } from '@remix-run/node';
+import { json } from '@remix-run/node';
 
 import { requireAdminUser, requireUser } from '~/server/auth/session.server';
 import i18n from '~/server/i18n.server';

@@ -1,56 +1,63 @@
-import type { ActionFunction } from 'remix';
-import { redirect } from 'remix';
+import type { LoaderFunction } from '@remix-run/node';
+import { redirect } from '@remix-run/node';
 import { CheckoutStatus } from '@prisma/client';
+import type { TFunction } from 'i18next';
 
 import { getClientSession } from '~/server/auth/client.server';
-import type { RaceCheckoutInput } from '~/types';
-import {
-  createRegistration,
-  findBooking,
-  getCheckoutByUserAndRace
-} from '~/server/db/checkout.server';
 import { getUser } from '~/server/auth/session.server';
+import { createBooking, findBooking } from '~/server/db/booking.server';
+import { badRequest } from '~/utils/misc';
+import { addParticipantsToRace } from '~/server/db/participant.server';
+import i18n from '~/server/i18n.server';
 
-export const action: ActionFunction = async ({ request }) => {
-  const form = await request.formData();
+export const loader: LoaderFunction = async ({ request }) => {
+  const t = await i18n.getFixedT(request, 'checkout');
   const clientSession = await getClientSession(request);
   const authClient = await getUser(request);
+  const { searchParams } = new URL(request.url);
 
   const clientId =
     authClient !== null ? authClient.id : clientSession.getClientId();
-  const raceId = form.get('raceId') as string;
-  const eventId = form.get('eventId') as string;
+  const raceId = searchParams.get('raceId') as string;
+  const eventId = searchParams.get('eventId') as string;
 
-  const checkout = await getCheckoutByUserAndRace(clientId, raceId);
   const booking = await findBooking(clientId, eventId);
 
-  const data: RaceCheckoutInput = {
-    raceId: raceId,
-    userId: clientId as string,
-    qtd: 1
-  };
-
   try {
-    if (checkout) {
+    if (booking) {
       return redirect(
         `/checkout/${
-          booking
-            ? booking.status === CheckoutStatus.checkout
-              ? 'info'
-              : booking.status === CheckoutStatus.pending
-              ? 'payment'
-              : 'confirmation'
-            : 'registrations'
+          booking.status === CheckoutStatus.checkout
+            ? 'info'
+            : booking.status === CheckoutStatus.pending
+            ? 'payment'
+            : 'confirmation'
         }/${eventId}`
       );
-    } else {
-      await createRegistration(data);
     }
+
+    await createInitialBookingFlow(clientId, eventId, raceId, t);
+    return redirect(`/checkout/info/${eventId}`);
   } catch (e) {
     console.log(e);
 
     return redirect('/');
   }
-
-  return redirect(`/checkout/registrations/${eventId}`);
 };
+
+export async function createInitialBookingFlow(
+  clientId: string,
+  eventId: string,
+  raceId: string,
+  t: TFunction
+) {
+
+  const pin = Math.floor(1000 + Math.random() * 9000);
+  const booking = await createBooking(pin, eventId, clientId);
+
+  if (!booking) {
+    return badRequest({ error: t("Can't Create Booking") });
+  }
+
+  await addParticipantsToRace([raceId], clientId, booking.id);
+}

@@ -10,8 +10,8 @@ export function inputBaseClasses(className?: string) {
     'dark:disabled:text-blueGray-500 dark:text-white dark:bg-gray-800',
     'disabled:text-gray-400',
     {
-      'px-11': !className || className.indexOf('px') < 0,
-      'py-4': !className || className.indexOf('py') < 0
+      'px-11': !className || className.indexOf('px-') < 0,
+      'py-4': !className || className.indexOf('py-') < 0
     },
     // added to remove border added by @tailwindcss/forms
     'border-0',

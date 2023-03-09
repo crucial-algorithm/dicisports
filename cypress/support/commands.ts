@@ -16,6 +16,8 @@ declare global {
 
       getRecoverPasswordUrl(): Chainable<string>;
 
+      waitForHydration(): Chainable<void>;
+
       visitAndWaitForHydration(
         url: string,
         options?: Partial<VisitOptions>
@@ -41,10 +43,12 @@ function loginAdmin() {
 }
 
 function pickOptionFromSelect(name: string, position: number) {
-  cy.get(`#select-${name}`)
+  cy.get(`button[name=select-${name}]`)
+    .last() // in case we have multiple with the same name, pick the last one 🤷‍♂️
     .click()
 
-    .get(`[class*="-menu"] [class*="-option"]:nth-child(${position})`)
+    .siblings('ul')
+    .children(`:nth-child(${position})`)
     .click();
 }
 
@@ -74,7 +78,7 @@ function pickLocationInMap(triggerOpenMapButtonName: string) {
 
     .wait('@mapBoxFindAddressFromCoords', { timeout: 10000 })
     .get('button[name=pick-location]:enabled', { timeout: 10000 })
-    .click()
+    .click({ force: true })
 
     .get('input[name=discard-location]')
     .should('have.value', 'Estrada De Torres Novas');
@@ -94,6 +98,10 @@ function visitAndWaitForHydration(
   cy.visit(url, options).get('body[data-cy=ready]');
 }
 
+function waitForHydration() {
+  cy.get('body[data-cy=ready]');
+}
+
 function getRecoverPasswordUrl() {
   function extractUrl(text: string) {
     const urlRegex = /(https?:\/\/[^\s]+)/g;
@@ -106,11 +114,11 @@ function getRecoverPasswordUrl() {
     return loginLink;
   }
 
-  return cy.request({ method: 'GET', url: Cypress.env('HTTP_CATCHER') })
-    .then(
-      ({ body }) => {
-        const url = extractUrl(body.text);
-        const start = url.search('/magic');
+  return cy
+    .request({ method: 'GET', url: Cypress.env('HTTP_CATCHER') })
+    .then(({ body }) => {
+      const url = extractUrl(body.text);
+      const start = url.search('/magic');
 
       return url.substr(start);
     });
@@ -118,14 +126,10 @@ function getRecoverPasswordUrl() {
 
 function assertValueCopiedToClipboard(value: string) {
   cy.window().then((win) => {
-    return new Cypress.Promise((resolve) => {
-      win.navigator.clipboard.readText().then((text) => {
-        expect(text).to.eq(Cypress.config().baseUrl + value);
-        resolve();
-      });
+    return win.navigator.clipboard.readText().then((text) => {
+      expect(text).to.eq(Cypress.config().baseUrl + value);
     });
   });
-
 }
 
 Cypress.Commands.add('login', login);
@@ -134,7 +138,11 @@ Cypress.Commands.add('pickOptionFromSelect', pickOptionFromSelect);
 Cypress.Commands.add('pickLocationInMap', pickLocationInMap);
 Cypress.Commands.add('wasImageLoaded', wasImageLoaded);
 Cypress.Commands.add('visitAndWaitForHydration', visitAndWaitForHydration);
+Cypress.Commands.add('waitForHydration', waitForHydration);
 Cypress.Commands.add('getRecoverPasswordUrl', getRecoverPasswordUrl);
-Cypress.Commands.add('assertValueCopiedToClipboard', assertValueCopiedToClipboard);
+Cypress.Commands.add(
+  'assertValueCopiedToClipboard',
+  assertValueCopiedToClipboard
+);
 
 export {};

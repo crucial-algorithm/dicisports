@@ -2,11 +2,10 @@
 // put it in its own file which is silly I know...
 
 import type { RootLoaderData } from '~/root';
-import { handle } from '~/root';
 
 import { useMatchLoaderData } from './providers';
 
-export const useRootData = () => useMatchLoaderData<RootLoaderData>(handle.id);
+export const useRootData = () => useMatchLoaderData<RootLoaderData>('root');
 
 export function useUser() {
   const { user } = useRootData();

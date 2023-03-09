@@ -1,6 +1,6 @@
 import * as React from 'react';
-import type { LinksFunction, LoaderFunction } from 'remix';
-import { json } from 'remix';
+import type { LinksFunction, LoaderFunction } from '@remix-run/node';
+import { json } from '@remix-run/node';
 import {
   Links,
   LiveReload,
@@ -12,7 +12,6 @@ import {
   useLoaderData,
   useTransition
 } from '@remix-run/react';
-import { useTranslation } from 'react-i18next';
 
 import type { User } from '@prisma/client';
 
@@ -21,8 +20,6 @@ import { useSpinDelay } from 'spin-delay';
 import clsx from 'clsx';
 
 import { setConfig } from 'cloudinary-build-url';
-
-import { useChangeLanguage } from 'remix-i18next';
 
 import type { KCDHandle, Sport } from '~/types';
 import type { Timings } from '~/server/metrics.server';
@@ -46,7 +43,7 @@ import Config from '~/server/config.server';
 import { LocationProvider } from '~/utils/LocationProvider';
 import { getLocationSession } from '~/routes/action/set-my-location';
 
-import { findSports } from '~/server/db/sports.server';
+import { findSports } from '~/server/db/reference.server';
 
 import vendorsCss from './styles/vendors.css';
 import mainCss from './styles/main.css';
@@ -243,11 +240,10 @@ function Html({
   lang: string;
 }) {
   const [theme] = useTheme();
-  const { i18n } = useTranslation();
   const data = useLoaderData<RootLoaderData>() as RootLoaderData;
   const analyticsUrl = 'https://plausible.io/js/plausible.js';
 
-  useChangeLanguage(lang);
+  // useChangeLanguage(lang);
   // script bellow setting window.ENV is not actually being used; Just keeping
   // in case we need other vars to be available and for debugging in production
   setConfig({
@@ -259,13 +255,13 @@ function Html({
     (
       document.getElementsByTagName('body').item(0) as HTMLBodyElement
     ).setAttribute('data-cy', 'ready');
-  }, []);
+  }, [lang]);
 
   return (
     <html
       lang={lang}
       className={clsx(theme, 'set-color-team-current-red')}
-      dir={i18n.dir()}
+      dir="ltr"
     >
       <head>
         {process.env.NODE_ENV === 'production' && (

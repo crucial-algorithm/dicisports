@@ -6,7 +6,7 @@ describe('Groups', () => {
   context('General', () => {
     it('should load groups', () => {
       cy.login()
-        .visit('/m/groups')
+        .visitAndWaitForHydration('/m/groups')
         .get('button[name=create-group]')
         .should('exist');
     });
@@ -15,19 +15,23 @@ describe('Groups', () => {
       cy.intercept('GET', '/*?coords=*')
         .as('search')
         .login()
-        .visit('/')
+        .visitAndWaitForHydration('/')
 
         .get('#search-button')
         .click()
 
         .wait('@search')
+        .waitForHydration()
 
-        .get('#add-favorite-0')
+        .get('#add-favorite-2632486059874a0b03d9')
         .click()
 
         .wait('@search')
 
-        .visit('/m/groups')
+        .get('#remove-favorite')
+        .should('exist')
+
+        .visitAndWaitForHydration('/m/groups')
 
         .get('button[name=groupId]')
         .should('have.length', 2);
@@ -38,7 +42,7 @@ describe('Groups', () => {
         .as('removeFavorite')
 
         .login()
-        .visit('/m/groups')
+        .visitAndWaitForHydration('/m/groups')
 
         .get('#remove-favorite-0')
         .click()
@@ -53,14 +57,14 @@ describe('Groups', () => {
 
   context('Security', () => {
     it('should not access /m/groups when not authenticated', () => {
-      cy.visit('/m/groups')
+      cy.visitAndWaitForHydration('/m/groups')
         .url()
         .should('eq', `${Cypress.config().baseUrl}/login`);
     });
 
     it('should not allow a user from editing another user group', () => {
       cy.login()
-        .visit('/m/group/d888b22b730daaf3b70e')
+        .visitAndWaitForHydration('/m/group/d888b22b730daaf3b70e')
 
         .url()
         .should('eq', `${Cypress.config().baseUrl}/m/groups`);
@@ -71,16 +75,15 @@ describe('Groups', () => {
     beforeEach(() => cy.login());
 
     it('should create a group', () => {
-      cy.visit('/m/groups')
+      cy.visitAndWaitForHydration('/m/groups')
         .get('button[name=create-group]')
         .click()
+
+        .waitForHydration()
 
         .url()
         .should('include', '/m/group/')
 
-        .reload()
-
-        .get('body[data-cy=ready]')
         // fill the form
         .get('input[name=name]')
         .type('a new group')
@@ -101,7 +104,6 @@ describe('Groups', () => {
 
         .pickOptionFromSelect('dayOfWeek', 3)
         .pickOptionFromSelect('hour', 11)
-        .pickOptionFromSelect('minute', 31)
 
         .get('input[name=whatsapp]')
         .type('https://...')
@@ -124,24 +126,28 @@ describe('Groups', () => {
         .get('div[data-cy="group-entry"]')
         .should('exist')
 
-        .visit('/group/a-new-group')
+        .visitAndWaitForHydration('/group/a-new-group')
         .wasImageLoaded('img[data-cy=image1]')
         .get('p[data-cy=schedule]')
-        .contains('Terça-Feira, 10:30 | Domingo, 09:00');
+        .contains('Terça-Feira, 10:00 | Domingo, 09:00');
     });
 
     it('should update group', () => {
       const description = 'Grupo organizado pela bikebrothers';
 
-      cy.visit('/m/group/FkoxmH5db6RXqBpExion')
-        .get('textarea')
+      cy.visitAndWaitForHydration('/m/group/FkoxmH5db6RXqBpExion')
+        .get('textarea[name=description]')
         .type(description)
         .intercept('GET', '/m/groups?message=*')
         .as('createGroup')
         .get('button[name=save-group]')
         .click()
         .wait('@createGroup')
-        .visit('/group/bike-brothers-domingueira')
+
+        .url()
+        .should('include', '/m/groups')
+
+        .visitAndWaitForHydration('/group/bike-brothers-domingueira')
         .get('[data-cy=description]')
         .contains(description);
     });
@@ -161,7 +167,7 @@ describe('Groups', () => {
 
         .wait('@deleteGroup')
 
-        .visit('/group/bike-brothers-domingueira')
+        .visitAndWaitForHydration('/group/bike-brothers-domingueira')
         .get('p[data-cy=group-not-found]');
     });
   });

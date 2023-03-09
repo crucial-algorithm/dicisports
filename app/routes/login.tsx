@@ -2,8 +2,8 @@ import { Form, Link, useActionData, useSearchParams } from '@remix-run/react';
 
 import { z, ZodError } from 'zod';
 
-import type { ActionFunction, LoaderFunction, MetaFunction } from 'remix';
-import { json, redirect } from 'remix';
+import type { ActionFunction, LoaderFunction, MetaFunction } from '@remix-run/node';
+import { json, redirect } from '@remix-run/node';
 
 import { useRef } from 'react';
 
@@ -31,7 +31,7 @@ import type { LoginAction } from '~/types';
 import { loginUser } from '~/server/db/users.server';
 import Main from '~/components/shared/Main';
 import { CanonicalMeta } from '~/utils/seo';
-import { changeCheckoutToAuthUser } from '~/server/db/checkout.server';
+import { changeRegistrationToAuthUser } from '~/server/db/booking.server';
 import { getClientSession } from '~/server/auth/client.server';
 
 type LoaderData = {
@@ -215,7 +215,7 @@ export const action: ActionFunction = async ({ request }) => {
       try {
         const clientSession = await getClientSession(request);
 
-        await changeCheckoutToAuthUser(user.id, clientSession.getClientId());
+        await changeRegistrationToAuthUser(user.id, clientSession.getClientId());
       } catch (e) {
         console.error(e);
       }
@@ -286,8 +286,9 @@ export default function Login() {
         <input type="hidden" value={action || ''} name="action" />
         <input type="hidden" value={group || ''} name="group" />
         <input type="hidden" value={redirectTo || ''} name="location" />
-        <FormField label={t('Email')} error={errors.email}>
+        <FormField label={t('Email')} error={errors.email} id="email">
           <TextField
+            id="email"
             name="email"
             className="w-full text-sm h-14 md:text-2xl md:h-20"
             defaultValue={fields.email}
@@ -295,12 +296,13 @@ export default function Login() {
           />
         </FormField>
         {action !== actions.joinWhatsAppGroup && (
-          <FormField label={t('Password')} error={errors.password}>
+          <FormField label={t('Password')} error={errors.password} id="password">
             <TextField
+              id="password"
               type="password"
               name="password"
               className="w-full text-sm h-14 md:text-2xl md:h-20"
-              autoComplete="off"
+              autoComplete="current-password"
             />
           </FormField>
         )}

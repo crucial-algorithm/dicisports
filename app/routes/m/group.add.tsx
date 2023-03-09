@@ -1,11 +1,11 @@
-import type { ActionFunction } from 'remix';
-import { redirect } from 'remix';
+import type { LoaderFunction } from '@remix-run/node';
+import { redirect } from '@remix-run/node';
 
 import Id from '~/server/utils/Id.server';
 import { createDraftGroup } from '~/server/db/groups.server';
 import { requireUser } from '~/server/auth/session.server';
 
-export const action: ActionFunction = async ({ request }) => {
+export const loader: LoaderFunction = async ({ request }) => {
   const user = await requireUser(request);
   const id = Id();
 

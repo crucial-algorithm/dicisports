@@ -13,6 +13,9 @@ import groupSpiritSeed from './data/groupSpirit.json';
 import groupTypesSeed from './data/groupTypes.json';
 import shirtSizesSeed from './data/shirtSizes.json';
 import sportsSeed from './data/sports.json';
+import bookingsSeed from './data/booking.json';
+import participantsSeed from './data/participants.json';
+import raceParticipantsSeed from './data/raceParticipants.json';
 
 const db = new PrismaClient();
 const now = new Date();
@@ -49,6 +52,9 @@ async function seed() {
   await persist('races', races(), db.race);
   await persist('perks', perks(), db.perk);
   await persist('sessions', sessions(), db.session);
+  await persist('bookings', bookings(), db.booking);
+  await persist('participants', participants(), db.participant);
+  await persist('raceParticipants', raceParticipants(), db.raceParticipant);
   await persist('favorite groups', favoriteGroup(), db.favoriteGroup);
   await persist('group schedules', groupsSchedules(), db.groupSchedule);
 }
@@ -58,7 +64,6 @@ async function clear() {
   await db.raceParticipant.deleteMany();
   await db.booking.deleteMany();
   await db.participant.deleteMany();
-  await db.raceCheckout.deleteMany();
   await db.race.deleteMany();
   await db.perk.deleteMany();
   await db.favoriteEvent.deleteMany();
@@ -223,6 +228,37 @@ function groupsSchedules() {
       dayOfWeek: g.dayOfWeek,
       timeOfDay: g.timeOfDay,
       groupId: g.id
+    };
+  });
+}
+
+function bookings() {
+  return bookingsSeed.map((b) => {
+    return {
+      ...b,
+      createdAt: now,
+      updatedAt: now
+    };
+  });
+}
+
+function participants() {
+  return participantsSeed.map((p) => {
+    return {
+      ...p,
+      birthday: new Date(p.birthday),
+      createdAt: now,
+      updatedAt: now
+    };
+  });
+}
+
+function raceParticipants() {
+  return raceParticipantsSeed.map((rp) => {
+    return {
+      ...rp,
+      createdAt: now,
+      updatedAt: now
     };
   });
 }

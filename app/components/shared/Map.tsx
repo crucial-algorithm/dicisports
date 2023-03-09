@@ -2,11 +2,11 @@ import * as React from 'react';
 import { useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import MapboxGeocoder from '@mapbox/mapbox-gl-geocoder';
-import { Dialog } from '@reach/dialog';
 import { MapPinIcon } from '@heroicons/react/24/solid';
 
 import { useTranslation } from 'react-i18next';
 
+import Dialog from '~/components/shared/Dialog';
 import Button from '~/components/shared/Button';
 import type { DiciLocation } from '~/types';
 
@@ -251,13 +251,22 @@ function MapDialog({
     setLocation(location);
   }
 
-
   return (
     <Dialog
+      className="min-w-full h-screen dark:bg-gray-900 opacity-100 m-0 shadow-none rounded-none"
       isOpen={open}
-      className="min-w-full h-screen fixed top-0 bottom-0 p-0 dark:bg-gray-900 opacity-100 m-0"
-      onDismiss={handleClose}
+      onClose={handleClose}
       aria-label={t('map')}
+      PrimaryAction={(
+        <Button name="pick-location" onClick={handleClose} disabled={!location}>
+          {t('Pick Location Button')}
+        </Button>
+      )}
+      SecondaryAction={(
+        <Button variant="secondary" onClick={handleClose}>
+          {t('Cancel')}
+        </Button>
+      )}
     >
       <Map
         defaultValue={defaultValue}
@@ -266,14 +275,6 @@ function MapDialog({
         callback={handleCallback}
         placeholder={t('Drag Map to Choose a Location Hint')}
       />
-      <div className="flex flex-row gap-2 justify-end mt-4 pr-2">
-        <Button variant="secondary" onClick={handleClose}>
-          {t('Cancel')}
-        </Button>
-        <Button name="pick-location" onClick={handleClose} disabled={!location}>
-          {t('Pick Location Button')}
-        </Button>
-      </div>
     </Dialog>
   );
 }

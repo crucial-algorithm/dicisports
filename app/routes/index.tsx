@@ -1,8 +1,9 @@
+import { useCreation } from 'ahooks';
 import type { SyntheticEvent } from 'react';
 import * as React from 'react';
-import { useEffect, useRef, useState } from 'react';
-import type { LoaderFunction, MetaFunction } from 'remix';
-import { json } from 'remix';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import type { LoaderFunction, MetaFunction } from '@remix-run/node';
+import { json } from '@remix-run/node';
 import {
   Form,
   Link,
@@ -18,15 +19,14 @@ import {
   HeartIcon as Favorite
 } from '@heroicons/react/24/solid';
 
-import { HeartIcon, XCircleIcon } from '@heroicons/react/24/outline';
+import { HeartIcon } from '@heroicons/react/24/outline';
 
 import clsx from 'clsx';
 
 import type { TFunction } from 'i18next';
 
-import { Dialog } from '@reach/dialog';
-
 import Main from '~/components/shared/Main';
+import PeekDayOfWeek from '~/components/shared/PeekDayOfWeek';
 import { Spacer } from '~/components/shared/Spacer';
 import Button, { ButtonLink } from '~/components/shared/Button';
 import type {
@@ -47,13 +47,13 @@ import ButtonGroup from '~/components/shared/ButtonGroup';
 import { H3, Paragraph } from '~/components/shared/typography';
 import FormField from '~/components/shared/form/FormField';
 import CheckBox from '~/components/shared/form/CheckBox';
-import { findGroupsSpirit } from '~/server/db/groupsSpirit.server';
-import { findSports } from '~/server/db/sports.server';
+import { findGroupsSpirit, findSports } from '~/server/db/reference.server';
 import type { Option } from '~/components/shared/form/ComboBox';
 import ComboBox from '~/components/shared/form/ComboBox';
 
-import { getLocalizedText, PeekDayOfWeek } from '~/utils/misc';
+import { getLocalizedText } from '~/utils/misc';
 
+import Dialog, { ActionsBar } from '~/components/shared/Dialog';
 import HomeLogo from '~/components/shared/HomeLogo';
 import DisplayImg from '~/components/shared/DisplayImg';
 import { findUserFavoriteGroups } from '~/server/db/groups.server';
@@ -85,9 +85,10 @@ type FilterParams = {
 type LoaderData = {
   sports: Sport[];
   groupsSpirit: GroupSpirit[];
-  result: ActionData;
+  searchResult: ActionData;
   favorites: Group[];
   mapToken: string;
+  selectedDayParts: string[] | null;
 };
 
 type ActionData = {
@@ -123,7 +124,7 @@ enum SortMethod {
 
 export const meta: MetaFunction = CanonicalMeta;
 
-export const loader: LoaderFunction = async ({ request, params, context }) => {
+export const loader: LoaderFunction = async ({ request }) => {
   const data = parseQueryString(request.url);
   // Initial load
   const user = await getUser(request);
@@ -161,8 +162,9 @@ export const loader: LoaderFunction = async ({ request, params, context }) => {
     sports: await findSports(),
     groupsSpirit: await findGroupsSpirit(),
     favorites,
-    result,
-    mapToken: MAPBOX_TOKEN
+    searchResult: result,
+    mapToken: MAPBOX_TOKEN,
+    selectedDayParts: data.dayParts
   });
 };
 
@@ -184,7 +186,7 @@ function parseQueryString(url: string): FilterParams {
     search,
     page,
     sport,
-    dayOfWeek,
+    dayOfWeek: dayOfWeek === null || dayOfWeek < 0 ? null : dayOfWeek,
     dayParts: dayParts,
     orderBy: (orderBy as SortMethod) || SortMethod.recency,
     spirit: spirit.map((v) => parseInt(v))
@@ -266,7 +268,6 @@ async function search(
     results: results.map((g, index) => {
       return {
         ...g,
-        position: index,
         distance: Math.floor(g.distance || 0) // save some bandwidth
       };
     }),
@@ -277,22 +278,38 @@ async function search(
   };
 }
 
+function useQueryString() {
+  const searchString = useLocation()?.search;
+
+  // parse the string in a useCreation so that the searchParse
+  // object is not recreated on every render if the searchString doesn't change
+  return useCreation(
+    () => parseQueryString(`https://a.com/?${searchString}`),
+    [searchString]
+  );
+}
+
 export default function Index() {
   const { t, i18n } = useTranslation('home');
   const { user } = useRootData();
   const lang = i18n.language as Language;
   const tc = useTranslation('common').t;
-  const { sports, groupsSpirit, result, favorites, mapToken } =
-    useLoaderData<LoaderData>();
+  const {
+    sports,
+    groupsSpirit,
+    searchResult,
+    favorites,
+    mapToken,
+    selectedDayParts
+  } = useLoaderData<LoaderData>() as LoaderData;
   const [selection, setSelection] = useState<DiciLocation | undefined>();
-  const data = result;
-  const [page, setPage] = useState<number>(data?.page || 0);
-  const [groups, setGroups] = useState<Array<Group & { position: number }>>([]);
+  const data = searchResult;
+  const [groups, setGroups] = useState<Array<Group>>(data?.results || []);
   const [filtersModalOpen, setFiltersModalOpen] = useState<boolean>(false);
-  const [searchPerformed, setSearchPerformed] = useState<boolean>(false);
+  const [searchPerformed, setSearchPerformed] = useState<boolean>(groups.length > 0);
   const [address, setAddress] = useState<string>('');
   const location = useLocation();
-  const filters = parseQueryString(`https://a.com/${location.search}`);
+  const filters = useQueryString();
   const [userLocation, setUserLocation] = useUserLocation();
   const locationFetcher = useFetcher();
   const [searchingLocation, setSearchingLocation] = useState<boolean>(false);
@@ -310,9 +327,28 @@ export default function Index() {
     Date.now()
   );
 
+  const handleSearchLocations = useCallback(
+    (o: DiciLocation | SyntheticEvent<HTMLSelectElement>) => {
+      setSelection(o as DiciLocation);
+    },
+    []
+  );
+
+  const handleOnSubmit = useCallback(() => {
+    setSearchPerformed(true);
+    setFiltersModalOpen(false);
+    setFiltersCacheBurst(Date.now());
+  }, []);
+
+  const handleCloseFilters = useCallback(() => {
+    setFiltersModalOpen(false);
+  }, []);
+
   useEffect(() => {
-    if (!result) {
+    if (!searchResult) {
       if (groups.length > 0) {
+        // we get here when a user navigates back to the home page (by clicking dicisports, for instance)
+        // after having performed a query with results
         setGroups([]);
         setSearchPerformed(false);
         setFiltersModalOpen(false);
@@ -321,17 +357,16 @@ export default function Index() {
     }
     setSearchPerformed(true);
 
-    const { reset, results } = result as ActionData;
+    const { reset, results } = searchResult;
 
-    if (reset) {
-      setPage(0);
-    }
     if (!results) {
       return;
     }
+
+    // reset is used to keep previous groups when "load more results" is used
     const list = reset ? [] : [...groups];
 
-    results.map((r, index) => list.push({ ...r, position: index }));
+    results.map((r, index) => list.push(r));
     setGroups(list);
     const url = new URL(window.location.href);
 
@@ -343,32 +378,12 @@ export default function Index() {
     return () => {
       window.onpopstate = null;
     };
-  }, [result, location]);
+  }, [searchResult]);
 
   const showMoreResults = !!data && groups.length < data.total;
 
-  function handleOnSubmit() {
-    setSearchPerformed(true);
-    setFiltersModalOpen(false);
-    setFiltersCacheBurst(Date.now());
-  }
-
-  function handleSearchLocations(
-    o: DiciLocation | SyntheticEvent<HTMLSelectElement>
-  ) {
-    setSelection(o as DiciLocation);
-  }
-
   function handleOpenFilters() {
     setFiltersModalOpen(true);
-  }
-
-  function handleCloseFilters() {
-    setFiltersModalOpen(false);
-  }
-
-  function handleLoadNextPage() {
-    setPage(page + 1);
   }
 
   function handleResetSearchPerformed() {
@@ -429,7 +444,12 @@ export default function Index() {
         visible={searchingLocation}
         action={t('Searching Location')}
       />
-      <Form method="get" onSubmit={handleOnSubmit}>
+      <Form
+        method="get"
+        onSubmit={handleOnSubmit}
+        autoComplete="off"
+        preventScrollReset={true}
+      >
         <input
           type="hidden"
           value={selection ? selection.coords : ''}
@@ -440,17 +460,34 @@ export default function Index() {
           value={selection ? `${selection.address}` : ''}
           name="search"
         />
-        <input type="hidden" name="page" value={result?.page || 0} />
+        <input type="hidden" name="page" value={searchResult?.page || 0} />
+        <input
+          type="hidden"
+          name="dow"
+          value={
+            filters?.dayOfWeek === null
+              ? ''
+              : (filters?.dayOfWeek as DaysOfWeek)
+          }
+        />
+        <input type="hidden" name="sport" value={filters?.sport || ''} />
+        {selectedDayParts &&
+          selectedDayParts.map((p: string) => (
+            <input key={p} type="hidden" name="daypart" value={p} />
+          ))}
+        {filters?.spirit &&
+          filters.spirit.map((v) => (
+            <input key={v} type="hidden" name="spirit" value={v} />
+          ))}
         <div className="flex align-middle justify-center">
           <Link to="/" onClick={handleResetSearchPerformed}>
             <HomeLogo className="w-80 h-16 md:w-96 lg:w-144" />
           </Link>
         </div>
         <Spacer size="2xs" />
-        <div className="flex align-middle justify-center">
+        <div className="flex align-middle justify-center items-center">
           <div className="flex flex-col w-full md:w-160 lg:flex-row">
             <SearchLocations
-              ariaLabel={t('Search')}
               onSelect={handleSearchLocations}
               placeholder={t('Search Placeholder')}
               className="px-0 mr-4 w-full search-select"
@@ -472,9 +509,15 @@ export default function Index() {
           sports={sports}
           groupsSpirit={groupsSpirit}
           triggerModalClose={handleCloseFilters}
+          onSubmit={handleOnSubmit}
+          // we need to pass all the filters because filters dialog will submit its own form
           filters={filters}
+          coords={selection ? selection.coords : ''}
+          search={selection ? selection.address : ''}
+          order={orderBy}
         />
-        {searchPerformed ? (
+
+        {searchPerformed && (
           <>
             <Spacer size="xs" />
             <div className="pl-6 flex align-middle">
@@ -500,21 +543,22 @@ export default function Index() {
               />
             </div>
           </>
-        ) : null}
-        {showMoreResults ? (
+        )}
+
+        {showMoreResults && (
           <>
             <div className="mb-8 flex align-middle justify-center absolute bottom-0 w-full">
               <Button
                 id="see-more"
                 name="actionId"
                 value={actions.more}
-                onClick={handleLoadNextPage}
+                formMethod="get"
               >
                 <ChevronDownIcon width="22" /> {t('Load More')}
               </Button>
             </div>
           </>
-        ) : null}
+        )}
 
         {searchPerformed && (
           <div className="flex flex-col justify-center">
@@ -551,12 +595,13 @@ export default function Index() {
           </div>
         )}
       </Form>
+
       {searchPerformed && (
         <>
-          {groups.map((group, index: number) => (
+          {groups.map((group, index) => (
             <GroupResult
               group={group}
-              key={`${group.id}-${group.position}`}
+              key={`${group.id}-${index}`}
               isUserFavorite={
                 favorites.find((g: Group) => g.id === group.id) !== undefined
               }
@@ -569,29 +614,23 @@ export default function Index() {
               isLoggedIn={user !== null}
               userLocation={userLocation}
               showLocation={orderBy === SortMethod.proximity}
-              index={index}
             />
           ))}
         </>
       )}
 
-      {!searchPerformed ? (
+      {!searchPerformed && (
         <>
           <Spacer size="3xs" />
           <SportsGrid sports={sports} lang={lang} t={t} />
         </>
-      ) : null}
+      )}
 
       <Dialog
-        onDismiss={handleCloseLocationFailedWarning}
+        onClose={handleCloseLocationFailedWarning}
         isOpen={isLocationFailedWarningOpened}
-        aria-label="Delete your account"
-        className="w-11/12 dark:bg-gray-900 border-2 border-black dark:border-white rounded-lg lg:px-24 lg:py-14 lg:max-w-screen-lg"
-      >
-        <H3 className="mb-4">{t('Failed to find Your Location Title')}</H3>
-        <Paragraph>{t('Failed to find Your Location Hint')}</Paragraph>
-        <Spacer size="2xs" />
-        <div className="flex flex-wrap gap-4 justify-end">
+        aria-label="Location Failed"
+        SecondaryAction={
           <Button
             variant="danger"
             size="medium"
@@ -600,7 +639,11 @@ export default function Index() {
           >
             {t('Failed to find Your Location Close')}
           </Button>
-        </div>
+        }
+      >
+        <H3 className="mb-4">{t('Failed to find Your Location Title')}</H3>
+        <Paragraph>{t('Failed to find Your Location Hint')}</Paragraph>
+        <Spacer size="2xs" />
       </Dialog>
     </Main>
   );
@@ -614,18 +657,16 @@ function CallToActionToCreateGroup({
   className?: string;
 }) {
   return (
-    <Form method="post" action="/m/group/add">
-      <input type="hidden" name="actionId" value="create" />
-      <button
-        className={clsx(
-          'background-transparent text-orange-600 dark:text-blueGray-500 font-medium',
-          className
-        )}
-        name="create-your-group"
-      >
-        {label}
-      </button>
-    </Form>
+    <Link
+      to="/m/group/add"
+      className={clsx(
+        'background-transparent text-orange-600 dark:text-blueGray-500 font-medium',
+        className
+      )}
+      id="create-your-group"
+    >
+      {label}
+    </Link>
   );
 }
 
@@ -640,8 +681,7 @@ function GroupResult({
   location,
   isLoggedIn,
   userLocation,
-  showLocation,
-  index
+  showLocation
 }: {
   group: Group;
   img?: string;
@@ -654,7 +694,6 @@ function GroupResult({
   isLoggedIn: boolean;
   userLocation: [number, number] | null;
   showLocation: boolean;
-  index: number;
 }) {
   const favorite = useFetcher();
   const ref = useRef();
@@ -725,7 +764,7 @@ function GroupResult({
               action={`/m/group/fav/${group.id}`}
             >
               {isUserFavorite ? (
-                <Button size="tiny" name="action" value="remove">
+                <Button size="tiny" name="action" value="remove" id="remove-favorite">
                   <Favorite className="h-6 w-6 m-0 inline-block" />
                 </Button>
               ) : (
@@ -733,7 +772,7 @@ function GroupResult({
                   size="tiny"
                   name="action"
                   value="add"
-                  id={`add-favorite-${index}`}
+                  id={`add-favorite-${group.id}`}
                 >
                   <HeartIcon className="h-6 w-6 m-0 inline-block" />
                 </Button>
@@ -748,7 +787,10 @@ function GroupResult({
           </ButtonGroup>
         }
         footer={
-          <div className="font-medium text-gray-500 dark:text-white flex items-center justify-center" data-cy="distance">
+          <div
+            className="font-medium text-gray-500 dark:text-white flex items-center justify-center"
+            data-cy="distance"
+          >
             {userLocation && showLocation && (
               <span>{Math.ceil(group.distance || 0)} km</span>
             )}
@@ -814,63 +856,48 @@ function SportsGrid({
   );
 }
 
-/**
- * Not using @reach/dialog in order to inline form controls and keep
- * all state in a single form
- *
- * @param props
- * @constructor
- */
 function FiltersDialog(props: {
   isOpen: boolean;
   sports: Sport[];
   groupsSpirit: GroupSpirit[];
   triggerModalClose: () => void;
   filters: FilterParams | null;
+  onSubmit: () => void;
+  coords?: string;
+  search?: string;
+  order: SortMethod;
 }) {
   const { t, i18n } = useTranslation('home');
-  const { isOpen, sports, groupsSpirit, triggerModalClose, filters } = props;
-  const sportsOptions: Option[] = [];
-
-  sports
+  const {
+    isOpen,
+    sports,
+    groupsSpirit,
+    triggerModalClose,
+    filters,
+    onSubmit,
+    coords,
+    search,
+    order
+  } = props;
+  const sportsOptions: Option[] = sports
     .sort((a, b) => a.id - b.id)
-    .map((s) => {
-      sportsOptions.push({
-        value: s.id,
-        label: s.name
-      });
-      return s;
-    });
+    .map((s) => ({
+      value: s.id,
+      label: s.name
+    }));
+  const form = useRef<HTMLFormElement>(null);
+
   return (
-    <div
-      data-reach-dialog-overlay={true}
-      className={clsx({
-        'hidden ': !isOpen,
-        'z-50 flex h-screen': isOpen
-      })}
-    >
-      <div
-        aria-modal={true}
-        aria-label={t('Filters')}
-        className={clsx(
-          'w-5/6 max-w-lg',
-          'bg-white dark:bg-gray-900 border-2 border-black dark:border-white rounded-lg font-extrabold',
-          {
-            'hidden ': !isOpen,
-            'm-auto': isOpen
-          }
-        )}
-      >
+    <Dialog isOpen={isOpen} onClose={triggerModalClose}>
+      <Form method="get" onSubmit={onSubmit} ref={form}>
+        <input type="hidden" name="coords" value={coords} />
+        <input type="hidden" name="search" value={search} />
+        <input type="hidden" name="order" value={order} />
         <div className="relative">
-          <button
-            type="button"
-            className="absolute top-2 right-2"
-            onClick={triggerModalClose}
-          >
-            <XCircleIcon className="w-8" />
-          </button>
           <div className="px-6 py-2 flex flex-col items-center lg:px-24 lg:py-14">
-            <H3 className="w-full md:w-112 text-left">{t('Filters')}</H3>
+            <H3 data-cy="dialog-title" className="w-full md:w-112 text-left">
+              {t('Filters')}
+            </H3>
             <Spacer size="2xs" />
 
             <FormField
@@ -881,7 +908,7 @@ function FiltersDialog(props: {
               <ComboBox
                 options={sportsOptions}
                 name="sport"
-                defaultValue={filters?.sport || -1}
+                defaultValue={filters?.sport || ''}
                 placeholder={t('All Sports')}
                 lang={i18n.language as Language}
               />
@@ -906,6 +933,7 @@ function FiltersDialog(props: {
             >
               <CheckBox
                 name="daypart"
+                id={`daypart-${dayParts.morning}`}
                 label={t('Morning')}
                 value={dayParts.morning}
                 checked={filters?.dayParts?.includes(dayParts.morning)}
@@ -913,6 +941,7 @@ function FiltersDialog(props: {
               />
               <CheckBox
                 name="daypart"
+                id={`daypart-${dayParts.afternoon}`}
                 label={t('Afternoon')}
                 value={dayParts.afternoon}
                 checked={filters?.dayParts?.includes(dayParts.afternoon)}
@@ -920,6 +949,7 @@ function FiltersDialog(props: {
               />
               <CheckBox
                 name="daypart"
+                id={`daypart-${dayParts.evening}`}
                 label={t('Evening')}
                 value={dayParts.evening}
                 checked={filters?.dayParts?.includes(dayParts.evening)}
@@ -934,6 +964,7 @@ function FiltersDialog(props: {
               {groupsSpirit.map((gs) => (
                 <CheckBox
                   key={gs.id}
+                  id={`spirit-${gs.id}`}
                   name="spirit"
                   label={gs.name}
                   value={gs.id}
@@ -942,29 +973,25 @@ function FiltersDialog(props: {
                 />
               ))}
             </FormField>
-            <div className="w-full md:w-112 flex flex-wrap gap-4 justify-end">
-              <Button
-                variant="secondary"
-                type="button"
-                onClick={triggerModalClose}
-              >
-                {t('Cancel')}
-              </Button>
-              <Button
-                id="apply-filters"
-                variant="primary"
-                size="medium"
-                type="submit"
-                name="actionId"
-                value={actions.search}
-              >
-                {t('Apply Filters')}
-              </Button>
-            </div>
           </div>
         </div>
-      </div>
-    </div>
+        <ActionsBar>
+          <Button variant="secondary" type="button" onClick={triggerModalClose}>
+            {t('Cancel')}
+          </Button>
+          <Button
+            id="apply-filters"
+            variant="primary"
+            size="medium"
+            name="actionId"
+            type="submit"
+            value={actions.search}
+          >
+            {t('Apply Filters')}
+          </Button>
+        </ActionsBar>
+      </Form>
+    </Dialog>
   );
 }
 

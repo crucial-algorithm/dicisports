@@ -10,23 +10,27 @@ import type {
 import { Role } from '@prisma/client';
 
 import type {
-  Cart,
   DaysOfWeek,
   DBRawCart,
   DBRawGroup,
-  DBRawRaceCheckout,
+  DBRawParticipant,
   DBRawRaceQtd,
+  DBRawUICartRow,
+  DBRawUIRaceParticipant,
   Difficulty,
   Group,
   GroupInput,
   GroupSpirit,
   GroupType,
-  PartialRaceCheckout,
+  PartialCart,
+  Participant,
   Perk,
   RaceQtd,
   ShirtSize,
   Sport,
-  TranslationObject
+  TranslationObject,
+  UICartRow,
+  UIRaceParticipant
 } from '~/types';
 
 function dbSportToSport(sport: DBSport): Sport {
@@ -168,13 +172,30 @@ function dbRawGroupToGroup(group: DBRawGroup): Group {
   };
 }
 
-function dbCartToCart(cart: DBRawCart): Cart {
+function dbUICartToUICart(cart: DBRawUICartRow): UICartRow {
   return {
-    id: cart.checkout_id,
-    qtd: cart.qtd,
-    raceName: cart.race_name,
-    racePrice: cart.race_price,
-    displayOrder: cart.display_order
+    id: cart.id,
+    raceId: cart.race_id,
+    name: cart.name,
+    price: cart.price,
+    distance: cart.distance,
+    startTime: cart.start_time,
+    order: cart.display_order,
+    qtd: Number(cart.qtd)
+  };
+}
+
+function dbUIRaceParticipantToUIRaceParticipant(
+  raceParticipant: DBRawUIRaceParticipant
+): UIRaceParticipant {
+  return {
+    id: raceParticipant.id,
+    name: raceParticipant.name,
+    birthday: raceParticipant.birthday,
+    gender: raceParticipant.gender,
+    bookingAt: raceParticipant.booking_at,
+    status: raceParticipant.status,
+    raceName: raceParticipant.race_name
   };
 }
 
@@ -192,15 +213,35 @@ function dbEventRaceCheckoutQtdToEventRaceCheckoutQtd(
   };
 }
 
-function dbRaceCheckoutToRaceCheckout(
-  raceCheckout: DBRawRaceCheckout
-): PartialRaceCheckout {
+function dbCartToCart(cart: DBRawCart): PartialCart {
   return {
-    id: raceCheckout.id,
-    raceId: raceCheckout.race_id,
-    userId: raceCheckout.user_id,
-    createdAt: raceCheckout.created_at,
-    updatedAt: raceCheckout.updated_at
+    id: cart.id,
+    raceId: cart.race_id,
+    userId: cart.user_id,
+    createdAt: cart.created_at,
+    updatedAt: cart.updated_at
+  };
+}
+
+function dbParticipantToParticipant(
+  participant: DBRawParticipant
+): Participant {
+  return {
+    id: participant.id,
+    userId: participant.user_id,
+    firstName: participant.first_name,
+    lastName: participant.last_name,
+    gender: participant.gender,
+    birthday: participant.birthday,
+    phoneNumber: participant.phone_number,
+    identityCard: participant.identity_card,
+    federationNumber: participant.federation_number,
+    shirtSize: participant.shirt_size,
+    nationality: participant.nationality,
+    postalCode: participant.postal_code,
+    status: participant.status,
+    createdAt: participant.created_at,
+    updatedAt: participant.updated_at
   };
 }
 
@@ -212,8 +253,10 @@ export {
   dbPerkToPerk,
   dbRawGroupToGroup,
   dbDifficultyToDifficulty,
-  dbCartToCart,
+  dbUICartToUICart,
   dbEventRaceCheckoutQtdToEventRaceCheckoutQtd,
-  dbRaceCheckoutToRaceCheckout,
-  dbShirtSizeToShirtSize
+  dbCartToCart,
+  dbShirtSizeToShirtSize,
+  dbUIRaceParticipantToUIRaceParticipant,
+  dbParticipantToParticipant
 };

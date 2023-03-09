@@ -1,8 +1,6 @@
 import React from 'react';
 import clsx from 'clsx';
 
-import { useId } from '@reach/auto-id';
-
 import Label from '~/components/shared/form/Label';
 import InputError from '~/components/shared/form/InputError';
 
@@ -22,8 +20,7 @@ const FormField: React.FC<Props> = ({
   children,
   dataCy
 }) => {
-  const prefix = useId();
-  const inputId = id ?? `${prefix}-${label}`;
+  const inputId = id ?? `ff-${label}`;
   const errorId = `${inputId}-error`;
   const descriptionId = `${inputId}-description`;
 
@@ -31,11 +28,11 @@ const FormField: React.FC<Props> = ({
     <div className={clsx('mb-8', className)} data-cy={dataCy}>
       <div className="flex gap-2 items-baseline justify-between mb-2">
         <Label htmlFor={inputId}>{label}</Label>
-        {description ? (
+        {description && (
           <div id={descriptionId} className="text-primary text-lg">
             {description}
           </div>
-        ) : null}
+        )}
       </div>
       {children}
       {error ? <InputError className="mt-2" id={errorId}>{error}</InputError> : null }

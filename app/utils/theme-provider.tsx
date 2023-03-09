@@ -30,19 +30,23 @@ function ThemeProvider({
   children: React.ReactNode
   specifiedTheme: Theme | null
 }) {
-  const [theme, setTheme] = React.useState<Theme | null>(() => {
+  const [theme, setThemeState] = React.useState<Theme | null>(() => {
     // On the server, if we don't have a specified theme then we should
     // return null and the clientThemeCode will set the theme for us
     // before hydration. Then (during hydration), this code will get the same
     // value that clientThemeCode got so hydration is happy.
     if (specifiedTheme) {
-      if (themes.includes(specifiedTheme)) {return specifiedTheme;}
-      else {return null;}
+      if (themes.includes(specifiedTheme)) {
+        return specifiedTheme;
+      }
+      return null;
     }
 
     // there's no way for us to know what the theme should be in this context
     // the client will have to figure it out before hydration.
-    if (typeof window !== 'object') {return null;}
+    if (typeof window !== 'object') {
+      return null;
+    }
 
     return getPreferredTheme();
   });
@@ -55,30 +59,31 @@ function ThemeProvider({
     persistThemeRef.current = persistTheme;
   }, [persistTheme]);
 
-  const mountRun = React.useRef(false);
-
-  React.useEffect(() => {
-    if (!mountRun.current) {
-      mountRun.current = true;
-      return;
-    }
-    if (!theme) {return;}
-
-    persistThemeRef.current.submit(
-      { theme },
-      { action: 'action/set-theme', method: 'post' }
-    );
-  }, [theme]);
-
   React.useEffect(() => {
     const mediaQuery = window.matchMedia(prefersLightMQ);
     const handleChange = () => {
-      setTheme(mediaQuery.matches ? Theme.LIGHT : Theme.DARK);
+      setThemeState(mediaQuery.matches ? Theme.LIGHT : Theme.DARK);
     };
 
     mediaQuery.addEventListener('change', handleChange);
     return () => mediaQuery.removeEventListener('change', handleChange);
   }, []);
+
+
+  const setTheme = React.useCallback(
+    (cb: Parameters<typeof setThemeState>[0]) => {
+      const newTheme = typeof cb === 'function' ? cb(theme) : cb;
+
+      if (newTheme) {
+        persistThemeRef.current.submit(
+          { theme: newTheme },
+          { action: 'action/set-theme', method: 'post' }
+        );
+      }
+      setThemeState(newTheme);
+    },
+    [ theme ]
+  );
 
   return (
     <ThemeContext.Provider value={[theme, setTheme]}>

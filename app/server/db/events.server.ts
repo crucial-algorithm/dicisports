@@ -1,9 +1,8 @@
-import type { Event } from '@prisma/client';
 import { PrismaClient, Status } from '@prisma/client';
 
 import { db } from '~/server/db.server';
 import Id from '~/server/utils/Id.server';
-import type { CreateEventInput, FavoriteEvent, Language } from '~/types';
+import type { CreateEventInput, FavoriteEvent, Language, Event } from '~/types';
 import {
   createDefaultPerks,
   createPerks,
@@ -181,7 +180,8 @@ async function findEventBySlug(slug: string): Promise<Event | null> {
         },
         orderBy: { position: 'asc' }
       },
-      difficulty: true
+      difficulty: true,
+      races: true
     }
   });
 }
