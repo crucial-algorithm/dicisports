@@ -173,7 +173,6 @@ function dbRawGroupToGroup(group: DBRawGroup): Group {
 }
 
 function dbRawSearchResultsToSearchResults(results: DBRawSearchResults): SearchResults {
-  console.log('here --->', results);
   return {
     entity: results.entity,
     distance: results.distance,

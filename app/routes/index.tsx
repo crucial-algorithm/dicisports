@@ -80,6 +80,7 @@ type FilterParams = {
   sport: number | null;
   dayOfWeek: number | null;
   orderBy: SortMethod;
+  groupsAction: string | null;
 };
 
 type LoaderData = {
@@ -152,7 +153,8 @@ export const loader: LoaderFunction = async ({ request }) => {
       data.actionId === actions.more ? page + 1 : page,
       data.actionId !== actions.more,
       !isNaN(Number(lat)) ? [Number(lat), Number(lng)] : null,
-      data.orderBy === SortMethod.proximity
+      data.orderBy === SortMethod.proximity,
+      data.groupsAction !== 'hide'
     );
   }
 
@@ -179,6 +181,7 @@ function parseQueryString(url: string): FilterParams {
   const dayParts = searchParams.getAll('daypart');
   const spirit = searchParams.getAll('spirit');
   const orderBy = searchParams.get('order');
+  const groupsAction = searchParams.get('g');
 
   return {
     actionId,
@@ -189,7 +192,8 @@ function parseQueryString(url: string): FilterParams {
     dayOfWeek: dayOfWeek === null || dayOfWeek < 0 ? null : dayOfWeek,
     dayParts: dayParts,
     orderBy: (orderBy as SortMethod) || SortMethod.recency,
-    spirit: spirit.map((v) => parseInt(v))
+    spirit: spirit.map((v) => parseInt(v)),
+    groupsAction
   };
 }
 
@@ -242,7 +246,8 @@ async function search(
   page: number,
   reset: boolean = true,
   userLocation: [number, number] | null,
-  orderByProximity: boolean
+  orderByProximity: boolean,
+  showGroups: boolean
 ): Promise<ActionData> {
   const [lat, lng] = searchedLocation ? searchedLocation : [null, null];
   const filters = {
@@ -254,6 +259,7 @@ async function search(
         ? null
         : reduceDayParts(dayParts.map(dayPartToTimeInterval))
   };
+
   const { total, results } = await findResults(
     lat,
     lng,
@@ -261,7 +267,8 @@ async function search(
     10,
     page,
     userLocation,
-    orderByProximity
+    orderByProximity,
+    showGroups
   );
 
   return {
@@ -531,7 +538,7 @@ export default function Index() {
               </Button>
               <div className="flex mx-2 items-center dark:text-white text-blueGray-500 text-sm">
                 {data?.total
-                  ? t('Number of Groups Found', { total: data?.total })
+                  ? t('Number of Results Found', { total: data?.total })
                   : null}
               </div>
               <DisplayFilters
@@ -598,9 +605,9 @@ export default function Index() {
 
       {searchPerformed && (
         <>
-          {searchResults.filter((r) => r.entity = 'group').map((group, index) => (
+          {searchResults.filter((r) => r.entity === 'group').map((group, index) => (
             <GroupResult
-              group={group as Group}
+              group={group}
               key={`${group.id}-${index}`}
               isUserFavorite={
                 favorites.find((g: Group) => g.id === group.id) !== undefined
@@ -683,7 +690,7 @@ function GroupResult({
   userLocation,
   showLocation
 }: {
-  group: Group;
+  group: SearchResults;
   img?: string;
   isUserFavorite: boolean;
   favAddedMessage: string;
@@ -737,7 +744,7 @@ function GroupResult({
   return (
     <>
       <GroupEntry
-        group={group}
+        group={group as Group}
         key={group.id}
         img={img}
         actions={
@@ -972,6 +979,14 @@ function FiltersDialog(props: {
                   className="mb-2"
                 />
               ))}
+              <Spacer size="3xs" />
+              <CheckBox
+                name="g"
+                label={t('Hide Groups')}
+                value="hide"
+                checked={filters?.groupsAction === 'hide'}
+                className="mb-2"
+              />
             </FormField>
           </div>
         </div>

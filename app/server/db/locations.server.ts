@@ -66,8 +66,7 @@ async function findResults(
               FROM events e
                        INNER JOIN races r on e.id = r.event_id
                        INNER JOIN users u2 on e.created_by = u2.id
-              WHERE ${showGroups} 
-                AND e.status = 'published'
+              WHERE e.status = 'published'
                 AND (6357.0 *
                      acos(LEAST(cos(radians(${lat})) * cos(radians(CAST(split_part(e.location, ',', 1) AS FLOAT))) *
                                 cos(radians(CAST(split_part(e.location, ',', 2) AS FLOAT)) - radians(${lng})) +
@@ -115,7 +114,8 @@ async function findResults(
                        INNER JOIN users u ON g.created_by = u.id
                        INNER JOIN groups_spirit gs on g.group_spirit_id = gs.id
                        INNER JOIN group_schedule gsc on gsc.group_id = g.id
-              WHERE status = 'published'
+              WHERE ${showGroups} 
+                AND status = 'published'
                 AND (6357.0 *
                      acos(LEAST(cos(radians(${lat})) * cos(radians(g.lat)) * cos(radians(g.lng) - radians(${lng})) +
                                 sin(radians(${lat})) * sin(radians(g.lat)), 1))) < ${lat === null ? 1000000000 : 30 }
