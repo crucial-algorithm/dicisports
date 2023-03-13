@@ -212,6 +212,73 @@ type DBRawGroup = {
   schedules: string[];
 };
 
+type DBRawSearchResults = {
+  entity: string;
+  distance: number;
+  id: string;
+  name: string;
+  min_price: number;
+  difficulty_id: number;
+  description: string;
+  slug: string;
+  sport_id: number;
+  group_type_id: number;
+  group_spirit_id: number;
+  lat: number;
+  lng: number;
+  location: string;
+  near: string;
+  day_of_week: number;
+  time_of_day: number;
+  whatsapp: string | null;
+  image1: string | null;
+  image2: string | null;
+  image3: string | null;
+  image4: string | null;
+  image5: string | null;
+  status: string;
+  created_at: string;
+  created_by: string;
+  updated_at: string;
+  user_name: string;
+  group_spirit: TranslationObject;
+  records: number;
+  schedules: string[];
+};
+
+type SearchResults = {
+  entity: string;
+  distance: number;
+  id: string;
+  name: string;
+  minPrice: number | null;
+  difficultyId: number | null;
+  description: string | null;
+  slug: string;
+  sportId: number;
+  groupTypeId: number | null;
+  groupSpiritId: number | null;
+  lat: number;
+  lng: number;
+  location: string;
+  near: string | null;
+  dayOfWeek: DaysOfWeek | null;
+  timeOfDay: number | null;
+  whatsapp: string | null;
+  image1: string | null;
+  image2: string | null;
+  image3: string | null;
+  image4: string | null;
+  image5: string | null;
+  status: string | null;
+  createdAt: Date;
+  createdById: string;
+  updatedAt: Date;
+  groupSpirit?: GroupSpirit | null;
+  createdBy: User;
+  schedules: GroupSchedule[] | null;
+};
+
 type Group = {
   dayOfWeek: DaysOfWeek;
   createdBy?: User;
@@ -477,7 +544,9 @@ export {
   DBRawParticipant,
   Booking,
   ShirtSize,
-  RaceRevenueRegistrations
+  RaceRevenueRegistrations,
+  DBRawSearchResults,
+  SearchResults
 };
 
 

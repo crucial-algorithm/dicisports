@@ -35,10 +35,10 @@ import type {
   Group,
   GroupFilters,
   GroupSpirit,
-  Language,
+  Language, SearchResults,
   Sport
 } from '~/types';
-import { findGroups } from '~/server/db/locations.server';
+import { findResults } from '~/server/db/locations.server';
 import GroupEntry from '~/components/GroupEntry';
 
 import SearchLocations from '~/components/SearchLocations';
@@ -92,7 +92,7 @@ type LoaderData = {
 };
 
 type ActionData = {
-  results: Group[];
+  results: SearchResults[];
   filters: null | GroupFilters;
   total: number;
   page?: number;
@@ -254,7 +254,7 @@ async function search(
         ? null
         : reduceDayParts(dayParts.map(dayPartToTimeInterval))
   };
-  const { total, results } = await findGroups(
+  const { total, results } = await findResults(
     lat,
     lng,
     filters,
@@ -304,9 +304,9 @@ export default function Index() {
   } = useLoaderData<LoaderData>() as LoaderData;
   const [selection, setSelection] = useState<DiciLocation | undefined>();
   const data = searchResult;
-  const [groups, setGroups] = useState<Array<Group>>(data?.results || []);
+  const [searchResults, setSearchResults] = useState<Array<SearchResults>>(data?.results || []);
   const [filtersModalOpen, setFiltersModalOpen] = useState<boolean>(false);
-  const [searchPerformed, setSearchPerformed] = useState<boolean>(groups.length > 0);
+  const [searchPerformed, setSearchPerformed] = useState<boolean>(searchResults.length > 0);
   const [address, setAddress] = useState<string>('');
   const location = useLocation();
   const filters = useQueryString();
@@ -346,10 +346,10 @@ export default function Index() {
 
   useEffect(() => {
     if (!searchResult) {
-      if (groups.length > 0) {
+      if (searchResults.length > 0) {
         // we get here when a user navigates back to the home page (by clicking dicisports, for instance)
         // after having performed a query with results
-        setGroups([]);
+        setSearchResults([]);
         setSearchPerformed(false);
         setFiltersModalOpen(false);
       }
@@ -364,10 +364,10 @@ export default function Index() {
     }
 
     // reset is used to keep previous groups when "load more results" is used
-    const list = reset ? [] : [...groups];
+    const list = reset ? [] : [...searchResults];
 
     results.map((r, index) => list.push(r));
-    setGroups(list);
+    setSearchResults(list);
     const url = new URL(window.location.href);
 
     setAddress(url.origin);
@@ -380,7 +380,7 @@ export default function Index() {
     };
   }, [searchResult]);
 
-  const showMoreResults = !!data && groups.length < data.total;
+  const showMoreResults = !!data && searchResults.length < data.total;
 
   function handleOpenFilters() {
     setFiltersModalOpen(true);
@@ -562,7 +562,7 @@ export default function Index() {
 
         {searchPerformed && (
           <div className="flex flex-col justify-center">
-            {groups.length === 0 ? (
+            {searchResults.length === 0 ? (
               <div className="w-full flex justify-center mt-8">
                 <CallToActionToCreateGroup
                   className="text-xl"
@@ -598,9 +598,9 @@ export default function Index() {
 
       {searchPerformed && (
         <>
-          {groups.map((group, index) => (
+          {searchResults.filter((r) => r.entity = 'group').map((group, index) => (
             <GroupResult
-              group={group}
+              group={group as Group}
               key={`${group.id}-${index}`}
               isUserFavorite={
                 favorites.find((g: Group) => g.id === group.id) !== undefined
