@@ -27,8 +27,7 @@ async function findResults(
                             acos(LEAST(cos(radians(${lat})) *
                                        cos(radians(CAST(split_part(e.location, ',', 1) AS FLOAT))) *
                                        cos(radians(CAST(split_part(e.location, ',', 2) AS FLOAT)) - radians(${lng})) +
-                                       sin(radians(${lat})) *
-                                       sin(radians(CAST(split_part(e.location, ',', 1) AS FLOAT))),
+                                       sin(radians(${lat})) * sin(radians(CAST(split_part(e.location, ',', 1) AS FLOAT))),
                                        1))))                       AS distance_to_searched_location,
                      floor((6357.0 *
                             acos(LEAST(cos(radians(${myLat})) *
@@ -67,51 +66,51 @@ async function findResults(
               FROM events e
                        INNER JOIN races r on e.id = r.event_id
                        INNER JOIN users u2 on e.created_by = u2.id
-              WHERE ${showGroups}
+              WHERE ${showGroups} 
                 AND e.status = 'published'
                 AND (6357.0 *
                      acos(LEAST(cos(radians(${lat})) * cos(radians(CAST(split_part(e.location, ',', 1) AS FLOAT))) *
                                 cos(radians(CAST(split_part(e.location, ',', 2) AS FLOAT)) - radians(${lng})) +
-                                sin(radians(${lat})) * sin(radians(CAST(split_part(e.location, ',', 2) AS FLOAT))),
-                                1))) < ${lat === null ? 1000000000 : 30}
+                                sin(radians(${lat})) * sin(radians(CAST(split_part(e.location, ',', 2) AS FLOAT))), 1))) < ${
+                                  lat === null ? 1000000000 : 30
+                                }
               GROUP BY e.id, u2.name
               UNION ALL
-              SELECT 'group'                                                               as entity,
+              SELECT 'group'                                                                as entity,
                      floor((6357.0 *
-                            acos(LEAST(cos(radians(${lat})) * cos(radians(g.lat)) *
-                                       cos(radians(g.lng) - radians(${lng})) +
+                            acos(LEAST(cos(radians(${lat})) * cos(radians(g.lat)) * cos(radians(g.lng) - radians(${lng})) +
                                        sin(radians(${lat})) * sin(radians(g.lat)),
-                                       1))))                                               AS distance_to_searched_location,
+                                       1))))                                                AS distance_to_searched_location,
                      floor((6357.0 *
                             acos(LEAST(cos(radians(${myLat})) * cos(radians(g.lat)) *
                                        cos(radians(g.lng) - radians(${myLng})) +
                                        sin(radians(${myLat})) * sin(radians(g.lat)), 1)))) AS distance,
-                     g.id                                                                  AS "id",
-                     g.name                                                                AS "name",
-                     null                                                                  AS "min_price",
-                     null                                                                  AS "difficulty_id",
-                     g.slug                                                                AS "slug",
-                     g.sport_id                                                            AS "sport_id",
-                     g.group_type_id                                                       AS "group_type_id",
-                     g.group_spirit_id                                                     AS "group_spirit_id",
-                     g.lat                                                                 AS "lat",
-                     g.lng                                                                 AS "lng",
-                     g.location                                                            AS "location",
-                     g.near                                                                AS "near",
-                     g.whatsapp                                                            AS "whatsapp",
-                     g.image1                                                              AS "image1",
-                     g.image2                                                              AS "image2",
-                     g.image3                                                              AS "image3",
-                     null                                                                  AS "image4",
-                     null                                                                  AS "image5",
-                     g.status                                                              AS "status",
-                     g.created_at                                                          AS "created_at",
-                     g.created_by                                                          AS "created_by",
-                     g.updated_at                                                          AS "updated_at",
-                     g.description                                                         AS "description",
-                     u.name                                                                AS "user_name",
-                     gs.name                                                               AS "group_spirit",
-                     array_agg(gsc.id || ':' || gsc.day_of_week || ':' || gsc.time_of_day) AS "schedules"
+                     g.id                                                                   AS "id",
+                     g.name                                                                 AS "name",
+                     null                                                                   AS "min_price",
+                     null                                                                   AS "difficulty_id",
+                     g.slug                                                                 AS "slug",
+                     g.sport_id                                                             AS "sport_id",
+                     g.group_type_id                                                        AS "group_type_id",
+                     g.group_spirit_id                                                      AS "group_spirit_id",
+                     g.lat                                                                  AS "lat",
+                     g.lng                                                                  AS "lng",
+                     g.location                                                             AS "location",
+                     g.near                                                                 AS "near",
+                     g.whatsapp                                                             AS "whatsapp",
+                     g.image1                                                               AS "image1",
+                     g.image2                                                               AS "image2",
+                     g.image3                                                               AS "image3",
+                     null                                                                   AS "image4",
+                     null                                                                   AS "image5",
+                     g.status                                                               AS "status",
+                     g.created_at                                                           AS "created_at",
+                     g.created_by                                                           AS "created_by",
+                     g.updated_at                                                           AS "updated_at",
+                     g.description                                                          AS "description",
+                     u.name                                                                 AS "user_name",
+                     gs.name                                                                AS "group_spirit",
+                     array_agg(gsc.id || ':' || gsc.day_of_week || ':' || gsc.time_of_day)  AS "schedules"
               FROM groups g
                        INNER JOIN users u ON g.created_by = u.id
                        INNER JOIN groups_spirit gs on g.group_spirit_id = gs.id
@@ -119,22 +118,17 @@ async function findResults(
               WHERE status = 'published'
                 AND (6357.0 *
                      acos(LEAST(cos(radians(${lat})) * cos(radians(g.lat)) * cos(radians(g.lng) - radians(${lng})) +
-                                sin(radians(${lat})) * sin(radians(g.lat)), 1))) < ${
-    lat === null ? 1000000000 : 30
-  }
-                  ${n(spirit, `AND gs.id IN (${s(spirit).join(', ')})`)} ${n(
-    sport,
-    `AND g.sport_id = ${sport}`
-  )} ${n(dayOfWeek, `AND gsc.day_of_week = ${dayOfWeek}`)} ${n(
-    timeOfDay,
-    `AND gsc.time_of_day BETWEEN ${b} AND ${e}`
-  )}
+                                sin(radians(${lat})) * sin(radians(g.lat)), 1))) < ${lat === null ? 1000000000 : 30 }
+                ${n(spirit, `AND gs.id IN (${s(spirit).join(', ')})`)}
+                ${n(sport, `AND g.sport_id = ${sport}`)}
+                ${n(dayOfWeek, `AND gsc.day_of_week = ${dayOfWeek}`)}
+                ${n(timeOfDay, `AND gsc.time_of_day BETWEEN ${b} AND ${e}`)}
               GROUP BY g.id, g.name, g.slug, g.sport_id, g.group_type_id, g.group_spirit_id, g.lat, g.lng, g.location,
-                  g.near, g.whatsapp, g.image1, g.image2, g.image3, g.status, g.created_at, g.created_by,
-                  g.updated_at,
-                  g.description, u.name, gs.name) as r
-        ORDER BY ${orderBy} LIMIT ${chunkSize}
-        OFFSET ${position * chunkSize};
+                       g.near, g.whatsapp, g.image1, g.image2, g.image3, g.status, g.created_at, g.created_by,
+                       g.updated_at,
+                       g.description, u.name, gs.name) as r 
+              ORDER BY ${orderBy} 
+            LIMIT ${chunkSize} OFFSET ${position * chunkSize};
     `;
 
   const results: Array<DBRawSearchResults> = await db.$queryRawUnsafe(query);
