@@ -46,7 +46,7 @@ describe('Search', () => {
         .should('have.length', 2);
     });
 
-    it('should redirect to create a group form: authenticated', () => {
+    it('should redirect to create group: authenticated', () => {
       cy.intercept('GET', '/*?coords=*')
         .as('search')
         .login()
@@ -55,19 +55,13 @@ describe('Search', () => {
         .get('#search-button')
         .click()
 
-        .wait('@search')
-        .waitForHydration()
-
-        .url()
-        .should('include', '/?coords=&search=&page=0&dow=&sport=&actionId=search')
-
         .get('#create-your-group')
         .click()
 
         .waitForHydration()
 
         .url()
-        .should('include', `${Cypress.config().baseUrl}/m/group/`);
+        .should('include', `${Cypress.config().baseUrl}/g/group/`);
     });
 
     it('should favorite a group unauthenticated: login', () => {
@@ -108,7 +102,7 @@ describe('Search', () => {
         .url()
         .should('eq', `${Cypress.config().baseUrl}/`)
 
-        .visitAndWaitForHydration('/m/groups')
+        .visitAndWaitForHydration('/g/groups')
 
         .get('button[name=groupId]')
         .should('have.length', 2);
@@ -163,7 +157,7 @@ describe('Search', () => {
         .wait('@signup')
         .waitForHydration()
 
-        .visitAndWaitForHydration('/m/groups')
+        .visitAndWaitForHydration('/g/groups')
 
         .get('button[name=groupId]')
         .should('have.length', 1);

@@ -658,7 +658,7 @@ function CallToActionToCreateGroup({
 }) {
   return (
     <Link
-      to="/m/group/add"
+      to="/g/group/add"
       className={clsx(
         'background-transparent text-orange-600 dark:text-blueGray-500 font-medium',
         className
@@ -761,7 +761,7 @@ function GroupResult({
               // @ts-ignore
               ref={ref}
               method="post"
-              action={`/m/group/fav/${group.id}`}
+              action={`/g/group/fav/${group.id}`}
             >
               {isUserFavorite ? (
                 <Button size="tiny" name="action" value="remove" id="remove-favorite">
