@@ -2,7 +2,7 @@ import type { LoaderFunction } from '@remix-run/node';
 
 import { getUser } from '~/server/auth/session.server';
 import { findEvent } from '~/server/db/events.server';
-import EventDisplayRoute, { loadDisplayEventData } from '~/routes/event/$slug';
+import EventDisplayRoute, { loadDisplayEventData } from '~/routes/e/$slug';
 
 export const loader: LoaderFunction = async ({ params, request }) => {
   const user = await getUser(request);

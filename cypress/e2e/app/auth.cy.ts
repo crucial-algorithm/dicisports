@@ -5,14 +5,14 @@ describe('Authentication / Authorization', () => {
 
   context('When user not authenticated', () => {
     it('should redirect to login when accessing groups', () => {
-      cy.visitAndWaitForHydration('/m/groups')
+      cy.visitAndWaitForHydration('/g/groups')
 
         .url()
         .should('eq', `${Cypress.config().baseUrl}/login`);
     });
 
     it('should redirect to login when accessing events', () => {
-      cy.visitAndWaitForHydration('/organizer/')
+      cy.visitAndWaitForHydration('/o/')
 
         .url()
         .should('eq', `${Cypress.config().baseUrl}/login`);

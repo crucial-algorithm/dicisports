@@ -16,7 +16,7 @@ describe('Event', () => {
         'O Granfondo tem 154km de distância e irá testar as vossas capacidades. Estão prontos para o desafio ?';
 
       cy.loginAdmin()
-        .visitAndWaitForHydration('/event/love-tiles-douro-granfondo-2023')
+        .visitAndWaitForHydration('/e/love-tiles-douro-granfondo-2023')
         .get('[data-cy=image0]')
         .should('be.visible')
 
@@ -69,7 +69,7 @@ describe('Event', () => {
         .get('[data-cy=document-label]')
         .contains('Regulamento')
         .should('have.attr', 'href')
-        .and('include', '/organizer/document/MY4bvgxDbMtGv8rbYe5d');
+        .and('include', '/o/document/MY4bvgxDbMtGv8rbYe5d');
 
       verifyRace('AhowRdNWCBQWSuivSt7s', 'Mediofondo', 102, '08:30', 15, 1804);
       verifyRace('AhowRdNWCBQWSuivSt7h', 'Minifondo', 57, '08:30', 10, 800);
@@ -82,22 +82,22 @@ describe('Event', () => {
         2274,
         576,
         granfondo,
-        '/organizer/race/gpx/xaXaCzs2t7D8DpRNnffM'
+        '/o/race/gpx/xaXaCzs2t7D8DpRNnffM'
       );
     });
 
     it('Should show an handled message when accessing an unpublished event', () => {
-      cy.visitAndWaitForHydration('/event/trail-do-zezere').get('p[data-cy=event-not-found]');
+      cy.visitAndWaitForHydration('/e/trail-do-zezere').get('p[data-cy=event-not-found]');
     });
 
     it('Should show error message when accessing an non existing event', () => {
-      cy.visitAndWaitForHydration('/event/non-existing-event').get('p[data-cy=event-not-found');
+      cy.visitAndWaitForHydration('/e/non-existing-event').get('p[data-cy=event-not-found');
     });
   });
 
   context('Security', () => {
-    it('should not access /organizer/event/create when not authenticated', () => {
-      cy.visitAndWaitForHydration('/organizer/event/create')
+    it('should not access /o/event/create when not authenticated', () => {
+      cy.visitAndWaitForHydration('/o/event/create')
 
         .url()
         .should('eq', `${Cypress.config().baseUrl}/login`);
@@ -105,7 +105,7 @@ describe('Event', () => {
 
     it('should not allow a user from editing another user event', () => {
       cy.login()
-        .visitAndWaitForHydration('/organizer/event/MY4bvgxDbMtGv8rbYe5d')
+        .visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d')
 
         .url()
         .should('eq', `${Cypress.config().baseUrl}/`);
@@ -119,12 +119,33 @@ describe('Event', () => {
       cy.task('clearDownloadFolder');
     });
 
+    it('should load events in mobile', () => {
+      cy.loginAdmin()
+        .visitAndWaitForHydration('/')
+        .get('[data-cy=mobile-menu]')
+        .click()
+        .get('[data-cy=m-events]')
+        .click()
+        .get('button[name=create-event]')
+        .should('exist');
+    });
+
+    it('should load events in desktop', () => {
+      cy.viewport(1024, 768)
+        .loginAdmin()
+        .visitAndWaitForHydration('/')
+        .get('[data-cy=events]')
+        .click()
+        .get('button[name=create-event]')
+        .should('exist');
+    });
+
     it('should create and publish an event', () => {
       const description = 'O Peso da Régua será ponto de partida';
 
-      cy.intercept('GET', '/organizer/event/*?_data=routes*')
+      cy.intercept('GET', '/o/event/*?_data=routes*')
         .as('EventRequests')
-        .visitAndWaitForHydration('/organizer')
+        .visitAndWaitForHydration('/o')
         .get('button[name=create-event]')
         .click()
 
@@ -220,7 +241,7 @@ describe('Event', () => {
 
         .wait('@EventRequests')
 
-        .intercept('POST', '/organizer/event/*_data=routes*')
+        .intercept('POST', '/o/event/*_data=routes*')
         .as('createEvent')
 
         .get('button[name=create-event]')
@@ -241,16 +262,16 @@ describe('Event', () => {
         .get('#unpublish')
 
         // Check if event slug was created
-        .visitAndWaitForHydration('/event/a-new-event')
+        .visitAndWaitForHydration('/e/a-new-event')
 
         .get('[data-cy=name]')
         .contains('a new event');
     });
 
     it('should update a event', () => {
-      cy.intercept('GET', '/organizer/event/*?_data=routes*')
+      cy.intercept('GET', '/o/event/*?_data=routes*')
         .as('EventRequests')
-        .visitAndWaitForHydration('/organizer')
+        .visitAndWaitForHydration('/o')
         .get('div[data-cy=event-MY4bvgxDbMtGv8rbYe5d]')
         .click()
 
@@ -265,7 +286,7 @@ describe('Event', () => {
 
         .wait('@EventRequests')
 
-        .visitAndWaitForHydration('/event/love-tiles-douro-granfondo-2023')
+        .visitAndWaitForHydration('/e/love-tiles-douro-granfondo-2023')
         .reload()
 
         .get('[data-cy=description]')
@@ -273,9 +294,9 @@ describe('Event', () => {
     });
 
     it('should change race order', () => {
-      cy.intercept('GET', '/organizer/event/*?_data=routes*')
+      cy.intercept('GET', '/o/event/*?_data=routes*')
         .as('EventRequests')
-        .visitAndWaitForHydration('/organizer')
+        .visitAndWaitForHydration('/o')
         .get('div[data-cy=event-MY4bvgxDbMtGv8rbYe5d]')
         .click()
 
@@ -290,7 +311,7 @@ describe('Event', () => {
         .get('div[data-cy=race-index-0]')
         .contains('Mediofondo')
 
-        .visitAndWaitForHydration('/event/love-tiles-douro-granfondo-2023')
+        .visitAndWaitForHydration('/e/love-tiles-douro-granfondo-2023')
         .reload()
 
         .get('div[data-cy=race-0]')
@@ -298,9 +319,9 @@ describe('Event', () => {
     });
 
     it('should change document order', () => {
-      cy.intercept('GET', '/organizer/event/*?_data=routes*')
+      cy.intercept('GET', '/o/event/*?_data=routes*')
         .as('EventRequests')
-        .visitAndWaitForHydration('/organizer')
+        .visitAndWaitForHydration('/o')
         .get('div[data-cy=event-MY4bvgxDbMtGv8rbYe5d]')
         .click()
 
@@ -315,7 +336,7 @@ describe('Event', () => {
         .get('div[data-cy=document-index-0]')
         .contains('Circuito')
 
-        .visitAndWaitForHydration('/event/love-tiles-douro-granfondo-2023')
+        .visitAndWaitForHydration('/e/love-tiles-douro-granfondo-2023')
         .reload()
 
         .get('div[data-cy=document-0]')
@@ -323,9 +344,9 @@ describe('Event', () => {
     });
 
     it('should download document', () => {
-      cy.intercept('GET', '/organizer/event/*?_data=routes*')
+      cy.intercept('GET', '/o/event/*?_data=routes*')
         .as('EventRequests')
-        .visitAndWaitForHydration('/organizer')
+        .visitAndWaitForHydration('/o')
         .get('div[data-cy=event-MY4bvgxDbMtGv8rbYe5d]')
         .click()
 
@@ -338,9 +359,9 @@ describe('Event', () => {
     });
 
     it('should add a new perk', () => {
-      cy.intercept('GET', '/organizer/event/*?_data=routes*')
+      cy.intercept('GET', '/o/event/*?_data=routes*')
         .as('EventRequests')
-        .visitAndWaitForHydration('/organizer')
+        .visitAndWaitForHydration('/o')
         .get('div[data-cy=event-MY4bvgxDbMtGv8rbYe5d]')
         .click()
 
@@ -359,14 +380,14 @@ describe('Event', () => {
         .wait('@EventRequests')
         .waitForHydration()
 
-        .visitAndWaitForHydration('/event/love-tiles-douro-granfondo-2023')
+        .visitAndWaitForHydration('/e/love-tiles-douro-granfondo-2023')
 
         .get('label[data-cy=perk-9]')
         .contains('a new perk');
     });
 
     it('should display event preview', () => {
-      cy.visitAndWaitForHydration('/organizer/event/MY4bvgxDbMtGv8rbYe5d')
+      cy.visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d')
         .get('#preview-button')
         .should('exist')
         .then((link) => {
@@ -378,9 +399,9 @@ describe('Event', () => {
     });
 
     it('should not have preview button if event is not created yet', () => {
-      cy.intercept('GET', '/organizer/event/*?_data=routes*')
+      cy.intercept('GET', '/o/event/*?_data=routes*')
         .as('EventRequests')
-        .visitAndWaitForHydration('/organizer')
+        .visitAndWaitForHydration('/o')
         .get('button[name=create-event]')
         .click()
 
@@ -391,9 +412,9 @@ describe('Event', () => {
     });
 
     it('should preview saved event', () => {
-      cy.intercept('GET', '/organizer/event/*?_data=routes*')
+      cy.intercept('GET', '/o/event/*?_data=routes*')
         .as('EventRoute')
-        .visitAndWaitForHydration('/organizer')
+        .visitAndWaitForHydration('/o')
         .get('div[data-cy=event-bQmGXYkbhJetjk6mniMt]')
         .click()
 
@@ -421,7 +442,7 @@ describe('Event', () => {
 
     it('should not access a preview if user did not create such event', () => {
       cy.login()
-        .visitAndWaitForHydration('/event/preview/MY4bvgxDbMtGv8rbYe5d')
+        .visitAndWaitForHydration('/e/preview/MY4bvgxDbMtGv8rbYe5d')
 
         .get('p[data-cy=event-not-found]')
         .should('exist');

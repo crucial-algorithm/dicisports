@@ -26,5 +26,5 @@ export const action: ActionFunction = async ({ request }) => {
     // TODO: redirect somewhere
   }
 
-  return redirect(`/organizer/event/${eventId}`);
+  return redirect(`/o/event/${eventId}`);
 };

@@ -251,11 +251,11 @@ function Html({
   });
 
   // Support for cypress command that waits for HTML to be hydrated
-  React.useEffect(() => {
-    (
+  React.useEffect(() => (
       document.getElementsByTagName('body').item(0) as HTMLBodyElement
-    ).setAttribute('data-cy', 'ready');
-  }, [lang]);
+    ).setAttribute('data-cy', 'ready'),
+    [lang]
+  );
 
   return (
     <html

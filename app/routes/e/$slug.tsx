@@ -326,7 +326,7 @@ function DisplayRace(props: { race: Race; index: number }) {
             )}
             {race.track && (
               <Link
-                to={`/organizer/race/gpx/${race.id}`}
+                to={`/o/race/gpx/${race.id}`}
                 target="_blank"
                 rel="noreferrer"
                 data-cy={`gpx-${race.id}`}
@@ -375,7 +375,7 @@ function DisplayDocument(props: { document: Document; index: number }) {
         {fileExtension[fileExtension.length - 1].toUpperCase()}
       </div>
       <a
-        href={`/organizer/document/${document.id}`}
+        href={`/o/document/${document.id}`}
         target="_blank"
         rel="noreferrer"
         className="text-black dark:text-white"
@@ -505,7 +505,7 @@ function PriceTag({
             </H2>
             <favorite.Form
               method="post"
-              action={`/organizer/event/fav/${event.id}`}
+              action={`/o/event/fav/${event.id}`}
             >
               {isFavorite ? (
                 <Button
