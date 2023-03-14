@@ -66,12 +66,22 @@ function pickLocationInMap(triggerOpenMapButtonName: string) {
     .click()
     .get('button[name=pick-location]')
 
-    .get('canvas.mapboxgl-canvas')
-    .get('.mapboxgl-ctrl-geolocate')
+    // search location
+    .get('input.mapboxgl-ctrl-geocoder--input')
+    .type('Fátima, Santarém, Portugal')
+    .wait('@mapBoxSearchResult')
+
+    // get 1st suggestion - it looks like @mapBoxSearchResult might not be the right request to intercept
+    .get('ul.suggestions > li > a')
+    .first()
     .click()
 
-    .get('button[name=pick-location]:enabled', { timeout: 20000 })
-    .click({ force: true });
+    .wait('@mapBoxFindAddressFromCoords', { timeout: 10000 })
+    .get('button[name=pick-location]:enabled', { timeout: 10000 })
+    .click({ force: true })
+
+    .get('input[name=discard-location]')
+    .should('have.value', 'Estrada De Torres Novas');
 }
 
 function wasImageLoaded(selector: string) {
