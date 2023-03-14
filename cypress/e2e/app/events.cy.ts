@@ -16,7 +16,7 @@ describe('Event', () => {
         'O Granfondo tem 154km de distância e irá testar as vossas capacidades. Estão prontos para o desafio ?';
 
       cy.loginAdmin()
-        .visitAndWaitForHydration('/e/love-tiles-douro-granfondo-2023')
+        .visitAndWaitForHydration('/event/love-tiles-douro-granfondo-2023')
         .get('[data-cy=image0]')
         .should('be.visible')
 
@@ -87,11 +87,11 @@ describe('Event', () => {
     });
 
     it('Should show an handled message when accessing an unpublished event', () => {
-      cy.visitAndWaitForHydration('/e/trail-do-zezere').get('p[data-cy=event-not-found]');
+      cy.visitAndWaitForHydration('/event/trail-do-zezere').get('p[data-cy=event-not-found]');
     });
 
     it('Should show error message when accessing an non existing event', () => {
-      cy.visitAndWaitForHydration('/e/non-existing-event').get('p[data-cy=event-not-found');
+      cy.visitAndWaitForHydration('/event/non-existing-event').get('p[data-cy=event-not-found');
     });
   });
 
@@ -262,7 +262,7 @@ describe('Event', () => {
         .get('#unpublish')
 
         // Check if event slug was created
-        .visitAndWaitForHydration('/e/a-new-event')
+        .visitAndWaitForHydration('/event/a-new-event')
 
         .get('[data-cy=name]')
         .contains('a new event');
@@ -286,7 +286,7 @@ describe('Event', () => {
 
         .wait('@EventRequests')
 
-        .visitAndWaitForHydration('/e/love-tiles-douro-granfondo-2023')
+        .visitAndWaitForHydration('/event/love-tiles-douro-granfondo-2023')
         .reload()
 
         .get('[data-cy=description]')
@@ -311,7 +311,7 @@ describe('Event', () => {
         .get('div[data-cy=race-index-0]')
         .contains('Mediofondo')
 
-        .visitAndWaitForHydration('/e/love-tiles-douro-granfondo-2023')
+        .visitAndWaitForHydration('/event/love-tiles-douro-granfondo-2023')
         .reload()
 
         .get('div[data-cy=race-0]')
@@ -336,7 +336,7 @@ describe('Event', () => {
         .get('div[data-cy=document-index-0]')
         .contains('Circuito')
 
-        .visitAndWaitForHydration('/e/love-tiles-douro-granfondo-2023')
+        .visitAndWaitForHydration('/event/love-tiles-douro-granfondo-2023')
         .reload()
 
         .get('div[data-cy=document-0]')
@@ -380,7 +380,7 @@ describe('Event', () => {
         .wait('@EventRequests')
         .waitForHydration()
 
-        .visitAndWaitForHydration('/e/love-tiles-douro-granfondo-2023')
+        .visitAndWaitForHydration('/event/love-tiles-douro-granfondo-2023')
 
         .get('label[data-cy=perk-9]')
         .contains('a new perk');

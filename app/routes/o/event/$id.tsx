@@ -141,7 +141,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 
   const sports = await findSports();
   const difficulties = await findDifficulties();
-  const eventId = params.eventId as string;
+  const eventId = params.id as string;
   const event = eventId ? await findEvent(eventId) : null;
 
   const { MAPBOX_TOKEN, CLOUDINARY_UPLOAD_PRESET } = Config();
@@ -185,7 +185,7 @@ export const action: ActionFunction = async ({ request, params }) => {
     unstable_createMemoryUploadHandler()
   );
 
-  const event = params.eventId ? await findEvent(params.eventId) : null;
+  const event = params.id ? await findEvent(params.id) : null;
 
   if (!event) {
     throw NotFound(t('Event not found'));
@@ -213,7 +213,7 @@ export const action: ActionFunction = async ({ request, params }) => {
   }
 
   const data: CreateEventInput = {
-    id: params.eventId as string,
+    id: params.id as string,
     name: form.get('event-name') as string,
     sportId: parseInt(form.get('sport') as string),
     difficultyId: parseInt(form.get('difficulty') as string),
