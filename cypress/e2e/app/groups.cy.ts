@@ -25,7 +25,7 @@ describe('Groups', () => {
         .should('exist');
     });
 
-    it.only('should favorite group', () => {
+    it('should favorite group', () => {
       cy.intercept('GET', '/*?coords=*')
         .as('search')
         .login()

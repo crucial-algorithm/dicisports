@@ -475,7 +475,7 @@ export default function OrganizerEventRoute() {
                       className="md:ml-4"
                       variant="secondary"
                       size="medium"
-                      to={`/e/preview/${event.id}`}
+                      to={`/o/event/preview/${event.id}`}
                       target="_blank"
                     >
                       {t('Preview Button')}
@@ -499,7 +499,7 @@ export default function OrganizerEventRoute() {
                       className="md:ml-4"
                       variant="secondary"
                       size="medium"
-                      to={`/e/preview/${event.id}`}
+                      to={`/o/event/preview/${event.id}`}
                       target="_blank"
                     >
                       {t('Preview Button')}

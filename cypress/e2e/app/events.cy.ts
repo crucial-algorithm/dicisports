@@ -442,7 +442,7 @@ describe('Event', () => {
 
     it('should not access a preview if user did not create such event', () => {
       cy.login()
-        .visitAndWaitForHydration('/e/preview/MY4bvgxDbMtGv8rbYe5d')
+        .visitAndWaitForHydration('/o/event/preview/MY4bvgxDbMtGv8rbYe5d')
 
         .get('p[data-cy=event-not-found]')
         .should('exist');
