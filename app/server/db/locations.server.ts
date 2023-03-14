@@ -40,7 +40,8 @@ async function findResults(
                      e.id                                          AS "id",
                      e.name                                        AS "name",
                      min(price)                                    AS "min_price",
-                     e.difficulty_id                               AS "difficulty_id",
+                     d.name                                        AS "difficulty",
+                     e.start_at                                    AS "start_at",
                      e.slug                                        AS "slug",
                      e.sport_id                                    AS "sport_id",
                      null                                          AS "group_type_id",
@@ -66,6 +67,7 @@ async function findResults(
               FROM events e
                        INNER JOIN races r on e.id = r.event_id
                        INNER JOIN users u2 on e.created_by = u2.id
+                       INNER JOIN difficulties d on e.difficulty_id = d.id
               WHERE e.status = 'published'
                 AND (6357.0 *
                      acos(LEAST(cos(radians(${lat})) * cos(radians(CAST(split_part(e.location, ',', 1) AS FLOAT))) *
@@ -73,7 +75,7 @@ async function findResults(
                                 sin(radians(${lat})) * sin(radians(CAST(split_part(e.location, ',', 2) AS FLOAT))), 1))) < ${
                                   lat === null ? 1000000000 : 30
                                 }
-              GROUP BY e.id, u2.name
+              GROUP BY e.id, u2.name, d.name
               UNION ALL
               SELECT 'group'                                                                as entity,
                      floor((6357.0 *
@@ -87,7 +89,8 @@ async function findResults(
                      g.id                                                                   AS "id",
                      g.name                                                                 AS "name",
                      null                                                                   AS "min_price",
-                     null                                                                   AS "difficulty_id",
+                     null                                                                   AS "difficulty",
+                     null                                                                   AS "start_at",
                      g.slug                                                                 AS "slug",
                      g.sport_id                                                             AS "sport_id",
                      g.group_type_id                                                        AS "group_type_id",

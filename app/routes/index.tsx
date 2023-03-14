@@ -35,8 +35,10 @@ import type {
   Group,
   GroupFilters,
   GroupSpirit,
-  Language, SearchResults,
-  Sport
+  Language,
+  SearchResults,
+  Sport,
+  Event
 } from '~/types';
 import { findResults } from '~/server/db/locations.server';
 import GroupEntry from '~/components/GroupEntry';
@@ -69,6 +71,8 @@ import { useUserLocation } from '~/utils/LocationProvider';
 import { CanonicalMeta } from '~/utils/seo';
 
 import CopyToClipboard from '~/components/shared/CopyToClipboard';
+import EventEntry from '~/components/EventEntry';
+import { findUserFavoriteEvents } from '~/server/db/events.server';
 
 type FilterParams = {
   actionId: keyof typeof actions | null;
@@ -87,7 +91,8 @@ type LoaderData = {
   sports: Sport[];
   groupsSpirit: GroupSpirit[];
   searchResult: ActionData;
-  favorites: Group[];
+  favoriteGroups: Group[];
+  favoriteEvents: Event[];
   mapToken: string;
   selectedDayParts: string[] | null;
 };
@@ -129,8 +134,9 @@ export const loader: LoaderFunction = async ({ request }) => {
   const data = parseQueryString(request.url);
   // Initial load
   const user = await getUser(request);
-  const favorites = user ? await findUserFavoriteGroups(user.id) : [];
-
+  const favoriteGroups = user ? await findUserFavoriteGroups(user.id) : [];
+  const favoriteEvents = user ? await findUserFavoriteEvents(user.id) : [];
+  
   let result: ActionData | null = null;
   const page = data.actionId === actions.search ? 0 : data.page || 0;
 
@@ -163,7 +169,8 @@ export const loader: LoaderFunction = async ({ request }) => {
   return json({
     sports: await findSports(),
     groupsSpirit: await findGroupsSpirit(),
-    favorites,
+    favoriteGroups,
+    favoriteEvents,
     searchResult: result,
     mapToken: MAPBOX_TOKEN,
     selectedDayParts: data.dayParts
@@ -305,7 +312,8 @@ export default function Index() {
     sports,
     groupsSpirit,
     searchResult,
-    favorites,
+    favoriteGroups,
+    favoriteEvents,
     mapToken,
     selectedDayParts
   } = useLoaderData<LoaderData>() as LoaderData;
@@ -445,6 +453,7 @@ export default function Index() {
     );
   }
 
+  // @ts-ignore
   return (
     <Main className="dark:text-blueGray-500 relative mb-8">
       <TransitionIndicator
@@ -486,6 +495,7 @@ export default function Index() {
           filters.spirit.map((v) => (
             <input key={v} type="hidden" name="spirit" value={v} />
           ))}
+        <input type="hidden" name="g" value={filters?.groupsAction || ''} />
         <div className="flex align-middle justify-center">
           <Link to="/" onClick={handleResetSearchPerformed}>
             <HomeLogo className="w-80 h-16 md:w-96 lg:w-144" />
@@ -605,24 +615,35 @@ export default function Index() {
 
       {searchPerformed && (
         <>
-          {searchResults.filter((r) => r.entity === 'group').map((group, index) => (
-            <GroupResult
-              group={group}
-              key={`${group.id}-${index}`}
-              isUserFavorite={
-                favorites.find((g: Group) => g.id === group.id) !== undefined
-              }
-              img={sports.find((s: Sport) => s.id === group.sportId)?.picture}
-              favAddedMessage={t('Favorite Added')}
-              favRemovedMessage={t('Favorite Removed')}
-              copiedToClipMessage={t('Copied to Clipboard')}
-              address={address}
-              location={`${location.pathname}${location.search}`}
-              isLoggedIn={user !== null}
-              userLocation={userLocation}
-              showLocation={orderBy === SortMethod.proximity}
-            />
-          ))}
+          {searchResults.map((r, index) =>
+            r.entity === 'event' ? (
+              <EventResult
+                key={r.id}
+                event={r}
+                img={sports.find((s) => s.id === r.sportId)?.picture}
+                userLocation={userLocation}
+                showLocation={orderBy === SortMethod.proximity}
+                isUserFavorite={favoriteEvents.find((e) => e.id === r.id) !== undefined}
+              />
+            ) : (
+              <GroupResult
+                group={r}
+                key={`${r.id}-${index}`}
+                isUserFavorite={
+                  favoriteGroups.find((g: Group) => g.id === r.id) !== undefined
+                }
+                img={sports.find((s: Sport) => s.id === r.sportId)?.picture}
+                favAddedMessage={t('Favorite Added')}
+                favRemovedMessage={t('Favorite Removed')}
+                copiedToClipMessage={t('Copied to Clipboard')}
+                address={address}
+                location={`${location.pathname}${location.search}`}
+                isLoggedIn={user !== null}
+                userLocation={userLocation}
+                showLocation={orderBy === SortMethod.proximity}
+              />
+            )
+          )}
         </>
       )}
 
@@ -802,6 +823,120 @@ function GroupResult({
               <span>{Math.ceil(group.distance || 0)} km</span>
             )}
           </div>
+        }
+      />
+    </>
+  );
+}
+
+function EventResult({
+  event,
+  img,
+  userLocation,
+  showLocation,
+  isUserFavorite
+}: {
+  event: SearchResults;
+  img?: string;
+  userLocation: [number, number] | null;
+  showLocation: boolean;
+  isUserFavorite: boolean;
+}) {
+  const { t } = useTranslation('organizer');
+  const favorite = useFetcher();
+
+  const favoriteAddedMessage = t('Favorite Added');
+  const favoriteRemovedMessage = t('Favorite Removed');
+  const copiedToClipMessage = t('Copied to Clipboard');
+
+  const [isFavorite, setIsFavorite] = useState<boolean>(isUserFavorite);
+  const [message, setMessage] = useState<string>(favoriteAddedMessage);
+  const [address, setAddress] = useState<string>('');
+  let showFavoriteAddedNotification: any = null;
+  let showCopiedToClipboardNotification: any = null;
+
+  function handlerSetShowNotificationFunction(callback: () => void) {
+    showFavoriteAddedNotification = callback;
+  }
+
+  function handlerSetShowNotificationCopyToClipboard(callback: () => void) {
+    showCopiedToClipboardNotification = callback;
+  }
+
+  function handlerClickToCopy() {
+    showCopiedToClipboardNotification();
+  }
+
+  useEffect(() => {
+    if (favorite.type === 'actionReload' && favorite.data.ok) {
+      setMessage(
+          favorite.data.action === 'add'
+              ? favoriteAddedMessage
+              : favoriteRemovedMessage
+      );
+      setIsFavorite(favorite.data.action === 'add');
+      showFavoriteAddedNotification();
+    }
+
+    const url = new URL(window.location.href);
+
+    setAddress(url.origin);
+  }, [
+    favorite,
+    showFavoriteAddedNotification,
+    favoriteAddedMessage,
+    favoriteRemovedMessage
+  ]);
+
+  return (
+    <>
+      <EventEntry
+        //@ts-ignore TODO: fix type
+        event={event}
+        img={img}
+        footer={
+          <div
+            className="font-medium text-gray-500 dark:text-white flex items-center justify-center"
+            data-cy="distance"
+          >
+            {userLocation && showLocation && (
+              <span>{Math.ceil(event.distance || 0)} km</span>
+            )}
+          </div>
+        }
+        actions={
+          <ButtonGroup density="compact">
+            <CopyToClipboard
+              text={`${address}/event/${event.slug}`}
+              id={event.id}
+              successMessage={handlerClickToCopy}
+            />
+            <favorite.Form
+              method="post"
+              action={`/organizer/event/fav/${event.id}`}
+            >
+              {isFavorite ? (
+                <Button
+                  size="tiny"
+                  name="action"
+                  value="remove"
+                  id="remove-favorite"
+                >
+                  <Favorite className="h-6 w-6 m-0 inline-block" />
+                </Button>
+              ) : (
+                <Button size="tiny" name="action" value="add">
+                  <HeartIcon className="h-6 w-6 m-0 inline-block" />
+                </Button>
+              )}
+            </favorite.Form>
+            <Notification show={handlerSetShowNotificationFunction}>
+              {message}
+            </Notification>
+            <Notification show={handlerSetShowNotificationCopyToClipboard}>
+              {copiedToClipMessage}
+            </Notification>
+          </ButtonGroup>
         }
       />
     </>

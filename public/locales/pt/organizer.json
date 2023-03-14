@@ -4,5 +4,18 @@
   "Date": "Data",
   "Edit": "Editar",
   "Create": "Criar evento",
-  "Events Empty": "Clica em \"Criar Evento\" para criar o teu primeiro evento."
+  "Events Empty": "Clica em \"Criar Evento\" para criar o teu primeiro evento.",
+
+  "When": "Quando",
+  "Who": "Organizador",
+  "Where": "Onde",
+  "Difficulty": "Dificuldade",
+  "Description": "Descrição",
+  "Read More": "ver mais",
+  "Read Less": "ver menos",
+  "View in Map": "ver mapa",
+
+  "Favorite Added": "Adicionado aos favoritos",
+  "Favorite Removed": "Removido dos favoritos",
+  "Copied to Clipboard": "Copiado. Cole no whatsapp ou facebook e partilhe com os amigos"
 }

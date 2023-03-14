@@ -218,7 +218,8 @@ type DBRawSearchResults = {
   id: string;
   name: string;
   min_price: number;
-  difficulty_id: number;
+  difficulty: TranslationObject;
+  start_at: string;
   description: string;
   slug: string;
   sport_id: number;
@@ -252,7 +253,8 @@ type SearchResults = {
   id: string;
   name: string;
   minPrice: number | null;
-  difficultyId: number | null;
+  difficulty: TranslationObject | null;
+  startAt: Date | null;
   description: string | null;
   slug: string;
   sportId: number;
