@@ -496,6 +496,11 @@ type RaceRevenueRegistrations = {
   revenue: number;
 };
 
+type SearchEventsResults = {
+  name: string;
+  slug: string;
+};
+
 export {
   NonNullProperties,
   MemberProfile,
@@ -548,7 +553,8 @@ export {
   ShirtSize,
   RaceRevenueRegistrations,
   DBRawSearchResults,
-  SearchResults
+  SearchResults,
+  SearchEventsResults
 };
 
 

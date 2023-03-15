@@ -2,7 +2,7 @@ import { PrismaClient, Status } from '@prisma/client';
 
 import { db } from '~/server/db.server';
 import Id from '~/server/utils/Id.server';
-import type { CreateEventInput, FavoriteEvent, Language, Event } from '~/types';
+import type { CreateEventInput, FavoriteEvent, Language, Event, SearchEventsResults } from '~/types';
 import {
   createDefaultPerks,
   createPerks,
@@ -233,6 +233,16 @@ async function findUserFavoriteEvent(
   });
 }
 
+async function getEventResultsByName(name: string): Promise<Array<SearchEventsResults>> {
+  const searchTerm = `%${name.length ? name : ''}%`;
+
+  return await db.$queryRaw`
+    SELECT name, slug
+    FROM events
+    WHERE name ILIKE ${searchTerm};
+  `;
+}
+
 export {
   findEvents,
   findUserEvents,
@@ -245,5 +255,6 @@ export {
   addEventToFavorites,
   removeEventFromFavorites,
   findUserFavoriteEvents,
-  findUserFavoriteEvent
+  findUserFavoriteEvent,
+  getEventResultsByName
 };
