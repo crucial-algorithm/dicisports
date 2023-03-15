@@ -300,6 +300,33 @@ describe('Search', () => {
     });
 
     context('Test all filters', () => {
+      it('should hide groups', () => {
+        cy.intercept('GET', '*g=hide*')
+          .as('applyFilters')
+          .visitAndWaitForHydration(
+            '/?index=&coords=&search=&page=0&sport=&dow=&value=&actionId=search'
+          )
+
+          .get('button[name=filters]')
+          .click()
+
+          .get('#g-hide')
+          .click({ force: true })
+
+          .get('#apply-filters')
+          .click({ force: true })
+
+          .wait('@applyFilters')
+
+          .waitForHydration()
+
+          .url()
+          .should('include', 'g=hide')
+
+          .get('[data-cy=event-entry]')
+          .should('have.length', 2);
+      });
+
       it('should return Morning groups', () => {
         cy.intercept('GET', '*coords*&daypart=*&actionId=search&_data=routes*')
           .as('applyFilters')

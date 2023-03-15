@@ -40,7 +40,7 @@ import type {
   SearchResults,
   Sport
 } from '~/types';
-import { findResults } from '~/server/db/locations.server';
+import { searchEventsAndGroups } from '~/server/db/locations.server';
 import GroupEntry from '~/components/GroupEntry';
 
 import SearchLocations from '~/components/SearchLocations';
@@ -267,7 +267,7 @@ async function search(
         : reduceDayParts(dayParts.map(dayPartToTimeInterval))
   };
 
-  const { total, results } = await findResults(
+  const { total, results } = await searchEventsAndGroups(
     lat,
     lng,
     filters,

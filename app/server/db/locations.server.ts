@@ -2,7 +2,7 @@ import { db } from '~/server/db.server';
 import type { DBRawSearchResults, GroupFilters, SearchResults } from '~/types';
 import { dbRawSearchResultsToSearchResults } from '~/server/db/codecs.server';
 
-async function findResults(
+async function searchEventsAndGroups(
   lat: number | null,
   lng: number | null,
   filters: GroupFilters,
@@ -136,4 +136,4 @@ async function findResults(
   return { results: mapped, total };
 }
 
-export { findResults };
+export { searchEventsAndGroups };
