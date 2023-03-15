@@ -32,13 +32,13 @@ import Button, { ButtonLink } from '~/components/shared/Button';
 import type {
   DaysOfWeek,
   DiciLocation,
+  Event,
   Group,
   GroupFilters,
   GroupSpirit,
   Language,
   SearchResults,
-  Sport,
-  Event
+  Sport
 } from '~/types';
 import { findResults } from '~/server/db/locations.server';
 import GroupEntry from '~/components/GroupEntry';

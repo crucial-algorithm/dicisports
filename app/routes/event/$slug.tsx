@@ -140,8 +140,8 @@ export default function EventDisplayRoute() {
             className="dark:text-blueGray-500 text-base font-medium mr-2 mt-2 whitespace-pre-line"
             data-cy="description"
           >
-            {event.eventDescription ? (
-              event.eventDescription
+            {event.description ? (
+              event.description
             ) : (
               <H6
                 className="text-center p-12"
@@ -419,7 +419,6 @@ function PriceTag({
     event.image4,
     event.image5
   ].filter(Boolean) as string[];
-  const [lat, lng] = event?.location?.split(',') || [0, 0];
 
   function handlerSetShowNotificationFunction(callback: () => void) {
     showFavoriteAddedNotification = callback;
@@ -549,20 +548,20 @@ function PriceTag({
           <div className="flex flex-row items-center mb-2">
             <MapPinIcon className="h-6 w-6 m-0 inline-block text-primary" />
             <a
-              href={`https://www.google.com/maps/search/?api=1&query=${lat}%2C${lng}`}
+              href={`https://www.google.com/maps/search/?api=1&query=${event.lat}%2C${event.lng}`}
               target="_blank"
               rel="noreferrer"
               data-cy="location-link"
             >
               <H6 className="ml-4 mr-2 md:ml-2" data-cy="location">
-                {event.address}
+                {event.location}
               </H6>
             </a>
           </div>
           <div className="flex flex-row items-center mb-2">
             <ArrowTrendingUpIcon className="h-6 w-6 m-0 inline-block text-primary" />
             <H6 data-cy="difficulty" className="ml-4 md:ml-2">
-              <I18nText text={event.difficulty.name as TranslationObject} />
+              <I18nText text={event.difficulty?.name as TranslationObject} />
             </H6>
           </div>
           <div className="flex flex-row justify-between items-center mt-16 dark:bg-gray-900 bg-white">

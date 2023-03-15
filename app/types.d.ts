@@ -123,7 +123,7 @@ type GroupInput = {
   description: string | null;
 } & DBGroup;
 
-type Event = { races: Race[]; difficulty: Difficulty, documents: Document[] } & DBEvent;
+type Event = { races: Race[]; difficulty: Difficulty | null, documents: Document[] } & DBEvent;
 
 type CreateEventInput = {
   id: string;
@@ -132,11 +132,12 @@ type CreateEventInput = {
   sportId: number;
   difficultyId: number;
   startAt: Date | string;
+  lat: number;
+  lng: number;
   location: string;
-  address: string;
   useExternalBooking: boolean;
   externalBookingUrl?: string | null;
-  eventDescription?: string | null;
+  description?: string | null;
   directions: string | null;
   image1?: string | null;
   image2?: string | null;

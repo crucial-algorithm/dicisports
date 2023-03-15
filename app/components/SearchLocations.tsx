@@ -50,13 +50,7 @@ export default function SearchLocations({
     const res = await fetch(`/action/get-event-results?s=${search}`);
     const events = await res.json();
 
-    const mapped: { value: string; label: string; extra?: DiciLocation }[] = (
-      results || []
-    ).map((l: DiciLocation) => ({
-      value: `${l.coords}|${l.address}`,
-      label: l.address || `${l.coords}|${l.address}`,
-      extra: l
-    }));
+    const mapped: { value: string; label: string; extra?: DiciLocation }[] = [];
 
     if (events && events.length) {
       events.map((e: SearchEventsResults) =>
@@ -66,6 +60,14 @@ export default function SearchLocations({
         })
       );
     }
+
+    (results || []).map((l: DiciLocation) =>
+      mapped.push({
+        value: `${l.coords}|${l.address}`,
+        label: l.address || `${l.coords}|${l.address}`,
+        extra: l
+      })
+    );
 
     setContext({ search, results: mapped });
   }, [mapToken]);

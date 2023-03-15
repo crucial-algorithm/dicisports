@@ -96,11 +96,12 @@ model Event {
   difficultyId       Int?           @map("difficulty_id")
   startAt            DateTime?      @map("start_at")
   endAt              DateTime?      @map("end_at")
+  lat                Float?
+  lng                Float?
   location           String?
-  address            String?
   useExternalBooking Boolean        @default(false) @map("use_external_booking")
   externalBookingUrl String?        @map("external_booking_url")
-  eventDescription   String?        @map("event_description")
+  description        String?
   status             Status         @default(auto)
   image1             String?
   image2             String?
