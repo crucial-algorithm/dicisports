@@ -69,6 +69,7 @@ async function searchEventsAndGroups(
                                 sin(radians(${lat})) * sin(radians(e.lat)), 1))) < ${
                             lat === null ? 1000000000 : 30
                     }
+                ${n(sport, `AND e.sport_id = ${sport}`)}
               GROUP BY e.id, u2.name, d.name
               UNION ALL
               SELECT 'group'                                                                as entity,

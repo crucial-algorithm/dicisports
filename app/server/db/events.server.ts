@@ -272,7 +272,7 @@ async function getEventResultsByName(name: string): Promise<Array<SearchEventsRe
   const searchTerm = `%${name.length ? name : ''}%`;
 
   return await db.$queryRaw`
-    SELECT name, slug
+    SELECT name, slug, image1, image2, image3, image4, image5
     FROM events
     WHERE name ILIKE ${searchTerm};
   `;

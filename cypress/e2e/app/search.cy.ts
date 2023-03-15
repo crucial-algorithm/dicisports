@@ -59,7 +59,7 @@ describe('Search', () => {
         .waitForHydration()
 
         .url()
-        .should('include', '/?coords=&search=&page=0&dow=&sport=&actionId=search')
+        .should('include', '/?coords=&search=&page=0&dow=&sport=&g=&actionId=search')
 
         .get('#create-your-group')
         .click()
