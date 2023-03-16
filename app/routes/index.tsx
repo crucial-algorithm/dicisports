@@ -40,7 +40,7 @@ import type {
   SearchResults,
   Sport
 } from '~/types';
-import { searchEventsAndGroups } from '~/server/db/locations.server';
+import { searchEventsAndGroups } from '~/server/db/search.server';
 import GroupEntry from '~/components/GroupEntry';
 
 import SearchLocations from '~/components/SearchLocations';

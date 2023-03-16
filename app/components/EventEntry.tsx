@@ -8,7 +8,7 @@ import type { Event, TranslationObject, User } from '~/types';
 import DisplayImg from '~/components/shared/DisplayImg';
 import DisplayDate from '~/components/shared/DIsplayDate';
 import I18nText from '~/components/I18nText';
-import ResultEntryDescription from '~/components/shared/icons/ResultEntryDescription';
+import ResultEntryDescription from '~/components/shared/ResultEntryDescription';
 
 export type DisplayEvent = Event & {
   createdBy: User;

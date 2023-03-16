@@ -11,7 +11,7 @@ import type { Group, TranslationObject } from '~/types';
 import I18nText from '~/components/I18nText';
 import DisplayImg from '~/components/shared/DisplayImg';
 import { displayTimeOfDay } from '~/utils/misc';
-import ResultEntryDescription from '~/components/shared/icons/ResultEntryDescription';
+import ResultEntryDescription from '~/components/shared/ResultEntryDescription';
 
 type Props = {
   actions?: React.ReactNode;
