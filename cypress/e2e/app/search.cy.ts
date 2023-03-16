@@ -73,18 +73,12 @@ describe('Search', () => {
     it('should favorite a group unauthenticated: login', () => {
       cy.intercept('GET', '/*?coords=*')
         .as('search')
-        .visitAndWaitForHydration('/')
-
-        .get('#search-button')
-        .click()
-
-        .wait('@search')
-        .waitForHydration()
+        .visitAndWaitForHydration('/?actionId=search&sport=6')
 
         .intercept('GET', '/login?a=favorite&g=*_data=routes*')
         .as('loadLoginPage')
 
-        .get('#add-favorite-2632486059874a0b03d9')
+        .get('#add-favorite-05b72760f9674a2abdcc')
         .click()
 
         .wait('@loadLoginPage')
@@ -117,18 +111,12 @@ describe('Search', () => {
     it('should favorite a group unauthenticated: signup', () => {
       cy.intercept('GET', '/*?coords=*')
         .as('search')
-        .visitAndWaitForHydration('/')
-
-        .get('#search-button')
-        .click()
-
-        .wait('@search')
-        .waitForHydration()
+        .visitAndWaitForHydration('/?actionId=search&sport=6')
 
         .intercept('GET', '/login?*_data=routes*')
         .as('loginPage')
 
-        .get('#add-favorite-2632486059874a0b03d9')
+        .get('#add-favorite-05b72760f9674a2abdcc')
         .click()
 
         .wait('@loginPage')
