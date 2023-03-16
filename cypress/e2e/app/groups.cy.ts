@@ -4,9 +4,23 @@ describe('Groups', () => {
   });
 
   context('General', () => {
-    it('should load groups', () => {
+    it('should load groups in mobile', () => {
       cy.login()
-        .visitAndWaitForHydration('/m/groups')
+        .visitAndWaitForHydration('/')
+        .get('[data-cy=mobile-menu]')
+        .click()
+        .get('[data-cy=m-groups]')
+        .click()
+        .get('button[name=create-group]')
+        .should('exist');
+    });
+
+    it('should load groups in desktop', () => {
+      cy.viewport(1024, 768)
+        .login()
+        .visitAndWaitForHydration('/')
+        .get('[data-cy=groups]')
+        .click()
         .get('button[name=create-group]')
         .should('exist');
     });
@@ -25,18 +39,18 @@ describe('Groups', () => {
         .get('#remove-favorite')
         .should('exist')
 
-        .visitAndWaitForHydration('/m/groups')
+        .visitAndWaitForHydration('/g/groups')
 
         .get('button[name=groupId]')
         .should('have.length', 2);
     });
 
     it('should remove group from favorites', () => {
-      cy.intercept('GET', '/m/groups?message=*')
+      cy.intercept('GET', '/g/groups?message=*')
         .as('removeFavorite')
 
         .login()
-        .visitAndWaitForHydration('/m/groups')
+        .visitAndWaitForHydration('/g/groups')
 
         .get('#remove-favorite-0')
         .click()
@@ -50,18 +64,18 @@ describe('Groups', () => {
   });
 
   context('Security', () => {
-    it('should not access /m/groups when not authenticated', () => {
-      cy.visitAndWaitForHydration('/m/groups')
+    it('should not access /g/groups when not authenticated', () => {
+      cy.visitAndWaitForHydration('/g/groups')
         .url()
         .should('eq', `${Cypress.config().baseUrl}/login`);
     });
 
     it('should not allow a user from editing another user group', () => {
       cy.login()
-        .visitAndWaitForHydration('/m/group/d888b22b730daaf3b70e')
+        .visitAndWaitForHydration('/g/group/d888b22b730daaf3b70e')
 
         .url()
-        .should('eq', `${Cypress.config().baseUrl}/m/groups`);
+        .should('eq', `${Cypress.config().baseUrl}/g/groups`);
     });
   });
 
@@ -69,14 +83,14 @@ describe('Groups', () => {
     beforeEach(() => cy.login());
 
     it('should create a group', () => {
-      cy.visitAndWaitForHydration('/m/groups')
+      cy.visitAndWaitForHydration('/g/groups')
         .get('button[name=create-group]')
         .click()
 
         .waitForHydration()
 
         .url()
-        .should('include', '/m/group/')
+        .should('include', '/g/group/')
 
         // fill the form
         .get('input[name=name]')
@@ -109,7 +123,7 @@ describe('Groups', () => {
         .type('we do things')
 
         // save group (prepare to wait for the redirect to happen when group is created)
-        .intercept('GET', '/m/groups?message=*')
+        .intercept('GET', '/g/groups?message=*')
         .as('createGroup')
         .get('button[name=save-group]')
         .click()
@@ -129,17 +143,17 @@ describe('Groups', () => {
     it('should update group', () => {
       const description = 'Grupo organizado pela bikebrothers';
 
-      cy.visitAndWaitForHydration('/m/group/FkoxmH5db6RXqBpExion')
+      cy.visitAndWaitForHydration('/g/group/FkoxmH5db6RXqBpExion')
         .get('textarea[name=description]')
         .type(description)
-        .intercept('GET', '/m/groups?message=*')
+        .intercept('GET', '/g/groups?message=*')
         .as('createGroup')
         .get('button[name=save-group]')
         .click()
         .wait('@createGroup')
 
         .url()
-        .should('include', '/m/groups')
+        .should('include', '/g/groups')
 
         .visitAndWaitForHydration('/group/bike-brothers-domingueira')
         .get('[data-cy=description]')
@@ -148,13 +162,13 @@ describe('Groups', () => {
 
     it('should delete group', () => {
       // eslint-disable-next-line cypress/no-unnecessary-waiting
-      cy.visitAndWaitForHydration('/m/group/FkoxmH5db6RXqBpExion')
+      cy.visitAndWaitForHydration('/g/group/FkoxmH5db6RXqBpExion')
         .get('button[name=delete]')
         .click()
 
         .get('[data-cy=delete-dialog]')
 
-        .intercept('GET', '/m/groups?message=*')
+        .intercept('GET', '/g/groups?message=*')
         .as('deleteGroup')
         .get('button[name=confirm-delete]')
         .click()

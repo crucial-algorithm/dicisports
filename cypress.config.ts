@@ -8,13 +8,13 @@ const { CY_REQUEST_TIMEOUT, CY_RESPONSE_TIMEOUT, CY_DEFAULT_COMMAND_TIMEOUT } =
 
 const requestTimeout = CY_REQUEST_TIMEOUT
   ? Number(CY_REQUEST_TIMEOUT)
-  : 15000;
+  : undefined;
 const responseTimeout = CY_RESPONSE_TIMEOUT
   ? Number(CY_RESPONSE_TIMEOUT)
-  : 90000;
+  : undefined;
 const defaultCommandTimeout = CY_DEFAULT_COMMAND_TIMEOUT
   ? Number(CY_DEFAULT_COMMAND_TIMEOUT)
-  : 12000;
+  : undefined;
 
 export default defineConfig({
   viewportWidth: 375,

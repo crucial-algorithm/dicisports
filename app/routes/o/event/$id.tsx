@@ -141,7 +141,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 
   const sports = await findSports();
   const difficulties = await findDifficulties();
-  const eventId = params.eventId as string;
+  const eventId = params.id as string;
   const event = eventId ? await findEvent(eventId) : null;
 
   const { MAPBOX_TOKEN, CLOUDINARY_UPLOAD_PRESET } = Config();
@@ -185,7 +185,7 @@ export const action: ActionFunction = async ({ request, params }) => {
     unstable_createMemoryUploadHandler()
   );
 
-  const event = params.eventId ? await findEvent(params.eventId) : null;
+  const event = params.id ? await findEvent(params.id) : null;
 
   if (!event) {
     throw NotFound(t('Event not found'));
@@ -213,7 +213,7 @@ export const action: ActionFunction = async ({ request, params }) => {
   }
 
   const data: CreateEventInput = {
-    id: params.eventId as string,
+    id: params.id as string,
     name: form.get('event-name') as string,
     sportId: parseInt(form.get('sport') as string),
     difficultyId: parseInt(form.get('difficulty') as string),
@@ -476,7 +476,7 @@ export default function OrganizerEventRoute() {
                       className="md:ml-4"
                       variant="secondary"
                       size="medium"
-                      to={`/event/preview/${event.id}`}
+                      to={`/o/event/preview/${event.id}`}
                       target="_blank"
                     >
                       {t('Preview Button')}
@@ -500,7 +500,7 @@ export default function OrganizerEventRoute() {
                       className="md:ml-4"
                       variant="secondary"
                       size="medium"
-                      to={`/event/preview/${event.id}`}
+                      to={`/o/event/preview/${event.id}`}
                       target="_blank"
                     >
                       {t('Preview Button')}
@@ -941,7 +941,7 @@ function RaceDialog(props: {
     // @ts-ignore
     fetcher.submit(payload, {
       method: 'post',
-      action: `/organizer/race/${eventId}/manage`,
+      action: `/o/race/${eventId}/manage`,
       encType: 'multipart/form-data'
     });
   }
@@ -1191,7 +1191,7 @@ function RaceDialog(props: {
                 </div>
                 <div>
                   <a
-                    href={`/organizer/race/gpx/${race?.id}`}
+                    href={`/o/race/gpx/${race?.id}`}
                     target="_blank"
                     rel="noreferrer"
                     className="group relative inline-flex ml-14 dark:text-blueGray-500"
@@ -1262,7 +1262,7 @@ function RacesList(props: {
       {},
       {
         method: 'post',
-        action: `/organizer/race/${e.currentTarget.id}/move-up`
+        action: `/o/race/${e.currentTarget.id}/move-up`
       }
     );
   }
@@ -1272,7 +1272,7 @@ function RacesList(props: {
       {},
       {
         method: 'post',
-        action: `/organizer/race/${e.currentTarget.id}/move-down`
+        action: `/o/race/${e.currentTarget.id}/move-down`
       }
     );
   }
@@ -1372,7 +1372,7 @@ function DeleteRaceDialog(props: {
       { actionId: 'delete', raceId: race?.id as string },
       {
         method: 'post',
-        action: `/organizer/race/${eventId}/manage`,
+        action: `/o/race/${eventId}/manage`,
         encType: 'multipart/form-data'
       }
     );
@@ -1459,7 +1459,7 @@ function UploadDocumentDialog(props: {
 
     fetcher.submit(payload, {
       method: 'post',
-      action: `organizer/document/${eventId}/manage`,
+      action: `/o/document/${eventId}/manage`,
       encType: 'multipart/form-data'
     });
   }
@@ -1614,7 +1614,7 @@ function DocumentsList(props: {
       {},
       {
         method: 'post',
-        action: `organizer/document/${e.currentTarget.id}/move-up`
+        action: `/o/document/${e.currentTarget.id}/move-up`
       }
     );
   }
@@ -1624,7 +1624,7 @@ function DocumentsList(props: {
       {},
       {
         method: 'post',
-        action: `organizer/document/${e.currentTarget.id}/move-down`
+        action: `/o/document/${e.currentTarget.id}/move-down`
       }
     );
   }
@@ -1688,7 +1688,7 @@ function DocumentsList(props: {
               </div>
 
               <a
-                href={`/organizer/document/${d.id}`}
+                href={`/o/document/${d.id}`}
                 target="_blank"
                 rel="noreferrer"
                 data-cy={`download-${d.id}`}
@@ -1733,7 +1733,7 @@ function DeleteDocumentDialog(props: {
       { actionId: 'delete', documentId: document.id },
       {
         method: 'post',
-        action: `organizer/document/${eventId}/manage`,
+        action: `/o/document/${eventId}/manage`,
         encType: 'multipart/form-data'
       }
     );

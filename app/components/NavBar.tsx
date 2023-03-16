@@ -27,14 +27,26 @@ import { TeamCircle } from './shared/icons/TeamCircle';
 
 
 const LINKS = [
-  { name: 'NAVBAR >>> Events', to: '/organizer', public: false, roles: ['ADMIN'] },
-  { name: 'NAVBAR >>> Meeting Point', to: '/m/groups', public: false, roles: [] }
+  {
+    name: 'NAVBAR >>> Events',
+    to: '/o',
+    public: false,
+    roles: ['ADMIN'],
+    id: 'events'
+  },
+  {
+    name: 'NAVBAR >>> Meeting Point',
+    to: '/g/groups',
+    public: false,
+    roles: [],
+    id: 'groups'
+  }
 ];
 
-const MOBILE_LINKS = [{ name: 'Home', to: '/', public: true, roles: [] }, ...LINKS];
+const MOBILE_LINKS = [{ name: 'Home', to: '/', public: true, roles: [], id: 'home' }, ...LINKS];
 
 const links = (
-  list: Array<{ name: string; to: string; public: boolean; roles: string[] }>,
+  list: Array<{ name: string; to: string; public: boolean; roles: string[], id: string }>,
   user: User | null
 ) => {
   return list.filter(
@@ -163,6 +175,7 @@ function MobileMenuList({ isExpanded, linkClicked }: { isExpanded: boolean, link
                   key={link.to}
                   to={link.to}
                   onClick={linkClicked}
+                  data-cy={`m-${link.id}`}
                 >
                   {t(link.name)}
                 </Link>
@@ -210,7 +223,7 @@ function MobileMenu() {
 
   return (
     <>
-      <button className={clsx(
+      <button data-cy="mobile-menu" className={clsx(
         'w-14 h-14 p-1 rounded-full border-2 border-secondary text-primary transition',
         'inline-flex items-center justify-center',
         'focus:border-primary focus:outline-none hover:border-primary'
@@ -357,7 +370,7 @@ function Navbar() {
         <div className="flex items-center justify-center">
           <ul className="hidden lg:flex">
             {links(LINKS, user).map((link) => (
-              <NavLink key={link.to} to={link.to}>
+              <NavLink key={link.to} to={link.to} data-cy={link.id}>
                 {t(link.name)}
               </NavLink>
             ))}
