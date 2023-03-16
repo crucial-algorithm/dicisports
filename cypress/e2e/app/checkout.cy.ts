@@ -340,9 +340,6 @@ describe('Checkout', () => {
 
         .wait('@checkout')
 
-        .reload()
-        .waitForHydration()
-
         .get('#checkout')
         .click()
 
