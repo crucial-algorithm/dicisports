@@ -366,6 +366,10 @@ describe('Event', () => {
         .click()
 
         .wait('@EventRequests')
+        .waitForHydration()
+
+        .url()
+        .should('include', '/o/event/MY4bvgxDbMtGv8rbYe5d')
 
         .get('input[name=new-perk-input]')
         .type('a new perk')
