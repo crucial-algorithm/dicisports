@@ -4,18 +4,28 @@ import React from 'react';
 import { Carousel } from 'react-responsive-carousel';
 import { useTranslation } from 'react-i18next';
 
-import type { Event, TranslationObject, User } from '~/types';
+import type { TranslationObject, User } from '~/types';
 import DisplayImg from '~/components/shared/DisplayImg';
 import DisplayDate from '~/components/shared/DIsplayDate';
 import I18nText from '~/components/I18nText';
 import ResultEntryDescription from '~/components/shared/ResultEntryDescription';
 
-export type DisplayEvent = Event & {
+export type DisplayEvent = {
+  id: string;
+  name: string;
+  slug: string;
+  startAt: Date | null;
+  location: string;
+  lat: number;
+  lng: number;
+  description: string | null;
+  image1: string | null;
+  image2: string | null;
+  image3: string | null;
+  image4: string | null;
+  image5: string | null;
   createdBy: User;
-  lat: string;
-  lng: string;
-  description: string;
-  difficulty: TranslationObject;
+  difficulty: TranslationObject | null;
 };
 
 type FeatureProps = {
@@ -78,7 +88,7 @@ export default function EventEntry({
             className="flex justify-between align-middle"
             data-cy="group-spirit"
           >
-            <Feature label={t('Difficulty')} value={event.difficulty} />
+            <Feature label={t('Difficulty')} value={event.difficulty || ''} />
           </div>
           <ResultEntryDescription
             text={event.description}
@@ -100,7 +110,7 @@ export default function EventEntry({
   );
 }
 
-function EventImage({ event, img }: { event: Event; img?: string }) {
+function EventImage({ event, img }: { event: DisplayEvent; img?: string }) {
   function Wrapper({ children }: {} & React.ComponentProps<'div'>) {
     return <div className="w-full lg:w-144 lg:max-h-144">{children}</div>;
   }

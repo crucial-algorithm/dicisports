@@ -453,7 +453,6 @@ export default function Index() {
     );
   }
 
-  // @ts-ignore
   return (
     <Main className="dark:text-blueGray-500 relative mb-8">
       <TransitionIndicator
@@ -870,9 +869,9 @@ function EventResult({
   useEffect(() => {
     if (favorite.type === 'actionReload' && favorite.data.ok) {
       setMessage(
-          favorite.data.action === 'add'
-              ? favoriteAddedMessage
-              : favoriteRemovedMessage
+        favorite.data.action === 'add'
+          ? favoriteAddedMessage
+          : favoriteRemovedMessage
       );
       setIsFavorite(favorite.data.action === 'add');
       showFavoriteAddedNotification();
@@ -891,7 +890,6 @@ function EventResult({
   return (
     <>
       <EventEntry
-        //@ts-ignore TODO: fix type
         event={event}
         img={img}
         footer={
