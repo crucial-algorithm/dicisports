@@ -5,7 +5,8 @@ import type {
   Perk as DBPerk,
   ShirtSize as DBShirtSize,
   Sport as DBSport,
-  Status
+  Status,
+  User as DBUser
 } from '@prisma/client';
 import { Role } from '@prisma/client';
 
@@ -30,8 +31,15 @@ import type {
   Sport,
   TranslationObject,
   UICartRow,
-  UIRaceParticipant
+  UIRaceParticipant,
+  User
 } from '~/types';
+
+function dbUserToUser(user: DBUser | User): User {
+  const { id, name, email, lat, lng, location, role, createdAt, updatedAt } = user;
+
+  return { id, name, email, lat, lng, location, role, createdAt, updatedAt };
+}
 
 function dbSportToSport(sport: DBSport): Sport {
   const { id, name, createdAt, updatedAt, picture } = sport;
@@ -306,6 +314,7 @@ function dbParticipantToParticipant(
 }
 
 export {
+  dbUserToUser,
   dbSportToSport,
   dbGroupSpiritToGroupSpirit,
   dbGroupTypeToGroupType,

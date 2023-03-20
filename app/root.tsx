@@ -94,7 +94,6 @@ export type RootLoaderData = {
     path: string;
     session: {
       email: string | undefined;
-      magicLinkVerified: boolean | undefined;
       theme: Theme | null;
       location: [number, number] | null;
     };
@@ -135,7 +134,6 @@ export const loader: LoaderFunction = async ({ request }) => {
       path: new URL(request.url).pathname,
       session: {
         email: loginInfoSession.getEmail(),
-        magicLinkVerified: loginInfoSession.getMagicLinkVerified(),
         theme: themeSession.getTheme(),
         location: locationSession.getLocation()
       }

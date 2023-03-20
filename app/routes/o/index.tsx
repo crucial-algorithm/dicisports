@@ -17,11 +17,11 @@ import Main from '~/components/shared/Main';
 import { findUserEvents } from '~/server/db/events.server';
 import WhenListEmpty from '~/components/shared/Empty';
 
-import type { Sport } from '~/types';
+import type { Sport, EventStatus } from '~/types';
 import DisplayImg from '~/components/shared/DisplayImg';
 
 import { findSports } from '~/server/db/reference.server';
-import { requireAdminUser } from '~/server/auth/session.server';
+import { requireAdminUser, requireUser } from '~/server/auth/session.server';
 
 type LoaderData = {
   events: Array<Event>;
@@ -32,8 +32,8 @@ export const handle = {
 };
 
 export const loader: LoaderFunction = async ({ request }) => {
-  // hide while this is still in dev
-  const user = await requireAdminUser(request);
+  // TODO: this should be restricted to organisers
+  const user = await requireUser(request);
 
   const events = await findUserEvents(user.id);
   const sports = await findSports();
@@ -47,6 +47,14 @@ export const loader: LoaderFunction = async ({ request }) => {
 export const links: LinksFunction = () => {
   return [];
 };
+
+function target(status: EventStatus, id: string) {
+  if (['published', 'unpublished'].indexOf(status) >= 0) {
+    return `/o/dashboard/${id}`;
+  }
+
+  return `/o/event/${id}`;
+}
 
 export default function OrganizerIndexRoute() {
   const { t } = useTranslation('organizer');
@@ -66,7 +74,7 @@ export default function OrganizerIndexRoute() {
         </div>
         <div className="events-list">
           {events.map((event: Event) => (
-            <Link to={`/o/event/${event.id}`} key={event.id}>
+            <Link to={target(event.status, event.id)} key={event.id}>
               <div
                 className={clsx(
                   'relative flex mb-12',

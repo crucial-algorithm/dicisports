@@ -13,13 +13,14 @@ import { buildImageUrl } from 'cloudinary-build-url';
 
 import { useTranslation } from 'react-i18next';
 
-import { useRootData } from '~/utils/use-root-data';
+import { ButtonLink } from '~/components/shared/Button';
+import { IsAdmin, IsNotAnOrganizer } from '~/components/shared/Roles';
 
 import { Theme, Themed, useTheme } from '~/utils/theme-provider';
 
 import Logo from '~/components/shared/Logo';
 
-import { useElementState } from '~/components/hooks';
+import { useElementState, useRootData } from '~/hooks';
 
 import { SunIcon } from './shared/icons/SunIcon';
 import { MoonIcon } from './shared/icons/MoonIcon';
@@ -223,12 +224,11 @@ function MobileMenu() {
 
   return (
     <>
-      <button data-cy="mobile-menu" className={clsx(
+      <button data-cy="mobile-menu" onClick={handleTriggerMenu} className={clsx(
         'w-14 h-14 p-1 rounded-full border-2 border-secondary text-primary transition',
         'inline-flex items-center justify-center',
         'focus:border-primary focus:outline-none hover:border-primary'
-      )}
-              onClick={handleTriggerMenu}>
+      )}>
         <svg
           width="32"
           height="32"
@@ -285,7 +285,7 @@ const durations = {
   active: 0.25
 };
 
-function ProfileButton({ user, magicLinkVerified }: { user: User | null, magicLinkVerified: boolean | undefined }) {
+function ProfileButton({ user }: { user: User | null }) {
   const controls = useAnimation();
   const [ref, state] = useElementState();
   const shouldReduceMotion = useReducedMotion();
@@ -315,10 +315,8 @@ function ProfileButton({ user, magicLinkVerified }: { user: User | null, magicLi
   return (
     <Link
       prefetch="intent"
-      to={user ? '/me' : magicLinkVerified ? '/signup' : '/login'}
-      aria-label={
-        user ? 'My Account' : magicLinkVerified ? 'Finish signing up' : 'Login'
-      }
+      to={user ? '/me' : '/login'}
+      aria-label={user ? 'My Account' : 'Login'}
       className={clsx(
         'inline-flex items-center justify-center ml-4 w-14 h-14 rounded-full focus:outline-none'
       )}
@@ -340,7 +338,7 @@ function ProfileButton({ user, magicLinkVerified }: { user: User | null, magicLi
 
 function Navbar() {
   const { t } = useTranslation('common');
-  const { requestInfo, user } = useRootData();
+  const { user } = useRootData();
   const [isRoot, setIsRoot] = useState<boolean>(true);
   const location = useLocation();
 
@@ -369,11 +367,20 @@ function Navbar() {
 
         <div className="flex items-center justify-center">
           <ul className="hidden lg:flex">
-            {links(LINKS, user).map((link) => (
-              <NavLink key={link.to} to={link.to} data-cy={link.id}>
-                {t(link.name)}
+            <IsAdmin>
+              <NavLink to="/o" data-cy="events">
+                {t('Events Menu')}
               </NavLink>
-            ))}
+              <NavLink to="/g/groups" data-cy="groups">
+                {t('Groups Menu')}
+              </NavLink>
+            </IsAdmin>
+
+            <IsNotAnOrganizer>
+              <li className="px-5 py-2">
+                <CTALandingPublishYourEvent cta={t('CTA Publish Your Event')} />
+              </li>
+            </IsNotAnOrganizer>
           </ul>
           <div className="block lg:hidden">
             <MobileMenu />
@@ -382,13 +389,18 @@ function Navbar() {
             <DarkModeToggle />
           </div>
 
-          <ProfileButton
-            magicLinkVerified={requestInfo.session.magicLinkVerified}
-            user={user}
-          />
+          <ProfileButton user={user} />
         </div>
       </nav>
     </div>
+  );
+}
+
+function CTALandingPublishYourEvent({ cta }: { cta: string }) {
+  return (
+    <ButtonLink to="/organizers-promo" size="x-small" className="py-1">
+      {cta}
+    </ButtonLink>
   );
 }
 

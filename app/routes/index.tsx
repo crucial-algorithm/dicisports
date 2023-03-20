@@ -65,7 +65,7 @@ import { Notification } from '~/components/shared/NotificationMessage';
 import Config from '~/server/config.server';
 import TransitionIndicator from '~/components/shared/TransitionIndicator';
 import WhatsApp from '~/components/shared/icons/WhatsApp';
-import { useRootData } from '~/utils/use-root-data';
+import { useRootData } from '~/hooks';
 import { getLocationSession } from '~/routes/action/set-my-location';
 import { useUserLocation } from '~/utils/LocationProvider';
 import { CanonicalMeta } from '~/utils/seo';
@@ -136,7 +136,7 @@ export const loader: LoaderFunction = async ({ request }) => {
   const user = await getUser(request);
   const favoriteGroups = user ? await findUserFavoriteGroups(user.id) : [];
   const favoriteEvents = user ? await findUserFavoriteEvents(user.id) : [];
-  
+
   let result: ActionData | null = null;
   const page = data.actionId === actions.search ? 0 : data.page || 0;
 
