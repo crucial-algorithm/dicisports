@@ -59,7 +59,10 @@ describe('Search', () => {
         .waitForHydration()
 
         .url()
-        .should('include', '/?coords=&search=&page=0&dow=&sport=&g=&actionId=search')
+        .should(
+          'include',
+          '/?coords=&search=&page=0&dow=&sport=&g=&actionId=search'
+        )
 
         .get('#create-your-group')
         .click()
@@ -712,7 +715,10 @@ function checkGroupsBySpirit(filterOption: number, spirit: string) {
     .should('contain', spirit);
 }
 
-function checkAllFiltersAndSelectDOWAndSport(filterOption: number, dow: number) {
+function checkAllFiltersAndSelectDOWAndSport(
+  filterOption: number,
+  dow: number
+) {
   cy.intercept('GET', '/*?coords=*_data=routes*')
     .as('search')
     .visitAndWaitForHydration('/')
@@ -752,6 +758,9 @@ function checkAllFiltersAndSelectDOWAndSport(filterOption: number, dow: number) 
 
     .wait('@search')
     .waitForHydration()
+
+    .url()
+    .should('include', `sport=${filterOption}&dow=${dow}`)
 
     .get('#search-button')
     .click()
