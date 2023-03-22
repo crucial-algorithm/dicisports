@@ -1,5 +1,9 @@
 name: Code validation - Groups
-on: push
+on:
+  workflow_run:
+    workflows: [Lint]
+    types:
+      - completed
 
 jobs:
   e2e:
