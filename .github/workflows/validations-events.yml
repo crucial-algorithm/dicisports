@@ -1,4 +1,4 @@
-name: Code validation - Events
+name: E2E tests - Events
 on: push
 
 jobs:

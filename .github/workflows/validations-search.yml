@@ -1,4 +1,4 @@
-name: Code validation - Search
+name: E2E tests - Search
 on: push
 
 jobs:

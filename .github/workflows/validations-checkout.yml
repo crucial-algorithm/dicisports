@@ -1,4 +1,4 @@
-name: Code validation - Checkout
+name: E2E tests - Checkout
 on: push
 
 jobs:

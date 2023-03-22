@@ -1,4 +1,4 @@
-name: Code validation - Authentication and Dashboard
+name: E2E tests - Authentication and Dashboard
 on: push
 
 jobs:

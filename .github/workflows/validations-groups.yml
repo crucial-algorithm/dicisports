@@ -1,4 +1,4 @@
-name: Code validation - Groups
+name: E2E tests - Groups
 on: push
 
 jobs:
