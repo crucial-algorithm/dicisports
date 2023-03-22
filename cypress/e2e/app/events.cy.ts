@@ -381,30 +381,24 @@ describe('Event', () => {
     });
 
     it('should add a new perk', () => {
-      cy.intercept('GET', '/o/event/*?_data=routes*')
-        .as('EventRequests')
-        .visitAndWaitForHydration('/o')
-        .get('div[data-cy=event-MY4bvgxDbMtGv8rbYe5d]')
-        .click()
-
-        .wait('@EventRequests')
-        .waitForHydration()
-
-        .url()
-        .should('include', '/o/event/MY4bvgxDbMtGv8rbYe5d')
+      cy.intercept('POST', '/o/event/*?_data=routes*')
+        .as('postPerk')
+        .visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d')
 
         .get('input[name=new-perk-input]')
         .type('a new perk')
 
+        // Click another thing to get input out of focus and add the new perk
         .get('textarea[name=event-description]')
         .click()
 
-        // Click another thing to get input out of focus and add the new perk
         .get('button[name=update-event]')
         .click()
 
-        .wait('@EventRequests')
+        .wait('@postPerk')
         .waitForHydration()
+
+        .contains('a new perk')
 
         .visitAndWaitForHydration('/event/love-tiles-douro-granfondo-2023')
 
