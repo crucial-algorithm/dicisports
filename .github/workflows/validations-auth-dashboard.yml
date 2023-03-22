@@ -1,12 +1,13 @@
 name: Code validation - Authentication and Dashboard
 on:
   workflow_run:
-    workflows: [lint]
+    workflows: [Lint]
     types: [completed]
 
 jobs:
-  on-success:
+  e2e:
     runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     name: E2E on Chrome
 
     services:
