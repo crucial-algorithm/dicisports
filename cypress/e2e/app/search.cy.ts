@@ -268,11 +268,8 @@ describe('Search', () => {
         .wait('@order')
         .waitForHydration()
 
-        .get('#sort-location')
-        .click()
-
-        .wait('@order')
-        .waitForHydration()
+        .url()
+        .should('include', '/?coords=&search=&page=0&dow=&sport=&g=&order=proximity&actionId=sort')
 
         .get('div[data-cy=distance]')
         .should('exist')

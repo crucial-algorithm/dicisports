@@ -1,9 +1,5 @@
 name: Code validation - Events
-on:
-  workflow_run:
-    workflows: [Lint]
-    types:
-      - completed
+on: push
 
 jobs:
   e2e:
