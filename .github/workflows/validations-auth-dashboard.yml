@@ -6,7 +6,6 @@ on:
 
 jobs:
   on-success:
-    e2e:
     runs-on: ubuntu-latest
     name: E2E on Chrome
 
