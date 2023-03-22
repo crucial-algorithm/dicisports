@@ -14,6 +14,7 @@ import type {
   Participant as DBParticipant,
   Booking as DBBooking,
   ShirtSize as DBShirtSize,
+  Organiser as DBOrganiser,
   ParticipantStatus,
   Status
 } from '@prisma/client';
@@ -507,6 +508,20 @@ type SearchEventsResults = {
   image5?: string;
 };
 
+type Organiser = DBOrganiser & {};
+
+type InputOrganiser = {
+  name: string;
+  email: string;
+  phoneNumber: number;
+  address: string;
+  postalCode: string,
+  city: string;
+  description?: string;
+  logo?: string;
+  userId: string;
+}
+
 export {
   NonNullProperties,
   MemberProfile,
@@ -560,7 +575,9 @@ export {
   RaceRevenueRegistrations,
   DBRawSearchResults,
   SearchResults,
-  SearchEventsResults
+  SearchEventsResults,
+  Organiser,
+  InputOrganiser
 };
 
 

@@ -10,6 +10,16 @@
   "City": "Cidade",
   "Hint For Profile Picture": "Selecione a sua foto de perfil",
 
+  "Pending Validation": "A sua conta ainda está a ser analisada. Aguarde o nosso contacto.",
+  "Pending Validation Action": "Voltar à página inicial",
+
+  "Field Required": "Campo obrigatório",
+  "Min 2 Chars": "Insira no mínimo 2 caracteres",
+  "9 Digits": "Número tem de conter 9 dígitos",
+  "Invalid number": "Número inválido",
+  "Max 9 Number": "Apenas permitidos 9 dígitos",
+  "Valid E-mail": "Insira um e-mail válido",
+
   "Save": "Guardar",
   "Cancel": "Cancelar"
 }

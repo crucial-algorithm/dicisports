@@ -352,6 +352,8 @@ model Organiser {
     email               String              @unique
     phoneNumber         Int                 @unique @map("phone_number")
     address             String
+    postalCode          String              @map("postal_code")
+    city                String
     userId              String              @unique
     user                User                @relation(fields: [userId], references: [id])
     status              OrganiserStatus     @default(PENDING)

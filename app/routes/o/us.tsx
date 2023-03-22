@@ -1,7 +1,14 @@
 import * as React from 'react';
 import type { ActionFunction, LoaderFunction } from '@remix-run/node';
+import {
+  json,
+  redirect,
+  unstable_composeUploadHandlers,
+  unstable_createMemoryUploadHandler, unstable_parseMultipartFormData,
+  UploadHandler
+} from '@remix-run/node';
 
-import { Form, useActionData } from '@remix-run/react';
+import { Form, useActionData, useLoaderData } from '@remix-run/react';
 import { useTranslation } from 'react-i18next';
 import { z, ZodError } from 'zod';
 
@@ -16,16 +23,53 @@ import Button, { ButtonLink } from '~/components/shared/Button';
 import { getUser, requireUser } from '~/server/auth/session.server';
 import i18n from '~/server/i18n.server';
 import { badRequest } from '~/utils/misc';
+import { createOrganiser, findOrganiser } from '~/server/db/organiser.server';
+import type { Organiser } from '~/types';
+import { Paragraph } from '~/components/shared/typography';
+import { processImgField } from '~/server/utils/misc';
+import { uploadImageToCloudinary } from '~/server/storage/cloudinary.server';
+import UploadForm from '~/components/shared/form/UploadForm';
+
+type ActionData = {
+  errors?: {
+    name?: string;
+    email?: string;
+    phoneNumber?: string;
+    address?: string;
+    postalCode?: string;
+    city?: string;
+  };
+};
+
+type LoaderData = {
+  organiser: Organiser;
+}
 
 export const action: ActionFunction = async ({ request }) => {
   const t = await i18n.getFixedT(request, 'checkout');
 
-  const form = await request.formData();
   const user = await getUser(request);
+
+  const uploadHandler: UploadHandler = unstable_composeUploadHandlers(
+      // our custom upload handler
+      async ({ name, data, filename }) => {
+        if (!name.startsWith('/file/image') || !filename) {
+          return undefined;
+        }
+        const uploadedImage = await uploadImageToCloudinary(data);
+
+        return uploadedImage.public_id;
+      },
+      // fallback to memory for everything else
+      unstable_createMemoryUploadHandler()
+  );
+
+  const form = await unstable_parseMultipartFormData(request, uploadHandler);
 
   const data = {
     name: form.get('name'),
     email: form.get('email'),
+    logo: processImgField(form.get('/file/image/0'), false),
     phoneNumber: parseInt(form.get('phone-number')),
     address: form.get('address'),
     postalCode: form.get('postal-code'),
@@ -38,7 +82,7 @@ export const action: ActionFunction = async ({ request }) => {
     name: z
       .string({ required_error: t('Field Required') })
       .min(2, { message: t('Min 2 Chars') }),
-    email: z.string().email({ message: t('Valid Email') }),
+    email: z.string().email({ message: t('Valid E-mail') }),
     phoneNumber: z
       .number({
         required_error: t('Field Required'),
@@ -66,8 +110,9 @@ export const action: ActionFunction = async ({ request }) => {
 
   try {
     OrganiserSchema.parse(data);
+    await createOrganiser(data);
 
-    console.log('here');
+    return json({});
   } catch (e) {
     if (!(e instanceof ZodError)) {
       console.error(e);
@@ -86,44 +131,54 @@ export const action: ActionFunction = async ({ request }) => {
   }
 };
 
-type ActionData = {
-  errors?: {
-    name?: string;
-    email?: string;
-    phoneNumber?: string;
-    address?: string;
-    postalCode?: string;
-    city?: string;
-  };
+export const loader: LoaderFunction = async ({ request }) => {
+  const user = await requireUser(request);
+  const organiser = await findOrganiser(user.id as string);
+
+  if ((organiser && organiser.status === 'APPROVED') || user.role === 'ORGANIZER') {
+    return redirect('/o');
+  }
+  
+  return json({
+    organiser
+  });
 };
 
 export default function UsRoute() {
   const { t } = useTranslation('organiser-form');
+  const { organiser } = useLoaderData<LoaderData>() as LoaderData;
   const actionData = useActionData<ActionData>() as ActionData;
+
+  if (organiser && organiser.status === 'PENDING') {
+    return (
+        <PendingOrganiserMessage />
+    );
+  }
 
   return (
     <Main>
-      <Form method="post">
+      <UploadForm method="post">
         <div className="flex flex-row w-full">
           <FormField label={t('Profile Photo')} className="w-112">
-            <UploadImage index={0} label={t('Hint For Profile Picture')} />
+            <UploadImage index={0} label={t('Hint For Profile Picture')} defaultValue={organiser?.logo || ''} />
           </FormField>
 
           <div className="flex flex-col ml-4">
             <FormField data-cy="name" label={t('Name')} error={actionData?.errors?.name}>
-              <TextField name="name" />
+              <TextField name="name" defaultValue={organiser?.name || ''} />
             </FormField>
 
             <div className="flex lg:flex-row lg:gap-x-2">
-              <FormField data-cy="email" label={t('E-mail')} className="w-1/2" error={actionData?.errors?.email}>
-                <TextField name="email" />
+              <FormField data-cy="email" label={t('E-mail')} className="w-1/2" error={actionData?.errors?.email} >
+                <TextField name="email" defaultValue={organiser?.email || ''} />
               </FormField>
 
-              <FormField label={t('Phone Number')} className="w-1/2" error={actionData?.errors?.phoneNumber}>
+              <FormField label={t('Phone Number')} className="w-1/2" error={actionData?.errors?.phoneNumber} >
                 <TextField
                   name="phone-number"
                   type="number"
                   placeholder={t('Phone Number Placeholder')}
+                  defaultValue={organiser?.phoneNumber || ''}
                 />
               </FormField>
             </div>
@@ -131,7 +186,7 @@ export default function UsRoute() {
         </div>
 
         <FormField data-cy="address" label={t('Address')} error={actionData?.errors?.address}>
-          <TextField name="address" />
+          <TextField name="address"  defaultValue={organiser?.address || ''} />
         </FormField>
 
         <div className="flex lg:flex-row lg:gap-x-2">
@@ -141,11 +196,11 @@ export default function UsRoute() {
             className="w-1/4"
             error={actionData?.errors?.postalCode}
           >
-            <TextField name="postal-code" />
+            <TextField name="postal-code" defaultValue={organiser?.postalCode || ''} />
           </FormField>
 
           <FormField data-cy="city" label={t('City')} className="w-1/4" error={actionData?.errors?.city}>
-            <TextField name="city" />
+            <TextField name="city" defaultValue={organiser?.city || ''} />
           </FormField>
         </div>
 
@@ -157,6 +212,7 @@ export default function UsRoute() {
               placeholder={t('Profile Description')}
               rows={5}
               cols={50}
+              defaultValue={organiser?.description || ''}
             />
           </div>
         </FormField>
@@ -170,7 +226,18 @@ export default function UsRoute() {
             {t('Save')}
           </Button>
         </ButtonGroup>
-      </Form>
+      </UploadForm>
     </Main>
+  );
+}
+
+function PendingOrganiserMessage() {
+  const { t } = useTranslation('organiser-form');
+
+  return (
+      <Main>
+        <Paragraph data-cy="pending-validation">{t('Pending Validation')}</Paragraph>
+        <a href="/">{t('Pending Validation Action')}</a>
+      </Main>
   );
 }
