@@ -1,5 +1,5 @@
 describe('Search', () => {
-  beforeEach(() => {
+  before(() => {
     cy.task('db:reset');
   });
 

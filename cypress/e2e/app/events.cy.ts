@@ -140,7 +140,7 @@ describe('Event', () => {
         .should('exist');
     });
 
-    it('should create and publish an event', () => {
+    it('should create an event', () => {
       const description = 'O Peso da Régua será ponto de partida';
 
       cy.intercept('GET', '/o/event/*?_data=routes*')
@@ -253,20 +253,42 @@ describe('Event', () => {
         .get('button[name=update-event]')
 
         .get('#publish')
+        .should('exist');
+    });
+
+    it('should publish an event', () => {
+      cy.intercept('POST', '/o/event/*_data=routes*')
+        .as('publishEvent')
+
+        .visitAndWaitForHydration('/o/event/bQmGXYkbhJetjk6mniMt')
+
+        .get('#publish')
         .click()
 
-        .wait('@createEvent')
-        .wait('@EventRequests')
-        .waitForHydration()
+        .wait('@publishEvent')
+
+        .visitAndWaitForHydration('/event/trail-do-zezere')
+
+        .get('[data-cy=event-not-found]')
+        .should('not.exist');
+    });
+
+    it('should unpbulish an event', () => {
+      cy.intercept('POST', '/o/event/*_data=routes*')
+        .as('unpublishEvent')
+
+        .visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d')
 
         .get('#unpublish')
+        .click()
 
-        // Check if event slug was created
-        .visitAndWaitForHydration('/event/a-new-event')
+        .wait('@unpublishEvent')
 
-        .get('[data-cy=name]')
-        .contains('a new event');
-    });
+        .visitAndWaitForHydration('/event/love-tiles-douro-granfondo-2023')
+
+        .get('[data-cy=event-not-found]')
+        .should('exist');
+    });    
 
     it('should update a event', () => {
       cy.intercept('GET', '/o/event/*?_data=routes*')
