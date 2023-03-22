@@ -441,7 +441,7 @@ describe('Event', () => {
       cy.intercept('GET', '/o/event/*?_data=routes*')
         .as('EventRoute')
         .visitAndWaitForHydration('/o')
-        .get('div[data-cy=event-bQmGXYkbhJetjk6mniMt]')
+        .get('div[data-cy=event-cmWJ3DMDwzJRwMaTQv53]')
         .click()
 
         .wait('@EventRoute')
@@ -452,7 +452,7 @@ describe('Event', () => {
           cy.request(link.prop('href')).its('status').should('eq', 200);
           cy.visitAndWaitForHydration(link.prop('href'))
             .get('[data-cy=name]')
-            .contains('Trail do Zêzere')
+            .contains('A new event')
 
             // Check if it shows message when there is no races, documents, etc.
             .get('[data-cy=no-races]')
