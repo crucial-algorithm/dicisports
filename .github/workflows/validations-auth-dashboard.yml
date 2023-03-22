@@ -2,11 +2,11 @@ name: Code validation - Authentication and Dashboard
 on:
   workflow_run:
     workflows: [Lint]
-    types:
-      - completed
+    types: [completed]
 
 jobs:
-  e2e:
+  on-success:
+    e2e:
     runs-on: ubuntu-latest
     name: E2E on Chrome
 
