@@ -1,0 +1,15 @@
+{
+  "Name": "Nome",
+  "Description": "Descrição",
+  "Profile Description": "Insira uma descrição",
+  "Profile Photo": "Foto de perfil",
+  "E-mail": "E-mail",
+  "Phone Number": "Número de telemóvel",
+  "Address": "Morada",
+  "Postal Code": "Código Postal",
+  "City": "Cidade",
+  "Hint For Profile Picture": "Selecione a sua foto de perfil",
+
+  "Save": "Guardar",
+  "Cancel": "Cancelar"
+}
