@@ -32,13 +32,15 @@ import Button, { ButtonLink } from '~/components/shared/Button';
 import type {
   DaysOfWeek,
   DiciLocation,
+  Event,
   Group,
   GroupFilters,
   GroupSpirit,
   Language,
+  SearchResults,
   Sport
 } from '~/types';
-import { findGroups } from '~/server/db/locations.server';
+import { searchEventsAndGroups } from '~/server/db/search.server';
 import GroupEntry from '~/components/GroupEntry';
 
 import SearchLocations from '~/components/SearchLocations';
@@ -69,6 +71,8 @@ import { useUserLocation } from '~/utils/LocationProvider';
 import { CanonicalMeta } from '~/utils/seo';
 
 import CopyToClipboard from '~/components/shared/CopyToClipboard';
+import EventEntry from '~/components/EventEntry';
+import { findUserFavoriteEvents } from '~/server/db/events.server';
 
 type FilterParams = {
   actionId: keyof typeof actions | null;
@@ -80,19 +84,21 @@ type FilterParams = {
   sport: number | null;
   dayOfWeek: number | null;
   orderBy: SortMethod;
+  groupsAction: string | null;
 };
 
 type LoaderData = {
   sports: Sport[];
   groupsSpirit: GroupSpirit[];
   searchResult: ActionData;
-  favorites: Group[];
+  favoriteGroups: Group[];
+  favoriteEvents: Event[];
   mapToken: string;
   selectedDayParts: string[] | null;
 };
 
 type ActionData = {
-  results: Group[];
+  results: SearchResults[];
   filters: null | GroupFilters;
   total: number;
   page?: number;
@@ -128,8 +134,9 @@ export const loader: LoaderFunction = async ({ request }) => {
   const data = parseQueryString(request.url);
   // Initial load
   const user = await getUser(request);
-  const favorites = user ? await findUserFavoriteGroups(user.id) : [];
-
+  const favoriteGroups = user ? await findUserFavoriteGroups(user.id) : [];
+  const favoriteEvents = user ? await findUserFavoriteEvents(user.id) : [];
+  
   let result: ActionData | null = null;
   const page = data.actionId === actions.search ? 0 : data.page || 0;
 
@@ -152,7 +159,8 @@ export const loader: LoaderFunction = async ({ request }) => {
       data.actionId === actions.more ? page + 1 : page,
       data.actionId !== actions.more,
       !isNaN(Number(lat)) ? [Number(lat), Number(lng)] : null,
-      data.orderBy === SortMethod.proximity
+      data.orderBy === SortMethod.proximity,
+      data.groupsAction !== 'hide'
     );
   }
 
@@ -161,7 +169,8 @@ export const loader: LoaderFunction = async ({ request }) => {
   return json({
     sports: await findSports(),
     groupsSpirit: await findGroupsSpirit(),
-    favorites,
+    favoriteGroups,
+    favoriteEvents,
     searchResult: result,
     mapToken: MAPBOX_TOKEN,
     selectedDayParts: data.dayParts
@@ -179,6 +188,7 @@ function parseQueryString(url: string): FilterParams {
   const dayParts = searchParams.getAll('daypart');
   const spirit = searchParams.getAll('spirit');
   const orderBy = searchParams.get('order');
+  const groupsAction = searchParams.get('g');
 
   return {
     actionId,
@@ -189,7 +199,8 @@ function parseQueryString(url: string): FilterParams {
     dayOfWeek: dayOfWeek === null || dayOfWeek < 0 ? null : dayOfWeek,
     dayParts: dayParts,
     orderBy: (orderBy as SortMethod) || SortMethod.recency,
-    spirit: spirit.map((v) => parseInt(v))
+    spirit: spirit.map((v) => parseInt(v)),
+    groupsAction
   };
 }
 
@@ -242,7 +253,8 @@ async function search(
   page: number,
   reset: boolean = true,
   userLocation: [number, number] | null,
-  orderByProximity: boolean
+  orderByProximity: boolean,
+  showGroups: boolean
 ): Promise<ActionData> {
   const [lat, lng] = searchedLocation ? searchedLocation : [null, null];
   const filters = {
@@ -254,14 +266,16 @@ async function search(
         ? null
         : reduceDayParts(dayParts.map(dayPartToTimeInterval))
   };
-  const { total, results } = await findGroups(
+
+  const { total, results } = await searchEventsAndGroups(
     lat,
     lng,
     filters,
     10,
     page,
     userLocation,
-    orderByProximity
+    orderByProximity,
+    showGroups
   );
 
   return {
@@ -298,15 +312,16 @@ export default function Index() {
     sports,
     groupsSpirit,
     searchResult,
-    favorites,
+    favoriteGroups,
+    favoriteEvents,
     mapToken,
     selectedDayParts
   } = useLoaderData<LoaderData>() as LoaderData;
   const [selection, setSelection] = useState<DiciLocation | undefined>();
   const data = searchResult;
-  const [groups, setGroups] = useState<Array<Group>>(data?.results || []);
+  const [searchResults, setSearchResults] = useState<Array<SearchResults>>(data?.results || []);
   const [filtersModalOpen, setFiltersModalOpen] = useState<boolean>(false);
-  const [searchPerformed, setSearchPerformed] = useState<boolean>(groups.length > 0);
+  const [searchPerformed, setSearchPerformed] = useState<boolean>(searchResults.length > 0);
   const [address, setAddress] = useState<string>('');
   const location = useLocation();
   const filters = useQueryString();
@@ -346,10 +361,10 @@ export default function Index() {
 
   useEffect(() => {
     if (!searchResult) {
-      if (groups.length > 0) {
+      if (searchResults.length > 0) {
         // we get here when a user navigates back to the home page (by clicking dicisports, for instance)
         // after having performed a query with results
-        setGroups([]);
+        setSearchResults([]);
         setSearchPerformed(false);
         setFiltersModalOpen(false);
       }
@@ -364,10 +379,10 @@ export default function Index() {
     }
 
     // reset is used to keep previous groups when "load more results" is used
-    const list = reset ? [] : [...groups];
+    const list = reset ? [] : [...searchResults];
 
     results.map((r, index) => list.push(r));
-    setGroups(list);
+    setSearchResults(list);
     const url = new URL(window.location.href);
 
     setAddress(url.origin);
@@ -380,7 +395,7 @@ export default function Index() {
     };
   }, [searchResult]);
 
-  const showMoreResults = !!data && groups.length < data.total;
+  const showMoreResults = !!data && searchResults.length < data.total;
 
   function handleOpenFilters() {
     setFiltersModalOpen(true);
@@ -479,6 +494,7 @@ export default function Index() {
           filters.spirit.map((v) => (
             <input key={v} type="hidden" name="spirit" value={v} />
           ))}
+        <input type="hidden" name="g" value={filters?.groupsAction || ''} />
         <div className="flex align-middle justify-center">
           <Link to="/" onClick={handleResetSearchPerformed}>
             <HomeLogo className="w-80 h-16 md:w-96 lg:w-144" />
@@ -531,7 +547,7 @@ export default function Index() {
               </Button>
               <div className="flex mx-2 items-center dark:text-white text-blueGray-500 text-sm">
                 {data?.total
-                  ? t('Number of Groups Found', { total: data?.total })
+                  ? t('Number of Results Found', { total: data?.total })
                   : null}
               </div>
               <DisplayFilters
@@ -562,7 +578,7 @@ export default function Index() {
 
         {searchPerformed && (
           <div className="flex flex-col justify-center">
-            {groups.length === 0 ? (
+            {searchResults.length === 0 ? (
               <div className="w-full flex justify-center mt-8">
                 <CallToActionToCreateGroup
                   className="text-xl"
@@ -598,24 +614,35 @@ export default function Index() {
 
       {searchPerformed && (
         <>
-          {groups.map((group, index) => (
-            <GroupResult
-              group={group}
-              key={`${group.id}-${index}`}
-              isUserFavorite={
-                favorites.find((g: Group) => g.id === group.id) !== undefined
-              }
-              img={sports.find((s: Sport) => s.id === group.sportId)?.picture}
-              favAddedMessage={t('Favorite Added')}
-              favRemovedMessage={t('Favorite Removed')}
-              copiedToClipMessage={t('Copied to Clipboard')}
-              address={address}
-              location={`${location.pathname}${location.search}`}
-              isLoggedIn={user !== null}
-              userLocation={userLocation}
-              showLocation={orderBy === SortMethod.proximity}
-            />
-          ))}
+          {searchResults.map((r, index) =>
+            r.entity === 'event' ? (
+              <EventResult
+                key={r.id}
+                event={r}
+                img={sports.find((s) => s.id === r.sportId)?.picture}
+                userLocation={userLocation}
+                showLocation={orderBy === SortMethod.proximity}
+                isUserFavorite={favoriteEvents.find((e) => e.id === r.id) !== undefined}
+              />
+            ) : (
+              <GroupResult
+                group={r}
+                key={`${r.id}-${index}`}
+                isUserFavorite={
+                  favoriteGroups.find((g: Group) => g.id === r.id) !== undefined
+                }
+                img={sports.find((s: Sport) => s.id === r.sportId)?.picture}
+                favAddedMessage={t('Favorite Added')}
+                favRemovedMessage={t('Favorite Removed')}
+                copiedToClipMessage={t('Copied to Clipboard')}
+                address={address}
+                location={`${location.pathname}${location.search}`}
+                isLoggedIn={user !== null}
+                userLocation={userLocation}
+                showLocation={orderBy === SortMethod.proximity}
+              />
+            )
+          )}
         </>
       )}
 
@@ -683,7 +710,7 @@ function GroupResult({
   userLocation,
   showLocation
 }: {
-  group: Group;
+  group: SearchResults;
   img?: string;
   isUserFavorite: boolean;
   favAddedMessage: string;
@@ -737,7 +764,7 @@ function GroupResult({
   return (
     <>
       <GroupEntry
-        group={group}
+        group={group as Group}
         key={group.id}
         img={img}
         actions={
@@ -795,6 +822,119 @@ function GroupResult({
               <span>{Math.ceil(group.distance || 0)} km</span>
             )}
           </div>
+        }
+      />
+    </>
+  );
+}
+
+function EventResult({
+  event,
+  img,
+  userLocation,
+  showLocation,
+  isUserFavorite
+}: {
+  event: SearchResults;
+  img?: string;
+  userLocation: [number, number] | null;
+  showLocation: boolean;
+  isUserFavorite: boolean;
+}) {
+  const { t } = useTranslation('organizer');
+  const favorite = useFetcher();
+
+  const favoriteAddedMessage = t('Favorite Added');
+  const favoriteRemovedMessage = t('Favorite Removed');
+  const copiedToClipMessage = t('Copied to Clipboard');
+
+  const [isFavorite, setIsFavorite] = useState<boolean>(isUserFavorite);
+  const [message, setMessage] = useState<string>(favoriteAddedMessage);
+  const [address, setAddress] = useState<string>('');
+  let showFavoriteAddedNotification: any = null;
+  let showCopiedToClipboardNotification: any = null;
+
+  function handlerSetShowNotificationFunction(callback: () => void) {
+    showFavoriteAddedNotification = callback;
+  }
+
+  function handlerSetShowNotificationCopyToClipboard(callback: () => void) {
+    showCopiedToClipboardNotification = callback;
+  }
+
+  function handlerClickToCopy() {
+    showCopiedToClipboardNotification();
+  }
+
+  useEffect(() => {
+    if (favorite.type === 'actionReload' && favorite.data.ok) {
+      setMessage(
+        favorite.data.action === 'add'
+          ? favoriteAddedMessage
+          : favoriteRemovedMessage
+      );
+      setIsFavorite(favorite.data.action === 'add');
+      showFavoriteAddedNotification();
+    }
+
+    const url = new URL(window.location.href);
+
+    setAddress(url.origin);
+  }, [
+    favorite,
+    showFavoriteAddedNotification,
+    favoriteAddedMessage,
+    favoriteRemovedMessage
+  ]);
+
+  return (
+    <>
+      <EventEntry
+        event={event}
+        img={img}
+        footer={
+          <div
+            className="font-medium text-gray-500 dark:text-white flex items-center justify-center"
+            data-cy="distance"
+          >
+            {userLocation && showLocation && (
+              <span>{Math.ceil(event.distance || 0)} km</span>
+            )}
+          </div>
+        }
+        actions={
+          <ButtonGroup density="compact">
+            <CopyToClipboard
+              text={`${address}/event/${event.slug}`}
+              id={event.id}
+              successMessage={handlerClickToCopy}
+            />
+            <favorite.Form
+              method="post"
+              action={`/organizer/event/fav/${event.id}`}
+            >
+              {isFavorite ? (
+                <Button
+                  size="tiny"
+                  name="action"
+                  value="remove"
+                  id="remove-favorite"
+                >
+                  <Favorite className="h-6 w-6 m-0 inline-block" />
+                </Button>
+              ) : (
+                <Button size="tiny" name="action" value="add">
+                  <HeartIcon className="h-6 w-6 m-0 inline-block" />
+                </Button>
+              )}
+            </favorite.Form>
+            <Notification show={handlerSetShowNotificationFunction}>
+              {message}
+            </Notification>
+            <Notification show={handlerSetShowNotificationCopyToClipboard}>
+              {copiedToClipMessage}
+            </Notification>
+          </ButtonGroup>
         }
       />
     </>
@@ -972,6 +1112,14 @@ function FiltersDialog(props: {
                   className="mb-2"
                 />
               ))}
+              <Spacer size="3xs" />
+              <CheckBox
+                name="g"
+                label={t('Hide Groups')}
+                value="hide"
+                checked={filters?.groupsAction === 'hide'}
+                className="mb-2"
+              />
             </FormField>
           </div>
         </div>

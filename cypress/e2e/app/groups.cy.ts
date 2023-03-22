@@ -26,18 +26,12 @@ describe('Groups', () => {
     });
 
     it('should favorite group', () => {
-      cy.intercept('GET', '/*?coords=*')
+      cy.intercept('GET', '/?actionId=search*')
         .as('search')
         .login()
-        .visitAndWaitForHydration('/')
+        .visitAndWaitForHydration('/?actionId=search&sport=6')
 
-        .get('#search-button')
-        .click()
-
-        .wait('@search')
-        .waitForHydration()
-
-        .get('#add-favorite-2632486059874a0b03d9')
+        .get('#add-favorite-05b72760f9674a2abdcc')
         .click()
 
         .wait('@search')

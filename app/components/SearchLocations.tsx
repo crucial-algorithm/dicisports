@@ -1,10 +1,10 @@
-import { useSearchParams } from '@remix-run/react';
+import { useNavigate, useSearchParams } from '@remix-run/react';
 import * as React from 'react';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { AutoComplete } from '~/components/shared/form/ComboBox';
-import type { DiciLocation } from '~/types';
+import type { DiciLocation, SearchEventsResults } from '~/types';
 import MapUtils from '~/utils/MapUtils';
 
 type SearchLocationsProps = {
@@ -20,12 +20,14 @@ export default function SearchLocations({
   onSelect,
   mapToken
 }: SearchLocationsProps) {
+  const navigate = useNavigate();
+
   const { t } = useTranslation('home');
   const noCitiesLabel = t('No Cities');
   const keepTypingLabel = t('Keep Typing');
   const [context, setContext] = useState<{
     search: string;
-    results: { value: string; label: string; extra: DiciLocation }[];
+    results: { value: string; label: string; extra?: DiciLocation; image?: string }[];
   } | null>(null);
   const [params] = useSearchParams();
   const search = params.get('search');
@@ -44,11 +46,29 @@ export default function SearchLocations({
     const mapUtils = new MapUtils(mapToken);
     const results = await mapUtils.searchCityInMapBox(search);
 
-    const mapped = (results || []).map((l: DiciLocation) => ({
-      value: `${l.coords}|${l.address}`,
-      label: l.address || `${l.coords}|${l.address}`,
-      extra: l
-    }));
+    // Fetch events
+    const res = await fetch(`/action/get-event-results?s=${search}`);
+    const events = await res.json();
+
+    const mapped: { value: string; label: string; extra?: DiciLocation; image?: string }[] = [];
+
+    if (events && events.length) {
+      events.map((e: SearchEventsResults) =>
+        mapped.push({
+          value: e.slug,
+          label: e.name,
+          image: e.image1 || e.image2 || e.image3 || e.image4 || e.image5 || ''
+        })
+      );
+    }
+
+    (results || []).map((l: DiciLocation) =>
+      mapped.push({
+        value: `${l.coords}|${l.address}`,
+        label: l.address || `${l.coords}|${l.address}`,
+        extra: l
+      })
+    );
 
     setContext({ search, results: mapped });
   }, [mapToken]);
@@ -56,8 +76,15 @@ export default function SearchLocations({
   const handleOnChange = useCallback((v: string | number) => {
     const option = context?.results.find((o) => o.value === v);
 
-    option && onSelect(option.extra);
-  }, [context?.results, onSelect]);
+    // If option doesn't have extra, it means that it's an event and not a location
+    if (option && !(option.extra)) {
+      navigate(`/event/${option.value}`);
+    }
+
+    if (option && option.extra) {
+      onSelect(option.extra);
+    }
+  }, [navigate, context?.results, onSelect]);
 
   useEffect(() => {
     !search && setContext(null);
@@ -66,7 +93,7 @@ export default function SearchLocations({
   return (
     <AutoComplete
       id="search-box"
-      options={context?.results.map(({ label, value }) => ({ value, label }))}
+      options={context?.results.map(({ label, value, image }) => ({ value, label, image }))}
       placeholder={search || placeholder || ''}
       completeMethod={handleOnComplete}
       onChange={handleOnChange}

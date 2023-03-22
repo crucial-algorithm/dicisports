@@ -39,8 +39,19 @@
     "startTime": 900,
     "elevationGain": 800,
     "price": 13,
-    "displayOrder": 5,
+    "displayOrder": 4,
     "status": "auto",
     "eventId": "gLqrDfMx6qkTHn6hoZqA"
+  },
+  {
+    "id": "Rd9SETi59X9ava6CPhkY",
+    "name": "10 Km",
+    "distance": 10,
+    "startTime": 900,
+    "elevationGain": 10,
+    "price": 10,
+    "displayOrder": 5,
+    "status": "auto",
+    "eventId": "bQmGXYkbhJetjk6mniMt"
   }
 ]

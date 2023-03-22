@@ -102,9 +102,9 @@ type ActionData = {
   errors?: {
     name?: string;
     startAt?: string;
-    address?: string;
+    location?: string;
     externalBookingUrl?: string;
-    eventDescription?: string;
+    description?: string;
     directions?: string;
     submit?: string;
   };
@@ -218,11 +218,12 @@ export const action: ActionFunction = async ({ request, params }) => {
     sportId: parseInt(form.get('sport') as string),
     difficultyId: parseInt(form.get('difficulty') as string),
     startAt: new Date(date), //TODO: hour
-    location: `${location.lat},${location.lng}`,
-    address: location.address,
+    lat: location.lat,
+    lng: location.lng,
+    location: location.address,
     useExternalBooking: form.get('booking') === 'external',
     externalBookingUrl: (form.get('booking-url') as string) || null,
-    eventDescription: (form.get('event-description') as string) || null,
+    description: (form.get('event-description') as string) || null,
     directions: (form.get('get-there') as string) || null,
     image1: processImgField(image1, isUpdate),
     image2: processImgField(image2, isUpdate),
@@ -246,7 +247,7 @@ export const action: ActionFunction = async ({ request, params }) => {
         .lte(7, { message: t('Nonexistent Sport') }),
       startAt: z.date()
         .min(new Date(), { message: t('Future Date') }),
-      address: z.string({ required_error: t('Field required') }),
+      location: z.string({ required_error: t('Field required') }),
       useExternalBooking: z.boolean({
         invalid_type_error: t('Invalid Type')
       }),
@@ -255,7 +256,7 @@ export const action: ActionFunction = async ({ request, params }) => {
         .url()
         .min(5, { message: t('Min 5 chars') })
         .nullable(),
-      eventDescription: z
+      description: z
         .string({ invalid_type_error: t('Invalid Type') })
         .min(1, { message: t('Min 1 chars') })
         .nullable()
@@ -352,10 +353,10 @@ export default function OrganizerEventRoute() {
   const [perks, setPerks] = useState<Array<StrippedPerk>>(dbPerks);
   const [races, setRaces] = useState<Array<Race>>(dbRaces);
   const [location, setLocation] = useState<DiciLocation | null>(
-    event.address
+    event.location
       ? {
-          coords: event.location,
-          shortAddress: event.address
+          coords: `${event.lat}, ${event.lng}`,
+          shortAddress: event.location
         }
       : null
   );
@@ -657,14 +658,14 @@ export default function OrganizerEventRoute() {
 
           <FormField
             label={t('Description')}
-            error={actionData?.errors?.eventDescription}
+            error={actionData?.errors?.description}
           >
             <div className="mt-1 relative rounded-md shadow-sm">
               <textarea
                 name="event-description"
                 className={inputBaseClasses('p-10')}
                 placeholder={t('Event description')}
-                defaultValue={event.eventDescription || ''}
+                defaultValue={event.description || ''}
                 rows={5}
                 cols={50}
               />

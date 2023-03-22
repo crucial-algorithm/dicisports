@@ -2,7 +2,7 @@ import { PrismaClient, Status } from '@prisma/client';
 
 import { db } from '~/server/db.server';
 import Id from '~/server/utils/Id.server';
-import type { CreateEventInput, FavoriteEvent, Language, Event } from '~/types';
+import type { CreateEventInput, FavoriteEvent, Language, Event, SearchEventsResults } from '~/types';
 import {
   createDefaultPerks,
   createPerks,
@@ -17,6 +17,17 @@ async function findEvents(): Promise<Array<Event>> {
   return db.event.findMany({
     where: {
       status: { notIn: [Status.auto, Status.deleted] }
+    },
+    include: {
+      documents: {
+        where: {
+          status: {
+            not: Status.deleted
+          }
+        }
+      },
+      difficulty: true,
+      races: true
     }
   });
 }
@@ -26,6 +37,17 @@ async function findUserEvents(userId: string): Promise<Array<Event>> {
     where: {
       status: { notIn: [Status.auto, Status.deleted] },
       createdById: userId
+    },
+    include: {
+      documents: {
+        where: {
+          status: {
+            not: Status.deleted
+          }
+        }
+      },
+      difficulty: true,
+      races: true
     }
   });
 }
@@ -63,8 +85,9 @@ async function createDraftEvent(
       difficultyId: 1,
       startAt: eventAt,
       endAt: null,
+      lat: null,
+      lng: null,
       location: null,
-      address: null,
       useExternalBooking: false,
       externalBookingUrl: null,
       createdById,
@@ -90,8 +113,9 @@ async function updateEvent(
         difficultyId: event.difficultyId,
         startAt: event.startAt,
         endAt: event.startAt,
+        lat: event.lat,
+        lng: event.lng,
         location: event.location,
-        address: event.address,
         useExternalBooking: event.useExternalBooking,
         externalBookingUrl: event.externalBookingUrl,
         image1: event.image1,
@@ -99,7 +123,7 @@ async function updateEvent(
         image3: event.image3,
         image4: event.image4,
         image5: event.image5,
-        eventDescription: event.eventDescription,
+        description: event.description,
         directions: event.directions,
         status: event.status
       }
@@ -199,7 +223,18 @@ async function findUserFavoriteEvents(id: string): Promise<Array<Event>> {
   }
 
   return await db.event.findMany({
-    where: { id: { in: user.favEvents.map((fe) => fe.eventId) } }
+    where: { id: { in: user.favEvents.map((fe) => fe.eventId) } },
+    include: {
+      documents: {
+        where: {
+          status: {
+            not: Status.deleted
+          }
+        }
+      },
+      difficulty: true,
+      races: true
+    }
   });
 }
 
@@ -233,6 +268,17 @@ async function findUserFavoriteEvent(
   });
 }
 
+async function getEventResultsByName(name: string): Promise<Array<SearchEventsResults>> {
+  const searchTerm = `%${name.length ? name : ''}%`;
+
+  return await db.$queryRaw`
+    SELECT name, slug, image1, image2, image3, image4, image5
+    FROM events
+    WHERE name ILIKE ${searchTerm}
+      AND status = 'published';
+  `;
+}
+
 export {
   findEvents,
   findUserEvents,
@@ -245,5 +291,6 @@ export {
   addEventToFavorites,
   removeEventFromFavorites,
   findUserFavoriteEvents,
-  findUserFavoriteEvent
+  findUserFavoriteEvent,
+  getEventResultsByName
 };

@@ -1,9 +1,10 @@
-import * as React from 'react';
 import type { ReactElement } from 'react';
+import * as React from 'react';
 import { Fragment, useRef, useState } from 'react';
 import clsx from 'clsx';
 import { useTranslation } from 'react-i18next';
 import { useDebounceFn } from 'ahooks';
+import { buildImageUrl } from 'cloudinary-build-url';
 
 import { Combobox, Listbox, Transition } from '@headlessui/react';
 import { CheckIcon, ChevronUpDownIcon } from '@heroicons/react/20/solid';
@@ -18,6 +19,7 @@ import { getI18nText } from '~/components/I18nText';
 export type Option = {
   value: string | number;
   label: string | TranslationObject;
+  image?: string;
 };
 
 type Props = {
@@ -57,7 +59,8 @@ export function AutoComplete({
       label:
         typeof o.label === 'string'
           ? o.label
-          : getLocalizedText(lang as Language, o.label)
+          : getLocalizedText(lang as Language, o.label),
+      image: o.image || ''
     };
   });
 
@@ -137,22 +140,29 @@ export function AutoComplete({
                   <NoOptionsMessage />
                 </div>
               ) : (
-                values.map(({ value, label }, index) => (
+                values.map(({ value, label, image }, index) => (
                   <Combobox.Option
                     key={`${index}-${value}`}
                     className={handleOptionStyle}
                     value={value}
                   >
                     {({ selected, active }) => (
-                      <>
+                      <div className="flex items-center">
+                        {image.length > 0 && (
+                          <img
+                            src={buildImageUrl(image, {})}
+                            className="h-10 flex-shrink-0 absolute"
+                            alt=""
+                          />
+                        )}
                         <span
                           className={`block truncate ${
                             selected ? 'font-medium' : 'font-normal'
-                          }`}
+                          } ${image.length > 0 ? 'ml-12' : ''}`}
                         >
                           {label}
                         </span>
-                      </>
+                      </div>
                     )}
                   </Combobox.Option>
                 ))

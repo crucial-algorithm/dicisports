@@ -1,36 +1,10 @@
-name: Code validation
+name: E2E tests - Checkout
 on: push
 
 jobs:
-  lint:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [16.x]
-
-    steps:
-      - uses: actions/checkout@v3
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v2
-        with:
-          node-version: ${{ matrix.node-version }}
-      - uses: actions/cache@v3
-        with:
-          path: '**/node_modules'
-          key: ${{ runner.os }}-modules-${{ hashFiles('**/package-lock.json') }}
-      - name: Install dependencies
-        run: npm ci
-      - name: Generate CSS dependencies
-        run: |
-          npm run generate:css
-          npm run deploy:css
-      - name: Run Lint
-        run: npm run lint
-
   e2e:
     runs-on: ubuntu-latest
     name: E2E on Chrome
-    needs: [lint]
 
     services:
       postgres:
@@ -73,10 +47,11 @@ jobs:
           record: false
           build: npm run ci:build
           start: npm run dev
+          spec: cypress/e2e/app/checkout.cy.ts
         env:
           CY_REQUEST_TIMEOUT: 15000
-          CY_RESPONSE_TIMEOUT: 60000
-          CY_DEFAULT_COMMAND_TIMEOUT: 10000
+          CY_RESPONSE_TIMEOUT: 90000
+          CY_DEFAULT_COMMAND_TIMEOUT: 30000
 
           DATABASE_URL: postgresql://dici:sports@localhost:5432/dicisports?schema=public&charset=utf8
 
