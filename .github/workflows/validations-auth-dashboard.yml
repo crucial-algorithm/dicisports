@@ -1,7 +1,7 @@
 name: Code validation - Authentication and Dashboard
 on:
   workflow_run:
-    workflows: [Lint]
+    workflows: [lint]
     types: [completed]
 
 jobs:
