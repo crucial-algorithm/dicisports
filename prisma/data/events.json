@@ -27,6 +27,18 @@
     "createdById": "gZZCGTHBq9SxdpRFoP8b"
   },
   {
+    "id": "cmWJ3DMDwzJRwMaTQv53",
+    "name": "A new event",
+    "sportId": 1,
+    "difficultyId": 1,
+    "lat": 40.21520599895345,
+    "lng": -8.434857125610932,
+    "location": "Avenida Fernão De Magalhães",
+    "useExternalBooking": false,
+    "status": "draft",
+    "createdById": "3beca472138d6d234d3f"
+  },
+  {
     "id": "MY4bvgxDbMtGv8rbYe5d",
     "name": "Love Tiles Douro Granfondo 2023",
     "sportId": 3,

@@ -1,0 +1,90 @@
+name: E2E tests - Search
+on: push
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    name: E2E on Chrome
+
+    services:
+      postgres:
+        image: postgres:13
+        env:
+          POSTGRES_USER: dici
+          POSTGRES_PASSWORD: sports
+          POSTGRES_DB: dicisports
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+      http-catcher:
+        image: filipeutter/http-catcher
+        ports:
+          - 3001:3001
+
+    steps:
+      - name: Test connection
+        run: |
+          curl localhost:3001
+
+      - name: Check out repository code
+        uses: actions/checkout@v3
+
+      - name: Install dependencies
+        run: npm ci
+
+      # not sure why, but we can't write to files without updating permissions
+      - name: Reset permissions
+        run: chmod -R 777 .
+
+      - name: Cypress e2e tests
+        uses: cypress-io/github-action@v4.2.0
+        with:
+          browser: chrome
+          record: false
+          build: npm run ci:build
+          start: npm run dev
+          spec: cypress/e2e/app/search.cy.ts
+        env:
+          CY_REQUEST_TIMEOUT: 15000
+          CY_RESPONSE_TIMEOUT: 90000
+          CY_DEFAULT_COMMAND_TIMEOUT: 30000
+
+          DATABASE_URL: postgresql://dici:sports@localhost:5432/dicisports?schema=public&charset=utf8
+
+          MAPBOX_TOKEN: ${{secrets.E2E_MAPBOX_TOKEN}}
+
+          CLOUDINARY_CLOUD_NAME: ${{secrets.E2E_CLOUDINARY_CLOUD_NAME}}
+          CLOUDINARY_API_KEY: ${{secrets.E2E_CLOUDINARY_API_KEY}}
+          CLOUDINARY_API_SECRET: ${{secrets.E2E_CLOUDINARY_API_SECRET}}
+          CLOUDINARY_UPLOAD_PRESET: ${{secrets.E2E_CLOUDINARY_UPLOAD_PRESET}}
+
+          SESSION_SECRET: ${{secrets.E2E_SESSION_SECRET}}
+          MAGIC_LINK_SECRET: ${{secrets.E2E_MAGIC_LINK_SECRET}}
+
+          EMAIL_VERIFIER_TOKEN: ${{secrets.E2E_EMAIL_VERIFIER_TOKEN}}
+          MAILGUN_SENDING_KEY: ${{secrets.E2E_MAILGUN_SENDING_KEY}}
+          MAILGUN_ENDPOINT: http://127.0.0.1:3001
+
+          CONVERT_KIT_FORM: ${{secrets.E2E_CONVERT_KIT_FORM}}
+          CONVERT_KIT_API_KEY: ${{secrets.E2E_CONVERT_KIT_API_KEY}}
+
+          AWS_S3_BUCKET: ${{secrets.E2E_AWS_S3_BUCKET}}
+          AWS_REGION: ${{secrets.E2E_AWS_REGION}}
+          AWS_ACCESS_KEY_ID: ${{secrets.E2E_AWS_ACCESS_KEY_ID}}
+          AWS_SECRET_ACCESS_KEY: ${{secrets.E2E_AWS_SECRET_ACCESS_KEY}}
+
+      - uses: actions/upload-artifact@v2
+        if: failure()
+        with:
+          name: cypress-screenshots
+          path: cypress/screenshots
+
+      - uses: actions/upload-artifact@v2
+        if: always()
+        with:
+          name: cypress-videos
+          path: cypress/videos

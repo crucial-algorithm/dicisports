@@ -274,7 +274,8 @@ async function getEventResultsByName(name: string): Promise<Array<SearchEventsRe
   return await db.$queryRaw`
     SELECT name, slug, image1, image2, image3, image4, image5
     FROM events
-    WHERE name ILIKE ${searchTerm};
+    WHERE name ILIKE ${searchTerm}
+      AND status = 'published';
   `;
 }
 

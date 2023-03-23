@@ -140,7 +140,7 @@ describe('Event', () => {
         .should('exist');
     });
 
-    it('should create and publish an event', () => {
+    it('should create an event', () => {
       const description = 'O Peso da Régua será ponto de partida';
 
       cy.intercept('GET', '/o/event/*?_data=routes*')
@@ -253,20 +253,42 @@ describe('Event', () => {
         .get('button[name=update-event]')
 
         .get('#publish')
+        .should('exist');
+    });
+
+    it('should publish an event', () => {
+      cy.intercept('POST', '/o/event/*_data=routes*')
+        .as('publishEvent')
+
+        .visitAndWaitForHydration('/o/event/bQmGXYkbhJetjk6mniMt')
+
+        .get('#publish')
         .click()
 
-        .wait('@createEvent')
-        .wait('@EventRequests')
-        .waitForHydration()
+        .wait('@publishEvent')
+
+        .visitAndWaitForHydration('/event/trail-do-zezere')
+
+        .get('[data-cy=event-not-found]')
+        .should('not.exist');
+    });
+
+    it('should unpbulish an event', () => {
+      cy.intercept('POST', '/o/event/*_data=routes*')
+        .as('unpublishEvent')
+
+        .visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d')
 
         .get('#unpublish')
+        .click()
 
-        // Check if event slug was created
-        .visitAndWaitForHydration('/event/a-new-event')
+        .wait('@unpublishEvent')
 
-        .get('[data-cy=name]')
-        .contains('a new event');
-    });
+        .visitAndWaitForHydration('/event/love-tiles-douro-granfondo-2023')
+
+        .get('[data-cy=event-not-found]')
+        .should('exist');
+    });    
 
     it('should update a event', () => {
       cy.intercept('GET', '/o/event/*?_data=routes*')
@@ -359,30 +381,24 @@ describe('Event', () => {
     });
 
     it('should add a new perk', () => {
-      cy.intercept('GET', '/o/event/*?_data=routes*')
-        .as('EventRequests')
-        .visitAndWaitForHydration('/o')
-        .get('div[data-cy=event-MY4bvgxDbMtGv8rbYe5d]')
-        .click()
-
-        .wait('@EventRequests')
-        .waitForHydration()
-
-        .url()
-        .should('include', '/o/event/MY4bvgxDbMtGv8rbYe5d')
+      cy.intercept('POST', '/o/event/*?_data=routes*')
+        .as('postPerk')
+        .visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d')
 
         .get('input[name=new-perk-input]')
         .type('a new perk')
 
+        // Click another thing to get input out of focus and add the new perk
         .get('textarea[name=event-description]')
         .click()
 
-        // Click another thing to get input out of focus and add the new perk
         .get('button[name=update-event]')
         .click()
 
-        .wait('@EventRequests')
+        .wait('@postPerk')
         .waitForHydration()
+
+        .contains('a new perk')
 
         .visitAndWaitForHydration('/event/love-tiles-douro-granfondo-2023')
 
@@ -419,7 +435,7 @@ describe('Event', () => {
       cy.intercept('GET', '/o/event/*?_data=routes*')
         .as('EventRoute')
         .visitAndWaitForHydration('/o')
-        .get('div[data-cy=event-bQmGXYkbhJetjk6mniMt]')
+        .get('div[data-cy=event-cmWJ3DMDwzJRwMaTQv53]')
         .click()
 
         .wait('@EventRoute')
@@ -430,7 +446,7 @@ describe('Event', () => {
           cy.request(link.prop('href')).its('status').should('eq', 200);
           cy.visitAndWaitForHydration(link.prop('href'))
             .get('[data-cy=name]')
-            .contains('Trail do Zêzere')
+            .contains('A new event')
 
             // Check if it shows message when there is no races, documents, etc.
             .get('[data-cy=no-races]')
