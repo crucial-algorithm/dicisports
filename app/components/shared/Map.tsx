@@ -1,5 +1,6 @@
+import clsx from 'clsx';
 import * as React from 'react';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import MapboxGeocoder from '@mapbox/mapbox-gl-geocoder';
 import { MapPinIcon } from '@heroicons/react/24/solid';
@@ -65,7 +66,9 @@ function Map({
   React.useEffect(() => {
     const node = mapNode.current;
 
-    if (typeof window === 'undefined' || node === null) {return;}
+    if (typeof window === 'undefined' || node === null) {
+      return;
+    }
 
     // otherwise, create a map instance
     const map = new mapboxgl.Map({
@@ -130,7 +133,9 @@ function Map({
       const json = await res.json();
       const feature = json.features[0] || null;
 
-      if (!feature) {return null;}
+      if (!feature) {
+        return null;
+      }
       return processMapBoxFeature(feature, lat, lng);
     };
 
@@ -140,24 +145,28 @@ function Map({
   }, []);
 
   return (
-    <div style={{ position: 'relative', left: 0 }} className={className}>
+    <div className={clsx('relative left-0 w-full overflow-hidden h-full')}>
       <Label label={info.address} />
       <Pin />
-      <div ref={mapNode} className="map-container" />
+      <div ref={mapNode} className="h-[100%]"/>
     </div>
   );
 }
 
 function Pin() {
   return (
-    <div className="map-pin">
+    <div className="z-10 absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
       <MapPinIcon className="text-black w-6 h-6" />
     </div>
   );
 }
 
 function Label({ label }: { label: string | null }) {
-  return label ? <div className="map-location-label">{label}</div> : null;
+  return label ? (
+    <div className="z-10 absolute left-1/2 [top:calc(50%-32px)] -translate-x-1/2 -translate-y-1/2 bg-black text-white text-xs font-semibold py-1 px-2.5 rounded-[50px]">
+      {label}
+    </div>
+  ) : null;
 }
 
 /**
@@ -244,12 +253,15 @@ function MapDialog({
     }
   }
 
-  function handleCallback(location: DiciLocation | null) {
-    if (onPickedLocation) {
-      onPickedLocation(location);
-    }
-    setLocation(location);
-  }
+  const handleCallback = useCallback(
+    (location: DiciLocation | null) => {
+      if (onPickedLocation) {
+        onPickedLocation(location);
+      }
+      setLocation(location);
+    },
+    [onPickedLocation]
+  );
 
   return (
     <Dialog

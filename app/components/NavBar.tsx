@@ -8,13 +8,13 @@ import {
   useAnimation,
   useReducedMotion
 } from 'framer-motion';
-import type { User } from '@prisma/client';
 import { buildImageUrl } from 'cloudinary-build-url';
 
 import { useTranslation } from 'react-i18next';
 
 import { ButtonLink } from '~/components/shared/Button';
 import { IsAdmin, IsNotAnOrganizer } from '~/components/shared/Roles';
+import type { User } from '~/types';
 
 import { Theme, Themed, useTheme } from '~/utils/theme-provider';
 
@@ -29,14 +29,14 @@ import { TeamCircle } from './shared/icons/TeamCircle';
 
 const LINKS = [
   {
-    name: 'NAVBAR >>> Events',
+    name: 'Events Menu',
     to: '/o',
     public: false,
     roles: ['ADMIN'],
     id: 'events'
   },
   {
-    name: 'NAVBAR >>> Meeting Point',
+    name: 'Groups Menu',
     to: '/g/groups',
     public: false,
     roles: [],

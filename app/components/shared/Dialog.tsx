@@ -20,29 +20,30 @@ export default function DiciDialog(
   return (
     <Dialog.Root open={isOpen} onOpenChange={onClose}>
       <Dialog.Portal>
-        <Dialog.Overlay className="dialog-overlay" />
-        <Dialog.Content className={clsx(className, 'dialog-content')}>
-          <Dialog.Title className="dialog-title">{title || ' '}</Dialog.Title>
-          {description && (
-            <Dialog.Description className="dialog-description">
-              {description}
-            </Dialog.Description>
-          )}
-          {children}
-          <Dialog.Close asChild>
-            <button className="dialog-close-btn" aria-label="Close">
-              <XCircleIcon className="w-8" />
-            </button>
-          </Dialog.Close>
-
+        <Dialog.Overlay className="fixed inset-0 bg-gray-500 opacity-50" />
+        <Dialog.Content
+          className={clsx(className, 'dialog-content md:dialog-content-desktop')}
+        >
+          <div className="dialog-title">
+            <Dialog.Title className="text-lg">{title || ' '}</Dialog.Title>
+            <Dialog.Close asChild>
+              <button aria-label="Close" className="hidden md:block">
+                <XCircleIcon className="w-8" />
+              </button>
+            </Dialog.Close>
+          </div>
+          <div className="dialog-body">
+            {description && (
+              <Dialog.Description className="mt-2.5 mb-2.5 mr-5 ml-5">
+                {description}
+              </Dialog.Description>
+            )}
+            {children}
+          </div>
           {(PrimaryAction || SecondaryAction) && (
             <ActionsBar>
-              <Dialog.Close asChild>
-                {SecondaryAction}
-              </Dialog.Close>
-              <Dialog.Close asChild>
-                {PrimaryAction}
-              </Dialog.Close>
+              {SecondaryAction}
+              {PrimaryAction}
             </ActionsBar>
           )}
         </Dialog.Content>
@@ -54,6 +55,10 @@ export default function DiciDialog(
 type ActionsBarProps = {
 } & React.ComponentProps<'div'>
 
-export function ActionsBar({ children }: ActionsBarProps) {
-  return (<div className="w-full px-6 flex justify-end flex-wrap gap-4 justify-end absolute bottom-2">{children}</div>);
+export function ActionsBar({ children, className }: ActionsBarProps) {
+  return (
+    <div className={clsx(className, 'dialog-footer md:dialog-footer-desktop')}>
+      {children}
+    </div>
+  );
 }

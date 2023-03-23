@@ -1,29 +1,7 @@
-.map-container {
-    height: calc(100vh - 100px);
-}
-
-.map-pin {
-    z-index: 1;
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-}
-
-.map-location-label {
-    z-index: 1;
-    position: absolute;
-    left: 50%;
-    top: calc(50% - 32px);
-    transform: translate(-50%, -50%);
-    background-color: #000;
-    padding: 4px 10px;
-    border-radius: 50px;
-    color: #fff;
-    font-size: 12px;
-    font-weight: 600;
-}
-
 .mapboxgl-ctrl-geocoder--input {
     padding-left: 40px;
+}
+
+.mapboxgl-ctrl-bottom-right {
+    bottom: 80px;
 }

@@ -17,7 +17,6 @@ export const action: ActionFunction = async ({ request }) => {
 
 
 async function create(request: Request) {
-  console.log('----> success');
   const user = await requireUser(request);
 
   const eventId = Id();

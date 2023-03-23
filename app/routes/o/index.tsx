@@ -12,8 +12,6 @@ import { H4, H5, H6 } from '~/components/shared/typography';
 
 import Button from '~/components/shared/Button';
 
-import Main from '~/components/shared/Main';
-
 import { findUserEvents } from '~/server/db/events.server';
 import WhenListEmpty from '~/components/shared/Empty';
 
@@ -21,7 +19,7 @@ import type { Sport, EventStatus } from '~/types';
 import DisplayImg from '~/components/shared/DisplayImg';
 
 import { findSports } from '~/server/db/reference.server';
-import { requireAdminUser, requireUser } from '~/server/auth/session.server';
+import { requireUser } from '~/server/auth/session.server';
 
 type LoaderData = {
   events: Array<Event>;
@@ -61,7 +59,7 @@ export default function OrganizerIndexRoute() {
   const { events, sports } = useLoaderData<LoaderData>();
 
   return (
-    <Main>
+    <>
       <div className="dark:text-blueGray-500">
         <div className="col-span-full mb-12 lg:mb-12">
           <div className="flex flex-col-reverse justify-end lg:flex-row lg:items-center">
@@ -108,18 +106,17 @@ export default function OrganizerIndexRoute() {
           </H4>
         </WhenListEmpty>
       </div>
-    </Main>
+    </>
   );
 }
 
-function PlaceholderImg({
-  event,
-  img
-}: {
+type PlaceholderImgProps = {
   event: Event;
   className: string;
   img?: string;
-}) {
+};
+
+function PlaceholderImg({ event, img }: PlaceholderImgProps) {
   if (!img) {
     return null;
   }

@@ -320,7 +320,7 @@ export default function Index() {
   const [selection, setSelection] = useState<DiciLocation | undefined>();
   const data = searchResult;
   const [searchResults, setSearchResults] = useState<Array<SearchResults>>(data?.results || []);
-  const [filtersModalOpen, setFiltersModalOpen] = useState<boolean>(false);
+  const [filtersModalOpen, setFiltersModalOpen] = useState<boolean>(true);
   const [searchPerformed, setSearchPerformed] = useState<boolean>(searchResults.length > 0);
   const [address, setAddress] = useState<string>('');
   const location = useLocation();
@@ -660,7 +660,6 @@ export default function Index() {
         aria-label="Location Failed"
         SecondaryAction={
           <Button
-            variant="danger"
             size="medium"
             type="button"
             onClick={handleCloseLocationFailedWarning}
@@ -1030,101 +1029,92 @@ function FiltersDialog(props: {
   const form = useRef<HTMLFormElement>(null);
 
   return (
-    <Dialog isOpen={isOpen} onClose={triggerModalClose}>
-      <Form method="get" onSubmit={onSubmit} ref={form}>
+    <Dialog isOpen={isOpen} onClose={triggerModalClose} title={t('Filters')}>
+      <Form method="get" onSubmit={onSubmit} ref={form} className="w-full flex flex-col items-center justify-start p-4">
         <input type="hidden" name="coords" value={coords} />
         <input type="hidden" name="search" value={search} />
         <input type="hidden" name="order" value={order} />
-        <div className="relative">
-          <div className="px-6 py-2 flex flex-col items-center lg:px-24 lg:py-14">
-            <H3 data-cy="dialog-title" className="w-full md:w-112 text-left">
-              {t('Filters')}
-            </H3>
-            <Spacer size="2xs" />
-
-            <FormField
-              label={t('Sport')}
-              id="sport"
-              className="w-full md:w-112"
-            >
-              <ComboBox
-                options={sportsOptions}
-                name="sport"
-                defaultValue={filters?.sport || ''}
-                placeholder={t('All Sports')}
-                lang={i18n.language as Language}
-              />
-            </FormField>
-            <FormField
-              label={t('Day Of Week')}
-              id="day-of-week"
-              className="w-full md:w-112"
-            >
-              <PeekDayOfWeek
-                key={Date.now()}
-                name="dow"
-                id="day-of-week"
-                defaultValue={filters?.dayOfWeek as DaysOfWeek}
-                addAll={true}
-              />
-            </FormField>
-            <FormField
-              label={t('Day Part')}
-              id="day-part"
-              className="w-full md:w-112"
-            >
-              <CheckBox
-                name="daypart"
-                id={`daypart-${dayParts.morning}`}
-                label={t('Morning')}
-                value={dayParts.morning}
-                checked={filters?.dayParts?.includes(dayParts.morning)}
-                className="mb-2"
-              />
-              <CheckBox
-                name="daypart"
-                id={`daypart-${dayParts.afternoon}`}
-                label={t('Afternoon')}
-                value={dayParts.afternoon}
-                checked={filters?.dayParts?.includes(dayParts.afternoon)}
-                className="mb-2"
-              />
-              <CheckBox
-                name="daypart"
-                id={`daypart-${dayParts.evening}`}
-                label={t('Evening')}
-                value={dayParts.evening}
-                checked={filters?.dayParts?.includes(dayParts.evening)}
-                className="mb-2"
-              />
-            </FormField>
-            <FormField
-              label={t('Group Spirit')}
-              id="spirit"
-              className="w-full md:w-112"
-            >
-              {groupsSpirit.map((gs) => (
-                <CheckBox
-                  key={gs.id}
-                  id={`spirit-${gs.id}`}
-                  name="spirit"
-                  label={gs.name}
-                  value={gs.id}
-                  checked={filters?.spirit?.includes(gs.id)}
-                  className="mb-2"
-                />
-              ))}
-              <Spacer size="3xs" />
-              <CheckBox
-                name="g"
-                label={t('Hide Groups')}
-                value="hide"
-                checked={filters?.groupsAction === 'hide'}
-                className="mb-2"
-              />
-            </FormField>
-          </div>
-        </div>
+        <FormField
+          label={t('Sport')}
+          id="sport"
+          className="w-full md:w-112"
+        >
+          <ComboBox
+            options={sportsOptions}
+            name="sport"
+            defaultValue={filters?.sport || ''}
+            placeholder={t('All Sports')}
+            lang={i18n.language as Language}
+          />
+        </FormField>
+        <FormField
+          label={t('Day Of Week')}
+          id="day-of-week"
+          className="w-full md:w-112"
+        >
+          <PeekDayOfWeek
+            key={Date.now()}
+            name="dow"
+            id="day-of-week"
+            defaultValue={filters?.dayOfWeek as DaysOfWeek}
+            addAll={true}
+          />
+        </FormField>
+        <FormField
+          label={t('Day Part')}
+          id="day-part"
+          className="w-full md:w-112"
+        >
+          <CheckBox
+            name="daypart"
+            id={`daypart-${dayParts.morning}`}
+            label={t('Morning')}
+            value={dayParts.morning}
+            checked={filters?.dayParts?.includes(dayParts.morning)}
+            className="mb-2"
+          />
+          <CheckBox
+            name="daypart"
+            id={`daypart-${dayParts.afternoon}`}
+            label={t('Afternoon')}
+            value={dayParts.afternoon}
+            checked={filters?.dayParts?.includes(dayParts.afternoon)}
+            className="mb-2"
+          />
+          <CheckBox
+            name="daypart"
+            id={`daypart-${dayParts.evening}`}
+            label={t('Evening')}
+            value={dayParts.evening}
+            checked={filters?.dayParts?.includes(dayParts.evening)}
+            className="mb-2"
+          />
+        </FormField>
+        <FormField
+          label={t('Group Spirit')}
+          id="spirit"
+          className="w-full md:w-112"
+        >
+          {groupsSpirit.map((gs) => (
+            <CheckBox
+              key={gs.id}
+              id={`spirit-${gs.id}`}
+              name="spirit"
+              label={gs.name}
+              value={gs.id}
+              checked={filters?.spirit?.includes(gs.id)}
+              className="mb-2"
+            />
+          ))}
+          <Spacer size="3xs" />
+          <CheckBox
+            name="g"
+            label={t('Hide Groups')}
+            value="hide"
+            checked={filters?.groupsAction === 'hide'}
+            className="mb-2"
+          />
+        </FormField>
         <ActionsBar>
           <Button variant="secondary" type="button" onClick={triggerModalClose}>
             {t('Cancel')}

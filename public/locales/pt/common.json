@@ -1,6 +1,10 @@
 {
   "Groups Menu": "Os meus grupos",
-  "Events Menu": "Os meus eventos",
+  "Events Menu": "Provas",
+  "Campaigns Menu": "Campanhas",
+  "Promo Codes Menu": "Códigos Desconto",
+  "Users Menu": "Utilizadores",
+  "Switch Collapse Menu": "Minimzar",
   "Home": "Inicio",
   "Switch to light mode": "Alterar para light mode",
   "Switch to dark mode": "Alterar para dark mode",
