@@ -16,7 +16,7 @@ import { Form, useActionData, useLoaderData } from '@remix-run/react';
 
 import { useTranslation } from 'react-i18next';
 
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 
 import type { UploadHandler } from '@remix-run/node';
 import { unstable_composeUploadHandlers } from '@remix-run/node';
@@ -25,7 +25,7 @@ import { z, ZodError } from 'zod';
 
 import { TrashIcon } from '@heroicons/react/24/outline';
 
-import Dialog, { ActionsBar } from '~/components/shared/Dialog';
+import { ConfirmationDialog } from '~/components/shared/Dialog';
 import Main from '~/components/shared/Main';
 import PeekDayOfWeek from '~/components/shared/PeekDayOfWeek';
 import { H2, H3, Paragraph } from '~/components/shared/typography';
@@ -67,7 +67,6 @@ import vendorsCss from '~/styles/vendors.css';
 
 import i18n from '~/server/i18n.server';
 import InputError from '~/components/shared/form/InputError';
-import { Spacer } from '~/components/shared/Spacer';
 
 import { uploadImageToCloudinary } from '~/server/storage/cloudinary.server';
 import { inputBaseClasses } from '~/components/shared/form/InputBase';
@@ -328,6 +327,7 @@ export default function GroupRoute() {
   const loadedData = useLoaderData<LoaderData>();
   const { mapToken, sports, groupTypes, groupsSpirit, group } = loadedData;
   const isUpdate = group.status !== 'auto';
+  const deleteGroupForm = useRef<HTMLFormElement>(null);
 
   // using parse float for 0 min's to work
   const actionData = useActionData<ActionData>();
@@ -384,6 +384,14 @@ export default function GroupRoute() {
   }
 
   function handleDiscardDelete() {
+    setDeleteModalOpen(false);
+  }
+
+  function handleDelete() {
+    if (!deleteGroupForm.current) {
+      return;
+    }
+    deleteGroupForm.current.submit();
     setDeleteModalOpen(false);
   }
 
@@ -640,38 +648,27 @@ export default function GroupRoute() {
         onClose={handleCloseMap}
       />
 
-      <Dialog
-        onClose={handleDiscardDelete}
+      <ConfirmationDialog
         isOpen={deleteModalOpen}
-        aria-label="Delete your account"
         title={t('Delete Group X', { name: group?.name })}
+        question={t('Are you sure you want to delete group?')}
+        primaryLabel={t('Delete Group')}
+        primaryVariant="danger"
+        secondaryLabel={t("No, I don't want to delete")}
+        onDismiss={handleDiscardDelete}
+        onConfirm={handleDelete}
+      />
+
+      <Form
+        id="profile-form"
+        method="post"
+        noValidate
+        aria-describedby="general-error"
+        className="hidden"
+        ref={deleteGroupForm}
       >
-        <Paragraph data-cy="delete-dialog">
-          {t('Are you sure you want to delete group?')}
-        </Paragraph>
-        <Spacer size="2xs" />
-        <Form
-          id="profile-form"
-          method="post"
-          noValidate
-          aria-describedby="general-error"
-        >
-          <input type="hidden" name="actionId" value={actionIds.delete} />
-          <ActionsBar>
-            <Button type="button" onClick={handleDiscardDelete}>
-              {t("No, I don't want to delete")}
-            </Button>
-            <Button
-              variant="danger"
-              size="medium"
-              type="submit"
-              name="confirm-delete"
-            >
-              {t('Delete Group')}
-            </Button>
-          </ActionsBar>
-        </Form>
-      </Dialog>
+        <input type="hidden" name="actionId" value={actionIds.delete} />
+      </Form>
     </Main>
   );
 }

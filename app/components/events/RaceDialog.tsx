@@ -8,14 +8,11 @@ import { useTranslation } from 'react-i18next';
 
 import HourOfDay from '~/components/HourOfDay';
 import Button from '~/components/shared/Button';
-import ButtonGroup from '~/components/shared/ButtonGroup';
 import Dialog from '~/components/shared/Dialog';
 import BasicDatePicker from '~/components/shared/form/DatePicker';
 import FormField from '~/components/shared/form/FormField';
 import { inputBaseClasses } from '~/components/shared/form/InputBase';
 import TextField from '~/components/shared/form/TextField';
-import { Spacer } from '~/components/shared/Spacer';
-import { H3 } from '~/components/shared/typography';
 import type { Race } from '~/types';
 import { hoursMinutesToTimeOfDay, timeOfDayToHoursMinutes } from '~/utils/misc';
 

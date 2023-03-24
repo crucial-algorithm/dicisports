@@ -1,14 +1,9 @@
 import { useFetcher } from '@remix-run/react';
-import clsx from 'clsx';
 import * as React from 'react';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import Button from '~/components/shared/Button';
-import ButtonGroup from '~/components/shared/ButtonGroup';
 import { ConfirmationDialog } from '~/components/shared/Dialog';
-import { Spacer } from '~/components/shared/Spacer';
-import { H3, Paragraph } from '~/components/shared/typography';
 import type { Race } from '~/types';
 
 const RESOURCES_NS = 'create-event-form';

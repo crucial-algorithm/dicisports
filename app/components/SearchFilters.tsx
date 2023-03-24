@@ -5,7 +5,7 @@ import { useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import Button from '~/components/shared/Button';
-import Dialog, { ActionsBar } from '~/components/shared/Dialog';
+import Dialog from '~/components/shared/Dialog';
 import CheckBox from '~/components/shared/form/CheckBox';
 import type { Option } from '~/components/shared/form/ComboBox';
 import ComboBox from '~/components/shared/form/ComboBox';

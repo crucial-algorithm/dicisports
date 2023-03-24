@@ -57,7 +57,7 @@ export default function DiciDialog(
 type ActionsBarProps = {
 } & React.ComponentProps<'div'>
 
-export function ActionsBar({ children, className }: ActionsBarProps) {
+function ActionsBar({ children, className }: ActionsBarProps) {
   return (
     <div className={clsx(className, 'dialog-footer md:dialog-footer-desktop')}>
       {children}
