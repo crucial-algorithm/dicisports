@@ -1,8 +1,5 @@
 name: E2E tests - Authentication and Dashboard
-on:
-  workflow_run:
-    workflows: [Lint]
-    types: [completed]
+on: push
 
 jobs:
   e2e:
