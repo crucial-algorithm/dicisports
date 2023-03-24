@@ -4,6 +4,8 @@ import clsx from 'clsx';
 import type { ReactElement } from 'react';
 import React from 'react';
 
+import Button from '~/components/shared/Button';
+
 type DialogProps = {
   isOpen: boolean;
   title?: string;
@@ -60,5 +62,61 @@ export function ActionsBar({ children, className }: ActionsBarProps) {
     <div className={clsx(className, 'dialog-footer md:dialog-footer-desktop')}>
       {children}
     </div>
+  );
+}
+
+type ConfirmationDialogProps = {
+  isOpen: boolean;
+  title: string;
+  question: string;
+  primaryLabel: string;
+  primaryVariant?: 'primary' | 'danger';
+  secondaryLabel: string;
+  onDismiss: () => void
+  onConfirm: () => void
+} & React.ComponentProps<'div'>
+
+
+export function ConfirmationDialog({
+  title,
+  question,
+  primaryLabel,
+  primaryVariant = 'primary',
+  secondaryLabel,
+  isOpen,
+  onDismiss,
+  onConfirm,
+  className
+}: ConfirmationDialogProps) {
+  return (
+    <Dialog.Root open={isOpen} onOpenChange={onDismiss}>
+      <Dialog.Portal>
+        <Dialog.Overlay className="fixed inset-0 bg-gray-500 opacity-50" />
+        <Dialog.Content
+          className={clsx(
+            'dialog-content md:dialog-content-desktop',
+            className
+          )}
+        >
+          <div className="dialog-title">
+            <Dialog.Title className="text-lg">{title}</Dialog.Title>
+            <Dialog.Close asChild>
+              <button aria-label="Close" className="hidden md:block">
+                <XCircleIcon className="w-8" />
+              </button>
+            </Dialog.Close>
+          </div>
+          <div className="dialog-body">
+            <Dialog.Description className="mt-2.5 mb-2.5">
+              {question}
+            </Dialog.Description>
+          </div>
+          <ActionsBar>
+            <Button variant="secondary" onClick={onDismiss}>{secondaryLabel}</Button>
+            <Button variant={primaryVariant} onClick={onConfirm}>{primaryLabel}</Button>
+          </ActionsBar>
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog.Root>
   );
 }

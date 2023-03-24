@@ -1,6 +1,6 @@
 import { ArrowDownTrayIcon, ChevronDownIcon, ChevronUpIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { useFetcher } from '@remix-run/react';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import * as React from 'react';
 
 import DeleteDocumentDialog from '~/components/events/DeleteDocumentDialog';
@@ -18,27 +18,29 @@ export default function DocumentsList(props: {
     document?: Document;
   }>({ show: false });
 
-  function handleMoveUp(e: React.MouseEvent) {
+  const handleMoveUp = useCallback((e: React.MouseEvent) =>
     fetcher.submit(
       {},
       {
         method: 'post',
         action: `/o/document/${e.currentTarget.id}/move-up`
       }
-    );
-  }
+    ), [fetcher]);
 
-  function handleMoveDown(e: React.MouseEvent) {
-    fetcher.submit(
-      {},
-      {
-        method: 'post',
-        action: `/o/document/${e.currentTarget.id}/move-down`
-      }
-    );
-  }
+  const handleMoveDown = useCallback(
+    (e: React.MouseEvent) =>
+      fetcher.submit(
+        {},
+        {
+          method: 'post',
+          action: `/o/document/${e.currentTarget.id}/move-down`
+        }
+      ),
+    [fetcher]
+  );
 
-  function handleOpenDeleteDocumentDialog(e: React.MouseEvent) {
+
+  const handleOpenDeleteDocumentDialog = useCallback((e: React.MouseEvent) => {
     const document = documents.find((d) => d.id === e.currentTarget.id);
 
     if (!document) {
@@ -46,11 +48,13 @@ export default function DocumentsList(props: {
     }
 
     setShowDeleteDocumentDialog({ show: true, document });
-  }
+  }, [documents]);
 
-  function handleCloseDeleteDocumentDialog() {
-    setShowDeleteDocumentDialog({ show: false });
-  }
+  const handleCloseDeleteDocumentDialog = useCallback(
+    () => setShowDeleteDocumentDialog({ show: false }),
+    []
+  );
+
 
   return (
     <>

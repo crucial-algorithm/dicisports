@@ -60,7 +60,7 @@ export default function OrganizerLayout() {
       />
       <MobileMenuButton onClick={handleMobileMenuClick} />
       <MobileMenu isExpanded={isMobileMenuOpen} linkClicked={handleMobileMenuClick} pathname={location.pathname} />
-      <div className="grow p-2">
+      <div className="grow p-2 h-screen overflow-auto">
         <Outlet />
       </div>
     </div>
@@ -256,7 +256,7 @@ function MobileMenuButton({ onClick }: MobileMenuButtonProps) {
     <button
       type="button"
       onClick={onClick}
-      className="md:hidden fixed bottom-2 left-2 w-11 h-11 bg-black dark:bg-white rounded-full z-100"
+      className="md:hidden fixed bottom-2 left-2 w-11 h-11 bg-black dark:bg-white rounded-full z-10"
     >
       <Bars3Icon className="h-6 w-6 m-0 inline-block fill-white dark:fill-black" />
     </button>

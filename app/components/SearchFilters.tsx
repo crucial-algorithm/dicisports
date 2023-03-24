@@ -57,6 +57,7 @@ function FiltersDialog(props: {
 
   return (
     <Dialog
+      className="md:max-w-lg search-filters"
       isOpen={isOpen}
       onClose={triggerModalClose}
       title={t('Filters')}

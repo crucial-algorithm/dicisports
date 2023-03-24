@@ -12,12 +12,13 @@
         w-screen h-screen
         px-8 bg-white text-gray-500 font-medium
         dark:bg-gray-900 dark:border-white dark:text-white
+        z-20
         ;
     }
 
     .dialog-content-desktop {
         @apply flex flex-col fixed top-[50%] left-[50%] -translate-x-1/2 -translate-y-1/2
-        w-5/6 m-auto max-w-lg min-h-[200px] max-h-[90vh] h-fit rounded-lg border-2 border-black
+        w-5/6 m-auto max-w-[90%] min-h-[200px] max-h-[90vh] h-fit rounded-lg border-2 border-black
         px-4 bg-white text-gray-500 font-medium
         focus:outline-none
         dark:bg-gray-900 dark:border-white dark:text-white
@@ -29,15 +30,19 @@
     }
 
     .dialog-body {
-        @apply flex flex-col flex-auto justify-start relative mb-2 overflow-auto;
+        @apply flex flex-col flex-auto justify-start relative mb-8 overflow-auto;
     }
 
     .dialog-footer {
-        @apply fixed bottom-1 right-1 flex items-baseline justify-end gap-4;
+        @apply fixed bottom-4 right-1 flex items-baseline justify-end gap-4;
     }
 
     .dialog-footer-desktop {
         @apply static w-full flex items-center py-2 px-1 justify-end flex-wrap gap-4 justify-end;
+    }
+
+    .search-filters .dialog-footer {
+        @apply bottom-16 right-8;
     }
 }
 

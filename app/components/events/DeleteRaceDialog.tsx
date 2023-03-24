@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 
 import Button from '~/components/shared/Button';
 import ButtonGroup from '~/components/shared/ButtonGroup';
+import { ConfirmationDialog } from '~/components/shared/Dialog';
 import { Spacer } from '~/components/shared/Spacer';
 import { H3, Paragraph } from '~/components/shared/typography';
 import type { Race } from '~/types';
@@ -41,42 +42,14 @@ function DeleteRaceDialog(props: {
   }, [fetcher, onDismiss]);
 
   return (
-    <div
-      data-reach-dialog-overlay={true}
-      className={clsx({
-        'hidden ': !isOpen,
-        'z-50 flex h-screen': isOpen
-      })}
-    >
-      <div
-        aria-modal={true}
-        className={clsx(
-          'w-10/12 md:w-11/12 dark:bg-gray-900 border-2 border-black dark:border-white rounded-lg px-8 py-10 lg:px-24 lg:py-14 lg:max-w-screen-lg',
-          'w-10/12 md:w-11/12 dark:bg-gray-900 border-2 border-black dark:border-white rounded-lg lg:px-24 lg:py-14 lg:max-w-screen-lg',
-          {
-            'hidden ': !isOpen,
-            'm-auto': isOpen
-          }
-        )}
-      >
-        <H3>{t('Delete Race X', { name: race?.name })}</H3>
-        <Paragraph>{t('Are you sure you want to delete race?')}</Paragraph>
-        <Spacer size="2xs" />
-
-        <ButtonGroup>
-          <Button type="button" onClick={onDismiss}>
-            {t('Ignore')}
-          </Button>
-          <Button
-            variant="danger"
-            size="medium"
-            type="button"
-            onClick={handleSubmit}
-          >
-            {t('Delete')}
-          </Button>
-        </ButtonGroup>
-      </div>
-    </div>
+    <ConfirmationDialog
+      isOpen={isOpen}
+      title={t('Delete Race X', { name: race?.name })}
+      question={t('Are you sure you want to delete race?')}
+      primaryLabel={t('Delete')}
+      secondaryLabel={t('Ignore')}
+      onDismiss={onDismiss}
+      onConfirm={handleSubmit}
+    />
   );
 }

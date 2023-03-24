@@ -6,11 +6,9 @@ import { useDropzone } from 'react-dropzone';
 import { useTranslation } from 'react-i18next';
 
 import Button from '~/components/shared/Button';
-import ButtonGroup from '~/components/shared/ButtonGroup';
+import Dialog from '~/components/shared/Dialog';
 import FormField from '~/components/shared/form/FormField';
 import TextField from '~/components/shared/form/TextField';
-import { Spacer } from '~/components/shared/Spacer';
-import { H3 } from '~/components/shared/typography';
 import type { Document } from '~/types';
 
 const RESOURCES_NS = 'create-event-form';
@@ -106,88 +104,71 @@ export default function UploadDocumentDialog(props: {
   }, [close, fetcher, hash]);
 
   return (
-    <div
-      data-reach-dialog-overlay={true}
-      className={clsx({
-        'hidden ': !isOpen,
-        'z-50 flex h-screen': isOpen
-      })}
+    <Dialog
+      className="md:w-8/12"
+      isOpen={isOpen}
+      onClose={close}
+      title={document?.id ? t('Update Document') : t('Upload Document')}
+      PrimaryAction={
+        <Button
+          type="button"
+          onClick={handleSubmit}
+          name="create-document-button"
+        >
+          {document?.id
+            ? t('Update Document Button')
+            : t('Upload Document Button')}
+        </Button>
+      }
+      SecondaryAction={
+        <Button type="button" variant="secondary" onClick={close}>
+          {t('Cancel')}
+        </Button>
+      }
     >
-      <div
-        aria-modal={true}
-        className={clsx(
-          'h-full w-full lg:h-auto lg:w-11/12 px-8 py-8 md:px-24 md:py-14 ' +
-          'bg-white dark:bg-gray-900  lg:max-w-screen-lg',
-          'lg:border-2 lg:border-black dark:lg:border-white lg:rounded-lg lg:max-w-screen-lg',
-          {
-            'hidden ': !isOpen,
-            'm-auto': isOpen
-          }
-        )}
-      >
-        <div className="relative" key={hash}>
-          <H3 className="w-full md:w-112 text-left">
-            {document?.id ? t('Update Document') : t('Upload Document')}
-          </H3>
-          <Spacer size="2xs" />
-
-          <FormField label={t('Name')} error={errors?.label}>
-            <TextField
-              name="document-name"
-              placeholder={t('Document Name')}
-              defaultValue={document?.label ? document.label : ''}
-              className="max-w-md"
-              input={name}
-            />
-          </FormField>
-          {!document && (
-            <FormField label={t('Document')} error={errors?.path}>
-              <section
-                className={clsx(
-                  'h-40 bg-gray-100 text-black placeholder-gray-500 text-lg font-medium',
-                  'dark:disabled:text-blueGray-500 dark:text-white dark:bg-gray-800',
-                  'object-cover object-left-top overflow-hidden',
-                  'flex content-center justify-center'
-                )}
-              >
-                <div
-                  {...getRootProps({
-                    className: 'h-80 w-full overflow-hidden'
-                  })}
-                >
-                  <input {...inputProps} name="/file/misc/" ref={inputEl} />
-                  <p className="h-40 w-full flex items-center justify-center">
-                    {t('Document Dropzone')}
-                  </p>
-                </div>
-              </section>
-            </FormField>
-          )}
-          {uploadedDocument && (
-            <div
+      <div className="p-4" key={hash}>
+        <FormField label={t('Name')} error={errors?.label}>
+          <TextField
+            name="document-name"
+            placeholder={t('Document Name')}
+            defaultValue={document?.label ? document.label : ''}
+            className="max-w-md"
+            input={name}
+          />
+        </FormField>
+        {!document && (
+          <FormField label={t('Document')} error={errors?.path}>
+            <section
               className={clsx(
-                'text-md font-extrabold dark:text-white my-4 ml-4'
+                'h-40 bg-gray-100 text-black placeholder-gray-500 text-lg font-medium',
+                'dark:disabled:text-blueGray-500 dark:text-white dark:bg-gray-800',
+                'object-cover object-left-top overflow-hidden',
+                'flex content-center justify-center'
               )}
             >
-              {uploadedDocument}
-            </div>
-          )}
-          <ButtonGroup className="fixed w-5/6 m-auto bottom-2 lg:static lg:m-0">
-            <Button type="button" variant="secondary" onClick={close}>
-              {t('Cancel')}
-            </Button>
-            <Button
-              type="button"
-              onClick={handleSubmit}
-              name="create-document-button"
-            >
-              {document?.id
-                ? t('Update Document Button')
-                : t('Upload Document Button')}
-            </Button>
-          </ButtonGroup>
-        </div>
+              <div
+                {...getRootProps({
+                  className: 'h-80 w-full overflow-hidden'
+                })}
+              >
+                <input {...inputProps} name="/file/misc/" ref={inputEl} />
+                <p className="h-40 w-full flex items-center justify-center">
+                  {t('Document Dropzone')}
+                </p>
+              </div>
+            </section>
+          </FormField>
+        )}
+        {uploadedDocument && (
+          <div
+            className={clsx(
+              'text-md font-extrabold dark:text-white my-4 ml-4'
+            )}
+          >
+            {uploadedDocument}
+          </div>
+        )}
       </div>
-    </div>
+    </Dialog>
   );
 }
