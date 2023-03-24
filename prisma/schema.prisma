@@ -347,10 +347,10 @@ enum OrganiserStatus {
 model Organiser {
     id                  String              @id
     name                String
-    description         String?
-    logo                String?
+    description         String
+    logo                String
     email               String              @unique
-    phoneNumber         Int                 @unique @map("phone_number")
+    phoneNumber         Int?                 @unique @map("phone_number")
     address             String
     postalCode          String              @map("postal_code")
     city                String

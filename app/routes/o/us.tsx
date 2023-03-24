@@ -38,6 +38,8 @@ type ActionData = {
     address?: string;
     postalCode?: string;
     city?: string;
+    logo?: string;
+    description?: string;
   };
 };
 
@@ -66,26 +68,30 @@ export const action: ActionFunction = async ({ request }) => {
 
   const form = await unstable_parseMultipartFormData(request, uploadHandler);
 
+  const isUpdate = user?.role === 'ORGANIZER';
   const data = {
     name: form.get('name'),
     email: form.get('email'),
-    logo: processImgField(form.get('/file/image/0'), false),
-    phoneNumber: parseInt(form.get('phone-number')),
+    logo: processImgField(form.get('/file/image/0'), isUpdate),
+    phoneNumber: (form.get('phone-number') as string).length > 0 ? parseInt(form.get('phone-number') as string) : null,
     address: form.get('address'),
     postalCode: form.get('postal-code'),
     city: form.get('city'),
-    description: (form.get('description') as string) || null,
+    description: form.get('description'),
     userId: user?.id
   };
 
+  console.log('data --->', data);
   const OrganiserSchema = z.object({
     name: z
       .string({ required_error: t('Field Required') })
       .min(2, { message: t('Min 2 Chars') }),
     email: z.string().email({ message: t('Valid E-mail') }),
+    logo: z
+      .string({ required_error: t('Field Required') })
+      .min(1, { message: t('Field Required') }),
     phoneNumber: z
       .number({
-        required_error: t('Field Required'),
         invalid_type_error: t('Field Required')
       })
       .refine((val) => val.toString().length === 9, t('9 Digits'))
@@ -96,7 +102,8 @@ export const action: ActionFunction = async ({ request }) => {
           val.toString().startsWith('93') ||
           val.toString().startsWith('96'),
         t('Invalid number')
-      ),
+      )
+      .nullable(),
     address: z
       .string({ required_error: t('Field Required') })
       .min(2, { message: t('Min 2 Chars') }),
@@ -104,6 +111,9 @@ export const action: ActionFunction = async ({ request }) => {
       .string({ required_error: t('Field Required') })
       .min(2, { message: t('Min 2 Chars') }),
     city: z
+      .string({ required_error: t('Field Required') })
+      .min(2, { message: t('Min 2 Chars') }),
+    description: z
       .string({ required_error: t('Field Required') })
       .min(2, { message: t('Min 2 Chars') })
   });
@@ -135,10 +145,6 @@ export const loader: LoaderFunction = async ({ request }) => {
   const user = await requireUser(request);
   const organiser = await findOrganiser(user.id as string);
 
-  if ((organiser && organiser.status === 'APPROVED') || user.role === 'ORGANIZER') {
-    return redirect('/o');
-  }
-  
   return json({
     organiser
   });
@@ -159,21 +165,42 @@ export default function UsRoute() {
     <Main>
       <UploadForm method="post">
         <div className="flex flex-row w-full">
-          <FormField label={t('Profile Photo')} className="w-112">
-            <UploadImage index={0} label={t('Hint For Profile Picture')} defaultValue={organiser?.logo || ''} />
+          <FormField
+            label={t('Profile Photo')}
+            className="w-112"
+            error={actionData?.errors?.logo}
+          >
+            <UploadImage
+              index={0}
+              label={t('Hint For Profile Picture')}
+              defaultValue={organiser?.logo || ''}
+            />
           </FormField>
 
           <div className="flex flex-col ml-4">
-            <FormField data-cy="name" label={t('Name')} error={actionData?.errors?.name}>
+            <FormField
+              data-cy="name"
+              label={t('Name')}
+              error={actionData?.errors?.name}
+            >
               <TextField name="name" defaultValue={organiser?.name || ''} />
             </FormField>
 
             <div className="flex lg:flex-row lg:gap-x-2">
-              <FormField data-cy="email" label={t('E-mail')} className="w-1/2" error={actionData?.errors?.email} >
+              <FormField
+                data-cy="email"
+                label={t('E-mail')}
+                className="w-1/2"
+                error={actionData?.errors?.email}
+              >
                 <TextField name="email" defaultValue={organiser?.email || ''} />
               </FormField>
 
-              <FormField label={t('Phone Number')} className="w-1/2" error={actionData?.errors?.phoneNumber} >
+              <FormField
+                label={t('Phone Number')}
+                className="w-1/2"
+                error={actionData?.errors?.phoneNumber}
+              >
                 <TextField
                   name="phone-number"
                   type="number"
@@ -185,8 +212,12 @@ export default function UsRoute() {
           </div>
         </div>
 
-        <FormField data-cy="address" label={t('Address')} error={actionData?.errors?.address}>
-          <TextField name="address"  defaultValue={organiser?.address || ''} />
+        <FormField
+          data-cy="address"
+          label={t('Address')}
+          error={actionData?.errors?.address}
+        >
+          <TextField name="address" defaultValue={organiser?.address || ''} />
         </FormField>
 
         <div className="flex lg:flex-row lg:gap-x-2">
@@ -196,15 +227,26 @@ export default function UsRoute() {
             className="w-1/4"
             error={actionData?.errors?.postalCode}
           >
-            <TextField name="postal-code" defaultValue={organiser?.postalCode || ''} />
+            <TextField
+              name="postal-code"
+              defaultValue={organiser?.postalCode || ''}
+            />
           </FormField>
 
-          <FormField data-cy="city" label={t('City')} className="w-1/4" error={actionData?.errors?.city}>
+          <FormField
+            data-cy="city"
+            label={t('City')}
+            className="w-1/4"
+            error={actionData?.errors?.city}
+          >
             <TextField name="city" defaultValue={organiser?.city || ''} />
           </FormField>
         </div>
 
-        <FormField label={t('Description')}>
+        <FormField
+          label={t('Description')}
+          error={actionData?.errors?.description}
+        >
           <div className="mt-1 relative rounded-md shadow-sm">
             <textarea
               name="description"
@@ -218,7 +260,11 @@ export default function UsRoute() {
         </FormField>
 
         <ButtonGroup>
-          <ButtonLink type="button" variant="secondary" to={'/'}>
+          <ButtonLink
+            type="button"
+            variant="secondary"
+            to={organiser.status === 'PENDING' ? '/' : '/o'}
+          >
             {t('Cancel')}
           </ButtonLink>
 
