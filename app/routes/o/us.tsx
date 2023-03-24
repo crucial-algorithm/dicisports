@@ -172,7 +172,7 @@ export default function UsRoute() {
           <div>
             <FormField
               data-cy="name"
-              label={t('Name')}
+              label={t('Name') + '*'}
               error={actionData?.errors?.name}
             >
               <TextField name="name" defaultValue={organiser?.name || ''} />
@@ -217,7 +217,7 @@ export default function UsRoute() {
               <FormField
                 data-cy="postal-code"
                 label={t('Postal Code')}
-                className="lg:w-1/4"
+                className="lg:w-1/3"
                 error={actionData?.errors?.postalCode}
               >
                 <TextField
@@ -229,7 +229,7 @@ export default function UsRoute() {
               <FormField
                 data-cy="city"
                 label={t('City')}
-                className="lg:w-1/4"
+                className="lg:w-1/3"
                 error={actionData?.errors?.city}
               >
                 <TextField name="city" defaultValue={organiser?.city || ''} />
@@ -237,7 +237,7 @@ export default function UsRoute() {
             </div>
 
             <FormField
-              label={t('Description')}
+              label={t('Description') + '*'}
               error={actionData?.errors?.description}
             >
               <div className="mt-1 relative rounded-md shadow-sm">
@@ -254,7 +254,7 @@ export default function UsRoute() {
           </div>
           <div className="col-span-3">
             <FormField
-              label={t('Profile Photo')}
+              label={t('Profile Photo') + '*'}
               error={actionData?.errors?.logo}
             >
               <UploadImage
@@ -265,6 +265,9 @@ export default function UsRoute() {
             </FormField>
           </div>
         </div>
+        <legend className="block text-sm font-medium text-gray-500 mb-4">
+          {t('Organiser display fields')}
+        </legend>
         <ButtonGroup>
           <ButtonLink
             type="button"

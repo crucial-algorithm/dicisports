@@ -71,6 +71,7 @@ async function clear() {
   await db.groupSchedule.deleteMany();
   await db.favoriteGroup.deleteMany();
   await db.group.deleteMany();
+  await db.organiser.deleteMany();
   await db.user.deleteMany();
   await db.groupSpirit.deleteMany();
   await db.groupType.deleteMany();

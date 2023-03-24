@@ -59,11 +59,15 @@ export async function loadDisplayEventData(
   user: User | null,
   event: Event | null
 ) {
-  const organiser = await findOrganiser(user.id);
+  let organiser: Organiser | null = null;
   let isUserFavorite = false;
 
   if (user && event) {
     isUserFavorite = !!(await findUserFavoriteEvent(user.id, event.id));
+  }
+
+  if (event) {
+    organiser = await findOrganiser(event.createdById);
   }
 
   const eventId = event?.id as string;
