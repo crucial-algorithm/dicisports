@@ -1,7 +1,7 @@
 import * as React from 'react';
 import type { Event } from '@prisma/client';
 import { Link } from '@remix-run/react';
-import type { TFunction } from 'react-i18next';
+import type { TFunction } from 'i18next';
 
 export type DataTableProps = {
   data: Array<Event>
@@ -51,10 +51,10 @@ export default function DataTable({ data, t }: DataTableProps) {
                       {row.name}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {row.address}
+                      {row.location}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {row.startAt}
+                      {row.startAt?.toUTCString()}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       <Link to={`event/${row.id}`}>{t('Edit')}</Link>

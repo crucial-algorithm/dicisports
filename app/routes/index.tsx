@@ -106,7 +106,7 @@ const dayParts = {
 };
 
 export const handle = {
-  i18n: ['common', 'home', 'm-groups']
+  i18n: ['common', 'home', 'm-groups', 'organizer']
 };
 
 export enum SortMethod {
