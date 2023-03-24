@@ -80,17 +80,6 @@ function Map({
       boxZoom: true
     });
 
-    // add the button to "center in current location"
-    map.addControl(
-      new mapboxgl.GeolocateControl({
-        positionOptions: {
-          enableHighAccuracy: true
-        },
-        trackUserLocation: true,
-        showUserHeading: true
-      }), 'bottom-right'
-    );
-
     // Add the control to the map.
     map.addControl(
       new MapboxGeocoder({
@@ -99,6 +88,17 @@ function Map({
         zoom: 15,
         mapboxgl,
         reverseGeocode: false
+      }), 'top-left'
+    );
+
+    // add the button to "center in current location"
+    map.addControl(
+      new mapboxgl.GeolocateControl({
+        positionOptions: {
+          enableHighAccuracy: true
+        },
+        trackUserLocation: true,
+        showUserHeading: true
       }), 'top-left'
     );
 
@@ -265,7 +265,7 @@ function MapDialog({
 
   return (
     <Dialog
-      className="min-w-full h-screen dark:bg-gray-900 opacity-100 m-0 shadow-none rounded-none"
+      className="min-w-[98%] md:h-[100%] dark:bg-gray-900 opacity-100 m-0 shadow-none rounded-none"
       isOpen={open}
       onClose={handleClose}
       aria-label={t('map')}

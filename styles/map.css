@@ -5,3 +5,7 @@
 .mapboxgl-ctrl-bottom-right {
     bottom: 80px;
 }
+
+.mapboxgl-ctrl.mapboxgl-ctrl-attrib.mapboxgl-compact {
+    display: none;
+}

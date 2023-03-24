@@ -22,7 +22,7 @@ export default function DiciDialog(
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 bg-gray-500 opacity-50" />
         <Dialog.Content
-          className={clsx(className, 'dialog-content md:dialog-content-desktop')}
+          className={clsx('dialog-content md:dialog-content-desktop', className)}
         >
           <div className="dialog-title">
             <Dialog.Title className="text-lg">{title || ' '}</Dialog.Title>
