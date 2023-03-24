@@ -128,7 +128,11 @@ function Menu({ handleToggleMenu, pathname, sideBarCollapsed, allowCollapse, cla
 
   return (
     <>
-      <ul className={clsx(className, 'pt-6', { 'w-full md:w-52': !sideBarCollapsed })}>
+      <ul
+        className={clsx(className, 'pt-6', {
+          'w-full md:w-52': !sideBarCollapsed
+        })}
+      >
         <MenuEntry
           icon={<CollectionIcon className="w-6" />}
           title={t('Events Menu')}
@@ -171,16 +175,29 @@ function Menu({ handleToggleMenu, pathname, sideBarCollapsed, allowCollapse, cla
             'w-52': !sideBarCollapsed
           })}
         >
-          <MenuEntry
-            icon={<CollapseMenuIcon className="w-6" />}
-            title={t('Switch Collapse Menu')}
-            sideBarCollapsed={sideBarCollapsed}
-            className={clsx('w-full', {
-              'rotate-180': sideBarCollapsed,
-              'right-4': !sideBarCollapsed
-            })}
+          <li
+            className={clsx(
+              'flex items-center gap-x-6 p-3 text-base font-bold rounded-lg cursor-pointer dark:text-white hover:bg-gray-200 dark:hover:bg-gray-700 mt-2',
+              className,
+              'w-full select-none',
+              {
+                'rotate-180': sideBarCollapsed,
+                'right-4': !sideBarCollapsed
+              }
+            )}
             onClick={handleToggleMenu}
-          />
+          >
+            <span className="text-2xl">
+              <CollapseMenuIcon className="w-6" />
+            </span>
+            <span
+              className={clsx('origin-left duration-300 hover:block', {
+                hidden: sideBarCollapsed
+              })}
+            >
+              {t('Switch Collapse Menu')}
+            </span>
+          </li>
         </ul>
       )}
     </>
