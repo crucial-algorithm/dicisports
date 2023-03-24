@@ -43,25 +43,14 @@ export default function DiciDialog(
             {children}
           </div>
           {(PrimaryAction || SecondaryAction) && (
-            <ActionsBar>
+            <div className={clsx(className, 'dialog-footer')}>
               {SecondaryAction}
               {PrimaryAction}
-            </ActionsBar>
+            </div>
           )}
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>
-  );
-}
-
-type ActionsBarProps = {
-} & React.ComponentProps<'div'>
-
-function ActionsBar({ children, className }: ActionsBarProps) {
-  return (
-    <div className={clsx(className, 'dialog-footer md:dialog-footer-desktop')}>
-      {children}
-    </div>
   );
 }
 
@@ -94,7 +83,7 @@ export function ConfirmationDialog({
         <Dialog.Overlay className="fixed inset-0 bg-gray-500 opacity-50" />
         <Dialog.Content
           className={clsx(
-            'dialog-content md:dialog-content-desktop',
+            'dialog-content',
             className
           )}
         >
@@ -111,10 +100,10 @@ export function ConfirmationDialog({
               {question}
             </Dialog.Description>
           </div>
-          <ActionsBar>
+          <div className={clsx(className, 'dialog-footer')}>
             <Button variant="secondary" onClick={onDismiss}>{secondaryLabel}</Button>
             <Button variant={primaryVariant} onClick={onConfirm}>{primaryLabel}</Button>
-          </ActionsBar>
+          </div>
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>
