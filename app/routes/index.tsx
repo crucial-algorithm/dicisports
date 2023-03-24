@@ -43,7 +43,7 @@ import { searchEventsAndGroups } from '~/server/db/search.server';
 
 import SearchLocations from '~/components/SearchLocations';
 
-import { H3, Paragraph } from '~/components/shared/typography';
+import { H5, Paragraph } from '~/components/shared/typography';
 import { findGroupsSpirit, findSports } from '~/server/db/reference.server';
 
 import Dialog from '~/components/shared/Dialog';
@@ -653,7 +653,7 @@ export default function Index() {
           </Button>
         }
       >
-        <H3 className="mb-4">{t('Failed to find Your Location Title')}</H3>
+        <H5 className="mb-4">{t('Failed to find Your Location Title')}</H5>
         <Paragraph>{t('Failed to find Your Location Hint')}</Paragraph>
         <Spacer size="2xs" />
       </Dialog>
