@@ -510,15 +510,15 @@ type SearchEventsResults = {
 
 type Organiser = DBOrganiser & {};
 
-type InputOrganiser = {
+type OrganiserInput = {
   name: string;
   email: string;
-  phoneNumber: number;
+  phoneNumber?: number | null;
   address: string;
   postalCode: string,
   city: string;
-  description?: string;
-  logo?: string;
+  description: string;
+  logo: string;
   userId: string;
 }
 
@@ -577,7 +577,7 @@ export {
   SearchResults,
   SearchEventsResults,
   Organiser,
-  InputOrganiser
+  OrganiserInput
 };
 
 

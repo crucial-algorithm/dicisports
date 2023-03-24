@@ -1,8 +1,8 @@
 import { db } from '~/server/db.server';
-import type { InputOrganiser, Organiser } from '~/types';
+import type { OrganiserInput, Organiser } from '~/types';
 import Id from '~/server/utils/Id.server';
 
-async function createOrganiser(organiser: InputOrganiser): Promise<void> {
+async function createOrganiser(organiser: OrganiserInput): Promise<Organiser | void> {
   const now = new Date();
 
   return db.organiser.create({

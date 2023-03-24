@@ -1,14 +1,17 @@
 import * as React from 'react';
-import type { ActionFunction, LoaderFunction } from '@remix-run/node';
-import {
-  json,
-  redirect,
-  unstable_composeUploadHandlers,
-  unstable_createMemoryUploadHandler, unstable_parseMultipartFormData,
+import type {
+  ActionFunction,
+  LoaderFunction,
   UploadHandler
 } from '@remix-run/node';
+import {
+  json,
+  unstable_composeUploadHandlers,
+  unstable_createMemoryUploadHandler,
+  unstable_parseMultipartFormData
+} from '@remix-run/node';
 
-import { Form, useActionData, useLoaderData } from '@remix-run/react';
+import { useActionData, useLoaderData } from '@remix-run/react';
 import { useTranslation } from 'react-i18next';
 import { z, ZodError } from 'zod';
 
@@ -24,11 +27,11 @@ import { getUser, requireUser } from '~/server/auth/session.server';
 import i18n from '~/server/i18n.server';
 import { badRequest } from '~/utils/misc';
 import { createOrganiser, findOrganiser } from '~/server/db/organiser.server';
-import type { Organiser } from '~/types';
+import type { Organiser, OrganiserInput } from '~/types';
 import { Paragraph } from '~/components/shared/typography';
-import { processImgField } from '~/server/utils/misc';
 import { uploadImageToCloudinary } from '~/server/storage/cloudinary.server';
 import UploadForm from '~/components/shared/form/UploadForm';
+import { processImgField } from '~/server/utils/misc';
 
 type ActionData = {
   errors?: {
@@ -45,43 +48,46 @@ type ActionData = {
 
 type LoaderData = {
   organiser: Organiser;
-}
+};
 
 export const action: ActionFunction = async ({ request }) => {
-  const t = await i18n.getFixedT(request, 'checkout');
+  const t = await i18n.getFixedT(request, 'organiser-form');
 
   const user = await getUser(request);
 
   const uploadHandler: UploadHandler = unstable_composeUploadHandlers(
-      // our custom upload handler
-      async ({ name, data, filename }) => {
-        if (!name.startsWith('/file/image') || !filename) {
-          return undefined;
-        }
-        const uploadedImage = await uploadImageToCloudinary(data);
+    // our custom upload handler
+    async ({ name, data, filename }) => {
+      if (!name.startsWith('/file/image') || !filename) {
+        return undefined;
+      }
+      const uploadedImage = await uploadImageToCloudinary(data);
 
-        return uploadedImage.public_id;
-      },
-      // fallback to memory for everything else
-      unstable_createMemoryUploadHandler()
+      return uploadedImage.public_id;
+    },
+    // fallback to memory for everything else
+    unstable_createMemoryUploadHandler()
   );
 
   const form = await unstable_parseMultipartFormData(request, uploadHandler);
 
   const isUpdate = user?.role === 'ORGANIZER';
-  const data = {
-    name: form.get('name'),
-    email: form.get('email'),
-    logo: processImgField(form.get('/file/image/0'), isUpdate),
-    phoneNumber: (form.get('phone-number') as string).length > 0 ? parseInt(form.get('phone-number') as string) : null,
-    address: form.get('address'),
-    postalCode: form.get('postal-code'),
-    city: form.get('city'),
-    description: form.get('description'),
-    userId: user?.id
+  // @ts-ignore TODO: fix type
+  const data: OrganiserInput = {
+    name: form.get('name') as string,
+    email: form.get('email') as string,
+    logo: processImgField(form.get('/file/image/0') as string, isUpdate),
+    phoneNumber:
+      (form.get('phone-number') as string).length > 0
+        ? parseInt(form.get('phone-number') as string)
+        : null,
+    address: form.get('address') as string,
+    postalCode: form.get('postal-code') as string,
+    city: form.get('city') as string,
+    description: form.get('description') as string,
+    userId: user?.id as string
   };
 
-  console.log('data --->', data);
   const OrganiserSchema = z.object({
     name: z
       .string({ required_error: t('Field Required') })
@@ -156,28 +162,14 @@ export default function UsRoute() {
   const actionData = useActionData<ActionData>() as ActionData;
 
   if (organiser && organiser.status === 'PENDING') {
-    return (
-        <PendingOrganiserMessage />
-    );
+    return <PendingOrganiserMessage />;
   }
 
   return (
     <Main>
       <UploadForm method="post">
-        <div className="flex flex-row w-full">
-          <FormField
-            label={t('Profile Photo')}
-            className="w-112"
-            error={actionData?.errors?.logo}
-          >
-            <UploadImage
-              index={0}
-              label={t('Hint For Profile Picture')}
-              defaultValue={organiser?.logo || ''}
-            />
-          </FormField>
-
-          <div className="flex flex-col ml-4">
+        <div className="flex flex-col md:grid md:grid-cols-2 md:grid-flow-col md:gap-4">
+          <div>
             <FormField
               data-cy="name"
               label={t('Name')}
@@ -186,11 +178,11 @@ export default function UsRoute() {
               <TextField name="name" defaultValue={organiser?.name || ''} />
             </FormField>
 
-            <div className="flex lg:flex-row lg:gap-x-2">
+            <div className="flex flex-col lg:flex-row lg:gap-x-2">
               <FormField
                 data-cy="email"
                 label={t('E-mail')}
-                className="w-1/2"
+                className="lg:w-1/2"
                 error={actionData?.errors?.email}
               >
                 <TextField name="email" defaultValue={organiser?.email || ''} />
@@ -198,7 +190,7 @@ export default function UsRoute() {
 
               <FormField
                 label={t('Phone Number')}
-                className="w-1/2"
+                className="lg:w-1/2"
                 error={actionData?.errors?.phoneNumber}
               >
                 <TextField
@@ -209,61 +201,75 @@ export default function UsRoute() {
                 />
               </FormField>
             </div>
+
+            <FormField
+              data-cy="address"
+              label={t('Address')}
+              error={actionData?.errors?.address}
+            >
+              <TextField
+                name="address"
+                defaultValue={organiser?.address || ''}
+              />
+            </FormField>
+
+            <div className="flex flex-col lg:flex-row lg:gap-x-2">
+              <FormField
+                data-cy="postal-code"
+                label={t('Postal Code')}
+                className="lg:w-1/4"
+                error={actionData?.errors?.postalCode}
+              >
+                <TextField
+                  name="postal-code"
+                  defaultValue={organiser?.postalCode || ''}
+                />
+              </FormField>
+
+              <FormField
+                data-cy="city"
+                label={t('City')}
+                className="lg:w-1/4"
+                error={actionData?.errors?.city}
+              >
+                <TextField name="city" defaultValue={organiser?.city || ''} />
+              </FormField>
+            </div>
+
+            <FormField
+              label={t('Description')}
+              error={actionData?.errors?.description}
+            >
+              <div className="mt-1 relative rounded-md shadow-sm">
+                <textarea
+                  name="description"
+                  className={inputBaseClasses('p-10')}
+                  placeholder={t('Profile Description')}
+                  rows={5}
+                  cols={50}
+                  defaultValue={organiser?.description || ''}
+                />
+              </div>
+            </FormField>
+          </div>
+          <div className="col-span-3">
+            <FormField
+              label={t('Profile Photo')}
+              error={actionData?.errors?.logo}
+            >
+              <UploadImage
+                index={0}
+                label={t('Hint For Profile Picture')}
+                defaultValue={organiser?.logo || ''}
+              />
+            </FormField>
           </div>
         </div>
-
-        <FormField
-          data-cy="address"
-          label={t('Address')}
-          error={actionData?.errors?.address}
-        >
-          <TextField name="address" defaultValue={organiser?.address || ''} />
-        </FormField>
-
-        <div className="flex lg:flex-row lg:gap-x-2">
-          <FormField
-            data-cy="postal-code"
-            label={t('Postal Code')}
-            className="w-1/4"
-            error={actionData?.errors?.postalCode}
-          >
-            <TextField
-              name="postal-code"
-              defaultValue={organiser?.postalCode || ''}
-            />
-          </FormField>
-
-          <FormField
-            data-cy="city"
-            label={t('City')}
-            className="w-1/4"
-            error={actionData?.errors?.city}
-          >
-            <TextField name="city" defaultValue={organiser?.city || ''} />
-          </FormField>
-        </div>
-
-        <FormField
-          label={t('Description')}
-          error={actionData?.errors?.description}
-        >
-          <div className="mt-1 relative rounded-md shadow-sm">
-            <textarea
-              name="description"
-              className={inputBaseClasses('p-10')}
-              placeholder={t('Profile Description')}
-              rows={5}
-              cols={50}
-              defaultValue={organiser?.description || ''}
-            />
-          </div>
-        </FormField>
-
         <ButtonGroup>
           <ButtonLink
             type="button"
             variant="secondary"
-            to={organiser.status === 'PENDING' ? '/' : '/o'}
+            to={!organiser || organiser?.status === 'PENDING' ? '/' : '/o'}
           >
             {t('Cancel')}
           </ButtonLink>
@@ -281,9 +287,11 @@ function PendingOrganiserMessage() {
   const { t } = useTranslation('organiser-form');
 
   return (
-      <Main>
-        <Paragraph data-cy="pending-validation">{t('Pending Validation')}</Paragraph>
-        <a href="/">{t('Pending Validation Action')}</a>
-      </Main>
+    <Main>
+      <Paragraph data-cy="pending-validation">
+        {t('Pending Validation')}
+      </Paragraph>
+      <a href="/">{t('Pending Validation Action')}</a>
+    </Main>
   );
 }
