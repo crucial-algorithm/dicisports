@@ -3,6 +3,7 @@ import {
   EnvelopeIcon,
   Bars3Icon
 } from '@heroicons/react/20/solid';
+import { XMarkIcon } from '@heroicons/react/24/outline';
 import type { LoaderFunction } from '@remix-run/node';
 import { json } from '@remix-run/node';
 import { Link, Outlet, useLocation } from '@remix-run/react';
@@ -108,7 +109,7 @@ function OrganizerSideBar({ sideBarCollapsed, handleToggleMenu }: OrganizerSideB
           sideBarCollapsed={sideBarCollapsed}
           pathname={location.pathname}
           handleToggleMenu={handleToggleMenu}
-          allowCollapse={true}
+          hideCollapseMenu={false}
         />
       </div>
     </>
@@ -120,10 +121,10 @@ type MenuProps = {
   sideBarCollapsed: boolean;
   pathname: string;
   handleToggleMenu?: () => void;
-  allowCollapse: boolean
+  hideCollapseMenu: boolean
 } & React.ComponentProps<'li'>
 
-function Menu({ handleToggleMenu, pathname, sideBarCollapsed, allowCollapse, className, onClick }: MenuProps) {
+function Menu({ handleToggleMenu, pathname, sideBarCollapsed, hideCollapseMenu, className, onClick }: MenuProps) {
   const [t] = useTranslation('common');
 
   return (
@@ -169,7 +170,7 @@ function Menu({ handleToggleMenu, pathname, sideBarCollapsed, allowCollapse, cla
         />
       </ul>
 
-      {allowCollapse && (
+      {!hideCollapseMenu && (
         <ul
           className={clsx('flex absolute bottom-8', {
             'w-52': !sideBarCollapsed
@@ -247,9 +248,7 @@ function MenuEntry({
   );
 }
 
-type MobileMenuButtonProps = {
-
-} & React.ComponentProps<'button'>
+type MobileMenuButtonProps = {} & React.ComponentProps<'button'>
 
 function MobileMenuButton({ onClick }: MobileMenuButtonProps) {
   return (
@@ -259,6 +258,20 @@ function MobileMenuButton({ onClick }: MobileMenuButtonProps) {
       className="md:hidden fixed bottom-2 left-2 w-11 h-11 bg-black dark:bg-white rounded-full z-10"
     >
       <Bars3Icon className="h-6 w-6 m-0 inline-block fill-white dark:fill-black" />
+    </button>
+  );
+}
+
+type MobileMenuCloseButtonProps = {} & React.ComponentProps<'button'>
+
+function MobileMenuCloseButton({ onClick }: MobileMenuCloseButtonProps) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="md:hidden fixed bottom-2 left-2 w-11 h-11 bg-black dark:bg-white rounded-full z-10"
+    >
+      <XMarkIcon className="h-6 w-6 m-0 inline-block text-white dark:text-white" />
     </button>
   );
 }
@@ -302,12 +315,13 @@ function MobileMenu({ isExpanded, linkClicked, pathname }: MobileMenuProps) {
             className="bg-primary flex flex-col pb-12 h-full border-gray-200 dark:border-gray-600 overflow-y-scroll"
           >
             <Menu
-              allowCollapse={false}
+              hideCollapseMenu={true}
               sideBarCollapsed={false}
               pathname={pathname}
               onClick={linkClicked}
               className="w-11/12 m-auto"
             />
+            <MobileMenuCloseButton onClick={linkClicked} />
           </motion.div>
         </div>
       )}
