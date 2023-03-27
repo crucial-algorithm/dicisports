@@ -657,6 +657,7 @@ export default function GroupRoute() {
         secondaryLabel={t("No, I don't want to delete")}
         onDismiss={handleDiscardDelete}
         onConfirm={handleDelete}
+        className="cy-delete-dialog"
       />
 
       <Form

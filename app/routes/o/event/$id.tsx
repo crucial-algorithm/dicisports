@@ -138,7 +138,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   const { MAPBOX_TOKEN, CLOUDINARY_UPLOAD_PRESET } = Config();
 
   if (!event || event.createdById !== user.id) {
-    return redirect('/organizer');
+    return redirect('/');
   }
 
   return json({

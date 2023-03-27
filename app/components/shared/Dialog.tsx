@@ -81,12 +81,7 @@ export function ConfirmationDialog({
     <Dialog.Root open={isOpen} onOpenChange={onDismiss}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 bg-gray-500 opacity-50" />
-        <Dialog.Content
-          className={clsx(
-            'dialog-content',
-            className
-          )}
-        >
+        <Dialog.Content className={clsx('dialog-content', className)}>
           <div className="dialog-title">
             <Dialog.Title className="text-lg">{title}</Dialog.Title>
             <Dialog.Close asChild>
@@ -101,8 +96,12 @@ export function ConfirmationDialog({
             </Dialog.Description>
           </div>
           <div className={clsx(className, 'dialog-footer')}>
-            <Button variant="secondary" onClick={onDismiss}>{secondaryLabel}</Button>
-            <Button variant={primaryVariant} onClick={onConfirm}>{primaryLabel}</Button>
+            <Button type="button" variant="secondary" onClick={onDismiss}>
+              {secondaryLabel}
+            </Button>
+            <Button type="button" variant={primaryVariant} onClick={onConfirm} className="cy-primary">
+              {primaryLabel}
+            </Button>
           </div>
         </Dialog.Content>
       </Dialog.Portal>

@@ -26,6 +26,7 @@ import { H2, H3, H4, H5, H6 } from '~/components/shared/typography';
 import DisplayDate from '~/components/shared/DIsplayDate';
 import I18nText from '~/components/I18nText';
 import Main from '~/components/shared/Main';
+import type { KCDHandle } from '~/types';
 import type {
   Event,
   Race,
@@ -54,6 +55,11 @@ const actionsId = {
   previousPage: 'previousPage'
 };
 
+export const handle: KCDHandle & { id: string; i18n: string[] } = {
+  id: 'dashboard',
+  i18n: ['dashboard']
+};
+
 export const loader: LoaderFunction = async ({ request, params }) => {
   const user = await requireUser(request);
   const eventId = params.eventId as string;
@@ -62,7 +68,6 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 
   const event = (await findEvent(eventId)) as Event;
 
-  console.log('----->', event);
   const racesRevenueAndRegistrations = await findRevenueAndRegistrationsPerRace(
     eventId as string
   );
@@ -230,8 +235,8 @@ export default function DashboardRoute() {
             {event.name}
           </b>
         </H2>
-        <ButtonLink to={`/o/event/${event.id}`} size="small" className="w-28">
-          Editar
+        <ButtonLink to={`/o/event/${event.id}`} size="small" className="w-28" data-cy="edit">
+          {t('Edit')}
         </ButtonLink>
       </div>
 

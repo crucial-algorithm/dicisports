@@ -44,6 +44,11 @@ const actions = {
   checkout: 'checkout'
 };
 
+export const handle: { id: string; i18n: string[] } = {
+  id: 'checkout',
+  i18n: ['checkout']
+};
+
 export const action: ActionFunction = async ({ request, params }) => {
   const t = await i18n.getFixedT(request, 'checkout');
   const form = await request.formData();
