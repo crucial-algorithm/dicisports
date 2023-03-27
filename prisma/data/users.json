@@ -178,5 +178,15 @@
     "email": "azores@gmail.com",
     "name": "Azores",
     "role": "MEMBER"
+  },
+  {
+    "id": "nK8Ekvc7SY8LgqhQ6dAR",
+    "createdAt": "2023-03-27 10:27:16.208",
+    "updatedAt": "2023-03-27 10:27:16.208",
+    "email": "organiser@gmail.com",
+    "name": "Organiser",
+    "password": "8335d266bc609c26d7fdad3b8b57beb15fb567a5c187a3c5487f99baa9d48942bf5e5b981bf86acc480ac67e8b1bde2c04aae85d836b4a8ed83cd4ffb1ae19db",
+    "salt": "da35921ed2f3f3697022ccf7e22f920f",
+    "role": "ORGANIZER"
   }
 ]

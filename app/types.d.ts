@@ -511,6 +511,8 @@ type SearchEventsResults = {
 type Organiser = DBOrganiser & {};
 
 type OrganiserInput = {
+  // id will be null if the user has no organiser profile and is creating it
+  id: string | null;
   name: string;
   email: string;
   phoneNumber?: number | null;

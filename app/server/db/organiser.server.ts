@@ -1,8 +1,10 @@
 import { db } from '~/server/db.server';
-import type { OrganiserInput, Organiser } from '~/types';
+import type { Organiser, OrganiserInput } from '~/types';
 import Id from '~/server/utils/Id.server';
 
-async function createOrganiser(organiser: OrganiserInput): Promise<Organiser | void> {
+async function createOrganiser(
+  organiser: OrganiserInput
+): Promise<Organiser | void> {
   const now = new Date();
 
   return db.organiser.create({
@@ -24,9 +26,33 @@ async function createOrganiser(organiser: OrganiserInput): Promise<Organiser | v
 }
 
 async function findOrganiser(userId: string): Promise<Organiser | null> {
-    return db.organiser.findUnique({
-      where: { userId }
-    });
+  return db.organiser.findUnique({
+    where: { userId }
+  });
 }
 
-export { createOrganiser, findOrganiser };
+async function updateOrganiser(
+  organiser: OrganiserInput
+): Promise<Organiser | void> {
+  const now = new Date();
+
+  return await db.organiser.update({
+    where: {
+      id: organiser.id as string
+    },
+    data: {
+      name: organiser.name,
+      email: organiser.email,
+      phoneNumber: organiser.phoneNumber,
+      address: organiser.address,
+      postalCode: organiser.postalCode,
+      city: organiser.city,
+      description: organiser.description,
+      logo: organiser.logo,
+      userId: organiser.userId,
+      updatedAt: now
+    }
+  });
+}
+
+export { createOrganiser, findOrganiser, updateOrganiser };

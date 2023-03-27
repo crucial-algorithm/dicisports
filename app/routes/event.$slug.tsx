@@ -624,7 +624,7 @@ function StickyPriceTag({
 
 function OrganiserFooter({ organiser }: { organiser: Organiser }) {
   return (
-    <footer>
+    <footer data-cy="organiser-profile">
       <div className="container px-4 mx-auto">
         <div className="-mx-4 flex flex-wrap">
           <div className="px-4 my-4 w-full">
@@ -632,7 +632,7 @@ function OrganiserFooter({ organiser }: { organiser: Organiser }) {
               <div className="w-14 h-14">
                 <DisplayImg imageId={organiser.logo} />
               </div>
-              <H4>{organiser.name}</H4>
+              <H4 data-cy="organiser-name">{organiser.name}</H4>
             </div>
 
             <div className="mt-4 whitespace-pre-wrap max-w-[90ch] dark:text-blueGray-500 text-gray-500 text-base break-words">

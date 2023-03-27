@@ -26,7 +26,7 @@ import Button, { ButtonLink } from '~/components/shared/Button';
 import { getUser, requireUser } from '~/server/auth/session.server';
 import i18n from '~/server/i18n.server';
 import { badRequest } from '~/utils/misc';
-import { createOrganiser, findOrganiser } from '~/server/db/organiser.server';
+import { createOrganiser, findOrganiser, updateOrganiser } from '~/server/db/organiser.server';
 import type { Organiser, OrganiserInput } from '~/types';
 import { Paragraph } from '~/components/shared/typography';
 import { uploadImageToCloudinary } from '~/server/storage/cloudinary.server';
@@ -54,6 +54,7 @@ export const action: ActionFunction = async ({ request }) => {
   const t = await i18n.getFixedT(request, 'organiser-form');
 
   const user = await getUser(request);
+  const organizer = await findOrganiser(user?.id as string);
 
   const uploadHandler: UploadHandler = unstable_composeUploadHandlers(
     // our custom upload handler
@@ -72,11 +73,15 @@ export const action: ActionFunction = async ({ request }) => {
   const form = await unstable_parseMultipartFormData(request, uploadHandler);
 
   const isUpdate = user?.role === 'ORGANIZER';
-  // @ts-ignore TODO: fix type
+
+  const logo = form.get('/file/image/0') as string;
+  const savedLogo = form.get('saved-logo') as string;
+
   const data: OrganiserInput = {
+    id: organizer ? organizer.id : null,
     name: form.get('name') as string,
     email: form.get('email') as string,
-    logo: processImgField(form.get('/file/image/0') as string, isUpdate),
+    logo: savedLogo.length > 0? savedLogo : processImgField(logo, isUpdate),
     phoneNumber:
       (form.get('phone-number') as string).length > 0
         ? parseInt(form.get('phone-number') as string)
@@ -126,7 +131,12 @@ export const action: ActionFunction = async ({ request }) => {
 
   try {
     OrganiserSchema.parse(data);
-    await createOrganiser(data);
+
+    if (data.id !== null) {
+      await updateOrganiser(data);
+    } else {
+      await createOrganiser(data);
+    }
 
     return json({});
   } catch (e) {
@@ -168,6 +178,7 @@ export default function UsRoute() {
   return (
     <Main>
       <UploadForm method="post">
+        <input type="hidden" name="saved-logo" value={organiser?.logo ? organiser.logo : ''} />
         <div className="flex flex-col md:grid md:grid-cols-2 md:grid-flow-col md:gap-4">
           <div>
             <FormField

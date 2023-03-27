@@ -335,6 +335,7 @@ describe('Checkout', () => {
 
         .wait('@selectRace')
 
+
         .get('#checkout')
         .click()
 
