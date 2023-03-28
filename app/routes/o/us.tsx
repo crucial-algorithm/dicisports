@@ -72,8 +72,6 @@ export const action: ActionFunction = async ({ request }) => {
 
   const form = await unstable_parseMultipartFormData(request, uploadHandler);
 
-  const isUpdate = user?.role === 'ORGANIZER';
-
   const logo = form.get('/file/image/0') as string;
   const savedLogo = form.get('saved-logo') as string;
 
@@ -81,7 +79,7 @@ export const action: ActionFunction = async ({ request }) => {
     id: organizer ? organizer.id : null,
     name: form.get('name') as string,
     email: form.get('email') as string,
-    logo: savedLogo.length > 0? savedLogo : processImgField(logo, isUpdate),
+    logo: savedLogo.length > 0? savedLogo : logo,
     phoneNumber:
       (form.get('phone-number') as string).length > 0
         ? parseInt(form.get('phone-number') as string)
