@@ -664,11 +664,23 @@ function checkGroupsBySport(sport: number, length: number) {
       .wait('@applyFilters')
       .waitForHydration()
 
+      .location()
+      .should((l) => {
+        expect(l.pathname).to.eq('/');
+        expect(l.search).to.contain('sport=' + sport);
+      })
+
       .get('#see-more')
       .click()
 
       .wait('@seeMore')
       .waitForHydration()
+
+      .location()
+      .should((l) => {
+        expect(l.pathname).to.eq('/');
+        expect(l.search).to.contain('sport=' + sport);
+      })
 
       .get('div[data-cy=group-entry]')
       .should('have.length', length)
@@ -704,6 +716,12 @@ function checkGroupsBySport(sport: number, length: number) {
 
       .wait('@applyFilters')
       .waitForHydration()
+
+      .location()
+      .should((l) => {
+        expect(l.pathname).to.eq('/');
+        expect(l.search).to.contain('sport=' + sport);
+      })
 
       .get('div[data-cy=group-entry]')
       .should('have.length', length)
