@@ -1,3 +1,4 @@
+import { Role } from '@prisma/client';
 import { Form, Link, useActionData, useSearchParams } from '@remix-run/react';
 
 import { z, ZodError } from 'zod';
@@ -224,6 +225,10 @@ export const action: ActionFunction = async ({ request }) => {
 
     if (postLoginAction === actions.createEvent) {
       return redirect('/o/event/create', { headers });
+    }
+
+    if (user.role === Role.ORGANIZER) {
+      return redirect('/o', { headers });
     }
 
     return redirect('/', { headers });

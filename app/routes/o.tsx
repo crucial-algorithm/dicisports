@@ -1,7 +1,7 @@
 import {
   UsersIcon,
   EnvelopeIcon,
-  Bars3Icon
+  Bars3Icon, UserIcon
 } from '@heroicons/react/20/solid';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import type { LoaderFunction } from '@remix-run/node';
@@ -34,7 +34,7 @@ export default function OrganizerLayout() {
   const [collapsed, setCollapsed] = useState<null | boolean>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
   const handleToggleMenu = useCallback(() => {
-    window.localStorage.setItem('side-menu-collapsed', !collapsed ? 'false' : 'true');
+    window.localStorage.setItem('side-menu-collapsed', String(!collapsed));
     setCollapsed(!collapsed);
   }, [collapsed]);
   const location = useLocation();
@@ -164,6 +164,14 @@ function Menu({ handleToggleMenu, pathname, sideBarCollapsed, hideCollapseMenu, 
           icon={<UsersIcon className="w-6" />}
           title={t('Users Menu')}
           to="/o/users"
+          pathname={pathname}
+          sideBarCollapsed={sideBarCollapsed}
+          onClick={onClick}
+        />
+        <MenuEntry
+          icon={<UserIcon className="w-6" />}
+          title={t('Profile menu')}
+          to="/me"
           pathname={pathname}
           sideBarCollapsed={sideBarCollapsed}
           onClick={onClick}

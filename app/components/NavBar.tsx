@@ -1,3 +1,4 @@
+import { Role } from '@prisma/client';
 import * as React from 'react';
 import { Link, useLocation } from '@remix-run/react';
 import clsx from 'clsx';
@@ -285,6 +286,18 @@ const durations = {
   active: 0.25
 };
 
+function to(user: User | null) {
+  if (!user) {
+    return '/login';
+  }
+
+  if (user.role === Role.ORGANIZER) {
+    return '/o';
+  }
+
+  return 'me';
+}
+
 function ProfileButton({ user }: { user: User | null }) {
   const controls = useAnimation();
   const [ref, state] = useElementState();
@@ -315,7 +328,7 @@ function ProfileButton({ user }: { user: User | null }) {
   return (
     <Link
       prefetch="intent"
-      to={user ? '/me' : '/login'}
+      to={to(user)}
       aria-label={user ? 'My Account' : 'Login'}
       className={clsx(
         'inline-flex items-center justify-center ml-4 w-14 h-14 rounded-full focus:outline-none'
