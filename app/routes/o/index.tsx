@@ -70,34 +70,16 @@ export default function OrganizerIndexRoute() {
             </Form>
           </div>
         </div>
-        <div className="events-list">
-          {events.map((event: Event) => (
-            <Link to={target(event.status, event.id)} key={event.id}>
-              <div
-                className={clsx(
-                  'relative flex mb-12',
-                  'flex-col',
-                  'p-4',
-                  'border-b border-gray-300 dark:border-gray-300',
-                  {
-                    'opacity-60':
-                      event.status === 'draft' || event.status === 'unpublished'
-                  }
-                )}
-                data-cy={`event-${event.id}`}
-              >
-                <div id="event-image">
-                  <H5 className={clsx('mb-5')}>{event.name}</H5>
-                  <RaceImage
-                    event={event}
-                    img={
-                      sports.find((s: Sport) => s.id === event.sportId)?.picture
-                    }
-                  />
-                </div>
-                <div className="w-full h-full p-2 lg:pl-6"></div>
-              </div>
-            </Link>
+        <H5 className="border-b mb-4">{t('Draft Events')}</H5>
+        <div className="flex align-middle justify-start">
+          {events.filter((e: Event) => e.status === 'draft' || e.status === 'unpublished').map((event: Event) => (
+            <EventEntry className="border-r" event={event} sports={sports} key={event.id} />
+          ))}
+        </div>
+        <H5 className="border-b">{t('Published Events')}</H5>
+        <div className="flex align-middle justify-start">
+          {events.filter((e: Event) => e.status === 'published').map((event: Event) => (
+            <EventEntry event={event} sports={sports} key={event.id} />
           ))}
         </div>
         <WhenListEmpty list={events}>
@@ -107,6 +89,40 @@ export default function OrganizerIndexRoute() {
         </WhenListEmpty>
       </div>
     </>
+  );
+}
+
+type EventEntryProps = {
+  event: Event;
+  sports: Sport[];
+} & React.ComponentProps<'div'>;
+
+function EventEntry({ event, sports, className }: EventEntryProps) {
+  return (
+    <Link to={target(event.status, event.id)} key={event.id}>
+      <div
+        className={clsx(
+          className,
+          'relative flex flex-col p-4 mb-4 hover:bg-secondary',
+          {
+            'opacity-60':
+              event.status === 'draft' || event.status === 'unpublished'
+          }
+        )}
+        data-cy={`event-${event.id}`}
+      >
+        <div id="event-image">
+          <H5 className={clsx('mb-5')}>{event.name}</H5>
+          <RaceImage
+            event={event}
+            img={
+              sports.find((s: Sport) => s.id === event.sportId)?.picture
+            }
+          />
+        </div>
+        <div className="w-full h-full p-2 lg:pl-6"></div>
+      </div>
+    </Link>
   );
 }
 
@@ -131,7 +147,7 @@ function PlaceholderImg({ event, img }: PlaceholderImgProps) {
 
 function RaceImage({ event, img }: { event: Event; img?: string }) {
   function Wrapper({ children }: {} & React.ComponentProps<'div'>) {
-    return <div className="w-[100px] h-[100px]">{children}</div>;
+    return <div className="w-[50px] h-[50px]">{children}</div>;
   }
 
   const { image1, image2, image3 } = event;
@@ -151,8 +167,8 @@ function RaceImage({ event, img }: { event: Event; img?: string }) {
           transformations={{
             resize: {
               type: 'fill',
-              width: 100,
-              height: 100
+              width: 50,
+              height: 50
             }
           }}
         />
