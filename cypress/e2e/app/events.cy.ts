@@ -381,7 +381,7 @@ describe('Event', () => {
     });
 
     it('should add a new perk', () => {
-      cy.intercept('POST', '/o/event/*?_data=routes*')
+      cy.intercept('POST', '/o/event/MY4bvgxDbMtGv8rbYe5d*')
         .as('postPerk')
         .visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d')
 
@@ -398,9 +398,23 @@ describe('Event', () => {
         .wait('@postPerk')
         .waitForHydration()
 
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.eq('/o/event/MY4bvgxDbMtGv8rbYe5d');
+        })
+
+        .get('[data-cy=perk-10]')
+        .should('exist').and('be.checked')
+
+        .get('[data-cy=perk-label-10]')
         .contains('a new perk')
 
         .visitAndWaitForHydration('/event/love-tiles-douro-granfondo-2023')
+
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.eq('/event/love-tiles-douro-granfondo-2023');
+        })
 
         .get('label[data-cy=perk-9]')
         .contains('a new perk');
