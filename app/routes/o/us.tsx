@@ -26,12 +26,15 @@ import Button, { ButtonLink } from '~/components/shared/Button';
 import { getUser, requireUser } from '~/server/auth/session.server';
 import i18n from '~/server/i18n.server';
 import { badRequest } from '~/utils/misc';
-import { createOrganiser, findOrganiser, updateOrganiser } from '~/server/db/organiser.server';
+import {
+  createOrganiser,
+  findOrganiser,
+  updateOrganiser
+} from '~/server/db/organiser.server';
 import type { Organiser, OrganiserInput } from '~/types';
 import { Paragraph } from '~/components/shared/typography';
 import { uploadImageToCloudinary } from '~/server/storage/cloudinary.server';
 import UploadForm from '~/components/shared/form/UploadForm';
-import { processImgField } from '~/server/utils/misc';
 
 type ActionData = {
   errors?: {

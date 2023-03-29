@@ -2,6 +2,7 @@ import * as React from 'react';
 import type { LinksFunction, LoaderFunction } from '@remix-run/node';
 import { json } from '@remix-run/node';
 import {
+  Link,
   Links,
   LiveReload,
   Meta,
@@ -20,6 +21,7 @@ import { useSpinDelay } from 'spin-delay';
 import clsx from 'clsx';
 
 import { setConfig } from 'cloudinary-build-url';
+import { useTranslation } from 'react-i18next';
 
 import type { KCDHandle, Sport } from '~/types';
 import type { Timings } from '~/server/metrics.server';
@@ -44,6 +46,10 @@ import { LocationProvider } from '~/utils/LocationProvider';
 import { getLocationSession } from '~/routes/action/set-my-location';
 
 import { findSports } from '~/server/db/reference.server';
+
+import HomeLogo from '~/components/shared/HomeLogo';
+import { H3, H6 } from '~/components/shared/typography';
+import { ButtonLink } from '~/components/shared/Button';
 
 import vendorsCss from './styles/vendors.css';
 import mainCss from './styles/main.css';
@@ -82,7 +88,7 @@ export const links: LinksFunction = () => {
 
 export const handle: KCDHandle & { id: string; i18n: string[] } = {
   id: 'root',
-  i18n: ['common', 'home']
+  i18n: ['common', 'home', 'errors']
 };
 
 export type RootLoaderData = {
@@ -99,7 +105,7 @@ export type RootLoaderData = {
       location: [number, number] | null;
     };
   };
-  sports: Array<Sport>
+  sports: Array<Sport>;
 };
 
 export const loader: LoaderFunction = async ({ request }) => {
@@ -234,11 +240,7 @@ function PageLoadingMessage() {
   );
 }
 
-function Html({
-  lang
-}: {
-  lang: string;
-}) {
+function Html({ lang }: { lang: string }) {
   const [theme] = useTheme();
   const data = useLoaderData<RootLoaderData>() as RootLoaderData;
   const analyticsUrl = 'https://plausible.io/js/plausible.js';
@@ -324,8 +326,10 @@ export function ErrorBoundary({ error }: { error: Error }) {
 
 export function CatchBoundary() {
   const caught = useCatch();
+  const { t } = useTranslation('errors');
 
   let message;
+  let subMessage;
 
   switch (caught.status) {
     case 401:
@@ -337,9 +341,8 @@ export function CatchBoundary() {
       );
       break;
     case 404:
-      message = (
-        <p>Oops! Looks like you tried to visit a page that does not exist.</p>
-      );
+      message = <p>{t('404 - Message')}</p>;
+      subMessage = <p>{t('404 - Sub Message')}</p>;
       break;
 
     default:
@@ -353,8 +356,17 @@ export function CatchBoundary() {
         <Links />
       </head>
       <body className="dark:bg-gray-900 bg-white transition duration-500">
-        <div>
-          <h1>{message}</h1>
+        <div className="flex justify-center items-center gap-y-2 flex-col h-screen">
+          <Link to="/">
+            <HomeLogo className="w-80 h-16 md:w-96 lg:w-144" />
+          </Link>
+          <div className="flex flex-col items-center">
+            <H3>{message}</H3>
+            {subMessage && <H6 variant="secondary">{subMessage}</H6>}
+          </div>
+          <ButtonLink variant="primary" to={'/'} className="mt-8">
+            {t('Return home')}
+          </ButtonLink>
         </div>
         <Scripts />
       </body>
