@@ -132,9 +132,9 @@ type CreateEventInput = {
   sportId: number;
   difficultyId: number;
   startAt: Date | string;
-  lat: number;
-  lng: number;
-  location: string;
+  lat: number | null;
+  lng: number | null;
+  location: string | null;
   useExternalBooking: boolean;
   externalBookingUrl?: string | null;
   description?: string | null;

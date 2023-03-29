@@ -71,15 +71,15 @@ export default function OrganizerIndexRoute() {
           </div>
         </div>
         <H5 className="border-b mb-4">{t('Draft Events')}</H5>
-        <div className="flex align-middle justify-start">
+        <div className="flex flex-wrap align-middle justify-start last:border-none">
           {events.filter((e: Event) => e.status === 'draft' || e.status === 'unpublished').map((event: Event) => (
             <EventEntry className="border-r" event={event} sports={sports} key={event.id} />
           ))}
         </div>
         <H5 className="border-b">{t('Published Events')}</H5>
-        <div className="flex align-middle justify-start">
+        <div className="flex flex-wrap align-middle justify-start">
           {events.filter((e: Event) => e.status === 'published').map((event: Event) => (
-            <EventEntry event={event} sports={sports} key={event.id} />
+            <EventEntry className="border-r" event={event} sports={sports} key={event.id} />
           ))}
         </div>
         <WhenListEmpty list={events}>
@@ -98,6 +98,8 @@ type EventEntryProps = {
 } & React.ComponentProps<'div'>;
 
 function EventEntry({ event, sports, className }: EventEntryProps) {
+  const { t } = useTranslation('organizer');
+
   return (
     <Link to={target(event.status, event.id)} key={event.id}>
       <div
@@ -112,7 +114,7 @@ function EventEntry({ event, sports, className }: EventEntryProps) {
         data-cy={`event-${event.id}`}
       >
         <div id="event-image">
-          <H5 className={clsx('mb-5')}>{event.name}</H5>
+          <H5 className={clsx('mb-5')}>{event.name || t('No Name')}</H5>
           <RaceImage
             event={event}
             img={
@@ -120,7 +122,7 @@ function EventEntry({ event, sports, className }: EventEntryProps) {
             }
           />
         </div>
-        <div className="w-full h-full p-2 lg:pl-6"></div>
+        <div className="w-full h-full p-2 lg:pl-6" />
       </div>
     </Link>
   );

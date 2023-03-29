@@ -225,46 +225,53 @@ export const action: ActionFunction = async ({ request, params }) => {
   const perks: string[] = form.getAll('perks') as string[];
   const newPerks: string[] = form.getAll('new-perk-input') as string[];
 
-  const EventSchema = z
-    .object({
-      name: z
-        .string({ required_error: t('Field Required') })
-        .min(5, { message: t('Min 5 chars') }),
-      sportId: z
-        .number()
-        .nonnegative({ message: t('Nonexistent Sport') })
-        .lte(7, { message: t('Nonexistent Sport') }),
-      startAt: z.date()
-        .min(new Date(), { message: t('Future Date') }),
-      location: z.string({ required_error: t('Field required') }),
-      useExternalBooking: z.boolean({
-        invalid_type_error: t('Invalid Type')
-      }),
-      externalBookingUrl: z
-        .string({ invalid_type_error: t('Invalid Type') })
-        .url()
-        .min(5, { message: t('Min 5 chars') })
-        .nullable(),
-      description: z
-        .string({ invalid_type_error: t('Invalid Type') })
-        .min(1, { message: t('Min 1 chars') })
-        .nullable()
-    })
-    .refine(
-      () =>
-        (actionId === actionIds.publish && races.length > 0) ||
-        actionId !== actionIds.publish,
-      {
-        message: t('At least 1 race'),
-        path: ['submit']
-      }
-    );
+  const EventSchema = {
+    name: z
+      .string({ required_error: t('Field Required') })
+      .min(5, { message: t('Min 5 chars') }),
+    sportId: z
+      .number()
+      .nonnegative({ message: t('Nonexistent Sport') })
+      .lte(7, { message: t('Nonexistent Sport') }),
+    startAt: z.date().min(new Date(), { message: t('Future Date') }),
+    location: z.string({
+      required_error: t('Field required'),
+      invalid_type_error: t('Field required')
+    }),
+    useExternalBooking: z.boolean({
+      invalid_type_error: t('Invalid Type')
+    }),
+    externalBookingUrl: z
+      .string({ invalid_type_error: t('Invalid URL') })
+      .url(),
+    description: z
+      .string({
+        invalid_type_error: t('Invalid Type'),
+        required_error: t('Field Required')
+      })
+      .min(1, { message: t('Min 1 chars') })
+      .nullable(),
+    races: z
+      .string({ required_error: t('At least 1 race') })
+      .array()
+      .nonempty(t('At least 1 race'))
+  };
+
+  if (!data.useExternalBooking) {
+    // @ts-ignore Don't like this... can we solve it with z.discriminatedUnion?
+    EventSchema.externalBookingUrl = z
+      .string({ invalid_type_error: t('Invalid URL') })
+      .url()
+      .nullable();
+  }
 
   try {
-    EventSchema.parse(data);
     await updateEvent(data, perks, newPerks);
 
     if (actionId === actionIds.publish) {
+
+      z.object(EventSchema).parse({ ...data, races: races.map((r) => r.id) });
+
       if (user.role === Role.ORGANIZER) {
         await publishEvent(event.id as string, data.name);
       } else {
@@ -287,9 +294,10 @@ export const action: ActionFunction = async ({ request, params }) => {
     return json({});
   } catch (e) {
     if (!(e instanceof ZodError)) {
-      console.error(e);
+      const tc = await i18n.getFixedT(request, 'common');
+
       return badRequest({
-        error: 'We dont know what happened'
+        errors: { submit: tc('500 error message') }
       });
     }
 
@@ -356,9 +364,9 @@ export default function OrganizerEventRoute() {
   const [location, setLocation] = useState<DiciLocation | null>(
     event.location
       ? {
-          coords: `${event.lat}, ${event.lng}`,
-          shortAddress: event.location
-        }
+        coords: `${event.lat}, ${event.lng}`,
+        shortAddress: event.location
+      }
       : null
   );
   const [showDocumentsDialog, setSowDocumentsDialog] = useState<{
@@ -569,13 +577,15 @@ export default function OrganizerEventRoute() {
             label={t('Location')}
             id="event-location"
             className="w-full"
-            error={actionData?.errors?.address}
+            error={actionData?.errors?.location}
+            onClick={handleShowMap}
           >
             <TextField
               name="discard-location"
               id="event-sport"
               defaultValue={location?.shortAddress}
               disabled={true}
+              className="cursor-pointer"
               adornment={
                 <Button
                   name="open-map"
@@ -737,9 +747,9 @@ export default function OrganizerEventRoute() {
                 {t('No Races')}
               </H6>
             </WhenListEmpty>
-            {actionData?.errors?.submit ? (
+            {actionData?.errors?.races ? (
               <InputError className="mt-8" id="error-message">
-                {actionData?.errors?.submit}
+                {actionData?.errors?.races}
               </InputError>
             ) : null}
           </div>
@@ -801,7 +811,7 @@ export default function OrganizerEventRoute() {
           </div>
 
           <ButtonGroup className="mt-8">
-            <ButtonLink type="button" variant="secondary" to={'/organizer'}>
+            <ButtonLink type="button" variant="secondary" to={'/o'}>
               {t('Cancel')}
             </ButtonLink>
 
@@ -828,6 +838,11 @@ export default function OrganizerEventRoute() {
               </Button>
             )}
           </ButtonGroup>
+          {actionData?.errors?.submit && (
+            <InputError className="mt-8" id="500-error-message">
+              {actionData?.errors?.submit}
+            </InputError>
+          )}
         </UploadForm>
       </div>
 
