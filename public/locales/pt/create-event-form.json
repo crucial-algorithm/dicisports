@@ -88,6 +88,8 @@
 
   "Delete": "Apagar Distância",
   "Delete Document": "Apagar documento",
+  "Delete Event": "Apagar evento",
+  "Event Deleted": "Evento apagado",
   "Delete Race X": "Apagar a corrida \"{{name}}\"",
   "Delete Document X": "Apagar a documento \"{{name}}\"",
   "Are you sure you want to delete race?": "Tem a certeza que quer apagar a corrida ? Não há como voltar atrás",

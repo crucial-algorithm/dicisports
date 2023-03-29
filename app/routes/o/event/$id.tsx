@@ -64,7 +64,8 @@ import {
   findEvent,
   publishEvent,
   unpublishEvent,
-  updateEvent
+  updateEvent,
+  deleteEvent
 } from '~/server/db/events.server';
 import Main from '~/components/shared/Main';
 import FormField from '~/components/shared/form/FormField';
@@ -112,7 +113,8 @@ type ActionData = {
 
 const actionIds = {
   publish: 'publish',
-  unpublish: 'unpublish'
+  unpublish: 'unpublish',
+  delete: 'delete'
 };
 
 const RESOURCES_NS = 'create-event-form';
@@ -210,6 +212,12 @@ export const action: ActionFunction = async ({ request, params }) => {
 
   if (eventStatus === Status.auto) {
     eventStatus = Status.draft;
+  }
+
+  if (actionId === actionIds.delete) {
+    await deleteEvent(event.id as string);
+
+    return redirect(`/o?message=${t('Event Deleted')}`);
   }
 
   const data: CreateEventInput = {
@@ -812,6 +820,10 @@ export default function OrganizerEventRoute() {
           </div>
 
           <ButtonGroup className="mt-8">
+            <Button id="delete-button" name="actionId" type="submit" variant="danger" value={actionIds.delete}>
+              {t('Delete Event')}
+            </Button>
+
             <ButtonLink type="button" variant="secondary" to={'/organizer'}>
               {t('Cancel')}
             </ButtonLink>
