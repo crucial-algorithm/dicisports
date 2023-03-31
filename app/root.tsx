@@ -88,7 +88,7 @@ export const links: LinksFunction = () => {
 
 export const handle: KCDHandle & { id: string; i18n: string[] } = {
   id: 'root',
-  i18n: ['common', 'home', 'errors']
+  i18n: ['common', 'home']
 };
 
 export type RootLoaderData = {
@@ -326,7 +326,7 @@ export function ErrorBoundary({ error }: { error: Error }) {
 
 export function CatchBoundary() {
   const caught = useCatch();
-  const { t } = useTranslation('errors');
+  const { t } = useTranslation('common');
 
   let message;
   let subMessage;
