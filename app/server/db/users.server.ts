@@ -1,5 +1,7 @@
 import crypto from 'crypto';
 
+import { dbUserToUser } from '~/server/db/codecs.server';
+
 import type { User } from '~/types';
 
 import { db } from '~/server/db.server';
@@ -8,8 +10,8 @@ import Id from '~/server/utils/Id.server';
 
 const sessionExpirationTime = Config().SESSION_EXPIRATION_TIME;
 
-function findUserByEmail(email: string) {
-  return db.user.findUnique({
+async function findUserByEmail(email: string) {
+  const user = await db.user.findUnique({
     where: { email },
     select: {
       id: true,
@@ -25,8 +27,17 @@ function findUserByEmail(email: string) {
       role: true
     }
   });
+
+  if (user === null) {
+    return null;
+  }
+  return dbUserToUser(user);
 }
 
+/**
+ * This method is used for login, so don't use dbUserToUser!
+ * @param email
+ */
 function findUserByEmailWithHash(email: string) {
   return db.user.findUnique({
     where: { email },
@@ -73,7 +84,7 @@ async function findUserFromSessionId(sessionId: string) {
     });
   }
 
-  return { ...session.user, password: null, salt: null };
+  return dbUserToUser(session.user);
 }
 
 async function createUser({
@@ -90,9 +101,9 @@ async function createUser({
     .pbkdf2Sync(password, salt, 1000, 64, 'sha512')
     .toString('hex');
 
-  return await db.user.create({
+  return dbUserToUser(await db.user.create({
     data: { id: Id(), email, name, password: hash, salt }
-  });
+  }));
 }
 
 async function loginUser({

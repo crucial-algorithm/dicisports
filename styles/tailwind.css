@@ -1,4 +1,4 @@
- /* purgecss start ignore */
+/* purgecss start ignore */
 @tailwind base;
 @tailwind components;
 /* purgecss end ignore */
@@ -6,48 +6,84 @@
 @tailwind utilities;
 @tailwind screens;
 
+@layer components {
+    .dialog-content {
+        @apply flex flex-col fixed top-0 left-0
+        bg-white text-gray-500 font-medium
+        dark:bg-gray-900 dark:border-white dark:text-white
+        z-20
+
+        w-screen h-screen px-8
+
+        md:top-[50%] md:left-[50%] md:-translate-x-1/2 md:-translate-y-1/2
+        md:w-5/6 md:max-w-[90%] md:min-h-[200px] md:max-h-[90vh] md:h-fit
+        md:m-auto md:px-4
+        md:rounded-lg md:border-2 md:border-black
+        ;
+    }
+
+    .dialog-title {
+        @apply flex justify-between items-center font-bold py-3;
+    }
+
+    .dialog-body {
+        @apply flex flex-col flex-auto justify-start relative mb-8 overflow-auto;
+    }
+
+    .dialog-footer {
+        @apply fixed bottom-4 right-1 flex items-baseline justify-end gap-4
+        md:static md:w-full md:py-2 md:px-1
+        md:flex-wrap md:justify-end md:items-center
+        ;
+    }
+
+    .search-filters .dialog-footer {
+        @apply bottom-16 right-8;
+    }
+}
+
 @layer utilities {
-  .focus-ring {
-    @apply focus:outline-none focus-within:outline-none transition duration-300 disabled:ring-0 hover:ring-2 focus:ring-2 focus-within:ring-2 group-hover:ring-2 group-focus:ring-2 hover:ring-team-current focus:ring-team-current focus-within:ring-team-current group-hover:ring-team-current group-focus:ring-team-current ring-team-current ring-offset-4 dark:ring-offset-gray-900 ring-offset-white;
-  }
+    .focus-ring {
+        @apply focus:outline-none focus-within:outline-none transition duration-300 disabled:ring-0 hover:ring-2 focus:ring-2 focus-within:ring-2 group-hover:ring-2 group-focus:ring-2 hover:ring-team-current focus:ring-team-current focus-within:ring-team-current group-hover:ring-team-current group-focus:ring-team-current ring-team-current ring-offset-4 dark:ring-offset-gray-900 ring-offset-white;
+    }
 
-  .focus-ring.danger {
-    @apply dark:focus:ring-red-500 dark:hover:ring-red-500 dark:focus-within:ring-red-500 dark:group-hover:ring-red-500 group-focus:dark:ring-red-500 focus:ring-red-500 hover:ring-red-500 focus-within:ring-red-500 group-hover:ring-red-500 group-focus:ring-red-500 ring-red-500;
-  }
+    .focus-ring.danger {
+        @apply dark:focus:ring-red-500 dark:hover:ring-red-500 dark:focus-within:ring-red-500 dark:group-hover:ring-red-500 group-focus:dark:ring-red-500 focus:ring-red-500 hover:ring-red-500 focus-within:ring-red-500 group-hover:ring-red-500 group-focus:ring-red-500 ring-red-500;
+    }
 
-  .bg-primary {
-    @apply dark:bg-gray-900 bg-white;
-  }
+    .bg-primary {
+        @apply dark:bg-gray-900 bg-white;
+    }
 
-  .bg-secondary {
-    @apply bg-gray-100 dark:bg-gray-800;
-  }
+    .bg-secondary {
+        @apply bg-gray-100 dark:bg-gray-800;
+    }
 
-  .bg-alt {
-    @apply bg-gray-200 dark:bg-gray-700;
-  }
+    .bg-alt {
+        @apply bg-gray-200 dark:bg-gray-700;
+    }
 
-  .bg-inverse {
-    @apply bg-black dark:bg-white;
-  }
+    .bg-inverse {
+        @apply bg-black dark:bg-white;
+    }
 
-  .border-primary {
-    @apply border-gray-900 dark:border-white;
-  }
+    .border-primary {
+        @apply border-gray-900 dark:border-white;
+    }
 
-  .border-secondary {
-    @apply border-gray-200 dark:border-gray-600;
-  }
+    .border-secondary {
+        @apply border-gray-200 dark:border-gray-600;
+    }
 
-  .text-primary {
-    @apply text-black dark:text-white;
-  }
+    .text-primary {
+        @apply text-black dark:text-white;
+    }
 
-  .text-secondary {
-    @apply dark:text-blueGray-500 text-gray-500;
-  }
+    .text-secondary {
+        @apply dark:text-blueGray-500 text-gray-500;
+    }
 
-  .text-inverse {
-    @apply dark:text-black text-white;
-  }
+    .text-inverse {
+        @apply dark:text-black text-white;
+    }
 }

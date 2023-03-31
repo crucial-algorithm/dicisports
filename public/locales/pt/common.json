@@ -1,6 +1,12 @@
 {
-  "NAVBAR >>> Meeting Point": "Os meus grupos",
-  "NAVBAR >>> Events": "Os meus eventos",
+  "500 error message": "Aconteceu um problema e não sabemos o que foi... iremos avaliar. Tente mais tarde.",
+  "Groups Menu": "Os meus grupos",
+  "Events Menu": "Eventos",
+  "Campaigns Menu": "Campanhas",
+  "Promo Codes Menu": "Códigos Desconto",
+  "Users Menu": "Utilizadores",
+  "Profile menu": "Perfil",
+  "Switch Collapse Menu": "Minimizar",
   "Home": "Inicio",
   "Switch to light mode": "Alterar para light mode",
   "Switch to dark mode": "Alterar para dark mode",
@@ -38,4 +44,6 @@
   "404 - Message": "404 - Página não encontrada",
   "404 - Sub Message": "A página que está à procura não existe",
   "Return home": "Voltar à página inicial"
+
+  "CTA Publish Your Event": "Divulga a tua prova no DicisSports"
 }

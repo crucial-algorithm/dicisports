@@ -11,7 +11,7 @@ import { ArrowRightOnRectangleIcon } from '@heroicons/react/24/solid';
 import { useTranslation } from 'react-i18next';
 
 import ProfileFragment from '~/components/ProfileFragment';
-import { useRootData } from '~/utils/use-root-data';
+import { useRootData } from '~/hooks';
 
 import i18n from '~/server/i18n.server';
 

@@ -447,7 +447,7 @@ export default function CheckoutInfoRoute() {
         <H6>
           <DisplayDate date={new Date(event.startAt || 0)} />
         </H6>
-        <H6>{event.address}</H6>
+        <H6>{event.location}</H6>
       </div>
 
       {raceParticipants.length > 1 && (

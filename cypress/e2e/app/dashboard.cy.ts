@@ -22,7 +22,7 @@ describe('Dashboard', () => {
 
   context('General', () => {
     beforeEach(() => {
-      cy.loginAdmin();
+      cy.loginOrganiser();
     });
 
     it('should have correct number of pages', () => {

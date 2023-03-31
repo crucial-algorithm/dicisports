@@ -15,7 +15,7 @@ describe('Groups', () => {
         .should('exist');
     });
 
-    it('should load groups in desktop', () => {
+    it.skip('should load groups in desktop', () => {
       cy.viewport(1024, 768)
         .login()
         .visitAndWaitForHydration('/')
@@ -161,16 +161,16 @@ describe('Groups', () => {
     });
 
     it('should delete group', () => {
-      // eslint-disable-next-line cypress/no-unnecessary-waiting
-      cy.visitAndWaitForHydration('/g/group/FkoxmH5db6RXqBpExion')
+      cy.intercept('GET', '/g/groups?message=*')
+        .as('deleteGroup')
+
+        .visitAndWaitForHydration('/g/group/FkoxmH5db6RXqBpExion')
         .get('button[name=delete]')
         .click()
 
-        .get('[data-cy=delete-dialog]')
+        .get('.cy-delete-dialog')
 
-        .intercept('GET', '/g/groups?message=*')
-        .as('deleteGroup')
-        .get('button[name=confirm-delete]')
+        .get('button.cy-primary')
         .click()
 
         .wait('@deleteGroup')

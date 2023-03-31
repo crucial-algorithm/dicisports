@@ -1,4 +1,11 @@
 function parseLocation(location: string) {
+  if (!location) {
+    return {
+      lat: null,
+      lng: null,
+      address: null
+    };
+  }
   const [coords, address] = location.split('|');
   const [lat, lng] = coords.split(',');
 
