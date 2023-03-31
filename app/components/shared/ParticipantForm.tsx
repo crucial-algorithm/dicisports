@@ -277,20 +277,9 @@ export default function ParticipantForm({
 
       <input type="hidden" name="hash" value={hash} />
       <ButtonGroup>
-        {selectedParticipant && (
-          <Button
-            type="submit"
-            value={CheckoutInfoActions.updateAndSave}
-            name="actionId"
-            disabled={!participant}
-            id="save-update-button"
-          >
-            {t('Save and Update', {
-              first: selectedParticipant.firstName,
-              last: selectedParticipant.lastName
-            })}
-          </Button>
-        )}
+        <Button type="button" variant="secondary" onClick={resetForm}>
+          {t('Reset')}
+        </Button>
         <Button
           type="submit"
           value={
@@ -305,10 +294,20 @@ export default function ParticipantForm({
         >
           {t('Save')}
         </Button>
-
-        <Button type="button" variant="secondary" onClick={resetForm}>
-          {t('Reset')}
-        </Button>
+        {selectedParticipant && (
+            <Button
+                type="submit"
+                value={CheckoutInfoActions.updateAndSave}
+                name="actionId"
+                disabled={!participant}
+                id="save-update-button"
+            >
+              {t('Save and Update', {
+                first: selectedParticipant.firstName,
+                last: selectedParticipant.lastName
+              })}
+            </Button>
+        )}
       </ButtonGroup>
     </fetcher.Form>
   );

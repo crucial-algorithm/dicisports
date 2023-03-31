@@ -50,19 +50,23 @@ describe('Search', () => {
       cy.login()
         .visitAndWaitForHydration('/?coords=&search=&page=0&dow=&sport=&g=&actionId=search')
 
-        .url()
-        .should(
-          'include',
-          '/?coords=&search=&page=0&dow=&sport=&g=&actionId=search'
-        )
+        .location()
+        .should((l) => {
+          expect(l.search).to.contain(
+            'coords=&search=&page=0&dow=&sport=&g=&actionId=search'
+          );
+          expect(l.pathname).to.eq('/');
+        })
 
         .get('#create-your-group')
         .click()
 
         .waitForHydration()
 
-        .url()
-        .should('include', `${Cypress.config().baseUrl}/g/group/`);
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.contain('/g/group/');
+        });
     });
 
     it('should favorite a group unauthenticated: login', () => {
@@ -178,13 +182,7 @@ describe('Search', () => {
     it('should have whatsapp link', () => {
       cy.intercept('GET', '/?actionId=search*_data=routes*')
         .as('selectSport')
-        .visitAndWaitForHydration('/')
-
-        .get('[data-cy=4]')
-        .click()
-
-        .wait('@selectSport')
-        .waitForHydration()
+        .visitAndWaitForHydration('/?actionId=search&sport=4')
 
         .get('#whatsapp-GkoxmH5db6RXqBpExion')
         .should('be.visible');
@@ -253,7 +251,10 @@ describe('Search', () => {
         .waitForHydration()
 
         .url()
-        .should('include', '/?index=&coords=&search=&page=0&sport=&dow=&value=&actionId=search')
+        .should(
+          'include',
+          '/?index=&coords=&search=&page=0&sport=&dow=&value=&actionId=search'
+        )
 
         .get('#sort-location')
         .click()
@@ -262,7 +263,10 @@ describe('Search', () => {
         .waitForHydration()
 
         .url()
-        .should('include', '/?coords=&search=&page=0&dow=&sport=&g=&order=proximity&actionId=sort')
+        .should(
+          'include',
+          '/?coords=&search=&page=0&dow=&sport=&g=&order=proximity&actionId=sort'
+        )
 
         .get('#sort-location')
         .click()
@@ -274,22 +278,36 @@ describe('Search', () => {
         .waitForHydration()
 
         .url()
-        .should('include', '/?coords=&search=&page=0&dow=&sport=&g=&order=proximity&actionId=sort')
+        .should(
+          'include',
+          '/?coords=&search=&page=0&dow=&sport=&g=&order=proximity&actionId=sort'
+        )
 
         .get('div[data-cy=distance]')
-        .should('exist').and('have.length', 10)
+        .should('exist')
+        .and('have.length', 10)
 
         // Check if the values are correct
-        .get('div[data-cy=distance]:nth(0)').should('contain', '10 km')
-        .get('div[data-cy=distance]:nth(1)').should('contain', '12 km')
-        .get('div[data-cy=distance]:nth(2)').should('contain', '42 km')
-        .get('div[data-cy=distance]:nth(3)').should('contain', '46 km')
-        .get('div[data-cy=distance]:nth(4)').should('contain', '46 km')
-        .get('div[data-cy=distance]:nth(5)').should('contain', '46 km')
-        .get('div[data-cy=distance]:nth(6)').should('contain', '51 km')
-        .get('div[data-cy=distance]:nth(7)').should('contain', '57 km')
-        .get('div[data-cy=distance]:nth(8)').should('contain', '65 km')
-        .get('div[data-cy=distance]:nth(9)').should('contain', '71 km');
+        .get('div[data-cy=distance]:nth(0)')
+        .should('contain', '10 km')
+        .get('div[data-cy=distance]:nth(1)')
+        .should('contain', '12 km')
+        .get('div[data-cy=distance]:nth(2)')
+        .should('contain', '42 km')
+        .get('div[data-cy=distance]:nth(3)')
+        .should('contain', '46 km')
+        .get('div[data-cy=distance]:nth(4)')
+        .should('contain', '46 km')
+        .get('div[data-cy=distance]:nth(5)')
+        .should('contain', '46 km')
+        .get('div[data-cy=distance]:nth(6)')
+        .should('contain', '51 km')
+        .get('div[data-cy=distance]:nth(7)')
+        .should('contain', '57 km')
+        .get('div[data-cy=distance]:nth(8)')
+        .should('contain', '65 km')
+        .get('div[data-cy=distance]:nth(9)')
+        .should('contain', '71 km');
     });
 
     context('Test all filters', () => {
@@ -616,6 +634,12 @@ function checkGroupsBySport(sport: number, length: number) {
       })
       .waitForHydration()
 
+      .location()
+      .should((l) => {
+        expect(l.pathname).to.eq('/');
+        expect(l.search).to.contain('sport=' + sport);
+      })
+
       .get('#see-more')
       .click()
 
@@ -625,6 +649,12 @@ function checkGroupsBySport(sport: number, length: number) {
         expect(loc.pathname).to.eq('/');
       })
       .waitForHydration()
+
+      .location()
+      .should((l) => {
+        expect(l.pathname).to.eq('/');
+        expect(l.search).to.contain('sport=' + sport);
+      })
 
       .get('div[data-cy=group-entry]')
       .should('have.length', length)
@@ -668,6 +698,12 @@ function checkGroupsBySport(sport: number, length: number) {
         expect(loc.pathname).to.eq('/');
       })
       .waitForHydration()
+
+      .location()
+      .should((l) => {
+        expect(l.pathname).to.eq('/');
+        expect(l.search).to.contain('sport=' + sport);
+      })
 
       .get('div[data-cy=group-entry]')
       .should('have.length', length)

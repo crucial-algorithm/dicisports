@@ -335,10 +335,14 @@ describe('Checkout', () => {
 
         .wait('@selectRace')
 
+
         .get('#checkout')
         .click()
 
         .wait('@checkout')
+
+        .url()
+        .should('include', '/checkout/info/MY4bvgxDbMtGv8rbYe5d')
 
         .get('#checkout')
         .click()
@@ -476,41 +480,40 @@ describe('Checkout', () => {
 
     it('should fill form with saved participant info', () => {
       cy.intercept(
-          'POST',
-          '/checkout/cart/gLqrDfMx6qkTHn6hoZqA*?_data=routes*checkout*'
+        'POST',
+        '/checkout/cart/gLqrDfMx6qkTHn6hoZqA*?_data=routes*checkout*'
       )
-          .as('addRace')
+        .as('addRace')
 
-          .visitAndWaitForHydration(
-              '/checkout/cart/gLqrDfMx6qkTHn6hoZqA'
-          )
+        .visitAndWaitForHydration('/checkout/cart/gLqrDfMx6qkTHn6hoZqA')
 
-          .loginAdmin()
+        .loginAdmin()
 
-          .get('#add-race-LoDjLz7dWQTWk6Th4dRC')
-          .click()
+        .get('#add-race-LoDjLz7dWQTWk6Th4dRC')
+        .click()
 
-          .wait('@addRace')
+        .wait('@addRace')
 
-          .get('#checkout')
-          .click()
+        .get('#checkout')
+        .click()
 
-          .wait('@addRace')
+        .wait('@addRace')
 
-          .waitForHydration()
+        .waitForHydration()
 
-          .url()
-          .should('include', '/checkout/info/gLqrDfMx6qkTHn6hoZqA')
+        .url()
+        .should('include', '/checkout/info/gLqrDfMx6qkTHn6hoZqA')
 
-          .get('button[name=select-userSavedParticipants]')
-          .should('exist')
-          .pickOptionFromSelect('userSavedParticipants', 1)
+        .get('button[name=select-userSavedParticipants]')
+        .should('exist')
+        .pickOptionFromSelect('userSavedParticipants', 1)
 
-          .get('input[name=first-name]')
-          .should('have.length.at.least', 1)
+        .get('input[name=first-name]')
+        .should('have.length.at.least', 1)
 
-          .get('input[name=last-name]')
-          .should('have.length.at.least', 1).and('have.value', 'Lopes');
+        .get('input[name=last-name]')
+        .should('have.length.at.least', 1)
+        .and('have.value', 'Lopes');
     });
 
     it('should book a race', () => {

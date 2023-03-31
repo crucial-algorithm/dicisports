@@ -14,6 +14,7 @@ import type {
   Participant as DBParticipant,
   Booking as DBBooking,
   ShirtSize as DBShirtSize,
+  Organiser as DBOrganiser,
   ParticipantStatus,
   Status as EventStatus
 } from '@prisma/client';
@@ -123,7 +124,12 @@ type GroupInput = {
   description: string | null;
 } & DBGroup;
 
-type Event = { races: Race[]; difficulty: Difficulty | null, documents: Document[], status: EventStatus } & DBEvent;
+type Event = {
+  races: Race[];
+  difficulty: Difficulty | null;
+  documents: Document[];
+  status: EventStatus;
+} & DBEvent;
 
 type CreateEventInput = {
   id: string;
@@ -507,6 +513,22 @@ type SearchEventsResults = {
   image5?: string;
 };
 
+type Organiser = DBOrganiser & {};
+
+type OrganiserInput = {
+  // id will be null if the user has no organiser profile and is creating it
+  id: string | null;
+  name: string;
+  email: string;
+  phoneNumber?: number | null;
+  address: string;
+  postalCode: string;
+  city: string;
+  description: string;
+  logo: string;
+  userId: string;
+};
+
 export {
   NonNullProperties,
   MemberProfile,
@@ -561,9 +583,10 @@ export {
   DBRawSearchResults,
   SearchResults,
   SearchEventsResults,
+  Organiser,
+  OrganiserInput,
   EventStatus
 };
-
 
 // https://www.i18next.com/overview/typescript#argument-of-type-defaulttfuncreturn-is-not-assignable-to-parameter-of-type-xyz
 declare module 'i18next' {
