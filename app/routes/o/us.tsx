@@ -53,6 +53,10 @@ type LoaderData = {
   organiser: Organiser;
 };
 
+export const handle = {
+  i18n: ['organiser-form']
+};
+
 export const action: ActionFunction = async ({ request }) => {
   const t = await i18n.getFixedT(request, 'organiser-form');
 
@@ -179,13 +183,18 @@ export default function UsRoute() {
   return (
     <Main>
       <UploadForm method="post">
-        <input type="hidden" name="saved-logo" value={organiser?.logo ? organiser.logo : ''} />
+        <input
+          type="hidden"
+          name="saved-logo"
+          value={organiser?.logo ? organiser.logo : ''}
+        />
         <div className="flex flex-col md:grid md:grid-cols-2 md:grid-flow-col md:gap-4">
           <div>
             <FormField
               data-cy="name"
-              label={`${t('Name')}*`}
+              label={t('Name')}
               error={actionData?.errors?.name}
+              description={t('Organiser display field')}
             >
               <TextField name="name" defaultValue={organiser?.name || ''} />
             </FormField>
@@ -249,8 +258,9 @@ export default function UsRoute() {
             </div>
 
             <FormField
-              label={`${t('Description')}*`}
+              label={t('Description')}
               error={actionData?.errors?.description}
+              description={t('Organiser display field')}
             >
               <div className="mt-1 relative rounded-md shadow-sm">
                 <textarea
@@ -266,8 +276,9 @@ export default function UsRoute() {
           </div>
           <div className="col-span-3">
             <FormField
-              label={`${t('Profile Photo')}*`}
+              label={t('Profile Photo')}
               error={actionData?.errors?.logo}
+              description={t('Organiser display field')}
             >
               <UploadImage
                 index={0}
@@ -277,9 +288,6 @@ export default function UsRoute() {
             </FormField>
           </div>
         </div>
-        <legend className="block text-sm font-medium text-gray-500 mb-4">
-          {t('Organiser display fields')}
-        </legend>
         <ButtonGroup>
           <ButtonLink
             type="button"

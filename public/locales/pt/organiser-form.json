@@ -20,7 +20,7 @@
   "Invalid number": "Número inválido",
   "Max 9 Number": "Apenas permitidos 9 dígitos",
   "Valid E-mail": "Insira um e-mail válido",
-  "Organiser display fields": "*Estes campos estarão visíveis na página do evento",
+  "Organiser display field": "Este campo estará visível na página do evento",
 
   "Save": "Guardar",
   "Cancel": "Cancelar"
