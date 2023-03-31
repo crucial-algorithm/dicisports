@@ -1,4 +1,9 @@
-import { useActionData, useFetcher, useLoaderData } from '@remix-run/react';
+import {
+  Form,
+  useActionData,
+  useFetcher,
+  useLoaderData
+} from '@remix-run/react';
 import type {
   ActionFunction,
   LinksFunction,
@@ -61,11 +66,11 @@ import { inputBaseClasses } from '~/components/shared/form/InputBase';
 import Config from '~/server/config.server';
 import { findDifficulties, findSports } from '~/server/db/reference.server';
 import {
+  deleteEvent,
   findEvent,
   publishEvent,
   unpublishEvent,
-  updateEvent,
-  deleteEvent
+  updateEvent
 } from '~/server/db/events.server';
 import Main from '~/components/shared/Main';
 import FormField from '~/components/shared/form/FormField';
@@ -97,6 +102,7 @@ import { Spacer } from '~/components/shared/Spacer';
 import { requireAdminUser, requireUser } from '~/server/auth/session.server';
 import ButtonGroup from '~/components/shared/ButtonGroup';
 import InputError from '~/components/shared/form/InputError';
+import Dialog, { ActionsBar } from '~/components/shared/Dialog';
 
 type ActionData = {
   hash: number;
@@ -196,7 +202,22 @@ export const action: ActionFunction = async ({ request, params }) => {
     throw Unauthorized(t('Not authorized'));
   }
 
-  const form = await unstable_parseMultipartFormData(request, uploadHandler);
+  let form: FormData;
+
+  try {
+    form = await unstable_parseMultipartFormData(request, uploadHandler);
+  } catch (e) {
+    // delete can't be processed with multipart form data 🤷‍♂️
+    form = await request.formData();
+  }
+
+  const actionId = form.get('actionId') as string;
+
+  if (actionId === actionIds.delete) {
+    await deleteEvent(event.id as string);
+
+    return redirect(`/o?message=${t('Event Deleted')}`);
+  }
 
   const isUpdate = event.status !== 'auto';
   const date = form.get('event-date') as string;
@@ -206,18 +227,11 @@ export const action: ActionFunction = async ({ request, params }) => {
   const image4 = form.get('/file/image/3') as string;
   const image5 = form.get('/file/image/4') as string;
   const location = parseLocation(form.get('location') as string);
-  const actionId = form.get('actionId') as string;
   const races: Race[] = (await findEventRaces(event.id)) || [];
   let eventStatus = event.status;
 
   if (eventStatus === Status.auto) {
     eventStatus = Status.draft;
-  }
-
-  if (actionId === actionIds.delete) {
-    await deleteEvent(event.id as string);
-
-    return redirect(`/o?message=${t('Event Deleted')}`);
   }
 
   const data: CreateEventInput = {
@@ -376,6 +390,7 @@ export default function OrganizerEventRoute() {
     show: false,
     hash: 0
   });
+  const [deleteEventModalOpen, setDeleteEventModalOpen] = useState<boolean>(false);
   const inputEl = useRef(null);
   const isPublished = event.status === Status.published;
 
@@ -452,6 +467,14 @@ export default function OrganizerEventRoute() {
     setSowDocumentsDialog({ show: true, document, hash: Date.now() });
   }
 
+  function handleShowDeleteEventWarning() {
+    setDeleteEventModalOpen(true);
+  }
+
+  function handleDiscardDeleteEvent() {
+    setDeleteEventModalOpen(false);
+  }
+
   useEffect(() => {
     setRaces(dbRaces);
   }, [dbRaces]);
@@ -515,7 +538,6 @@ export default function OrganizerEventRoute() {
                     </ButtonLink>
                   </div>
                 ))}
-
             </div>
           </div>
           <FormField
@@ -820,7 +842,12 @@ export default function OrganizerEventRoute() {
           </div>
 
           <ButtonGroup className="mt-8">
-            <Button id="delete-button" name="actionId" type="submit" variant="danger" value={actionIds.delete}>
+            <Button
+              name="delete-button"
+              type="button"
+              variant="danger"
+              onClick={handleShowDeleteEventWarning}
+            >
               {t('Delete Event')}
             </Button>
 
@@ -861,6 +888,34 @@ export default function OrganizerEventRoute() {
         open={showLocationPicker}
         onClose={handleCloseMap}
       />
+
+      <Dialog
+        onClose={handleDiscardDeleteEvent}
+        isOpen={deleteEventModalOpen}
+        aria-label="Delete event"
+        title={t('Delete Event X', { name: event?.name })}
+      >
+        <Paragraph data-cy="delete-dialog">
+          {t('Are you sure you want to delete event?')}
+        </Paragraph>
+        <Spacer size="2xs" />
+        <Form method="post" noValidate aria-describedby="general-error">
+          <input type="hidden" name="actionId" value={actionIds.delete} />
+          <ActionsBar>
+            <Button type="button" onClick={handleDiscardDeleteEvent}>
+              {t('Ignore')}
+            </Button>
+            <Button
+              variant="danger"
+              size="medium"
+              type="submit"
+              name="confirm-delete"
+            >
+              {t('Delete Event')}
+            </Button>
+          </ActionsBar>
+        </Form>
+      </Dialog>
     </Main>
   );
 }

@@ -1,5 +1,5 @@
 import { ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline';
-import { CheckoutStatus, Status } from '@prisma/client';
+import { Status } from '@prisma/client';
 import type { ActionFunction, LoaderFunction } from '@remix-run/node';
 import { json, redirect } from '@remix-run/node';
 import {
@@ -19,10 +19,15 @@ import { H2, H4, H5, H6 } from '~/components/shared/typography';
 import { createInitialBookingFlow } from '~/routes/checkout/create';
 import { getClientSession } from '~/server/auth/client.server';
 import { getUser } from '~/server/auth/session.server';
-import { findBooking, findBookingCart, removeBooking } from '~/server/db/booking.server';
+import {
+  findBooking,
+  findBookingCart,
+  removeBooking
+} from '~/server/db/booking.server';
 import { findEvent } from '~/server/db/events.server';
 import {
-  addParticipantToRace, findUserEventRaceParticipants,
+  addParticipantToRace,
+  findUserEventRaceParticipants,
   findUserRaceParticipants,
   removeRaceParticipant
 } from '~/server/db/participant.server';

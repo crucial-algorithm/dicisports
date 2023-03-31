@@ -101,12 +101,19 @@ describe('Event', () => {
         .intercept('POST', '/o/event/MY4bvgxDbMtGv8rbYe5d*')
         .as('DeleteEvent')
 
-        .get('#delete-button')
+        .get('button[name=delete-button]')
+        .click()
+
+        .get('button[name=confirm-delete]')
+        .should('exist')
         .click()
 
         .wait('@DeleteEvent')
 
-        .visitAndWaitForHydration('/o')
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.eq('/o');
+        })
 
         .get('[data-cy=event-MY4bvgxDbMtGv8rbYe5d]')
         .should('not.exist');
