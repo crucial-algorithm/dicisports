@@ -124,7 +124,12 @@ type GroupInput = {
   description: string | null;
 } & DBGroup;
 
-type Event = { races: Race[]; difficulty: Difficulty | null, documents: Document[], status: EventStatus } & DBEvent;
+type Event = {
+  races: Race[];
+  difficulty: Difficulty | null;
+  documents: Document[];
+  status: EventStatus;
+} & DBEvent;
 
 type CreateEventInput = {
   id: string;
@@ -517,12 +522,12 @@ type OrganiserInput = {
   email: string;
   phoneNumber?: number | null;
   address: string;
-  postalCode: string,
+  postalCode: string;
   city: string;
   description: string;
   logo: string;
   userId: string;
-}
+};
 
 export {
   NonNullProperties,
@@ -579,10 +584,9 @@ export {
   SearchResults,
   SearchEventsResults,
   Organiser,
-  OrganiserInput
+  OrganiserInput,
   EventStatus
 };
-
 
 // https://www.i18next.com/overview/typescript#argument-of-type-defaulttfuncreturn-is-not-assignable-to-parameter-of-type-xyz
 declare module 'i18next' {
