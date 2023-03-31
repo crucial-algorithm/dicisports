@@ -1,10 +1,14 @@
 {
+  "No Name": "<sem nome>",
   "Name": "Título",
   "Location": "Localização",
   "Date": "Data",
   "Edit": "Editar",
   "Create": "Criar evento",
   "Events Empty": "Clica em \"Criar Evento\" para criar o teu primeiro evento.",
+
+  "Draft Events": "Eventos em rascunho",
+  "Published Events": "Eventos publicados",
 
   "When": "Quando",
   "Who": "Organizador",

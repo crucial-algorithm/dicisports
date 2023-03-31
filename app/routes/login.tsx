@@ -1,3 +1,4 @@
+import { Role } from '@prisma/client';
 import { Form, Link, useActionData, useSearchParams } from '@remix-run/react';
 
 import { z, ZodError } from 'zod';
@@ -43,7 +44,8 @@ const actions = {
   login: 'login',
   joinWhatsAppGroup: 'ws',
   addToFavorites: 'favorite',
-  checkout: 'checkout'
+  checkout: 'checkout',
+  createEvent: 'create-event'
 };
 
 type QueryStringArgs = {
@@ -202,7 +204,7 @@ export const action: ActionFunction = async ({ request }) => {
     loginInfoSession.clean();
     await loginInfoSession.getHeaders(headers);
 
-    if (postLoginAction === 'favorite') {
+    if (postLoginAction === actions.addToFavorites) {
       try {
         await addGroupToFavorites(user.id, searchParams.get('g') as string);
       } catch (err) {
@@ -219,6 +221,14 @@ export const action: ActionFunction = async ({ request }) => {
       } catch (e) {
         console.error(e);
       }
+    }
+
+    if (postLoginAction === actions.createEvent) {
+      return redirect('/o/event/create', { headers });
+    }
+
+    if (user.role === Role.ORGANIZER) {
+      return redirect('/o', { headers });
     }
 
     return redirect('/', { headers });

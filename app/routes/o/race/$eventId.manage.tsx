@@ -19,7 +19,7 @@ import { createRace, deleteRace, updateRace } from '~/server/db/races.server';
 import { badRequest, hoursMinutesToTimeOfDay } from '~/utils/misc';
 import type { CreateRaceInput } from '~/types';
 import i18n from '~/server/i18n.server';
-import { requireAdminUser, requireUser } from '~/server/auth/session.server';
+import { requireUser } from '~/server/auth/session.server';
 
 import { uploadToS3 } from '~/server/utils/s3';
 
@@ -31,8 +31,6 @@ import { NotFound, Unauthorized } from '~/server/utils/misc';
 const RESOURCES_NS = 'create-event-form';
 
 export const action: ActionFunction = async ({ params, request }) => {
-  // hide while this is still in dev
-  await requireAdminUser(request);
   const user = await requireUser(request);
 
   const t = await i18n.getFixedT(request, RESOURCES_NS);

@@ -41,7 +41,8 @@ const InputBase: React.FC<Props> = ({
   onChange,
   className,
   readOnly = false,
-  input
+  input,
+  onClick
 }) => {
   const [value, setValue] = useState<string>(defaultValue);
 
@@ -65,6 +66,7 @@ const InputBase: React.FC<Props> = ({
         className={inputBaseClasses(className)}
         readOnly={readOnly}
         ref={input}
+        onClick={onClick}
       />
     );
   }
@@ -81,6 +83,7 @@ const InputBase: React.FC<Props> = ({
       autoComplete={autoComplete}
       className={inputBaseClasses(className)}
       readOnly={readOnly}
+      onClick={onClick}
     />
   );
 };

@@ -25,7 +25,8 @@ const TextField: React.FC<Props> = ({
   id,
   type = 'text',
   input,
-  autoComplete
+  autoComplete,
+  onClick
 }) => {
   id = id || '';
   if (!adornment) {
@@ -43,6 +44,7 @@ const TextField: React.FC<Props> = ({
         disabled={disabled}
         input={input}
         autoComplete={autoComplete}
+        onClick={onClick}
       />
     );
   }
@@ -62,6 +64,7 @@ const TextField: React.FC<Props> = ({
           disabled={disabled}
           input={input}
           autoComplete={autoComplete}
+          onClick={onClick}
         />
         <div className="absolute inset-y-0 right-1 flex items-center">
           {adornment}

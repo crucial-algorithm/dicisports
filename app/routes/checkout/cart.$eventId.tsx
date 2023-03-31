@@ -1,5 +1,5 @@
 import { ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline';
-import { CheckoutStatus, Status } from '@prisma/client';
+import { Status } from '@prisma/client';
 import type { ActionFunction, LoaderFunction } from '@remix-run/node';
 import { json, redirect } from '@remix-run/node';
 import {
@@ -42,6 +42,11 @@ const actions = {
   add: 'add',
   remove: 'remove',
   checkout: 'checkout'
+};
+
+export const handle: { id: string; i18n: string[] } = {
+  id: 'checkout',
+  i18n: ['checkout']
 };
 
 export const action: ActionFunction = async ({ request, params }) => {
@@ -169,7 +174,7 @@ export default function CheckoutRegistrationsRoute() {
         <H6>
           <DisplayDate date={new Date(event.startAt || 0)} />
         </H6>
-        <H6>{event.address}</H6>
+        <H6>{event.location}</H6>
       </div>
       <div className="flex flex-col md:flex-row mt-8">
         <div className="flex-col w-full md:w-[calc(100%-(480px))] md:pr-4">

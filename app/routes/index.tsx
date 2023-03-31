@@ -15,20 +15,19 @@ import { useTranslation } from 'react-i18next';
 
 import {
   AdjustmentsVerticalIcon,
-  ChevronDownIcon,
-  HeartIcon as Favorite
+  ChevronDownIcon
 } from '@heroicons/react/24/solid';
-
-import { HeartIcon } from '@heroicons/react/24/outline';
 
 import clsx from 'clsx';
 
-import type { TFunction } from 'i18next';
+import EventResult from '~/components/SearchEventResult';
+import SportsGrid from '~/components/HomeSportsGrid';
+import GroupResult from '~/components/SearchGroupResult';
+import { FiltersDialog, DisplayFilters } from '~/components/SearchFilters';
 
 import Main from '~/components/shared/Main';
-import PeekDayOfWeek from '~/components/shared/PeekDayOfWeek';
 import { Spacer } from '~/components/shared/Spacer';
-import Button, { ButtonLink } from '~/components/shared/Button';
+import Button from '~/components/shared/Button';
 import type {
   DaysOfWeek,
   DiciLocation,
@@ -41,40 +40,27 @@ import type {
   Sport
 } from '~/types';
 import { searchEventsAndGroups } from '~/server/db/search.server';
-import GroupEntry from '~/components/GroupEntry';
 
 import SearchLocations from '~/components/SearchLocations';
-import ButtonGroup from '~/components/shared/ButtonGroup';
 
-import { H3, Paragraph } from '~/components/shared/typography';
-import FormField from '~/components/shared/form/FormField';
-import CheckBox from '~/components/shared/form/CheckBox';
+import { H5, Paragraph } from '~/components/shared/typography';
 import { findGroupsSpirit, findSports } from '~/server/db/reference.server';
-import type { Option } from '~/components/shared/form/ComboBox';
-import ComboBox from '~/components/shared/form/ComboBox';
 
-import { getLocalizedText } from '~/utils/misc';
-
-import Dialog, { ActionsBar } from '~/components/shared/Dialog';
+import Dialog from '~/components/shared/Dialog';
 import HomeLogo from '~/components/shared/HomeLogo';
-import DisplayImg from '~/components/shared/DisplayImg';
 import { findUserFavoriteGroups } from '~/server/db/groups.server';
 import { getUser } from '~/server/auth/session.server';
-import { Notification } from '~/components/shared/NotificationMessage';
 
 import Config from '~/server/config.server';
 import TransitionIndicator from '~/components/shared/TransitionIndicator';
-import WhatsApp from '~/components/shared/icons/WhatsApp';
-import { useRootData } from '~/utils/use-root-data';
+import { useRootData } from '~/hooks';
 import { getLocationSession } from '~/routes/action/set-my-location';
 import { useUserLocation } from '~/utils/LocationProvider';
 import { CanonicalMeta } from '~/utils/seo';
 
-import CopyToClipboard from '~/components/shared/CopyToClipboard';
-import EventEntry from '~/components/EventEntry';
 import { findUserFavoriteEvents } from '~/server/db/events.server';
 
-type FilterParams = {
+export type FilterParams = {
   actionId: keyof typeof actions | null;
   coords: string | null;
   search: string | null;
@@ -120,10 +106,10 @@ const dayParts = {
 };
 
 export const handle = {
-  i18n: ['common', 'home', 'm-groups']
+  i18n: ['common', 'home', 'm-groups', 'organizer']
 };
 
-enum SortMethod {
+export enum SortMethod {
   recency = 'recent',
   proximity = 'proximity'
 }
@@ -136,7 +122,7 @@ export const loader: LoaderFunction = async ({ request }) => {
   const user = await getUser(request);
   const favoriteGroups = user ? await findUserFavoriteGroups(user.id) : [];
   const favoriteEvents = user ? await findUserFavoriteEvents(user.id) : [];
-  
+
   let result: ActionData | null = null;
   const page = data.actionId === actions.search ? 0 : data.page || 0;
 
@@ -659,7 +645,6 @@ export default function Index() {
         aria-label="Location Failed"
         SecondaryAction={
           <Button
-            variant="danger"
             size="medium"
             type="button"
             onClick={handleCloseLocationFailedWarning}
@@ -668,7 +653,7 @@ export default function Index() {
           </Button>
         }
       >
-        <H3 className="mb-4">{t('Failed to find Your Location Title')}</H3>
+        <H5 className="mb-4">{t('Failed to find Your Location Title')}</H5>
         <Paragraph>{t('Failed to find Your Location Hint')}</Paragraph>
         <Spacer size="2xs" />
       </Dialog>
@@ -695,543 +680,4 @@ function CallToActionToCreateGroup({
       {label}
     </Link>
   );
-}
-
-function GroupResult({
-  group,
-  img,
-  isUserFavorite,
-  favAddedMessage,
-  favRemovedMessage,
-  copiedToClipMessage,
-  address,
-  location,
-  isLoggedIn,
-  userLocation,
-  showLocation
-}: {
-  group: SearchResults;
-  img?: string;
-  isUserFavorite: boolean;
-  favAddedMessage: string;
-  favRemovedMessage: string;
-  copiedToClipMessage: string;
-  address: string;
-  location: string;
-  isLoggedIn: boolean;
-  userLocation: [number, number] | null;
-  showLocation: boolean;
-}) {
-  const favorite = useFetcher();
-  const ref = useRef();
-  const [message, setMessage] = useState<string>(favAddedMessage);
-  let showFavoriteAddedNotification: any = null;
-  let showCopiedToClipboardNotification: any = null;
-
-  function handlerSetShowNotificationFunction(callback: () => void) {
-    showFavoriteAddedNotification = callback;
-  }
-
-  function handlerSetShowNotificationCopyToClipboard(callback: () => void) {
-    showCopiedToClipboardNotification = callback;
-  }
-
-  function handlerShowURLCopiedMessage() {
-    showCopiedToClipboardNotification();
-  }
-
-  useEffect(() => {
-    if (favorite.type === 'done' && favorite.data.ok) {
-      if (ref.current) {
-        (ref.current as HTMLFormElement).reset();
-      }
-      setMessage(
-        favorite.data.action === 'add' ? favAddedMessage : favRemovedMessage
-      );
-      showFavoriteAddedNotification();
-    }
-  }, [
-    favorite,
-    favAddedMessage,
-    favRemovedMessage,
-    showFavoriteAddedNotification
-  ]);
-
-  const whatsAppLink = isLoggedIn
-    ? group.whatsapp || ''
-    : `/login?a=ws&g=${group.id}&l=${location}`;
-
-  return (
-    <>
-      <GroupEntry
-        group={group as Group}
-        key={group.id}
-        img={img}
-        actions={
-          <ButtonGroup density="compact">
-            {group.whatsapp && (
-              <ButtonLink
-                size="tiny"
-                type="button"
-                to={whatsAppLink}
-                id={`whatsapp-${group.id}`}
-              >
-                <WhatsApp className="h-6 w-6 m-0 inline-block fill-white dark:fill-black" />
-              </ButtonLink>
-            )}
-            <CopyToClipboard
-              text={`${address}/group/${group.slug}`}
-              id={group.id}
-              successMessage={handlerShowURLCopiedMessage}
-            />
-            <favorite.Form
-              // @ts-ignore
-              ref={ref}
-              method="post"
-              action={`/g/group/fav/${group.id}`}
-            >
-              {isUserFavorite ? (
-                <Button size="tiny" name="action" value="remove" id="remove-favorite">
-                  <Favorite className="h-6 w-6 m-0 inline-block" />
-                </Button>
-              ) : (
-                <Button
-                  size="tiny"
-                  name="action"
-                  value="add"
-                  id={`add-favorite-${group.id}`}
-                >
-                  <HeartIcon className="h-6 w-6 m-0 inline-block" />
-                </Button>
-              )}
-            </favorite.Form>
-            <Notification show={handlerSetShowNotificationFunction}>
-              {message}
-            </Notification>
-            <Notification show={handlerSetShowNotificationCopyToClipboard}>
-              {copiedToClipMessage}
-            </Notification>
-          </ButtonGroup>
-        }
-        footer={
-          <div
-            className="font-medium text-gray-500 dark:text-white flex items-center justify-center"
-            data-cy="distance"
-          >
-            {userLocation && showLocation && (
-              <span>{Math.ceil(group.distance || 0)} km</span>
-            )}
-          </div>
-        }
-      />
-    </>
-  );
-}
-
-function EventResult({
-  event,
-  img,
-  userLocation,
-  showLocation,
-  isUserFavorite
-}: {
-  event: SearchResults;
-  img?: string;
-  userLocation: [number, number] | null;
-  showLocation: boolean;
-  isUserFavorite: boolean;
-}) {
-  const { t } = useTranslation('organizer');
-  const favorite = useFetcher();
-
-  const favoriteAddedMessage = t('Favorite Added');
-  const favoriteRemovedMessage = t('Favorite Removed');
-  const copiedToClipMessage = t('Copied to Clipboard');
-
-  const [isFavorite, setIsFavorite] = useState<boolean>(isUserFavorite);
-  const [message, setMessage] = useState<string>(favoriteAddedMessage);
-  const [address, setAddress] = useState<string>('');
-  let showFavoriteAddedNotification: any = null;
-  let showCopiedToClipboardNotification: any = null;
-
-  function handlerSetShowNotificationFunction(callback: () => void) {
-    showFavoriteAddedNotification = callback;
-  }
-
-  function handlerSetShowNotificationCopyToClipboard(callback: () => void) {
-    showCopiedToClipboardNotification = callback;
-  }
-
-  function handlerClickToCopy() {
-    showCopiedToClipboardNotification();
-  }
-
-  useEffect(() => {
-    if (favorite.type === 'actionReload' && favorite.data.ok) {
-      setMessage(
-        favorite.data.action === 'add'
-          ? favoriteAddedMessage
-          : favoriteRemovedMessage
-      );
-      setIsFavorite(favorite.data.action === 'add');
-      showFavoriteAddedNotification();
-    }
-
-    const url = new URL(window.location.href);
-
-    setAddress(url.origin);
-  }, [
-    favorite,
-    showFavoriteAddedNotification,
-    favoriteAddedMessage,
-    favoriteRemovedMessage
-  ]);
-
-  return (
-    <>
-      <EventEntry
-        event={event}
-        img={img}
-        footer={
-          <div
-            className="font-medium text-gray-500 dark:text-white flex items-center justify-center"
-            data-cy="distance"
-          >
-            {userLocation && showLocation && (
-              <span>{Math.ceil(event.distance || 0)} km</span>
-            )}
-          </div>
-        }
-        actions={
-          <ButtonGroup density="compact">
-            <CopyToClipboard
-              text={`${address}/event/${event.slug}`}
-              id={event.id}
-              successMessage={handlerClickToCopy}
-            />
-            <favorite.Form
-              method="post"
-              action={`/organizer/event/fav/${event.id}`}
-            >
-              {isFavorite ? (
-                <Button
-                  size="tiny"
-                  name="action"
-                  value="remove"
-                  id="remove-favorite"
-                >
-                  <Favorite className="h-6 w-6 m-0 inline-block" />
-                </Button>
-              ) : (
-                <Button size="tiny" name="action" value="add">
-                  <HeartIcon className="h-6 w-6 m-0 inline-block" />
-                </Button>
-              )}
-            </favorite.Form>
-            <Notification show={handlerSetShowNotificationFunction}>
-              {message}
-            </Notification>
-            <Notification show={handlerSetShowNotificationCopyToClipboard}>
-              {copiedToClipMessage}
-            </Notification>
-          </ButtonGroup>
-        }
-      />
-    </>
-  );
-}
-
-function SportsGrid({
-  sports,
-  lang,
-  t
-}: {
-  sports: Sport[];
-  lang: Language;
-  t: TFunction;
-}) {
-  if (!sports) {
-    return null;
-  }
-  const width = 'w-full md:w-56 lg:w-56 xl:w-56';
-
-  return (
-    <div className="w-full m-auto grid grid-flow-row gap-2 md:w-full md:grid-flow-col md:grid-rows-2">
-      {sports
-        .sort((a, b) => a.id - b.id)
-        .map((s) => (
-          <Link
-            to={`?actionId=${actions.search}&sport=${s.id}`}
-            key={s.id}
-            data-cy={s.id}
-          >
-            <DisplayImg
-              imageId={`product/sports/${s.picture}`}
-              key={s.id}
-              alt={getLocalizedText(lang, s.name)}
-              dontMessWithImgSize={true}
-              className={width}
-              variant="Grid"
-            />
-          </Link>
-        ))}
-      {new Array(8 - sports.length).fill(null).map((a, i) => (
-        <a
-          href={`mailto:feedback@dicisports.com?subject=${t(
-            'Add Sport Mail Subject'
-          )}`}
-          key={i}
-        >
-          <DisplayImg
-            imageId={'product/sports/add-sport_xe6eok'}
-            key={i}
-            alt={t('Add Sport')}
-            className={width}
-            dontMessWithImgSize={true}
-            variant="Grid"
-          />
-        </a>
-      ))}
-    </div>
-  );
-}
-
-function FiltersDialog(props: {
-  isOpen: boolean;
-  sports: Sport[];
-  groupsSpirit: GroupSpirit[];
-  triggerModalClose: () => void;
-  filters: FilterParams | null;
-  onSubmit: () => void;
-  coords?: string;
-  search?: string;
-  order: SortMethod;
-}) {
-  const { t, i18n } = useTranslation('home');
-  const {
-    isOpen,
-    sports,
-    groupsSpirit,
-    triggerModalClose,
-    filters,
-    onSubmit,
-    coords,
-    search,
-    order
-  } = props;
-  const sportsOptions: Option[] = sports
-    .sort((a, b) => a.id - b.id)
-    .map((s) => ({
-      value: s.id,
-      label: s.name
-    }));
-  const form = useRef<HTMLFormElement>(null);
-
-  return (
-    <Dialog isOpen={isOpen} onClose={triggerModalClose}>
-      <Form method="get" onSubmit={onSubmit} ref={form}>
-        <input type="hidden" name="coords" value={coords} />
-        <input type="hidden" name="search" value={search} />
-        <input type="hidden" name="order" value={order} />
-        <div className="relative">
-          <div className="px-6 py-2 flex flex-col items-center lg:px-24 lg:py-14">
-            <H3 data-cy="dialog-title" className="w-full md:w-112 text-left">
-              {t('Filters')}
-            </H3>
-            <Spacer size="2xs" />
-
-            <FormField
-              label={t('Sport')}
-              id="sport"
-              className="w-full md:w-112"
-            >
-              <ComboBox
-                options={sportsOptions}
-                name="sport"
-                defaultValue={filters?.sport || ''}
-                placeholder={t('All Sports')}
-                lang={i18n.language as Language}
-              />
-            </FormField>
-            <FormField
-              label={t('Day Of Week')}
-              id="day-of-week"
-              className="w-full md:w-112"
-            >
-              <PeekDayOfWeek
-                key={Date.now()}
-                name="dow"
-                id="day-of-week"
-                defaultValue={filters?.dayOfWeek as DaysOfWeek}
-                addAll={true}
-              />
-            </FormField>
-            <FormField
-              label={t('Day Part')}
-              id="day-part"
-              className="w-full md:w-112"
-            >
-              <CheckBox
-                name="daypart"
-                id={`daypart-${dayParts.morning}`}
-                label={t('Morning')}
-                value={dayParts.morning}
-                checked={filters?.dayParts?.includes(dayParts.morning)}
-                className="mb-2"
-              />
-              <CheckBox
-                name="daypart"
-                id={`daypart-${dayParts.afternoon}`}
-                label={t('Afternoon')}
-                value={dayParts.afternoon}
-                checked={filters?.dayParts?.includes(dayParts.afternoon)}
-                className="mb-2"
-              />
-              <CheckBox
-                name="daypart"
-                id={`daypart-${dayParts.evening}`}
-                label={t('Evening')}
-                value={dayParts.evening}
-                checked={filters?.dayParts?.includes(dayParts.evening)}
-                className="mb-2"
-              />
-            </FormField>
-            <FormField
-              label={t('Group Spirit')}
-              id="spirit"
-              className="w-full md:w-112"
-            >
-              {groupsSpirit.map((gs) => (
-                <CheckBox
-                  key={gs.id}
-                  id={`spirit-${gs.id}`}
-                  name="spirit"
-                  label={gs.name}
-                  value={gs.id}
-                  checked={filters?.spirit?.includes(gs.id)}
-                  className="mb-2"
-                />
-              ))}
-              <Spacer size="3xs" />
-              <CheckBox
-                name="g"
-                label={t('Hide Groups')}
-                value="hide"
-                checked={filters?.groupsAction === 'hide'}
-                className="mb-2"
-              />
-            </FormField>
-          </div>
-        </div>
-        <ActionsBar>
-          <Button variant="secondary" type="button" onClick={triggerModalClose}>
-            {t('Cancel')}
-          </Button>
-          <Button
-            id="apply-filters"
-            variant="primary"
-            size="medium"
-            name="actionId"
-            type="submit"
-            value={actions.search}
-          >
-            {t('Apply Filters')}
-          </Button>
-        </ActionsBar>
-      </Form>
-    </Dialog>
-  );
-}
-
-function DisplayFilters(props: {
-  filters: FilterParams;
-  sports: Sport[];
-  spirits: GroupSpirit[];
-  t: TFunction;
-  tc: TFunction;
-}) {
-  const { i18n } = useTranslation();
-  const language = i18n.language;
-  const { filters, sports, spirits, t, tc } = props;
-
-  if (!filters) {
-    return null;
-  }
-  const { spirit, sport, dayOfWeek, dayParts } = filters;
-  const label: string[] = [];
-
-  if (dayOfWeek !== null && dayOfWeek >= 0) {
-    label.push(
-      tc(
-        [
-          'Monday',
-          'Tuesday',
-          'Wednesday',
-          'Thursday',
-          'Friday',
-          'Saturday',
-          'Sunday'
-        ][dayOfWeek]
-      )
-    );
-  }
-  // if all day parts are picked, just ignore to save space
-  if (dayParts && dayParts.length > 0 && dayParts.length !== 3) {
-    const parts = semanticOr(
-      dayParts.map((v) => t(v)),
-      t('Or')
-    );
-
-    if (label.length === 1) {
-      label[0] = `${label[0]}, ${parts}`;
-    } else {
-      label.push(parts);
-    }
-  }
-
-  if (spirit && spirit.length > 0 && spirit.length !== 5) {
-    label.push(
-      t('Filter Spirit', {
-        sport: semanticOr(
-          spirit.map((s) => mapIdToName(s, spirits, language as Language)),
-          t('Or')
-        )
-      })
-    );
-  }
-
-  // using h1 for sports based on SEO recommendations from ahrefs
-  return (
-    <div className="flex mx-2 items-center dark:text-white text-blueGray-500 text-sm">
-      {sport && (
-        <h1 className="font-bold">
-          {mapIdToName(sport, sports, language as Language)}{' '}
-        </h1>
-      )}
-      {sport && label.length > 0 && <>&nbsp;|&nbsp;</>}
-      {label.join(' | ')}
-    </div>
-  );
-}
-
-/**
- * Create a human-readable phrase from a list of strings
- * @param list
- * @param or
- */
-function semanticOr(list: string[], or: string) {
-  if (list.length === 1) {
-    return list[0];
-  }
-  return `${list.slice(0, -1).join(', ')} ${or} ${list.slice(-1)}`;
-}
-
-function mapIdToName(
-  id: number,
-  universe: Sport[] | GroupSpirit[],
-  lang: Language
-): string {
-  const entity = universe.find((u) => u.id === id);
-
-  return getLocalizedText(lang, entity?.name);
 }

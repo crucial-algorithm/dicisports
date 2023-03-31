@@ -12,7 +12,7 @@ import { unstable_composeUploadHandlers } from '@remix-run/node';
 
 import { z, ZodError } from 'zod';
 
-import { requireAdminUser, requireUser } from '~/server/auth/session.server';
+import { requireUser } from '~/server/auth/session.server';
 import {
   createDocument,
   deleteDocument,
@@ -29,7 +29,6 @@ import { NotFound, Unauthorized } from '~/server/utils/misc';
 const RESOURCES_NS = 'create-event-form';
 
 export const action: ActionFunction = async ({ request, params }) => {
-  await requireAdminUser(request);
   const user = await requireUser(request);
 
   const t = await i18n.getFixedT(request, RESOURCES_NS);

@@ -3,7 +3,7 @@ import { useRef, useEffect, useState, useCallback } from 'react';
 
 export type ElementState = 'active' | 'focus' | 'hover' | 'initial'
 
-// This started as a work around for https://github.com/framer/motion/issues/1221,
+// This started as a workaround for https://github.com/framer/motion/issues/1221,
 // but it's so much more now. The variants in framer motion support hover, focus
 // and tap, while this effect also listens to the keypress, so that `Enter`
 // results in an active state as well.

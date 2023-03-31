@@ -135,6 +135,10 @@ export const action: ActionFunction = async ({ request }) => {
       }
     }
 
+    if (postSignUpAction === 'create-event') {
+      return redirect('/o/event/create', { headers });
+    }
+
     return redirect('/me', { headers });
   } catch (e) {
     if (!(e instanceof ZodError)) {

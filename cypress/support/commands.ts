@@ -8,6 +8,8 @@ declare global {
 
       loginAdmin(): Chainable<void>;
 
+      loginOrganiser(): Chainable<void>;
+
       pickOptionFromSelect(name: string, position: number): Chainable<void>;
 
       pickLocationInMap(triggerOpenMapButtonName: string): Chainable<void>;
@@ -39,6 +41,13 @@ function loginAdmin() {
   cy.setCookie(
     'ds_root_session',
     'eyJfX3Nlc3Npb25faWRfXyI6IjI5N2VmZWI4LTM5Y2YtNGI3NC05MzExLWMwODIzMzlkZTU1YSJ9.37yKylNYa4IFtwx6tM6dqYMU9wNPnlG28uvBeB18V60'
+  );
+}
+
+function loginOrganiser() {
+  cy.setCookie(
+    'ds_root_session',
+    'eyJfX3Nlc3Npb25faWRfXyI6ImE2ZDg5ZjNiLTFjZWUtNDYzMi1hNzU0LWY4NTc2M2ExOWJmOCJ9.ZB1rREpWNeNPCLgqJs58RGzDa1OrFao%2FGetqg3HBDe4'
   );
 }
 
@@ -134,6 +143,7 @@ function assertValueCopiedToClipboard(value: string) {
 
 Cypress.Commands.add('login', login);
 Cypress.Commands.add('loginAdmin', loginAdmin);
+Cypress.Commands.add('loginOrganiser', loginOrganiser);
 Cypress.Commands.add('pickOptionFromSelect', pickOptionFromSelect);
 Cypress.Commands.add('pickLocationInMap', pickLocationInMap);
 Cypress.Commands.add('wasImageLoaded', wasImageLoaded);

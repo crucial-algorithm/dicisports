@@ -5,15 +5,18 @@ import Id from '~/server/utils/Id.server';
 import { createDraftEvent } from '~/server/db/events.server';
 import i18n from '~/server/i18n.server';
 import type { Language } from '~/types';
-import { requireAdminUser, requireUser } from '~/server/auth/session.server';
+import { requireUser } from '~/server/auth/session.server';
 
 export const loader: LoaderFunction = async ({ request }) => {
-  await requireAdminUser(request);
+  return create(request);
 };
 
 export const action: ActionFunction = async ({ request }) => {
-  // hide while this is still in dev
-  await requireAdminUser(request);
+  return create(request);
+};
+
+
+async function create(request: Request) {
   const user = await requireUser(request);
 
   const eventId = Id();
@@ -27,4 +30,4 @@ export const action: ActionFunction = async ({ request }) => {
   }
 
   return redirect(`/o/event/${eventId}`);
-};
+}
