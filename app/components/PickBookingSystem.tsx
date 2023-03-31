@@ -39,12 +39,7 @@ export default function PickBookingSystem({
 
   return (
     <fieldset>
-      <div>
-        <legend className="dark:text-blueGray-500 text-gray-600 text-sm">
-          {t('How Is Booking Going To Be Managed')}
-        </legend>
-      </div>
-      <div className="mt-4 space-y-4">
+      <div className="space-y-4">
         <div className="flex items-center">
           <input
             id={`${name}-internal`}

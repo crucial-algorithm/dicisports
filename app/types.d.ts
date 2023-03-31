@@ -16,7 +16,7 @@ import type {
   ShirtSize as DBShirtSize,
   Organiser as DBOrganiser,
   ParticipantStatus,
-  Status
+  Status as EventStatus
 } from '@prisma/client';
 
 type NonNullProperties<Type> = {
@@ -124,7 +124,7 @@ type GroupInput = {
   description: string | null;
 } & DBGroup;
 
-type Event = { races: Race[]; difficulty: Difficulty | null, documents: Document[] } & DBEvent;
+type Event = { races: Race[]; difficulty: Difficulty | null, documents: Document[], status: EventStatus } & DBEvent;
 
 type CreateEventInput = {
   id: string;
@@ -133,9 +133,9 @@ type CreateEventInput = {
   sportId: number;
   difficultyId: number;
   startAt: Date | string;
-  lat: number;
-  lng: number;
-  location: string;
+  lat: number | null;
+  lng: number | null;
+  location: string | null;
   useExternalBooking: boolean;
   externalBookingUrl?: string | null;
   description?: string | null;
@@ -147,7 +147,7 @@ type CreateEventInput = {
   image5?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
-  status?: Status;
+  status?: EventStatus;
 };
 
 type Perk = {} & DBPerk;
@@ -580,6 +580,7 @@ export {
   SearchEventsResults,
   Organiser,
   OrganiserInput
+  EventStatus
 };
 
 

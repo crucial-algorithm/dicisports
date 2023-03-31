@@ -319,7 +319,7 @@ describe('Checkout', () => {
         );
     });
 
-    it('should show validation error If there are registrations with empty participant info', () => {
+    it('should show validation error if there are registrations with empty participant info', () => {
       cy.intercept('GET', '/checkout/cart/*?_data=routes*checkout*')
         .as('selectRace')
 
@@ -601,6 +601,11 @@ function bookParticipant() {
     .as('selectRace')
 
     .visitAndWaitForHydration('/checkout/cart/MY4bvgxDbMtGv8rbYe5d')
+
+    .location()
+    .should((loc) => {
+      expect(loc.pathname).to.contain('/checkout/cart/MY4bvgxDbMtGv8rbYe5d');
+    })
 
     .get('#add-race-AhowRdNWCBQWSuivSt7h')
     .click()

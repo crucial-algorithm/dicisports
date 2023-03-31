@@ -47,7 +47,7 @@ function loginAdmin() {
 function loginOrganiser() {
   cy.setCookie(
     'ds_root_session',
-      'eyJfX3Nlc3Npb25faWRfXyI6ImZhZTA2OWJlLTA0MjItNGY3Yi05NmQ5LTk0Yzc5NTYwMDQxZCJ9.GQd2CDcD%2FUCqu%2F6L8fwPutZ81lkrv65eB%2FAKUjyPz94'
+    'eyJfX3Nlc3Npb25faWRfXyI6ImE2ZDg5ZjNiLTFjZWUtNDYzMi1hNzU0LWY4NTc2M2ExOWJmOCJ9.ZB1rREpWNeNPCLgqJs58RGzDa1OrFao%2FGetqg3HBDe4'
   );
 }
 

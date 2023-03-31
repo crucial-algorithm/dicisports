@@ -4,7 +4,6 @@ import type { FetcherWithComponents } from '@remix-run/react';
 import { Form, Link, useFetcher, useLoaderData } from '@remix-run/react';
 import type { TFunction } from 'i18next';
 
-import type { User } from '@prisma/client';
 import { Status } from '@prisma/client';
 import {
   ArrowTrendingUpIcon,
@@ -34,7 +33,7 @@ import Button, { ButtonLink } from '~/components/shared/Button';
 import { getUser } from '~/server/auth/session.server';
 import { Notification } from '~/components/shared/NotificationMessage';
 import DisplayImg from '~/components/shared/DisplayImg';
-import type { Document, Event, Organiser, Perk, Race, TranslationObject } from '~/types';
+import type { Document, Event, Organiser, Perk, Race, TranslationObject, User } from '~/types';
 import { findEventRaces } from '~/server/db/races.server';
 import DisplayDate from '~/components/shared/DIsplayDate';
 import { displayTimeOfDay } from '~/utils/misc';
@@ -53,6 +52,11 @@ type LoaderData = {
 const actions = {
   add: 'add',
   remove: 'remove'
+};
+
+export const handle: { id: string; i18n: string[] } = {
+  id: 'event',
+  i18n: ['event']
 };
 
 export async function loadDisplayEventData(

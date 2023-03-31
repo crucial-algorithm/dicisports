@@ -2,7 +2,7 @@ import type { ActionFunction } from '@remix-run/node';
 import { json } from '@remix-run/node';
 
 import type { Document } from '~/types';
-import { requireAdminUser, requireUser } from '~/server/auth/session.server';
+import { requireUser } from '~/server/auth/session.server';
 import i18n from '~/server/i18n.server';
 import {
   findDocument,
@@ -13,7 +13,6 @@ import { findEvent } from '~/server/db/events.server';
 import { NotFound, Unauthorized } from '~/server/utils/misc';
 
 export const action: ActionFunction = async ({ request, params }) => {
-  await requireAdminUser(request);
   const user = await requireUser(request);
 
   const t = await i18n.getFixedT(request, 'create-event-from');

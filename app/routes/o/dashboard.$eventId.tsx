@@ -17,6 +17,8 @@ import {
 } from '@heroicons/react/20/solid';
 import clsx from 'clsx';
 
+import { ButtonLink } from '~/components/shared/Button';
+
 import { requireUser } from '~/server/auth/session.server';
 import { findEvent } from '~/server/db/events.server';
 import DisplayImg from '~/components/shared/DisplayImg';
@@ -24,6 +26,7 @@ import { H2, H3, H4, H5, H6 } from '~/components/shared/typography';
 import DisplayDate from '~/components/shared/DIsplayDate';
 import I18nText from '~/components/I18nText';
 import Main from '~/components/shared/Main';
+import type { KCDHandle } from '~/types';
 import type {
   Event,
   Race,
@@ -52,6 +55,11 @@ const actionsId = {
   previousPage: 'previousPage'
 };
 
+export const handle: KCDHandle & { id: string; i18n: string[] } = {
+  id: 'dashboard',
+  i18n: ['dashboard']
+};
+
 export const loader: LoaderFunction = async ({ request, params }) => {
   const user = await requireUser(request);
   const eventId = params.eventId as string;
@@ -59,6 +67,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   let page = searchParams.get('page')?.length ? Number(searchParams.get('page')) : 0;
 
   const event = (await findEvent(eventId)) as Event;
+
   const racesRevenueAndRegistrations = await findRevenueAndRegistrationsPerRace(
     eventId as string
   );
@@ -159,14 +168,14 @@ export default function DashboardRoute() {
             data-cy="location-link"
           >
             <H6 className="ml-4 mr-2 md:ml-2" data-cy="location">
-              {event.address}
+              {event.location}
             </H6>
           </a>
         </div>
         <div className="flex flex-row items-center mb-2">
           <ArrowTrendingUpIcon className="h-6 w-6 m-0 inline-block text-primary" />
           <H6 data-cy="difficulty" className="ml-4 md:ml-2">
-            <I18nText text={event.difficulty.name as TranslationObject} />
+            <I18nText text={event?.difficulty?.name as TranslationObject} />
           </H6>
         </div>
         <div className="flex flex-col justify-start mt-16">
@@ -220,12 +229,15 @@ export default function DashboardRoute() {
 
   return (
     <Main>
-      <div className="flex flex-row justify-start mb-2">
-        <H2 className="text-sp-light-blue-900 mb-8">
+      <div className="flex flex-row justify-between mb-8 w-full">
+        <H2 className="text-sp-light-blue-900">
           <b data-cy="name" className="break-words w-full">
             {event.name}
           </b>
         </H2>
+        <ButtonLink to={`/o/event/${event.id}`} size="small" className="w-28" data-cy="edit">
+          {t('Edit')}
+        </ButtonLink>
       </div>
 
       <div className="flex flex-col md:flex-row mt-4 mb-8">

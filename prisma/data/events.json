@@ -10,7 +10,7 @@
     "useExternalBooking": false,
     "status": "draft",
     "directions": "Carro: Saida pela A3 direção a Braga",
-    "createdById": "3beca472138d6d234d3f",
+    "createdById": "gZZCGTHBq9SxdpRFoP8b",
     "slug": "trail-do-zezere"
   },
   {
@@ -24,7 +24,8 @@
     "useExternalBooking": true,
     "externalBookingUrl": "https://stopandgo.com.pt/events/viii-trilho-dos-reis",
     "status": "draft",
-    "createdById": "nTQ8idPqTY8PmhzbsN4u"
+    "createdById": "gZZCGTHBq9SxdpRFoP8b",
+    "slug": "flavius-challenge-ocr"
   },
   {
     "id": "cmWJ3DMDwzJRwMaTQv53",
@@ -36,7 +37,7 @@
     "location": "Avenida Fernão De Magalhães",
     "useExternalBooking": false,
     "status": "draft",
-    "createdById": "3beca472138d6d234d3f"
+    "createdById": "gZZCGTHBq9SxdpRFoP8b"
   },
   {
     "id": "MY4bvgxDbMtGv8rbYe5d",
@@ -50,7 +51,7 @@
     "status": "published",
     "directions": "Carro: Saida pela A3 direção a Braga",
     "description": "O Peso da Régua será ponto de partida e de reencontro, depois de serem atravessados os concelhos de Lamego, Armamar, Tabuaço, Penedono, Foz Coa e São João da Pesqueira.",
-    "createdById": "3beca472138d6d234d3f",
+    "createdById": "gZZCGTHBq9SxdpRFoP8b",
     "image1": "users/NtGwBBJeHdR6X6XHZPJ3",
     "slug": "love-tiles-douro-granfondo-2023"
   },
@@ -66,7 +67,7 @@
     "status": "published",
     "description": "O BTT Trilho dos Moinhos é um passeio de exaltação à diversão, lazer e camaradagem entre amigos e grupos de ciclistas num cenário de natureza idílica que Barcelos oferece e serve de ‘partida’ para um ano repleto de atividades e eventos de ciclismo.\r\n\r\nTendo como base a admirável cidade de Barcelos e o seu centro histórico, a beleza natural do concelho continua a brindar os participantes ao longo do percurso, distinto pela qualidade e sabedoria que resulta de uma preparação cuidada por uma equipa que também encontra nos trilhos o que mais gosta para os momentos de lazer, uma fusão onde também se incluem, pois claro, os famosos reforços. E esta identificação, embebida em detalhes cuidadosamente preparados pelos Amigos da Montanha, só poderia resultar num evento tão único quanto especialmente memorável.\r\n\r\nSão moinhos que nos têm guiado à descoberta de trilhos, sempre diferentes em cada umas das 15 edições com que já fomos brindados.\r\n\r\nO percurso do Trilho dos Moinhos tem início e fim no centro da cidade de Barcelos (junto ao conhecido campo da feira), sendo este o ponto de referência principal para estacionamento, apoio logístico e apoio médico, além de qualquer assistência adicional.\r\n\r\nPercorrendo montes da proximidade da cidade, os participantes vão atravessar ribeiros, percorrer os melhores trilhos históricos, conhecer vários moinhos de água e claro, divertirem-se imenso num percurso planeado ao detalhe!\r\n\r\nContamos com a tua alegria!",
     "image1": "users/Aco6Qn8CWBEY6KDjBFJC",
-    "createdById": "nK8Ekvc7SY8LgqhQ6dAR",
+    "createdById": "gZZCGTHBq9SxdpRFoP8b",
     "slug": "trilho-dos-moinhos"
   }
 ]
