@@ -93,6 +93,34 @@ describe('Event', () => {
     it('Should show error message when accessing an non existing event', () => {
       cy.visitAndWaitForHydration('/event/non-existing-event').get('p[data-cy=event-not-found');
     });
+
+    it('Should delete event', () => {
+      cy.loginOrganiser()
+        .visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d')
+
+        .intercept('POST', '/o/event/MY4bvgxDbMtGv8rbYe5d*')
+        .as('DeleteEvent')
+
+        .get('button[name=delete-button]')
+        .click()
+
+        .get('.cy-delete-dialog')
+        .should('exist')
+
+        .get('button.cy-primary')
+        .should('exist')
+        .click()
+
+        .wait('@DeleteEvent')
+
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.eq('/o');
+        })
+
+        .get('[data-cy=event-MY4bvgxDbMtGv8rbYe5d]')
+        .should('not.exist');
+    });
   });
 
   context('Security', () => {

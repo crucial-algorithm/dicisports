@@ -279,6 +279,15 @@ async function getEventResultsByName(name: string): Promise<Array<SearchEventsRe
   `;
 }
 
+async function deleteEvent(id: string) {
+  return await db.event.update({
+    where: { id },
+    data: {
+      status: Status.deleted
+    }
+  });
+}
+
 export {
   findEvents,
   findUserEvents,
@@ -292,5 +301,6 @@ export {
   removeEventFromFavorites,
   findUserFavoriteEvents,
   findUserFavoriteEvent,
-  getEventResultsByName
+  getEventResultsByName,
+  deleteEvent
 };
