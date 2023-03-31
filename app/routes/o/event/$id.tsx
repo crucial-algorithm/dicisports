@@ -726,6 +726,7 @@ export default function OrganizerEventRoute() {
                     <label
                       htmlFor={p.id}
                       className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300"
+                      data-cy={`perk-label-${index}`}
                     >
                       {p.name}
                     </label>
