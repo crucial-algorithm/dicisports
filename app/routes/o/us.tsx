@@ -184,7 +184,7 @@ export default function UsRoute() {
           <div>
             <FormField
               data-cy="name"
-              label={t('Name') + '*'}
+              label={`${t('Name')}*`}
               error={actionData?.errors?.name}
             >
               <TextField name="name" defaultValue={organiser?.name || ''} />
@@ -249,7 +249,7 @@ export default function UsRoute() {
             </div>
 
             <FormField
-              label={t('Description') + '*'}
+              label={`${t('Description')}*`}
               error={actionData?.errors?.description}
             >
               <div className="mt-1 relative rounded-md shadow-sm">
@@ -266,7 +266,7 @@ export default function UsRoute() {
           </div>
           <div className="col-span-3">
             <FormField
-              label={t('Profile Photo') + '*'}
+              label={`${t('Profile Photo')}*`}
               error={actionData?.errors?.logo}
             >
               <UploadImage
