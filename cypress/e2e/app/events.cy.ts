@@ -95,7 +95,7 @@ describe('Event', () => {
     });
 
     it('Should delete event', () => {
-      cy.loginAdmin()
+      cy.loginOrganiser()
         .visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d')
 
         .intercept('POST', '/o/event/MY4bvgxDbMtGv8rbYe5d*')
@@ -104,7 +104,10 @@ describe('Event', () => {
         .get('button[name=delete-button]')
         .click()
 
-        .get('button[name=confirm-delete]')
+        .get('.cy-delete-dialog')
+        .should('exist')
+
+        .get('button.cy-primary')
         .should('exist')
         .click()
 

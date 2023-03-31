@@ -924,18 +924,19 @@ export default function OrganizerEventRoute() {
         secondaryLabel={t('Ignore')}
         onDismiss={handleDiscardDeleteEvent}
         onConfirm={handleDeleteEvent}
+        className="cy-delete-dialog"
+      />
+
+      <Form
+        id="profile-form"
+        method="post"
+        noValidate
+        aria-describedby="general-error"
+        className="hidden"
+        ref={deleteEventForm}
       >
-        <Form
-          id="profile-form"
-          method="post"
-          noValidate
-          aria-describedby="general-error"
-          className="hidden"
-          ref={deleteEventForm}
-        >
-          <input type="hidden" name="actionId" value={actionIds.delete} />
-        </Form>
-      </ConfirmationDialog>
+        <input type="hidden" name="actionId" value={actionIds.delete} />
+      </Form>
     </Main>
   );
 }
