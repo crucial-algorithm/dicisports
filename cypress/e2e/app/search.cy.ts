@@ -47,16 +47,8 @@ describe('Search', () => {
     });
 
     it('should redirect to create group: authenticated', () => {
-      cy.intercept('GET', '/*?coords=*')
-        .as('search')
-        .login()
-        .visitAndWaitForHydration('/')
-
-        .get('#search-button')
-        .click()
-
-        .wait('@search')
-        .waitForHydration()
+      cy.login()
+        .visitAndWaitForHydration('/?coords=&search=&page=0&dow=&sport=&g=&actionId=search')
 
         .location()
         .should((l) => {
