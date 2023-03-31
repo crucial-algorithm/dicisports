@@ -90,7 +90,7 @@ export const action: ActionFunction = async ({ request, params }) => {
       firstName: form.get('first-name') as string,
       lastName: form.get('last-name') as string,
       gender: form.get('gender') as string,
-      birthday: new Date(form.get('birthday') as string),
+      birthdate: new Date(form.get('birthdate') as string),
       phoneNumber: parseInt(phoneNumber),
       identityCard: (form.get('identity-card') as string) || null,
       federationNumber:
@@ -110,7 +110,7 @@ export const action: ActionFunction = async ({ request, params }) => {
       gender: z
         .string({ required_error: t('Field Required') })
         .min(1, { message: t('Field Required') }),
-      birthday: z
+      birthdate: z
         .date({ required_error: t('Field Required') })
         .max(new Date(), t('Past Date')),
       phoneNumber: z

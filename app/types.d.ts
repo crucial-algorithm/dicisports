@@ -437,7 +437,7 @@ type RaceParticipantInput = {
 type UIRaceParticipant = {
   id: string;
   name: string;
-  birthday: Date;
+  birthdate: Date;
   gender: string;
   bookingAt: Date;
   status: string;
@@ -447,7 +447,7 @@ type UIRaceParticipant = {
 type DBRawUIRaceParticipant = {
   id: string;
   name: string;
-  birthday: Date;
+  birthdate: Date;
   gender: string;
   booking_at: Date;
   status: string;
@@ -463,7 +463,7 @@ type ParticipantInput = {
   firstName: string;
   lastName: string;
   gender: string;
-  birthday: Date;
+  birthdate: Date;
   phoneNumber: number;
   identityCard?: string | null;
   federationNumber?: number | null;
@@ -480,7 +480,7 @@ type DBRawParticipant = {
   first_name: string;
   last_name: string;
   gender: string;
-  birthday: Date;
+  birthdate: Date;
   phone_number: number;
   identity_card: string | null;
   federation_number: number | null;

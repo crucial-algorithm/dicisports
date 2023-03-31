@@ -259,7 +259,7 @@ function dbUIRaceParticipantToUIRaceParticipant(
   return {
     id: raceParticipant.id,
     name: raceParticipant.name,
-    birthday: raceParticipant.birthday,
+    birthdate: raceParticipant.birthdate,
     gender: raceParticipant.gender,
     bookingAt: raceParticipant.booking_at,
     status: raceParticipant.status,
@@ -300,7 +300,7 @@ function dbParticipantToParticipant(
     firstName: participant.first_name,
     lastName: participant.last_name,
     gender: participant.gender,
-    birthday: participant.birthday,
+    birthdate: participant.birthdate,
     phoneNumber: participant.phone_number,
     identityCard: participant.identity_card,
     federationNumber: participant.federation_number,
