@@ -12,16 +12,14 @@ import { H4, H5, H6 } from '~/components/shared/typography';
 
 import Button from '~/components/shared/Button';
 
-import Main from '~/components/shared/Main';
-
 import { findUserEvents } from '~/server/db/events.server';
 import WhenListEmpty from '~/components/shared/Empty';
 
-import type { Sport } from '~/types';
+import type { Sport, EventStatus } from '~/types';
 import DisplayImg from '~/components/shared/DisplayImg';
 
 import { findSports } from '~/server/db/reference.server';
-import { requireAdminUser } from '~/server/auth/session.server';
+import { requireUser } from '~/server/auth/session.server';
 
 type LoaderData = {
   events: Array<Event>;
@@ -32,8 +30,8 @@ export const handle = {
 };
 
 export const loader: LoaderFunction = async ({ request }) => {
-  // hide while this is still in dev
-  const user = await requireAdminUser(request);
+  // TODO: this should be restricted to organisers
+  const user = await requireUser(request);
 
   const events = await findUserEvents(user.id);
   const sports = await findSports();
@@ -48,12 +46,20 @@ export const links: LinksFunction = () => {
   return [];
 };
 
+function target(status: EventStatus, id: string) {
+  if (['published', 'unpublished'].indexOf(status) >= 0) {
+    return `/o/dashboard/${id}`;
+  }
+
+  return `/o/event/${id}`;
+}
+
 export default function OrganizerIndexRoute() {
   const { t } = useTranslation('organizer');
   const { events, sports } = useLoaderData<LoaderData>();
 
   return (
-    <Main>
+    <>
       <div className="dark:text-blueGray-500">
         <div className="col-span-full mb-12 lg:mb-12">
           <div className="flex flex-col-reverse justify-end lg:flex-row lg:items-center">
@@ -64,34 +70,16 @@ export default function OrganizerIndexRoute() {
             </Form>
           </div>
         </div>
-        <div className="events-list">
-          {events.map((event: Event) => (
-            <Link to={`/o/event/${event.id}`} key={event.id}>
-              <div
-                className={clsx(
-                  'relative flex mb-12',
-                  'flex-col',
-                  'p-4',
-                  'border-b border-gray-300 dark:border-gray-300',
-                  {
-                    'opacity-60':
-                      event.status === 'draft' || event.status === 'unpublished'
-                  }
-                )}
-                data-cy={`event-${event.id}`}
-              >
-                <div id="event-image">
-                  <H5 className={clsx('mb-5')}>{event.name}</H5>
-                  <RaceImage
-                    event={event}
-                    img={
-                      sports.find((s: Sport) => s.id === event.sportId)?.picture
-                    }
-                  />
-                </div>
-                <div className="w-full h-full p-2 lg:pl-6"></div>
-              </div>
-            </Link>
+        <H5 className="border-b mb-4">{t('Draft Events')}</H5>
+        <div className="flex flex-wrap align-middle justify-start last:border-none">
+          {events.filter((e: Event) => e.status === 'draft' || e.status === 'unpublished').map((event: Event) => (
+            <EventEntry className="border-r" event={event} sports={sports} key={event.id} />
+          ))}
+        </div>
+        <H5 className="border-b">{t('Published Events')}</H5>
+        <div className="flex flex-wrap align-middle justify-start">
+          {events.filter((e: Event) => e.status === 'published').map((event: Event) => (
+            <EventEntry className="border-r" event={event} sports={sports} key={event.id} />
           ))}
         </div>
         <WhenListEmpty list={events}>
@@ -100,18 +88,53 @@ export default function OrganizerIndexRoute() {
           </H4>
         </WhenListEmpty>
       </div>
-    </Main>
+    </>
   );
 }
 
-function PlaceholderImg({
-  event,
-  img
-}: {
+type EventEntryProps = {
+  event: Event;
+  sports: Sport[];
+} & React.ComponentProps<'div'>;
+
+function EventEntry({ event, sports, className }: EventEntryProps) {
+  const { t } = useTranslation('organizer');
+
+  return (
+    <Link to={target(event.status, event.id)} key={event.id}>
+      <div
+        className={clsx(
+          className,
+          'relative flex flex-col p-4 mb-4 hover:bg-secondary',
+          {
+            'opacity-60':
+              event.status === 'draft' || event.status === 'unpublished'
+          }
+        )}
+        data-cy={`event-${event.id}`}
+      >
+        <div id="event-image">
+          <H5 className={clsx('mb-5')}>{event.name || t('No Name')}</H5>
+          <RaceImage
+            event={event}
+            img={
+              sports.find((s: Sport) => s.id === event.sportId)?.picture
+            }
+          />
+        </div>
+        <div className="w-full h-full p-2 lg:pl-6" />
+      </div>
+    </Link>
+  );
+}
+
+type PlaceholderImgProps = {
   event: Event;
   className: string;
   img?: string;
-}) {
+};
+
+function PlaceholderImg({ event, img }: PlaceholderImgProps) {
   if (!img) {
     return null;
   }
@@ -126,7 +149,7 @@ function PlaceholderImg({
 
 function RaceImage({ event, img }: { event: Event; img?: string }) {
   function Wrapper({ children }: {} & React.ComponentProps<'div'>) {
-    return <div className="w-[100px] h-[100px]">{children}</div>;
+    return <div className="w-[50px] h-[50px]">{children}</div>;
   }
 
   const { image1, image2, image3 } = event;
@@ -146,8 +169,8 @@ function RaceImage({ event, img }: { event: Event; img?: string }) {
           transformations={{
             resize: {
               type: 'fill',
-              width: 100,
-              height: 100
+              width: 50,
+              height: 50
             }
           }}
         />

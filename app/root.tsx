@@ -10,10 +10,9 @@ import {
   ScrollRestoration,
   useCatch,
   useLoaderData,
+  useMatches,
   useTransition
 } from '@remix-run/react';
-
-import type { User } from '@prisma/client';
 
 import { useSpinDelay } from 'spin-delay';
 
@@ -21,7 +20,7 @@ import clsx from 'clsx';
 
 import { setConfig } from 'cloudinary-build-url';
 
-import type { KCDHandle, Sport } from '~/types';
+import type { KCDHandle, Sport, User } from '~/types';
 import type { Timings } from '~/server/metrics.server';
 import { getServerTimeHeader, time } from '~/server/metrics.server';
 import { getSession } from '~/server/auth/session.server';
@@ -94,7 +93,6 @@ export type RootLoaderData = {
     path: string;
     session: {
       email: string | undefined;
-      magicLinkVerified: boolean | undefined;
       theme: Theme | null;
       location: [number, number] | null;
     };
@@ -135,7 +133,6 @@ export const loader: LoaderFunction = async ({ request }) => {
       path: new URL(request.url).pathname,
       session: {
         email: loginInfoSession.getEmail(),
-        magicLinkVerified: loginInfoSession.getMagicLinkVerified(),
         theme: themeSession.getTheme(),
         location: locationSession.getLocation()
       }
@@ -242,6 +239,7 @@ function Html({
   const [theme] = useTheme();
   const data = useLoaderData<RootLoaderData>() as RootLoaderData;
   const analyticsUrl = 'https://plausible.io/js/plausible.js';
+  const [, { pathname }] = useMatches();
 
   // useChangeLanguage(lang);
   // script bellow setting window.ENV is not actually being used; Just keeping
@@ -279,7 +277,7 @@ function Html({
       <body className="dark:bg-gray-900 bg-white transition duration-500 w-full">
         <PageLoadingMessage />
         <NotificationMessage queryStringKey="message" delay={0.3} />
-        <Navbar />
+        {pathname !== '/o' && <Navbar />}
         <Outlet />
         <ScrollRestoration />
         <script

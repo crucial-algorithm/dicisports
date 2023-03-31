@@ -92,7 +92,7 @@ const Button: React.FC<Props> = ({
 
 interface ButtonProps {
   variant?: 'primary' | 'secondary' | 'danger' | 'link'
-  size?: 'medium' | 'large' | 'small' | 'tiny'
+  size?: 'medium' | 'large' | 'small' | 'x-small' | 'tiny'
   children: React.ReactNode | React.ReactNode[]
 }
 
@@ -125,6 +125,7 @@ function ButtonInner({
             'px-11 py-6 space-x-5': size === 'large',
             'px-8 py-4 space-x-3': size === 'medium',
             'px-6 py-3 space-x-3': size === 'small',
+            'px-4 py-1 text-sm': size === 'x-small',
             'px-2 py-3 space-x-3 w-10 h-10': size === 'tiny'
           }
         )}

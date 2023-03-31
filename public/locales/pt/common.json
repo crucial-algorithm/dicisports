@@ -1,6 +1,12 @@
 {
-  "NAVBAR >>> Meeting Point": "Os meus grupos",
-  "NAVBAR >>> Events": "Os meus eventos",
+  "500 error message": "Aconteceu um problema e não sabemos o que foi... iremos avaliar. Tente mais tarde.",
+  "Groups Menu": "Os meus grupos",
+  "Events Menu": "Eventos",
+  "Campaigns Menu": "Campanhas",
+  "Promo Codes Menu": "Códigos Desconto",
+  "Users Menu": "Utilizadores",
+  "Profile menu": "Perfil",
+  "Switch Collapse Menu": "Minimizar",
   "Home": "Inicio",
   "Switch to light mode": "Alterar para light mode",
   "Switch to dark mode": "Alterar para dark mode",
@@ -33,5 +39,7 @@
   "Drag Map to Choose a Location Hint": "Arraste o mapa até à localização pretendida",
   "Pick Location Button": "Escolher local",
 
-  "No results found": "Nenhum resultado encontrado!"
+  "No results found": "Nenhum resultado encontrado!",
+
+  "CTA Publish Your Event": "Divulga a tua prova no DicisSports"
 }
