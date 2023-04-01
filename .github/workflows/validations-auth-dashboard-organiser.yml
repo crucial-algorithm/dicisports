@@ -1,4 +1,4 @@
-name: E2E tests - Authentication and Dashboard
+name: E2E tests - Authentication, Dashboard and Organiser
 on: push
 
 jobs:
@@ -50,6 +50,7 @@ jobs:
           spec: |
             cypress/e2e/app/auth.cy.ts
             cypress/e2e/app/dashboard.cy.ts
+            cypress/e2e/app/organiser.cy.ts
         env:
           CY_REQUEST_TIMEOUT: 15000
           CY_RESPONSE_TIMEOUT: 90000

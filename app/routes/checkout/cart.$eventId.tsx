@@ -19,10 +19,15 @@ import { H2, H4, H5, H6 } from '~/components/shared/typography';
 import { createInitialBookingFlow } from '~/routes/checkout/create';
 import { getClientSession } from '~/server/auth/client.server';
 import { getUser } from '~/server/auth/session.server';
-import { findBooking, findBookingCart, removeBooking } from '~/server/db/booking.server';
+import {
+  findBooking,
+  findBookingCart,
+  removeBooking
+} from '~/server/db/booking.server';
 import { findEvent } from '~/server/db/events.server';
 import {
-  addParticipantToRace, findUserEventRaceParticipants,
+  addParticipantToRace,
+  findUserEventRaceParticipants,
   findUserRaceParticipants,
   removeRaceParticipant
 } from '~/server/db/participant.server';
@@ -65,7 +70,6 @@ export const action: ActionFunction = async ({ request, params }) => {
   const raceId = form.get('raceId') as string;
 
   try {
-
     // Triggered when user clicks continue in the cart screen
     if (actionId === actions.checkout) {
       const userEventRaceParticipants = await findUserEventRaceParticipants(
@@ -89,14 +93,10 @@ export const action: ActionFunction = async ({ request, params }) => {
       } else {
         await addParticipantToRace(clientId, raceId, booking.id);
       }
-
     }
 
     if (actionId === actions.remove) {
-      const raceParticipants = await findUserRaceParticipants(
-        clientId,
-        raceId
-      );
+      const raceParticipants = await findUserRaceParticipants(clientId, raceId);
 
       if (!raceParticipants?.length) {
         return badRequest({ error: t('No Race Participants') });
@@ -151,11 +151,12 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 };
 
 export default function CheckoutRegistrationsRoute() {
-  const { event, races, userCheckoutRaces } = useLoaderData<LoaderData>() as LoaderData;
+  const { event, races, userCheckoutRaces } =
+    useLoaderData<LoaderData>() as LoaderData;
   const fetcher = useFetcher();
   const [searchParams] = useSearchParams();
   const raceQtds: RaceQtd[] = races.map((r) => {
-    const raceInCart = userCheckoutRaces.find((c) => (c.raceId === r.id));
+    const raceInCart = userCheckoutRaces.find((c) => c.raceId === r.id);
 
     return {
       ...r,

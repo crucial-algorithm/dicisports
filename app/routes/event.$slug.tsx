@@ -33,18 +33,20 @@ import Button, { ButtonLink } from '~/components/shared/Button';
 import { getUser } from '~/server/auth/session.server';
 import { Notification } from '~/components/shared/NotificationMessage';
 import DisplayImg from '~/components/shared/DisplayImg';
-import type { Document, Event, Perk, Race, TranslationObject, User } from '~/types';
+import type { Document, Event, Organiser, Perk, Race, TranslationObject, User } from '~/types';
 import { findEventRaces } from '~/server/db/races.server';
 import DisplayDate from '~/components/shared/DIsplayDate';
 import { displayTimeOfDay } from '~/utils/misc';
 import { findEventPerks } from '~/server/db/perks.server';
 import WhenListEmpty from '~/components/shared/Empty';
 import I18nText from '~/components/I18nText';
+import { findOrganiser } from '~/server/db/organiser.server';
 
 type LoaderData = {
   event: Event;
   isUserFavorite: boolean;
   races: Race[];
+  organiser?: Organiser;
 };
 
 const actions = {
@@ -61,10 +63,15 @@ export async function loadDisplayEventData(
   user: User | null,
   event: Event | null
 ) {
+  let organiser: Organiser | null = null;
   let isUserFavorite = false;
 
   if (user && event) {
     isUserFavorite = !!(await findUserFavoriteEvent(user.id, event.id));
+  }
+
+  if (event) {
+    organiser = await findOrganiser(event.createdById);
   }
 
   const eventId = event?.id as string;
@@ -74,7 +81,8 @@ export async function loadDisplayEventData(
     event: event,
     isUserFavorite,
     races,
-    perks: await findEventPerks(eventId)
+    perks: await findEventPerks(eventId),
+    organiser: organiser && organiser.status !== 'PENDING' ? organiser : null
   });
 }
 
@@ -96,7 +104,7 @@ export const loader: LoaderFunction = async ({ params, request }) => {
 
 export default function EventDisplayRoute() {
   const favorite = useFetcher();
-  const { event, isUserFavorite, races, perks } = useLoaderData<LoaderData>();
+  const { event, isUserFavorite, races, perks, organiser } = useLoaderData<LoaderData>();
   const { t } = useTranslation('event');
 
   let minPrice = 0;
@@ -248,6 +256,7 @@ export default function EventDisplayRoute() {
             </H6>
           </WhenListEmpty>
         </div>
+        {organiser && <OrganiserFooter organiser={organiser} />}
       </Main>
     </>
   );
@@ -614,5 +623,28 @@ function StickyPriceTag({
         </ButtonLink>
       </div>
     </div>
+  );
+}
+
+function OrganiserFooter({ organiser }: { organiser: Organiser }) {
+  return (
+    <footer data-cy="organiser-profile">
+      <div className="container px-4 mx-auto">
+        <div className="-mx-4 flex flex-wrap">
+          <div className="px-4 my-4 w-full">
+            <div className="flex flex-row gap-x-2 items-center">
+              <div className="w-14 h-14">
+                <DisplayImg imageId={organiser.logo} />
+              </div>
+              <H4 data-cy="organiser-name">{organiser.name}</H4>
+            </div>
+
+            <div className="mt-4 whitespace-pre-wrap max-w-[90ch] dark:text-blueGray-500 text-gray-500 text-base break-words">
+              {organiser.description}
+            </div>
+          </div>
+        </div>
+      </div>
+    </footer>
   );
 }

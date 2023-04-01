@@ -42,6 +42,7 @@ model User {
   favGroups FavoriteGroup[]
   events    Event[]
   favEvents FavoriteEvent[]
+  organiser Organiser?
 
   @@map("users")
 }
@@ -336,4 +337,28 @@ model ShirtSize {
     participants    Participant[]
 
     @@map("shirt_size")
+}
+
+enum OrganiserStatus {
+    PENDING
+    APPROVED
+}
+
+model Organiser {
+    id                  String              @id
+    name                String
+    description         String
+    logo                String
+    email               String              @unique
+    phoneNumber         Int?                 @unique @map("phone_number")
+    address             String
+    postalCode          String              @map("postal_code")
+    city                String
+    userId              String              @unique
+    user                User                @relation(fields: [userId], references: [id])
+    status              OrganiserStatus     @default(PENDING)
+    createdAt           DateTime            @default(now()) @map("created_at")
+    updatedAt           DateTime            @updatedAt @map("updated_at")
+
+    @@map("organizers")
 }

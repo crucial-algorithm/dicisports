@@ -1,5 +1,6 @@
 import { MapPinIcon, PlusIcon } from '@heroicons/react/24/outline';
 import { Role, Status } from '@prisma/client';
+import { Form, useActionData, useLoaderData } from '@remix-run/react';
 import type {
   ActionFunction,
   LinksFunction,
@@ -13,7 +14,6 @@ import {
   unstable_createMemoryUploadHandler,
   unstable_parseMultipartFormData
 } from '@remix-run/node';
-import { useActionData, useLoaderData } from '@remix-run/react';
 
 import clsx from 'clsx';
 
@@ -52,6 +52,7 @@ import { H2, H6 } from '~/components/shared/typography';
 import { requireUser } from '~/server/auth/session.server';
 import Config from '~/server/config.server';
 import {
+  deleteEvent,
   findEvent,
   publishEvent,
   unpublishEvent,
@@ -70,7 +71,7 @@ import {
   processImgField,
   Unauthorized
 } from '~/server/utils/misc';
-
+import { ConfirmationDialog } from '~/components/shared/Dialog';
 import mapCss from '~/styles/map.css';
 import organizerCss from '~/styles/organizer.css';
 
@@ -103,7 +104,8 @@ type ActionData = {
 
 const actionIds = {
   publish: 'publish',
-  unpublish: 'unpublish'
+  unpublish: 'unpublish',
+  delete: 'delete'
 };
 
 const RESOURCES_NS = 'create-event-form';
@@ -182,7 +184,22 @@ export const action: ActionFunction = async ({ request, params }) => {
     throw Unauthorized(t('Not authorized'));
   }
 
-  const form = await unstable_parseMultipartFormData(request, uploadHandler);
+  let form: FormData;
+
+  try {
+    form = await unstable_parseMultipartFormData(request, uploadHandler);
+  } catch (e) {
+    // delete can't be processed with multipart form data 🤷‍♂️
+    form = await request.formData();
+  }
+
+  const actionId = form.get('actionId') as string;
+
+  if (actionId === actionIds.delete) {
+    await deleteEvent(event.id as string);
+
+    return redirect(`/o?message=${t('Event Deleted')}`);
+  }
 
   const isUpdate = event.status !== 'auto';
   const date = form.get('event-date') as string;
@@ -192,7 +209,6 @@ export const action: ActionFunction = async ({ request, params }) => {
   const image4 = form.get('/file/image/3') as string;
   const image5 = form.get('/file/image/4') as string;
   const location = parseLocation(form.get('location') as string);
-  const actionId = form.get('actionId') as string;
   const races: Race[] = (await findEventRaces(event.id)) || [];
   let eventStatus = event.status;
 
@@ -268,7 +284,6 @@ export const action: ActionFunction = async ({ request, params }) => {
     await updateEvent(data, perks, newPerks);
 
     if (actionId === actionIds.publish) {
-
       z.object(EventSchema).parse({ ...data, races: races.map((r) => r.id) });
 
       if (user.role === Role.ORGANIZER) {
@@ -286,7 +301,10 @@ export const action: ActionFunction = async ({ request, params }) => {
 
     const updatedEvent = await findEvent(event.id);
 
-    if (updatedEvent?.status === 'published' || updatedEvent?.status === 'unpublished') {
+    if (
+      updatedEvent?.status === 'published' ||
+      updatedEvent?.status === 'unpublished'
+    ) {
       return redirect(`/o/dashboard/${event.id}`);
     }
 
@@ -363,9 +381,9 @@ export default function OrganizerEventRoute() {
   const [location, setLocation] = useState<DiciLocation | null>(
     event.location
       ? {
-        coords: `${event.lat}, ${event.lng}`,
-        shortAddress: event.location
-      }
+          coords: `${event.lat}, ${event.lng}`,
+          shortAddress: event.location
+        }
       : null
   );
   const [showDocumentsDialog, setSowDocumentsDialog] = useState<{
@@ -376,7 +394,10 @@ export default function OrganizerEventRoute() {
     show: false,
     hash: 0
   });
+  const [deleteEventModalOpen, setDeleteEventModalOpen] =
+    useState<boolean>(false);
   const inputEl = useRef(null);
+  const deleteEventForm = useRef<HTMLFormElement>(null);
   const isPublished = event.status === Status.published;
 
   // Hack: while remix doesn't handle dates properly
@@ -450,6 +471,22 @@ export default function OrganizerEventRoute() {
     }
 
     setSowDocumentsDialog({ show: true, document, hash: Date.now() });
+  }
+
+  function handleShowDeleteEventWarning() {
+    setDeleteEventModalOpen(true);
+  }
+
+  function handleDiscardDeleteEvent() {
+    setDeleteEventModalOpen(false);
+  }
+
+  function handleDeleteEvent() {
+    if (!deleteEventForm.current) {
+      return;
+    }
+    deleteEventForm.current.submit();
+    setDeleteEventModalOpen(false);
   }
 
   useEffect(() => {
@@ -689,6 +726,7 @@ export default function OrganizerEventRoute() {
                     <label
                       htmlFor={p.id}
                       className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300"
+                      data-cy={`perk-label-${index}`}
                     >
                       {p.name}
                     </label>
@@ -811,7 +849,16 @@ export default function OrganizerEventRoute() {
           </div>
 
           <ButtonGroup className="mt-8">
-            <ButtonLink type="button" variant="secondary" to={'/o'}>
+            <Button
+              name="delete-button"
+              type="button"
+              variant="danger"
+              onClick={handleShowDeleteEventWarning}
+            >
+              {t('Delete Event')}
+            </Button>
+
+            <ButtonLink type="button" variant="secondary" to={'/organizer'}>
               {t('Cancel')}
             </ButtonLink>
 
@@ -868,6 +915,29 @@ export default function OrganizerEventRoute() {
         open={showLocationPicker}
         onClose={handleCloseMap}
       />
+
+      <ConfirmationDialog
+        isOpen={deleteEventModalOpen}
+        title={t('Delete Event X', { name: event?.name })}
+        question={t('Are you sure you want to delete event?')}
+        primaryLabel={t('Delete Event')}
+        primaryVariant="danger"
+        secondaryLabel={t('Ignore')}
+        onDismiss={handleDiscardDeleteEvent}
+        onConfirm={handleDeleteEvent}
+        className="cy-delete-dialog"
+      />
+
+      <Form
+        id="profile-form"
+        method="post"
+        noValidate
+        aria-describedby="general-error"
+        className="hidden"
+        ref={deleteEventForm}
+      >
+        <input type="hidden" name="actionId" value={actionIds.delete} />
+      </Form>
     </Main>
   );
 }
