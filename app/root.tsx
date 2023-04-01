@@ -20,6 +20,11 @@ import clsx from 'clsx';
 
 import { setConfig } from 'cloudinary-build-url';
 
+import { locale } from 'primereact/api';
+
+import primeIcons from 'primeicons/primeicons.css';
+import primeReactCoreCss from 'primereact/resources/primereact.min.css';
+
 import type { KCDHandle, Sport, User } from '~/types';
 import type { Timings } from '~/server/metrics.server';
 import { getServerTimeHeader, time } from '~/server/metrics.server';
@@ -44,9 +49,13 @@ import { getLocationSession } from '~/routes/action/set-my-location';
 
 import { findSports } from '~/server/db/reference.server';
 
+import setupPrimeReact from '~/PrimeReact';
+
 import vendorsCss from './styles/vendors.css';
 import mainCss from './styles/main.css';
+import primeReactThemeCss from './styles/primereact-theme.css';
 import tailwind from './styles/tailwind.css';
+
 
 export const links: LinksFunction = () => {
   return [
@@ -75,6 +84,18 @@ export const links: LinksFunction = () => {
     {
       rel: 'stylesheet',
       href: mainCss
+    },
+    {
+      rel: 'stylesheet',
+      href: primeIcons
+    },
+    {
+      rel: 'stylesheet',
+      href: primeReactThemeCss
+    },
+    {
+      rel: 'stylesheet',
+      href: primeReactCoreCss
     }
   ];
 };
@@ -294,13 +315,17 @@ function Html({
 
 export default function App() {
   // set locale statically
-  const locale = 'pt';
+  const lang = 'pt';
   const data = useLoaderData<RootLoaderData>() as RootLoaderData;
+
+  locale(lang);
+
+  setupPrimeReact();
 
   return (
     <ThemeProvider specifiedTheme={data.requestInfo.session.theme}>
       <LocationProvider userLocation={data.requestInfo.session.location}>
-        <Html lang={locale} />
+        <Html lang={lang} />
       </LocationProvider>
     </ThemeProvider>
   );

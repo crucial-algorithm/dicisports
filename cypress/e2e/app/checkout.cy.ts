@@ -355,9 +355,8 @@ describe('Checkout', () => {
     });
 
     it('should be able to authenticate and keep booking after completing booking process', () => {
-      bookParticipant();
-
-      cy.get('[data-cy=authenticate]')
+      bookParticipant()
+        .get('[data-cy=authenticate]')
         .should('exist')
         .click()
 
@@ -558,8 +557,7 @@ function registerParticipant() {
 
     .pickOptionFromSelect('gender', 2)
 
-    .get('input[name=birthday]')
-    .type('2001-09-21')
+    .pickDate('birthday', '2001-09-21')
 
     .get('input[name=phone-number]')
     .type('937654321')
@@ -594,7 +592,7 @@ function registerParticipant() {
 }
 
 function bookParticipant() {
-  cy.intercept('GET', '*?_data=routes*checkout*')
+  return cy.intercept('GET', '*?_data=routes*checkout*')
     .as('selectRace')
 
     .visitAndWaitForHydration('/checkout/cart/MY4bvgxDbMtGv8rbYe5d')
@@ -622,8 +620,7 @@ function bookParticipant() {
 
     .pickOptionFromSelect('gender', 2)
 
-    .get('input[name=birthday]')
-    .type('2001-09-21')
+    .pickDate('birthday', '2001-09-21')
 
     .get('input[name=phone-number]')
     .type('937654321')

@@ -11,7 +11,6 @@ import Button from '~/components/shared/Button';
 import Dialog from '~/components/shared/Dialog';
 import BasicDatePicker from '~/components/shared/form/DatePicker';
 import FormField from '~/components/shared/form/FormField';
-import { inputBaseClasses } from '~/components/shared/form/InputBase';
 import TextField from '~/components/shared/form/TextField';
 import type { Race } from '~/types';
 import { hoursMinutesToTimeOfDay, timeOfDayToHoursMinutes } from '~/utils/misc';
@@ -284,8 +283,8 @@ export default function RaceDialog(props: {
             error={errors?.validUntil}
           >
             <BasicDatePicker
-              label={''}
-              name="race-date"
+              label=""
+              name="early-bird-limit"
               date={race?.validUntil ? new Date(race.validUntil) : null}
               input={validUntil}
               className="w-full"
@@ -294,10 +293,10 @@ export default function RaceDialog(props: {
         </div>
 
         <FormField label={t('Description')}>
-          <div className="mt-1 relative rounded-md shadow-sm">
+          <div className="mt-1 relative rounded-md">
               <textarea
                 name="race-description"
-                className={inputBaseClasses('p-10 max-w-lg')}
+                className="input-text p-10 max-w-lg"
                 placeholder={t('Race Description')}
                 defaultValue={race?.raceDescription || ''}
                 ref={raceDescription}

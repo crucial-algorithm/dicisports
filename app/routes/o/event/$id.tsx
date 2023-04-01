@@ -40,7 +40,6 @@ import ComboBox from '~/components/shared/form/ComboBox';
 import BasicDatePicker from '~/components/shared/form/DatePicker';
 import FormField from '~/components/shared/form/FormField';
 
-import { inputBaseClasses } from '~/components/shared/form/InputBase';
 import InputError from '~/components/shared/form/InputError';
 import Label from '~/components/shared/form/Label';
 import TextField from '~/components/shared/form/TextField';
@@ -548,6 +547,7 @@ export default function OrganizerEventRoute() {
                 label={t('Date')}
                 name="event-date"
                 date={event?.startAt}
+                minDate={new Date()}
               />
             </FormField>
 
@@ -659,10 +659,10 @@ export default function OrganizerEventRoute() {
             label={t('Description')}
             error={actionData?.errors?.description}
           >
-            <div className="mt-1 relative rounded-md shadow-sm">
+            <div className="mt-1 relative rounded-md">
               <textarea
                 name="event-description"
-                className={inputBaseClasses('p-10')}
+                className="input-text p-10"
                 placeholder={t('Event description')}
                 defaultValue={event.description || ''}
                 rows={5}
@@ -758,10 +758,10 @@ export default function OrganizerEventRoute() {
             label={t('Directions')}
             error={actionData?.errors?.directions}
           >
-            <div className="mt-2 relative rounded-md shadow-sm">
+            <div className="mt-2 relative rounded-md">
               <textarea
                 name="get-there"
-                className={inputBaseClasses('p-10')}
+                className="input-text p-10"
                 placeholder={t('How to get there')}
                 defaultValue={event.directions || ''}
                 rows={5}

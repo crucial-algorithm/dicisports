@@ -156,8 +156,10 @@ describe('Event', () => {
         .pickOptionFromSelect('sport', 4)
         .pickOptionFromSelect('difficulty', 1)
 
-        .get('input[name=event-date]')
-        .type(new Date(Date.now() + 86400 * 1000).toISOString().split('T')[0])
+        .pickDate(
+          'event-date',
+          new Date(Date.now() + 86400 * 1000).toISOString().split('T')[0]
+        )
 
         .pickLocationInMap('open-map')
 
@@ -206,8 +208,11 @@ describe('Event', () => {
         .get('input[name=priceEarlyBird]')
         .type('15')
 
-        .get('input[name=race-date]')
-        .type(new Date(Date.now() + 86400 * 1000).toISOString().split('T')[0])
+        .pickDate(
+          'early-bird-limit',
+          new Date(Date.now() + 86400 * 1000).toISOString().split('T')[0],
+          '[role="dialog"]'
+        )
 
         .get('textarea[name=race-description]')
         .type('10km run')
