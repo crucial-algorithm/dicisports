@@ -420,7 +420,7 @@ export default function RaceRoute() {
         <FormField label={t('Description')}>
           <div className="mt-1 relative rounded-md">
             <textarea
-              name="race-description"
+              name="description"
               className="input-text p-2 max-w-lg"
               placeholder={t('Race Description')}
               defaultValue={race?.raceDescription || ''}
