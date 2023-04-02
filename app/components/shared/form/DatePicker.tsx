@@ -1,43 +1,57 @@
 import * as React from 'react';
 
+import type { CalendarChangeEvent, CalendarDateTemplateEvent } from 'primereact/calendar';
+import { Calendar } from 'primereact/calendar';
+
 import Label from '~/components/shared/form/Label';
-import InputBase from '~/components/shared/form/InputBase';
 
 type DatePickerOptions = {
   name: string;
   label: string;
   date: Date | null | undefined;
-  input?:  React.RefObject<HTMLInputElement>;
+  minDate?: Date;
+  input?:  React.RefObject<any>;
 } & React.ComponentProps<'input'>;
 
 export default function BasicDatePicker({
   name,
   label,
   date = null,
+  minDate,
   input
 }: DatePickerOptions) {
-  const [value, setValue] = React.useState<string>(
-    date ? date.toISOString().split('T')[0] : ''
-  );
+  const [value, setValue] = React.useState<Date | null>(date);
 
-  function handleOnChange(date: any) {
-    const str: string = new Date(date).toISOString();
-
-    setValue(str);
+  function handleOnChange(event: CalendarChangeEvent) {
+    setValue(event.value as Date);
   }
 
   return (
     <>
       <Label htmlFor="date-picker">{label}</Label>
-      <InputBase
-        id="date-picker"
+      <Calendar
+        className="date-picker input-text"
+        ref={input}
+        dateFormat="yy-mm-dd"
         name={name}
-        type="date"
-        placeholder={label}
-        defaultValue={value}
-        input={input}
+        minDate={minDate}
+        value={value}
         onChange={handleOnChange}
+        dateTemplate={dateTemplateWithCypressTags}
       />
     </>
+  );
+}
+
+function dateTemplateWithCypressTags(date: CalendarDateTemplateEvent) {
+  return (
+    <span
+      data-cy-year={date.year}
+      data-cy-month={Number(date.month)+1}
+      data-cy-day={date.day}
+      data-cy-today={date.today}
+    >
+      {date.day}
+    </span>
   );
 }

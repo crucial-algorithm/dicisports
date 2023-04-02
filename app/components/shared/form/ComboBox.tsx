@@ -13,7 +13,6 @@ import type { Language, TranslationObject } from '~/types';
 import { getLocalizedText } from '~/utils/misc';
 
 import { useTheme } from '~/utils/theme-provider';
-import { inputBaseClasses } from '~/components/shared/form/InputBase';
 import { getI18nText } from '~/components/I18nText';
 
 export type Option = {
@@ -108,7 +107,7 @@ export function AutoComplete({
           <div className="z-100">
             <Combobox.Input
               id={id}
-              className={inputBaseClasses()}
+              className="input-text"
               displayValue={display}
               placeholder={placeholder}
               onChange={handleInputChange}
@@ -220,8 +219,8 @@ export default function ComboBox({
     <Listbox value={selected} onChange={onChangedInternal}>
       <div className={clsx('relative mt-1', className)}>
         <Listbox.Button
-          className={inputBaseClasses('text-left min-h-[60px]')}
-          name={'select-' + name}
+          className="input-text text-left min-h-[60px]"
+          name={`select-${name}`}
         >
           <span className="block truncate">
             {options.find((o) => o.value === selected)?.label || ''}

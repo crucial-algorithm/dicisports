@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { ChevronDownIcon, ChevronUpIcon, TrashIcon } from '@heroicons/react/24/outline';
-import { useFetcher } from '@remix-run/react';
+import { Link, useFetcher } from '@remix-run/react';
 import { useState } from 'react';
 
 
@@ -10,9 +10,8 @@ import type { Race } from '~/types';
 export default function RacesList(props: {
   races: Race[];
   eventId: string;
-  handleUpdateRace: (e: React.MouseEvent) => void;
 }) {
-  const { races, eventId, handleUpdateRace } = props;
+  const { races, eventId } = props;
   const fetcher = useFetcher();
 
   const [deleteModalOpen, setDeleteModalOpen] = useState<{
@@ -25,7 +24,7 @@ export default function RacesList(props: {
       {},
       {
         method: 'post',
-        action: `/o/race/${e.currentTarget.id}/move-up`
+        action: `/o/event/${eventId}/race/${e.currentTarget.id}/move-up`
       }
     );
   }
@@ -35,7 +34,7 @@ export default function RacesList(props: {
       {},
       {
         method: 'post',
-        action: `/o/race/${e.currentTarget.id}/move-down`
+        action: `/o/event/${eventId}/race/${e.currentTarget.id}/move-down`
       }
     );
   }
@@ -89,14 +88,14 @@ export default function RacesList(props: {
                 )}
               </div>
 
-              <div
-                className="text-lg font-extrabold pl-3 dark:text-white w-[calc(100%-(24px+24px))] cursor-pointer"
+              <Link
+                className="text-lg font-extrabold pl-3 text-gray-700 dark:text-white w-[calc(100%-(24px+24px))] cursor-pointer"
                 id={r.id}
-                onClick={handleUpdateRace}
+                to={`/o/event/${eventId}/race/${r.id}`}
                 data-cy={`race-index-${index}`}
               >
                 {r.name}
-              </div>
+              </Link>
 
               <button
                 type="button"

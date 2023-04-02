@@ -67,9 +67,7 @@ describe('Event', () => {
         .contains('PDF')
 
         .get('[data-cy=document-label]')
-        .contains('Regulamento')
-        .should('have.attr', 'href')
-        .and('include', '/o/document/MY4bvgxDbMtGv8rbYe5d');
+        .contains('Regulamento');
 
       verifyRace('AhowRdNWCBQWSuivSt7s', 'Mediofondo', 102, '08:30', 15, 1804);
       verifyRace('AhowRdNWCBQWSuivSt7h', 'Minifondo', 57, '08:30', 10, 800);
@@ -82,7 +80,7 @@ describe('Event', () => {
         2274,
         576,
         granfondo,
-        '/o/race/gpx/xaXaCzs2t7D8DpRNnffM'
+        '/o/event/MY4bvgxDbMtGv8rbYe5d/race/xaXaCzs2t7D8DpRNnffM/gpx'
       );
     });
 
@@ -188,8 +186,10 @@ describe('Event', () => {
         .pickOptionFromSelect('sport', 4)
         .pickOptionFromSelect('difficulty', 1)
 
-        .get('input[name=event-date]')
-        .type(new Date(Date.now() + 86400 * 1000).toISOString().split('T')[0])
+        .pickDate(
+          'event-date',
+          new Date(Date.now() + 86400 * 1000).toISOString().split('T')[0]
+        )
 
         .pickLocationInMap('open-map')
 
@@ -215,13 +215,18 @@ describe('Event', () => {
         .check()
 
         // Create a new race
-        .get('button[name=create-race]')
+        .get('a[data-cy=create-race]')
         .click()
 
-        .get('input[name=race-name]')
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.match(/.*\/new$/);
+        })
+
+        .get('input[name=name]')
         .type('a new race')
 
-        .get('input[name=race-distance]')
+        .get('input[name=distance]')
         .type('10')
 
         .pickOptionFromSelect('hour', 9)
@@ -238,13 +243,15 @@ describe('Event', () => {
         .get('input[name=priceEarlyBird]')
         .type('15')
 
-        .get('input[name=race-date]')
-        .type(new Date(Date.now() + 86400 * 1000).toISOString().split('T')[0])
+        .pickDate(
+          'earlyBirdValidUntil',
+          new Date(Date.now() + 86400 * 1000).toISOString().split('T')[0]
+        )
 
-        .get('textarea[name=race-description]')
+        .get('textarea[name=description]')
         .type('10km run')
 
-        .get('input[name="/file/gpx/"]')
+        .get('input[name="track"]')
         .selectFile('cypress/assets/sample.gpx', { force: true })
 
         // End of new race
@@ -257,13 +264,13 @@ describe('Event', () => {
         .type('Carro: Saida pela A3 direção a Braga')
 
         // "Create" document
-        .get('button[name=create-document]')
+        .get('a[data-cy=create-document]')
         .click()
 
-        .get('input[name=document-name]')
+        .get('input[name=name]')
         .type('a new document')
 
-        .get('input[name="/file/misc/"]')
+        .get('input[name="file"]')
         .selectFile('cypress/assets/sample.pdf', { force: true })
 
         .get('button[name=create-document-button]')
@@ -350,7 +357,7 @@ describe('Event', () => {
     });
 
     it('should change race order', () => {
-      cy.intercept('POST', '/o/race/AhowRdNWCBQWSuivSt7h/move-down?*')
+      cy.intercept('POST', '/o/event/MY4bvgxDbMtGv8rbYe5d/race/AhowRdNWCBQWSuivSt7h/move-down?*')
         .as('MoveRaceDown')
 
         .visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d')
@@ -361,7 +368,7 @@ describe('Event', () => {
         .wait('@MoveRaceDown')
         .reload()
 
-        .get('div[data-cy=race-index-0]')
+        .get('a[data-cy=race-index-0]')
         .contains('Mediofondo')
 
         .visitAndWaitForHydration('/event/love-tiles-douro-granfondo-2023')
@@ -372,7 +379,7 @@ describe('Event', () => {
     });
 
     it('should change document order', () => {
-      cy.intercept('POST', '/o/document/MY4bvgxDbMtGv8rbYe5d/move-down?*')
+      cy.intercept('POST', '/o/event/MY4bvgxDbMtGv8rbYe5d/doc/MY4bvgxDbMtGv8rbYe5d/move-down?*')
         .as('MoveDocumentDown')
 
         .visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d')
@@ -383,7 +390,7 @@ describe('Event', () => {
         .wait('@MoveDocumentDown')
         .reload()
 
-        .get('div[data-cy=document-index-0]')
+        .get('a[data-cy=document-index-0]')
         .contains('Circuito')
 
         .visitAndWaitForHydration('/event/love-tiles-douro-granfondo-2023')

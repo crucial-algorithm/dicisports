@@ -175,7 +175,7 @@ export default function EventDisplayRoute() {
           {races
             .sort((a: Race, b: Race) => a.displayOrder - b.displayOrder)
             .map((race: Race, index: number) => (
-              <DisplayRace race={race} key={race.id} index={index} />
+              <DisplayRace race={race} key={race.id} index={index} eventId={event.id} />
             ))}
           <WhenListEmpty list={races}>
             <H6
@@ -262,8 +262,7 @@ export default function EventDisplayRoute() {
   );
 }
 
-function DisplayRace(props: { race: Race; index: number }) {
-  const { race, index } = props;
+function DisplayRace({ race, index, eventId }: { race: Race; index: number, eventId: string }) {
   const { t } = useTranslation('event');
   const raceTime = displayTimeOfDay(race.startTime);
   const [expanded, setExpanded] = useState<boolean>(false);
@@ -339,7 +338,7 @@ function DisplayRace(props: { race: Race; index: number }) {
             )}
             {race.track && (
               <Link
-                to={`/o/race/gpx/${race.id}`}
+                to={`/o/event/${eventId}/race/${race.id}/gpx`}
                 target="_blank"
                 rel="noreferrer"
                 data-cy={`gpx-${race.id}`}

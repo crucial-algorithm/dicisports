@@ -14,24 +14,26 @@ import { NotFound, Unauthorized } from '~/server/utils/misc';
 
 export const action: ActionFunction = async ({ request, params }) => {
   const user = await requireUser(request);
-
   const t = await i18n.getFixedT(request, 'create-event-from');
 
-  const documentId = params.documentId as string;
+  const eventId = params.eventId as string;
+  const documentId = params.id as string;
   const current = await findDocument(documentId);
+  const event = await findEvent(eventId);
 
   if (!current) {
     throw NotFound(t('No Document'));
   }
-
-  const eventId = current.eventId;
-  const event = await findEvent(eventId);
 
   if (!event) {
     throw NotFound(t('Event not found'));
   }
   if (event.createdById !== user.id) {
     throw Unauthorized(t('Not authorized'));
+  }
+  if (current.eventId !== eventId) {
+    // weird - just in case, verify consistency in route
+    throw NotFound(t('Document not found'));
   }
 
   const documents: Array<Document> = (await findDocuments(

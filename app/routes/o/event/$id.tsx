@@ -28,9 +28,7 @@ import { z, ZodError } from 'zod';
 
 import DocumentsList from '~/components/events/DocumentsList';
 
-import RaceDialog from '~/components/events/RaceDialog';
 import RacesList from '~/components/events/RacesList';
-import UploadDocumentDialog from '~/components/events/UploadDocumentDialog';
 import PickBookingSystem from '~/components/PickBookingSystem';
 import Button, { ButtonLink } from '~/components/shared/Button';
 import ButtonGroup from '~/components/shared/ButtonGroup';
@@ -40,7 +38,6 @@ import ComboBox from '~/components/shared/form/ComboBox';
 import BasicDatePicker from '~/components/shared/form/DatePicker';
 import FormField from '~/components/shared/form/FormField';
 
-import { inputBaseClasses } from '~/components/shared/form/InputBase';
 import InputError from '~/components/shared/form/InputError';
 import Label from '~/components/shared/form/Label';
 import TextField from '~/components/shared/form/TextField';
@@ -372,11 +369,7 @@ export default function OrganizerEventRoute() {
   } = useLoaderData<LoaderData>();
   const actionData = useActionData<ActionData>();
   const [showLocationPicker, setShowLocationPicker] = useState<boolean>(false);
-  const [showRacesDialog, setShowRacesDialog] = useState<{
-    show: boolean;
-    hash: number;
-    race?: Race;
-  }>({ show: false, hash: 0 });
+
   const [perks, setPerks] = useState<Array<StrippedPerk>>(dbPerks);
   const [races, setRaces] = useState<Array<Race>>(dbRaces);
   const [location, setLocation] = useState<DiciLocation | null>(
@@ -387,14 +380,6 @@ export default function OrganizerEventRoute() {
         }
       : null
   );
-  const [showDocumentsDialog, setSowDocumentsDialog] = useState<{
-    show: boolean;
-    hash: number;
-    document?: Document;
-  }>({
-    show: false,
-    hash: 0
-  });
   const [deleteEventModalOpen, setDeleteEventModalOpen] =
     useState<boolean>(false);
   const inputEl = useRef(null);
@@ -406,14 +391,6 @@ export default function OrganizerEventRoute() {
 
   function handleShowMap() {
     setShowLocationPicker(true);
-  }
-
-  function handleCreateRace() {
-    setShowRacesDialog({ show: true, hash: Date.now() });
-  }
-
-  function handleCloseRace() {
-    setShowRacesDialog({ show: false, hash: 0 });
   }
 
   function handleCloseMap(location: DiciLocation | null) {
@@ -441,37 +418,6 @@ export default function OrganizerEventRoute() {
     if (inputEl.current) {
       (inputEl.current as HTMLInputElement).value = '';
     }
-  }
-
-  function handleOpenDocumentsDialog() {
-    setSowDocumentsDialog({ show: true, hash: Date.now() });
-  }
-
-  function handleCloseDocumentsDialog() {
-    setSowDocumentsDialog({ show: false, hash: 0 });
-  }
-
-  function handleUpdateRace(e: React.MouseEvent) {
-    const race = races.find((r) => r.id === e.currentTarget.id);
-
-    if (!race) {
-      // should never happen
-      return;
-    }
-
-    setShowRacesDialog({ show: true, race, hash: Date.now() });
-  }
-
-  function handleUpdateDocument(e: React.MouseEvent) {
-    const document = event.documents.find(
-      (d: Document) => d.id === e.currentTarget.id
-    );
-
-    if (!document) {
-      return;
-    }
-
-    setSowDocumentsDialog({ show: true, document, hash: Date.now() });
   }
 
   function handleShowDeleteEventWarning() {
@@ -585,6 +531,7 @@ export default function OrganizerEventRoute() {
                 label={t('Date')}
                 name="event-date"
                 date={event?.startAt}
+                minDate={new Date()}
               />
             </FormField>
 
@@ -696,10 +643,10 @@ export default function OrganizerEventRoute() {
             label={t('Description')}
             error={actionData?.errors?.description}
           >
-            <div className="mt-1 relative rounded-md shadow-sm">
+            <div className="mt-1 relative rounded-md">
               <textarea
                 name="event-description"
-                className={inputBaseClasses('p-10')}
+                className="input-text p-10"
                 placeholder={t('Event description')}
                 defaultValue={event.description || ''}
                 rows={5}
@@ -755,29 +702,26 @@ export default function OrganizerEventRoute() {
             >
               {t('Distances')}
 
-              <Button
+              <ButtonLink
                 className="hidden lg:flex"
-                type="button"
-                onClick={handleCreateRace}
+                to="race/new"
               >
                 {t('Create Distance')}
-              </Button>
+              </ButtonLink>
 
-              <Button
-                type="button"
-                onClick={handleCreateRace}
-                size="small"
+              <ButtonLink
                 className="flex lg:hidden"
-                name="create-race"
+                to="race/new"
+                size="small"
+                data-cy="create-race"
               >
-                <PlusIcon className="md:h-6 w-6 m-0 inline-block"></PlusIcon>
-              </Button>
+                <PlusIcon className="md:h-6 w-6 m-0 inline-block" />
+              </ButtonLink>
             </Label>
             <div>
               <RacesList
                 races={races}
                 eventId={event.id}
-                handleUpdateRace={handleUpdateRace}
               />
             </div>
             <WhenListEmpty list={races}>
@@ -796,10 +740,10 @@ export default function OrganizerEventRoute() {
             label={t('Directions')}
             error={actionData?.errors?.directions}
           >
-            <div className="mt-2 relative rounded-md shadow-sm">
+            <div className="mt-2 relative rounded-md">
               <textarea
                 name="get-there"
-                className={inputBaseClasses('p-10')}
+                className="input-text p-10"
                 placeholder={t('How to get there')}
                 defaultValue={event.directions || ''}
                 rows={5}
@@ -817,28 +761,27 @@ export default function OrganizerEventRoute() {
             >
               {t('Documents')}
 
-              <Button
+              <ButtonLink
                 className="hidden lg:flex"
                 type="button"
-                onClick={handleOpenDocumentsDialog}
+                to="doc/new"
               >
                 {t('Upload Document')}
-              </Button>
-              <Button
-                name="create-document"
+              </ButtonLink>
+              <ButtonLink
                 type="button"
-                onClick={handleOpenDocumentsDialog}
+                to="doc/new"
                 size="small"
                 className="flex lg:hidden"
+                data-cy="create-document"
               >
                 <PlusIcon className="md:h-6 w-6 m-0 inline-block"></PlusIcon>
-              </Button>
+              </ButtonLink>
             </Label>
             <div>
               <DocumentsList
                 documents={event.documents}
                 eventId={event.id}
-                handleUpdateDocument={handleUpdateDocument}
               />
             </div>
             <WhenListEmpty list={event.documents}>
@@ -849,27 +792,6 @@ export default function OrganizerEventRoute() {
           </div>
 
           <ButtonGroup className="mt-8">
-            <Button
-              name="delete-button"
-              type="button"
-              variant="danger"
-              onClick={handleShowDeleteEventWarning}
-            >
-              {t('Delete Event')}
-            </Button>
-
-            <ButtonLink type="button" variant="secondary" to={'/organizer'}>
-              {t('Cancel')}
-            </ButtonLink>
-
-            <Button
-              type="submit"
-              variant="primary"
-              name={event.status === 'auto' ? 'create-event' : 'update-event'}
-            >
-              {event.status === 'auto' ? t('Create Button') : t('Save Button')}
-            </Button>
-
             {event.status === 'published' && (
               <Button
                 id="unpublish"
@@ -884,6 +806,29 @@ export default function OrganizerEventRoute() {
                 {t('Unpublish Button')}
               </Button>
             )}
+
+            <Button
+              name="delete-button"
+              type="button"
+              variant="danger"
+              onClick={handleShowDeleteEventWarning}
+            >
+              {t('Delete Event')}
+            </Button>
+
+            <ButtonLink type="button" variant="secondary" to="/o">
+              {t('Cancel')}
+            </ButtonLink>
+
+            <Button
+              type="submit"
+              variant="primary"
+              name={event.status === 'auto' ? 'create-event' : 'update-event'}
+            >
+              {event.status === 'auto' ? t('Create Button') : t('Save Button')}
+            </Button>
+
+
           </ButtonGroup>
           {actionData?.errors?.submit && (
             <InputError className="mt-8" id="500-error-message">
@@ -892,22 +837,6 @@ export default function OrganizerEventRoute() {
           )}
         </UploadForm>
       </div>
-
-      <RaceDialog
-        isOpen={showRacesDialog.show}
-        triggerModalClose={handleCloseRace}
-        eventId={event.id}
-        race={showRacesDialog.race}
-        hash={showRacesDialog.hash}
-      />
-
-      <UploadDocumentDialog
-        isOpen={showDocumentsDialog.show}
-        document={showDocumentsDialog.document}
-        onDismiss={handleCloseDocumentsDialog}
-        eventId={event.id}
-        hash={showDocumentsDialog.hash}
-      />
 
       <MapDialog
         token={mapToken}
