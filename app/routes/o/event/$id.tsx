@@ -713,8 +713,9 @@ export default function OrganizerEventRoute() {
                 className="flex lg:hidden"
                 to="race/new"
                 size="small"
+                data-cy="create-race"
               >
-                <PlusIcon className="md:h-6 w-6 m-0 inline-block"></PlusIcon>
+                <PlusIcon className="md:h-6 w-6 m-0 inline-block" />
               </ButtonLink>
             </Label>
             <div>
@@ -772,6 +773,7 @@ export default function OrganizerEventRoute() {
                 to="doc/new"
                 size="small"
                 className="flex lg:hidden"
+                data-cy="create-document"
               >
                 <PlusIcon className="md:h-6 w-6 m-0 inline-block"></PlusIcon>
               </ButtonLink>
@@ -814,7 +816,7 @@ export default function OrganizerEventRoute() {
               {t('Delete Event')}
             </Button>
 
-            <ButtonLink type="button" variant="secondary" to={'/organizer'}>
+            <ButtonLink type="button" variant="secondary" to="/o">
               {t('Cancel')}
             </ButtonLink>
 

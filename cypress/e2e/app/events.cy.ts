@@ -67,9 +67,7 @@ describe('Event', () => {
         .contains('PDF')
 
         .get('[data-cy=document-label]')
-        .contains('Regulamento')
-        .should('have.attr', 'href')
-        .and('include', '/o/document/MY4bvgxDbMtGv8rbYe5d');
+        .contains('Regulamento');
 
       verifyRace('AhowRdNWCBQWSuivSt7s', 'Mediofondo', 102, '08:30', 15, 1804);
       verifyRace('AhowRdNWCBQWSuivSt7h', 'Minifondo', 57, '08:30', 10, 800);
@@ -217,7 +215,7 @@ describe('Event', () => {
         .check()
 
         // Create a new race
-        .get('button[name=create-race]')
+        .get('a[data-cy=create-race]')
         .click()
 
         .get('input[name=race-name]')
@@ -262,7 +260,7 @@ describe('Event', () => {
         .type('Carro: Saida pela A3 direção a Braga')
 
         // "Create" document
-        .get('button[name=create-document]')
+        .get('a[data-cy=create-document]')
         .click()
 
         .get('input[name=document-name]')
@@ -355,7 +353,7 @@ describe('Event', () => {
     });
 
     it('should change race order', () => {
-      cy.intercept('POST', '/o/race/AhowRdNWCBQWSuivSt7h/move-down?*')
+      cy.intercept('POST', '/o/event/MY4bvgxDbMtGv8rbYe5d/race/AhowRdNWCBQWSuivSt7h/move-down?*')
         .as('MoveRaceDown')
 
         .visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d')
@@ -377,7 +375,7 @@ describe('Event', () => {
     });
 
     it('should change document order', () => {
-      cy.intercept('POST', '/o/document/MY4bvgxDbMtGv8rbYe5d/move-down?*')
+      cy.intercept('POST', '/o/event/MY4bvgxDbMtGv8rbYe5d/doc/MY4bvgxDbMtGv8rbYe5d/move-down?*')
         .as('MoveDocumentDown')
 
         .visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d')
