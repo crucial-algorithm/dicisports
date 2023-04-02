@@ -28,7 +28,6 @@ import { z, ZodError } from 'zod';
 
 import DocumentsList from '~/components/events/DocumentsList';
 
-import RaceDialog from '~/components/events/RaceDialog';
 import RacesList from '~/components/events/RacesList';
 import UploadDocumentDialog from '~/components/events/UploadDocumentDialog';
 import PickBookingSystem from '~/components/PickBookingSystem';
@@ -407,14 +406,6 @@ export default function OrganizerEventRoute() {
     setShowLocationPicker(true);
   }
 
-  function handleCreateRace() {
-    setShowRacesDialog({ show: true, hash: Date.now() });
-  }
-
-  function handleCloseRace() {
-    setShowRacesDialog({ show: false, hash: 0 });
-  }
-
   function handleCloseMap(location: DiciLocation | null) {
     setShowLocationPicker(false);
     setLocation(location);
@@ -755,29 +746,25 @@ export default function OrganizerEventRoute() {
             >
               {t('Distances')}
 
-              <Button
+              <ButtonLink
                 className="hidden lg:flex"
-                type="button"
-                onClick={handleCreateRace}
+                to="race/new"
               >
                 {t('Create Distance')}
-              </Button>
+              </ButtonLink>
 
-              <Button
-                type="button"
-                onClick={handleCreateRace}
-                size="small"
+              <ButtonLink
                 className="flex lg:hidden"
-                name="create-race"
+                to="race/new"
+                size="small"
               >
                 <PlusIcon className="md:h-6 w-6 m-0 inline-block"></PlusIcon>
-              </Button>
+              </ButtonLink>
             </Label>
             <div>
               <RacesList
                 races={races}
                 eventId={event.id}
-                handleUpdateRace={handleUpdateRace}
               />
             </div>
             <WhenListEmpty list={races}>
@@ -849,6 +836,21 @@ export default function OrganizerEventRoute() {
           </div>
 
           <ButtonGroup className="mt-8">
+            {event.status === 'published' && (
+              <Button
+                id="unpublish"
+                className="mb-4 md:mb-0"
+                name="actionId"
+                type="submit"
+                size="medium"
+                variant="danger"
+                data-cy="unpublish"
+                value={actionIds.unpublish}
+              >
+                {t('Unpublish Button')}
+              </Button>
+            )}
+
             <Button
               name="delete-button"
               type="button"
@@ -870,20 +872,7 @@ export default function OrganizerEventRoute() {
               {event.status === 'auto' ? t('Create Button') : t('Save Button')}
             </Button>
 
-            {event.status === 'published' && (
-              <Button
-                id="unpublish"
-                className="mb-4 md:mb-0"
-                name="actionId"
-                type="submit"
-                size="medium"
-                variant="danger"
-                data-cy="unpublish"
-                value={actionIds.unpublish}
-              >
-                {t('Unpublish Button')}
-              </Button>
-            )}
+
           </ButtonGroup>
           {actionData?.errors?.submit && (
             <InputError className="mt-8" id="500-error-message">
@@ -892,14 +881,6 @@ export default function OrganizerEventRoute() {
           )}
         </UploadForm>
       </div>
-
-      <RaceDialog
-        isOpen={showRacesDialog.show}
-        triggerModalClose={handleCloseRace}
-        eventId={event.id}
-        race={showRacesDialog.race}
-        hash={showRacesDialog.hash}
-      />
 
       <UploadDocumentDialog
         isOpen={showDocumentsDialog.show}

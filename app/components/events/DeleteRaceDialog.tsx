@@ -21,11 +21,10 @@ function DeleteRaceDialog(props: {
 
   function handleSubmit() {
     fetcher.submit(
-      { actionId: 'delete', raceId: race?.id as string },
+      {},
       {
         method: 'post',
-        action: `/o/race/${eventId}/manage`,
-        encType: 'multipart/form-data'
+        action: `/o/event/${eventId}/race/${race?.id}/remove`
       }
     );
   }

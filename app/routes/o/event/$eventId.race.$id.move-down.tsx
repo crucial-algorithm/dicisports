@@ -19,21 +19,26 @@ export const action: ActionFunction = async ({ request, params }) => {
 
   const t = await i18n.getFixedT(request, RESOURCES_NS);
 
-  const raceId = params.raceId as string;
+  const eventId = params.eventId as string;
+  const raceId = params.id as string;
   const race = await findRace(raceId);
+  const event = await findEvent(eventId);
 
   if (!race) {
-    throw NotFound(t('No Race'));
+    throw NotFound(t('Race not found'));
   }
-
-  const eventId = race.eventId;
-  const event = await findEvent(eventId);
 
   if (!event) {
     throw NotFound(t('Event not found'));
   }
+
   if (event.createdById !== user.id) {
     throw Unauthorized(t('Not authorized'));
+  }
+
+  if (race.eventId !== eventId) {
+    // weird - just in case, verify consistency in route
+    throw NotFound(t('Race not found'));
   }
 
   const races: Array<Race> = (await findEventRaces(eventId)) as Race[];
