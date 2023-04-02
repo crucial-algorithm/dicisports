@@ -16,7 +16,6 @@ const RESOURCES_NS = 'create-event-form';
 
 export const action: ActionFunction = async ({ request, params }) => {
   const user = await requireUser(request);
-
   const t = await i18n.getFixedT(request, RESOURCES_NS);
 
   const eventId = params.eventId as string;

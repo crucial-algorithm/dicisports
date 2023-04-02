@@ -2,7 +2,7 @@ import path from 'path';
 
 import { Readable } from 'stream';
 
-import { TrashIcon } from '@heroicons/react/24/outline';
+import { ArrowDownTrayIcon, TrashIcon } from '@heroicons/react/24/outline';
 import type { LoaderFunction,
   ActionFunction,
   UploadHandler
@@ -13,7 +13,7 @@ import {
   unstable_composeUploadHandlers,
   unstable_createMemoryUploadHandler, unstable_parseMultipartFormData
 } from '@remix-run/node';
-import { Link, useActionData, useFetcher, useLoaderData } from '@remix-run/react';
+import { Link, useActionData, useLoaderData } from '@remix-run/react';
 import clsx from 'clsx';
 import * as React from 'react';
 import { useRef, useState } from 'react';
@@ -31,9 +31,9 @@ import FormField from '~/components/shared/form/FormField';
 import TextField from '~/components/shared/form/TextField';
 import UploadForm from '~/components/shared/form/UploadForm';
 import Main from '~/components/shared/Main';
-import { requireOrganizer, requireUser } from '~/server/auth/session.server';
+import { requireOrganizer } from '~/server/auth/session.server';
 import { findEvent } from '~/server/db/events.server';
-import { createRace, deleteRace, findRace, updateRace } from '~/server/db/races.server';
+import { createRace, findRace, updateRace } from '~/server/db/races.server';
 import i18n from '~/server/i18n.server';
 import Id from '~/server/utils/Id.server';
 import { NotFound, Unauthorized } from '~/server/utils/misc';
@@ -99,7 +99,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 };
 
 export const action: ActionFunction = async ({ params, request }) => {
-  const user = await requireUser(request);
+  const user = await requireOrganizer(request);
   const t = await i18n.getFixedT(request, RESOURCES_NS);
   const uploadHandler: UploadHandler = unstable_composeUploadHandlers(
     // our custom upload handler
@@ -477,21 +477,7 @@ export default function RaceRoute() {
                 className="group relative inline-flex ml-14 text-gray-700 dark:text-white"
                 download
               >
-                {/*couldn't find import of icon*/}
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth={1.5}
-                  stroke="currentColor"
-                  className="w-6 h-6"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"
-                  />
-                </svg>
+                <ArrowDownTrayIcon className="md:h-6 w-6 m-0 inline-block text-black dark:text-blueGray-500" />
               </Link>
               <button
                 className="group relative inline-flex ml-6 dark:text-blueGray-500"
