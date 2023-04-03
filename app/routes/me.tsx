@@ -1,9 +1,11 @@
 import type { ActionFunction, LoaderFunction } from '@remix-run/node';
 import { json, redirect } from '@remix-run/node';
-import React, { useState } from 'react';
 import type { ChangeEvent } from 'react';
+import React, { useState } from 'react';
 
 import type { TFunction } from 'i18next';
+import clsx from 'clsx';
+import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/20/solid';
 
 import {
   Form,
@@ -77,7 +79,9 @@ type LoaderData = {
   sports: Sport[];
   favorites: Favorite[] | [];
   bookings: BookingList[] | [];
+  totalBookings: number;
   searchedName: string;
+  pageNumber: number;
 };
 
 export const handle = {
@@ -186,7 +190,8 @@ export const loader: LoaderFunction = async ({ request }) => {
     favorites,
     bookings: results,
     totalBookings: total,
-    searchedName
+    searchedName,
+    pageNumber: page
   });
 };
 
@@ -253,15 +258,23 @@ export const action: ActionFunction = async ({ request }) => {
 
 export default function Me() {
   const { user } = useRootData();
-  const { groups, sports, favorites, bookings, searchedName } =
+  const { groups, sports, favorites, bookings, totalBookings, searchedName, pageNumber } =
     useLoaderData<LoaderData>() as LoaderData;
   const actionData = useActionData<ActionData>();
   const { t } = useTranslation('me');
 
+  const numberOfPages = Math.ceil(totalBookings / 10);
+
   return (
     <Main>
       <H2>{t('Your Bookings')}</H2>
-      <BookingsList bookings={bookings} t={t} searchedName={searchedName} />
+      <BookingsList
+        bookings={bookings}
+        t={t}
+        searchedName={searchedName}
+        pageNumber={pageNumber}
+        numberOfPages={numberOfPages}
+      />
 
       <Spacer size="xs" className="border-b mb-8" />
 
@@ -571,7 +584,19 @@ function EntryImage({ entry, img }: { entry: ListEntry; img?: string }) {
   );
 }
 
-function BookingsList({ bookings, t, searchedName }: { bookings: any[]; t: TFunction; searchedName: string }) {
+function BookingsList({
+  bookings,
+  t,
+  searchedName,
+  pageNumber,
+  numberOfPages
+}: {
+  bookings: any[];
+  t: TFunction;
+  searchedName: string;
+  pageNumber: number;
+  numberOfPages: number;
+}) {
   const [searchedParticipantName, setSearchedParticipantName] =
     useState<string>(searchedName);
 
@@ -662,6 +687,58 @@ function BookingsList({ bookings, t, searchedName }: { bookings: any[]; t: TFunc
                     ))}
                   </tbody>
                 </table>
+
+                <div className="flex justify-end mt-2">
+                  <nav aria-label="Page navigation example">
+                    <ul className="inline-flex items-center -space-x-px">
+                      <li>
+                        <button
+                          type="submit"
+                          className="block px-3 py-2 ml-0 leading-tight text-gray-500 bg-white border border-gray-300 rounded-l-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
+                          data-cy="previous-page"
+                          name="actionId"
+                          value={actionsId.previousPage}
+                          disabled={pageNumber === 0}
+                        >
+                          <ChevronLeftIcon className="h-5 w-5" />
+                        </button>
+                      </li>
+
+                      {Array(numberOfPages)
+                        .fill(0)
+                        .map((r, index) => (
+                          <li key={index}>
+                            <button
+                              id={String(index)}
+                              className={clsx({
+                                'px-3 py-2 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white':
+                                  index !== pageNumber,
+                                'z-10 px-3 py-2 leading-tight text-blue-600 border border-blue-300 bg-blue-50 hover:bg-blue-100 hover:text-blue-700 dark:border-gray-700 dark:bg-gray-700 dark:text-white':
+                                  index === pageNumber
+                              })}
+                              name="set-page"
+                              value={index}
+                              data-cy="page-number"
+                            >
+                              {index + 1}
+                            </button>
+                          </li>
+                        ))}
+                      <li>
+                        <button
+                          type="submit"
+                          className="block px-3 py-2 leading-tight text-gray-500 bg-white border border-gray-300 rounded-r-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
+                          data-cy="next-page"
+                          name="actionId"
+                          value={actionsId.nextPage}
+                          disabled={pageNumber + 1 === numberOfPages}
+                        >
+                          <ChevronRightIcon className="h-5 w-5" />
+                        </button>
+                      </li>
+                    </ul>
+                  </nav>
+                </div>
               </div>
             </div>
           </div>
