@@ -3,16 +3,27 @@ import { json, redirect } from '@remix-run/node';
 import React from 'react';
 import type { TFunction } from 'i18next';
 
-import { Form, useActionData, useLoaderData } from '@remix-run/react';
+import {
+  Form,
+  useActionData,
+  useFetcher,
+  useLoaderData
+} from '@remix-run/react';
 
-import { ArrowRightOnRectangleIcon } from '@heroicons/react/24/solid';
+import {
+  ArrowRightOnRectangleIcon,
+  HeartIcon as FavoriteIcon
+} from '@heroicons/react/24/solid';
 
 import { useTranslation } from 'react-i18next';
-import { HeartIcon as FavoriteIcon } from '@heroicons/react/24/solid';
 
 import ProfileFragment from '~/components/ProfileFragment';
 import { useRootData } from '~/hooks';
-import { findUserFavoriteGroups, findUserGroups } from '~/server/db/groups.server';
+import {
+  findUserFavoriteGroups,
+  findUserGroups,
+  removeGroupFromFavorites
+} from '~/server/db/groups.server';
 
 import i18n from '~/server/i18n.server';
 
@@ -33,12 +44,16 @@ import { findSports } from '~/server/db/reference.server';
 import WhenListEmpty from '~/components/shared/Empty';
 
 import { displayTimeOfDay } from '~/utils/misc';
-import { findUserFavoriteEvents } from '~/server/db/events.server';
+import {
+  findUserFavoriteEvents,
+  removeEventFromFavorites
+} from '~/server/db/events.server';
 import DisplayDate from '~/components/shared/DIsplayDate';
 
 const actionIds = {
   logout: 'logout',
-  changeDetails: 'change details'
+  changeDetails: 'change details',
+  remove: 'remove'
 };
 
 type ActionData = {
@@ -144,6 +159,25 @@ export const action: ActionFunction = async ({ request }) => {
     return redirect(`/?${searchParams.toString()}`, {
       headers: await session.getHeaders()
     });
+  }
+
+  if (actionId === actionIds.remove) {
+    const favoriteTypeAndId = form.get('f-type-id') as string;
+    const type = favoriteTypeAndId.split('|')[0];
+    const favoriteId = favoriteTypeAndId.split('|')[1];
+
+    try {
+      if (type === 'g') {
+        await removeGroupFromFavorites(user.id, favoriteId);
+      } else {
+        await removeEventFromFavorites(user.id, favoriteId);
+      }
+
+      return json({});
+    } catch (e) {
+      console.log('error: ', e);
+      // TODO: return error
+    }
   }
 
   function getFirstNameError(firstName: string | null) {
@@ -341,6 +375,7 @@ function DisplayFavorites({
   t: TFunction;
 }) {
   const tc = useTranslation('common').t;
+  const fetcher = useFetcher();
 
   function translateDay(day: number) {
     return tc(
@@ -400,9 +435,21 @@ function DisplayFavorites({
           </div>
         </div>
       </div>
-      <Button size="tiny" name="action" className="w-[40px] h-[40px]">
-        <FavoriteIcon className="h-6 w-6 m-0 inline-block" />
-      </Button>
+      <fetcher.Form method="post">
+        <input
+          type="hidden"
+          name="f-type-id"
+          value={`${favorite.type}|${favorite.id}`}
+        />
+        <Button
+          size="tiny"
+          name="actionId"
+          value={actionIds.remove}
+          className="w-[40px] h-[40px]"
+        >
+          <FavoriteIcon className="h-6 w-6 m-0 inline-block" />
+        </Button>
+      </fetcher.Form>
     </div>
   );
 }
