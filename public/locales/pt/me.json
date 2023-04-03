@@ -29,5 +29,6 @@
   "canceled": "Cancelado",
   "checkout": "Carrinho",
   "Search": "Procurar",
-  "Search Placeholder": "Procure booking pelo nome do evento"
+  "Search Placeholder": "Procura um booking pelo nome do evento",
+  "Back to the top": "Voltar ao topo da página"
 }

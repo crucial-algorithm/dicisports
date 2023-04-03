@@ -5,7 +5,7 @@ import React, { useState } from 'react';
 
 import type { TFunction } from 'i18next';
 import clsx from 'clsx';
-import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/20/solid';
+import { ChevronLeftIcon, ChevronRightIcon, ChevronUpIcon } from '@heroicons/react/20/solid';
 
 import {
   Form,
@@ -258,16 +258,30 @@ export const action: ActionFunction = async ({ request }) => {
 
 export default function Me() {
   const { user } = useRootData();
-  const { groups, sports, favorites, bookings, totalBookings, searchedName, pageNumber } =
-    useLoaderData<LoaderData>() as LoaderData;
+  const {
+    groups,
+    sports,
+    favorites,
+    bookings,
+    totalBookings,
+    searchedName,
+    pageNumber
+  } = useLoaderData<LoaderData>() as LoaderData;
   const actionData = useActionData<ActionData>();
   const { t } = useTranslation('me');
 
   const numberOfPages = Math.ceil(totalBookings / 10);
 
+  function scrollToTop() {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+  }
+
   return (
     <Main>
-      <H2>{t('Your Bookings')}</H2>
+      <H2 id="booking">{t('Your Bookings')}</H2>
       <BookingsList
         bookings={bookings}
         t={t}
@@ -368,6 +382,14 @@ export default function Me() {
           <H6 as="span">{t('Logout')}</H6>
         </Button>
       </Form>
+      <button
+        type="button"
+        onClick={scrollToTop}
+        className="w-full flex flex-row items-center justify-center mt-8 gap-x-2 text-white dark:text-blueGray-500"
+      >
+        <ChevronUpIcon className="h-5 w-5" />
+        <H6 className="dark:text-blueGray-500">{t('Back to the top')}</H6>
+      </button>
     </Main>
   );
 }
@@ -658,7 +680,7 @@ function BookingsList({
       </Form>
 
       <Form method="get" preventScrollReset={true}>
-        {/*<input type="hidden" value={pageNumber} name="page" />*/}
+        <input type="hidden" value={pageNumber} name="page" />
 
         {searchedName?.length > 0 && (
           <input
