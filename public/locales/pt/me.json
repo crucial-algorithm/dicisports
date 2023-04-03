@@ -8,6 +8,9 @@
 
   "Your Groups": "Os teus grupos",
   "Create Group": "Criar Grupo",
-  "No groups": "Ainda não criaste nenhum grupo, clica em \"Criar Grupo\" para criar o teu primeiro grupo!",
-  "Schedules": "Horários"
+  "No groups": "Ainda não criaste um grupo, clica em \"Criar Grupo\" para criar o teu primeiro grupo!",
+  "Schedules": "Horários",
+
+  "Your Favorites": "Os teus favoritos",
+  "Event Date": "Data do Evento"
 }

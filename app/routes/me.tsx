@@ -8,10 +8,11 @@ import { Form, useActionData, useLoaderData } from '@remix-run/react';
 import { ArrowRightOnRectangleIcon } from '@heroicons/react/24/solid';
 
 import { useTranslation } from 'react-i18next';
+import { HeartIcon as FavoriteIcon } from '@heroicons/react/24/solid';
 
 import ProfileFragment from '~/components/ProfileFragment';
 import { useRootData } from '~/hooks';
-import { findUserGroups } from '~/server/db/groups.server';
+import { findUserFavoriteGroups, findUserGroups } from '~/server/db/groups.server';
 
 import i18n from '~/server/i18n.server';
 
@@ -25,13 +26,15 @@ import { updateUser } from '~/server/db/users.server';
 
 import Main from '~/components/shared/Main';
 import { Spacer } from '~/components/shared/Spacer';
-import type { Group, Sport } from '~/types';
+import type { Group, GroupSchedule, Sport } from '~/types';
 
 import DisplayImg from '~/components/shared/DisplayImg';
 import { findSports } from '~/server/db/reference.server';
 import WhenListEmpty from '~/components/shared/Empty';
 
 import { displayTimeOfDay } from '~/utils/misc';
+import { findUserFavoriteEvents } from '~/server/db/events.server';
+import DisplayDate from '~/components/shared/DIsplayDate';
 
 const actionIds = {
   logout: 'logout',
@@ -52,21 +55,75 @@ type ActionData = {
 type LoaderData = {
   groups: Group[] | [];
   sports: Sport[];
+  favorites: Favorite[] | [];
 };
 
 export const handle = {
   i18n: ['common', 'me']
 };
 
+type Favorite = {
+  type: string;
+  id: string;
+  name: string;
+  slug: string;
+  image1: string | null;
+  image2: string | null;
+  image3: string | null;
+  image4: string | null;
+  image5: string | null;
+  sportId: number;
+  schedules?: GroupSchedule[];
+  eventDate?: Date;
+};
+
 export const loader: LoaderFunction = async ({ request }) => {
   const user = await requireUser(request);
+  const favorites: Favorite[] = [];
 
   const groups = await findUserGroups(user.id as string);
   const sports = await findSports();
+  const favoriteEvents = await findUserFavoriteEvents(user.id as string);
+  const favoriteGroups = await findUserFavoriteGroups(user.id as string);
+
+  favoriteGroups &&
+    favoriteGroups.map((f) =>
+      favorites.push({
+        type: 'g',
+        id: f.id,
+        name: f.name as string,
+        slug: f.slug as string,
+        image1: f.image1,
+        image2: f.image2,
+        image3: f.image3,
+        image4: null,
+        image5: null,
+        sportId: f.sportId as number,
+        schedules: f.schedules
+      })
+    );
+
+  favoriteEvents &&
+    favoriteEvents.map((f) =>
+      favorites.push({
+        type: 'e',
+        id: f.id,
+        name: f.name as string,
+        slug: f.slug as string,
+        image1: f.image1,
+        image2: f.image2,
+        image3: f.image3,
+        image4: f.image4,
+        image5: f.image5,
+        sportId: f.sportId as number,
+        eventDate: f.startAt as Date
+      })
+    );
 
   return json({
     groups,
-    sports
+    sports,
+    favorites
   });
 };
 
@@ -114,7 +171,7 @@ export const action: ActionFunction = async ({ request }) => {
 
 export default function Me() {
   const { user } = useRootData();
-  const { groups, sports } = useLoaderData<LoaderData>() as LoaderData;
+  const { groups, sports, favorites } = useLoaderData<LoaderData>() as LoaderData;
   const actionData = useActionData<ActionData>();
   const { t } = useTranslation('me');
 
@@ -147,6 +204,35 @@ export default function Me() {
           data-cy="no-groups"
         >
           {t('No Groups')}
+        </H6>
+      </WhenListEmpty>
+
+      <Spacer size="xs" className="border-b mb-8" />
+
+      <H2>{t('Your Favorites')}</H2>
+      <div className="flex flex-col w-[calc(100%-(50px))] p-4">
+        {favorites &&
+          favorites.map((f) => (
+            <div className="w-full border-b p-4 last:border-none" key={f.id}>
+              <a
+                href={f.type === 'g' ? `/group/${f.slug}` : `/event/${f.slug}`}
+                className="cursor-pointer"
+                data-cy="group-entry"
+              >
+                <DisplayFavorites favorite={f} sports={sports} t={t} />
+              </a>
+            </div>
+          ))}
+      </div>
+
+      <WhenListEmpty list={favorites}>
+        <H6
+          className="text-center p-12"
+          variant="secondary"
+          as="p"
+          data-cy="no-favorites"
+        >
+          {t('No Favorites')}
         </H6>
       </WhenListEmpty>
 
@@ -218,10 +304,20 @@ function DisplayGroups({
     )
     .join(' | ');
 
+  const entry = {
+    id: group.id,
+    name: group?.name || '',
+    image1: group.image1,
+    image2: group.image2,
+    image3: group.image3,
+    image4: null,
+    image5: null
+  };
+
   return (
-    <div className="flex flex-row items-center">
-      <GroupImage
-        group={group}
+    <div className="flex flex-row">
+      <EntryImage
+        entry={entry}
         img={sports.find((s) => s.id === group.sportId)?.picture}
       />
       <div className="flex flex-col gap-y-2 ml-4">
@@ -235,44 +331,130 @@ function DisplayGroups({
   );
 }
 
+function DisplayFavorites({
+  favorite,
+  sports,
+  t
+}: {
+  favorite: Favorite;
+  sports: Sport[];
+  t: TFunction;
+}) {
+  const tc = useTranslation('common').t;
+
+  function translateDay(day: number) {
+    return tc(
+      [
+        'Monday',
+        'Tuesday',
+        'Wednesday',
+        'Thursday',
+        'Friday',
+        'Saturday',
+        'Sunday'
+      ][day]
+    );
+  }
+
+  const schedule = favorite?.schedules
+    ?.sort((a, b) => a.dayOfWeek - b.dayOfWeek)
+    .map(
+      ({ dayOfWeek, timeOfDay }) =>
+        `${translateDay(dayOfWeek)}, ${displayTimeOfDay(timeOfDay)}`
+    )
+    .join(' | ');
+
+  const entry = {
+    id: favorite.id,
+    name: favorite?.name || '',
+    image1: favorite.image1,
+    image2: favorite.image2,
+    image3: favorite.image3,
+    image4: null,
+    image5: null
+  };
+
+  return (
+    <div className="flex flex-row justify-between">
+      <div className="flex flex-row">
+        <EntryImage
+          entry={entry}
+          img={sports.find((s) => s.id === favorite.sportId)?.picture}
+        />
+        <div className="flex flex-col gap-y-2 ml-4">
+          <H4>{favorite.name}</H4>
+          <div className="flex flex-col">
+            {favorite.type === 'g' ? (
+              <>
+                <H6 className="dark:text-blueGray-500">{t('Schedules')}</H6>
+                <H6>{schedule}</H6>
+              </>
+            ) : (
+              <>
+                <H6 className="dark:text-blueGray-500">{t('Event Date')}</H6>
+                <H6>
+                  <DisplayDate date={new Date(favorite.eventDate || 0)} />
+                </H6>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+      <Button size="tiny" name="action" className="w-[40px] h-[40px]">
+        <FavoriteIcon className="h-6 w-6 m-0 inline-block" />
+      </Button>
+    </div>
+  );
+}
+
 type PlaceholderImgProps = {
-  group: Group;
+  name: string;
   className: string;
   img?: string;
 };
 
-function PlaceholderImg({ group, img }: PlaceholderImgProps) {
+type ListEntry = {
+  id: string;
+  name: string;
+  image1: string | null;
+  image2: string | null;
+  image3: string | null;
+  image4: string | null;
+  image5: string | null;
+};
+
+function PlaceholderImg({ name, img }: PlaceholderImgProps) {
   if (!img) {
     return null;
   }
   return (
     <DisplayImg
       imageId={`product/sports/${img}`}
-      alt={group.name || ''}
+      alt={name || ''}
       variant="List"
     />
   );
 }
 
-function GroupImage({ group, img }: { group: Group; img?: string }) {
+function EntryImage({ entry, img }: { entry: ListEntry; img?: string }) {
   function Wrapper({ children }: {} & React.ComponentProps<'div'>) {
     return <div className="w-[100px] h-[100px]">{children}</div>;
   }
 
-  const { image1, image2, image3 } = group;
-  const images: string[] = [image1, image2, image3].filter(Boolean) as string[];
+  const { image1, image2, image3, image4, image5 } = entry;
+  const images: string[] = [image1, image2, image3, image4, image5].filter(Boolean) as string[];
 
   return (
     <Wrapper>
       {images.length === 0 ? (
         <PlaceholderImg
-          group={group}
+          name={entry?.name || ''}
           img={img}
           className="w-full rounded-lg bg-gray-100 dark:bg-gray-400 object-cover object-left-top"
         />
       ) : (
         <DisplayImg
-          imageId={image1 || image2 || image3 || ''}
+          imageId={images[0]}
           transformations={{
             resize: {
               type: 'fill',
