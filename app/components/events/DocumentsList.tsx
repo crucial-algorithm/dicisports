@@ -108,6 +108,7 @@ export default function DocumentsList(props: {
                 <ArrowDownTrayIcon className="md:h-6 w-6 m-0 inline-block text-black dark:text-blueGray-500" />
               </a>
               <button
+                name={`delete-${d.id}`}
                 type="button"
                 id={d.id}
                 onClick={handleOpenDeleteDocumentDialog}

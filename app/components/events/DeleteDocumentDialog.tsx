@@ -45,6 +45,7 @@ export default function DeleteDocumentDialog(props: {
       secondaryLabel={t('Ignore')}
       onDismiss={onDismiss}
       onConfirm={handleSubmit}
+      className="cy-delete-dialog"
     />
   );
 }
