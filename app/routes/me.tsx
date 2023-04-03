@@ -17,6 +17,8 @@ import {
 
 import { useTranslation } from 'react-i18next';
 
+import DisplayDate from '~/components/shared/DIsplayDate';
+
 import ProfileFragment from '~/components/ProfileFragment';
 import { useRootData } from '~/hooks';
 import {
@@ -37,7 +39,7 @@ import { updateUser } from '~/server/db/users.server';
 
 import Main from '~/components/shared/Main';
 import { Spacer } from '~/components/shared/Spacer';
-import type { Group, GroupSchedule, Sport } from '~/types';
+import type { BookingList, Group, GroupSchedule, Sport } from '~/types';
 
 import DisplayImg from '~/components/shared/DisplayImg';
 import { findSports } from '~/server/db/reference.server';
@@ -48,7 +50,8 @@ import {
   findUserFavoriteEvents,
   removeEventFromFavorites
 } from '~/server/db/events.server';
-import DisplayDate from '~/components/shared/DIsplayDate';
+
+import { findUserBookingsList } from '~/server/db/booking.server';
 
 const actionIds = {
   logout: 'logout',
@@ -71,6 +74,7 @@ type LoaderData = {
   groups: Group[] | [];
   sports: Sport[];
   favorites: Favorite[] | [];
+  bookings: BookingList[] | [];
 };
 
 export const handle = {
@@ -92,6 +96,11 @@ type Favorite = {
   eventDate?: Date;
 };
 
+const actionsId = {
+  nextPage: 'nextPage',
+  previousPage: 'previousPage'
+};
+
 export const loader: LoaderFunction = async ({ request }) => {
   const user = await requireUser(request);
   const favorites: Favorite[] = [];
@@ -100,6 +109,11 @@ export const loader: LoaderFunction = async ({ request }) => {
   const sports = await findSports();
   const favoriteEvents = await findUserFavoriteEvents(user.id as string);
   const favoriteGroups = await findUserFavoriteGroups(user.id as string);
+
+  const { searchParams } = new URL(request.url);
+  let page = searchParams.get('page')?.length
+    ? Number(searchParams.get('page'))
+    : 0;
 
   favoriteGroups &&
     favoriteGroups.map((f) =>
@@ -135,10 +149,37 @@ export const loader: LoaderFunction = async ({ request }) => {
       })
     );
 
+  const searchedName = searchParams.get('searched-name');
+
+  // In order to make pagination work on Cypress, we are now doing it server side
+  const actionId = searchParams.get('actionId');
+  const setPage = searchParams.get('set-page');
+
+  // If user presses next/previous page button
+  if (actionId) {
+    if (actionId === actionsId.nextPage) {
+      page += 1;
+    }
+
+    if (actionId === actionsId.previousPage) {
+      page -= 1;
+    }
+  }
+
+  // If user presses specific page button
+  if (setPage?.length) {
+    page = Number(setPage);
+  }
+
+  const { results, total } = await findUserBookingsList(user.id, page);
+
+  console.log('results --->', results);
   return json({
     groups,
     sports,
-    favorites
+    favorites,
+    bookings: results,
+    totalBookings: total
   });
 };
 
@@ -205,12 +246,18 @@ export const action: ActionFunction = async ({ request }) => {
 
 export default function Me() {
   const { user } = useRootData();
-  const { groups, sports, favorites } = useLoaderData<LoaderData>() as LoaderData;
+  const { groups, sports, favorites, bookings } =
+    useLoaderData<LoaderData>() as LoaderData;
   const actionData = useActionData<ActionData>();
   const { t } = useTranslation('me');
 
   return (
     <Main>
+      <H2>{t('Your Bookings')}</H2>
+      <BookingsList bookings={bookings} t={t} />
+
+      <Spacer size="xs" className="border-b mb-8" />
+
       <div className="flex flex-row justify-between items-center">
         <H2>{t('Your Groups')}</H2>
         <ButtonLink to="/g/group/add">{t('Create Group')}</ButtonLink>
@@ -512,5 +559,141 @@ function EntryImage({ entry, img }: { entry: ListEntry; img?: string }) {
         />
       )}
     </Wrapper>
+  );
+}
+
+function BookingsList({ bookings, t }: { bookings: any[]; t: TFunction }) {
+  return (
+    <>
+      <Form method="get" preventScrollReset={true}>
+        <input
+          type="hidden"
+          // value={searchedParticipantName}
+          name="searched-name"
+        />
+
+        <div className="flex justify-end">
+          <label
+            htmlFor="default-search"
+            className="mb-2 text-sm font-medium text-gray-900 sr-only dark:text-white"
+          >
+            {t('Search')}
+          </label>
+          <div className="relative w-[400px]">
+            <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+              <svg
+                aria-hidden="true"
+                className="w-5 h-5 text-gray-500 dark:text-gray-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                />
+              </svg>
+            </div>
+            <input
+              type="search"
+              className="block w-full p-4 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+              placeholder={t('Search Placeholder')}
+              // onChange={handleSearchedName}
+              // defaultValue={searchedName}
+              data-cy="search"
+            />
+            <button
+              type="submit"
+              className="text-white absolute right-2.5 bottom-2.5 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+              data-cy="search-participant"
+            >
+              {t('Search')}
+            </button>
+          </div>
+        </div>
+      </Form>
+
+      <Form method="get" preventScrollReset={true}>
+        {/*<input type="hidden" value={pageNumber} name="page" />*/}
+
+        {/*{searchedName.length > 0 && (*/}
+        {/*  <input*/}
+        {/*    type="hidden"*/}
+        {/*    value={searchedParticipantName}*/}
+        {/*    name="searched-name"*/}
+        {/*  />*/}
+        {/*)}*/}
+
+        <div className="flex flex-col">
+          <div className="overflow-x-auto sm:-mx-6 lg:-mx-8">
+            <div className="py-2 inline-block min-w-full sm:px-6 lg:px-8">
+              <div className="overflow-hidden">
+                <table className="table-auto min-w-full">
+                  <thead className="border-b">
+                    <tr>
+                      <TH name={t('Event Name')} />
+                      <TH name={t('Booking Date')} />
+                      <TH name={t('Status')} />
+                      <TH name={t('Number Of Participants')} />
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {bookings.map((b) => (
+                      <BookingListEntry booking={b} t={t} key={b.id} />
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Form>
+    </>
+  );
+}
+
+function TH({ name }: { name: string }) {
+  return (
+    <th className="text-sm font-medium text-black dark:text-white px-6 py-4 text-left">
+      {name}
+    </th>
+  );
+}
+
+function TD({ value }: { value: string | null }) {
+  return (
+    <td className="text-sm text-black dark:text-white font-light px-6 py-4 whitespace-nowrap">
+      {value}
+    </td>
+  );
+}
+
+function BookingListEntry({
+  booking,
+  t
+}: {
+  booking: BookingList;
+  t: TFunction;
+}) {
+  const date = String(booking.bookingDate).split('T')[0];
+  const hour = getHoursAndMinutes(new Date(booking.bookingDate));
+
+  function getHoursAndMinutes(date: Date) {
+    return `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
+  }
+
+  return (
+    <tr
+      className="border-b transition duration-300 ease-in-out hover:bg-red"
+      data-cy="participant-row"
+    >
+      <TD value={`${booking.eventName}`} />
+      <TD value={`${date} ${hour}`} />
+      <TD value={t(booking.status)} />
+      <TD value={`${booking.totalParticipants}`} />
+    </tr>
   );
 }

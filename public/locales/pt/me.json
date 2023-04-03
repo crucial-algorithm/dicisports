@@ -13,5 +13,15 @@
 
   "Your Favorites": "Os teus favoritos",
   "Event Date": "Data do Evento",
-  "No Favorites": "Os teus grupos e eventos favoritos irão aparecer aqui."
+  "No Favorites": "Os teus grupos e eventos favoritos irão aparecer aqui.",
+
+  "Event Name": "Nome do Evento",
+  "Booking Date": "Data de Booking",
+  "Status": "Estado",
+  "Number Of Participants": "Número de participantes",
+
+  "Your Bookings": "Os teus bookings",
+
+  "confirmed": "Confirmado",
+  "waiting": "Em Espera"
 }
