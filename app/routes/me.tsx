@@ -1,6 +1,8 @@
 import type { ActionFunction, LoaderFunction } from '@remix-run/node';
 import { json, redirect } from '@remix-run/node';
-import React from 'react';
+import React, { useState } from 'react';
+import type { ChangeEvent } from 'react';
+
 import type { TFunction } from 'i18next';
 
 import {
@@ -75,6 +77,7 @@ type LoaderData = {
   sports: Sport[];
   favorites: Favorite[] | [];
   bookings: BookingList[] | [];
+  searchedName: string;
 };
 
 export const handle = {
@@ -171,15 +174,19 @@ export const loader: LoaderFunction = async ({ request }) => {
     page = Number(setPage);
   }
 
-  const { results, total } = await findUserBookingsList(user.id, page);
+  const { results, total } = await findUserBookingsList(
+    user.id,
+    page,
+    searchedName?.length ? searchedName : null
+  );
 
-  console.log('results --->', results);
   return json({
     groups,
     sports,
     favorites,
     bookings: results,
-    totalBookings: total
+    totalBookings: total,
+    searchedName
   });
 };
 
@@ -246,7 +253,7 @@ export const action: ActionFunction = async ({ request }) => {
 
 export default function Me() {
   const { user } = useRootData();
-  const { groups, sports, favorites, bookings } =
+  const { groups, sports, favorites, bookings, searchedName } =
     useLoaderData<LoaderData>() as LoaderData;
   const actionData = useActionData<ActionData>();
   const { t } = useTranslation('me');
@@ -254,7 +261,7 @@ export default function Me() {
   return (
     <Main>
       <H2>{t('Your Bookings')}</H2>
-      <BookingsList bookings={bookings} t={t} />
+      <BookingsList bookings={bookings} t={t} searchedName={searchedName} />
 
       <Spacer size="xs" className="border-b mb-8" />
 
@@ -536,7 +543,9 @@ function EntryImage({ entry, img }: { entry: ListEntry; img?: string }) {
   }
 
   const { image1, image2, image3, image4, image5 } = entry;
-  const images: string[] = [image1, image2, image3, image4, image5].filter(Boolean) as string[];
+  const images: string[] = [image1, image2, image3, image4, image5].filter(
+    Boolean
+  ) as string[];
 
   return (
     <Wrapper>
@@ -562,13 +571,20 @@ function EntryImage({ entry, img }: { entry: ListEntry; img?: string }) {
   );
 }
 
-function BookingsList({ bookings, t }: { bookings: any[]; t: TFunction }) {
+function BookingsList({ bookings, t, searchedName }: { bookings: any[]; t: TFunction; searchedName: string }) {
+  const [searchedParticipantName, setSearchedParticipantName] =
+    useState<string>(searchedName);
+
+  function handleSearchedName(e: ChangeEvent<HTMLInputElement>) {
+    setSearchedParticipantName(e.target.value);
+  }
+
   return (
     <>
       <Form method="get" preventScrollReset={true}>
         <input
           type="hidden"
-          // value={searchedParticipantName}
+          value={searchedParticipantName}
           name="searched-name"
         />
 
@@ -601,8 +617,8 @@ function BookingsList({ bookings, t }: { bookings: any[]; t: TFunction }) {
               type="search"
               className="block w-full p-4 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
               placeholder={t('Search Placeholder')}
-              // onChange={handleSearchedName}
-              // defaultValue={searchedName}
+              onChange={handleSearchedName}
+              defaultValue={searchedName}
               data-cy="search"
             />
             <button
@@ -619,13 +635,13 @@ function BookingsList({ bookings, t }: { bookings: any[]; t: TFunction }) {
       <Form method="get" preventScrollReset={true}>
         {/*<input type="hidden" value={pageNumber} name="page" />*/}
 
-        {/*{searchedName.length > 0 && (*/}
-        {/*  <input*/}
-        {/*    type="hidden"*/}
-        {/*    value={searchedParticipantName}*/}
-        {/*    name="searched-name"*/}
-        {/*  />*/}
-        {/*)}*/}
+        {searchedName?.length > 0 && (
+          <input
+            type="hidden"
+            value={searchedParticipantName}
+            name="searched-name"
+          />
+        )}
 
         <div className="flex flex-col">
           <div className="overflow-x-auto sm:-mx-6 lg:-mx-8">
