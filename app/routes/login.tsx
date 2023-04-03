@@ -300,7 +300,7 @@ export default function Login() {
           <TextField
             id="email"
             name="email"
-            className="w-full text-sm h-14 md:text-2xl md:h-20"
+            className="w-full text-sm h-14 md:h-20"
             defaultValue={fields.email}
             autoComplete="off"
           />
