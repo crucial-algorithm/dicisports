@@ -1,5 +1,5 @@
 import { ArrowDownTrayIcon, ChevronDownIcon, ChevronUpIcon, TrashIcon } from '@heroicons/react/24/outline';
-import { useFetcher } from '@remix-run/react';
+import { Link, useFetcher } from '@remix-run/react';
 import { useCallback, useState } from 'react';
 import * as React from 'react';
 
@@ -9,9 +9,8 @@ import type { Document } from '~/types';
 export default function DocumentsList(props: {
   documents: Document[];
   eventId: string;
-  handleUpdateDocument: (e: React.MouseEvent) => void;
 }) {
-  const { documents, eventId, handleUpdateDocument } = props;
+  const { documents, eventId } = props;
   const fetcher = useFetcher();
   const [showDeleteDocumentDialog, setShowDeleteDocumentDialog] = useState<{
     show: boolean;
@@ -23,7 +22,7 @@ export default function DocumentsList(props: {
       {},
       {
         method: 'post',
-        action: `/o/document/${e.currentTarget.id}/move-up`
+        action: `/o/event/${eventId}/doc/${e.currentTarget.id}/move-up`
       }
     ), [fetcher]);
 
@@ -33,7 +32,7 @@ export default function DocumentsList(props: {
         {},
         {
           method: 'post',
-          action: `/o/document/${e.currentTarget.id}/move-down`
+          action: `/o/event/${eventId}/doc/${e.currentTarget.id}/move-down`
         }
       ),
     [fetcher]
@@ -91,17 +90,17 @@ export default function DocumentsList(props: {
                 )}
               </div>
 
-              <div
-                className="text-lg text-left font-extrabold pl-3 dark:text-white w-[calc(100%-(24px+24px+24px))] cursor-pointer"
+              <Link
+                to={`/o/event/${eventId}/doc/${d.id}`}
+                className="text-lg font-extrabold pl-3 text-gray-700 dark:text-white w-[calc(100%-(24px+24px))] cursor-pointer"
                 id={d.id}
-                onClick={handleUpdateDocument}
                 data-cy={`document-index-${index}`}
               >
                 {d.label}
-              </div>
+              </Link>
 
               <a
-                href={`/o/document/${d.id}`}
+                href={`/o/event/${eventId}/doc/${d.id}/view`}
                 target="_blank"
                 rel="noreferrer"
                 data-cy={`download-${d.id}`}

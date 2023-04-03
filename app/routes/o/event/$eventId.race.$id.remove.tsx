@@ -1,15 +1,12 @@
 import type { ActionFunction } from '@remix-run/node';
 import { json } from '@remix-run/node';
 
-import { requireUser } from '~/server/auth/session.server';
-import i18n from '~/server/i18n.server';
-
-import type { Document } from '~/types';
 import {
-  findDocument,
-  findDocuments,
-  updateDisplayOrderUp
-} from '~/server/documents.server';
+  deleteRace,
+  findRace
+} from '~/server/db/races.server';
+import i18n from '~/server/i18n.server';
+import { requireUser } from '~/server/auth/session.server';
 import { findEvent } from '~/server/db/events.server';
 import { NotFound, Unauthorized } from '~/server/utils/misc';
 
@@ -19,31 +16,37 @@ export const action: ActionFunction = async ({ request, params }) => {
   const user = await requireUser(request);
 
   const t = await i18n.getFixedT(request, RESOURCES_NS);
-  const documentId = params.documentId as string;
-  const current = await findDocument(documentId);
+
+  const raceId = params.id as string;
+  const current = await findRace(raceId);
 
   if (!current) {
-    throw NotFound(t('No Document'));
+    throw NotFound(t('Event not found'));
   }
 
   const eventId = current.eventId as string;
   const event = await findEvent(eventId);
+  const race = await findRace(raceId);
 
   if (!event) {
     throw NotFound(t('Event not found'));
   }
+
+  if (!race) {
+    throw NotFound(t('Race not found'));
+  }
+
   if (event.createdById !== user.id) {
     throw Unauthorized(t('Not authorized'));
   }
 
-  const documents: Array<Document> = (await findDocuments(
-    eventId
-  )) as Document[];
+  if (race.eventId !== eventId) {
+    // weird - just in case, verify consistency in route
+    throw NotFound(t('Race not found'));
+  }
 
-  const position = documents.findIndex((d) => d.id === documentId);
-  const previous = documents[position - 1];
 
-  await updateDisplayOrderUp(current, previous);
+  await deleteRace(raceId);
 
-  return json({});
+  return json({ ok: true });
 };

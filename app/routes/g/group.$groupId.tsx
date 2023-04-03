@@ -69,7 +69,6 @@ import i18n from '~/server/i18n.server';
 import InputError from '~/components/shared/form/InputError';
 
 import { uploadImageToCloudinary } from '~/server/storage/cloudinary.server';
-import { inputBaseClasses } from '~/components/shared/form/InputBase';
 import { processImgField } from '~/server/utils/misc';
 
 const RESOURCES_NS = 'groups-form';
@@ -596,7 +595,7 @@ export default function GroupRoute() {
                 <textarea
                   name="description"
                   maxLength={512}
-                  className={inputBaseClasses('p-10')}
+                  className="input-text p-10"
                   placeholder={t('Group description')}
                   defaultValue={group.description || ''}
                   rows={5}

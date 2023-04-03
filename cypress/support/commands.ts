@@ -10,6 +10,8 @@ declare global {
 
       loginOrganiser(): Chainable<void>;
 
+      pickDate(name: string, date: string, outside?: string): Chainable<void>;
+
       pickOptionFromSelect(name: string, position: number): Chainable<void>;
 
       pickLocationInMap(triggerOpenMapButtonName: string): Chainable<void>;
@@ -53,12 +55,30 @@ function loginOrganiser() {
 
 function pickOptionFromSelect(name: string, position: number) {
   cy.get(`button[name=select-${name}]`)
-    .last() // in case we have multiple with the same name, pick the last one 🤷‍♂️
+    .last() // in case we have multiple with the same name, pick the last one 🤷‍
     .click()
 
     .siblings('ul')
     .children(`:nth-child(${position})`)
     .click();
+}
+
+/**
+ *
+ * @param name
+ * @param date  format yyyy-mm-dd
+ * @param outside  format yyyy-mm-dd
+ */
+function pickDate(name: string, date: string, outside = 'body') {
+  const [year, month, day] = date.split('-').map(Number);
+
+  cy.get(`input[name=${name}]`)
+    .type(`0${date}`) // prefixing with 0 because 1st char is lost 🤷‍
+    .get(`[data-cy-year=${year}][data-cy-month=${month}][data-cy-day=${day}]`)
+    .click({ force: true }) // when within a dialog
+
+    .get(outside)
+    .click(0, 0, { force: true }); // when within a dialog
 }
 
 function pickLocationInMap(triggerOpenMapButtonName: string) {
@@ -145,6 +165,7 @@ Cypress.Commands.add('login', login);
 Cypress.Commands.add('loginAdmin', loginAdmin);
 Cypress.Commands.add('loginOrganiser', loginOrganiser);
 Cypress.Commands.add('pickOptionFromSelect', pickOptionFromSelect);
+Cypress.Commands.add('pickDate', pickDate);
 Cypress.Commands.add('pickLocationInMap', pickLocationInMap);
 Cypress.Commands.add('wasImageLoaded', wasImageLoaded);
 Cypress.Commands.add('visitAndWaitForHydration', visitAndWaitForHydration);

@@ -13,6 +13,7 @@ const RESOURCES_NS = 'create-event-form';
 export const loader: LoaderFunction = async ({ request, params }) => {
   const t = await i18n.getFixedT(request, RESOURCES_NS);
 
+  const eventId = params.eventId as string;
   const raceId = params.id as string;
   const race = await findRace(raceId);
 
@@ -27,6 +28,10 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   }
   if (event.status !== Status.published) {
     throw Unauthorized(t('Not authorized'));
+  }
+  if (race.eventId !== eventId) {
+    // weird - just in case, verify consistency in route
+    throw NotFound(t('Race not found'));
   }
 
   const body = await downloadFromS3(race.track as string);

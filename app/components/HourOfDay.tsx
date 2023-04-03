@@ -31,7 +31,7 @@ export default function HourOfDay({
   }
 
   return (
-    <div className="w-full flex flex-row justify-between md:flex-row">
+    <div className="w-full flex flex-row gap-3.5">
       <ComboBox
         name="hour"
         onChange={handleOnChangeHour}
@@ -70,7 +70,7 @@ export default function HourOfDay({
         onChange={handleOnChangeMinute}
         defaultValue={String(minute)}
         placeholder=""
-        className="mx-4 w-32"
+        className="w-32"
         options={[
           { value: '0', label: '00' }, // react-select doesn't handle zero values
           { value: '1', label: '01' },

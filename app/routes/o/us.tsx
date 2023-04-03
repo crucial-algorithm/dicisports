@@ -15,8 +15,6 @@ import { useActionData, useLoaderData } from '@remix-run/react';
 import { useTranslation } from 'react-i18next';
 import { z, ZodError } from 'zod';
 
-import { inputBaseClasses } from '~/components/shared/form/InputBase';
-
 import FormField from '~/components/shared/form/FormField';
 import Main from '~/components/shared/Main';
 import TextField from '~/components/shared/form/TextField';
@@ -265,7 +263,7 @@ export default function UsRoute() {
               <div className="mt-1 relative rounded-md shadow-sm">
                 <textarea
                   name="description"
-                  className={inputBaseClasses('p-10')}
+                  className="input-text p-10"
                   placeholder={t('Profile Description')}
                   rows={5}
                   cols={50}
