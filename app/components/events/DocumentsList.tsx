@@ -24,7 +24,7 @@ export default function DocumentsList(props: {
         method: 'post',
         action: `/o/event/${eventId}/doc/${e.currentTarget.id}/move-up`
       }
-    ), [fetcher]);
+    ), [eventId, fetcher]);
 
   const handleMoveDown = useCallback(
     (e: React.MouseEvent) =>
@@ -35,7 +35,7 @@ export default function DocumentsList(props: {
           action: `/o/event/${eventId}/doc/${e.currentTarget.id}/move-down`
         }
       ),
-    [fetcher]
+    [eventId, fetcher]
   );
 
 
