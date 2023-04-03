@@ -5,5 +5,4 @@
 
 */
 -- AlterTable
-ALTER TABLE "participants" DROP COLUMN "birthday",
-ADD COLUMN     "birthdate" TIMESTAMP(3);
+ALTER TABLE "participants" RENAME COLUMN "birthday" TO "birthdate";
