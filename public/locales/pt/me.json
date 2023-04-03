@@ -21,6 +21,8 @@
   "Number Of Participants": "Número de participantes",
 
   "Your Bookings": "Os teus bookings",
+  "No Bookings": "Os teus bookings irão aparecer aqui.",
+  "No Bookings Found": "Parece que o evento que estás à procura não existe.",
 
   "confirmed": "Confirmado",
   "pending": "Pendente",

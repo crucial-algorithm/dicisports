@@ -687,6 +687,11 @@ function BookingsList({
                     ))}
                   </tbody>
                 </table>
+                <WhenListEmpty list={bookings}>
+                  <H6 className="text-center p-12" variant="secondary" as="p">
+                    {searchedName?.length > 0 ? t('No Bookings Found') : t('No Bookings')}
+                  </H6>
+                </WhenListEmpty>
 
                 <div className="flex justify-end mt-2">
                   <nav aria-label="Page navigation example">
