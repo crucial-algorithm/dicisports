@@ -5,7 +5,7 @@ describe('Dashboard', () => {
 
   context('Security', () => {
     it('should not be able to access dashboard: unauthenticated', () => {
-      cy.visitAndWaitForHydration('/o/dashboard/MY4bvgxDbMtGv8rbYe5d')
+      cy.visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d/dashboard')
 
         .url()
         .should('equal', Cypress.config().baseUrl + '/login');
@@ -13,7 +13,7 @@ describe('Dashboard', () => {
 
     it('should not be able to access non-owned event dashboard: authenticated', () => {
       cy.login()
-        .visitAndWaitForHydration('/o/dashboard/MY4bvgxDbMtGv8rbYe5d')
+        .visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d/dashboard')
 
         .url()
         .should('equal', Cypress.config().baseUrl + '/');
@@ -26,13 +26,13 @@ describe('Dashboard', () => {
     });
 
     it('should have correct number of pages', () => {
-      cy.visitAndWaitForHydration('/o/dashboard/MY4bvgxDbMtGv8rbYe5d')
+      cy.visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d/dashboard')
         .get('button[data-cy=page-number]')
         .should('exist')
         .and('have.length', 2);
     });
     it('should change pages and stop when its the last/first page', () => {
-      cy.visitAndWaitForHydration('/o/dashboard/MY4bvgxDbMtGv8rbYe5d')
+      cy.visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d/dashboard')
         .intercept('GET', '*?page=*_data=routes*')
         .as('dashboardRequests')
 
@@ -61,7 +61,7 @@ describe('Dashboard', () => {
     });
 
     it('should have correct number of participants', () => {
-      cy.visitAndWaitForHydration('/o/dashboard/MY4bvgxDbMtGv8rbYe5d')
+      cy.visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d/dashboard')
         .intercept('GET', '*?page=*_data=routes*')
         .as('dashboardRequests')
 
@@ -83,7 +83,7 @@ describe('Dashboard', () => {
     });
 
     it('should search participant by name', () => {
-      cy.visitAndWaitForHydration('/o/dashboard/MY4bvgxDbMtGv8rbYe5d')
+      cy.visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d/dashboard')
         .intercept('GET', '*?searched-name=*_data=routes*')
         .as('dashboardRequests')
 
@@ -104,7 +104,7 @@ describe('Dashboard', () => {
     });
 
     it('should not retrieve results if there is no matching participant name', () => {
-      cy.visitAndWaitForHydration('/o/dashboard/MY4bvgxDbMtGv8rbYe5d')
+      cy.visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d/dashboard')
         .intercept('GET', '*?searched-name=*_data=routes*')
         .as('dashboardRequests')
 
