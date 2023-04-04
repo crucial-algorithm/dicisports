@@ -515,7 +515,7 @@ describe('Event', () => {
     it('should delete document', () => {
       cy.visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d')
 
-        .intercept('GET', '/o/event/MY4bvgxDbMtGv8rbYe5d*')
+        .intercept('POST', '/o/event/MY4bvgxDbMtGv8rbYe5d/doc/MY4bvgxDbMtGv8rbYe5d/remove?*')
         .as('DeleteDocument')
 
         .get('button[name=delete-MY4bvgxDbMtGv8rbYe5d]')
