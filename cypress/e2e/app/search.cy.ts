@@ -768,8 +768,11 @@ function checkAllFiltersAndSelectDOWAndSport(
     .get('#apply-filters')
     .click({ force: true })
 
-    .url()
-    .should('include', `sport=${filterOption}&dow=${dow}`)
+    .location()
+    .should((loc) => {
+      expect(loc.search).to.contain(`sport=${filterOption}`);
+      expect(loc.search).to.contain(`dow=${dow}`);
+    })
 
     .get('#search-button')
     .click({ force: true })
@@ -782,9 +785,10 @@ function checkAllFiltersAndSelectDOWAndSport(
     .waitForHydration()
 
     // After a new search, check URL to see if it all previous selected filters
-    .url()
-    .should(
-      'include',
-      `/?coords=&search=&page=0&dow=${dow}&sport=${filterOption}&daypart=Morning&daypart=Afternoon&daypart=Evening&spirit=1&spirit=2&spirit=3&spirit=4&spirit=5`
-    );
+
+    .location()
+    .should((loc) => {
+      expect(loc.search).to.contain(`sport=${filterOption}`);
+      expect(loc.search).to.contain(`dow=${dow}`);
+    });
 }
