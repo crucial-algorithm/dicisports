@@ -80,7 +80,7 @@ describe('Event', () => {
         2274,
         576,
         granfondo,
-        '/o/event/MY4bvgxDbMtGv8rbYe5d/race/xaXaCzs2t7D8DpRNnffM/gpx'
+        '/p/MY4bvgxDbMtGv8rbYe5d/race/xaXaCzs2t7D8DpRNnffM/gpx'
       );
     });
 
