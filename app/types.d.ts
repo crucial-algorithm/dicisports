@@ -494,6 +494,23 @@ type DBRawParticipant = {
 
 type Booking = {} & DBBooking;
 
+type BookingList = {
+  id: string;
+  eventName: string;
+  bookingDate: Date;
+  status: string;
+  totalParticipants: number;
+};
+
+type DBRawBookingList = {
+  id: string;
+  event_name: string;
+  booking_date: Date;
+  status: string;
+  total_participants: number;
+  records: number;
+};
+
 type ShirtSize = {} & DBShirtSize;
 
 type RaceRevenueRegistrations = {
@@ -585,7 +602,9 @@ export {
   SearchEventsResults,
   Organiser,
   OrganiserInput,
-  EventStatus
+  EventStatus,
+  BookingList,
+  DBRawBookingList
 };
 
 // https://www.i18next.com/overview/typescript#argument-of-type-defaulttfuncreturn-is-not-assignable-to-parameter-of-type-xyz

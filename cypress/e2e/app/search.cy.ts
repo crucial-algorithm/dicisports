@@ -101,9 +101,9 @@ describe('Search', () => {
         .url()
         .should('eq', `${Cypress.config().baseUrl}/`)
 
-        .visitAndWaitForHydration('/g/groups')
+        .visitAndWaitForHydration('/me')
 
-        .get('button[name=groupId]')
+        .get('[data-cy=favorite-entry]')
         .should('have.length', 2);
     });
 
@@ -150,9 +150,9 @@ describe('Search', () => {
         .wait('@signup')
         .waitForHydration()
 
-        .visitAndWaitForHydration('/g/groups')
+        .visitAndWaitForHydration('/me')
 
-        .get('button[name=groupId]')
+        .get('[data-cy=favorite-entry]')
         .should('have.length', 1);
     });
 

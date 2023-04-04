@@ -1,11 +1,13 @@
 import type {
   ActionFunction,
   LinksFunction,
-  LoaderFunction
+  LoaderFunction,
+  UploadHandler
 } from '@remix-run/node';
 import {
   json,
   redirect,
+  unstable_composeUploadHandlers,
   unstable_createMemoryUploadHandler,
   unstable_parseMultipartFormData
 } from '@remix-run/node';
@@ -18,9 +20,6 @@ import { useTranslation } from 'react-i18next';
 
 import React, { useRef, useState } from 'react';
 
-import type { UploadHandler } from '@remix-run/node';
-import { unstable_composeUploadHandlers } from '@remix-run/node';
-
 import { z, ZodError } from 'zod';
 
 import { TrashIcon } from '@heroicons/react/24/outline';
@@ -31,7 +30,11 @@ import PeekDayOfWeek from '~/components/shared/PeekDayOfWeek';
 import { H2, H3, Paragraph } from '~/components/shared/typography';
 
 import { requireUser } from '~/server/auth/session.server';
-import { findSports } from '~/server/db/reference.server';
+import {
+  findGroupsSpirit,
+  findGroupTypes,
+  findSports
+} from '~/server/db/reference.server';
 import { deleteGroup, findGroup, updateGroup } from '~/server/db/groups.server';
 
 import Button from '~/components/shared/Button';
@@ -48,9 +51,7 @@ import type {
   Sport
 } from '~/types';
 import ComboBox from '~/components/shared/form/ComboBox';
-import { findGroupTypes } from '~/server/db/reference.server';
 import HourOfDay from '~/components/HourOfDay';
-import { findGroupsSpirit } from '~/server/db/reference.server';
 
 import { MapDialog } from '~/components/shared/Map';
 import Config from '~/server/config.server';
@@ -112,7 +113,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   const group = groupId ? await findGroup(groupId) : null;
 
   if (!group || group.createdById !== user.id) {
-    return redirect('/g/groups');
+    return redirect('/me');
   }
 
   return json({
@@ -203,7 +204,7 @@ export const action: ActionFunction = async ({ request, params }) => {
   // from here on, the user is capable of doing whatever to the group
   if (action === actionIds.delete) {
     await deleteGroup(group.id);
-    return redirect(`/g/groups?message=${t('Group deleted successfully')}`);
+    return redirect(`/me?message=${t('Group deleted successfully')}`);
   }
   const isUpdate = group.status !== 'auto';
   const image1 = form.get('/file/image/0') as string;
@@ -286,7 +287,7 @@ export const action: ActionFunction = async ({ request, params }) => {
     GroupSchema.parse(data);
     await updateGroup(data, schedules);
     return redirect(
-      `/g/groups?message=${t(
+      `/me?message=${t(
         isUpdate ? 'Group updated successfully' : 'Group created successfully'
       )}`
     );
