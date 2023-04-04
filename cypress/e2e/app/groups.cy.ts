@@ -123,7 +123,7 @@ describe('Groups', () => {
         .type('we do things')
 
         // save group (prepare to wait for the redirect to happen when group is created)
-        .intercept('GET', '/g/groups?message=*')
+        .intercept('GET', '/me?message=*')
         .as('createGroup')
         .get('button[name=save-group]')
         .click()

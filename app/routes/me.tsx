@@ -438,7 +438,7 @@ function DisplayGroups({
   };
 
   return (
-    <div className="flex flex-row">
+    <div className="flex flex-row" data-cy="group-entry">
       <EntryImage
         entry={entry}
         img={sports.find((s) => s.id === group.sportId)?.picture}

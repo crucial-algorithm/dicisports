@@ -286,7 +286,7 @@ export const action: ActionFunction = async ({ request, params }) => {
     GroupSchema.parse(data);
     await updateGroup(data, schedules);
     return redirect(
-      `/g/groups?message=${t(
+      `/me?message=${t(
         isUpdate ? 'Group updated successfully' : 'Group created successfully'
       )}`
     );
