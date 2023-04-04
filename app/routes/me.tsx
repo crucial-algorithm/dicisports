@@ -294,7 +294,7 @@ export default function Me() {
 
       <div className="flex flex-row justify-between items-center">
         <H2>{t('Your Groups')}</H2>
-        <ButtonLink to="/g/group/add">{t('Create Group')}</ButtonLink>
+        <ButtonLink to="/g/group/add" data-cy="create-group">{t('Create Group')}</ButtonLink>
       </div>
       <div className="flex flex-col w-[calc(100%-(50px))] p-4">
         {groups &&
@@ -332,7 +332,7 @@ export default function Me() {
               <a
                 href={f.type === 'g' ? `/group/${f.slug}` : `/event/${f.slug}`}
                 className="cursor-pointer"
-                data-cy="group-entry"
+                data-cy="favorite-entry"
               >
                 <DisplayFavorites favorite={f} sports={sports} t={t} />
               </a>
@@ -438,7 +438,7 @@ function DisplayGroups({
   };
 
   return (
-    <div className="flex flex-row" data-cy="group-entry">
+    <div className="flex flex-row">
       <EntryImage
         entry={entry}
         img={sports.find((s) => s.id === group.sportId)?.picture}
@@ -535,6 +535,7 @@ function DisplayFavorites({
           name="actionId"
           value={actionIds.remove}
           className="w-[40px] h-[40px]"
+          id={`remove-favorite-${favorite.id}`}
         >
           <FavoriteIcon className="h-6 w-6 m-0 inline-block" />
         </Button>

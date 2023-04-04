@@ -6,13 +6,11 @@ describe('Groups', () => {
   context('General', () => {
     it('should load groups in mobile', () => {
       cy.login()
-        .visitAndWaitForHydration('/')
-        .get('[data-cy=mobile-menu]')
-        .click()
-        .get('[data-cy=m-groups]')
-        .click()
-        .get('button[name=create-group]')
-        .should('exist');
+        .visitAndWaitForHydration('/me')
+
+        .get('[data-cy=group-entry]')
+        .should('exist')
+        .and('have.length', 2);
     });
 
     it.skip('should load groups in desktop', () => {
@@ -39,33 +37,33 @@ describe('Groups', () => {
         .get('#remove-favorite')
         .should('exist')
 
-        .visitAndWaitForHydration('/g/groups')
+        .visitAndWaitForHydration('/me')
 
-        .get('button[name=groupId]')
-        .should('have.length', 2);
+        .get('[data-cy=favorite-entry]')
+        .should('exist')
+        .and('have.length', 2);
     });
 
     it('should remove group from favorites', () => {
-      cy.intercept('GET', '/g/groups?message=*')
+      cy.intercept('GET', '/me*')
         .as('removeFavorite')
 
         .login()
-        .visitAndWaitForHydration('/g/groups')
+        .visitAndWaitForHydration('/me')
 
-        .get('#remove-favorite-0')
+        .get('#remove-favorite-eaaf16cc63285c840ad1')
         .click()
 
         .wait('@removeFavorite')
-        .reload()
 
-        .get('[data-cy=empty-favorites]')
+        .get('[data-cy=no-favorites]')
         .should('exist');
     });
   });
 
   context('Security', () => {
-    it('should not access /g/groups when not authenticated', () => {
-      cy.visitAndWaitForHydration('/g/groups')
+    it('should not access /me when not authenticated', () => {
+      cy.visitAndWaitForHydration('/me')
         .url()
         .should('eq', `${Cypress.config().baseUrl}/login`);
     });
@@ -75,7 +73,7 @@ describe('Groups', () => {
         .visitAndWaitForHydration('/g/group/d888b22b730daaf3b70e')
 
         .url()
-        .should('eq', `${Cypress.config().baseUrl}/g/groups`);
+        .should('eq', `${Cypress.config().baseUrl}/me`);
     });
   });
 
@@ -83,14 +81,16 @@ describe('Groups', () => {
     beforeEach(() => cy.login());
 
     it('should create a group', () => {
-      cy.visitAndWaitForHydration('/g/groups')
-        .get('button[name=create-group]')
+      cy.visitAndWaitForHydration('/me')
+        .get('[data-cy=create-group]')
         .click()
 
         .waitForHydration()
 
-        .url()
-        .should('include', '/g/group/')
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.include('/g/group/');
+        })
 
         // fill the form
         .get('input[name=name]')
@@ -131,7 +131,7 @@ describe('Groups', () => {
         .wait('@createGroup')
 
         // validate that form was properly created
-        .get('div[data-cy="group-entry"]')
+        .get('[data-cy=group-entry]')
         .should('exist')
 
         .visitAndWaitForHydration('/group/a-new-group')
@@ -163,7 +163,7 @@ describe('Groups', () => {
     });
 
     it('should delete group', () => {
-      cy.intercept('GET', '/g/groups?message=*')
+      cy.intercept('GET', '/me?message=*')
         .as('deleteGroup')
 
         .visitAndWaitForHydration('/g/group/FkoxmH5db6RXqBpExion')
