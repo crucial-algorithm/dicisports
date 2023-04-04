@@ -146,7 +146,7 @@ describe('Groups', () => {
       cy.visitAndWaitForHydration('/g/group/FkoxmH5db6RXqBpExion')
         .get('textarea[name=description]')
         .type(description)
-        .intercept('GET', '/g/groups?message=*')
+        .intercept('GET', '/me?message=*')
         .as('createGroup')
         .get('button[name=save-group]')
         .click()
