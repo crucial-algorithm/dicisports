@@ -303,7 +303,7 @@ export const action: ActionFunction = async ({ request, params }) => {
       updatedEvent?.status === 'published' ||
       updatedEvent?.status === 'unpublished'
     ) {
-      return redirect(`/o/dashboard/${event.id}`);
+      return redirect(`/o/event/${event.id}/dashboard`);
     }
 
     return json({});

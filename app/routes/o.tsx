@@ -21,11 +21,10 @@ import DiscountCodeIcon from '~/components/shared/icons/DiscountCodeIcon';
 
 import Logo from '~/components/shared/Logo';
 
-import { requireUser } from '~/server/auth/session.server';
+import { requireOrganizer } from '~/server/auth/session.server';
 
 export const loader: LoaderFunction = async ({ request }) => {
-  // TODO: this should be restricted to organisers
-  await requireUser(request);
+  await requireOrganizer(request);
 
   return json({});
 };
@@ -138,17 +137,17 @@ function Menu({ handleToggleMenu, pathname, sideBarCollapsed, hideCollapseMenu, 
           icon={<CollectionIcon className="w-6" />}
           title={t('Events Menu')}
           to="/o"
-          pathname={pathname}
           sideBarCollapsed={sideBarCollapsed}
           onClick={onClick}
+          isActive={/\/o(\/$|$|\/event\/.*$)/.test(pathname)}
         />
         <MenuEntry
           icon={<EnvelopeIcon className="w-6" />}
           title={t('Campaigns Menu')}
           to="/o/campaigns"
-          pathname={pathname}
           sideBarCollapsed={sideBarCollapsed}
           onClick={onClick}
+          isActive={/\/o\/campaigns($|\/$|.*$)/.test(pathname)}
         />
         <MenuEntry
           icon={
@@ -156,25 +155,25 @@ function Menu({ handleToggleMenu, pathname, sideBarCollapsed, hideCollapseMenu, 
           }
           title={t('Promo Codes Menu')}
           to="/o/discount-codes"
-          pathname={pathname}
           sideBarCollapsed={sideBarCollapsed}
           onClick={onClick}
+          isActive={/\/o\/discount-codes($|\/$|.*$)/.test(pathname)}
         />
         <MenuEntry
           icon={<UsersIcon className="w-6" />}
           title={t('Users Menu')}
           to="/o/users"
-          pathname={pathname}
           sideBarCollapsed={sideBarCollapsed}
           onClick={onClick}
+          isActive={/\/o\/users($|\/$|.*$)/.test(pathname)}
         />
         <MenuEntry
           icon={<UserIcon className="w-6" />}
           title={t('Profile menu')}
           to="/me"
-          pathname={pathname}
           sideBarCollapsed={sideBarCollapsed}
           onClick={onClick}
+          isActive={/\/me($|\/$|.*$)/.test(pathname)}
         />
       </ul>
 
@@ -216,19 +215,19 @@ function Menu({ handleToggleMenu, pathname, sideBarCollapsed, hideCollapseMenu, 
 type MenuEntryProps = {
   icon: ReactNode;
   title: string;
-  pathname?: string;
   to?: string;
   sideBarCollapsed: boolean;
+  isActive?: boolean;
 } & React.ComponentProps<'li'>
 
 function MenuEntry({
   to,
-  pathname,
   icon,
   sideBarCollapsed,
   title,
   className,
-  onClick
+  onClick,
+  isActive
 }: MenuEntryProps) {
   return (
     <Link to={to || ''} className="text-gray-900 dark:text-white w-full">
@@ -238,7 +237,7 @@ function MenuEntry({
           className,
           'select-none',
           {
-            'bg-gray-200 dark:bg-gray-700': pathname === to
+            'bg-gray-200 dark:bg-gray-700': isActive
           }
         )}
         onClick={onClick}

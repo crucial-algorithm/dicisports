@@ -48,7 +48,7 @@ export const links: LinksFunction = () => {
 
 function target(status: EventStatus, id: string) {
   if (['published', 'unpublished'].indexOf(status) >= 0) {
-    return `/o/dashboard/${id}`;
+    return `/o/event/${id}/dashboard`;
   }
 
   return `/o/event/${id}`;
