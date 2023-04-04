@@ -21,11 +21,10 @@ export default function DeleteDocumentDialog(props: {
 
   function handleSubmit() {
     fetcher.submit(
-      { actionId: 'delete', documentId: document.id },
+      {},
       {
         method: 'post',
-        action: `/o/document/${eventId}/manage`,
-        encType: 'multipart/form-data'
+        action: `/o/event/${eventId}/doc/${document?.id}/remove`
       }
     );
   }
@@ -46,6 +45,7 @@ export default function DeleteDocumentDialog(props: {
       secondaryLabel={t('Ignore')}
       onDismiss={onDismiss}
       onConfirm={handleSubmit}
+      className="cy-delete-dialog"
     />
   );
 }

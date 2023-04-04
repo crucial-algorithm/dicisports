@@ -249,7 +249,7 @@ function participants() {
   return participantsSeed.map((p) => {
     return {
       ...p,
-      birthday: new Date(p.birthday),
+      birthdate: new Date(p.birthdate),
       createdAt: now,
       updatedAt: now
     };

@@ -1,24 +1,24 @@
 import { Readable } from 'stream';
 
 import * as React from 'react';
+import { useRef, useState } from 'react';
 
 import { useActionData, useLoaderData } from '@remix-run/react';
 
 import clsx from 'clsx';
 
-import type { ActionFunction } from '@remix-run/node';
-import type { LoaderFunction
+import type {
+  ActionFunction,
+  LoaderFunction,
+  UploadHandler
 } from '@remix-run/node';
-
-import type { UploadHandler } from '@remix-run/node';
 import {
-  unstable_composeUploadHandlers,
   json,
   redirect,
+  unstable_composeUploadHandlers,
   unstable_createMemoryUploadHandler,
   unstable_parseMultipartFormData
 } from '@remix-run/node';
-import { useRef, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 
 import { useTranslation } from 'react-i18next';
@@ -36,11 +36,11 @@ import Main from '~/components/shared/Main';
 import { requireOrganizer } from '~/server/auth/session.server';
 import {
   createDocument,
-  deleteDocument, findDocument,
+  findDocument,
   updateDocument
 } from '~/server/documents.server';
 import i18n from '~/server/i18n.server';
-import type { Event, Document, CreateDocumentInput } from '~/types';
+import type { CreateDocumentInput, Document, Event } from '~/types';
 import { badRequest } from '~/utils/misc';
 import { uploadToS3 } from '~/server/utils/s3';
 import Id from '~/server/utils/Id.server';
@@ -265,7 +265,7 @@ export default function EventDocumentRoute() {
                   'h-40 bg-gray-100 text-black placeholder-gray-500 text-lg font-medium',
                   'dark:disabled:text-blueGray-500 dark:text-white dark:bg-gray-800',
                   'object-cover object-left-top overflow-hidden',
-                  'flex content-center justify-center'
+                  'flex content-center justify-center cursor-pointer'
                 )}
               >
                 <div

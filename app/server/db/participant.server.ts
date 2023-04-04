@@ -145,7 +145,7 @@ async function updateParticipant(
       firstName: participant.firstName,
       lastName: participant.lastName,
       gender: participant.gender,
-      birthday: participant.birthday,
+      birthdate: participant.birthdate,
       phoneNumber: participant.phoneNumber,
       identityCard: participant.identityCard,
       federationNumber: participant.federationNumber,
@@ -206,7 +206,7 @@ async function findRaceParticipants(
         SELECT *, count(1) over () as records
         FROM (SELECT rp.id,
                      concat(p.first_name, ' ', p.last_name) as name,
-                     p.birthday,
+                     p.birthdate,
                      p.gender,
                      b.created_at                           as booking_at,
                      b.status,
