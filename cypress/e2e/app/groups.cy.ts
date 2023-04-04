@@ -152,8 +152,10 @@ describe('Groups', () => {
         .click()
         .wait('@createGroup')
 
-        .url()
-        .should('include', '/g/groups')
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.eq('/me');
+        })
 
         .visitAndWaitForHydration('/group/bike-brothers-domingueira')
         .get('[data-cy=description]')
