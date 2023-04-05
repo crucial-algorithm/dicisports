@@ -72,7 +72,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   const booking = await findBooking(clientId, eventId);
 
   if (!raceParticipants || raceParticipants?.length === 0) {
-    return redirect(`/checkout/registrations/${eventId}`);
+    return redirect(`/checkout/cart/${eventId}`);
   }
 
   if (booking?.status !== CheckoutStatus.pending) {

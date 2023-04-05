@@ -504,6 +504,28 @@ describe('Checkout', () => {
       bookParticipant();
     });
   });
+
+  context('Security', () => {
+    it('should not access info/payment/confirmation route without a booking', () => {
+      cy.visitAndWaitForHydration('/checkout/info/MY4bvgxDbMtGv8rbYe5d')
+          .location()
+          .should((l) => {
+            expect(l.pathname).to.eq('/checkout/cart/MY4bvgxDbMtGv8rbYe5d');
+          })
+
+          .visitAndWaitForHydration('/checkout/payment/MY4bvgxDbMtGv8rbYe5d')
+          .location()
+          .should((l) => {
+            expect(l.pathname).to.eq('/checkout/cart/MY4bvgxDbMtGv8rbYe5d');
+          })
+
+          .visitAndWaitForHydration('/checkout/confirmation/MY4bvgxDbMtGv8rbYe5d')
+          .location()
+          .should((l) => {
+            expect(l.pathname).to.eq('/checkout/cart/MY4bvgxDbMtGv8rbYe5d');
+          });
+    });
+  });
 });
 
 function registerParticipant() {
