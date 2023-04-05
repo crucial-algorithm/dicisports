@@ -58,7 +58,7 @@ export default function OrganizerIndexRoute() {
   const { t } = useTranslation('organizer');
   const { events, sports } = useLoaderData<LoaderData>();
   const unpublished = events.filter((e: Event) => e.status === 'draft' || e.status === 'unpublished');
-  const published = events.filter((e: Event) => e.status === 'draft' || e.status === 'published');
+  const published = events.filter((e: Event) => e.status === 'published');
 
   return (
     <>
