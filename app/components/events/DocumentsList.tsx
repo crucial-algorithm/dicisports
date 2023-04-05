@@ -24,7 +24,7 @@ export default function DocumentsList(props: {
         method: 'post',
         action: `/o/event/${eventId}/doc/${e.currentTarget.id}/move-up`
       }
-    ), [fetcher]);
+    ), [eventId, fetcher]);
 
   const handleMoveDown = useCallback(
     (e: React.MouseEvent) =>
@@ -35,7 +35,7 @@ export default function DocumentsList(props: {
           action: `/o/event/${eventId}/doc/${e.currentTarget.id}/move-down`
         }
       ),
-    [fetcher]
+    [eventId, fetcher]
   );
 
 
@@ -100,7 +100,7 @@ export default function DocumentsList(props: {
               </Link>
 
               <a
-                href={`/o/event/${eventId}/doc/${d.id}/view`}
+                href={`/${eventId}/doc/${d.id}/view`}
                 target="_blank"
                 rel="noreferrer"
                 data-cy={`download-${d.id}`}
@@ -108,6 +108,7 @@ export default function DocumentsList(props: {
                 <ArrowDownTrayIcon className="md:h-6 w-6 m-0 inline-block text-black dark:text-blueGray-500" />
               </a>
               <button
+                name={`delete-${d.id}`}
                 type="button"
                 id={d.id}
                 onClick={handleOpenDeleteDocumentDialog}

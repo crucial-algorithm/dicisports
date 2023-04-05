@@ -80,7 +80,7 @@ describe('Event', () => {
         2274,
         576,
         granfondo,
-        '/o/event/MY4bvgxDbMtGv8rbYe5d/race/xaXaCzs2t7D8DpRNnffM/gpx'
+        '/MY4bvgxDbMtGv8rbYe5d/race/xaXaCzs2t7D8DpRNnffM/gpx'
       );
     });
 
@@ -510,6 +510,35 @@ describe('Event', () => {
 
         .get('p[data-cy=event-not-found]')
         .should('exist');
+    });
+
+    it('should delete document', () => {
+      cy.visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d')
+
+        .intercept('POST', '/o/event/MY4bvgxDbMtGv8rbYe5d/doc/MY4bvgxDbMtGv8rbYe5d/remove?*')
+        .as('DeleteDocument')
+
+        .get('button[name=delete-MY4bvgxDbMtGv8rbYe5d]')
+        .click()
+
+        .get('.cy-delete-dialog')
+        .should('exist')
+
+        .get('button.cy-primary')
+        .should('exist')
+        .click()
+
+        .wait('@DeleteDocument')
+
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.eq('/o/event/MY4bvgxDbMtGv8rbYe5d');
+        })
+
+        .visitAndWaitForHydration('/event/love-tiles-douro-granfondo-2023')
+
+        .get('[data-cy=document-extension]')
+        .should('have.length', 1);
     });
   });
 });

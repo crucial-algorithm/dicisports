@@ -6,14 +6,14 @@ import {
   findRace
 } from '~/server/db/races.server';
 import i18n from '~/server/i18n.server';
-import { requireUser } from '~/server/auth/session.server';
+import { requireOrganizer } from '~/server/auth/session.server';
 import { findEvent } from '~/server/db/events.server';
 import { NotFound, Unauthorized } from '~/server/utils/misc';
 
 const RESOURCES_NS = 'create-event-form';
 
 export const action: ActionFunction = async ({ request, params }) => {
-  const user = await requireUser(request);
+  const user = await requireOrganizer(request);
 
   const t = await i18n.getFixedT(request, RESOURCES_NS);
 

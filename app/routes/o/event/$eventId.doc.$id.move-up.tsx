@@ -1,7 +1,7 @@
 import type { ActionFunction } from '@remix-run/node';
 import { json } from '@remix-run/node';
 
-import { requireOrganizer, requireUser } from '~/server/auth/session.server';
+import { requireOrganizer } from '~/server/auth/session.server';
 import i18n from '~/server/i18n.server';
 
 import type { Document } from '~/types';

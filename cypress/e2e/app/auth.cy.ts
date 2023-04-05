@@ -4,8 +4,8 @@ describe('Authentication / Authorization', () => {
   });
 
   context('When user not authenticated', () => {
-    it('should redirect to login when accessing groups', () => {
-      cy.visitAndWaitForHydration('/g/groups')
+    it('should redirect to login when accessing /me', () => {
+      cy.visitAndWaitForHydration('/me')
 
         .url()
         .should('eq', `${Cypress.config().baseUrl}/login`);

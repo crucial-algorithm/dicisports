@@ -11,7 +11,8 @@ import type {
 import { Role } from '@prisma/client';
 
 import type {
-  DaysOfWeek,
+  BookingList,
+  DaysOfWeek, DBRawBookingList,
   DBRawCart,
   DBRawGroup,
   DBRawParticipant,
@@ -259,7 +260,7 @@ function dbUIRaceParticipantToUIRaceParticipant(
   return {
     id: raceParticipant.id,
     name: raceParticipant.name,
-    birthday: raceParticipant.birthday,
+    birthdate: raceParticipant.birthdate,
     gender: raceParticipant.gender,
     bookingAt: raceParticipant.booking_at,
     status: raceParticipant.status,
@@ -300,7 +301,7 @@ function dbParticipantToParticipant(
     firstName: participant.first_name,
     lastName: participant.last_name,
     gender: participant.gender,
-    birthday: participant.birthday,
+    birthdate: participant.birthdate,
     phoneNumber: participant.phone_number,
     identityCard: participant.identity_card,
     federationNumber: participant.federation_number,
@@ -310,6 +311,18 @@ function dbParticipantToParticipant(
     status: participant.status,
     createdAt: participant.created_at,
     updatedAt: participant.updated_at
+  };
+}
+
+function dbRawBookingListToBookingList(
+  bookingList: DBRawBookingList
+): BookingList {
+  return {
+    id: bookingList.id,
+    eventName: bookingList.event_name,
+    bookingDate: bookingList.booking_date,
+    status: bookingList.status,
+    totalParticipants: Number(bookingList.total_participants)
   };
 }
 
@@ -328,5 +341,6 @@ export {
   dbShirtSizeToShirtSize,
   dbUIRaceParticipantToUIRaceParticipant,
   dbParticipantToParticipant,
-  dbRawSearchResultsToSearchResults
+  dbRawSearchResultsToSearchResults,
+  dbRawBookingListToBookingList
 };

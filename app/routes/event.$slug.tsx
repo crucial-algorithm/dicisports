@@ -338,7 +338,7 @@ function DisplayRace({ race, index, eventId }: { race: Race; index: number, even
             )}
             {race.track && (
               <Link
-                to={`/o/event/${eventId}/race/${race.id}/gpx`}
+                to={`/${eventId}/race/${race.id}/gpx`}
                 target="_blank"
                 rel="noreferrer"
                 data-cy={`gpx-${race.id}`}
@@ -387,7 +387,7 @@ function DisplayDocument(props: { document: Document; index: number }) {
         {fileExtension[fileExtension.length - 1].toUpperCase()}
       </div>
       <a
-        href={`/o/document/${document.id}`}
+        href={`/${document.eventId}/doc/${document.id}/view`}
         target="_blank"
         rel="noreferrer"
         className="text-black dark:text-white"
@@ -516,7 +516,7 @@ function PriceTag({
             </H2>
             <favorite.Form
               method="post"
-              action={`/o/event/fav/${event.id}`}
+              action={`/fav/${event.id}`}
             >
               {isFavorite ? (
                 <Button

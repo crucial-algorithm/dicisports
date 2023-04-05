@@ -560,7 +560,7 @@ function registerParticipant() {
 
     .pickOptionFromSelect('gender', 2)
 
-    .pickDate('birthday', '2001-09-21')
+    .pickDate('birthdate', '2001-09-21')
 
     .get('input[name=phone-number]')
     .type('937654321')
@@ -623,7 +623,7 @@ function bookParticipant() {
 
     .pickOptionFromSelect('gender', 2)
 
-    .pickDate('birthday', '2001-09-21')
+    .pickDate('birthdate', '2001-09-21')
 
     .get('input[name=phone-number]')
     .type('937654321')

@@ -4,5 +4,31 @@
   "Name": "Nome",
   "Email": "Email",
   "Logout": "Logout",
-  "Update Profile": "Actualizar"
+  "Update Profile": "Actualizar",
+
+  "Your Groups": "Os teus grupos",
+  "Create Group": "Criar Grupo",
+  "No Groups": "Ainda não criaste um grupo, clica em \"Criar Grupo\" para criares o teu primeiro grupo!",
+  "Schedules": "Horários",
+
+  "Your Favorites": "Os teus favoritos",
+  "Event Date": "Data do Evento",
+  "No Favorites": "Os teus grupos e eventos favoritos irão aparecer aqui.",
+
+  "Event Name": "Nome do Evento",
+  "Booking Date": "Data de Booking",
+  "Status": "Estado",
+  "Number Of Participants": "Número de participantes",
+
+  "Your Bookings": "Os teus bookings",
+  "No Bookings": "Os teus bookings irão aparecer aqui.",
+  "No Bookings Found": "Parece que o evento que estás à procura não existe.",
+
+  "confirmed": "Confirmado",
+  "pending": "Pendente",
+  "canceled": "Cancelado",
+  "checkout": "Carrinho",
+  "Search": "Procurar",
+  "Search Placeholder": "Procura um booking pelo nome do evento",
+  "Back to the top": "Voltar ao topo da página"
 }

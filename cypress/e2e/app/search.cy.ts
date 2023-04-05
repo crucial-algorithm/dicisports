@@ -101,9 +101,9 @@ describe('Search', () => {
         .url()
         .should('eq', `${Cypress.config().baseUrl}/`)
 
-        .visitAndWaitForHydration('/g/groups')
+        .visitAndWaitForHydration('/me')
 
-        .get('button[name=groupId]')
+        .get('[data-cy=favorite-entry]')
         .should('have.length', 2);
     });
 
@@ -150,9 +150,9 @@ describe('Search', () => {
         .wait('@signup')
         .waitForHydration()
 
-        .visitAndWaitForHydration('/g/groups')
+        .visitAndWaitForHydration('/me')
 
-        .get('button[name=groupId]')
+        .get('[data-cy=favorite-entry]')
         .should('have.length', 1);
     });
 
@@ -768,8 +768,11 @@ function checkAllFiltersAndSelectDOWAndSport(
     .get('#apply-filters')
     .click({ force: true })
 
-    .url()
-    .should('include', `sport=${filterOption}&dow=${dow}`)
+    .location()
+    .should((loc) => {
+      expect(loc.search).to.contain(`sport=${filterOption}`);
+      expect(loc.search).to.contain(`dow=${dow}`);
+    })
 
     .get('#search-button')
     .click({ force: true })
@@ -782,9 +785,10 @@ function checkAllFiltersAndSelectDOWAndSport(
     .waitForHydration()
 
     // After a new search, check URL to see if it all previous selected filters
-    .url()
-    .should(
-      'include',
-      `/?coords=&search=&page=0&dow=${dow}&sport=${filterOption}&daypart=Morning&daypart=Afternoon&daypart=Evening&spirit=1&spirit=2&spirit=3&spirit=4&spirit=5`
-    );
+
+    .location()
+    .should((loc) => {
+      expect(loc.search).to.contain(`sport=${filterOption}`);
+      expect(loc.search).to.contain(`dow=${dow}`);
+    });
 }

@@ -3,9 +3,9 @@ import type { CheckoutStatus, Prisma } from '@prisma/client';
 
 import { db } from '~/server/db.server';
 
-import { dbUICartToUICart } from '~/server/db/codecs.server';
+import { dbRawBookingListToBookingList, dbUICartToUICart } from '~/server/db/codecs.server';
 import Id from '~/server/utils/Id.server';
-import type { Booking, DBRawUICartRow, UICartRow } from '~/types';
+import type { Booking, DBRawUICartRow, UICartRow, BookingList, DBRawBookingList } from '~/types';
 
 async function updateBookingStatus(
   status: CheckoutStatus,
@@ -110,6 +110,30 @@ async function changeRegistrationToAuthUser(
   });
 }
 
+async function findUserBookingsList(
+  userId: string,
+  page: number,
+  searchedName: string | null,
+  pageSize = 10
+): Promise<{ results: BookingList[]; total: number }> {
+  const name = `%${searchedName?.length ? searchedName : ''}%`;
+
+  const results: Array<DBRawBookingList> = await db.$queryRaw`
+    SELECT *, count(1) over () as records
+    FROM (SELECT b.id, e.name as event_name, b.created_at as booking_date, b.status, COUNT(rp.id) as total_participants
+          FROM bookings b
+            INNER JOIN events e on e.id = b.event_id
+            INNER JOIN race_participants rp on b.id = rp.booking_id
+          WHERE user_id = ${userId}
+          AND e.name ILIKE ${name}
+          GROUP BY b.id, e.name, b.created_at, b.status) as P LIMIT ${pageSize}
+    OFFSET ${page * pageSize};
+  `;
+  const mapped = results.map(dbRawBookingListToBookingList);
+  const total = results.length === 0 ? 0 : Number(results[0].records);
+
+  return { results: mapped, total };
+}
 
 export {
   updateBookingStatus,
@@ -117,5 +141,6 @@ export {
   createBooking,
   removeBooking,
   findBookingCart,
-  changeRegistrationToAuthUser
+  changeRegistrationToAuthUser,
+  findUserBookingsList
 };

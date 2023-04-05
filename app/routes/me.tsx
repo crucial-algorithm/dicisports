@@ -1,21 +1,39 @@
 import type { ActionFunction, LoaderFunction } from '@remix-run/node';
-
 import { json, redirect } from '@remix-run/node';
+import type { ChangeEvent } from 'react';
+import React, { useState } from 'react';
 
-import { useActionData } from '@remix-run/react';
+import type { TFunction } from 'i18next';
+import clsx from 'clsx';
+import { ChevronLeftIcon, ChevronRightIcon, ChevronUpIcon } from '@heroicons/react/20/solid';
 
-import { Form } from '@remix-run/react';
+import {
+  Form,
+  useActionData,
+  useFetcher,
+  useLoaderData
+} from '@remix-run/react';
 
-import { ArrowRightOnRectangleIcon } from '@heroicons/react/24/solid';
+import {
+  ArrowRightOnRectangleIcon,
+  HeartIcon as FavoriteIcon
+} from '@heroicons/react/24/solid';
 
 import { useTranslation } from 'react-i18next';
 
+import DisplayDate from '~/components/shared/DIsplayDate';
+
 import ProfileFragment from '~/components/ProfileFragment';
 import { useRootData } from '~/hooks';
+import {
+  findUserFavoriteGroups,
+  findUserGroups,
+  removeGroupFromFavorites
+} from '~/server/db/groups.server';
 
 import i18n from '~/server/i18n.server';
 
-import Button from '~/components/shared/Button';
+import Button, { ButtonLink } from '~/components/shared/Button';
 
 import InputError from '~/components/shared/form/InputError';
 import { H2, H4, H6 } from '~/components/shared/typography';
@@ -25,10 +43,24 @@ import { updateUser } from '~/server/db/users.server';
 
 import Main from '~/components/shared/Main';
 import { Spacer } from '~/components/shared/Spacer';
+import type { BookingList, Group, GroupSchedule, Sport } from '~/types';
+
+import DisplayImg from '~/components/shared/DisplayImg';
+import { findSports } from '~/server/db/reference.server';
+import WhenListEmpty from '~/components/shared/Empty';
+
+import { displayTimeOfDay } from '~/utils/misc';
+import {
+  findUserFavoriteEvents,
+  removeEventFromFavorites
+} from '~/server/db/events.server';
+
+import { findUserBookingsList } from '~/server/db/booking.server';
 
 const actionIds = {
   logout: 'logout',
-  changeDetails: 'change details'
+  changeDetails: 'change details',
+  remove: 'remove'
 };
 
 type ActionData = {
@@ -42,13 +74,125 @@ type ActionData = {
   };
 };
 
+type LoaderData = {
+  groups: Group[] | [];
+  sports: Sport[];
+  favorites: Favorite[] | [];
+  bookings: BookingList[] | [];
+  totalBookings: number;
+  searchedName: string;
+  pageNumber: number;
+};
+
 export const handle = {
   i18n: ['common', 'me']
 };
 
-export const loader: LoaderFunction = async ({ request, params }) => {
-  await requireUser(request);
-  return json({});
+type Favorite = {
+  type: string;
+  id: string;
+  name: string;
+  slug: string;
+  image1: string | null;
+  image2: string | null;
+  image3: string | null;
+  image4: string | null;
+  image5: string | null;
+  sportId: number;
+  schedules?: GroupSchedule[];
+  eventDate?: Date;
+};
+
+const actionsId = {
+  nextPage: 'nextPage',
+  previousPage: 'previousPage'
+};
+
+export const loader: LoaderFunction = async ({ request }) => {
+  const user = await requireUser(request);
+  const favorites: Favorite[] = [];
+
+  const groups = await findUserGroups(user.id as string);
+  const sports = await findSports();
+  const favoriteEvents = await findUserFavoriteEvents(user.id as string);
+  const favoriteGroups = await findUserFavoriteGroups(user.id as string);
+
+  const { searchParams } = new URL(request.url);
+  let page = searchParams.get('page')?.length
+    ? Number(searchParams.get('page'))
+    : 0;
+
+  favoriteGroups &&
+    favoriteGroups.map((f) =>
+      favorites.push({
+        type: 'g',
+        id: f.id,
+        name: f.name as string,
+        slug: f.slug as string,
+        image1: f.image1,
+        image2: f.image2,
+        image3: f.image3,
+        image4: null,
+        image5: null,
+        sportId: f.sportId as number,
+        schedules: f.schedules
+      })
+    );
+
+  favoriteEvents &&
+    favoriteEvents.map((f) =>
+      favorites.push({
+        type: 'e',
+        id: f.id,
+        name: f.name as string,
+        slug: f.slug as string,
+        image1: f.image1,
+        image2: f.image2,
+        image3: f.image3,
+        image4: f.image4,
+        image5: f.image5,
+        sportId: f.sportId as number,
+        eventDate: f.startAt as Date
+      })
+    );
+
+  const searchedName = searchParams.get('searched-name');
+
+  // In order to make pagination work on Cypress, we are now doing it server side
+  const actionId = searchParams.get('actionId');
+  const setPage = searchParams.get('set-page');
+
+  // If user presses next/previous page button
+  if (actionId) {
+    if (actionId === actionsId.nextPage) {
+      page += 1;
+    }
+
+    if (actionId === actionsId.previousPage) {
+      page -= 1;
+    }
+  }
+
+  // If user presses specific page button
+  if (setPage?.length) {
+    page = Number(setPage);
+  }
+
+  const { results, total } = await findUserBookingsList(
+    user.id,
+    page,
+    searchedName?.length ? searchedName : null
+  );
+
+  return json({
+    groups,
+    sports,
+    favorites,
+    bookings: results,
+    totalBookings: total,
+    searchedName,
+    pageNumber: page
+  });
 };
 
 export const action: ActionFunction = async ({ request }) => {
@@ -68,6 +212,25 @@ export const action: ActionFunction = async ({ request }) => {
     return redirect(`/?${searchParams.toString()}`, {
       headers: await session.getHeaders()
     });
+  }
+
+  if (actionId === actionIds.remove) {
+    const favoriteTypeAndId = form.get('f-type-id') as string;
+    const type = favoriteTypeAndId.split('|')[0];
+    const favoriteId = favoriteTypeAndId.split('|')[1];
+
+    try {
+      if (type === 'g') {
+        await removeGroupFromFavorites(user.id, favoriteId);
+      } else {
+        await removeEventFromFavorites(user.id, favoriteId);
+      }
+
+      return json({});
+    } catch (e) {
+      console.log('error: ', e);
+      // TODO: return error
+    }
   }
 
   function getFirstNameError(firstName: string | null) {
@@ -95,11 +258,101 @@ export const action: ActionFunction = async ({ request }) => {
 
 export default function Me() {
   const { user } = useRootData();
+  const {
+    groups,
+    sports,
+    favorites,
+    bookings,
+    totalBookings,
+    searchedName,
+    pageNumber
+  } = useLoaderData<LoaderData>() as LoaderData;
   const actionData = useActionData<ActionData>();
   const { t } = useTranslation('me');
 
+  const numberOfPages = Math.ceil(totalBookings / 10);
+
+  function scrollToTop() {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+  }
+
   return (
-    <Main className="w-5/6 m-auto md:w-112">
+    <Main>
+      <H2 id="booking">{t('Your Bookings')}</H2>
+      <BookingsList
+        bookings={bookings}
+        t={t}
+        searchedName={searchedName}
+        pageNumber={pageNumber}
+        numberOfPages={numberOfPages}
+      />
+
+      <Spacer size="xs" className="border-b mb-8" />
+
+      <div className="flex flex-row justify-between items-center">
+        <H2>{t('Your Groups')}</H2>
+        <ButtonLink to="/g/group/add" data-cy="create-group">{t('Create Group')}</ButtonLink>
+      </div>
+      <div className="flex flex-col w-[calc(100%-(50px))] p-4">
+        {groups &&
+          groups.map((g) => (
+            <div className="w-full border-b p-4 last:border-none" key={g.id}>
+              <a
+                href={`/g/group/${g.id}`}
+                className="cursor-pointer"
+                data-cy="group-entry"
+              >
+                <DisplayGroups group={g} sports={sports} key={g.id} t={t} />
+              </a>
+            </div>
+          ))}
+      </div>
+
+      <WhenListEmpty list={groups}>
+        <H6
+          className="text-center p-12"
+          variant="secondary"
+          as="p"
+          data-cy="no-groups"
+        >
+          {t('No Groups')}
+        </H6>
+      </WhenListEmpty>
+
+      <Spacer size="xs" className="border-b mb-8" />
+
+      <H2>{t('Your Favorites')}</H2>
+      <div className="flex flex-col w-[calc(100%-(50px))] p-4">
+        {favorites &&
+          favorites.map((f) => (
+            <div className="w-full border-b p-4 last:border-none" key={f.id}>
+              <a
+                href={f.type === 'g' ? `/group/${f.slug}` : `/event/${f.slug}`}
+                className="cursor-pointer"
+                data-cy="favorite-entry"
+              >
+                <DisplayFavorites favorite={f} sports={sports} t={t} />
+              </a>
+            </div>
+          ))}
+      </div>
+
+      <WhenListEmpty list={favorites}>
+        <H6
+          className="text-center p-12"
+          variant="secondary"
+          as="p"
+          data-cy="no-favorites"
+        >
+          {t('No Favorites')}
+        </H6>
+      </WhenListEmpty>
+
+      <Spacer size="xs" className="border-b mb-8" />
+
       <H2>{t("Here's your profile")}</H2>
       <H4 variant="secondary" as="p">
         {t('Edit as you wish')}
@@ -129,6 +382,439 @@ export default function Me() {
           <H6 as="span">{t('Logout')}</H6>
         </Button>
       </Form>
+      <button
+        type="button"
+        onClick={scrollToTop}
+        className="w-full flex flex-row items-center justify-center mt-8 gap-x-2 text-white dark:text-blueGray-500"
+      >
+        <ChevronUpIcon className="h-5 w-5" />
+        <H6 className="dark:text-blueGray-500">{t('Back to the top')}</H6>
+      </button>
     </Main>
+  );
+}
+
+function DisplayGroups({
+  group,
+  sports,
+  t
+}: {
+  group: Group;
+  sports: Sport[];
+  t: TFunction;
+}) {
+  const tc = useTranslation('common').t;
+
+  function translateDay(day: number) {
+    return tc(
+      [
+        'Monday',
+        'Tuesday',
+        'Wednesday',
+        'Thursday',
+        'Friday',
+        'Saturday',
+        'Sunday'
+      ][day]
+    );
+  }
+
+  const schedule = group?.schedules
+    ?.sort((a, b) => a.dayOfWeek - b.dayOfWeek)
+    .map(
+      ({ dayOfWeek, timeOfDay }) =>
+        `${translateDay(dayOfWeek)}, ${displayTimeOfDay(timeOfDay)}`
+    )
+    .join(' | ');
+
+  const entry = {
+    id: group.id,
+    name: group?.name || '',
+    image1: group.image1,
+    image2: group.image2,
+    image3: group.image3,
+    image4: null,
+    image5: null
+  };
+
+  return (
+    <div className="flex flex-row">
+      <EntryImage
+        entry={entry}
+        img={sports.find((s) => s.id === group.sportId)?.picture}
+      />
+      <div className="flex flex-col gap-y-2 ml-4">
+        <H4>{group.name}</H4>
+        <div className="flex flex-col">
+          <H6 className="dark:text-blueGray-500">{t('Schedules')}</H6>
+          <H6>{schedule}</H6>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function DisplayFavorites({
+  favorite,
+  sports,
+  t
+}: {
+  favorite: Favorite;
+  sports: Sport[];
+  t: TFunction;
+}) {
+  const tc = useTranslation('common').t;
+  const fetcher = useFetcher();
+
+  function translateDay(day: number) {
+    return tc(
+      [
+        'Monday',
+        'Tuesday',
+        'Wednesday',
+        'Thursday',
+        'Friday',
+        'Saturday',
+        'Sunday'
+      ][day]
+    );
+  }
+
+  const schedule = favorite?.schedules
+    ?.sort((a, b) => a.dayOfWeek - b.dayOfWeek)
+    .map(
+      ({ dayOfWeek, timeOfDay }) =>
+        `${translateDay(dayOfWeek)}, ${displayTimeOfDay(timeOfDay)}`
+    )
+    .join(' | ');
+
+  const entry = {
+    id: favorite.id,
+    name: favorite?.name || '',
+    image1: favorite.image1,
+    image2: favorite.image2,
+    image3: favorite.image3,
+    image4: null,
+    image5: null
+  };
+
+  return (
+    <div className="flex flex-row justify-between">
+      <div className="flex flex-row">
+        <EntryImage
+          entry={entry}
+          img={sports.find((s) => s.id === favorite.sportId)?.picture}
+        />
+        <div className="flex flex-col gap-y-2 ml-4">
+          <H4>{favorite.name}</H4>
+          <div className="flex flex-col">
+            {favorite.type === 'g' ? (
+              <>
+                <H6 className="dark:text-blueGray-500">{t('Schedules')}</H6>
+                <H6>{schedule}</H6>
+              </>
+            ) : (
+              <>
+                <H6 className="dark:text-blueGray-500">{t('Event Date')}</H6>
+                <H6>
+                  <DisplayDate date={new Date(favorite.eventDate || 0)} />
+                </H6>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+      <fetcher.Form method="post">
+        <input
+          type="hidden"
+          name="f-type-id"
+          value={`${favorite.type}|${favorite.id}`}
+        />
+        <Button
+          size="tiny"
+          name="actionId"
+          value={actionIds.remove}
+          className="w-[40px] h-[40px]"
+          id={`remove-favorite-${favorite.id}`}
+        >
+          <FavoriteIcon className="h-6 w-6 m-0 inline-block" />
+        </Button>
+      </fetcher.Form>
+    </div>
+  );
+}
+
+type PlaceholderImgProps = {
+  name: string;
+  className: string;
+  img?: string;
+};
+
+type ListEntry = {
+  id: string;
+  name: string;
+  image1: string | null;
+  image2: string | null;
+  image3: string | null;
+  image4: string | null;
+  image5: string | null;
+};
+
+function PlaceholderImg({ name, img }: PlaceholderImgProps) {
+  if (!img) {
+    return null;
+  }
+  return (
+    <DisplayImg
+      imageId={`product/sports/${img}`}
+      alt={name || ''}
+      variant="List"
+    />
+  );
+}
+
+function EntryImage({ entry, img }: { entry: ListEntry; img?: string }) {
+  function Wrapper({ children }: {} & React.ComponentProps<'div'>) {
+    return <div className="w-[100px] h-[100px]">{children}</div>;
+  }
+
+  const { image1, image2, image3, image4, image5 } = entry;
+  const images: string[] = [image1, image2, image3, image4, image5].filter(
+    Boolean
+  ) as string[];
+
+  return (
+    <Wrapper>
+      {images.length === 0 ? (
+        <PlaceholderImg
+          name={entry?.name || ''}
+          img={img}
+          className="w-full rounded-lg bg-gray-100 dark:bg-gray-400 object-cover object-left-top"
+        />
+      ) : (
+        <DisplayImg
+          imageId={images[0]}
+          transformations={{
+            resize: {
+              type: 'fill',
+              width: 100,
+              height: 100
+            }
+          }}
+        />
+      )}
+    </Wrapper>
+  );
+}
+
+function BookingsList({
+  bookings,
+  t,
+  searchedName,
+  pageNumber,
+  numberOfPages
+}: {
+  bookings: any[];
+  t: TFunction;
+  searchedName: string;
+  pageNumber: number;
+  numberOfPages: number;
+}) {
+  const [searchedParticipantName, setSearchedParticipantName] =
+    useState<string>(searchedName);
+
+  function handleSearchedName(e: ChangeEvent<HTMLInputElement>) {
+    setSearchedParticipantName(e.target.value);
+  }
+
+  return (
+    <>
+      <Form method="get" preventScrollReset={true}>
+        <input
+          type="hidden"
+          value={searchedParticipantName}
+          name="searched-name"
+        />
+
+        <div className="flex justify-end">
+          <label
+            htmlFor="default-search"
+            className="mb-2 text-sm font-medium text-gray-900 sr-only dark:text-white"
+          >
+            {t('Search')}
+          </label>
+          <div className="relative w-[400px]">
+            <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+              <svg
+                aria-hidden="true"
+                className="w-5 h-5 text-gray-500 dark:text-gray-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                />
+              </svg>
+            </div>
+            <input
+              type="search"
+              className="block w-full p-4 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+              placeholder={t('Search Placeholder')}
+              onChange={handleSearchedName}
+              defaultValue={searchedName}
+              data-cy="search"
+            />
+            <button
+              type="submit"
+              className="text-white absolute right-2.5 bottom-2.5 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+              data-cy="search-participant"
+            >
+              {t('Search')}
+            </button>
+          </div>
+        </div>
+      </Form>
+
+      <Form method="get" preventScrollReset={true}>
+        <input type="hidden" value={pageNumber} name="page" />
+
+        {searchedName?.length > 0 && (
+          <input
+            type="hidden"
+            value={searchedParticipantName}
+            name="searched-name"
+          />
+        )}
+
+        <div className="flex flex-col">
+          <div className="overflow-x-auto sm:-mx-6 lg:-mx-8">
+            <div className="py-2 inline-block min-w-full sm:px-6 lg:px-8">
+              <div className="overflow-hidden">
+                <table className="table-auto min-w-full">
+                  <thead className="border-b">
+                    <tr>
+                      <TH name={t('Event Name')} />
+                      <TH name={t('Booking Date')} />
+                      <TH name={t('Status')} />
+                      <TH name={t('Number Of Participants')} />
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {bookings.map((b) => (
+                      <BookingListEntry booking={b} t={t} key={b.id} />
+                    ))}
+                  </tbody>
+                </table>
+                <WhenListEmpty list={bookings}>
+                  <H6 className="text-center p-12" variant="secondary" as="p">
+                    {searchedName?.length > 0 ? t('No Bookings Found') : t('No Bookings')}
+                  </H6>
+                </WhenListEmpty>
+
+                <div className="flex justify-end mt-2">
+                  <nav aria-label="Page navigation example">
+                    <ul className="inline-flex items-center -space-x-px">
+                      <li>
+                        <button
+                          type="submit"
+                          className="block px-3 py-2 ml-0 leading-tight text-gray-500 bg-white border border-gray-300 rounded-l-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
+                          data-cy="previous-page"
+                          name="actionId"
+                          value={actionsId.previousPage}
+                          disabled={pageNumber === 0}
+                        >
+                          <ChevronLeftIcon className="h-5 w-5" />
+                        </button>
+                      </li>
+
+                      {Array(numberOfPages)
+                        .fill(0)
+                        .map((r, index) => (
+                          <li key={index}>
+                            <button
+                              id={String(index)}
+                              className={clsx({
+                                'px-3 py-2 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white':
+                                  index !== pageNumber,
+                                'z-10 px-3 py-2 leading-tight text-blue-600 border border-blue-300 bg-blue-50 hover:bg-blue-100 hover:text-blue-700 dark:border-gray-700 dark:bg-gray-700 dark:text-white':
+                                  index === pageNumber
+                              })}
+                              name="set-page"
+                              value={index}
+                              data-cy="page-number"
+                            >
+                              {index + 1}
+                            </button>
+                          </li>
+                        ))}
+                      <li>
+                        <button
+                          type="submit"
+                          className="block px-3 py-2 leading-tight text-gray-500 bg-white border border-gray-300 rounded-r-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
+                          data-cy="next-page"
+                          name="actionId"
+                          value={actionsId.nextPage}
+                          disabled={pageNumber + 1 === numberOfPages}
+                        >
+                          <ChevronRightIcon className="h-5 w-5" />
+                        </button>
+                      </li>
+                    </ul>
+                  </nav>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Form>
+    </>
+  );
+}
+
+function TH({ name }: { name: string }) {
+  return (
+    <th className="text-sm font-medium text-black dark:text-white px-6 py-4 text-left">
+      {name}
+    </th>
+  );
+}
+
+function TD({ value }: { value: string | null }) {
+  return (
+    <td className="text-sm text-black dark:text-white font-light px-6 py-4 whitespace-nowrap">
+      {value}
+    </td>
+  );
+}
+
+function BookingListEntry({
+  booking,
+  t
+}: {
+  booking: BookingList;
+  t: TFunction;
+}) {
+  const date = String(booking.bookingDate).split('T')[0];
+  const hour = getHoursAndMinutes(new Date(booking.bookingDate));
+
+  function getHoursAndMinutes(date: Date) {
+    return `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
+  }
+
+  return (
+    <tr
+      className="border-b transition duration-300 ease-in-out hover:bg-red"
+      data-cy="participant-row"
+    >
+      <TD value={`${booking.eventName}`} />
+      <TD value={`${date} ${hour}`} />
+      <TD value={t(booking.status)} />
+      <TD value={`${booking.totalParticipants}`} />
+    </tr>
   );
 }

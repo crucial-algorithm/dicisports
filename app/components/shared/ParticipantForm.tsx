@@ -132,18 +132,18 @@ export default function ParticipantForm({
       <div className="flex flex-col md:flex-row md:space-x-2">
         <FormField
           label=""
-          id="birthday"
-          error={errors?.birthday}
-          dataCy="birthday"
+          id="birthdate"
+          error={errors?.birthdate}
+          dataCy="birthdate"
         >
           <BasicDatePicker
-            label={t('Birthday')}
-            name="birthday"
+            label={t('Birthdate')}
+            name="birthdate"
             date={
-              selectedParticipant?.birthday
-                ? new Date(selectedParticipant.birthday)
-                : participant?.birthday
-                ? new Date(participant.birthday)
+              selectedParticipant?.birthdate
+                ? new Date(selectedParticipant.birthdate)
+                : participant?.birthdate
+                ? new Date(participant.birthdate)
                 : new Date()
             }
           />
@@ -318,7 +318,7 @@ export type FormErrors = {
   firstName?: string;
   lastName?: string;
   gender?: string;
-  birthday?: string;
+  birthdate?: string;
   phoneNumber?: string;
   identityCard?: string;
   federationNumber?: string;
