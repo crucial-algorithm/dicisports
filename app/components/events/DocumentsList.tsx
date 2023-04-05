@@ -100,7 +100,7 @@ export default function DocumentsList(props: {
               </Link>
 
               <a
-                href={`/o/event/${eventId}/doc/${d.id}/view`}
+                href={`/${eventId}/doc/${d.id}/view`}
                 target="_blank"
                 rel="noreferrer"
                 data-cy={`download-${d.id}`}

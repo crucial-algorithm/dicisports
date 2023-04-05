@@ -471,7 +471,7 @@ export default function RaceRoute() {
             </div>
             <div >
               <Link
-                to={`/o/event/${event.id}/race/${race?.id}/gpx`}
+                to={`/${event.id}/race/${race?.id}/gpx`}
                 target="_blank"
                 rel="noreferrer"
                 className="group relative inline-flex ml-14 text-gray-700 dark:text-white"

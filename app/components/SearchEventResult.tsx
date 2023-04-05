@@ -95,7 +95,7 @@ export default function EventResult({
             />
             <favorite.Form
               method="post"
-              action={`/organizer/event/fav/${event.id}`}
+              action={`/fav/${event.id}`}
             >
               {isFavorite ? (
                 <Button
