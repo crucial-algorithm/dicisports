@@ -21,10 +21,10 @@ import DiscountCodeIcon from '~/components/shared/icons/DiscountCodeIcon';
 
 import Logo from '~/components/shared/Logo';
 
-import { requireOrganizer } from '~/server/auth/session.server';
+import { requireUser } from '~/server/auth/session.server';
 
 export const loader: LoaderFunction = async ({ request }) => {
-  await requireOrganizer(request);
+  await requireUser(request);
 
   return json({});
 };
