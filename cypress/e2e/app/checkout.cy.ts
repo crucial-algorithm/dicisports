@@ -251,7 +251,7 @@ describe('Checkout', () => {
         .should('not.exist');
     });
 
-    it('should redirect to registration if last race participant is removed', () => {
+    it('should redirect to cart if last race participant is removed', () => {
       cy.intercept('GET', '*?_data=routes*checkout*')
         .as('selectRace')
 

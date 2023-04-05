@@ -244,7 +244,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     return redirect('/');
   }
 
-  if (!raceParticipants) {
+  if (!raceParticipants || raceParticipants?.length === 0) {
     const booking = await findBooking(clientId, eventId);
 
     if (booking) {
