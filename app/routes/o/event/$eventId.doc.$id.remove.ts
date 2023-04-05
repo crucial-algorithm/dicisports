@@ -1,7 +1,7 @@
 import type { ActionFunction } from '@remix-run/node';
 import { json } from '@remix-run/node';
 
-import { requireOrganizer } from '~/server/auth/session.server';
+import { requireUser } from '~/server/auth/session.server';
 import { findEvent } from '~/server/db/events.server';
 import { NotFound, Unauthorized } from '~/server/utils/misc';
 import i18n from '~/server/i18n.server';
@@ -12,7 +12,7 @@ const RESOURCES_NS = 'create-event-form';
 export const action: ActionFunction = async ({ request, params }) => {
   const t = await i18n.getFixedT(request, RESOURCES_NS);
 
-  const user = await requireOrganizer(request);
+  const user = await requireUser(request);
 
   const eventId = params.eventId as string;
   const documentId = params.id as string;

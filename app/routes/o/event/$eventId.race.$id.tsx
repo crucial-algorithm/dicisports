@@ -31,7 +31,7 @@ import FormField from '~/components/shared/form/FormField';
 import TextField from '~/components/shared/form/TextField';
 import UploadForm from '~/components/shared/form/UploadForm';
 import Main from '~/components/shared/Main';
-import { requireOrganizer } from '~/server/auth/session.server';
+import { requireUser } from '~/server/auth/session.server';
 import { findEvent } from '~/server/db/events.server';
 import { createRace, findRace, updateRace } from '~/server/db/races.server';
 import i18n from '~/server/i18n.server';
@@ -66,7 +66,7 @@ type FormErrors = {
 const RESOURCES_NS = 'create-event-form';
 
 export const loader: LoaderFunction = async ({ request, params }) => {
-  const user = await requireOrganizer(request);
+  const user = await requireUser(request);
   const eventId = params.eventId as string;
   const raceId = params.id as string;
   const t = await i18n.getFixedT(request, RESOURCES_NS);
@@ -99,7 +99,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 };
 
 export const action: ActionFunction = async ({ params, request }) => {
-  const user = await requireOrganizer(request);
+  const user = await requireUser(request);
   const t = await i18n.getFixedT(request, RESOURCES_NS);
   const uploadHandler: UploadHandler = unstable_composeUploadHandlers(
     // our custom upload handler

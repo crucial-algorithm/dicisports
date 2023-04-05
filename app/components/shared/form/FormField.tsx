@@ -30,7 +30,7 @@ const FormField: React.FC<Props> = ({
       <div className="flex gap-2 items-baseline justify-between mb-2">
         <Label htmlFor={inputId}>{label}</Label>
         {description && (
-          <div id={descriptionId} className="text-primary text-lg">
+          <div id={descriptionId} className="text-primary text-xs">
             {description}
           </div>
         )}

@@ -328,7 +328,7 @@ describe('Event', () => {
     });
 
     it('should update a event', () => {
-      cy.visitAndWaitForHydration('/o/dashboard/MY4bvgxDbMtGv8rbYe5d')
+      cy.visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d/dashboard')
         .get('[data-cy="edit"]')
         .click()
 
@@ -346,7 +346,7 @@ describe('Event', () => {
 
         .location()
         .should((loc) => {
-          expect(loc.pathname).to.contain('/o/dashboard/MY4bvgxDbMtGv8rbYe5d');
+          expect(loc.pathname).to.contain('/o/event/MY4bvgxDbMtGv8rbYe5d/dashboard');
         })
 
         .visitAndWaitForHydration('/event/love-tiles-douro-granfondo-2023')

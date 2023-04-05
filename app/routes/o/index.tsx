@@ -48,7 +48,7 @@ export const links: LinksFunction = () => {
 
 function target(status: EventStatus, id: string) {
   if (['published', 'unpublished'].indexOf(status) >= 0) {
-    return `/o/dashboard/${id}`;
+    return `/o/event/${id}/dashboard`;
   }
 
   return `/o/event/${id}`;
@@ -57,6 +57,8 @@ function target(status: EventStatus, id: string) {
 export default function OrganizerIndexRoute() {
   const { t } = useTranslation('organizer');
   const { events, sports } = useLoaderData<LoaderData>();
+  const unpublished = events.filter((e: Event) => e.status === 'draft' || e.status === 'unpublished');
+  const published = events.filter((e: Event) => e.status === 'published');
 
   return (
     <>
@@ -70,16 +72,30 @@ export default function OrganizerIndexRoute() {
             </Form>
           </div>
         </div>
-        <H5 className="border-b mb-4">{t('Draft Events')}</H5>
-        <div className="flex flex-wrap align-middle justify-start last:border-none">
-          {events.filter((e: Event) => e.status === 'draft' || e.status === 'unpublished').map((event: Event) => (
-            <EventEntry className="border-r" event={event} sports={sports} key={event.id} />
-          ))}
-        </div>
+        {unpublished.length > 0 && (
+          <>
+            <H5 className="border-b mb-4">{t('Draft Events')}</H5>
+            <div className="flex flex-wrap align-middle justify-start last:border-none">
+              {unpublished.map((event: Event) => (
+                <EventEntry
+                  className="border-r"
+                  event={event}
+                  sports={sports}
+                  key={event.id}
+                />
+              ))}
+            </div>
+          </>
+        )}
         <H5 className="border-b">{t('Published Events')}</H5>
         <div className="flex flex-wrap align-middle justify-start">
-          {events.filter((e: Event) => e.status === 'published').map((event: Event) => (
-            <EventEntry className="border-r" event={event} sports={sports} key={event.id} />
+          {published.map((event: Event) => (
+            <EventEntry
+              className="border-r"
+              event={event}
+              sports={sports}
+              key={event.id}
+            />
           ))}
         </div>
         <WhenListEmpty list={events}>

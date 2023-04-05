@@ -33,7 +33,7 @@ import TextField from '~/components/shared/form/TextField';
 import UploadForm from '~/components/shared/form/UploadForm';
 import Main from '~/components/shared/Main';
 
-import { requireOrganizer } from '~/server/auth/session.server';
+import { requireUser } from '~/server/auth/session.server';
 import {
   createDocument,
   findDocument,
@@ -64,7 +64,7 @@ type FormErrors = {
 };
 
 export const loader: LoaderFunction = async ({ request, params }) => {
-  const user = await requireOrganizer(request);
+  const user = await requireUser(request);
   const eventId = params.eventId as string;
   const documentId = params.id as string;
   const t = await i18n.getFixedT(request, RESOURCES_NS);
@@ -97,7 +97,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 };
 
 export const action: ActionFunction = async ({ request, params }) => {
-  const user = await requireOrganizer(request);
+  const user = await requireUser(request);
 
   const t = await i18n.getFixedT(request, RESOURCES_NS);
 
