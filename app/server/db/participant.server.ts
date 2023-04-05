@@ -12,11 +12,11 @@ import type {
 } from '~/types';
 import { db } from '~/server/db.server';
 import Id from '~/server/utils/Id.server';
-import { findEventRaces } from '~/server/db/races.server';
 import {
   dbParticipantToParticipant,
   dbUIRaceParticipantToUIRaceParticipant
 } from '~/server/db/codecs.server';
+import { findBooking } from '~/server/db/booking.server';
 
 const prisma = new PrismaClient();
 
@@ -103,13 +103,15 @@ async function findUserEventRaceParticipants(
   userSessionId: string,
   eventId: string
 ): Promise<RaceParticipant[] | null> {
-  const eventRaces = await findEventRaces(eventId);
-  const userParticipants = await findUserParticipants(userSessionId);
+  const booking = await findBooking(userSessionId, eventId);
+
+  if (!booking) {
+    return null;
+  }
 
   return await db.raceParticipant.findMany({
     where: {
-      participantId: { in: userParticipants.map((p) => p.id) },
-      raceId: { in: eventRaces?.map((e) => e.id) }
+      bookingId: booking.id
     },
     include: {
       race: true,

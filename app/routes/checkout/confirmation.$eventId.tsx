@@ -44,13 +44,13 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   const booking = await findBooking(clientId, eventId);
 
   if (!raceParticipants || raceParticipants?.length === 0) {
-    return redirect(`/checkout/registrations/${eventId}`);
+    return redirect(`/checkout/cart/${eventId}`);
   }
 
   if (booking?.status !== CheckoutStatus.confirmed) {
     return redirect(
       `/checkout/${
-        booking?.status === CheckoutStatus.pending ? 'payment' : 'registrations'
+        booking?.status === CheckoutStatus.pending ? 'payment' : 'cart'
       }/${eventId}`
     );
   }
@@ -89,7 +89,7 @@ export default function CheckoutConfirmationRoute() {
       {!isAuth && (
         <div className="flex flex-row items-center justify-end gap-x-2">
           <H6>{t('Already Have An Account ?')}</H6>
-          <a href="/login?a=checkout" data-cy="authenticate">
+          <a href={`/login?a=checkout&e=${event.id}`} data-cy="authenticate">
             <H6 className="dark:text-blueGray-500 cursor-pointer">
               {t('Login')}
             </H6>

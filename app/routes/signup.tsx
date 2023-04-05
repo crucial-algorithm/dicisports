@@ -23,7 +23,7 @@ import { verifyEmailAddress } from '~/server/auth/verifier.server';
 import { addGroupToFavorites } from '~/server/db/groups.server';
 import InputError from '~/components/shared/form/InputError';
 import { CanonicalMeta } from '~/utils/seo';
-import { changeRegistrationToAuthUser } from '~/server/db/booking.server';
+import { changeRegistrationToAuthUser, findBooking } from '~/server/db/booking.server';
 import { getClientSession } from '~/server/auth/client.server';
 
 type ActionData = {
@@ -128,8 +128,20 @@ export const action: ActionFunction = async ({ request }) => {
     if (postSignUpAction === 'checkout') {
       try {
         const clientSession = await getClientSession(request);
+        const eventId = searchParams.get('e') as string;
+        const booking = await findBooking(clientSession.getClientId(), eventId);
 
-        await changeRegistrationToAuthUser(user.id, clientSession.getClientId());
+        await changeRegistrationToAuthUser(
+          user.id,
+          clientSession.getClientId()
+        );
+
+        return redirect(
+          booking?.status === 'confirmed'
+            ? `/checkout/confirmation/${eventId}`
+            : `/checkout/info/${eventId}`,
+          { headers }
+        );
       } catch (e) {
         console.error(e);
       }

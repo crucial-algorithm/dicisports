@@ -244,7 +244,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     return redirect('/');
   }
 
-  if (raceParticipants?.length === 0) {
+  if (!raceParticipants || raceParticipants?.length === 0) {
     const booking = await findBooking(clientId, eventId);
 
     if (booking) {
@@ -530,7 +530,7 @@ export default function CheckoutInfoRoute() {
       {!isAuth && (
         <div className="flex flex-row items-center justify-end gap-x-2">
           <H6>{t('Already Have An Account ?')}</H6>
-          <a href="/login?a=checkout" data-cy="authenticate">
+          <a href={`/login?a=checkout&e=${event.id}`} data-cy="authenticate">
             <H6 className="dark:text-blueGray-500 cursor-pointer">
               {t('Login')}
             </H6>
