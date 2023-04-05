@@ -30,6 +30,10 @@
         @apply flex flex-col flex-auto justify-start relative mb-8 overflow-auto;
     }
 
+    .map .dialog-body {
+        @apply md:h-full md:min-h-[86%]
+    }
+
     .dialog-footer {
         @apply fixed bottom-4 right-1 flex items-baseline justify-end gap-4
         md:static md:w-full md:py-2 md:px-1

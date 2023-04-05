@@ -148,7 +148,7 @@ function Map({
     <div className={clsx('relative left-0 w-full overflow-hidden h-full')}>
       <Label label={info.address} />
       <Pin />
-      <div ref={mapNode} className="h-[100%]"/>
+      <div ref={mapNode} className="h-full"/>
     </div>
   );
 }
@@ -265,7 +265,7 @@ function MapDialog({
 
   return (
     <Dialog
-      className="min-w-[98%] md:h-[100%] dark:bg-gray-900 opacity-100 m-0 shadow-none rounded-none"
+      className="min-w-[98%] md:h-full dark:bg-gray-900 opacity-100 m-0 shadow-none rounded-none map"
       isOpen={open}
       onClose={handleClose}
       aria-label={t('map')}
