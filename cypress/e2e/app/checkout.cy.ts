@@ -89,7 +89,7 @@ describe('Checkout', () => {
 
         .wait('@removeParticipant')
 
-        .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qtd]')
+        .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qty]')
         .contains('0');
     });
 
@@ -106,12 +106,12 @@ describe('Checkout', () => {
 
         .get('#add-race-AhowRdNWCBQWSuivSt7h')
         .click()
-        .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qtd]')
+        .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qty]')
         .contains(1)
 
         .get('#add-race-AhowRdNWCBQWSuivSt7h')
         .click()
-        .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qtd]')
+        .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qty]')
         .contains(2)
 
         .get('#checkout')
@@ -446,7 +446,7 @@ describe('Checkout', () => {
 
         .wait('@selectRace')
 
-        .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qtd]')
+        .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qty]')
         .contains('1')
 
         .get('#remove-race-AhowRdNWCBQWSuivSt7h')
@@ -454,7 +454,7 @@ describe('Checkout', () => {
 
         .wait('@selectRace')
 
-        .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qtd]')
+        .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qty]')
         .contains('0');
     });
 
@@ -471,12 +471,12 @@ describe('Checkout', () => {
 
         .get('#add-race-AhowRdNWCBQWSuivSt7h')
         .click()
-        .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qtd]')
+        .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qty]')
         .contains(1)
 
         .get('#add-race-AhowRdNWCBQWSuivSt7h')
         .click()
-        .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qtd]')
+        .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qty]')
         .contains(2)
 
         .get('#checkout')
@@ -555,7 +555,7 @@ function registerParticipant() {
 
     .get('#add-race-AhowRdNWCBQWSuivSt7h')
     .click()
-    .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qtd]')
+    .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qty]')
     .contains(1)
 
     .wait('@selectRace')
@@ -563,7 +563,7 @@ function registerParticipant() {
 
     .get('#add-race-AhowRdNWCBQWSuivSt7h')
     .click()
-    .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qtd]')
+    .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qty]')
     .contains(2)
 
     .wait('@selectRace')

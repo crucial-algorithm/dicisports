@@ -372,7 +372,7 @@ type DBRawCart = {
   id: string;
   race_id: string;
   user_id: string;
-  qtd: number;
+  qty: number;
   created_at: Date;
   updated_at: Date;
 };
@@ -380,7 +380,7 @@ type DBRawCart = {
 type UICartRow = {
   id: string;
   raceId: string;
-  qtd: number;
+  qty: number;
   name: string;
   price: number;
   order: number;
@@ -396,27 +396,27 @@ type DBRawUICartRow = {
   distance: number;
   start_time: number;
   display_order: number;
-  qtd: number;
+  qty: number;
 };
 
-type DBRawRaceQtd = {
+type DBRawRaceQty = {
   id: string;
   name: string;
   distance: number;
   start_time: number;
   price: number;
   display_order: number;
-  qtd: number;
+  qty: number;
 };
 
-type RaceQtd = {
+type RaceQty = {
   id: string;
   name: string;
   distance: number;
   startTime: number;
   price: number;
   displayOrder: number;
-  qtd: number;
+  qty: number;
 };
 
 type RaceParticipant = {
@@ -583,8 +583,8 @@ export {
   Ticket,
   UICartRow,
   DBRawUICartRow,
-  DBRawRaceQtd,
-  RaceQtd,
+  DBRawRaceQty,
+  RaceQty,
   DBRawCart,
   RaceParticipant,
   RaceParticipantInput,

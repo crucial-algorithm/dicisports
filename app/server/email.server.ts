@@ -375,7 +375,7 @@ PIN: ${booking.pin}
 Inscrições:
 ${cart.map(c => `
   Nome: ${c.name}
-  Quantidade: ${c.qtd}
+  Quantidade: ${c.qty}
   Preço: ${c.price}€
   
 `).join('')}
@@ -466,7 +466,7 @@ P.S. Recebeste este email porque o teu endereço de email foi usado para fazer l
                                           ${c.name}
                                           </span>
                                           <br>
-                                          <span style="font-size:14px;color:#999">Quantidade: ${c.qtd} </span>
+                                          <span style="font-size:14px;color:#999">Quantidade: ${c.qty} </span>
                                           <br>
                                         </td>
                                         <td style="white-space: nowrap;">

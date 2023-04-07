@@ -55,14 +55,14 @@ export default function DisplayCart({
             >
               <div className="flex flex-row items-center justify-between">
                 <H6>{ticket.name}</H6>
-                <H6>{'x' + ticket.qtd}</H6>
+                <H6>{'x' + ticket.qty}</H6>
               </div>
               <div className="flex flex-row items-center justify-between">
                 <H6 className="dark:text-blueGray-500">
                   {ticket.price + '€'}
                 </H6>
                 <H6 className="dark:text-blueGray-500">
-                  {ticket.price * ticket.qtd + '€'}
+                  {ticket.price * ticket.qty + '€'}
                 </H6>
               </div>
             </div>
@@ -70,7 +70,7 @@ export default function DisplayCart({
 
         {cart.length !== 0 &&
           cart.map((c) => {
-            totalPrice += c.price * c.qtd;
+            totalPrice += c.price * c.qty;
 
             return totalPrice;
           }) && (
