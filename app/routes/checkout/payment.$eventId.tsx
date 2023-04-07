@@ -20,7 +20,9 @@ import {
 } from '~/server/db/booking.server';
 import { findEvent } from '~/server/db/events.server';
 import { findUserEventRaceParticipants } from '~/server/db/participant.server';
-import type { Event, UICartRow } from '~/types';
+import type { Booking, Event, UICartRow } from '~/types';
+import { sendBookingConfirmationEmail } from '~/server/email.server';
+import { getDomainUrl } from '~/utils/misc';
 
 type LoaderData = {
   event: Event;
@@ -48,6 +50,22 @@ export const action: ActionFunction = async ({ request, params }) => {
   }
 
   await updateBookingStatus(CheckoutStatus.confirmed, clientId, eventId);
+
+  if (authenticatedClient !== null) {
+    const event = await findEvent(eventId);
+    const booking = await findBooking(clientId, eventId);
+    const domainUrl = getDomainUrl(request);
+    const cart = await findBookingCart(clientId, eventId);
+
+    await sendBookingConfirmationEmail({
+      emailAddress: authenticatedClient.email,
+      event,
+      booking: booking as Booking,
+      domainUrl,
+      cart,
+      userName: authenticatedClient.name
+    });
+  }
 
   return redirect(`/checkout/confirmation/${eventId}`);
 };
