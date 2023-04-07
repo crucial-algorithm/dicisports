@@ -390,6 +390,23 @@ describe('Checkout', () => {
         .url()
         .should('include', '/checkout/cart/');
     });
+
+    it('should send automated email after completing booking', () => {
+      bookParticipant();
+      cy.get('input[name=email]')
+        .type('asd@gmail.com')
+
+        .get('button[name=send-confirmation]')
+        .click()
+
+        .request({ method: 'GET', url: Cypress.env('HTTP_CATCHER') })
+        .then(({ body }) => {
+          expect(body.to).to.eq('asd@gmail.com');
+          expect(body.subject).to.eq(
+            'Informações do teu booking no evento Love Tiles Douro Granfondo 2023.'
+          );
+        });
+    });
   });
 
   context('Maintenance: authenticated', () => {
@@ -517,6 +534,15 @@ describe('Checkout', () => {
 
     it('should book a race', () => {
       bookParticipant();
+    });
+
+    it('should send automated email after completing booking', () => {
+      bookParticipant();
+      cy.request({ method: 'GET', url: Cypress.env('HTTP_CATCHER') }).then(
+        ({ body }) => {
+          expect(body.subject).to.eq('Informações do teu booking no evento Love Tiles Douro Granfondo 2023.');
+        }
+      );
     });
   });
 });
