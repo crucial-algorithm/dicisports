@@ -396,8 +396,13 @@ describe('Checkout', () => {
       cy.get('input[name=email]')
         .type('asd@gmail.com')
 
+        .intercept('POST', '/checkout/confirmation/*')
+        .as('SendEmail')
+
         .get('button[name=send-confirmation]')
         .click()
+
+        .wait('@SendEmail')
 
         .request({ method: 'GET', url: Cypress.env('HTTP_CATCHER') })
         .then(({ body }) => {
