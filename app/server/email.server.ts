@@ -365,7 +365,27 @@ async function sendBookingConfirmationEmail({
   let total = 0;
 
   cart.map((c) => total += c.price);
-  const text = 'TODO';
+  const text = `
+${userName && `Olá ${userName},`}
+Segue a informação do teu booking no evento ${event.name}:
+
+ID: ${booking.id}
+PIN: ${booking.pin}
+
+Inscrições:
+${cart.map(c => `
+  Nome: ${c.name}
+  Quantidade: ${c.qtd}
+  Preço: ${c.price}€
+  
+`).join('')}
+
+Total: ${total}€
+
+Obrigado!
+
+P.S. Recebeste este email porque o teu endereço de email foi usado para fazer login em ${hostname}. Se não solicitaste o email, ignora-o.
+  `.trim();
 
   const html = `
   <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -399,7 +419,6 @@ async function sendBookingConfirmationEmail({
       <h2 style='text-align: center'>
         Aqui tens a informação do teu booking:
       </h2>
-      <!-- Beggining cart table -->
       <div style='text-align: center; line-height: 1rem; margin-bottom: 2rem'>
         <h2 style='text-align: center'>
           ID
@@ -416,6 +435,7 @@ async function sendBookingConfirmationEmail({
           ${booking.pin}
         </h3>
       </div>
+      <!-- Beggining cart table -->
       <table style="width:100%;table-layout: fixed;border-spacing:0;border-collapse:collapse">
         <tbody>
           <tr>
