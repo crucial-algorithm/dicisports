@@ -21,28 +21,7 @@ describe('Checkout', () => {
         .wait('@selectRace')
 
         .url()
-        .should(
-          'eq',
-          `${Cypress.config().baseUrl}/checkout/info/MY4bvgxDbMtGv8rbYe5d`
-        );
-    });
-
-    it('Should add race', () => {
-      cy.intercept('GET', '*?_data=routes*checkout*')
-        .as('selectRace')
-
-        .visitAndWaitForHydration('/event/love-tiles-douro-granfondo-2023')
-
-        .get('button[name=race-AhowRdNWCBQWSuivSt7h]')
-        .click()
-
-        .wait('@selectRace')
-
-        .url()
-        .should(
-          'eq',
-          `${Cypress.config().baseUrl}/checkout/info/MY4bvgxDbMtGv8rbYe5d`
-        );
+        .should('include', `${Cypress.config().baseUrl}/checkout/info/`);
     });
 
     it('Should remove race', () => {
@@ -56,11 +35,10 @@ describe('Checkout', () => {
 
         .wait('@selectRace')
 
-        .url()
-        .should(
-          'eq',
-          `${Cypress.config().baseUrl}/checkout/info/MY4bvgxDbMtGv8rbYe5d`
-        )
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.include('/checkout/info/');
+        })
 
         .get('[data-cy=update-cart]')
         .should('exist')
@@ -69,13 +47,12 @@ describe('Checkout', () => {
 
         .waitForHydration()
 
-        .url()
-        .should(
-          'eq',
-          `${
-            Cypress.config().baseUrl
-          }/checkout/cart/MY4bvgxDbMtGv8rbYe5d?a=update`
-        )
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.eq('/checkout/cart/MY4bvgxDbMtGv8rbYe5d');
+          expect(l.search).to.contain('a=update');
+        })
+
         .intercept(
           'POST',
           '/checkout/cart/MY4bvgxDbMtGv8rbYe5d?a=update*&_data=routes*checkout*'
@@ -88,7 +65,10 @@ describe('Checkout', () => {
         .wait('@removeParticipant')
 
         .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qtd]')
-        .contains('0');
+        .contains('0')
+
+        .get('#checkout')
+        .should('have.prop', 'disabled');
     });
 
     it('Should fill form and save participant', () => {
@@ -113,11 +93,10 @@ describe('Checkout', () => {
         .get('#checkout')
         .click()
 
-        .url()
-        .should(
-          'eq',
-          `${Cypress.config().baseUrl}/checkout/info/MY4bvgxDbMtGv8rbYe5d`
-        )
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.include('/checkout/info/');
+        })
 
         .get('[data-cy=participant]')
         .should('have.length', 2);
@@ -173,7 +152,7 @@ describe('Checkout', () => {
         .waitForHydration()
 
         .url()
-        .should('include', '/checkout/info/MY4bvgxDbMtGv8rbYe5d')
+        .should('include', '/checkout/info/')
 
         .intercept(
           'POST',
@@ -188,13 +167,11 @@ describe('Checkout', () => {
 
         .waitForHydration()
 
-        .url()
-        .should(
-          'eq',
-          `${
-            Cypress.config().baseUrl
-          }/checkout/cart/MY4bvgxDbMtGv8rbYe5d?a=update`
-        )
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.eq('/checkout/cart/MY4bvgxDbMtGv8rbYe5d');
+          expect(l.search).to.contain('a=update');
+        })
 
         .get('#add-race-AhowRdNWCBQWSuivSt7h')
         .click()
@@ -266,6 +243,7 @@ describe('Checkout', () => {
         .click()
 
         .wait('@selectRace')
+        .waitForHydration()
 
         .intercept(
           'POST',
@@ -273,34 +251,39 @@ describe('Checkout', () => {
         )
         .as('removeParticipant')
 
-        .get('[data-cy=update-cart]')
-        .click({ force: true })
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.include('/checkout/info/');
+        })
+        .then((l) => {
+          const bookingId = l.pathname.split('/')[3];
 
-        .waitForHydration()
+          cy.get('[data-cy=update-cart]')
+            .click({ force: true })
 
-        .url()
-        .should(
-          'eq',
-          `${
-            Cypress.config().baseUrl
-          }/checkout/cart/MY4bvgxDbMtGv8rbYe5d?a=update`
-        )
+            .waitForHydration()
 
-        .get('#remove-race-AhowRdNWCBQWSuivSt7h')
-        .click()
+            .location()
+            .should((l) => {
+              expect(l.pathname).to.eq('/checkout/cart/MY4bvgxDbMtGv8rbYe5d');
+              expect(l.search).to.contain('a=update');
+            })
 
-        .wait('@removeParticipant')
+            .get('#remove-race-AhowRdNWCBQWSuivSt7h')
+            .click()
 
-        .get('#checkout')
-        .should('be.disabled')
+            .wait('@removeParticipant')
 
-        .visitAndWaitForHydration('/checkout/info/MY4bvgxDbMtGv8rbYe5d')
+            .get('#checkout')
+            .should('be.disabled')
 
-        .url()
-        .should(
-          'eq',
-          `${Cypress.config().baseUrl}/checkout/cart/MY4bvgxDbMtGv8rbYe5d`
-        );
+            .visitAndWaitForHydration(`/checkout/info/${bookingId}`)
+
+            .location()
+            .should((l) => {
+              expect(l.pathname).to.eq('/checkout/cart/MY4bvgxDbMtGv8rbYe5d');
+            });
+        });
     });
 
     it('should show validation error if there are registrations with empty participant info', () => {
@@ -322,8 +305,10 @@ describe('Checkout', () => {
 
         .wait('@checkout')
 
-        .url()
-        .should('include', '/checkout/info/MY4bvgxDbMtGv8rbYe5d')
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.include('/checkout/info/');
+        })
 
         .get('#checkout')
         .click()
@@ -348,8 +333,7 @@ describe('Checkout', () => {
         .location()
         .should((l) => {
           expect(l.pathname).to.eq('/login');
-          expect(l.search)
-            .to.contain('a=checkout&e=MY4bvgxDbMtGv8rbYe5d');
+          expect(l.search).to.contain('a=checkout&b=');
         })
 
         .get('body[data-cy=ready]')
@@ -370,9 +354,7 @@ describe('Checkout', () => {
 
         .location()
         .should((l) => {
-          expect(l.pathname).to.eq(
-            '/checkout/confirmation/MY4bvgxDbMtGv8rbYe5d'
-          );
+          expect(l.pathname).to.include('/checkout/confirmation/');
         });
     });
   });
@@ -394,20 +376,17 @@ describe('Checkout', () => {
 
         .wait('@selectRace')
 
-        .url()
-        .should(
-          'eq',
-          `${Cypress.config().baseUrl}/checkout/info/MY4bvgxDbMtGv8rbYe5d`
-        );
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.include('/checkout/info/');
+        });
     });
 
     it('Should add/remove race', () => {
       cy.intercept('GET', '*?_data=routes*checkout*')
         .as('selectRace')
 
-        .visitAndWaitForHydration(
-          '/checkout/cart/MY4bvgxDbMtGv8rbYe5d'
-        )
+        .visitAndWaitForHydration('/checkout/cart/MY4bvgxDbMtGv8rbYe5d')
 
         .get('#add-race-AhowRdNWCBQWSuivSt7h')
         .click()
@@ -433,9 +412,7 @@ describe('Checkout', () => {
     it('should contain right amount of races', () => {
       cy.login()
 
-        .visitAndWaitForHydration(
-          '/checkout/cart/MY4bvgxDbMtGv8rbYe5d'
-        )
+        .visitAndWaitForHydration('/checkout/cart/MY4bvgxDbMtGv8rbYe5d')
 
         .get('#add-race-AhowRdNWCBQWSuivSt7h')
         .click()
@@ -450,13 +427,10 @@ describe('Checkout', () => {
         .get('#checkout')
         .click()
 
-        .url()
-        .should(
-          'eq',
-          `${
-            Cypress.config().baseUrl
-          }/checkout/info/MY4bvgxDbMtGv8rbYe5d`
-        )
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.include('/checkout/info/');
+        })
 
         .get('[data-cy=participant]')
         .should('have.length', 2);
@@ -485,8 +459,10 @@ describe('Checkout', () => {
 
         .waitForHydration()
 
-        .url()
-        .should('include', '/checkout/info/gLqrDfMx6qkTHn6hoZqA')
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.include('/checkout/info/');
+        })
 
         .get('button[name=select-userSavedParticipants]')
         .should('exist')
@@ -508,22 +484,22 @@ describe('Checkout', () => {
   context('Security', () => {
     it('should not access info/payment/confirmation route without a booking', () => {
       cy.visitAndWaitForHydration('/checkout/info/MY4bvgxDbMtGv8rbYe5d')
-          .location()
-          .should((l) => {
-            expect(l.pathname).to.eq('/checkout/cart/MY4bvgxDbMtGv8rbYe5d');
-          })
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.eq('/');
+        })
 
-          .visitAndWaitForHydration('/checkout/payment/MY4bvgxDbMtGv8rbYe5d')
-          .location()
-          .should((l) => {
-            expect(l.pathname).to.eq('/checkout/cart/MY4bvgxDbMtGv8rbYe5d');
-          })
+        .visitAndWaitForHydration('/checkout/payment/MY4bvgxDbMtGv8rbYe5d')
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.eq('/');
+        })
 
-          .visitAndWaitForHydration('/checkout/confirmation/MY4bvgxDbMtGv8rbYe5d')
-          .location()
-          .should((l) => {
-            expect(l.pathname).to.eq('/checkout/cart/MY4bvgxDbMtGv8rbYe5d');
-          });
+        .visitAndWaitForHydration('/checkout/confirmation/MY4bvgxDbMtGv8rbYe5d')
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.eq('/');
+        });
     });
   });
 });
@@ -602,14 +578,15 @@ function registerParticipant() {
 }
 
 function bookParticipant() {
-  return cy.intercept('GET', '*?_data=routes*checkout*')
+  return cy
+    .intercept('GET', '*?_data=routes*checkout*')
     .as('selectRace')
 
     .visitAndWaitForHydration('/checkout/cart/MY4bvgxDbMtGv8rbYe5d')
 
     .location()
     .should((loc) => {
-      expect(loc.pathname).to.contain('/checkout/cart/MY4bvgxDbMtGv8rbYe5d');
+      expect(loc.pathname).to.eq('/checkout/cart/MY4bvgxDbMtGv8rbYe5d');
     })
 
     .get('#add-race-AhowRdNWCBQWSuivSt7h')
@@ -622,51 +599,63 @@ function bookParticipant() {
 
     .wait('@selectRace')
 
-    .get('input[name=first-name]')
-    .type('Nuno')
+    .location()
+    .should((l) => {
+      expect(l.pathname).to.include('/checkout/info/');
+    })
+    .then((l) => {
+      const bookingId = l.pathname.split('/')[3];
+      
+      cy.get('input[name=first-name]')
+        .type('Nuno')
 
-    .get('input[name=last-name]')
-    .type('Lopes')
+        .get('input[name=last-name]')
+        .type('Lopes')
 
-    .pickOptionFromSelect('gender', 2)
+        .pickOptionFromSelect('gender', 2)
 
-    .pickDate('birthdate', '2001-09-21')
+        .pickDate('birthdate', '2001-09-21')
 
-    .get('input[name=phone-number]')
-    .type('937654321')
+        .get('input[name=phone-number]')
+        .type('937654321')
 
-    .get('input[name=identity-card]')
-    .type('987654321')
+        .get('input[name=identity-card]')
+        .type('987654321')
 
-    .get('input[name=federation-number]')
-    .type('8165238')
+        .get('input[name=federation-number]')
+        .type('8165238')
 
-    .pickOptionFromSelect('shirt', 2)
+        .pickOptionFromSelect('shirt', 2)
 
-    .pickOptionFromSelect('nationality', 188)
+        .pickOptionFromSelect('nationality', 188)
 
-    .get('input[name=postal-code]')
-    .type('4730-454')
+        .get('input[name=postal-code]')
+        .type('4730-454')
 
-    .intercept('POST', '*?_data=routes*checkout*')
-    .as('saveParticipant')
+        .intercept('POST', '*?_data=routes*checkout*')
+        .as('saveParticipant')
 
-    .get('#save-button')
-    .click()
+        .get('#save-button')
+        .click()
 
-    .wait('@saveParticipant')
+        .wait('@saveParticipant')
 
-    .waitForHydration()
+        .waitForHydration()
 
-    .url()
-    .should('include', '/payment/MY4bvgxDbMtGv8rbYe5d')
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.eq(`/checkout/payment/${bookingId}`);
+        })
 
-    .get('button[name=pay]')
-    .click()
+        .get('button[name=pay]')
+        .click()
 
-    .get('[data-cy=confirmation-label]')
-    .should('exist')
+        .get('[data-cy=confirmation-label]')
+        .should('exist')
 
-    .url()
-    .should('include', '/confirmation/MY4bvgxDbMtGv8rbYe5d');
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.eq(`/checkout/confirmation/${bookingId}`);
+        });
+    });
 }

@@ -32,7 +32,7 @@ import type { LoginAction } from '~/types';
 import { loginUser } from '~/server/db/users.server';
 import Main from '~/components/shared/Main';
 import { CanonicalMeta } from '~/utils/seo';
-import { changeRegistrationToAuthUser, findBooking } from '~/server/db/booking.server';
+import { changeRegistrationToAuthUser, findBooking, findBookingById } from '~/server/db/booking.server';
 import { getClientSession } from '~/server/auth/client.server';
 
 type LoaderData = {
@@ -216,8 +216,8 @@ export const action: ActionFunction = async ({ request }) => {
     if (postLoginAction === actions.checkout) {
       try {
         const clientSession = await getClientSession(request);
-        const eventId = searchParams.get('e') as string;
-        const booking = await findBooking(clientSession.getClientId(), eventId);
+        const bookingId = searchParams.get('b') as string;
+        const booking = await findBookingById(bookingId);
 
         await changeRegistrationToAuthUser(
           user.id,
@@ -226,8 +226,8 @@ export const action: ActionFunction = async ({ request }) => {
 
         return redirect(
           booking?.status === 'confirmed'
-            ? `/checkout/confirmation/${eventId}`
-            : `/checkout/info/${eventId}`,
+            ? `/checkout/confirmation/${bookingId}`
+            : `/checkout/info/${bookingId}`,
           { headers }
         );
       } catch (e) {

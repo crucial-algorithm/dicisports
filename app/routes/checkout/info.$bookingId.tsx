@@ -69,6 +69,7 @@ type LoaderData = {
   shirtSizes: ShirtSize[];
   isAuth: boolean;
   isGuest: boolean;
+  bookingId: string;
 };
 
 export const action: ActionFunction = async ({ request, params }) => {
@@ -287,7 +288,8 @@ export const loader: LoaderFunction = async ({ request, params }) => {
       savedParticipants?.length !== 0 ? savedParticipants : null,
     shirtSizes,
     isAuth: !!authenticatedClient,
-    isGuest
+    isGuest,
+    bookingId
   });
 };
 
@@ -302,7 +304,8 @@ export default function CheckoutInfoRoute() {
     savedParticipants,
     shirtSizes,
     isAuth,
-    isGuest
+    isGuest,
+    bookingId
   } = useLoaderData<LoaderData>() as LoaderData;
   const [participant, setParticipant] = useState<Participant | null>(
     raceParticipants[0].participant
@@ -554,7 +557,7 @@ export default function CheckoutInfoRoute() {
       {!isAuth && !isGuest && (
         <div className="flex flex-row items-center justify-end gap-x-2">
           <H6>{t('Already Have An Account ?')}</H6>
-          <a href={`/login?a=checkout&e=${event.id}`} data-cy="authenticate">
+          <a href={`/login?a=checkout&b=${bookingId}`} data-cy="authenticate">
             <H6 className="dark:text-blueGray-500 cursor-pointer">
               {t('Login')}
             </H6>

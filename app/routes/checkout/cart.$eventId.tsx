@@ -35,6 +35,7 @@ import { findEventRaces } from '~/server/db/races.server';
 import i18n from '~/server/i18n.server';
 import type { Booking, Event, Race, RaceQtd, UICartRow } from '~/types';
 import { badRequest, displayTimeOfDay } from '~/utils/misc';
+import Id from '~/server/utils/Id.server';
 
 type LoaderData = {
   event: Event;
@@ -72,24 +73,27 @@ export const action: ActionFunction = async ({ request, params }) => {
   try {
     // Triggered when user clicks continue in the cart screen
     if (actionId === actions.checkout) {
+      const booking: Booking | null = await findBooking(clientId, eventId);
       const userEventRaceParticipants = await findUserEventRaceParticipants(
         clientId,
         eventId
       );
 
-      if (!userEventRaceParticipants?.length) {
+      if (!userEventRaceParticipants?.length || !booking) {
         await removeBooking(clientId, eventId);
 
         return redirect(`/checkout/cart/${eventId}`);
       }
 
-      return redirect(`/checkout/info/${eventId}`);
+      return redirect(`/checkout/info/${booking.id}`);
     }
     if (actionId === actions.add) {
       const booking: Booking | null = await findBooking(clientId, eventId);
 
       if (!booking) {
-        await createInitialBookingFlow(clientId, eventId, raceId, t);
+        const bookingId = Id();
+
+        await createInitialBookingFlow(bookingId, clientId, eventId, raceId, t);
       } else {
         await addParticipantToRace(clientId, raceId, booking.id);
       }
