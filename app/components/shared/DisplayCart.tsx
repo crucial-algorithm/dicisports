@@ -19,6 +19,7 @@ export default function DisplayCart({
   showContinueLabel,
   showUpdateCartButton,
   showFinishRegistrationLabel,
+  hideAllButtons,
   action
 }: {
   cart: UICartRow[];
@@ -31,6 +32,7 @@ export default function DisplayCart({
   showContinueLabel?: boolean;
   showUpdateCartButton?: boolean;
   showFinishRegistrationLabel?: boolean;
+  hideAllButtons?: boolean;
   action?: string;
 }) {
   const { t } = useTranslation('checkout');
@@ -58,9 +60,7 @@ export default function DisplayCart({
                 <H6>{'x' + ticket.qtd}</H6>
               </div>
               <div className="flex flex-row items-center justify-between">
-                <H6 className="dark:text-blueGray-500">
-                  {ticket.price + '€'}
-                </H6>
+                <H6 className="dark:text-blueGray-500">{ticket.price + '€'}</H6>
                 <H6 className="dark:text-blueGray-500">
                   {ticket.price * ticket.qtd + '€'}
                 </H6>
@@ -80,55 +80,59 @@ export default function DisplayCart({
             </div>
           )}
 
-        {!hideCheckoutButton && !showEditInfoButton && (
-          <div className="flex flex-col items-center w-full">
-            <input type="hidden" name="hash" value={hash} />
-            <Button
-              type="submit"
-              name="actionId"
-              value="checkout"
-              disabled={cart.length === 0}
-              className="mt-4 w-full"
-              id="checkout"
-            >
-              {showContinueLabel
-                ? t('Continue')
-                : showFinishRegistrationLabel
-                ? t('Finish Registration')
-                : t('Checkout now')}
-            </Button>
-            {error && (
-              <InputError id="checkout-error" className="mt-2">
-                {error}
-              </InputError>
+        {!hideAllButtons && (
+          <>
+            {!hideCheckoutButton && !showEditInfoButton && (
+              <div className="flex flex-col items-center w-full">
+                <input type="hidden" name="hash" value={hash} />
+                <Button
+                  type="submit"
+                  name="actionId"
+                  value="checkout"
+                  disabled={cart.length === 0}
+                  className="mt-4 w-full"
+                  id="checkout"
+                >
+                  {showContinueLabel
+                    ? t('Continue')
+                    : showFinishRegistrationLabel
+                    ? t('Finish Registration')
+                    : t('Checkout now')}
+                </Button>
+                {error && (
+                  <InputError id="checkout-error" className="mt-2">
+                    {error}
+                  </InputError>
+                )}
+              </div>
             )}
-          </div>
-        )}
 
-        {showUpdateCartButton && (
-          <div className="flex justify-end mt-4">
-            <a
-              href={`/checkout/cart/${event.id}?a=update`}
-              data-cy="update-cart"
-            >
-              <H6 className="dark:text-blueGray-500 cursor-pointer">
-                {t('Update Cart')}
-              </H6>
-            </a>
-          </div>
-        )}
+            {showUpdateCartButton && (
+              <div className="flex justify-end mt-4">
+                <a
+                  href={`/checkout/cart/${event.id}?a=update`}
+                  data-cy="update-cart"
+                >
+                  <H6 className="dark:text-blueGray-500 cursor-pointer">
+                    {t('Update Cart')}
+                  </H6>
+                </a>
+              </div>
+            )}
 
-        {showEditInfoButton && (
-          <div>
-            <Button
-              name="actionId"
-              className="mt-4 w-full"
-              type="submit"
-              value="update-info"
-            >
-              {t('Edit info')}
-            </Button>
-          </div>
+            {showEditInfoButton && (
+              <div>
+                <Button
+                  name="actionId"
+                  className="mt-4 w-full"
+                  type="submit"
+                  value="update-info"
+                >
+                  {t('Edit info')}
+                </Button>
+              </div>
+            )}
+          </>
         )}
       </div>
     </fetcher.Form>

@@ -1,6 +1,7 @@
 import type { FetcherWithComponents } from '@remix-run/react';
 import clsx from 'clsx';
 import * as React from 'react';
+import { useContext } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { CheckoutInfoActions } from '~/action.keys';
@@ -13,6 +14,7 @@ import FormField from '~/components/shared/form/FormField';
 import TextField from '~/components/shared/form/TextField';
 import countries from '~/server/db/countries.json';
 import type { Language, Participant, ShirtSize } from '~/types';
+import { UploadFormContext } from '~/components/shared/form/UploadForm';
 
 export default function ParticipantForm({
   participant,
@@ -25,7 +27,8 @@ export default function ParticipantForm({
   setSelectedParticipant,
   shirtSizes,
   resetForm,
-  isSingleParticipant
+  isSingleParticipant,
+  isReadOnly
 }: {
   participant: Participant | null;
   hash: number;
@@ -38,14 +41,20 @@ export default function ParticipantForm({
   shirtSizes: ShirtSize[];
   resetForm: () => void;
   isSingleParticipant: boolean;
+  isReadOnly: boolean;
 }) {
   const { t, i18n } = useTranslation('checkout');
   const language = i18n.language as Language;
+  const formProps = useContext(UploadFormContext);
 
   const genderOptions = [
     { value: 'F', label: t('Female') },
     { value: 'M', label: t('Male') }
   ];
+
+  if (isReadOnly) {
+    formProps.readOnly = true;
+  }
 
   return (
     <fetcher.Form
@@ -56,7 +65,8 @@ export default function ParticipantForm({
       })}
       key={hash}
     >
-      {participant &&
+      {!isReadOnly &&
+        participant &&
         userSavedParticipants &&
         userSavedParticipants.length !== 0 && (
           <div className="mb-8">
@@ -78,7 +88,12 @@ export default function ParticipantForm({
             </FormField>
           </div>
         )}
-      <div className="flex flex-col md:flex-row md:space-x-2">
+      <div
+        className={clsx('flex flex-col md:flex-row', {
+          'md:space-x-12': isReadOnly,
+          'md:space-x-2': !isReadOnly
+        })}
+      >
         <FormField
           label={t('First Name')}
           id="first-name"
@@ -129,7 +144,12 @@ export default function ParticipantForm({
         />
       </FormField>
 
-      <div className="flex flex-col md:flex-row md:space-x-2">
+      <div
+        className={clsx('flex flex-col md:flex-row', {
+          'md:space-x-9': isReadOnly,
+          'md:space-x-2': !isReadOnly
+        })}
+      >
         <FormField
           label={t('Birthdate')}
           id="birthdate"
@@ -167,7 +187,12 @@ export default function ParticipantForm({
         </FormField>
       </div>
 
-      <div className="flex flex-col md:flex-row md:space-x-2">
+      <div
+        className={clsx('flex flex-col md:flex-row', {
+          'md:space-x-12': isReadOnly,
+          'md:space-x-2': !isReadOnly
+        })}
+      >
         <FormField
           label={t('Identity Card')}
           id="identity-card"
@@ -276,39 +301,41 @@ export default function ParticipantForm({
       )}
 
       <input type="hidden" name="hash" value={hash} />
-      <ButtonGroup>
-        <Button type="button" variant="secondary" onClick={resetForm}>
-          {t('Reset')}
-        </Button>
-        <Button
-          type="submit"
-          value={
-            isSingleParticipant
-              ? CheckoutInfoActions.updateAndCheckout
-              : CheckoutInfoActions.update
-          }
-          name="actionId"
-          disabled={!participant}
-          id="save-button"
-          variant="secondary"
-        >
-          {t('Save')}
-        </Button>
-        {selectedParticipant && (
+      {!isReadOnly && (
+        <ButtonGroup>
+          <Button type="button" variant="secondary" onClick={resetForm}>
+            {t('Reset')}
+          </Button>
           <Button
             type="submit"
-            value={CheckoutInfoActions.updateAndSave}
+            value={
+              isSingleParticipant
+                ? CheckoutInfoActions.updateAndCheckout
+                : CheckoutInfoActions.update
+            }
             name="actionId"
             disabled={!participant}
-            id="save-update-button"
+            id="save-button"
+            variant="secondary"
           >
-            {t('Save and Update', {
-              first: selectedParticipant.firstName,
-              last: selectedParticipant.lastName
-            })}
+            {t('Save')}
           </Button>
-        )}
-      </ButtonGroup>
+          {selectedParticipant && (
+            <Button
+              type="submit"
+              value={CheckoutInfoActions.updateAndSave}
+              name="actionId"
+              disabled={!participant}
+              id="save-update-button"
+            >
+              {t('Save and Update', {
+                first: selectedParticipant.firstName,
+                last: selectedParticipant.lastName
+              })}
+            </Button>
+          )}
+        </ButtonGroup>
+      )}
     </fetcher.Form>
   );
 }

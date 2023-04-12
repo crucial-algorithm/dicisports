@@ -58,6 +58,7 @@ import type {
   UICartRow
 } from '~/types';
 import { badRequest, displayTimeOfDay } from '~/utils/misc';
+import { Unauthorized } from '~/server/utils/misc';
 
 type LoaderData = {
   event: Event;
@@ -89,6 +90,11 @@ export const action: ActionFunction = async ({ request, params }) => {
     authenticatedClient !== null
       ? authenticatedClient.id
       : anonymousClient.getClientId();
+
+  if (booking.userId !== clientId) {
+    throw Unauthorized(t('Not authorized'));
+  }
+
   const actionId = form.get('actionId');
   const hash = form.get('hash') as string;
 
@@ -259,17 +265,17 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   const eventId = booking.eventId;
 
   const event = await findEvent(eventId);
-  const cart = await findBookingCart(clientId, eventId);
+  const cart = await findBookingCart(isGuest ? booking.userId : clientId, eventId);
   const raceParticipants = await findUserBookingParticipants(bookingId);
 
   if (!raceParticipants || raceParticipants?.length === 0) {
-    await removeBooking(clientId, eventId);
-
     return redirect(`/checkout/cart/${eventId}`);
   }
 
-  const userParticipants = await findUserParticipants(clientId);
-  const savedParticipants = await findUserSavedParticipants(clientId);
+  // cant use clientId when user is a guest - accesses this route with booking PIN
+  // TODO: refactor these functions to use bookingId when we decide to have multiple bookings
+  const userParticipants = await findUserParticipants(isGuest ? booking.userId : clientId);
+  const savedParticipants = await findUserSavedParticipants(isGuest ? booking.userId : clientId);
   const shirtSizes = await findShirtSizes();
 
   return json({
@@ -508,7 +514,7 @@ export default function CheckoutInfoRoute() {
                     </span>
                   )}
 
-                  {p.participantId === participant?.id &&
+                  {!isGuest && p.participantId === participant?.id &&
                     p.race.id === selectedRace && (
                       <button
                         type="button"
@@ -531,15 +537,17 @@ export default function CheckoutInfoRoute() {
                 </div>
               </div>
             ))}
-          <div className="flex flex-col items-center snap-center mt-4">
-            <div
-              className="flex flex-col gap-y-2 border-2 border-b border-gray-500 p-2 mx-2 items-center w-[200px]"
-              onClick={handleOpenAddRaces}
-            >
-              <PlusIcon className="h-7 w-7 dark:text-blueGray-500" />
-              <H6 className="dark:text-blueGray-500">{t('Add Race')}</H6>
+          {!isGuest && (
+            <div className="flex flex-col items-center snap-center mt-4">
+              <div
+                className="flex flex-col gap-y-2 border-2 border-b border-gray-500 p-2 mx-2 items-center w-[200px]"
+                onClick={handleOpenAddRaces}
+              >
+                <PlusIcon className="h-7 w-7 dark:text-blueGray-500" />
+                <H6 className="dark:text-blueGray-500">{t('Add Race')}</H6>
+              </div>
             </div>
-          </div>
+          )}
         </div>
       )}
 
@@ -568,6 +576,7 @@ export default function CheckoutInfoRoute() {
             shirtSizes={shirtSizes}
             resetForm={resetForm}
             isSingleParticipant={raceParticipants.length === 1}
+            isReadOnly={isGuest}
           />
           <Notification show={handlerSetShowNotificationFunction}>
             {message}
@@ -582,6 +591,7 @@ export default function CheckoutInfoRoute() {
             hash={hash}
             showUpdateCartButton={true}
             showFinishRegistrationLabel={true}
+            hideAllButtons={isGuest}
           />
         </div>
       </div>
