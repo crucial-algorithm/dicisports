@@ -3,7 +3,11 @@ import { Form, Link, useActionData, useSearchParams } from '@remix-run/react';
 
 import { z, ZodError } from 'zod';
 
-import type { ActionFunction, LoaderFunction, MetaFunction } from '@remix-run/node';
+import type {
+  ActionFunction,
+  LoaderFunction,
+  MetaFunction
+} from '@remix-run/node';
 import { json, redirect } from '@remix-run/node';
 
 import { useRef } from 'react';
@@ -32,7 +36,10 @@ import type { LoginAction } from '~/types';
 import { loginUser } from '~/server/db/users.server';
 import Main from '~/components/shared/Main';
 import { CanonicalMeta } from '~/utils/seo';
-import { changeRegistrationToAuthUser, findBooking, findBookingById } from '~/server/db/booking.server';
+import {
+  changeRegistrationToAuthUser,
+  findBookingById
+} from '~/server/db/booking.server';
 import { getClientSession } from '~/server/auth/client.server';
 
 type LoaderData = {

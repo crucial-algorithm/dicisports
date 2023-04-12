@@ -33,7 +33,6 @@ import { getUser } from '~/server/auth/session.server';
 import {
   findBookingById,
   findBookingCart,
-  removeBooking,
   updateBookingStatus
 } from '~/server/db/booking.server';
 import { findEvent } from '~/server/db/events.server';
