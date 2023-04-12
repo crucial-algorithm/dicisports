@@ -14,7 +14,7 @@ import { H2, H6 } from '~/components/shared/typography';
 import { getClientSession } from '~/server/auth/client.server';
 import { getUser } from '~/server/auth/session.server';
 import {
-  findBooking,
+  findBookingById,
   findBookingCart,
   updateBookingStatus
 } from '~/server/db/booking.server';
@@ -31,7 +31,14 @@ export const action: ActionFunction = async ({ request, params }) => {
   const form = await request.formData();
   const anonymousClient = await getClientSession(request);
   const authenticatedClient = await getUser(request);
-  const eventId = params.eventId as string;
+  const bookingId = params.bookingId as string;
+  const booking = await findBookingById(bookingId);
+
+  if (!booking) {
+    return redirect('/');
+  }
+
+  const eventId = booking.eventId;
 
   // We check if user is authenticated -> authenticatedClient, if not, we use the client session -> anonymousClient
   const clientId =
@@ -44,18 +51,20 @@ export const action: ActionFunction = async ({ request, params }) => {
   if (actionId === 'update-info') {
     await updateBookingStatus(CheckoutStatus.checkout, clientId, eventId);
 
-    return redirect(`/checkout/info/${eventId}`);
+    return redirect(`/checkout/info/${bookingId}`);
   }
 
   await updateBookingStatus(CheckoutStatus.confirmed, clientId, eventId);
 
-  return redirect(`/checkout/confirmation/${eventId}`);
+  return redirect(`/checkout/confirmation/${bookingId}`);
 };
 
 export const loader: LoaderFunction = async ({ request, params }) => {
   const anonymousClient = await getClientSession(request);
   const authenticatedClient = await getUser(request);
-  const eventId = params.eventId as string;
+  const bookingId = params.bookingId as string;
+
+  const booking = await findBookingById(bookingId);
 
   // We check if user is authenticated -> authenticatedClient, if not, we use the client session -> anonymousClient
   const clientId =
@@ -63,13 +72,18 @@ export const loader: LoaderFunction = async ({ request, params }) => {
       ? authenticatedClient.id
       : anonymousClient.getClientId();
 
+  if (!booking || booking.userId !== clientId) {
+    return redirect('/');
+  }
+
+  const eventId = booking.eventId;
+
   const event = await findEvent(eventId);
   const cart = await findBookingCart(clientId, eventId);
   const raceParticipants = await findUserEventRaceParticipants(
     clientId,
     eventId
   );
-  const booking = await findBooking(clientId, eventId);
 
   if (!raceParticipants || raceParticipants?.length === 0) {
     return redirect(`/checkout/cart/${eventId}`);
@@ -79,7 +93,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     return redirect(
       `/checkout/${
         booking?.status === CheckoutStatus.checkout ? 'info' : 'confirmation'
-      }/${eventId}`
+      }/${bookingId}`
     );
   }
 

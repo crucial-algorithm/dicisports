@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useContext } from 'react';
 
 import InputBase from '~/components/shared/form/InputBase';
+import { UploadFormContext } from '~/components/shared/form/UploadForm';
 
 type Props = {
   name: string;
@@ -10,7 +11,7 @@ type Props = {
   adornment?: React.ReactNode;
   onChange?: (value: any) => void;
   type?: 'text' | 'password' | 'number';
-  input?:  React.RefObject<HTMLInputElement>;
+  input?: React.RefObject<HTMLInputElement>;
 } & React.ComponentProps<'input'>;
 
 const TextField: React.FC<Props> = ({
@@ -29,6 +30,12 @@ const TextField: React.FC<Props> = ({
   onClick
 }) => {
   id = id || '';
+  const formProps = useContext(UploadFormContext);
+
+  if (formProps.readOnly) {
+    return (<div className="font-medium">{defaultValue}</div>);
+  }
+
   if (!adornment) {
     return (
       <InputBase

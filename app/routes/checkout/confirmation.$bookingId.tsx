@@ -14,7 +14,7 @@ import { H2, H4, H6 } from '~/components/shared/typography';
 
 import { getClientSession } from '~/server/auth/client.server';
 import { getUser } from '~/server/auth/session.server';
-import { findBooking, findBookingCart } from '~/server/db/booking.server';
+import { findBookingById, findBookingCart } from '~/server/db/booking.server';
 import { findEvent } from '~/server/db/events.server';
 import { findUserEventRaceParticipants } from '~/server/db/participant.server';
 import type { Booking, Event, UICartRow } from '~/types';
@@ -29,7 +29,7 @@ type LoaderData = {
 export const loader: LoaderFunction = async ({ request, params }) => {
   const anonymousClient = await getClientSession(request);
   const authenticatedClient = await getUser(request);
-  const eventId = params.eventId as string;
+  const bookingId = params.bookingId as string;
 
   // We check if user is authenticated -> authenticatedClient, if not, we use the client session -> anonymousClient
   const clientId =
@@ -37,30 +37,35 @@ export const loader: LoaderFunction = async ({ request, params }) => {
       ? authenticatedClient.id
       : anonymousClient.getClientId();
 
+  const booking = await findBookingById(bookingId);
+
+  if (!booking || booking.userId !== clientId) {
+    return redirect('/');
+  }
+
+  const eventId = booking.eventId;
   const raceParticipants = await findUserEventRaceParticipants(
     clientId,
     eventId
   );
-  const booking = await findBooking(clientId, eventId);
 
   if (!raceParticipants || raceParticipants?.length === 0) {
     return redirect(`/checkout/cart/${eventId}`);
   }
 
-  if (booking?.status !== CheckoutStatus.confirmed) {
+  if (booking.status !== CheckoutStatus.confirmed) {
     return redirect(
       `/checkout/${
         booking?.status === CheckoutStatus.pending ? 'payment' : 'cart'
-      }/${eventId}`
+      }/${bookingId}`
     );
   }
 
-  const registration = await findBooking(clientId, eventId);
-  const event = await findEvent(registration?.eventId as string);
+  const event = await findEvent(eventId);
   const cart = await findBookingCart(clientId, eventId);
 
   return json({
-    registration,
+    registration: booking,
     event,
     cart,
     isAuth: !!authenticatedClient

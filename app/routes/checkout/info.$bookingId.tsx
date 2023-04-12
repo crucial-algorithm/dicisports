@@ -31,13 +31,14 @@ import { H2, H4, H5, H6 } from '~/components/shared/typography';
 import { getClientSession } from '~/server/auth/client.server';
 import { getUser } from '~/server/auth/session.server';
 import {
-  findBooking,
+  findBookingById,
   findBookingCart,
   removeBooking,
   updateBookingStatus
 } from '~/server/db/booking.server';
 import { findEvent } from '~/server/db/events.server';
 import {
+  findUserBookingParticipants,
   findUserEventRaceParticipants,
   findUserParticipants,
   findUserSavedParticipants,
@@ -66,6 +67,7 @@ type LoaderData = {
   savedParticipants: Participant[] | null;
   shirtSizes: ShirtSize[];
   isAuth: boolean;
+  isGuest: boolean;
 };
 
 export const action: ActionFunction = async ({ request, params }) => {
@@ -73,7 +75,14 @@ export const action: ActionFunction = async ({ request, params }) => {
   const form = await request.formData();
   const anonymousClient = await getClientSession(request);
   const authenticatedClient = await getUser(request);
-  const eventId = params.eventId as string;
+  const bookingId = params.bookingId as string;
+  const booking = await findBookingById(bookingId);
+
+  if (!booking) {
+    return redirect('/');
+  }
+
+  const eventId = booking.eventId;
 
   // We check if user is authenticated -> authenticatedClient, if not, we use the client session -> anonymousClient
   const clientId =
@@ -165,7 +174,10 @@ export const action: ActionFunction = async ({ request, params }) => {
       await updateParticipant(data);
     }
 
-    if (actionId === CheckoutInfoActions.update || actionId === CheckoutInfoActions.updateAndCheckout) {
+    if (
+      actionId === CheckoutInfoActions.update ||
+      actionId === CheckoutInfoActions.updateAndCheckout
+    ) {
       ParticipantSchema.parse(data);
       await updateParticipant(data);
     }
@@ -201,7 +213,7 @@ export const action: ActionFunction = async ({ request, params }) => {
 
       await updateBookingStatus(CheckoutStatus.pending, clientId, eventId);
 
-      return redirect(`/checkout/payment/${eventId}`);
+      return redirect(`/checkout/payment/${bookingId}`);
     }
 
     return json({ ok: true, action: actionId });
@@ -226,30 +238,32 @@ export const action: ActionFunction = async ({ request, params }) => {
 export const loader: LoaderFunction = async ({ request, params }) => {
   const anonymousClient = await getClientSession(request);
   const authenticatedClient = await getUser(request);
-  const eventId = params.eventId as string;
+  const bookingId = params.bookingId as string;
+  const { searchParams } = new URL(request.url);
+
+  const pin = searchParams.get('p');
 
   // We check if user is authenticated -> authenticatedClient, if not, we use the client session -> anonymousClient
   const clientId =
     authenticatedClient !== null
       ? authenticatedClient.id
       : anonymousClient.getClientId();
-  const event = await findEvent(eventId);
-  const cart = await findBookingCart(clientId, eventId);
-  const raceParticipants = await findUserEventRaceParticipants(
-    clientId,
-    eventId
-  );
 
-  if (!event) {
+  const booking = await findBookingById(bookingId);
+  const isGuest = pin && Number(pin) === booking?.pin;
+
+  if (!booking || (booking.userId !== clientId && !isGuest)) {
     return redirect('/');
   }
 
-  if (!raceParticipants || raceParticipants?.length === 0) {
-    const booking = await findBooking(clientId, eventId);
+  const eventId = booking.eventId;
 
-    if (booking) {
-      await removeBooking(clientId, eventId);
-    }
+  const event = await findEvent(eventId);
+  const cart = await findBookingCart(clientId, eventId);
+  const raceParticipants = await findUserBookingParticipants(bookingId);
+
+  if (!raceParticipants || raceParticipants?.length === 0) {
+    await removeBooking(clientId, eventId);
 
     return redirect(`/checkout/cart/${eventId}`);
   }
@@ -266,7 +280,8 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     savedParticipants:
       savedParticipants?.length !== 0 ? savedParticipants : null,
     shirtSizes,
-    isAuth: !!authenticatedClient
+    isAuth: !!authenticatedClient,
+    isGuest
   });
 };
 
@@ -280,7 +295,8 @@ export default function CheckoutInfoRoute() {
     userParticipants,
     savedParticipants,
     shirtSizes,
-    isAuth
+    isAuth,
+    isGuest
   } = useLoaderData<LoaderData>() as LoaderData;
   const [participant, setParticipant] = useState<Participant | null>(
     raceParticipants[0].participant
@@ -527,7 +543,7 @@ export default function CheckoutInfoRoute() {
         </div>
       )}
 
-      {!isAuth && (
+      {!isAuth && !isGuest && (
         <div className="flex flex-row items-center justify-end gap-x-2">
           <H6>{t('Already Have An Account ?')}</H6>
           <a href={`/login?a=checkout&e=${event.id}`} data-cy="authenticate">

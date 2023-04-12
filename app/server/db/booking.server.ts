@@ -56,13 +56,14 @@ async function findBookingCart(
 }
 
 async function createBooking(
+  bookingId: string,
   pin: number,
   eventId: string,
   userSessionId: string
 ): Promise<Booking> {
   return await db.booking.create({
     data: {
-      id: Id(),
+      id: bookingId,
       pin,
       eventId,
       userId: userSessionId,
@@ -135,6 +136,12 @@ async function findUserBookingsList(
   return { results: mapped, total };
 }
 
+async function findBookingById(id: string): Promise<Booking | null> {
+  return await db.booking.findUnique({
+    where: { id }
+  });
+} 
+
 export {
   updateBookingStatus,
   findBooking,
@@ -142,5 +149,6 @@ export {
   removeBooking,
   findBookingCart,
   changeRegistrationToAuthUser,
-  findUserBookingsList
+  findUserBookingsList,
+  findBookingById
 };

@@ -131,13 +131,13 @@ export default function ParticipantForm({
 
       <div className="flex flex-col md:flex-row md:space-x-2">
         <FormField
-          label=""
+          label={t('Birthdate')}
           id="birthdate"
           error={errors?.birthdate}
           dataCy="birthdate"
         >
           <BasicDatePicker
-            label={t('Birthdate')}
+            label=""
             name="birthdate"
             date={
               selectedParticipant?.birthdate
@@ -295,24 +295,23 @@ export default function ParticipantForm({
           {t('Save')}
         </Button>
         {selectedParticipant && (
-            <Button
-                type="submit"
-                value={CheckoutInfoActions.updateAndSave}
-                name="actionId"
-                disabled={!participant}
-                id="save-update-button"
-            >
-              {t('Save and Update', {
-                first: selectedParticipant.firstName,
-                last: selectedParticipant.lastName
-              })}
-            </Button>
+          <Button
+            type="submit"
+            value={CheckoutInfoActions.updateAndSave}
+            name="actionId"
+            disabled={!participant}
+            id="save-update-button"
+          >
+            {t('Save and Update', {
+              first: selectedParticipant.firstName,
+              last: selectedParticipant.lastName
+            })}
+          </Button>
         )}
       </ButtonGroup>
     </fetcher.Form>
   );
 }
-
 
 export type FormErrors = {
   firstName?: string;

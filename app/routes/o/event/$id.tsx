@@ -522,13 +522,13 @@ export default function OrganizerEventRoute() {
             </FormField>
 
             <FormField
-              label={''}
+              label={t('Date')}
               id="event-date"
               className="w-full md:basis-1/3 md:pr-4"
               error={actionData?.errors?.startAt}
             >
               <BasicDatePicker
-                label={t('Date')}
+                label=""
                 name="event-date"
                 date={event?.startAt}
                 minDate={new Date()}
@@ -702,10 +702,7 @@ export default function OrganizerEventRoute() {
             >
               {t('Distances')}
 
-              <ButtonLink
-                className="hidden lg:flex"
-                to="race/new"
-              >
+              <ButtonLink className="hidden lg:flex" to="race/new">
                 {t('Create Distance')}
               </ButtonLink>
 
@@ -719,10 +716,7 @@ export default function OrganizerEventRoute() {
               </ButtonLink>
             </Label>
             <div>
-              <RacesList
-                races={races}
-                eventId={event.id}
-              />
+              <RacesList races={races} eventId={event.id} />
             </div>
             <WhenListEmpty list={races}>
               <H6 className="text-center p-12" variant="secondary" as="p">
@@ -761,11 +755,7 @@ export default function OrganizerEventRoute() {
             >
               {t('Documents')}
 
-              <ButtonLink
-                className="hidden lg:flex"
-                type="button"
-                to="doc/new"
-              >
+              <ButtonLink className="hidden lg:flex" type="button" to="doc/new">
                 {t('Upload Document')}
               </ButtonLink>
               <ButtonLink
@@ -779,10 +769,7 @@ export default function OrganizerEventRoute() {
               </ButtonLink>
             </Label>
             <div>
-              <DocumentsList
-                documents={event.documents}
-                eventId={event.id}
-              />
+              <DocumentsList documents={event.documents} eventId={event.id} />
             </div>
             <WhenListEmpty list={event.documents}>
               <H6 className="text-center p-12" variant="secondary" as="p">
@@ -827,8 +814,6 @@ export default function OrganizerEventRoute() {
             >
               {event.status === 'auto' ? t('Create Button') : t('Save Button')}
             </Button>
-
-
           </ButtonGroup>
           {actionData?.errors?.submit && (
             <InputError className="mt-8" id="500-error-message">

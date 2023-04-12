@@ -242,6 +242,16 @@ async function findUserSavedParticipants(
   return results.map(dbParticipantToParticipant);
 }
 
+async function findUserBookingParticipants(bookingId: string): Promise<RaceParticipant[] | null> {
+  return db.raceParticipant.findMany({
+    where: { bookingId },
+    include: {
+      race: true,
+      participant: true
+    }
+  });
+}
+
 export {
   addParticipantsToRace,
   findUserEventRaceParticipants,
@@ -253,5 +263,6 @@ export {
   findUserRaceParticipants,
   addParticipantToRace,
   findRaceParticipants,
-  findUserSavedParticipants
+  findUserSavedParticipants,
+  findUserBookingParticipants
 };
