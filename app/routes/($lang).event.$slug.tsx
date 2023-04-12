@@ -87,6 +87,7 @@ export async function loadDisplayEventData(
 }
 
 export const loader: LoaderFunction = async ({ params, request }) => {
+  // params.lang holds the value of the language user is accessing
   const user = await getUser(request);
   const slug = params.slug as string;
 

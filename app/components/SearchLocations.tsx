@@ -22,7 +22,7 @@ export default function SearchLocations({
 }: SearchLocationsProps) {
   const navigate = useNavigate();
 
-  const { t } = useTranslation('home');
+  const { t, i18n } = useTranslation('home');
   const noCitiesLabel = t('No Cities');
   const keepTypingLabel = t('Keep Typing');
   const [context, setContext] = useState<{
@@ -78,7 +78,7 @@ export default function SearchLocations({
 
     // If option doesn't have extra, it means that it's an event and not a location
     if (option && !(option.extra)) {
-      navigate(`/event/${option.value}`);
+      navigate(`${i18n.language}/event/${option.value}`);
     }
 
     if (option && option.extra) {

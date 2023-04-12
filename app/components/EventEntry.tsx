@@ -44,7 +44,7 @@ export default function EventEntry({
   footer?: ReactNode;
   actions?: React.ReactNode;
 }) {
-  const { t } = useTranslation('organizer');
+  const { t, i18n } = useTranslation('organizer');
 
   return (
     <div
@@ -61,7 +61,7 @@ export default function EventEntry({
       <div className="w-full h-full p-2 lg:pl-6">
         <div className="flex flex-col">
           <a
-            href={`/event/${event.slug}`}
+            href={`${i18n.language}/event/${event.slug}`}
             className="text-lg font-extrabold dark:text-white cursor-pointer"
             data-cy="event-name"
           >
