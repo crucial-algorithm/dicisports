@@ -21,6 +21,9 @@ import {
 import { findEvent } from '~/server/db/events.server';
 import { findUserEventRaceParticipants } from '~/server/db/participant.server';
 import type { Event, UICartRow } from '~/types';
+import { sendBookingConfirmationEmail } from '~/server/email.server';
+import { badRequest, getDomainUrl } from '~/utils/misc';
+import i18n from '~/server/i18n.server';
 
 type LoaderData = {
   event: Event;
@@ -28,6 +31,8 @@ type LoaderData = {
 };
 
 export const action: ActionFunction = async ({ request, params }) => {
+  const t = await i18n.getFixedT(request, ['checkout']);
+
   const form = await request.formData();
   const anonymousClient = await getClientSession(request);
   const authenticatedClient = await getUser(request);
@@ -48,6 +53,28 @@ export const action: ActionFunction = async ({ request, params }) => {
   }
 
   await updateBookingStatus(CheckoutStatus.confirmed, clientId, eventId);
+
+  if (authenticatedClient !== null) {
+    const event = await findEvent(eventId);
+    const booking = await findBooking(clientId, eventId);
+    const domainUrl = getDomainUrl(request);
+    const cart = await findBookingCart(clientId, eventId);
+
+    if (!booking) {
+      return badRequest({
+        error: t('No Booking')
+      });
+    }
+
+    await sendBookingConfirmationEmail({
+      emailAddress: authenticatedClient.email,
+      event,
+      booking,
+      domainUrl,
+      cart,
+      userName: authenticatedClient.name
+    });
+  }
 
   return redirect(`/checkout/confirmation/${eventId}`);
 };

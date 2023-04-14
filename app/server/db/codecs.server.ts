@@ -16,7 +16,7 @@ import type {
   DBRawCart,
   DBRawGroup,
   DBRawParticipant,
-  DBRawRaceQtd, DBRawSearchResults,
+  DBRawRaceQty, DBRawSearchResults,
   DBRawUICartRow,
   DBRawUIRaceParticipant,
   Difficulty,
@@ -27,7 +27,7 @@ import type {
   PartialCart,
   Participant,
   Perk,
-  RaceQtd, SearchResults,
+  RaceQty, SearchResults,
   ShirtSize,
   Sport,
   TranslationObject,
@@ -250,7 +250,7 @@ function dbUICartToUICart(cart: DBRawUICartRow): UICartRow {
     distance: cart.distance,
     startTime: cart.start_time,
     order: cart.display_order,
-    qtd: Number(cart.qtd)
+    qty: Number(cart.qty)
   };
 }
 
@@ -268,9 +268,9 @@ function dbUIRaceParticipantToUIRaceParticipant(
   };
 }
 
-function dbEventRaceCheckoutQtdToEventRaceCheckoutQtd(
-  race: DBRawRaceQtd
-): RaceQtd {
+function dbEventRaceCheckoutQtyToEventRaceCheckoutQty(
+  race: DBRawRaceQty
+): RaceQty {
   return {
     id: race.id,
     name: race.name,
@@ -278,7 +278,7 @@ function dbEventRaceCheckoutQtdToEventRaceCheckoutQtd(
     startTime: race.start_time,
     price: race.price,
     displayOrder: race.display_order,
-    qtd: race.qtd
+    qty: race.qty
   };
 }
 
@@ -336,7 +336,7 @@ export {
   dbRawGroupToGroup,
   dbDifficultyToDifficulty,
   dbUICartToUICart,
-  dbEventRaceCheckoutQtdToEventRaceCheckoutQtd,
+  dbEventRaceCheckoutQtyToEventRaceCheckoutQty,
   dbCartToCart,
   dbShirtSizeToShirtSize,
   dbUIRaceParticipantToUIRaceParticipant,

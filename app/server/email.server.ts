@@ -1,4 +1,4 @@
-import type { User } from '~/types';
+import type { Booking, UICartRow, User } from '~/types';
 
 import Config from '~/server/config.server';
 
@@ -21,12 +21,12 @@ if (process.env.NODE_ENV === 'production' && !MAILGUN_SENDING_KEY) {
 }
 
 type MailgunMessage = {
-  to: string
-  from: string
-  subject: string
-  text: string
-  html?: string | null
-}
+  to: string;
+  from: string;
+  subject: string;
+  text: string;
+  html?: string | null;
+};
 
 async function sendEmail({ to, from, subject, text, html }: MailgunMessage) {
   const auth = `${Buffer.from(`api:${mailgunSendingKey}`).toString('base64')}`;
@@ -53,10 +53,10 @@ async function sendMagicLinkEmail({
   user,
   domainUrl
 }: {
-  emailAddress: string
-  magicLink: string
-  user?: User | null
-  domainUrl: string
+  emailAddress: string;
+  magicLink: string;
+  user?: User | null;
+  domainUrl: string;
 }) {
   const sender = '"DiciSports" <noreply@mail.dicisports.com>';
   const { hostname } = new URL(domainUrl);
@@ -154,10 +154,10 @@ async function sendWhatsAppGroupLink({
   groupName,
   whatsAppLink
 }: {
-  emailAddress: string
-  domainUrl: string
-  groupName: string
-  whatsAppLink: string
+  emailAddress: string;
+  domainUrl: string;
+  groupName: string;
+  whatsAppLink: string;
 }) {
   const sender = '"DiciSports" <noreply@mail.dicisports.com>';
   const { hostname } = new URL(domainUrl);
@@ -255,7 +255,6 @@ async function subscribeUser(email: string, name?: string) {
   );
 }
 
-
 async function sendRecoverPasswordEmail({
   emailAddress,
   magicLink,
@@ -309,9 +308,7 @@ P.S.  Se não solicitaste o email, ignora sem clickar no link (não incorres em 
   <body style="font-family:Matter, sans-serif;">
     <div style="margin: 0 auto; max-width: 450px;">
 
-      <h2 style="text-align: center">${
-        `Olá ${user.name}!`
-      }</h2>
+      <h2 style="text-align: center">${`Olá ${user.name}!`}</h2>
       
       <h3 style="text-align: center">Clica no botão para fazer recuperar a tua password do ${hostname}</h3>
 
@@ -347,7 +344,211 @@ P.S.  Se não solicitaste o email, ignora sem clickar no link (não incorres em 
   await sendEmail(message);
 }
 
-export { sendEmail, sendMagicLinkEmail, sendWhatsAppGroupLink, subscribeUser, sendRecoverPasswordEmail };
+async function sendBookingConfirmationEmail({
+  emailAddress,
+  event,
+  booking,
+  domainUrl,
+  cart,
+  userName
+}: {
+  emailAddress: string;
+  event: any;
+  booking: Booking;
+  domainUrl: string;
+  cart: UICartRow[];
+  userName: string | null;
+}) {
+  const sender = '"DiciSports" <noreply@mail.dicisports.com>';
+  const { hostname } = new URL(domainUrl);
+
+  let total = 0;
+
+  cart.map((c) => total += c.price);
+  const text = `
+${userName && `Olá ${userName},`}
+Segue a informação do teu booking no evento ${event.name}:
+
+ID: ${booking.id}
+PIN: ${booking.pin}
+
+Inscrições:
+${cart.map(c => `
+  Nome: ${c.name}
+  Quantidade: ${c.qty}
+  Preço: ${c.price}€
+  
+`).join('')}
+
+Total: ${total}€
+
+Obrigado!
+
+P.S. Recebeste este email porque o teu endereço de email foi usado para fazer login em ${hostname}. Se não solicitaste o email, ignora-o.
+  `.trim();
+
+  const html = `
+  <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <head>
+    <meta http-equiv='Content-Type' content='text/html charset=UTF-8' />
+    <style type='text/css'>
+      @font-face {
+      font-family: 'Matter';
+      src: url('https://kcd-img.netlify.app/Matter-Medium.woff2') format('woff2'),
+      url('https://kcd-img.netlify.app/Matter-Medium.woff') format('woff');
+      font-weight: 500;
+      font-style: normal;
+      font-display: swap;
+      }
+      @font-face {
+      font-family: 'Matter';
+      src: url('https://kcd-img.netlify.app/Matter-Regular.woff2') format('woff2'),
+      url('https://kcd-img.netlify.app/Matter-Regular.woff') format('woff');
+      font-weight: normal;
+      font-style: normal;
+      font-display: swap;
+      }
+    </style>
+  </head>
+  <body style='font-family:Matter, sans-serif;'>
+    <div style='margin: 0 auto; max-width: 450px;'>
+      <h2 style='text-align: center'>
+        ${userName && `Olá, ${userName}!`} Obrigado por escolheres a ${hostname} para te inscreveres no evento ${event.name}!
+      </h2>
+      <h2 style='text-align: center'>
+        Aqui tens a informação do teu booking:
+      </h2>
+      <div style='text-align: center; line-height: 1rem; margin-bottom: 2rem'>
+        <h2 style='text-align: center'>
+          ID
+        </h2>
+        <h3 style='text-align: center; color: grey'>
+          ${booking.id}
+        </h3>
+      </div>
+      <div style='text-align: center; line-height: 1rem'>
+        <h2 style='text-align: center'>
+          PIN
+        </h2>
+        <h3 style='text-align: center; color: grey'>
+          ${booking.pin}
+        </h3>
+      </div>
+      <!-- Beggining cart table -->
+      <table style="width:100%;table-layout: fixed;border-spacing:0;border-collapse:collapse">
+        <tbody>
+          <tr>
+            <td style="padding:40px 0">
+              <center>
+                <table style="width:100%;text-align:left;border-spacing:0;border-collapse:collapse;margin:0 auto">
+                  <tbody>
+                    <tr>
+                      <td>
+                        <h3 style="font-weight:normal;font-size:20px;margin:0 0 25px">Inscrições</h3>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+                <table style="width:100%;text-align:left;border-spacing:0;border-collapse:collapse;margin:0 auto">
+                  <tbody>
+                    <tr>
+                      <td>
+                        <table style="width:100%;border-spacing:0;border-collapse:collapse" id="races">
+                          <tbody>
+                            ${cart.map((c) => `
+                              <tr style="width: 100%; border-top: 1px solid rgb(229, 229, 229);">
+                                <td style="padding-top: 15px;">
+                                  <table style="border-spacing: 0px; border-collapse: collapse;">
+                                    <tbody>
+                                      <tr>
+                                        <td style="width: 100%;"><span style="font-size:16px;font-weight:600;line-height:1.4;color:#555">
+                                          ${c.name}
+                                          </span>
+                                          <br>
+                                          <span style="font-size:14px;color:#999">Quantidade: ${c.qty} </span>
+                                          <br>
+                                        </td>
+                                        <td style="white-space: nowrap;">
+                                          <p align="right" style="color:#555;line-height:150%;font-size:16px;font-weight:600;margin:0 0 0 15px">
+                                            ${c.price}€ 
+                                          </p>
+                                        </td>
+                                      </tr>
+                                    </tbody>
+                                  </table>
+                                </td>
+                              </tr>
+                            `).join('')}
+                          </tbody>
+                        </table>
+                        <table style="width:100%;border-spacing:0;border-collapse:collapse;margin-top:15px;border-top-width:1px;border-top-color:#e5e5e5;border-top-style:solid">
+                          <tbody>
+                            <tr>
+                              <td style="width:40%"></td>
+                              <td>
+                                <table style="width:100%;border-spacing:0;border-collapse:collapse;">
+                                  <tbody>
+                                    <tr>
+                                      <td style="padding:20px 0 0">
+                                        <p style="color:#777;line-height:1.2em;font-size:16px;margin:0"><span style="font-size:16px">Total</span>
+                                        </p>
+                                      </td>
+                                      <td align="right" style="padding:20px 0 0"><strong style="font-size:24px;color:#555">${total}€</strong>
+                                      </td>
+                                    </tr>
+                                  </tbody>
+                                </table>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </center>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <!-- End cart table -->
+      <h3 style='text-align: center; margin-top: 2rem'>
+        Clica no botão para acederes ao teu booking
+      </h3>
+      <a href='${domainUrl}/checkout/confirmation/${event.id}' style='display: block; margin: 0 auto; width: 80%; padding: 1.5rem; background: #A6DEE4; border-radius: 7px; border-width: 0; font-size: 1.1rem; text-align: center; font-family: sans-serif; text-decoration: none; color: black'>
+      Aceder ao booking
+      </a>
+      <hr style='width: 20%; height: 0px; border: 1px solid lightgrey; margin-top: 2rem; margin-bottom: 2rem'>
+      <div style='text-align: center; color: grey; font-size: .8rem; line-height: 1.2rem'>
+        Recebeste este email porque o teu endereço de email foi usado para fazer login em
+        <a href='${domainUrl}' style='color: grey'>${hostname}</a>. Se não solicitaste o email,
+        ignora sem clickar no link (não corres qualquer risco de segurança).
+      </div>
+    </div>
+  </body>
+</html>
+  `;
+
+  const message = {
+    from: sender,
+    to: emailAddress,
+    subject: `Informações do teu booking no evento ${event.name}.`,
+    text,
+    html
+  };
+
+  await sendEmail(message);
+}
+
+export {
+  sendEmail,
+  sendMagicLinkEmail,
+  sendWhatsAppGroupLink,
+  subscribeUser,
+  sendRecoverPasswordEmail,
+  sendBookingConfirmationEmail
+};
 
 /*
 eslint

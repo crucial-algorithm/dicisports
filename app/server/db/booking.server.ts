@@ -24,7 +24,7 @@ async function findBooking(
   userSessionId: string,
   eventId: string
 ): Promise<Booking | null> {
-  return db.booking.findUnique({
+  return await db.booking.findUnique({
     where: { eventId_userId: { eventId, userId: userSessionId } }
   });
 }
@@ -41,7 +41,7 @@ async function findBookingCart(
                r.distance,
                r.start_time,
                r.display_order, 
-               count(1)          AS qtd
+               count(1)          AS qty
         FROM bookings b
                  INNER JOIN race_participants rp ON (b.id = rp.booking_id)
                  INNER JOIN races r ON rp.race_id = r.id
