@@ -24,7 +24,7 @@ async function findBooking(
   userSessionId: string,
   eventId: string
 ): Promise<Booking | null> {
-  return db.booking.findUnique({
+  return await db.booking.findUnique({
     where: { eventId_userId: { eventId, userId: userSessionId } }
   });
 }
