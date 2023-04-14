@@ -1,9 +1,15 @@
 import { CheckoutStatus } from '@prisma/client';
-import type { LoaderFunction } from '@remix-run/node';
+import type { ActionFunction, LoaderFunction } from '@remix-run/node';
 import { json, redirect } from '@remix-run/node';
-import { useFetcher, useLoaderData } from '@remix-run/react';
+import {
+  Form,
+  useActionData,
+  useFetcher,
+  useLoaderData
+} from '@remix-run/react';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
+import { z } from 'zod';
 
 import Button from '~/components/shared/Button';
 import DisplayCart from '~/components/shared/DisplayCart';
@@ -18,6 +24,11 @@ import { findBookingById, findBookingCart } from '~/server/db/booking.server';
 import { findEvent } from '~/server/db/events.server';
 import { findUserEventRaceParticipants } from '~/server/db/participant.server';
 import type { Booking, Event, UICartRow } from '~/types';
+import { badRequest, getDomainUrl } from '~/utils/misc';
+import { sendBookingConfirmationEmail } from '~/server/email.server';
+import i18n from '~/server/i18n.server';
+import InputError from '~/components/shared/form/InputError';
+import FormField from '~/components/shared/form/FormField';
 
 type LoaderData = {
   registration: Booking;
@@ -25,6 +36,69 @@ type LoaderData = {
   cart: UICartRow;
   isAuth: boolean;
   bookingId: string;
+};
+
+type ActionData = {
+  fields: {
+    email: string;
+  };
+  errors: {
+    email?: string;
+    submit?: string;
+  };
+  successMessage: string | null;
+};
+
+export const action: ActionFunction = async ({ request, params }) => {
+  const t = await i18n.getFixedT(request, ['checkout']);
+  const form = await request.formData();
+
+  const anonymousClient = await getClientSession(request);
+  const authenticatedClient = await getUser(request);
+  const bookingId = params.bookingId as string;
+
+  const clientId =
+    authenticatedClient !== null
+      ? authenticatedClient.id
+      : anonymousClient.getClientId();
+
+  const booking = await findBookingById(bookingId);
+
+  if (!booking) {
+    return badRequest({
+      error: t('No Booking')
+    });
+  }
+
+  const eventId = booking.eventId;
+  const event = await findEvent(eventId);
+  const domainUrl = getDomainUrl(request);
+  const cart = await findBookingCart(clientId, eventId);
+  const email = form.get('email') as string;
+
+  try {
+    z.string().email().parse(email);
+  } catch (e) {
+    return json({
+      errors: { email: t('Invalid Email') },
+      fields: { email }
+    });
+  }
+
+  await sendBookingConfirmationEmail({
+    emailAddress: email,
+    event,
+    booking,
+    domainUrl,
+    cart,
+    userName: authenticatedClient !== null ? authenticatedClient.name : null
+  });
+
+  return json({
+    errors: {},
+    fields: { email },
+    successMessage: t('Booking Confirmation Email Sent')
+  });
 };
 
 export const loader: LoaderFunction = async ({ request, params }) => {
@@ -78,6 +152,11 @@ export default function CheckoutConfirmationRoute() {
   const { registration, event, cart, isAuth, bookingId } = useLoaderData<LoaderData>();
   const { t } = useTranslation('checkout');
   const fetcher = useFetcher();
+  const { errors, fields, successMessage } =
+    (useActionData<ActionData>() as ActionData) || {
+      errors: { email: '', submit: '' },
+      fields: { email: '' }
+    };
 
   return (
     <Main>
@@ -120,19 +199,38 @@ export default function CheckoutConfirmationRoute() {
             </div>
           </div>
 
-          <div className="flex flex-col items-start mt-16">
-            <H6 className="dark:text-blueGray-500">
-              {t('Mail Confirmation Details')}
-            </H6>
-            <TextField
-              name="mail-confirmation"
-              className="w-[350px] p-8"
-              placeholder={t('Email Address')}
-            />
-            <Button name="send-confirmation" type="button" className="mt-4">
+          <Form method="post" className="flex flex-col items-start mt-16">
+            <FormField
+              label={t('Mail Confirmation Details')}
+              error={errors.email}
+            >
+              <TextField
+                name="email"
+                className="w-1/2 p-8"
+                placeholder={t('Email Address')}
+                defaultValue={fields.email}
+              />
+            </FormField>
+            <Button name="send-confirmation" type="submit" className="mt-4">
               {t('Send')}
             </Button>
-          </div>
+            {errors.submit && (
+              <InputError className="mt-4" id="error-message">
+                {errors.submit}
+              </InputError>
+            )}
+            {successMessage && (
+              <p
+                id="success-message"
+                className="dark:text-blueGray-500 text-gray-500 text-lg mt-2"
+              >
+                <span role="img" aria-label="sparkles">
+                  ✨
+                </span>{' '}
+                {successMessage}
+              </p>
+            )}
+          </Form>
         </div>
         <div className="w-full md:w-[480px] mt-4 md:mt-0">
           <DisplayCart

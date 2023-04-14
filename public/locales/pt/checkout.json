@@ -70,5 +70,10 @@
   "Email Address": "E-mail",
   "Send": "Enviar",
   "Reset": "Limpar",
-  "Save and Update": "Guardar e atualizar {{first}} {{last}}"
+  "Save and Update": "Guardar e atualizar {{first}} {{last}}",
+
+  "Invalid Email": "Email inválido",
+  "Booking Confirmation Email Sent": "Informação da inscrição enviada para o teu email.",
+
+  "No Booking": "Esse booking não existe!"
 }

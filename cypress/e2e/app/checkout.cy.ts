@@ -64,7 +64,7 @@ describe('Checkout', () => {
 
         .wait('@removeParticipant')
 
-        .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qtd]')
+        .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qty]')
         .contains('0')
 
         .get('#checkout')
@@ -82,12 +82,12 @@ describe('Checkout', () => {
 
         .get('#add-race-AhowRdNWCBQWSuivSt7h')
         .click()
-        .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qtd]')
+        .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qty]')
         .contains(1)
 
         .get('#add-race-AhowRdNWCBQWSuivSt7h')
         .click()
-        .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qtd]')
+        .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qty]')
         .contains(2)
 
         .get('#checkout')
@@ -243,7 +243,6 @@ describe('Checkout', () => {
         .click()
 
         .wait('@selectRace')
-        .waitForHydration()
 
         .intercept(
           'POST',
@@ -357,6 +356,28 @@ describe('Checkout', () => {
           expect(l.pathname).to.include('/checkout/confirmation/');
         });
     });
+
+    it('should send automated email after completing booking', () => {
+      bookParticipant();
+      cy.get('input[name=email]')
+        .type('asd@gmail.com')
+
+        .intercept('POST', '/checkout/confirmation/*')
+        .as('SendEmail')
+
+        .get('button[name=send-confirmation]')
+        .click()
+
+        .wait('@SendEmail')
+
+        .request({ method: 'GET', url: Cypress.env('HTTP_CATCHER') })
+        .then(({ body }) => {
+          expect(body.to).to.eq('asd@gmail.com');
+          expect(body.subject).to.eq(
+            'Informações do teu booking no evento Love Tiles Douro Granfondo 2023.'
+          );
+        });
+    });
   });
 
   context('Maintenance: authenticated', () => {
@@ -393,7 +414,7 @@ describe('Checkout', () => {
 
         .wait('@selectRace')
 
-        .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qtd]')
+        .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qty]')
         .contains('1')
 
         .get('#remove-race-AhowRdNWCBQWSuivSt7h')
@@ -401,7 +422,7 @@ describe('Checkout', () => {
 
         .wait('@selectRace')
 
-        .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qtd]')
+        .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qty]')
         .contains('0');
     });
 
@@ -416,12 +437,12 @@ describe('Checkout', () => {
 
         .get('#add-race-AhowRdNWCBQWSuivSt7h')
         .click()
-        .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qtd]')
+        .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qty]')
         .contains(1)
 
         .get('#add-race-AhowRdNWCBQWSuivSt7h')
         .click()
-        .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qtd]')
+        .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qty]')
         .contains(2)
 
         .get('#checkout')
@@ -479,6 +500,15 @@ describe('Checkout', () => {
     it('should book a race', () => {
       bookParticipant();
     });
+
+    it('should send automated email after completing booking', () => {
+      bookParticipant();
+      cy.request({ method: 'GET', url: Cypress.env('HTTP_CATCHER') }).then(
+        ({ body }) => {
+          expect(body.subject).to.eq('Informações do teu booking no evento Love Tiles Douro Granfondo 2023.');
+        }
+      );
+    });
   });
 
   context('Security', () => {
@@ -512,7 +542,7 @@ function registerParticipant() {
 
     .get('#add-race-AhowRdNWCBQWSuivSt7h')
     .click()
-    .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qtd]')
+    .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qty]')
     .contains(1)
 
     .wait('@selectRace')
@@ -520,7 +550,7 @@ function registerParticipant() {
 
     .get('#add-race-AhowRdNWCBQWSuivSt7h')
     .click()
-    .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qtd]')
+    .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qty]')
     .contains(2)
 
     .wait('@selectRace')
@@ -605,7 +635,7 @@ function bookParticipant() {
     })
     .then((l) => {
       const bookingId = l.pathname.split('/')[3];
-      
+
       cy.get('input[name=first-name]')
         .type('Nuno')
 

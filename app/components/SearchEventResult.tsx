@@ -25,7 +25,7 @@ export default function EventResult({
   showLocation: boolean;
   isUserFavorite: boolean;
 }) {
-  const { t } = useTranslation('organizer');
+  const { t, i18n } = useTranslation('organizer');
   const favorite = useFetcher();
 
   const favoriteAddedMessage = t('Favorite Added');
@@ -89,7 +89,7 @@ export default function EventResult({
         actions={
           <ButtonGroup density="compact">
             <CopyToClipboard
-              text={`${address}/event/${event.slug}`}
+              text={`${address}/${i18n.language}/event/${event.slug}`}
               id={event.id}
               successMessage={handlerClickToCopy}
             />

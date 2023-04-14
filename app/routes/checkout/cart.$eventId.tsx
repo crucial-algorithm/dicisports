@@ -33,7 +33,7 @@ import {
 } from '~/server/db/participant.server';
 import { findEventRaces } from '~/server/db/races.server';
 import i18n from '~/server/i18n.server';
-import type { Booking, Event, Race, RaceQtd, UICartRow } from '~/types';
+import type { Booking, Event, Race, RaceQty, UICartRow } from '~/types';
 import { badRequest, displayTimeOfDay } from '~/utils/misc';
 import Id from '~/server/utils/Id.server';
 
@@ -159,12 +159,12 @@ export default function CheckoutRegistrationsRoute() {
     useLoaderData<LoaderData>() as LoaderData;
   const fetcher = useFetcher();
   const [searchParams] = useSearchParams();
-  const raceQtds: RaceQtd[] = races.map((r) => {
+  const raceQties: RaceQty[] = races.map((r) => {
     const raceInCart = userCheckoutRaces.find((c) => c.raceId === r.id);
 
     return {
       ...r,
-      qtd: raceInCart ? raceInCart.qtd : 0
+      qty: raceInCart ? raceInCart.qty : 0
     };
   });
 
@@ -183,9 +183,9 @@ export default function CheckoutRegistrationsRoute() {
       </div>
       <div className="flex flex-col md:flex-row mt-8">
         <div className="flex-col w-full md:w-[calc(100%-(480px))] md:pr-4">
-          {raceQtds
+          {raceQties
             .sort((a, b) => a.displayOrder - b.displayOrder)
-            .map((r: RaceQtd) => (
+            .map((r: RaceQty) => (
               <DisplayRace
                 race={r}
                 eventId={event.id}
@@ -215,7 +215,7 @@ function DisplayRace({
   eventId,
   searchParams
 }: {
-  race: RaceQtd;
+  race: RaceQty;
   eventId: string;
   searchParams: URLSearchParams;
 }) {
@@ -261,9 +261,9 @@ function DisplayRace({
 
             <H6
               className="dark:text-blueGray-500"
-              data-cy={`race-${race.id}-qtd`}
+              data-cy={`race-${race.id}-qty`}
             >
-              {race.qtd}
+              {race.qty}
             </H6>
             <button
               id={`add-race-${race.id}`}

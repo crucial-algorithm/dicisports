@@ -718,23 +718,23 @@ function DisplayRace({
 }) {
   const { t } = useTranslation('checkout');
   const raceTime = displayTimeOfDay(race.startTime);
-  const [raceQtd, setRaceQtd] = useState<number>(0);
+  const [raceQty, setRaceQty] = useState<number>(0);
 
   function handleAddRace() {
-    setRaceQtd((c) => c + 1);
+    setRaceQty((c) => c + 1);
     addRace(race.id);
   }
 
   function handleRemoveRace() {
-    if (raceQtd !== 0) {
-      setRaceQtd((c) => c - 1);
+    if (raceQty !== 0) {
+      setRaceQty((c) => c - 1);
       removeRace(race.id);
     }
   }
 
   useEffect(() => {
     if (reset) {
-      setRaceQtd(0);
+      setRaceQty(0);
     }
   }, [reset]);
 
@@ -766,7 +766,7 @@ function DisplayRace({
             <ChevronDownIcon className="md:h-6 w-6 m-0 inline-block" />
           </button>
 
-          <H6 className="dark:text-blueGray-500">{raceQtd}</H6>
+          <H6 className="dark:text-blueGray-500">{raceQty}</H6>
           <button
             type="button"
             className="w-[24px] h-[24px]"
