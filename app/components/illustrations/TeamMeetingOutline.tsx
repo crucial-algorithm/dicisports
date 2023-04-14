@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default function TeamMeetingOutlineIcon({
+export default function TeamMeetingOutline({
   className,
   onClick
 }: { className?: string } & React.ComponentProps<'svg'>) {

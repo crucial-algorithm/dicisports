@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default function TeamMeetingMonoIcon({
+export default function TeamMeetingMono({
   className,
   onClick
 }: { className?: string } & React.ComponentProps<'svg'>) {

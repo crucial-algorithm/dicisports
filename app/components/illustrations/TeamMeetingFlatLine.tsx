@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default function TeamMeetingFlatLineIcon({
+export default function TeamMeetingFlatLine({
   className,
   onClick
 }: { className?: string } & React.ComponentProps<'svg'>) {

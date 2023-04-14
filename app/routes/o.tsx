@@ -1,12 +1,14 @@
 import {
   UsersIcon,
   EnvelopeIcon,
-  Bars3Icon, UserIcon
+  Bars3Icon,
+  UserIcon,
+  BuildingStorefrontIcon
 } from '@heroicons/react/20/solid';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import type { LoaderFunction } from '@remix-run/node';
 import { json } from '@remix-run/node';
-import { Link, Outlet, useLocation } from '@remix-run/react';
+import { Link, Outlet, useLoaderData, useLocation } from '@remix-run/react';
 import { buildImageUrl } from 'cloudinary-build-url';
 import clsx from 'clsx';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
@@ -20,13 +22,17 @@ import CollectionIcon from '~/components/shared/icons/Collection';
 import DiscountCodeIcon from '~/components/shared/icons/DiscountCodeIcon';
 
 import Logo from '~/components/shared/Logo';
+import { useUser } from '~/hooks';
 
 import { requireUser } from '~/server/auth/session.server';
+import { findOrganiser } from '~/server/db/organiser.server';
+import type { Organiser } from '~/types';
 
 export const loader: LoaderFunction = async ({ request }) => {
-  await requireUser(request);
+  const user = await requireUser(request);
+  const organiser = await findOrganiser(user.id);
 
-  return json({});
+  return json({ organiser });
 };
 
 export default function OrganizerLayout() {
@@ -37,6 +43,9 @@ export default function OrganizerLayout() {
     setCollapsed(!collapsed);
   }, [collapsed]);
   const location = useLocation();
+  const { organiser } = useLoaderData() as {
+    organiser: Organiser | null;
+  };
 
   useEffect(() => {
     const collapsed = window.localStorage.getItem('side-menu-collapsed') === 'true';
@@ -57,9 +66,15 @@ export default function OrganizerLayout() {
       <OrganizerSideBar
         sideBarCollapsed={collapsed}
         handleToggleMenu={handleToggleMenu}
+        organiser={organiser}
       />
       <MobileMenuButton onClick={handleMobileMenuClick} />
-      <MobileMenu isExpanded={isMobileMenuOpen} linkClicked={handleMobileMenuClick} pathname={location.pathname} />
+      <MobileMenu
+        isExpanded={isMobileMenuOpen}
+        linkClicked={handleMobileMenuClick}
+        pathname={location.pathname}
+        organiser={organiser}
+      />
       <div className="grow p-2 h-screen overflow-auto">
         <Outlet />
       </div>
@@ -69,10 +84,11 @@ export default function OrganizerLayout() {
 
 type OrganizerSideBarProps = {
   sideBarCollapsed: boolean,
+  organiser: Organiser | null
   handleToggleMenu: () => void
 }
 
-function OrganizerSideBar({ sideBarCollapsed, handleToggleMenu }: OrganizerSideBarProps) {
+function OrganizerSideBar({ sideBarCollapsed, handleToggleMenu, organiser }: OrganizerSideBarProps) {
   const location = useLocation();
 
   return (
@@ -109,6 +125,7 @@ function OrganizerSideBar({ sideBarCollapsed, handleToggleMenu }: OrganizerSideB
           pathname={location.pathname}
           handleToggleMenu={handleToggleMenu}
           hideCollapseMenu={false}
+          organiser={organiser}
         />
       </div>
     </>
@@ -120,11 +137,21 @@ type MenuProps = {
   sideBarCollapsed: boolean;
   pathname: string;
   handleToggleMenu?: () => void;
-  hideCollapseMenu: boolean
+  hideCollapseMenu: boolean;
+  organiser: Organiser | null
 } & React.ComponentProps<'li'>
 
-function Menu({ handleToggleMenu, pathname, sideBarCollapsed, hideCollapseMenu, className, onClick }: MenuProps) {
-  const [t] = useTranslation('common');
+function Menu({
+  handleToggleMenu,
+  pathname,
+  sideBarCollapsed,
+  hideCollapseMenu,
+  className,
+  onClick,
+  organiser
+}: MenuProps) {
+  const { t } = useTranslation('common');
+  const user = useUser();
 
   return (
     <>
@@ -167,47 +194,65 @@ function Menu({ handleToggleMenu, pathname, sideBarCollapsed, hideCollapseMenu, 
           onClick={onClick}
           isActive={/\/o\/users($|\/$|.*$)/.test(pathname)}
         />
-        <MenuEntry
-          icon={<UserIcon className="w-6" />}
-          title={t('Profile menu')}
-          to="/me"
-          sideBarCollapsed={sideBarCollapsed}
-          onClick={onClick}
-          isActive={/\/me($|\/$|.*$)/.test(pathname)}
-        />
       </ul>
 
-      {!hideCollapseMenu && (
+      <div
+        className={clsx('absolute bottom-16 md:bottom-8', {
+          'w-full md:w-52': !sideBarCollapsed
+        })}
+      >
         <ul
-          className={clsx('flex absolute bottom-8', {
-            'w-52': !sideBarCollapsed
-          })}
+          className="w-full"
         >
-          <li
-            className={clsx(
-              'flex items-center gap-x-6 p-3 text-base font-bold rounded-lg cursor-pointer dark:text-white hover:bg-gray-200 dark:hover:bg-gray-700 mt-2',
-              className,
-              'w-full select-none',
-              {
-                'rotate-180': sideBarCollapsed,
-                'right-4': !sideBarCollapsed
-              }
-            )}
-            onClick={handleToggleMenu}
-          >
-            <span className="text-2xl">
-              <CollapseMenuIcon className="w-6" />
-            </span>
-            <span
-              className={clsx('origin-left duration-300 hover:block', {
-                hidden: sideBarCollapsed
-              })}
-            >
-              {t('Switch Collapse Menu')}
-            </span>
-          </li>
+          <MenuEntry
+            icon={<BuildingStorefrontIcon className="w-6" />}
+            title={organiser?.name || t('Profile menu')}
+            to="/o/us"
+            sideBarCollapsed={sideBarCollapsed}
+            onClick={onClick}
+            isActive={/\/me($|\/$|.*$)/.test(pathname)}
+          />
+          <MenuEntry
+            icon={<UserIcon className="w-6" />}
+            title={user?.name || t('Profile menu')}
+            to="/me"
+            sideBarCollapsed={sideBarCollapsed}
+            onClick={onClick}
+            isActive={/\/me($|\/$|.*$)/.test(pathname)}
+          />
         </ul>
-      )}
+        {!hideCollapseMenu && (
+          <ul
+            className={clsx('flex', {
+              'w-52': !sideBarCollapsed
+            })}
+          >
+            <li
+              className={clsx(
+                'flex items-center gap-x-6 p-3 text-base font-bold rounded-lg cursor-pointer dark:text-white hover:bg-gray-200 dark:hover:bg-gray-700 mt-2',
+                className,
+                'w-full select-none',
+                {
+                  'rotate-180': sideBarCollapsed,
+                  'right-4': !sideBarCollapsed
+                }
+              )}
+              onClick={handleToggleMenu}
+            >
+              <span className="text-2xl">
+                <CollapseMenuIcon className="w-6" />
+              </span>
+              <span
+                className={clsx('origin-left duration-300 hover:block', {
+                  hidden: sideBarCollapsed
+                })}
+              >
+                {t('Switch Collapse Menu')}
+              </span>
+            </li>
+          </ul>
+        )}
+      </div>
     </>
   );
 }
@@ -287,9 +332,10 @@ type MobileMenuProps = {
   isExpanded: boolean;
   linkClicked: () => void;
   pathname: string;
+  organiser: Organiser | null
 }
 
-function MobileMenu({ isExpanded, linkClicked, pathname }: MobileMenuProps) {
+function MobileMenu({ isExpanded, linkClicked, pathname, organiser }: MobileMenuProps) {
   const shouldReduceMotion = useReducedMotion();
 
   useEffect(() => {
@@ -327,6 +373,7 @@ function MobileMenu({ isExpanded, linkClicked, pathname }: MobileMenuProps) {
               pathname={pathname}
               onClick={linkClicked}
               className="w-11/12 m-auto"
+              organiser={organiser}
             />
             <MobileMenuCloseButton onClick={linkClicked} />
           </motion.div>
