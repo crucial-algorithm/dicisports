@@ -1,0 +1,26 @@
+[
+  {
+    "code": "SPRING-20",
+    "value": 20,
+    "fixed": false,
+    "active": true,
+    "createdById": "gZZCGTHBq9SxdpRFoP8b",
+    "organiserId": "wu7LhCXXBcHFN9cWzjoG"
+  },
+  {
+    "code": "GET-FIT-5",
+    "value": 5,
+    "fixed": true,
+    "active": true,
+    "createdById": "gZZCGTHBq9SxdpRFoP8b",
+    "organiserId": "wu7LhCXXBcHFN9cWzjoG"
+  },
+  {
+    "code": "CHRISTMAS-30",
+    "value": 30,
+    "fixed": false,
+    "active": false,
+    "createdById": "gZZCGTHBq9SxdpRFoP8b",
+    "organiserId": "wu7LhCXXBcHFN9cWzjoG"
+  }
+]

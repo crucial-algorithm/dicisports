@@ -16,7 +16,8 @@ import type {
   ShirtSize as DBShirtSize,
   Organiser as DBOrganiser,
   ParticipantStatus,
-  Status as EventStatus
+  Status as EventStatus,
+  DiscountCode as DBDiscountCode
 } from '@prisma/client';
 
 type NonNullProperties<Type> = {
@@ -546,6 +547,8 @@ type OrganiserInput = {
   userId: string;
 };
 
+type DiscountCode = DBDiscountCode & {};
+
 export {
   NonNullProperties,
   MemberProfile,
@@ -604,7 +607,8 @@ export {
   OrganiserInput,
   EventStatus,
   BookingList,
-  DBRawBookingList
+  DBRawBookingList,
+  DiscountCode
 };
 
 // https://www.i18next.com/overview/typescript#argument-of-type-defaulttfuncreturn-is-not-assignable-to-parameter-of-type-xyz

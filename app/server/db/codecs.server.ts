@@ -6,7 +6,8 @@ import type {
   ShirtSize as DBShirtSize,
   Sport as DBSport,
   Status,
-  User as DBUser
+  User as DBUser,
+  DiscountCode as DBDiscountCode
 } from '@prisma/client';
 import { Role } from '@prisma/client';
 
@@ -19,7 +20,7 @@ import type {
   DBRawRaceQtd, DBRawSearchResults,
   DBRawUICartRow,
   DBRawUIRaceParticipant,
-  Difficulty,
+  Difficulty, DiscountCode,
   Group,
   GroupInput,
   GroupSpirit,
@@ -326,6 +327,12 @@ function dbRawBookingListToBookingList(
   };
 }
 
+function dbDiscountCodeToDiscountCode(discountCode: DBDiscountCode): DiscountCode {
+  const { code, value, fixed, active, createdById, organiserId, createdAt, updatedAt  } = discountCode;
+
+  return { code, value, fixed, active, createdById, organiserId, createdAt, updatedAt };
+}
+
 export {
   dbUserToUser,
   dbSportToSport,
@@ -342,5 +349,6 @@ export {
   dbUIRaceParticipantToUIRaceParticipant,
   dbParticipantToParticipant,
   dbRawSearchResultsToSearchResults,
-  dbRawBookingListToBookingList
+  dbRawBookingListToBookingList,
+  dbDiscountCodeToDiscountCode
 };
