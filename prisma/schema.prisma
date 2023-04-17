@@ -368,14 +368,14 @@ model Organiser {
 }
 
 model DiscountCode {
-  code        String    @id
+  code        String    @id @db.VarChar(20)
   value       Float
   fixed       Boolean
   active      Boolean
   createdBy   User      @relation(fields: [createdById], references: [id])
-  createdById String    @map("created_by")
+  createdById String    @map("created_by") @db.VarChar(20)
   organiser   Organiser @relation(fields: [organiserId], references: [id])
-  organiserId String    @map("organiser_id")
+  organiserId String    @map("organiser_id") @db.VarChar(20)
   createdAt   DateTime  @default(now()) @map("created_at")
   updatedAt   DateTime  @updatedAt @map("updated_at")
 
