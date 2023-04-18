@@ -1,24 +1,43 @@
 import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/20/solid';
+import { useDebounceFn } from 'ahooks';
+import clsx from 'clsx';
 import type { ChangeEvent } from 'react';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 
 import Button from '~/components/shared/Button';
 
 type props = {
-  onChange: (value: string) => void;
-} & Omit<React.ComponentProps<'input'>, 'onChange'>;
+  onChange?: (value: string) => void;
+  onSearch?: (value: string) => void;
+  debounceTime?: number;
+  defaultValue?: string
+} & Omit<React.ComponentProps<'input'>, 'onChange' | 'defaultValue'>;
 
-export default function SearchField({ name, onChange, placeholder }: props) {
-  const [value, setValue] = useState('');
+export default function SearchField({
+  name,
+  onChange = () => {},
+  placeholder,
+  debounceTime: wait = 500,
+  defaultValue = '',
+  className
+}: props) {
+  const [value, setValue] = useState(defaultValue || '');
+  const input = useRef<HTMLInputElement>(null);
+  const { run: onChangeDebounced } = useDebounceFn(onChange, { wait });
   const handleValueChange = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
-      onChange(e.target.value);
+      onChangeDebounced(e.target.value);
       setValue(e.target.value);
     },
-    [onChange]
+    [onChangeDebounced]
   );
 
   const handleClear = useCallback(() => {
+    // why are we doing this? In case we are using search within the form, form would submit before the
+    // setValue had been applied
+    if (input?.current?.value) {
+      input.current.value = '';
+    }
     setValue('');
     onChange('');
   }, [onChange]);
@@ -27,10 +46,11 @@ export default function SearchField({ name, onChange, placeholder }: props) {
     <>
       <div className="mt-1 relative rounded-md shadow-sm">
         <input
+          ref={input}
           name={name}
           onChange={handleValueChange}
           type="text"
-          className="input-text"
+          className={clsx('input-text', className)}
           value={value}
           placeholder={placeholder}
         />

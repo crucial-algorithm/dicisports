@@ -1,8 +1,7 @@
 import type { LoaderFunction } from '@remix-run/node';
 import { json, redirect } from '@remix-run/node';
-import type { ChangeEvent } from 'react';
 import * as React from 'react';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Form, useLoaderData } from '@remix-run/react';
 import {
@@ -18,6 +17,7 @@ import {
 import clsx from 'clsx';
 
 import { ButtonLink } from '~/components/shared/Button';
+import SearchField from '~/components/shared/SearchField';
 
 import { requireUser } from '~/server/auth/session.server';
 import { findEvent } from '~/server/db/events.server';
@@ -131,7 +131,7 @@ export default function DashboardRoute() {
     searchedName
   } = useLoaderData<LoaderData>() as LoaderData;
   const { t } = useTranslation('dashboard');
-
+  const searchForm = useRef<HTMLFormElement>(null);
   const [searchedParticipantName, setSearchedParticipantName] =
     useState<string>(searchedName);
   const [lat, lng] = event?.location?.split(',') || [0, 0];
@@ -146,8 +146,9 @@ export default function DashboardRoute() {
   statsPerRace.map((r) => (totalClicks += r.total));
   minPrice = sortedRaces[0];
 
-  function handleSearchedName(e: ChangeEvent<HTMLInputElement>) {
-    setSearchedParticipantName(e.target.value);
+  function handleSearchedName(value: string) {
+    setSearchedParticipantName(value);
+    searchForm?.current?.submit();
   }
 
   function EventInformation() {
@@ -235,7 +236,12 @@ export default function DashboardRoute() {
             {event.name}
           </b>
         </H2>
-        <ButtonLink to={`/o/event/${event.id}`} size="small" className="w-28" data-cy="edit">
+        <ButtonLink
+          to={`/o/event/${event.id}`}
+          size="small"
+          className="w-28"
+          data-cy="edit"
+        >
           {t('Edit')}
         </ButtonLink>
       </div>
@@ -275,54 +281,15 @@ export default function DashboardRoute() {
         ))}
       </div>
 
-      <Form method="get" preventScrollReset={true}>
-        <input
-          type="hidden"
-          value={searchedParticipantName}
-          name="searched-name"
-        />
-
+      <Form method="get" preventScrollReset={true} ref={searchForm}>
         <div className="flex justify-end">
-          <label
-            htmlFor="default-search"
-            className="mb-2 text-sm font-medium text-gray-900 sr-only dark:text-white"
-          >
-            {t('Search')}
-          </label>
-          <div className="relative w-[400px]">
-            <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-              <svg
-                aria-hidden="true"
-                className="w-5 h-5 text-gray-500 dark:text-gray-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                />
-              </svg>
-            </div>
-            <input
-              type="search"
-              className="block w-full p-4 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-              placeholder={t('Search Placeholder')}
-              onChange={handleSearchedName}
-              defaultValue={searchedName}
-              data-cy="search"
-            />
-            <button
-              type="submit"
-              className="text-white absolute right-2.5 bottom-2.5 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-              data-cy="search-participant"
-            >
-              {t('Search')}
-            </button>
-          </div>
+          <SearchField
+            name="searched-name"
+            placeholder={t('Search Placeholder')}
+            onChange={handleSearchedName}
+            defaultValue={searchedName}
+            className="text-sm"
+          />
         </div>
       </Form>
 

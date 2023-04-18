@@ -1,7 +1,6 @@
 import type { LoaderFunction } from '@remix-run/node';
 import { json } from '@remix-run/node';
 import { useLoaderData } from '@remix-run/react';
-import { useDebounceFn } from 'ahooks';
 import clsx from 'clsx';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
@@ -58,8 +57,6 @@ export default function OrganiserDiscountCodesRoute() {
     );
   }
 
-  const { run: handleSearchChange } = useDebounceFn(filter, { wait: 500 });
-
   function cellState({ active }: DiscountCode) {
     return (
       <span
@@ -77,7 +74,7 @@ export default function OrganiserDiscountCodesRoute() {
     <Main>
       <div className="flex flex-row h-16 justify-between gap-4 mb-8 items-center">
         <div className="w-72">
-          <SearchField name="search" onChange={handleSearchChange} />
+          <SearchField name="search" onChange={filter} />
         </div>
         <Button name="create" type="button">
           {t('Create')}

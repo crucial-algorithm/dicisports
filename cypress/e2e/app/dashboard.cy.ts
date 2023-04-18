@@ -84,17 +84,14 @@ describe('Dashboard', () => {
 
     it('should search participant by name', () => {
       cy.visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d/dashboard')
-        .intercept('GET', '*?searched-name=*_data=routes*')
-        .as('dashboardRequests')
+        .intercept('GET', '*?searched-name=Joaquim')
+        .as('search')
 
-        .get('[data-cy=search]')
+        .get('[name=searched-name]')
         .should('exist')
-        .type('Joaquim Lopes')
+        .type('Joaquim')
 
-        .get('button[data-cy=search-participant]')
-        .click()
-
-        .wait('@dashboardRequests')
+        .wait('@search')
 
         .get('[data-cy=participant-row]')
         .should('exist')
@@ -105,17 +102,14 @@ describe('Dashboard', () => {
 
     it('should not retrieve results if there is no matching participant name', () => {
       cy.visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d/dashboard')
-        .intercept('GET', '*?searched-name=*_data=routes*')
-        .as('dashboardRequests')
+        .intercept('GET', '*?searched-name=barnabe')
+        .as('search')
 
-        .get('[data-cy=search]')
+        .get('[name=searched-name]')
         .should('exist')
-        .type('Joaquim Afonso')
+        .type('barnabe')
 
-        .get('button[data-cy=search-participant]')
-        .click()
-
-        .wait('@dashboardRequests')
+        .wait('@search')
 
         .get('[data-cy=participant-row]')
         .should('not.exist')

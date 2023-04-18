@@ -1,11 +1,10 @@
 import type { ActionFunction, LoaderFunction } from '@remix-run/node';
 import { json, redirect } from '@remix-run/node';
-import type { ChangeEvent } from 'react';
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 
 import type { TFunction } from 'i18next';
 import clsx from 'clsx';
-import { ChevronLeftIcon, ChevronRightIcon, ChevronUpIcon } from '@heroicons/react/20/solid';
+import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/20/solid';
 
 import {
   Form,
@@ -24,6 +23,7 @@ import { useTranslation } from 'react-i18next';
 import DisplayDate from '~/components/shared/DIsplayDate';
 
 import ProfileFragment from '~/components/ProfileFragment';
+import SearchField from '~/components/shared/SearchField';
 import { useRootData } from '~/hooks';
 import {
   findUserFavoriteGroups,
@@ -272,13 +272,6 @@ export default function Me() {
 
   const numberOfPages = Math.ceil(totalBookings / 10);
 
-  function scrollToTop() {
-    window.scrollTo({
-      top: 0,
-      behavior: 'smooth'
-    });
-  }
-
   return (
     <Main>
       <H2 id="booking">{t('Your Bookings')}</H2>
@@ -382,14 +375,6 @@ export default function Me() {
           <H6 as="span">{t('Logout')}</H6>
         </Button>
       </Form>
-      <button
-        type="button"
-        onClick={scrollToTop}
-        className="w-full flex flex-row items-center justify-center mt-8 gap-x-2 text-white dark:text-blueGray-500"
-      >
-        <ChevronUpIcon className="h-5 w-5" />
-        <H6 className="dark:text-blueGray-500">{t('Back to the top')}</H6>
-      </button>
     </Main>
   );
 }
@@ -622,61 +607,26 @@ function BookingsList({
 }) {
   const [searchedParticipantName, setSearchedParticipantName] =
     useState<string>(searchedName);
+  const searchForm = useRef<HTMLFormElement>(null);
 
-  function handleSearchedName(e: ChangeEvent<HTMLInputElement>) {
-    setSearchedParticipantName(e.target.value);
+  console.log(searchedName);
+
+  function handleSearchedName(value: string) {
+    setSearchedParticipantName(value);
+    searchForm?.current?.submit();
   }
 
   return (
     <>
-      <Form method="get" preventScrollReset={true}>
-        <input
-          type="hidden"
-          value={searchedParticipantName}
-          name="searched-name"
-        />
-
+      <Form method="get" preventScrollReset={true} ref={searchForm}>
         <div className="flex justify-end">
-          <label
-            htmlFor="default-search"
-            className="mb-2 text-sm font-medium text-gray-900 sr-only dark:text-white"
-          >
-            {t('Search')}
-          </label>
-          <div className="relative w-[400px]">
-            <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-              <svg
-                aria-hidden="true"
-                className="w-5 h-5 text-gray-500 dark:text-gray-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                />
-              </svg>
-            </div>
-            <input
-              type="search"
-              className="block w-full p-4 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-              placeholder={t('Search Placeholder')}
-              onChange={handleSearchedName}
-              defaultValue={searchedName}
-              data-cy="search"
-            />
-            <button
-              type="submit"
-              className="text-white absolute right-2.5 bottom-2.5 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-              data-cy="search-participant"
-            >
-              {t('Search')}
-            </button>
-          </div>
+          <SearchField
+            name="searched-name"
+            placeholder={t('Search Placeholder')}
+            onChange={handleSearchedName}
+            defaultValue={searchedName}
+            className="text-sm"
+          />
         </div>
       </Form>
 
