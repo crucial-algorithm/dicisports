@@ -76,7 +76,7 @@ export default function DisplayCart({
           }) && (
             <div className="flex flex-row items-center justify-between mt-4 py-4 border-t-2 border-grey-300">
               <H6>{t('Total')}</H6>
-              <H6>{totalPrice + '€'}</H6>
+              <H6 data-cy="total-price">{totalPrice + '€'}</H6>
             </div>
           )}
 

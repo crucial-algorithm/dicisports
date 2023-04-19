@@ -33,7 +33,7 @@ const TextField: React.FC<Props> = ({
   const formProps = useContext(UploadFormContext);
 
   if (formProps.readOnly) {
-    return (<div className="font-medium">{defaultValue}</div>);
+    return (<div className="font-medium dark:text-white">{defaultValue}</div>);
   }
 
   if (!adornment) {

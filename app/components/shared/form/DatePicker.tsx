@@ -30,7 +30,7 @@ export default function BasicDatePicker({
 
   if (formProps.readOnly) {
     return (
-      <div className="font-medium">
+      <div className="font-medium dark:text-white">
         {date ? date.toISOString().split('T')[0] : ''}
       </div>
     );

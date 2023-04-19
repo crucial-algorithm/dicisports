@@ -378,6 +378,20 @@ describe('Checkout', () => {
           );
         });
     });
+
+    it('should access booking with PIN', () => {
+      cy.visitAndWaitForHydration('/checkout/info/e8pHPLNjnNxKTzoGwtLh?p=1234')
+
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.eq('/checkout/info/e8pHPLNjnNxKTzoGwtLh');
+          expect(l.search).to.eq('?p=1234');
+        })
+
+        .get('[data-cy=total-price]')
+        .should('exist')
+        .and('contain', '20€');
+    });
   });
 
   context('Maintenance: authenticated', () => {

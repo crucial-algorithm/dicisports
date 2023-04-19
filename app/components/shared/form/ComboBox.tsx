@@ -207,7 +207,7 @@ export default function ComboBox({
 
   if (formProps.readOnly) {
     return (
-      <div className="font-medium">
+      <div className="font-medium dark:text-white">
         {options.find((o) => o.value === defaultValue)?.label}
       </div>
     );
