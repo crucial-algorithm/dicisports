@@ -30,6 +30,6 @@
   "Undefined": "Não definido",
   "Valid During": "Promoção válida durante",
   "Valid Until": "Promoção válida até",
-  "Days": "dias",
-  "Day": "dia"
+  "Valid Days": "{{total}} dias",
+  "Valid Day": "{{total}} dia"
 }

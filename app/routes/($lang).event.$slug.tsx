@@ -338,7 +338,9 @@ function DisplayRace({ race, index, eventId }: { race: Race; index: number, even
                   data-cy={`race-valid-until-${race.id}`}
                 >
                   {validDuring < 7 ? (
-                    `${validDuring} ${validDuring === 1 ? t('Day') : t('Days')}`
+                    `${t(validDuring === 1 ? 'Valid Day' : 'Valid Days', {
+                      total: validDuring
+                    })}`
                   ) : (
                     <DisplayDate date={new Date(String(race.validUntil))} />
                   )}
