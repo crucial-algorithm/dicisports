@@ -267,6 +267,17 @@ function DisplayRace({ race, index, eventId }: { race: Race; index: number, even
   const { t } = useTranslation('event');
   const raceTime = displayTimeOfDay(race.startTime);
   const [expanded, setExpanded] = useState<boolean>(false);
+  let validDuring: number | null = null;
+  let isEarlyPriceValid = false;
+
+  if (race.priceEarlyBird && race.validUntil) {
+    // calculate the difference in milliseconds
+    const diffInMs = new Date(race.validUntil.toString()).getTime() - Date.now();
+
+    // convert the difference to days
+    validDuring = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+    isEarlyPriceValid = validDuring > 0;
+  }
 
   function handleSeeMore() {
     expanded ? setExpanded(false) : setExpanded(true);
@@ -297,12 +308,46 @@ function DisplayRace({ race, index, eventId }: { race: Race; index: number, even
             {raceTime}
           </H5>
         </div>
-        <div className={clsx('mt-4', expanded ? 'mb-0' : 'mb-2')}>
-          <H4>{t('Race Price')}</H4>
-          <H5
-            className="dark:text-blueGray-500"
-            data-cy={`race-price-${race.id}`}
-          >{`€${race.price}`}</H5>
+        <div
+          className={clsx('flex flex-col items-center mt-4', {
+            'mb-0': expanded && !isEarlyPriceValid,
+            'mb-2': expanded && !isEarlyPriceValid
+          })}
+        >
+          {isEarlyPriceValid && validDuring ? (
+            <>
+              <div className="flex flex-row gap-x-5 items-end px-28">
+                <H5
+                  className="dark:text-blueGray-500 line-through"
+                  data-cy={`race-price-${race.id}`}
+                >{`€${race.price}`}</H5>
+                <H3
+                  data-cy={`race-price-${race.id}`}
+                >{`€${race.priceEarlyBird}`}</H3>
+              </div>
+
+              <div className="border-b h-2 w-48 mb-2" />
+
+              <div>
+                {/*if early bird price deadline is bigger than 7 days, we'll show the date instead of days*/}
+                <p className="text-sm font-medium dark:text-white">
+                  {validDuring < 7 ? t('Valid During') : t('Valid Until')}
+                </p>
+                <p
+                  className="text-sm font-medium dark:text-blueGray-500"
+                  data-cy={`race-valid-until-${race.id}`}
+                >
+                  {validDuring < 7 ? (
+                    `${validDuring} ${validDuring === 1 ? t('Day') : t('Days')}`
+                  ) : (
+                    <DisplayDate date={new Date(String(race.validUntil))} />
+                  )}
+                </p>
+              </div>
+            </>
+          ) : (
+            <H3 data-cy={`race-price-${race.id}`}>{`€${race.price}`}</H3>
+          )}
         </div>
         {expanded && (
           <>

@@ -27,5 +27,9 @@
   "Event not found": "Hmmm, não conhecemos o evento que estás à procura, mas temos muitos outros disponíveis.",
   "Event not found action": "Clica para voltar à pesquisa",
 
-  "Undefined": "Não definido"
+  "Undefined": "Não definido",
+  "Valid During": "Promoção válida durante",
+  "Valid Until": "Promoção válida até",
+  "Days": "dias",
+  "Day": "dia"
 }
