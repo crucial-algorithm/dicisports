@@ -1,7 +1,7 @@
 import React, { useContext } from 'react';
 
 import InputBase from '~/components/shared/form/InputBase';
-import { UploadFormContext } from '~/components/shared/form/UploadForm';
+import { FormContext } from '~/components/shared/form/UploadForm';
 
 type Props = {
   name: string;
@@ -30,7 +30,7 @@ const TextField: React.FC<Props> = ({
   onClick
 }) => {
   id = id || '';
-  const formProps = useContext(UploadFormContext);
+  const formProps = useContext(FormContext);
 
   if (formProps.readOnly) {
     return (<div className="font-medium dark:text-white">{defaultValue}</div>);

@@ -8,10 +8,10 @@ import clsx from 'clsx';
 import { ChevronLeftIcon, ChevronRightIcon, ChevronUpIcon } from '@heroicons/react/20/solid';
 
 import {
-  Form,
-  useActionData,
-  useFetcher,
-  useLoaderData
+    Form,
+    useActionData,
+    useFetcher,
+    useLoaderData, useNavigate
 } from '@remix-run/react';
 
 import {
@@ -801,15 +801,31 @@ function BookingListEntry({
 }) {
   const date = String(booking.bookingDate).split('T')[0];
   const hour = getHoursAndMinutes(new Date(booking.bookingDate));
+  const navigate = useNavigate();
 
   function getHoursAndMinutes(date: Date) {
     return `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
   }
 
+  function handleRedirectToBooking() {
+    // If booking process is finished, redirect him to the info route with PIN to check participants information
+    const route =
+      booking.status === 'checkout' || booking.status === 'confirmed'
+        ? 'info'
+        : 'payment';
+
+    navigate(
+      `/checkout/${route}/${booking.id}${
+        booking.status === 'confirmed' && `?p=${booking.pin}`
+      }`
+    );
+  }
+
   return (
     <tr
-      className="border-b transition duration-300 ease-in-out hover:bg-red"
+      className="border-b transition duration-300 ease-in-out hover:bg-red cursor-pointer"
       data-cy="participant-row"
+      onClick={handleRedirectToBooking}
     >
       <TD value={`${booking.eventName}`} />
       <TD value={`${date} ${hour}`} />

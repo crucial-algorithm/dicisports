@@ -528,7 +528,6 @@ export default function OrganizerEventRoute() {
               error={actionData?.errors?.startAt}
             >
               <BasicDatePicker
-                label=""
                 name="event-date"
                 date={event?.startAt}
                 minDate={new Date()}

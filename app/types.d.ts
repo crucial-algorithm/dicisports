@@ -499,6 +499,7 @@ type BookingList = {
   eventName: string;
   bookingDate: Date;
   status: string;
+  pin: number;
   totalParticipants: number;
 };
 
@@ -508,6 +509,7 @@ type DBRawBookingList = {
   booking_date: Date;
   status: string;
   total_participants: number;
+  pin: number;
   records: number;
 };
 

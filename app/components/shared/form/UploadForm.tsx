@@ -7,15 +7,15 @@ type Props = FormProps &
 
 type UploadFormContextType = Props;
 
-export const UploadFormContext = React.createContext<UploadFormContextType>({});
+export const FormContext = React.createContext<UploadFormContextType>({});
 
 const UploadForm: React.FC<Props> = (props: Props) => {
   return (
-    <UploadFormContext.Provider value={props}>
+    <FormContext.Provider value={props}>
       <Form method="post" encType="multipart/form-data" {...props}>
         {props.children}
       </Form>
-    </UploadFormContext.Provider>
+    </FormContext.Provider>
   );
 };
 

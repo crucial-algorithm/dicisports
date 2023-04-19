@@ -14,7 +14,7 @@ import FormField from '~/components/shared/form/FormField';
 import TextField from '~/components/shared/form/TextField';
 import countries from '~/server/db/countries.json';
 import type { Language, Participant, ShirtSize } from '~/types';
-import { UploadFormContext } from '~/components/shared/form/UploadForm';
+import { FormContext } from '~/components/shared/form/UploadForm';
 
 export default function ParticipantForm({
   participant,
@@ -45,7 +45,7 @@ export default function ParticipantForm({
 }) {
   const { t, i18n } = useTranslation('checkout');
   const language = i18n.language as Language;
-  const formProps = useContext(UploadFormContext);
+  const formProps = useContext(FormContext);
 
   const genderOptions = [
     { value: 'F', label: t('Female') },
@@ -157,7 +157,6 @@ export default function ParticipantForm({
           dataCy="birthdate"
         >
           <BasicDatePicker
-            label=""
             name="birthdate"
             date={
               selectedParticipant?.birthdate

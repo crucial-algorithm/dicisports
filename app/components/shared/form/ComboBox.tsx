@@ -14,7 +14,7 @@ import { getLocalizedText } from '~/utils/misc';
 
 import { useTheme } from '~/utils/theme-provider';
 import { getI18nText } from '~/components/I18nText';
-import { UploadFormContext } from '~/components/shared/form/UploadForm';
+import { FormContext } from '~/components/shared/form/UploadForm';
 
 export type Option = {
   value: string | number;
@@ -203,7 +203,7 @@ export default function ComboBox({
   });
 
   const [selected, setSelected] = useState(defaultValue);
-  const formProps = useContext(UploadFormContext);
+  const formProps = useContext(FormContext);
 
   if (formProps.readOnly) {
     return (
