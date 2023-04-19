@@ -237,7 +237,6 @@ export default function CheckoutConfirmationRoute() {
             cart={cart}
             event={event}
             fetcher={fetcher}
-            hideCheckoutButton={true}
           />
         </div>
       </div>

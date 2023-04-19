@@ -157,7 +157,18 @@ export default function CheckoutPaymentRoute() {
             cart={cart}
             event={event}
             fetcher={fetcher}
-            showEditInfoButton={true}
+            children={
+              <div>
+                <Button
+                  name="actionId"
+                  className="mt-4 w-full"
+                  type="submit"
+                  value="update-info"
+                >
+                  {t('Edit info')}
+                </Button>
+              </div>
+            }
           />
         </div>
       </div>

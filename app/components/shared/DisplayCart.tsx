@@ -1,11 +1,11 @@
 import type { FetcherWithComponents } from '@remix-run/react';
 import * as React from 'react';
+import type { ReactElement } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import type { UICartRow, Event } from '~/types';
+import type { Event, UICartRow } from '~/types';
 import { H4, H5, H6 } from '~/components/shared/typography';
 import DisplayDate from '~/components/shared/DIsplayDate';
-import Button from '~/components/shared/Button';
 import InputError from '~/components/shared/form/InputError';
 
 export default function DisplayCart({
@@ -14,12 +14,7 @@ export default function DisplayCart({
   error,
   fetcher,
   hash,
-  hideCheckoutButton,
-  showEditInfoButton,
-  showContinueLabel,
-  showUpdateCartButton,
-  showFinishRegistrationLabel,
-  hideAllButtons,
+  children,
   action
 }: {
   cart: UICartRow[];
@@ -27,12 +22,7 @@ export default function DisplayCart({
   error?: string;
   fetcher: FetcherWithComponents<any>;
   hash?: number;
-  hideCheckoutButton?: boolean;
-  showEditInfoButton?: boolean;
-  showContinueLabel?: boolean;
-  showUpdateCartButton?: boolean;
-  showFinishRegistrationLabel?: boolean;
-  hideAllButtons?: boolean;
+  children?: ReactElement | null;
   action?: string;
 }) {
   const { t } = useTranslation('checkout');
@@ -80,57 +70,14 @@ export default function DisplayCart({
             </div>
           )}
 
-        {!hideAllButtons && (
+        {children && (
           <>
-            {!hideCheckoutButton && !showEditInfoButton && (
-              <div className="flex flex-col items-center w-full">
-                <input type="hidden" name="hash" value={hash} />
-                <Button
-                  type="submit"
-                  name="actionId"
-                  value="checkout"
-                  disabled={cart.length === 0}
-                  className="mt-4 w-full"
-                  id="checkout"
-                >
-                  {showContinueLabel
-                    ? t('Continue')
-                    : showFinishRegistrationLabel
-                    ? t('Finish Registration')
-                    : t('Checkout now')}
-                </Button>
-                {error && (
-                  <InputError id="checkout-error" className="mt-2">
-                    {error}
-                  </InputError>
-                )}
-              </div>
-            )}
-
-            {showUpdateCartButton && (
-              <div className="flex justify-end mt-4">
-                <a
-                  href={`/checkout/cart/${event.id}?a=update`}
-                  data-cy="update-cart"
-                >
-                  <H6 className="dark:text-blueGray-500 cursor-pointer">
-                    {t('Update Cart')}
-                  </H6>
-                </a>
-              </div>
-            )}
-
-            {showEditInfoButton && (
-              <div>
-                <Button
-                  name="actionId"
-                  className="mt-4 w-full"
-                  type="submit"
-                  value="update-info"
-                >
-                  {t('Edit info')}
-                </Button>
-              </div>
+            <input type="hidden" name="hash" value={hash} />
+            {children}
+            {error && (
+              <InputError id="checkout-error" className="mt-2">
+                {error}
+              </InputError>
             )}
           </>
         )}

@@ -36,6 +36,7 @@ import i18n from '~/server/i18n.server';
 import type { Booking, Event, Race, RaceQty, UICartRow } from '~/types';
 import { badRequest, displayTimeOfDay } from '~/utils/misc';
 import Id from '~/server/utils/Id.server';
+import Button from '~/components/shared/Button';
 
 type LoaderData = {
   event: Event;
@@ -155,6 +156,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 };
 
 export default function CheckoutRegistrationsRoute() {
+  const { t } = useTranslation('checkout');
   const { event, races, userCheckoutRaces } =
     useLoaderData<LoaderData>() as LoaderData;
   const fetcher = useFetcher();
@@ -202,7 +204,22 @@ export default function CheckoutRegistrationsRoute() {
             action={`/checkout/cart/${event.id}${
               searchParams.toString().length ? `?${searchParams}` : ''
             }`}
-            showContinueLabel={searchParams.get('a') === 'update'}
+            children={
+              <div className="flex flex-col items-center w-full">
+                <Button
+                  type="submit"
+                  name="actionId"
+                  value="checkout"
+                  disabled={userCheckoutRaces.length === 0}
+                  className="mt-4 w-full"
+                  id="checkout"
+                >
+                  {searchParams.get('a') === 'update'
+                    ? t('Continue')
+                    : t('Checkout now')}
+                </Button>
+              </div>
+            }
           />
         </div>
       </div>
