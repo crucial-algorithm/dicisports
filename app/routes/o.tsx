@@ -17,16 +17,28 @@ import type { ReactNode } from 'react';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import DisplayImg from '~/components/shared/DisplayImg';
+
 import CollapseMenuIcon from '~/components/shared/icons/CollapseMenuIcon';
 import CollectionIcon from '~/components/shared/icons/Collection';
 import DiscountCodeIcon from '~/components/shared/icons/DiscountCodeIcon';
 
 import Logo from '~/components/shared/Logo';
 import { useUser } from '~/hooks';
+import { useOrganiser } from '~/hooks/useOrganiser';
 
 import { requireUser } from '~/server/auth/session.server';
 import { findOrganiser } from '~/server/db/organiser.server';
-import type { Organiser } from '~/types';
+import type { Organiser, KCDHandle } from '~/types';
+
+export const handle: KCDHandle & { id: string; i18n: string[] } = {
+  id: 'organiser',
+  i18n: []
+};
+
+export type OrganiserLoaderData = {
+  organiser: Organiser
+};
 
 export const loader: LoaderFunction = async ({ request }) => {
   const user = await requireUser(request);
@@ -43,9 +55,6 @@ export default function OrganizerLayout() {
     setCollapsed(!collapsed);
   }, [collapsed]);
   const location = useLocation();
-  const { organiser } = useLoaderData() as {
-    organiser: Organiser | null;
-  };
 
   useEffect(() => {
     const collapsed = window.localStorage.getItem('side-menu-collapsed') === 'true';
@@ -66,14 +75,12 @@ export default function OrganizerLayout() {
       <OrganizerSideBar
         sideBarCollapsed={collapsed}
         handleToggleMenu={handleToggleMenu}
-        organiser={organiser}
       />
       <MobileMenuButton onClick={handleMobileMenuClick} />
       <MobileMenu
         isExpanded={isMobileMenuOpen}
         linkClicked={handleMobileMenuClick}
         pathname={location.pathname}
-        organiser={organiser}
       />
       <div className="grow p-2 h-screen overflow-auto">
         <Outlet />
@@ -84,11 +91,10 @@ export default function OrganizerLayout() {
 
 type OrganizerSideBarProps = {
   sideBarCollapsed: boolean,
-  organiser: Organiser | null
   handleToggleMenu: () => void
 }
 
-function OrganizerSideBar({ sideBarCollapsed, handleToggleMenu, organiser }: OrganizerSideBarProps) {
+function OrganizerSideBar({ sideBarCollapsed, handleToggleMenu }: OrganizerSideBarProps) {
   const location = useLocation();
 
   return (
@@ -125,7 +131,6 @@ function OrganizerSideBar({ sideBarCollapsed, handleToggleMenu, organiser }: Org
           pathname={location.pathname}
           handleToggleMenu={handleToggleMenu}
           hideCollapseMenu={false}
-          organiser={organiser}
         />
       </div>
     </>
@@ -138,7 +143,6 @@ type MenuProps = {
   pathname: string;
   handleToggleMenu?: () => void;
   hideCollapseMenu: boolean;
-  organiser: Organiser | null
 } & React.ComponentProps<'li'>
 
 function Menu({
@@ -147,11 +151,13 @@ function Menu({
   sideBarCollapsed,
   hideCollapseMenu,
   className,
-  onClick,
-  organiser
+  onClick
 }: MenuProps) {
   const { t } = useTranslation('common');
   const user = useUser();
+  const organiser = useOrganiser();
+
+  organiser.logo;
 
   return (
     <>
@@ -201,12 +207,15 @@ function Menu({
           'w-full md:w-52': !sideBarCollapsed
         })}
       >
-        <ul
-          className="w-full"
-        >
+        <ul className="w-full">
           <MenuEntry
-            icon={<BuildingStorefrontIcon className="w-6" />}
-            title={organiser?.name || t('Profile menu')}
+            icon={
+              <>
+                {organiser?.logo && <DisplayImg imageId={organiser.logo} dontMessWithImgSize={true} className="w-6 inline rounded-full" />}
+                {!organiser?.logo && <BuildingStorefrontIcon className="w-6" />}
+              </>
+            }
+            title={organiser?.name || t('Organiser menu')}
             to="/o/us"
             sideBarCollapsed={sideBarCollapsed}
             onClick={onClick}
@@ -332,10 +341,9 @@ type MobileMenuProps = {
   isExpanded: boolean;
   linkClicked: () => void;
   pathname: string;
-  organiser: Organiser | null
 }
 
-function MobileMenu({ isExpanded, linkClicked, pathname, organiser }: MobileMenuProps) {
+function MobileMenu({ isExpanded, linkClicked, pathname }: MobileMenuProps) {
   const shouldReduceMotion = useReducedMotion();
 
   useEffect(() => {
@@ -373,7 +381,6 @@ function MobileMenu({ isExpanded, linkClicked, pathname, organiser }: MobileMenu
               pathname={pathname}
               onClick={linkClicked}
               className="w-11/12 m-auto"
-              organiser={organiser}
             />
             <MobileMenuCloseButton onClick={linkClicked} />
           </motion.div>
