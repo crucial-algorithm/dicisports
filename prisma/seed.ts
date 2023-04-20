@@ -126,7 +126,8 @@ function races() {
   return racesSeed.map((r) => ({
     ...r,
     createdAt: now,
-    updatedAt: now
+    updatedAt: now,
+    validUntil: r.validUntil ? new Date(r.validUntil) : null
   }));
 }
 

@@ -331,13 +331,13 @@ function DisplayRace({ race, index, eventId }: { race: Race; index: number, even
               <div>
                 {/*if early bird price deadline is bigger than 7 days, we'll show the date instead of days*/}
                 <p className="text-sm font-medium dark:text-white">
-                  {validDuring < 7 ? t('Valid During') : t('Valid Until')}
+                  {validDuring < 30 ? t('Valid During') : t('Valid Until')}
                 </p>
                 <p
                   className="text-sm font-medium dark:text-blueGray-500"
                   data-cy={`race-valid-until-${race.id}`}
                 >
-                  {validDuring < 7 ? (
+                  {validDuring < 30 ? (
                     `${t(validDuring === 1 ? 'Valid Day' : 'Valid Days', {
                       total: validDuring
                     })}`
