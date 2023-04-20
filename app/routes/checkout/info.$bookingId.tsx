@@ -592,37 +592,35 @@ export default function CheckoutInfoRoute() {
             error={errors.missingFilledParticipants}
             fetcher={fetcher}
             hash={hash}
-            children={
-              !isGuest ? (
-                <>
-                  <div className="flex flex-col items-center w-full">
-                    <input type="hidden" name="hash" value={hash} />
-                    <Button
-                      type="submit"
-                      name="actionId"
-                      value="checkout"
-                      disabled={cart.length === 0}
-                      className="mt-4 w-full"
-                      id="checkout"
-                    >
-                      {t('Finish Registration')}
-                    </Button>
-                  </div>
-
-                  <div className="flex justify-end mt-4">
-                    <a
-                      href={`/checkout/cart/${event.id}?a=update`}
-                      data-cy="update-cart"
-                    >
-                      <H6 className="dark:text-blueGray-500 cursor-pointer">
-                        {t('Update Cart')}
-                      </H6>
-                    </a>
-                  </div>
-                </>
-              ) : null
-            }
-          />
+          >
+            {!isGuest && (
+              <>
+                <div className="flex flex-col items-center w-full">
+                  <input type="hidden" name="hash" value={hash} />
+                  <Button
+                    type="submit"
+                    name="actionId"
+                    value="checkout"
+                    disabled={cart.length === 0}
+                    className="mt-4 w-full"
+                    id="checkout"
+                  >
+                    {t('Finish Registration')}
+                  </Button>
+                </div>
+                <div className="flex justify-end mt-4">
+                  <a
+                    href={`/checkout/cart/${event.id}?a=update`}
+                    data-cy="update-cart"
+                  >
+                    <H6 className="dark:text-blueGray-500 cursor-pointer">
+                      {t('Update Cart')}
+                    </H6>
+                  </a>
+                </div>
+              </>
+            )}
+          </DisplayCart>
         </div>
       </div>
 

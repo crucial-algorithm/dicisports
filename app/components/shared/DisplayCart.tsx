@@ -1,6 +1,5 @@
 import type { FetcherWithComponents } from '@remix-run/react';
 import * as React from 'react';
-import type { ReactElement } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import type { Event, UICartRow } from '~/types';
@@ -22,9 +21,8 @@ export default function DisplayCart({
   error?: string;
   fetcher: FetcherWithComponents<any>;
   hash?: number;
-  children?: ReactElement | null;
   action?: string;
-}) {
+} & React.ComponentProps<'div'>) {
   const { t } = useTranslation('checkout');
   let totalPrice = 0;
 
@@ -70,17 +68,14 @@ export default function DisplayCart({
             </div>
           )}
 
-        {children && (
-          <>
-            <input type="hidden" name="hash" value={hash} />
-            {children}
-            {error && (
-              <InputError id="checkout-error" className="mt-2">
-                {error}
-              </InputError>
-            )}
-          </>
+        {children}
+        <input type="hidden" name="hash" value={hash} />
+        {error && (
+            <InputError id="checkout-error" className="mt-2">
+              {error}
+            </InputError>
         )}
+
       </div>
     </fetcher.Form>
   );

@@ -153,23 +153,18 @@ export default function CheckoutPaymentRoute() {
           </Form>
         </div>
         <div className="w-full md:w-[480px]">
-          <DisplayCart
-            cart={cart}
-            event={event}
-            fetcher={fetcher}
-            children={
-              <div>
-                <Button
-                  name="actionId"
-                  className="mt-4 w-full"
-                  type="submit"
-                  value="update-info"
-                >
-                  {t('Edit info')}
-                </Button>
-              </div>
-            }
-          />
+          <DisplayCart cart={cart} event={event} fetcher={fetcher}>
+            <div>
+              <Button
+                name="actionId"
+                className="mt-4 w-full"
+                type="submit"
+                value="update-info"
+              >
+                {t('Edit info')}
+              </Button>
+            </div>
+          </DisplayCart>
         </div>
       </div>
     </Main>

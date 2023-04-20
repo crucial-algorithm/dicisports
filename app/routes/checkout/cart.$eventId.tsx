@@ -204,23 +204,22 @@ export default function CheckoutRegistrationsRoute() {
             action={`/checkout/cart/${event.id}${
               searchParams.toString().length ? `?${searchParams}` : ''
             }`}
-            children={
-              <div className="flex flex-col items-center w-full">
-                <Button
-                  type="submit"
-                  name="actionId"
-                  value="checkout"
-                  disabled={userCheckoutRaces.length === 0}
-                  className="mt-4 w-full"
-                  id="checkout"
-                >
-                  {searchParams.get('a') === 'update'
-                    ? t('Continue')
-                    : t('Checkout now')}
-                </Button>
-              </div>
-            }
-          />
+          >
+            <div className="flex flex-col items-center w-full">
+              <Button
+                type="submit"
+                name="actionId"
+                value="checkout"
+                disabled={userCheckoutRaces.length === 0}
+                className="mt-4 w-full"
+                id="checkout"
+              >
+                {searchParams.get('a') === 'update'
+                  ? t('Continue')
+                  : t('Checkout now')}
+              </Button>
+            </div>
+          </DisplayCart>
         </div>
       </div>
     </Main>

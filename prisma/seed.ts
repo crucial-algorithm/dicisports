@@ -13,7 +13,7 @@ import groupSpiritSeed from './data/groupSpirit.json';
 import groupTypesSeed from './data/groupTypes.json';
 import shirtSizesSeed from './data/shirtSizes.json';
 import sportsSeed from './data/sports.json';
-import bookingsSeed from './data/booking.json';
+import bookingsSeed from './data/bookings.json';
 import participantsSeed from './data/participants.json';
 import raceParticipantsSeed from './data/raceParticipants.json';
 import organiserSeed from './data/organisers.json';
