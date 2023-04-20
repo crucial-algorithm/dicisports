@@ -155,8 +155,6 @@ function Menu({
   const user = useUser();
   const organiser = useOrganiser();
 
-  organiser.logo;
-
   return (
     <>
       <ul
