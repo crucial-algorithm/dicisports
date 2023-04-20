@@ -80,6 +80,8 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{secrets.E2E_AWS_ACCESS_KEY_ID}}
           AWS_SECRET_ACCESS_KEY: ${{secrets.E2E_AWS_SECRET_ACCESS_KEY}}
 
+          RELEASE: ${{ github.sha }}
+
       - uses: actions/upload-artifact@v2
         if: failure()
         with:
