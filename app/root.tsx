@@ -113,7 +113,7 @@ export const handle: KCDHandle & { id: string; i18n: string[] } = {
 
 export type RootLoaderData = {
   user: User | null;
-  ENV: { CLOUDINARY_CLOUD_NAME: string };
+  ENV: { CLOUDINARY_CLOUD_NAME: string, RELEASE: string };
   requestInfo: {
     canonicalUrl: string;
     origin: string;
@@ -150,7 +150,8 @@ export const loader: LoaderFunction = async ({ request }) => {
   const data: RootLoaderData = {
     user,
     ENV: {
-      CLOUDINARY_CLOUD_NAME: Config().CLOUDINARY_CLOUD_NAME
+      CLOUDINARY_CLOUD_NAME: Config().CLOUDINARY_CLOUD_NAME,
+      RELEASE: Config().RELEASE
     },
     requestInfo: {
       canonicalUrl: request.url

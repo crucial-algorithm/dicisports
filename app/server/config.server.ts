@@ -19,6 +19,7 @@ export type ConfigServer = {
   AWS_ACCESS_KEY_ID: string
   AWS_SECRET_ACCESS_KEY: string
   AWS_S3_BUCKET: string
+  RELEASE: string
 }
 
 let config: ConfigServer | null = null;
@@ -49,15 +50,17 @@ export default function Config(): ConfigServer {
     AWS_REGION: extractVar('AWS_REGION'),
     AWS_ACCESS_KEY_ID: extractVar('AWS_ACCESS_KEY_ID'),
     AWS_SECRET_ACCESS_KEY: extractVar('AWS_SECRET_ACCESS_KEY'),
-    AWS_S3_BUCKET: extractVar('AWS_S3_BUCKET')
+    AWS_S3_BUCKET: extractVar('AWS_S3_BUCKET'),
+    RELEASE: extractVar('RELEASE')
   };
 
   return config;
 }
 
 function extractVar(varName: string | undefined): string {
-  if (!varName)
-    {throw 'reading config for an empty varName... something is wrong';}
+  if (!varName) {
+    throw 'reading config for an empty varName... something is wrong';
+  }
 
   if (!process.env[varName]) {throw `Missing ${varName} in .env`;}
 
