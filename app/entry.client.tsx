@@ -20,8 +20,8 @@ async function hydrate() {
       ns: getInitialNamespaces(),
       backend: {
         loadPath: '/locales/{{lng}}/{{ns}}.json',
-        // TODO: auto generate in build time
-        queryStringParams: { v: '20230327' }
+        // @ts-ignore
+        queryStringParams: { v: window.ENV.RELEASE }
       },
       detection: {
         // Here only enable htmlTag detection, we'll detect the language only
