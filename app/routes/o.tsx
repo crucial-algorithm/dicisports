@@ -8,7 +8,7 @@ import {
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import type { LoaderFunction } from '@remix-run/node';
 import { json } from '@remix-run/node';
-import { Link, Outlet, useLoaderData, useLocation } from '@remix-run/react';
+import { Link, Outlet, useLocation } from '@remix-run/react';
 import { buildImageUrl } from 'cloudinary-build-url';
 import clsx from 'clsx';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
@@ -16,8 +16,6 @@ import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import type { ReactNode } from 'react';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-
-import DisplayImg from '~/components/shared/DisplayImg';
 
 import CollapseMenuIcon from '~/components/shared/icons/CollapseMenuIcon';
 import CollectionIcon from '~/components/shared/icons/Collection';
@@ -211,7 +209,15 @@ function Menu({
           <MenuEntry
             icon={
               <>
-                {organiser?.logo && <DisplayImg imageId={organiser.logo} dontMessWithImgSize={true} className="w-6 inline rounded-full" />}
+                {organiser?.logo && (
+                  <img
+                    src={buildImageUrl(organiser.logo, {
+                      transformations: { resize: { type: 'fill', width: 30, height: 30 } }
+                    })}
+                    className="w-6 inline rounded-full"
+                    alt={organiser.name}
+                  />
+                )}
                 {!organiser?.logo && <BuildingStorefrontIcon className="w-6" />}
               </>
             }
@@ -219,7 +225,7 @@ function Menu({
             to="/o/us"
             sideBarCollapsed={sideBarCollapsed}
             onClick={onClick}
-            isActive={/\/me($|\/$|.*$)/.test(pathname)}
+            isActive={/\/us($|\/$|.*$)/.test(pathname)}
           />
           <MenuEntry
             icon={<UserIcon className="w-6" />}
