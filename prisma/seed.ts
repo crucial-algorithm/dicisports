@@ -17,6 +17,7 @@ import bookingsSeed from './data/booking.json';
 import participantsSeed from './data/participants.json';
 import raceParticipantsSeed from './data/raceParticipants.json';
 import organiserSeed from './data/organisers.json';
+import discountCodesSeed from './data/discountCodes.json';
 
 const db = new PrismaClient();
 const now = new Date();
@@ -56,12 +57,14 @@ async function seed() {
   await persist('sessions', sessions(), db.session);
   await persist('bookings', bookings(), db.booking);
   await persist('participants', participants(), db.participant);
-  await persist('raceParticipants', raceParticipants(), db.raceParticipant);
+  await persist('race participants', raceParticipants(), db.raceParticipant);
+  await persist('discount codes', discountCodes(), db.discountCode);
   await persist('favorite groups', favoriteGroup(), db.favoriteGroup);
   await persist('group schedules', groupsSchedules(), db.groupSchedule);
 }
 
 async function clear() {
+  console.log('cleaning');
   await db.document.deleteMany();
   await db.raceParticipant.deleteMany();
   await db.booking.deleteMany();
@@ -73,6 +76,7 @@ async function clear() {
   await db.groupSchedule.deleteMany();
   await db.favoriteGroup.deleteMany();
   await db.group.deleteMany();
+  await db.discountCode.deleteMany();
   await db.organiser.deleteMany();
   await db.user.deleteMany();
   await db.groupSpirit.deleteMany();
@@ -270,6 +274,16 @@ function organisers() {
   return organiserSeed.map((o) => {
     return {
       ...o,
+      createdAt: now,
+      updatedAt: now
+    };
+  });
+}
+
+function discountCodes() {
+  return discountCodesSeed.map((v) => {
+    return {
+      ...v,
       createdAt: now,
       updatedAt: now
     };

@@ -8,7 +8,7 @@ import type { Event } from '@prisma/client';
 import React from 'react';
 import clsx from 'clsx';
 
-import { H4, H5, H6 } from '~/components/shared/typography';
+import { H4, H5 } from '~/components/shared/typography';
 
 import Button from '~/components/shared/Button';
 
@@ -66,8 +66,8 @@ export default function OrganizerIndexRoute() {
         <div className="col-span-full mb-12 lg:mb-12">
           <div className="flex flex-col-reverse justify-end lg:flex-row lg:items-center">
             <Form method="post" action="/o/event/create">
-              <Button variant="secondary" name="create-event">
-                <H6 as="span">{t('Create')}</H6>
+              <Button name="create-event">
+                {t('Create')}
               </Button>
             </Form>
           </div>

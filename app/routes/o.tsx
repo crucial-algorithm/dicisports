@@ -1,7 +1,9 @@
 import {
   UsersIcon,
   EnvelopeIcon,
-  Bars3Icon, UserIcon
+  Bars3Icon,
+  UserIcon,
+  BuildingStorefrontIcon
 } from '@heroicons/react/20/solid';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import type { LoaderFunction } from '@remix-run/node';
@@ -20,13 +22,27 @@ import CollectionIcon from '~/components/shared/icons/Collection';
 import DiscountCodeIcon from '~/components/shared/icons/DiscountCodeIcon';
 
 import Logo from '~/components/shared/Logo';
+import { useUser } from '~/hooks';
+import { useOrganiser } from '~/hooks/useOrganiser';
 
 import { requireUser } from '~/server/auth/session.server';
+import { findOrganiser } from '~/server/db/organiser.server';
+import type { Organiser, KCDHandle } from '~/types';
+
+export const handle: KCDHandle & { id: string; i18n: string[] } = {
+  id: 'organiser',
+  i18n: []
+};
+
+export type OrganiserLoaderData = {
+  organiser: Organiser
+};
 
 export const loader: LoaderFunction = async ({ request }) => {
-  await requireUser(request);
+  const user = await requireUser(request);
+  const organiser = await findOrganiser(user.id);
 
-  return json({});
+  return json({ organiser });
 };
 
 export default function OrganizerLayout() {
@@ -59,7 +75,11 @@ export default function OrganizerLayout() {
         handleToggleMenu={handleToggleMenu}
       />
       <MobileMenuButton onClick={handleMobileMenuClick} />
-      <MobileMenu isExpanded={isMobileMenuOpen} linkClicked={handleMobileMenuClick} pathname={location.pathname} />
+      <MobileMenu
+        isExpanded={isMobileMenuOpen}
+        linkClicked={handleMobileMenuClick}
+        pathname={location.pathname}
+      />
       <div className="grow p-2 h-screen overflow-auto">
         <Outlet />
       </div>
@@ -120,11 +140,20 @@ type MenuProps = {
   sideBarCollapsed: boolean;
   pathname: string;
   handleToggleMenu?: () => void;
-  hideCollapseMenu: boolean
+  hideCollapseMenu: boolean;
 } & React.ComponentProps<'li'>
 
-function Menu({ handleToggleMenu, pathname, sideBarCollapsed, hideCollapseMenu, className, onClick }: MenuProps) {
-  const [t] = useTranslation('common');
+function Menu({
+  handleToggleMenu,
+  pathname,
+  sideBarCollapsed,
+  hideCollapseMenu,
+  className,
+  onClick
+}: MenuProps) {
+  const { t } = useTranslation('common');
+  const user = useUser();
+  const organiser = useOrganiser();
 
   return (
     <>
@@ -167,47 +196,76 @@ function Menu({ handleToggleMenu, pathname, sideBarCollapsed, hideCollapseMenu, 
           onClick={onClick}
           isActive={/\/o\/users($|\/$|.*$)/.test(pathname)}
         />
-        <MenuEntry
-          icon={<UserIcon className="w-6" />}
-          title={t('Profile menu')}
-          to="/me"
-          sideBarCollapsed={sideBarCollapsed}
-          onClick={onClick}
-          isActive={/\/me($|\/$|.*$)/.test(pathname)}
-        />
       </ul>
 
-      {!hideCollapseMenu && (
-        <ul
-          className={clsx('flex absolute bottom-8', {
-            'w-52': !sideBarCollapsed
-          })}
-        >
-          <li
-            className={clsx(
-              'flex items-center gap-x-6 p-3 text-base font-bold rounded-lg cursor-pointer dark:text-white hover:bg-gray-200 dark:hover:bg-gray-700 mt-2',
-              className,
-              'w-full select-none',
-              {
-                'rotate-180': sideBarCollapsed,
-                'right-4': !sideBarCollapsed
-              }
-            )}
-            onClick={handleToggleMenu}
-          >
-            <span className="text-2xl">
-              <CollapseMenuIcon className="w-6" />
-            </span>
-            <span
-              className={clsx('origin-left duration-300 hover:block', {
-                hidden: sideBarCollapsed
-              })}
-            >
-              {t('Switch Collapse Menu')}
-            </span>
-          </li>
+      <div
+        className={clsx('absolute bottom-16 md:bottom-8', {
+          'w-full md:w-52': !sideBarCollapsed
+        })}
+      >
+        <ul className="w-full">
+          <MenuEntry
+            icon={
+              <>
+                {organiser?.logo && (
+                  <img
+                    src={buildImageUrl(organiser.logo, {
+                      transformations: { resize: { type: 'fill', width: 30, height: 30 } }
+                    })}
+                    className="w-6 inline rounded-full"
+                    alt={organiser.name}
+                  />
+                )}
+                {!organiser?.logo && <BuildingStorefrontIcon className="w-6" />}
+              </>
+            }
+            title={organiser?.name || t('Organiser menu')}
+            to="/o/us"
+            sideBarCollapsed={sideBarCollapsed}
+            onClick={onClick}
+            isActive={/\/us($|\/$|.*$)/.test(pathname)}
+          />
+          <MenuEntry
+            icon={<UserIcon className="w-6" />}
+            title={user?.name || t('Profile menu')}
+            to="/me"
+            sideBarCollapsed={sideBarCollapsed}
+            onClick={onClick}
+            isActive={/\/me($|\/$|.*$)/.test(pathname)}
+          />
         </ul>
-      )}
+        {!hideCollapseMenu && (
+          <ul
+            className={clsx('flex', {
+              'w-52': !sideBarCollapsed
+            })}
+          >
+            <li
+              className={clsx(
+                'flex items-center gap-x-6 p-3 text-base font-bold rounded-lg cursor-pointer dark:text-white hover:bg-gray-200 dark:hover:bg-gray-700 mt-2',
+                className,
+                'w-full select-none',
+                {
+                  'rotate-180': sideBarCollapsed,
+                  'right-4': !sideBarCollapsed
+                }
+              )}
+              onClick={handleToggleMenu}
+            >
+              <span className="text-2xl">
+                <CollapseMenuIcon className="w-6" />
+              </span>
+              <span
+                className={clsx('origin-left duration-300 hover:block', {
+                  hidden: sideBarCollapsed
+                })}
+              >
+                {t('Switch Collapse Menu')}
+              </span>
+            </li>
+          </ul>
+        )}
+      </div>
     </>
   );
 }

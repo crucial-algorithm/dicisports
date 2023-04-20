@@ -197,29 +197,25 @@ export default function UsRoute() {
               <TextField name="name" defaultValue={organiser?.name || ''} />
             </FormField>
 
-            <div className="flex flex-col lg:flex-row lg:gap-x-2">
-              <FormField
-                data-cy="email"
-                label={t('E-mail')}
-                className="lg:w-1/2"
-                error={actionData?.errors?.email}
-              >
-                <TextField name="email" defaultValue={organiser?.email || ''} />
-              </FormField>
+            <FormField
+              data-cy="email"
+              label={t('E-mail')}
+              error={actionData?.errors?.email}
+            >
+              <TextField name="email" defaultValue={organiser?.email || ''} />
+            </FormField>
 
-              <FormField
-                label={t('Phone Number')}
-                className="lg:w-1/2"
-                error={actionData?.errors?.phoneNumber}
-              >
-                <TextField
-                  name="phone-number"
-                  type="number"
-                  placeholder={t('Phone Number Placeholder')}
-                  defaultValue={organiser?.phoneNumber || ''}
-                />
-              </FormField>
-            </div>
+            <FormField
+              label={t('Phone Number')}
+              error={actionData?.errors?.phoneNumber}
+            >
+              <TextField
+                name="phone-number"
+                type="number"
+                placeholder={t('Phone Number Placeholder')}
+                defaultValue={organiser?.phoneNumber || ''}
+              />
+            </FormField>
 
             <FormField
               data-cy="address"
@@ -236,7 +232,7 @@ export default function UsRoute() {
               <FormField
                 data-cy="postal-code"
                 label={t('Postal Code')}
-                className="lg:w-1/3"
+                className="w-1/2 md:w-full"
                 error={actionData?.errors?.postalCode}
               >
                 <TextField
@@ -248,7 +244,7 @@ export default function UsRoute() {
               <FormField
                 data-cy="city"
                 label={t('City')}
-                className="lg:w-1/3"
+                className="w-1/2 md:w-full"
                 error={actionData?.errors?.city}
               >
                 <TextField name="city" defaultValue={organiser?.city || ''} />
