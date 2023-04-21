@@ -346,7 +346,7 @@ function DisplayRace({ race, index, eventId, areThereRacesInEarlyBird }: Display
             <div className="border-b h-2 w-48 mb-2" />
 
             <div>
-              {/*if early bird price deadline is bigger than 7 days, we'll show the date instead of days*/}
+              {/*if early bird price deadline is bigger than 30 days, we'll show the date instead of days*/}
               <p className="text-sm font-medium dark:text-white">
                 {validDuring < 30 ? t('Valid During') : t('Valid Until')}
               </p>
