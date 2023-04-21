@@ -110,6 +110,15 @@ export default function EventDisplayRoute() {
 
   let minPrice = 0;
   const [visiblePriceTag, setVisiblePriceTag] = useState<boolean>(true);
+  const anyRaceInEarlyBird = races
+    .map(
+      (r: Race) =>
+        r.priceEarlyBird &&
+        r.validUntil &&
+        new Date(r.validUntil).getTime() - Date.now() > 0
+    )
+    .filter(Boolean)
+    .length > 0;
 
   if (!event) {
     return (
@@ -176,7 +185,7 @@ export default function EventDisplayRoute() {
           {races
             .sort((a: Race, b: Race) => a.displayOrder - b.displayOrder)
             .map((race: Race, index: number) => (
-              <DisplayRace race={race} key={race.id} index={index} eventId={event.id} />
+              <DisplayRace race={race} key={race.id} index={index} eventId={event.id} areThereRacesInEarlyBird={anyRaceInEarlyBird} />
             ))}
           <WhenListEmpty list={races}>
             <H6
@@ -263,7 +272,14 @@ export default function EventDisplayRoute() {
   );
 }
 
-function DisplayRace({ race, index, eventId }: { race: Race; index: number, eventId: string }) {
+type DisplayRaceProps = {
+  race: Race;
+  index: number;
+  eventId: string;
+  areThereRacesInEarlyBird: boolean
+}
+
+function DisplayRace({ race, index, eventId, areThereRacesInEarlyBird }: DisplayRaceProps) {
   const { t } = useTranslation('event');
   const raceTime = displayTimeOfDay(race.startTime);
   const [expanded, setExpanded] = useState<boolean>(false);
@@ -271,8 +287,8 @@ function DisplayRace({ race, index, eventId }: { race: Race; index: number, even
   let isEarlyPriceValid = false;
 
   if (race.priceEarlyBird && race.validUntil) {
-    // calculate the difference in milliseconds
-    const diffInMs = new Date(race.validUntil.toString()).getTime() - Date.now();
+    // calculate the difference in milliseconds (+ 1 day, given the user selects an end date that is part of range)
+    const diffInMs = new Date(race.validUntil).getTime() - Date.now() + 86400 * 1000;
 
     // convert the difference to days
     validDuring = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
@@ -309,7 +325,8 @@ function DisplayRace({ race, index, eventId }: { race: Race; index: number, even
           </H5>
         </div>
         <div
-          className={clsx('flex flex-col items-center mt-4', {
+          className={clsx('flex flex-col items-center mt-4 justify-center', {
+            'min-h-[90px]': areThereRacesInEarlyBird,
             'mb-0': expanded && !isEarlyPriceValid,
             'mb-2': expanded && !isEarlyPriceValid
           })}
