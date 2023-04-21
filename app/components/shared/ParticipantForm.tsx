@@ -14,7 +14,7 @@ import FormField from '~/components/shared/form/FormField';
 import TextField from '~/components/shared/form/TextField';
 import countries from '~/server/db/countries.json';
 import type { Language, Participant, ShirtSize } from '~/types';
-import { FormContext } from '~/components/shared/form/UploadForm';
+import { FetcherForm, FormContext } from '~/components/shared/form/UploadForm';
 
 export default function ParticipantForm({
   participant,
@@ -45,25 +45,22 @@ export default function ParticipantForm({
 }) {
   const { t, i18n } = useTranslation('checkout');
   const language = i18n.language as Language;
-  const formProps = useContext(FormContext);
 
   const genderOptions = [
     { value: 'F', label: t('Female') },
     { value: 'M', label: t('Male') }
   ];
 
-  if (isReadOnly) {
-    formProps.readOnly = true;
-  }
-
   return (
-    <fetcher.Form
+    <FetcherForm
+      FForm={fetcher.Form}
       method="post"
       className={clsx('w-full', {
         'opacity-100': participant,
         'opacity-50': !participant
       })}
       key={hash}
+      readOnly={isReadOnly}
     >
       {!isReadOnly &&
         participant &&
@@ -335,7 +332,7 @@ export default function ParticipantForm({
           )}
         </ButtonGroup>
       )}
-    </fetcher.Form>
+    </FetcherForm>
   );
 }
 
