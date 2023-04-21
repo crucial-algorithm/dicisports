@@ -1,6 +1,8 @@
-# Welcome to Remix!
+# DiciSports 
 
-- [Remix Docs](https://remix.run/docs)
+Hosted at [dicisports](https://dicisports.com), but tested @ [dicistg.fly.dev](https://dicistg.fly.dev/).
+
+Built with [Remix](https://remix.run) running on [fly.io](https://fly.io).
 
 ## Development
 
