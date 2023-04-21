@@ -300,136 +300,140 @@ function DisplayRace({ race, index, eventId, areThereRacesInEarlyBird }: Display
   }
 
   return (
-    <div className="flex flex-col" data-cy="race">
+    <div
+      className={clsx(
+        'flex flex-col gap-y-4 mb-4 mr-2 md:mr-4 text-center items-center border border-black dark:border-white rounded-2xl outline-offset-1 w-[340px] md:overflow-hidden',
+        {
+          'relative min-h-[430px]': areThereRacesInEarlyBird
+        }
+      )}
+      data-cy={`race-${index}`}
+    >
+      <div className="mt-4" data-cy="race">
+        <H4 data-cy={`race-name-${race.id}`}>{race.name}</H4>
+      </div>
+      <div>
+        <H4>{t('Race Distance')}</H4>
+        <H5
+          className="dark:text-blueGray-500"
+          data-cy={`race-distance-${race.id}`}
+        >{`${race.distance} km`}</H5>
+      </div>
+      <div>
+        <H4>{t('Race Start Time')}</H4>
+        <H5 className="dark:text-blueGray-500" data-cy={`race-time-${race.id}`}>
+          {raceTime}
+        </H5>
+      </div>
       <div
-        className="gap-y-2 mb-4 mr-2 md:mr-4 text-center items-center border border-black dark:border-white rounded-2xl outline-offset-1 w-[340px] md:overflow-hidden"
-        data-cy={`race-${index}`}
+        className={clsx('flex flex-col items-center justify-center', {
+          'mb-0': expanded && !isEarlyPriceValid,
+          'mb-2': expanded && !isEarlyPriceValid
+        })}
       >
-        <div className="mt-4">
-          <H4 data-cy={`race-name-${race.id}`}>{race.name}</H4>
-        </div>
-        <div className="mt-4">
-          <H4>{t('Race Distance')}</H4>
-          <H5
-            className="dark:text-blueGray-500"
-            data-cy={`race-distance-${race.id}`}
-          >{`${race.distance} km`}</H5>
-        </div>
-        <div className="mt-4">
-          <H4>{t('Race Start Time')}</H4>
-          <H5
-            className="dark:text-blueGray-500"
-            data-cy={`race-time-${race.id}`}
-          >
-            {raceTime}
-          </H5>
-        </div>
-        <div
-          className={clsx('flex flex-col items-center mt-4 justify-center', {
-            'min-h-[90px]': areThereRacesInEarlyBird,
-            'mb-0': expanded && !isEarlyPriceValid,
-            'mb-2': expanded && !isEarlyPriceValid
-          })}
-        >
-          {isEarlyPriceValid && validDuring ? (
-            <>
-              <div className="flex flex-row gap-x-5 items-end px-28">
-                <H5
-                  className="dark:text-blueGray-500 line-through"
-                  data-cy={`race-price-${race.id}`}
-                >{`€${race.price}`}</H5>
-                <H3
-                  data-cy={`race-price-${race.id}`}
-                >{`€${race.priceEarlyBird}`}</H3>
-              </div>
-
-              <div className="border-b h-2 w-48 mb-2" />
-
-              <div>
-                {/*if early bird price deadline is bigger than 7 days, we'll show the date instead of days*/}
-                <p className="text-sm font-medium dark:text-white">
-                  {validDuring < 30 ? t('Valid During') : t('Valid Until')}
-                </p>
-                <p
-                  className="text-sm font-medium dark:text-blueGray-500"
-                  data-cy={`race-valid-until-${race.id}`}
-                >
-                  {validDuring < 30 ? (
-                    `${t(validDuring === 1 ? 'Valid Day' : 'Valid Days', {
-                      total: validDuring
-                    })}`
-                  ) : (
-                    <DisplayDate date={new Date(String(race.validUntil))} />
-                  )}
-                </p>
-              </div>
-            </>
-          ) : (
-            <H3 data-cy={`race-price-${race.id}`}>{`€${race.price}`}</H3>
-          )}
-        </div>
-        {expanded && (
+        {isEarlyPriceValid && validDuring ? (
           <>
-            {race.raceDescription && (
-              <div className="mt-4">
-                <H4>{t('Description')}</H4>
-                <div
-                  className="dark:text-blueGray-500 text-base font-medium mr-2 mt-2 whitespace-pre-line px-4"
-                  data-cy={`race-description-${race.id}`}
-                >
-                  {race.raceDescription}
-                </div>
-              </div>
-            )}
-            <div className="mt-4">
-              <H4>{t('Elevation Gain')}</H4>
-              <div
-                className="dark:text-blueGray-500 text-base font-medium mr-2 mt-2"
-                data-cy={`elevation-gain-${race.id}`}
+            <div className="flex flex-row gap-x-5 items-end px-28">
+              <H5
+                className="dark:text-blueGray-500 line-through"
+                data-cy={`race-price-${race.id}`}
+              >{`€${race.price}`}</H5>
+              <H3
+                data-cy={`race-price-${race.id}`}
+              >{`€${race.priceEarlyBird}`}</H3>
+            </div>
+
+            <div className="border-b h-2 w-48 mb-2" />
+
+            <div>
+              {/*if early bird price deadline is bigger than 7 days, we'll show the date instead of days*/}
+              <p className="text-sm font-medium dark:text-white">
+                {validDuring < 30 ? t('Valid During') : t('Valid Until')}
+              </p>
+              <p
+                className="text-sm font-medium dark:text-blueGray-500"
+                data-cy={`race-valid-until-${race.id}`}
               >
-                {`${race.elevationGain} m`}
+                {validDuring < 30 ? (
+                  `${t(validDuring === 1 ? 'Valid Day' : 'Valid Days', {
+                    total: validDuring
+                  })}`
+                ) : (
+                  <DisplayDate date={new Date(String(race.validUntil))} />
+                )}
+              </p>
+            </div>
+          </>
+        ) : (
+          <H3
+            className="items-center"
+            data-cy={`race-price-${race.id}`}
+          >{`€${race.price}`}</H3>
+        )}
+      </div>
+      {expanded && (
+        <>
+          {race.raceDescription && (
+            <div>
+              <H4>{t('Description')}</H4>
+              <div
+                className="dark:text-blueGray-500 text-base font-medium mr-2 mt-2 whitespace-pre-line px-4"
+                data-cy={`race-description-${race.id}`}
+              >
+                {race.raceDescription}
               </div>
             </div>
-            {race.elevationLoss && (
-              <div className="mt-4">
-                <H4>{t('Elevation Loss')}</H4>
-                <div
-                  className="dark:text-blueGray-500 text-base font-medium mr-2 mt-2"
-                  data-cy={`elevation-loss-${race.id}`}
-                >
-                  {`${race.elevationLoss} m`}
-                </div>
-              </div>
-            )}
-            {race.track && (
-              <Link
-                to={`/${eventId}/race/${race.id}/gpx`}
-                target="_blank"
-                rel="noreferrer"
-                data-cy={`gpx-${race.id}`}
-                download
+          )}
+          <div>
+            <H4>{t('Elevation Gain')}</H4>
+            <div
+              className="dark:text-blueGray-500 text-base font-medium mr-2 mt-2"
+              data-cy={`elevation-gain-${race.id}`}
+            >
+              {`${race.elevationGain} m`}
+            </div>
+          </div>
+          {race.elevationLoss && (
+            <div>
+              <H4>{t('Elevation Loss')}</H4>
+              <div
+                className="dark:text-blueGray-500 text-base font-medium mr-2 mt-2"
+                data-cy={`elevation-loss-${race.id}`}
               >
-                <H4 className="my-4 dark:text-blueGray-500">{t('GPX')}</H4>
-              </Link>
-            )}
-          </>
-        )}
-        <div className="dark:text-blueGray-500 text-sm font-medium mt-4">
-          <label
-            role="button"
-            onClick={handleSeeMore}
-            data-cy={`see-more-${race.id}`}
-          >
-            {expanded ? t('See Less') : t('See More')}
-          </label>
-        </div>
-        <div className="my-4">
-          <Form method="get" action="/checkout/create">
-            <input type="hidden" value={race.id} name="raceId" />
-            <input type="hidden" value={race.eventId} name="eventId" />
-            <Button name={`race-${race.id}`}>{t('Book')}</Button>
-          </Form>
-        </div>
+                {`${race.elevationLoss} m`}
+              </div>
+            </div>
+          )}
+          {race.track && (
+            <Link
+              to={`/${eventId}/race/${race.id}/gpx`}
+              target="_blank"
+              rel="noreferrer"
+              data-cy={`gpx-${race.id}`}
+              download
+            >
+              <H4 className="my-4 dark:text-blueGray-500">{t('GPX')}</H4>
+            </Link>
+          )}
+        </>
+      )}
+      <div
+        className={clsx('dark:text-blueGray-500 text-sm font-medium mb-4', {
+          'absolute bottom-0': areThereRacesInEarlyBird && !expanded
+        })}
+      >
+        <label
+          role="button"
+          onClick={handleSeeMore}
+          data-cy={`see-more-${race.id}`}
+        >
+          {expanded ? t('See Less') : t('See More')}
+        </label>
+        <Form method="get" action="/checkout/create" className="mt-2">
+          <input type="hidden" value={race.id} name="raceId" />
+          <input type="hidden" value={race.eventId} name="eventId" />
+          <Button name={`race-${race.id}`}>{t('Book')}</Button>
+        </Form>
       </div>
     </div>
   );
