@@ -1,7 +1,6 @@
 import type { FetcherWithComponents } from '@remix-run/react';
 import clsx from 'clsx';
 import * as React from 'react';
-import { useContext } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { CheckoutInfoActions } from '~/action.keys';
@@ -14,7 +13,7 @@ import FormField from '~/components/shared/form/FormField';
 import TextField from '~/components/shared/form/TextField';
 import countries from '~/server/db/countries.json';
 import type { Language, Participant, ShirtSize } from '~/types';
-import { FetcherForm, FormContext } from '~/components/shared/form/UploadForm';
+import { FetcherForm } from '~/components/shared/form/UploadForm';
 
 export default function ParticipantForm({
   participant,
@@ -53,7 +52,7 @@ export default function ParticipantForm({
 
   return (
     <FetcherForm
-      FForm={fetcher.Form}
+      TheForm={fetcher.Form}
       method="post"
       className={clsx('w-full', {
         'opacity-100': participant,
