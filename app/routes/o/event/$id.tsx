@@ -165,7 +165,11 @@ export const action: ActionFunction = async ({ request, params }) => {
       if (!name.startsWith('/file/image') || !filename) {
         return undefined;
       }
-      const uploadedImage = await uploadImageToCloudinary(data);
+
+      const uploadedImage = await uploadImageToCloudinary(
+        data,
+        params.id || null
+      );
 
       return uploadedImage.public_id;
     },
