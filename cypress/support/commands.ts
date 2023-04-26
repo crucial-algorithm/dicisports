@@ -28,6 +28,8 @@ declare global {
       ): Chainable<AUTWindow>;
 
       assertValueCopiedToClipboard(value: string): Promise<Chainable<void>>;
+
+      write(name: string, value: string): Chainable<void>;
     }
   }
 }
@@ -131,6 +133,12 @@ function waitForHydration() {
   cy.get('body[data-cy=ready]');
 }
 
+function writePrimeReactEditor(name: string, value: string) {
+  cy.get(`div[data-cy=editor-${name}] .ql-editor[contenteditable="true"]`)
+    .clear()
+    .type(value);
+}
+
 function getRecoverPasswordUrl() {
   function extractUrl(text: string) {
     const urlRegex = /(https?:\/\/[^\s]+)/g;
@@ -175,5 +183,6 @@ Cypress.Commands.add(
   'assertValueCopiedToClipboard',
   assertValueCopiedToClipboard
 );
+Cypress.Commands.add('write', writePrimeReactEditor);
 
 export {};

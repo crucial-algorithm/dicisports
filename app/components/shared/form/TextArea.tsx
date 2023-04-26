@@ -15,7 +15,7 @@ export default function TextArea({
   className
 }: TextAreaProps) {
   const { t } = useTranslation('common');
-  const [text, setText] = useState(defaultValue);
+  const [text, setText] = useState<string | undefined>(defaultValue ? String(defaultValue) : '');
 
   function renderHeader() {
     return (
@@ -42,6 +42,7 @@ export default function TextArea({
     <div
       className={clsx(className, 'p-0')}
       style={{ padding: 0 }}
+      data-cy={`editor-${name}`}
     >
       <Editor
         value={String(text)}
