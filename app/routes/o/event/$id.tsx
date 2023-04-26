@@ -40,6 +40,7 @@ import FormField from '~/components/shared/form/FormField';
 
 import InputError from '~/components/shared/form/InputError';
 import Label from '~/components/shared/form/Label';
+import TextArea from '~/components/shared/form/TextArea';
 import TextField from '~/components/shared/form/TextField';
 
 import UploadForm from '~/components/shared/form/UploadForm';
@@ -644,13 +645,11 @@ export default function OrganizerEventRoute() {
             error={actionData?.errors?.description}
           >
             <div className="mt-1 relative rounded-md">
-              <textarea
+              <TextArea
                 name="event-description"
-                className="input-text p-10"
+                className="input-text h-80"
                 placeholder={t('Event description')}
-                defaultValue={event.description || ''}
-                rows={5}
-                cols={50}
+                defaultValue={event.description}
               />
             </div>
           </FormField>
@@ -702,10 +701,7 @@ export default function OrganizerEventRoute() {
             >
               {t('Distances')}
 
-              <ButtonLink
-                className="hidden lg:flex"
-                to="race/new"
-              >
+              <ButtonLink className="hidden lg:flex" to="race/new">
                 {t('Create Distance')}
               </ButtonLink>
 
@@ -719,10 +715,7 @@ export default function OrganizerEventRoute() {
               </ButtonLink>
             </Label>
             <div>
-              <RacesList
-                races={races}
-                eventId={event.id}
-              />
+              <RacesList races={races} eventId={event.id} />
             </div>
             <WhenListEmpty list={races}>
               <H6 className="text-center p-12" variant="secondary" as="p">
@@ -741,13 +734,11 @@ export default function OrganizerEventRoute() {
             error={actionData?.errors?.directions}
           >
             <div className="mt-2 relative rounded-md">
-              <textarea
+              <TextArea
                 name="get-there"
-                className="input-text p-10"
+                className="input-text h-80"
                 placeholder={t('How to get there')}
-                defaultValue={event.directions || ''}
-                rows={5}
-                cols={50}
+                defaultValue={event.directions}
               />
             </div>
           </FormField>
@@ -761,11 +752,7 @@ export default function OrganizerEventRoute() {
             >
               {t('Documents')}
 
-              <ButtonLink
-                className="hidden lg:flex"
-                type="button"
-                to="doc/new"
-              >
+              <ButtonLink className="hidden lg:flex" type="button" to="doc/new">
                 {t('Upload Document')}
               </ButtonLink>
               <ButtonLink
@@ -779,10 +766,7 @@ export default function OrganizerEventRoute() {
               </ButtonLink>
             </Label>
             <div>
-              <DocumentsList
-                documents={event.documents}
-                eventId={event.id}
-              />
+              <DocumentsList documents={event.documents} eventId={event.id} />
             </div>
             <WhenListEmpty list={event.documents}>
               <H6 className="text-center p-12" variant="secondary" as="p">
@@ -827,8 +811,6 @@ export default function OrganizerEventRoute() {
             >
               {event.status === 'auto' ? t('Create Button') : t('Save Button')}
             </Button>
-
-
           </ButtonGroup>
           {actionData?.errors?.submit && (
             <InputError className="mt-8" id="500-error-message">

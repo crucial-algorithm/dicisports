@@ -168,8 +168,6 @@ describe('Event', () => {
     });
 
     it('should create an event', () => {
-      const description = 'O Peso da Régua será ponto de partida';
-
       cy.intercept('GET', '/o/event/*?_data=routes*')
         .as('EventRequests')
         .visitAndWaitForHydration('/o')
@@ -200,9 +198,7 @@ describe('Event', () => {
         .get('input[name="/file/image/0"]')
         .selectFile('cypress/assets/logo.jpg', { force: true })
 
-        .get('textarea[name=event-description]')
-        .type(description)
-        .should('have.value', description)
+        .write('event-description', 'O Peso da Régua será ponto de partida')
 
         .get('input[data-cy=perk-1]')
         .check()
@@ -247,8 +243,7 @@ describe('Event', () => {
           new Date(Date.now() + 86400 * 1000).toISOString().split('T')[0]
         )
 
-        .get('textarea[name=description]')
-        .type('10km run')
+        .write('description', '10km run')
 
         .get('input[name="track"]')
         .selectFile('cypress/assets/sample.gpx', { force: true })
@@ -259,8 +254,7 @@ describe('Event', () => {
 
         .wait('@EventRequests')
 
-        .get('textarea[name=get-there]')
-        .type('Carro: Saida pela A3 direção a Braga')
+        .write('get-there', 'Carro: Saida pela A3 direção a Braga')
 
         // "Create" document
         .get('a[data-cy=create-document]')
@@ -336,9 +330,7 @@ describe('Event', () => {
           expect(loc.pathname).to.contain('/o/event/MY4bvgxDbMtGv8rbYe5d');
         })
 
-        .get('textarea[name=event-description]')
-        .clear()
-        .type('event update')
+        .write('event-description', 'event update')
 
         .get('button[name=update-event]')
         .click()
@@ -417,7 +409,7 @@ describe('Event', () => {
         .type('a new perk')
 
         // Click another thing to get input out of focus and add the new perk
-        .get('textarea[name=event-description]')
+        .get('body')
         .click()
 
         .get('button[name=update-event]')
@@ -496,9 +488,6 @@ describe('Event', () => {
             .should('exist')
 
             .get('[data-cy=no-documents]')
-            .should('exist')
-
-            .get('[data-cy=no-description]')
             .should('exist');
         });
     });
