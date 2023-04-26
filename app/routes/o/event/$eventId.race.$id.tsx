@@ -28,6 +28,7 @@ import Button, { ButtonLink } from '~/components/shared/Button';
 import ButtonGroup from '~/components/shared/ButtonGroup';
 import BasicDatePicker from '~/components/shared/form/DatePicker';
 import FormField from '~/components/shared/form/FormField';
+import TextArea from '~/components/shared/form/TextArea';
 import TextField from '~/components/shared/form/TextField';
 import UploadForm from '~/components/shared/form/UploadForm';
 import Main from '~/components/shared/Main';
@@ -254,16 +255,6 @@ export default function RaceRoute() {
     race?.startTime ? race.startTime : hoursMinutesToTimeOfDay(9, 0)
   );
 
-  const name = useRef<HTMLInputElement | null>(null);
-  const distance = useRef<HTMLInputElement | null>(null);
-  const startTime = useRef<HTMLInputElement | null>(null);
-  const elevationGain = useRef<HTMLInputElement | null>(null);
-  const elevationLoss = useRef<HTMLInputElement | null>(null);
-  const price = useRef<HTMLInputElement | null>(null);
-  const priceEarlyBird = useRef<HTMLInputElement | null>(null);
-  const validUntil = useRef<HTMLInputElement | null>(null);
-  const raceDescription = useRef<HTMLTextAreaElement | null>(null);
-
   function FileListItems(files: File[]) {
     const dt = new ClipboardEvent('').clipboardData || new DataTransfer();
 
@@ -312,7 +303,6 @@ export default function RaceRoute() {
             id="name"
             name="name"
             placeholder={t('Race Name Placeholder')}
-            input={name}
             className="max-w-md"
             defaultValue={race?.name}
           />
@@ -328,7 +318,6 @@ export default function RaceRoute() {
             type="number"
             className="w-full"
             placeholder={t('Distance Placeholder')}
-            input={distance}
             defaultValue={race?.distance}
           />
         </FormField>
@@ -338,7 +327,7 @@ export default function RaceRoute() {
           className="w-80"
           error={actionData?.errors?.startTime}
         >
-          <HourOfDay hour={hour} minute={minute} input={startTime} />
+          <HourOfDay hour={hour} minute={minute} />
         </FormField>
 
         <FormField
@@ -351,7 +340,6 @@ export default function RaceRoute() {
             type="number"
             className="w-full"
             placeholder={t('D+ Placeholder')}
-            input={elevationGain}
             defaultValue={race?.elevationGain}
           />
         </FormField>
@@ -365,7 +353,6 @@ export default function RaceRoute() {
             type="number"
             className="w-full"
             placeholder={t('D- Placeholder')}
-            input={elevationLoss}
             defaultValue={race?.elevationLoss as number}
           ></TextField>
         </FormField>
@@ -380,7 +367,6 @@ export default function RaceRoute() {
             type="number"
             className="w-44"
             placeholder={t('Price Placeholder')}
-            input={price}
             defaultValue={race?.price}
           ></TextField>
         </FormField>
@@ -397,7 +383,6 @@ export default function RaceRoute() {
               type="number"
               className="w-44"
               placeholder={t('Price Early Bird Placeholder')}
-              input={priceEarlyBird}
               defaultValue={race?.priceEarlyBird as number}
             ></TextField>
           </FormField>
@@ -411,7 +396,6 @@ export default function RaceRoute() {
               label=""
               name="earlyBirdValidUntil"
               date={race?.validUntil ? new Date(race.validUntil) : null}
-              input={validUntil}
               className="w-full"
             />
           </FormField>
@@ -419,14 +403,11 @@ export default function RaceRoute() {
 
         <FormField label={t('Description')}>
           <div className="mt-1 relative rounded-md">
-            <textarea
+            <TextArea
               name="description"
-              className="input-text p-2 max-w-lg"
+              className="input-text h-40 p-2 max-w-lg"
               placeholder={t('Race Description')}
               defaultValue={race?.raceDescription || ''}
-              ref={raceDescription}
-              rows={5}
-              cols={50}
             />
           </div>
         </FormField>

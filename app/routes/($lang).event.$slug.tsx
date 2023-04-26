@@ -159,22 +159,10 @@ export default function EventDisplayRoute() {
         <div className="my-8">
           <H3>{t('About')}</H3>
           <div
-            className="dark:text-blueGray-500 text-base font-medium mr-2 mt-2 whitespace-pre-line"
+            className="dark:text-blueGray-500 text-base font-medium mr-2 mt-2 whitespace-pre-line prose"
             data-cy="description"
-          >
-            {event.description ? (
-              event.description
-            ) : (
-              <H6
-                className="text-center p-12"
-                variant="secondary"
-                as="p"
-                data-cy="no-description"
-              >
-                {t('No Description')}
-              </H6>
-            )}
-          </div>
+            dangerouslySetInnerHTML={{ __html: event.description || '...' }}
+          />
         </div>
 
         <H3 id="races-list">{t('Races')}</H3>
@@ -234,10 +222,9 @@ export default function EventDisplayRoute() {
             <H3>{t('How to get there')}</H3>
             <div
               data-cy="directions"
-              className="dark:text-blueGray-500 text-base font-medium mr-2 mt-2 whitespace-pre-line"
-            >
-              {event.directions}
-            </div>
+              className="dark:text-blueGray-500 text-base font-medium mr-2 mt-2 whitespace-pre-line prose"
+              dangerouslySetInnerHTML={{ __html: event.directions || '...' }}
+            />
           </div>
         )}
 
