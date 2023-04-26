@@ -566,8 +566,7 @@ describe('Event', () => {
           new Date(Date.now() + 86400 * 1000).toISOString().split('T')[0]
         )
 
-        .get('textarea[name=description]')
-        .type('10km run')
+        .write('description', '10km run')
 
         .get('input[name="track"]')
         .selectFile('cypress/assets/sample.gpx', { force: true })
