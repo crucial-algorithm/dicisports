@@ -154,7 +154,7 @@ export const action: ActionFunction = async ({ params, request }) => {
     throw Unauthorized(t('Not authorized'));
   }
 
-  if (uploadResult.length > 0) {
+  if (uploadResult && uploadResult.length > 0) {
     const [path, id] = uploadResult.split('|');
 
     track = path;
