@@ -9,7 +9,7 @@ async function createOrganiser(
 
   return db.organiser.create({
     data: {
-      id: Id(),
+      id: organiser.id || Id(),
       name: organiser.name,
       email: organiser.email,
       phoneNumber: organiser.phoneNumber,

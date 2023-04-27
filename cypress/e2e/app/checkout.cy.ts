@@ -221,11 +221,19 @@ describe('Checkout', () => {
         .click()
 
         .wait('@selectRace')
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.eq('/checkout/cart/MY4bvgxDbMtGv8rbYe5d');
+        })
 
         .get('#add-race-AhowRdNWCBQWSuivSt7h')
         .click()
 
         .wait('@selectRace')
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.eq('/checkout/cart/MY4bvgxDbMtGv8rbYe5d');
+        })
 
         .intercept('GET', '*?data=routes*info*')
         .as('registrationsCheckout')
@@ -234,6 +242,11 @@ describe('Checkout', () => {
         .click()
 
         .wait('@registrationsCheckout')
+
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.include('/checkout/info/');
+        })
 
         .intercept('POST', '/checkout/manage*?_data=routes*')
         .as('removeParticipant')

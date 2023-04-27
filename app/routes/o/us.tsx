@@ -33,6 +33,7 @@ import type { Organiser, OrganiserInput } from '~/types';
 import { Paragraph } from '~/components/shared/typography';
 import { uploadImageToCloudinary } from '~/server/storage/cloudinary.server';
 import UploadForm from '~/components/shared/form/UploadForm';
+import Id from '~/server/utils/Id.server';
 
 type ActionData = {
   errors?: {
@@ -59,7 +60,10 @@ export const action: ActionFunction = async ({ request }) => {
   const t = await i18n.getFixedT(request, 'organiser-form');
 
   const user = await getUser(request);
-  const organizer = await findOrganiser(user?.id as string);
+  const organiser = await findOrganiser(user?.id as string);
+  const isUpdate: boolean = !!organiser;
+
+  const organiserId = organiser ? organiser.id : Id();
 
   const uploadHandler: UploadHandler = unstable_composeUploadHandlers(
     // our custom upload handler
@@ -67,7 +71,11 @@ export const action: ActionFunction = async ({ request }) => {
       if (!name.startsWith('/file/image') || !filename) {
         return undefined;
       }
-      const uploadedImage = await uploadImageToCloudinary(data);
+
+      const uploadedImage = await uploadImageToCloudinary(
+        data,
+        organiserId || null
+      );
 
       return uploadedImage.public_id;
     },
@@ -81,7 +89,7 @@ export const action: ActionFunction = async ({ request }) => {
   const savedLogo = form.get('saved-logo') as string;
 
   const data: OrganiserInput = {
-    id: organizer ? organizer.id : null,
+    id: organiserId,
     name: form.get('name') as string,
     email: form.get('email') as string,
     logo: savedLogo.length > 0? savedLogo : logo,
@@ -135,7 +143,7 @@ export const action: ActionFunction = async ({ request }) => {
   try {
     OrganiserSchema.parse(data);
 
-    if (data.id !== null) {
+    if (isUpdate) {
       await updateOrganiser(data);
     } else {
       await createOrganiser(data);
