@@ -98,5 +98,8 @@
   "Are you sure you want to delete race?": "Tem a certeza que quer apagar a corrida? Não há como voltar atrás!",
   "Are you sure you want to delete document?": "Tem a certeza que quer apagar o documento? Não há como voltar atrás!",
   "Are you sure you want to delete event?": "Tem a certeza que quer apagar o evento? Não há como voltar atrás",
-  "Ignore": "Ignorar"
+  "Ignore": "Ignorar",
+  "Insert Valid Price": "Insira um preço válido",
+  "Insert Valid Date": "Insira uma data válida",
+  "Cheaper Early Bird": "Insira um valor menor que o preço da distância"
 }

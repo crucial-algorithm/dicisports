@@ -3,7 +3,8 @@ import path from 'path';
 import { Readable } from 'stream';
 
 import { ArrowDownTrayIcon, TrashIcon } from '@heroicons/react/24/outline';
-import type { LoaderFunction,
+import type {
+  LoaderFunction,
   ActionFunction,
   UploadHandler
 } from '@remix-run/node';
@@ -11,7 +12,8 @@ import {
   json,
   redirect,
   unstable_composeUploadHandlers,
-  unstable_createMemoryUploadHandler, unstable_parseMultipartFormData
+  unstable_createMemoryUploadHandler,
+  unstable_parseMultipartFormData
 } from '@remix-run/node';
 import { Link, useActionData, useLoaderData } from '@remix-run/react';
 import clsx from 'clsx';
@@ -19,7 +21,6 @@ import * as React from 'react';
 import { useRef, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { useTranslation } from 'react-i18next';
-
 
 import { z, ZodError } from 'zod';
 
@@ -41,17 +42,20 @@ import { NotFound, Unauthorized } from '~/server/utils/misc';
 import { uploadToS3 } from '~/server/utils/s3';
 import type { CreateRaceInput } from '~/types';
 import type { Event, Race } from '~/types';
-import { badRequest, hoursMinutesToTimeOfDay, timeOfDayToHoursMinutes } from '~/utils/misc';
+import {
+  badRequest,
+  hoursMinutesToTimeOfDay,
+  timeOfDayToHoursMinutes
+} from '~/utils/misc';
 
 type LoaderData = {
   event: Event;
   race: Race | null;
 };
 
-
 type ActionData = {
-  errors?: FormErrors
-}
+  errors?: FormErrors;
+};
 
 type FormErrors = {
   name?: string;
@@ -102,6 +106,14 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 export const action: ActionFunction = async ({ params, request }) => {
   const user = await requireUser(request);
   const t = await i18n.getFixedT(request, RESOURCES_NS);
+
+  let raceId = params.id || null;
+  const isInsert: boolean = raceId === 'new';
+
+  if (raceId === 'new') {
+    raceId = Id();
+  }
+
   const uploadHandler: UploadHandler = unstable_composeUploadHandlers(
     // our custom upload handler
     async ({ name, data, filename }) => {
@@ -109,35 +121,32 @@ export const action: ActionFunction = async ({ params, request }) => {
         return undefined;
       }
 
+      if (filename === undefined || filename.length === 0) {
+        return undefined;
+      }
+
       const eventId = params.eventId as string;
-      const raceId = params.id as string;
       const fileExtension = path.parse(filename as string).ext;
-      const id = raceId || Id();
 
       const key = await uploadToS3(
         Readable.from(data),
         eventId,
-        id + fileExtension
+        raceId + fileExtension
       );
 
-      return `${key}|${id}`;
+      return `${key}|${raceId}`;
     },
     // fallback to memory for everything else
     unstable_createMemoryUploadHandler()
   );
   const form = await unstable_parseMultipartFormData(request, uploadHandler);
   const eventId = params.eventId as string;
-  let raceId = params.id || null;
   const earlyBirdValidUntil = form.get('earlyBirdValidUntil') as string;
   const deletedGPX = form.get('deletedGPX');
   const uploadResult = form.get('track') as string;
   let track: string | null = null;
   let trackAssignedId: string | null = null;
   const event = await findEvent(eventId);
-
-  if (raceId === 'new') {
-    raceId = null;
-  }
 
   if (!event) {
     throw NotFound(t('Event not found'));
@@ -146,8 +155,7 @@ export const action: ActionFunction = async ({ params, request }) => {
     throw Unauthorized(t('Not authorized'));
   }
 
-
-  if (uploadResult) {
+  if (uploadResult && uploadResult.length > 0) {
     const [path, id] = uploadResult.split('|');
 
     track = path;
@@ -176,53 +184,73 @@ export const action: ActionFunction = async ({ params, request }) => {
   const str5CharsOrMore = z
     .string(required)
     .min(1, { message: t('Min 1 chars') });
-  const RaceSchema = z.object({
-    name: str5CharsOrMore,
-    distance: z
-      .number({
-        required_error: t('Field Required'),
-        invalid_type_error: t('Must Be Number')
-      })
-      .positive({ message: t('Positive Number') }),
-    startTime: z.number({ invalid_type_error: t('Start Time') }),
-    elevationGain: z
-      .number({
-        required_error: t('Field Required'),
-        invalid_type_error: t('Must Be Number')
-      })
-      .nonnegative({ message: t('Elevation Positive') }),
-    elevationLoss: z
-      .number({
-        required_error: t('Field Required'),
-        invalid_type_error: t('Must Be Number')
-      })
-      .nonnegative({ message: t('Elevation Positive') })
-      .nullable(),
-    price: z
-      .number({
-        required_error: t('Field Required'),
-        invalid_type_error: t('Must Be Number')
-      })
-      .positive({ message: t('Positive Number') }),
-    priceEarlyBird: z
-      .number({
-        required_error: t('Field Required'),
-        invalid_type_error: t('Must Be Number')
-      })
-      .positive({ message: t('Positive Number') })
-      .nullable(),
-    validUntil: z
-      .date()
-      .min(new Date(), { message: t('Future Date') })
-      .nullable()
-  });
+  const RaceSchema = z
+    .object({
+      name: str5CharsOrMore,
+      distance: z
+        .number({
+          required_error: t('Field Required'),
+          invalid_type_error: t('Must Be Number')
+        })
+        .positive({ message: t('Positive Number') }),
+      startTime: z.number({ invalid_type_error: t('Start Time') }),
+      elevationGain: z
+        .number({
+          required_error: t('Field Required'),
+          invalid_type_error: t('Must Be Number')
+        })
+        .nonnegative({ message: t('Elevation Positive') }),
+      elevationLoss: z
+        .number({
+          required_error: t('Field Required'),
+          invalid_type_error: t('Must Be Number')
+        })
+        .nonnegative({ message: t('Elevation Positive') })
+        .nullable(),
+      price: z
+        .number({
+          required_error: t('Field Required'),
+          invalid_type_error: t('Must Be Number')
+        })
+        .positive({ message: t('Positive Number') }),
+      priceEarlyBird: z
+        .number({
+          required_error: t('Field Required'),
+          invalid_type_error: t('Must Be Number')
+        })
+        .positive({ message: t('Positive Number') })
+        .nullable(),
+      validUntil: z
+        .date()
+        .min(new Date(), { message: t('Future Date') })
+        .nullable()
+    })
+    .refine(
+      (schema) =>
+        (schema.priceEarlyBird === null && schema.validUntil === null) ||
+        (schema.priceEarlyBird !== null && schema.validUntil !== null),
+      {
+        message: t(
+          raceData.priceEarlyBird === null
+            ? 'Insert Valid Price'
+            : 'Insert Valid Date'
+        ),
+        path: [
+          raceData.priceEarlyBird === null ? 'priceEarlyBird' : 'validUntil'
+        ]
+      }
+    )
+    .refine((s) => s.price > s.priceEarlyBird, {
+      message: t('Cheaper Early Bird'),
+      path: ['priceEarlyBird']
+    });
 
   try {
-
     RaceSchema.parse(raceData);
-    raceId
-      ? await updateRace(raceData, deletedGPX === 'true')
-      : await createRace(raceData);
+
+    isInsert
+      ? await createRace(raceData)
+      : await updateRace(raceData, deletedGPX === 'true');
 
     return redirect(`/o/event/${event.id}`);
   } catch (e) {
@@ -242,7 +270,6 @@ export const action: ActionFunction = async ({ params, request }) => {
     return badRequest({ errors });
   }
 };
-
 
 export default function RaceRoute() {
   const { event, race } = useLoaderData() as LoaderData;
@@ -450,7 +477,7 @@ export default function RaceRoute() {
                 {t('Download GPX File')}
               </div>
             </div>
-            <div >
+            <div>
               <Link
                 to={`/${event.id}/race/${race?.id}/gpx`}
                 target="_blank"
