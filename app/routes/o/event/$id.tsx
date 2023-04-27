@@ -527,13 +527,12 @@ export default function OrganizerEventRoute() {
             </FormField>
 
             <FormField
-              label={''}
+              label={t('Date')}
               id="event-date"
               className="w-full md:basis-1/3 md:pr-4"
               error={actionData?.errors?.startAt}
             >
               <BasicDatePicker
-                label={t('Date')}
                 name="event-date"
                 date={event?.startAt}
                 minDate={new Date()}

@@ -1,16 +1,21 @@
 import * as React from 'react';
+import { useContext } from 'react';
 
-import type { CalendarChangeEvent, CalendarDateTemplateEvent } from 'primereact/calendar';
+import type {
+  CalendarChangeEvent,
+  CalendarDateTemplateEvent
+} from 'primereact/calendar';
 import { Calendar } from 'primereact/calendar';
 
 import Label from '~/components/shared/form/Label';
+import { FormContext } from '~/components/shared/form/UploadForm';
 
 type DatePickerOptions = {
   name: string;
-  label: string;
+  label?: string;
   date: Date | null | undefined;
   minDate?: Date;
-  input?:  React.RefObject<any>;
+  input?: React.RefObject<any>;
 } & React.ComponentProps<'input'>;
 
 export default function BasicDatePicker({
@@ -21,6 +26,15 @@ export default function BasicDatePicker({
   input
 }: DatePickerOptions) {
   const [value, setValue] = React.useState<Date | null>(date);
+  const formProps = useContext(FormContext);
+
+  if (formProps.readOnly) {
+    return (
+      <div className="font-medium dark:text-white">
+        {date ? date.toISOString().split('T')[0] : ''}
+      </div>
+    );
+  }
 
   function handleOnChange(event: CalendarChangeEvent) {
     setValue(event.value as Date);
@@ -47,7 +61,7 @@ function dateTemplateWithCypressTags(date: CalendarDateTemplateEvent) {
   return (
     <span
       data-cy-year={date.year}
-      data-cy-month={Number(date.month)+1}
+      data-cy-month={Number(date.month) + 1}
       data-cy-day={date.day}
       data-cy-today={date.today}
     >

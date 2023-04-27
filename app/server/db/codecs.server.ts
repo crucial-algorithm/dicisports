@@ -323,6 +323,7 @@ function dbRawBookingListToBookingList(
     eventName: bookingList.event_name,
     bookingDate: bookingList.booking_date,
     status: bookingList.status,
+    pin: bookingList.pin,
     totalParticipants: Number(bookingList.total_participants)
   };
 }

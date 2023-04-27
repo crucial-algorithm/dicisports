@@ -2,10 +2,9 @@ import type { FetcherWithComponents } from '@remix-run/react';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import type { UICartRow, Event } from '~/types';
+import type { Event, UICartRow } from '~/types';
 import { H4, H5, H6 } from '~/components/shared/typography';
 import DisplayDate from '~/components/shared/DIsplayDate';
-import Button from '~/components/shared/Button';
 import InputError from '~/components/shared/form/InputError';
 
 export default function DisplayCart({
@@ -14,11 +13,7 @@ export default function DisplayCart({
   error,
   fetcher,
   hash,
-  hideCheckoutButton,
-  showEditInfoButton,
-  showContinueLabel,
-  showUpdateCartButton,
-  showFinishRegistrationLabel,
+  children,
   action
 }: {
   cart: UICartRow[];
@@ -26,13 +21,8 @@ export default function DisplayCart({
   error?: string;
   fetcher: FetcherWithComponents<any>;
   hash?: number;
-  hideCheckoutButton?: boolean;
-  showEditInfoButton?: boolean;
-  showContinueLabel?: boolean;
-  showUpdateCartButton?: boolean;
-  showFinishRegistrationLabel?: boolean;
   action?: string;
-}) {
+} & React.ComponentProps<'div'>) {
   const { t } = useTranslation('checkout');
   let totalPrice = 0;
 
@@ -58,9 +48,7 @@ export default function DisplayCart({
                 <H6>{'x' + ticket.qty}</H6>
               </div>
               <div className="flex flex-row items-center justify-between">
-                <H6 className="dark:text-blueGray-500">
-                  {ticket.price + '€'}
-                </H6>
+                <H6 className="dark:text-blueGray-500">{ticket.price + '€'}</H6>
                 <H6 className="dark:text-blueGray-500">
                   {ticket.price * ticket.qty + '€'}
                 </H6>
@@ -76,60 +64,18 @@ export default function DisplayCart({
           }) && (
             <div className="flex flex-row items-center justify-between mt-4 py-4 border-t-2 border-grey-300">
               <H6>{t('Total')}</H6>
-              <H6>{totalPrice + '€'}</H6>
+              <H6 data-cy="total-price">{totalPrice + '€'}</H6>
             </div>
           )}
 
-        {!hideCheckoutButton && !showEditInfoButton && (
-          <div className="flex flex-col items-center w-full">
-            <input type="hidden" name="hash" value={hash} />
-            <Button
-              type="submit"
-              name="actionId"
-              value="checkout"
-              disabled={cart.length === 0}
-              className="mt-4 w-full"
-              id="checkout"
-            >
-              {showContinueLabel
-                ? t('Continue')
-                : showFinishRegistrationLabel
-                ? t('Finish Registration')
-                : t('Checkout now')}
-            </Button>
-            {error && (
-              <InputError id="checkout-error" className="mt-2">
-                {error}
-              </InputError>
-            )}
-          </div>
+        {children}
+        <input type="hidden" name="hash" value={hash} />
+        {error && (
+            <InputError id="checkout-error" className="mt-2">
+              {error}
+            </InputError>
         )}
 
-        {showUpdateCartButton && (
-          <div className="flex justify-end mt-4">
-            <a
-              href={`/checkout/cart/${event.id}?a=update`}
-              data-cy="update-cart"
-            >
-              <H6 className="dark:text-blueGray-500 cursor-pointer">
-                {t('Update Cart')}
-              </H6>
-            </a>
-          </div>
-        )}
-
-        {showEditInfoButton && (
-          <div>
-            <Button
-              name="actionId"
-              className="mt-4 w-full"
-              type="submit"
-              value="update-info"
-            >
-              {t('Edit info')}
-            </Button>
-          </div>
-        )}
       </div>
     </fetcher.Form>
   );

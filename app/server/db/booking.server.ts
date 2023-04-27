@@ -1,11 +1,19 @@
-import { PrismaClient } from '@prisma/client';
 import type { CheckoutStatus, Prisma } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 
 import { db } from '~/server/db.server';
 
-import { dbRawBookingListToBookingList, dbUICartToUICart } from '~/server/db/codecs.server';
-import Id from '~/server/utils/Id.server';
-import type { Booking, DBRawUICartRow, UICartRow, BookingList, DBRawBookingList } from '~/types';
+import {
+  dbRawBookingListToBookingList,
+  dbUICartToUICart
+} from '~/server/db/codecs.server';
+import type {
+  Booking,
+  BookingList,
+  DBRawBookingList,
+  DBRawUICartRow,
+  UICartRow
+} from '~/types';
 
 async function updateBookingStatus(
   status: CheckoutStatus,
@@ -56,13 +64,14 @@ async function findBookingCart(
 }
 
 async function createBooking(
+  bookingId: string,
   pin: number,
   eventId: string,
   userSessionId: string
 ): Promise<Booking> {
   return await db.booking.create({
     data: {
-      id: Id(),
+      id: bookingId,
       pin,
       eventId,
       userId: userSessionId,
@@ -120,12 +129,17 @@ async function findUserBookingsList(
 
   const results: Array<DBRawBookingList> = await db.$queryRaw`
     SELECT *, count(1) over () as records
-    FROM (SELECT b.id, e.name as event_name, b.created_at as booking_date, b.status, COUNT(rp.id) as total_participants
+    FROM (SELECT b.id,
+                 e.name       as event_name,
+                 b.created_at as booking_date,
+                 b.status,
+                 b.pin,
+                 COUNT(rp.id) as total_participants
           FROM bookings b
-            INNER JOIN events e on e.id = b.event_id
-            INNER JOIN race_participants rp on b.id = rp.booking_id
+                 INNER JOIN events e on e.id = b.event_id
+                 INNER JOIN race_participants rp on b.id = rp.booking_id
           WHERE user_id = ${userId}
-          AND e.name ILIKE ${name}
+            AND e.name ILIKE ${name}
           GROUP BY b.id, e.name, b.created_at, b.status) as P LIMIT ${pageSize}
     OFFSET ${page * pageSize};
   `;
@@ -135,6 +149,12 @@ async function findUserBookingsList(
   return { results: mapped, total };
 }
 
+async function findBookingById(id: string): Promise<Booking | null> {
+  return await db.booking.findUnique({
+    where: { id }
+  });
+} 
+
 export {
   updateBookingStatus,
   findBooking,
@@ -142,5 +162,6 @@ export {
   removeBooking,
   findBookingCart,
   changeRegistrationToAuthUser,
-  findUserBookingsList
+  findUserBookingsList,
+  findBookingById
 };
