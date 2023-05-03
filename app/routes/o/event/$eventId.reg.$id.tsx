@@ -52,7 +52,7 @@ const RESOURCES_NS = 'create-event-form';
 
 type LoaderData = {
   event: Event;
-  document: Document | null;
+  regulation: Document | null;
 };
 
 type ActionData = {
@@ -223,7 +223,7 @@ export const action: ActionFunction = async ({ request, params }) => {
 };
 
 export default function EventDocumentRoute() {
-  const { event, document } = useLoaderData() as LoaderData;
+  const { event, regulation } = useLoaderData() as LoaderData;
   const actionData = useActionData() as ActionData;
 
   const { t } = useTranslation(RESOURCES_NS);
@@ -265,7 +265,7 @@ export default function EventDocumentRoute() {
     <Main>
       <UploadForm>
         <div className="p-4">
-          {!document && (
+          {!regulation && (
             <>
               <FormField
                 label={t('Document')}
@@ -304,8 +304,12 @@ export default function EventDocumentRoute() {
             </div>
           )}
 
-          <FormField label={t('Or')}>
-            <TextArea name="regulation" className="input-text h-80" />
+          <FormField label={t(regulation?.id ? 'Regulation' : 'Or')}>
+            <TextArea
+              name="regulation"
+              className="input-text h-80"
+              defaultValue={regulation?.content ? regulation.content : null}
+            />
           </FormField>
 
           {actionData?.errors?.submit && (
@@ -323,7 +327,7 @@ export default function EventDocumentRoute() {
             {t('Cancel')}
           </ButtonLink>
           <Button type="submit" name="create-document-button">
-            {document?.id
+            {regulation?.id
               ? t('Update Document Button')
               : t('Upload Document Button')}
           </Button>

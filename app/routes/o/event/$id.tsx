@@ -397,9 +397,8 @@ export default function OrganizerEventRoute() {
   const inputEl = useRef(null);
   const deleteEventForm = useRef<HTMLFormElement>(null);
   const isPublished = event.status === Status.published;
-  const isInlineRegulation = regulation.content !== null;
+  const isInlineRegulation = regulation && regulation.content !== null;
 
-  console.log('inline? ', isInlineRegulation);
   // Hack: while remix doesn't handle dates properly
   hackyEventRevival(event);
 
@@ -822,7 +821,7 @@ export default function OrganizerEventRoute() {
               <div className="relative flex mb-4 justify-between items-center flex-row border-b p-4 last:border-none border-gray-300 dark:border-gray-300">
                 {isInlineRegulation ? (
                   <Link
-                    to={`/o/event/${event.id}/doc/${regulation.id}`}
+                    to={`/o/event/${event.id}/reg/${regulation.id}`}
                     className="text-lg font-extrabold pl-3 text-gray-700 dark:text-white w-[calc(100%-(24px+24px))] cursor-pointer"
                     data-cy="regulation-doc"
                   >
@@ -837,11 +836,10 @@ export default function OrganizerEventRoute() {
                   </div>
                 )}
 
-                {/*TODO: redirect inline regulations to the display route */}
                 <a
                   href={
                     isInlineRegulation
-                      ? '/'
+                      ? `/${event.slug}/regulation`
                       : `/${event.id}/doc/${regulation.id}/view`
                   }
                   target="_blank"

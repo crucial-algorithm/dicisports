@@ -32,10 +32,12 @@ import { sendBookingConfirmationEmail } from '~/server/email.server';
 import { badRequest, getDomainUrl } from '~/utils/misc';
 import i18n from '~/server/i18n.server';
 import InputError from '~/components/shared/form/InputError';
+import { findRegulation } from '~/server/documents.server';
 
 type LoaderData = {
   event: Event;
   cart: UICartRow[];
+  regulation: Document;
 };
 
 export const action: ActionFunction = async ({ request, params }) => {
@@ -152,7 +154,8 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 
   return json({
     event,
-    cart
+    cart,
+    regulation: await findRegulation(eventId)
   });
 };
 
@@ -165,9 +168,11 @@ type ActionData = {
 
 export default function CheckoutPaymentRoute() {
   const actionData = useActionData<ActionData>();
-  const { event, cart } = useLoaderData<LoaderData>();
+  const { event, cart, regulation } = useLoaderData<LoaderData>();
   const { t } = useTranslation('checkout');
   const fetcher = useFetcher();
+
+  const isInlineRegulation = regulation.content !== null;
 
   return (
     <Main>
@@ -197,7 +202,16 @@ export default function CheckoutPaymentRoute() {
                 htmlFor="regulation"
               >
                 {t('Read and Accepted')}
-                <Link to="/">{t('Event Regulation')}</Link>
+                <Link
+                  target="_blank"
+                  to={
+                    isInlineRegulation
+                      ? `/${event.slug}/regulation`
+                      : `/${event.id}/doc/${regulation.id}/view`
+                  }
+                >
+                  {t('Event Regulation')}
+                </Link>
               </label>
             </div>
 
@@ -212,7 +226,9 @@ export default function CheckoutPaymentRoute() {
                 htmlFor="terms"
               >
                 {t('Read and Accepted')}
-                <Link to="/">{t('Terms and Conditions')}</Link>
+                <Link target="_blank" to="/privacy">
+                  {t('Terms and Conditions')}
+                </Link>
               </label>
             </div>
 

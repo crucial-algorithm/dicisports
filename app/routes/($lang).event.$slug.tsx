@@ -428,7 +428,7 @@ function DisplayRace({ race, index, eventId, areThereRacesInEarlyBird }: Display
 
 function DisplayDocument(props: { document: Document; index: number }) {
   const { document, index } = props;
-  const path = document.path;
+  const path = document.path as string;
   const fileExtension = path.split('.');
 
   return (

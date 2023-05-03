@@ -1,23 +1,24 @@
 import type {
-  Group as DBGroup,
-  User as DBUser,
-  GroupSpirit as DBGroupSpirit,
-  GroupType as DBGroupType,
-  Sport as DBSport,
+  Booking as DBBooking,
+  Difficulty as DBDifficulty,
+  DiscountCode as DBDiscountCode,
   Document as DBDocument,
   Event as DBEvent,
+  Group as DBGroup,
+  GroupSchedule as DBGroupSchedule,
+  GroupSpirit as DBGroupSpirit,
+  GroupType as DBGroupType,
+  Organiser as DBOrganiser,
+  Participant as DBParticipant,
+  ParticipantStatus,
   Perk as DBPerk,
   Race as DBRace,
-  GroupSchedule as DBGroupSchedule,
-  Difficulty as DBDifficulty,
   RaceParticipant as DBRaceParticipant,
-  Participant as DBParticipant,
-  Booking as DBBooking,
   ShirtSize as DBShirtSize,
-  Organiser as DBOrganiser,
-  ParticipantStatus,
+  Sport as DBSport,
   Status as EventStatus,
-  DiscountCode as DBDiscountCode
+  User as DBUser,
+  Status
 } from '@prisma/client';
 
 type NonNullProperties<Type> = {
@@ -113,6 +114,19 @@ type CreateDocumentInput = {
   isRegulation?: boolean;
   content?: string | null;
   eventId: string;
+};
+
+type DBRawDocument = {
+  id: string;
+  label: string | null;
+  path: string | null;
+  is_regulation: boolean;
+  content: string | null;
+  event_id: string;
+  status: Status;
+  position: number;
+  created_at: Date;
+  updated_at: Date;
 };
 
 type GroupType = {
@@ -610,7 +624,8 @@ export {
   EventStatus,
   BookingList,
   DBRawBookingList,
-  DiscountCode
+  DiscountCode,
+  DBRawDocument
 };
 
 // https://www.i18next.com/overview/typescript#argument-of-type-defaulttfuncreturn-is-not-assignable-to-parameter-of-type-xyz

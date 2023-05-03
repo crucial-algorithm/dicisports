@@ -1,7 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 
 import { db } from '~/server/db.server';
-import type { CreateDocumentInput, Document } from '~/types';
+import type { CreateDocumentInput, DBRawDocument, Document } from '~/types';
 import Id from '~/server/utils/Id.server';
 
 const prisma = new PrismaClient();
@@ -33,6 +33,7 @@ async function createDocument(
       createdAt: documentAt,
       updatedAt: documentAt,
       isRegulation: document.isRegulation,
+      content: document.content,
       eventId: document.eventId
     }
   });
@@ -43,7 +44,7 @@ async function updateDocument(document: CreateDocumentInput): Promise<void> {
 
   await db.document.update({
     where: { id: document.id },
-    data: { label: document.label, updatedAt }
+    data: { label: document.label, updatedAt, content: document.content }
   });
 }
 
@@ -99,7 +100,7 @@ async function deleteDocument(documentId: string): Promise<void> {
 }
 
 async function findRegulation(eventId: string): Promise<Document | null> {
-  const results = await db.$queryRaw`
+  const results: DBRawDocument[] = await db.$queryRaw`
     SELECT *
     FROM documents
     WHERE event_id = ${eventId}
