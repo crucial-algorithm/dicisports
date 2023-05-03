@@ -337,7 +337,9 @@ describe('Event', () => {
 
         .location()
         .should((loc) => {
-          expect(loc.pathname).to.contain('/o/event/MY4bvgxDbMtGv8rbYe5d/dashboard');
+          expect(loc.pathname).to.contain(
+            '/o/event/MY4bvgxDbMtGv8rbYe5d/dashboard'
+          );
         })
 
         .visitAndWaitForHydration('/event/love-tiles-douro-granfondo-2023')
@@ -348,7 +350,10 @@ describe('Event', () => {
     });
 
     it('should change race order', () => {
-      cy.intercept('POST', '/o/event/MY4bvgxDbMtGv8rbYe5d/race/AhowRdNWCBQWSuivSt7h/move-down?*')
+      cy.intercept(
+        'POST',
+        '/o/event/MY4bvgxDbMtGv8rbYe5d/race/AhowRdNWCBQWSuivSt7h/move-down?*'
+      )
         .as('MoveRaceDown')
 
         .visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d')
@@ -370,7 +375,10 @@ describe('Event', () => {
     });
 
     it('should change document order', () => {
-      cy.intercept('POST', '/o/event/MY4bvgxDbMtGv8rbYe5d/doc/MY4bvgxDbMtGv8rbYe5d/move-down?*')
+      cy.intercept(
+        'POST',
+        '/o/event/MY4bvgxDbMtGv8rbYe5d/doc/MY4bvgxDbMtGv8rbYe5d/move-down?*'
+      )
         .as('MoveDocumentDown')
 
         .visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d')
@@ -503,7 +511,10 @@ describe('Event', () => {
     it('should delete document', () => {
       cy.visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d')
 
-        .intercept('POST', '/o/event/MY4bvgxDbMtGv8rbYe5d/doc/MY4bvgxDbMtGv8rbYe5d/remove?*')
+        .intercept(
+          'POST',
+          '/o/event/MY4bvgxDbMtGv8rbYe5d/doc/MY4bvgxDbMtGv8rbYe5d/remove?*'
+        )
         .as('DeleteDocument')
 
         .get('button[name=delete-MY4bvgxDbMtGv8rbYe5d]')
@@ -587,9 +598,10 @@ describe('Event', () => {
         .visitAndWaitForHydration('/event/love-tiles-douro-granfondo-2023')
 
         .get('[data-cy=race]')
-        .should('have.length', 4).and('contain', 'a new race');
+        .should('have.length', 4)
+        .and('contain', 'a new race');
     });
-    
+
     it('should update race', () => {
       cy.loginOrganiser()
         .visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d')
@@ -623,6 +635,128 @@ describe('Event', () => {
         .get('[data-cy=race-name-xaXaCzs2t7D8DpRNnffM]')
         .should('exist')
         .and('contain', 'Granfondo updated');
+    });
+
+    it('should be able to upload a regulation pdf', () => {
+      cy.loginOrganiser()
+
+        .intercept('GET', '/o/event/*?_data=routes*')
+        .as('EventRequests')
+        .visitAndWaitForHydration('/o')
+
+        .get('button[name=create-event]')
+        .click()
+
+        .wait('@EventRequests')
+
+        .get('[data-cy=add-regulation]')
+        .click()
+
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.include('/reg/new');
+        })
+
+        .get('input[name=file]')
+        .selectFile('cypress/assets/sample.pdf', { force: true })
+
+        .get('#submit-button')
+        .click()
+
+        .wait('@EventRequests')
+
+        .location()
+        .should((l) => expect(l.pathname).to.include('/o/event/'))
+
+        .get('[data-cy=regulation-doc]')
+        .should('exist');
+    });
+
+    it('should be able to upload a regulation inline', () => {
+      cy.loginOrganiser()
+
+        .intercept('GET', '/o/event/*?_data=routes*')
+        .as('EventRequests')
+        .visitAndWaitForHydration('/o')
+
+        .get('button[name=create-event]')
+        .click()
+
+        .wait('@EventRequests')
+
+        .get('[data-cy=add-regulation]')
+        .click()
+
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.include('/reg/new');
+        })
+
+        .write(
+          'regulation',
+          'Devoluções aceites apenas com justificação válida.'
+        )
+
+        .get('#submit-button')
+        .click()
+
+        .wait('@EventRequests')
+
+        .location()
+        .should((l) => expect(l.pathname).to.include('/o/event/'))
+
+        .get('[data-cy=regulation-doc]')
+        .should('exist');
+    });
+
+    it('should display regulation', () => {
+      cy.visit('/trilho-dos-moinhos/regulation')
+
+        .get('div[data-cy=regulation]')
+        .contains(
+          'A inscrição é efetuada online, no site dos Amigos da Montanha, ou na sede da Associação, em Barcelinhos.'
+        );
+    });
+
+    it('should be able to update inline regulation', () => {
+      cy.loginOrganiser()
+        .visitAndWaitForHydration('/o/event/gLqrDfMx6qkTHn6hoZqA')
+
+        .get('[data-cy=regulation-doc]')
+        .click()
+
+        .location()
+        .should((l) =>
+          expect(l.pathname).to.eq(
+            '/o/event/gLqrDfMx6qkTHn6hoZqA/reg/4paKnjmW6LFtTfutNSgc'
+          )
+        )
+
+        .write(
+          'regulation',
+          'Devoluções aceites apenas com justificação válida.'
+        )
+
+        .intercept(
+          'POST',
+          '/o/event/gLqrDfMx6qkTHn6hoZqA/reg/4paKnjmW6LFtTfutNSgc*'
+        )
+        .as('saveRegulation')
+
+        .get('#submit-button')
+        .click()
+
+        .wait('@saveRegulation')
+
+        .location()
+        .should((l) =>
+          expect(l.pathname).to.eq('/o/event/gLqrDfMx6qkTHn6hoZqA')
+        )
+
+        .visit('/trilho-dos-moinhos/regulation')
+
+        .get('div[data-cy=regulation]')
+        .contains('Devoluções aceites apenas com justificação válida.');
     });
   });
 });

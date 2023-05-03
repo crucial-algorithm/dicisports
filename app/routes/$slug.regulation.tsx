@@ -41,7 +41,7 @@ export default function Privacy() {
     <Main>
       <article className="prose dark:prose-invert">
         <div
-          data-cy="directions"
+          data-cy="regulation"
           className="dark:text-white text-base mr-2 mt-2 whitespace-pre-line prose"
           dangerouslySetInnerHTML={{ __html: regulation.content || '...' }}
         />

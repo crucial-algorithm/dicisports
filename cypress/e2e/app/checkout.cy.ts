@@ -556,6 +556,58 @@ describe('Checkout', () => {
           expect(l.pathname).to.eq('/');
         });
     });
+
+    it('should not allow user to pay if he does not accept terms and conditions', () => {
+      cy.login()
+
+        .visitAndWaitForHydration('/checkout/payment/HJtAk2sSktodKez744mt')
+
+        .intercept('POST', '/checkout/payment/HJtAk2sSktodKez744mt*')
+        .as('pay')
+
+        .get('button[name=pay]')
+        .click()
+
+        .wait('@pay')
+
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.eq('/checkout/payment/HJtAk2sSktodKez744mt');
+        })
+
+        .get('#terms-error')
+        .should('exist');
+    });
+
+    it('should have link to Event regulation and Dici terms', () => {
+      cy.login()
+
+        .visitAndWaitForHydration('/checkout/payment/HJtAk2sSktodKez744mt')
+
+        .get('[data-cy=terms-link]')
+        .should('exist')
+        .then((link) => {
+          cy.request(link.prop('href'))
+            .its('status')
+            .should('eq', 200)
+
+            .request(link.prop('href'))
+            .its('body')
+            .should('include', 'Termos e Condições');
+        })
+
+        .get('[data-cy=regulation-link]')
+        .should('exist')
+        .then((link) => {
+          cy.request(link.prop('href'))
+            .its('status')
+            .should('eq', 200)
+
+            .request(link.prop('href'))
+            .its('body')
+            .should('include', 'Regulamento');
+        });
+    });
   });
 });
 
@@ -701,6 +753,11 @@ function bookParticipant(eventId: string, raceId: string) {
         .should((l) => {
           expect(l.pathname).to.eq(`/checkout/payment/${bookingId}`);
         })
+
+        .get('input[name=regulation]')
+        .click()
+        .get('input[name=terms]')
+        .click()
 
         .get('button[name=pay]')
         .click()

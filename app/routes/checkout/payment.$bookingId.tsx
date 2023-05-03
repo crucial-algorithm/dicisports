@@ -104,7 +104,6 @@ export const action: ActionFunction = async ({ request, params }) => {
   }
 
   return redirect(`/checkout/confirmation/${bookingId}`);
-    return redirect(`/checkout/confirmation/${eventId}`);
   } catch (e) {
     if (!(e instanceof ZodError)) {
       const tc = await i18n.getFixedT(request, 'common');
@@ -182,7 +181,7 @@ export default function CheckoutPaymentRoute() {
   const { t } = useTranslation('checkout');
   const fetcher = useFetcher();
 
-  const isInlineRegulation = regulation.content !== null;
+  const isInlineRegulation = regulation && regulation.content !== null;
 
   return (
     <Main>
@@ -219,6 +218,7 @@ export default function CheckoutPaymentRoute() {
                       ? `/${event.slug}/regulation`
                       : `/${event.id}/doc/${regulation.id}/view`
                   }
+                  data-cy="regulation-link"
                 >
                   {t('Event Regulation')}
                 </Link>
@@ -236,13 +236,13 @@ export default function CheckoutPaymentRoute() {
                 htmlFor="terms"
               >
                 {t('Read and Accepted')}
-                <Link target="_blank" to="/terms">
+                <Link target="_blank" to="/terms" data-cy="terms-link">
                   {t('Terms and Conditions')}
                 </Link>
               </label>
             </div>
 
-            <InputError id="general-error" className="mb-2">
+            <InputError id="terms-error" className="mb-2">
               {actionData?.errors?.terms || actionData?.errors?.regulation}
             </InputError>
 

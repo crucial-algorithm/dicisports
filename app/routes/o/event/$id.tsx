@@ -92,7 +92,7 @@ import type {
   User
 } from '~/types';
 import { badRequest } from '~/utils/misc';
-import { findRegulation } from '~/server/documents.server';
+import { deleteDocument, findRegulation } from '~/server/documents.server';
 
 type ActionData = {
   hash: number;
@@ -110,7 +110,8 @@ type ActionData = {
 const actionIds = {
   publish: 'publish',
   unpublish: 'unpublish',
-  delete: 'delete'
+  deleteEvent: 'delete-event',
+  deleteRegulation: 'delete-regulation'
 };
 
 const RESOURCES_NS = 'create-event-form';
@@ -212,6 +213,14 @@ export const action: ActionFunction = async ({ request, params }) => {
     await deleteEvent(event.id as string);
 
     return redirect(`/o?message=${t('Event Deleted')}`);
+  }
+
+  if (actionId === actionIds.deleteRegulation) {
+    const regulation = await findRegulation(event.id as string);
+
+    await deleteDocument(regulation.id as string);
+
+    return json({});
   }
 
   const isUpdate = event.status !== 'auto';
@@ -396,8 +405,19 @@ export default function OrganizerEventRoute() {
         }
       : null
   );
-  const [deleteEventModalOpen, setDeleteEventModalOpen] =
-    useState<boolean>(false);
+  const [deleteModalOpen, setDeleteModalOpen] = useState<{
+    showModal: boolean;
+    title: string | null;
+    question: string | null;
+    action: string | null;
+    label: string | null;
+  }>({
+    showModal: false,
+    title: null,
+    question: null,
+    action: null,
+    label: null
+  });
   const inputEl = useRef(null);
   const deleteEventForm = useRef<HTMLFormElement>(null);
   const isPublished = event.status === Status.published;
@@ -438,11 +458,33 @@ export default function OrganizerEventRoute() {
   }
 
   function handleShowDeleteEventWarning() {
-    setDeleteEventModalOpen(true);
+    setDeleteModalOpen({
+      showModal: true,
+      title: t('Delete Event X', { name: event?.name }),
+      question: t('Are you sure you want to delete event?'),
+      action: actionIds.deleteEvent,
+      label: t('Delete Event')
+    });
+  }
+
+  function handleShowDeleteRegulationWarning() {
+    setDeleteModalOpen({
+      showModal: true,
+      title: t('Delete Regulation'),
+      question: t('Are you sure you want to delete regulation?'),
+      action: actionIds.deleteRegulation,
+      label: t('Delete Regulation')
+    });
   }
 
   function handleDiscardDeleteEvent() {
-    setDeleteEventModalOpen(false);
+    setDeleteModalOpen({
+      showModal: false,
+      title: null,
+      question: null,
+      action: null,
+      label: null
+    });
   }
 
   function handleDeleteEvent() {
@@ -450,7 +492,13 @@ export default function OrganizerEventRoute() {
       return;
     }
     deleteEventForm.current.submit();
-    setDeleteEventModalOpen(false);
+    setDeleteModalOpen({
+      showModal: false,
+      title: null,
+      question: null,
+      action: null,
+      label: null
+    });
   }
 
   useEffect(() => {
@@ -460,7 +508,7 @@ export default function OrganizerEventRoute() {
   return (
     <Main>
       <div className="mb-24">
-        <UploadForm method="post" className="w-full">
+        <UploadForm method="post" className="w-full" preventScrollReset={true}>
           <div className="mb-12 lg:mb-20">
             <div className="flex flex-row items-start justify-between items-center">
               <div>
@@ -855,6 +903,7 @@ export default function OrganizerEventRoute() {
                   name={`delete-${regulation.id}`}
                   type="button"
                   className="ml-3 w-[24px] h-[24px] dark:text-blueGray-500"
+                  onClick={handleShowDeleteRegulationWarning}
                 >
                   <TrashIcon className="md:h-6 w-6 m-0 inline-block" />
                 </button>
@@ -919,10 +968,10 @@ export default function OrganizerEventRoute() {
       />
 
       <ConfirmationDialog
-        isOpen={deleteEventModalOpen}
-        title={t('Delete Event X', { name: event?.name })}
-        question={t('Are you sure you want to delete event?')}
-        primaryLabel={t('Delete Event')}
+        isOpen={deleteModalOpen.showModal}
+        title={deleteModalOpen.title}
+        question={deleteModalOpen.question}
+        primaryLabel={deleteModalOpen.label}
         primaryVariant="danger"
         secondaryLabel={t('Ignore')}
         onDismiss={handleDiscardDeleteEvent}
@@ -938,7 +987,7 @@ export default function OrganizerEventRoute() {
         className="hidden"
         ref={deleteEventForm}
       >
-        <input type="hidden" name="actionId" value={actionIds.delete} />
+        <input type="hidden" name="actionId" value={deleteModalOpen.action} />
       </Form>
     </Main>
   );

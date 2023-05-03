@@ -308,7 +308,7 @@ export default function EventDocumentRoute() {
             <TextArea
               name="regulation"
               className="input-text h-80"
-              defaultValue={regulation?.content ? regulation.content : null}
+              defaultValue={regulation?.content ? regulation.content : ''}
             />
           </FormField>
 
@@ -326,7 +326,7 @@ export default function EventDocumentRoute() {
           >
             {t('Cancel')}
           </ButtonLink>
-          <Button type="submit" name="create-document-button">
+          <Button type="submit" name="create-document-button" id="submit-button">
             {regulation?.id
               ? t('Update Document Button')
               : t('Upload Document Button')}

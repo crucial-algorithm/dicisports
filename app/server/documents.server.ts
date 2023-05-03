@@ -104,7 +104,8 @@ async function findRegulation(eventId: string): Promise<Document | null> {
     SELECT *
     FROM documents
     WHERE event_id = ${eventId}
-      AND is_regulation = true;
+      AND is_regulation = true
+      AND NOT status = 'deleted';
   `;
 
   return results.length > 0

@@ -24,5 +24,14 @@
     "isRegulation": true,
     "eventId": "bQmGXYkbhJetjk6mniMt",
     "status": "auto"
+  },
+  {
+    "id": "4paKnjmW6LFtTfutNSgc",
+    "position": 4,
+    "label": "Regulamento",
+    "eventId": "gLqrDfMx6qkTHn6hoZqA",
+    "status": "auto",
+    "content": "<h1>Regulamento</h1><h2><strong>Inscrições</strong></h2><p><br></p><p>A inscrição é efetuada online, no site dos Amigos da Montanha, ou na sede da Associação, em Barcelinhos.</p><p><br></p><p>Abertura de inscrições: 01/12/2022;</p><p>Encerramento de Inscrições: às 24h00 de 19/02/2023 ou quando se atingir o limite de inscrições validadas.</p><p><br></p><p><br></p><p>Valor de inscrição:13,00€</p><p><br></p><p>A inscrição inclui:</p><p>&gt; Peúgas;</p><p>&gt; Bidão porta ferramentas;</p><p>&gt; Frontal;</p><p>&gt; Seguro de acidentes pessoais e responsabilidade civil;</p><p>&gt; Abastecimento de sólidos e líquidos;</p><p>&gt; Apoio logístico;</p><p>&gt; Banhos;</p><p>&gt; Sorteio de prémios;</p><p>&gt; Lavagem de bikes;</p><p>&gt; Massagens;</p><p>&gt; Primeiros socorros;</p><p>&gt; Controlo de tempos por chip electrónico;</p><p>&gt; Bifana no pão + cerveja (no final).</p><p><br></p><p><br></p><p>Formas de pagamento:</p><p>&gt; Pagamento Multibanco;</p><p>&gt; Numerário na sede da Associação.</p>",
+    "isRegulation": true
   }
 ]
