@@ -20,7 +20,7 @@ import { H2, H4, H6 } from '~/components/shared/typography';
 
 import { getClientSession } from '~/server/auth/client.server';
 import { getUser } from '~/server/auth/session.server';
-import { findBooking, findBookingCart } from '~/server/db/booking.server';
+import { findBookingById, findBookingCart } from '~/server/db/booking.server';
 import { findEvent } from '~/server/db/events.server';
 import { findUserEventRaceParticipants } from '~/server/db/participant.server';
 import type { Booking, Event, UICartRow } from '~/types';
@@ -35,6 +35,7 @@ type LoaderData = {
   event: Event;
   cart: UICartRow;
   isAuth: boolean;
+  bookingId: string;
 };
 
 type ActionData = {
@@ -54,15 +55,23 @@ export const action: ActionFunction = async ({ request, params }) => {
 
   const anonymousClient = await getClientSession(request);
   const authenticatedClient = await getUser(request);
-  const eventId = params.eventId as string;
+  const bookingId = params.bookingId as string;
 
   const clientId =
     authenticatedClient !== null
       ? authenticatedClient.id
       : anonymousClient.getClientId();
 
+  const booking = await findBookingById(bookingId);
+
+  if (!booking) {
+    return badRequest({
+      error: t('No Booking')
+    });
+  }
+
+  const eventId = booking.eventId;
   const event = await findEvent(eventId);
-  const booking = await findBooking(clientId, eventId);
   const domainUrl = getDomainUrl(request);
   const cart = await findBookingCart(clientId, eventId);
   const email = form.get('email') as string;
@@ -73,12 +82,6 @@ export const action: ActionFunction = async ({ request, params }) => {
     return json({
       errors: { email: t('Invalid Email') },
       fields: { email }
-    });
-  }
-
-  if (!booking) {
-    return badRequest({
-      error: t('No Booking')
     });
   }
 
@@ -101,7 +104,7 @@ export const action: ActionFunction = async ({ request, params }) => {
 export const loader: LoaderFunction = async ({ request, params }) => {
   const anonymousClient = await getClientSession(request);
   const authenticatedClient = await getUser(request);
-  const eventId = params.eventId as string;
+  const bookingId = params.bookingId as string;
 
   // We check if user is authenticated -> authenticatedClient, if not, we use the client session -> anonymousClient
   const clientId =
@@ -109,38 +112,44 @@ export const loader: LoaderFunction = async ({ request, params }) => {
       ? authenticatedClient.id
       : anonymousClient.getClientId();
 
+  const booking = await findBookingById(bookingId);
+
+  if (!booking || booking.userId !== clientId) {
+    return redirect('/');
+  }
+
+  const eventId = booking.eventId;
   const raceParticipants = await findUserEventRaceParticipants(
     clientId,
     eventId
   );
-  const booking = await findBooking(clientId, eventId);
 
   if (!raceParticipants || raceParticipants?.length === 0) {
     return redirect(`/checkout/cart/${eventId}`);
   }
 
-  if (booking?.status !== CheckoutStatus.confirmed) {
+  if (booking.status !== CheckoutStatus.confirmed) {
     return redirect(
       `/checkout/${
         booking?.status === CheckoutStatus.pending ? 'payment' : 'cart'
-      }/${eventId}`
+      }/${bookingId}`
     );
   }
 
-  const registration = await findBooking(clientId, eventId);
-  const event = await findEvent(registration?.eventId as string);
+  const event = await findEvent(eventId);
   const cart = await findBookingCart(clientId, eventId);
 
   return json({
-    registration,
+    registration: booking,
     event,
     cart,
-    isAuth: !!authenticatedClient
+    isAuth: !!authenticatedClient,
+    bookingId
   });
 };
 
 export default function CheckoutConfirmationRoute() {
-  const { registration, event, cart, isAuth } = useLoaderData<LoaderData>();
+  const { registration, event, cart, isAuth, bookingId } = useLoaderData<LoaderData>();
   const { t } = useTranslation('checkout');
   const fetcher = useFetcher();
   const { errors, fields, successMessage } =
@@ -166,7 +175,7 @@ export default function CheckoutConfirmationRoute() {
       {!isAuth && (
         <div className="flex flex-row items-center justify-end gap-x-2">
           <H6>{t('Already Have An Account ?')}</H6>
-          <a href={`/login?a=checkout&e=${event.id}`} data-cy="authenticate">
+          <a href={`/login?a=checkout&b=${bookingId}`} data-cy="authenticate">
             <H6 className="dark:text-blueGray-500 cursor-pointer">
               {t('Login')}
             </H6>
@@ -228,7 +237,6 @@ export default function CheckoutConfirmationRoute() {
             cart={cart}
             event={event}
             fetcher={fetcher}
-            hideCheckoutButton={true}
           />
         </div>
       </div>

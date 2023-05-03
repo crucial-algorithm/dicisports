@@ -31,13 +31,13 @@ import { H2, H4, H5, H6 } from '~/components/shared/typography';
 import { getClientSession } from '~/server/auth/client.server';
 import { getUser } from '~/server/auth/session.server';
 import {
-  findBooking,
+  findBookingById,
   findBookingCart,
-  removeBooking,
   updateBookingStatus
 } from '~/server/db/booking.server';
 import { findEvent } from '~/server/db/events.server';
 import {
+  findUserBookingParticipants,
   findUserEventRaceParticipants,
   findUserParticipants,
   findUserSavedParticipants,
@@ -57,6 +57,7 @@ import type {
   UICartRow
 } from '~/types';
 import { badRequest, displayTimeOfDay } from '~/utils/misc';
+import { Unauthorized } from '~/server/utils/misc';
 
 type LoaderData = {
   event: Event;
@@ -66,6 +67,8 @@ type LoaderData = {
   savedParticipants: Participant[] | null;
   shirtSizes: ShirtSize[];
   isAuth: boolean;
+  isGuest: boolean;
+  bookingId: string;
 };
 
 export const action: ActionFunction = async ({ request, params }) => {
@@ -73,13 +76,25 @@ export const action: ActionFunction = async ({ request, params }) => {
   const form = await request.formData();
   const anonymousClient = await getClientSession(request);
   const authenticatedClient = await getUser(request);
-  const eventId = params.eventId as string;
+  const bookingId = params.bookingId as string;
+  const booking = await findBookingById(bookingId);
+
+  if (!booking) {
+    return redirect('/');
+  }
+
+  const eventId = booking.eventId;
 
   // We check if user is authenticated -> authenticatedClient, if not, we use the client session -> anonymousClient
   const clientId =
     authenticatedClient !== null
       ? authenticatedClient.id
       : anonymousClient.getClientId();
+
+  if (booking.userId !== clientId) {
+    throw Unauthorized(t('Not authorized'));
+  }
+
   const actionId = form.get('actionId');
   const hash = form.get('hash') as string;
 
@@ -165,7 +180,10 @@ export const action: ActionFunction = async ({ request, params }) => {
       await updateParticipant(data);
     }
 
-    if (actionId === CheckoutInfoActions.update || actionId === CheckoutInfoActions.updateAndCheckout) {
+    if (
+      actionId === CheckoutInfoActions.update ||
+      actionId === CheckoutInfoActions.updateAndCheckout
+    ) {
       ParticipantSchema.parse(data);
       await updateParticipant(data);
     }
@@ -201,7 +219,7 @@ export const action: ActionFunction = async ({ request, params }) => {
 
       await updateBookingStatus(CheckoutStatus.pending, clientId, eventId);
 
-      return redirect(`/checkout/payment/${eventId}`);
+      return redirect(`/checkout/payment/${bookingId}`);
     }
 
     return json({ ok: true, action: actionId });
@@ -226,36 +244,38 @@ export const action: ActionFunction = async ({ request, params }) => {
 export const loader: LoaderFunction = async ({ request, params }) => {
   const anonymousClient = await getClientSession(request);
   const authenticatedClient = await getUser(request);
-  const eventId = params.eventId as string;
+  const bookingId = params.bookingId as string;
+  const { searchParams } = new URL(request.url);
+
+  const pin = searchParams.get('p');
 
   // We check if user is authenticated -> authenticatedClient, if not, we use the client session -> anonymousClient
   const clientId =
     authenticatedClient !== null
       ? authenticatedClient.id
       : anonymousClient.getClientId();
-  const event = await findEvent(eventId);
-  const cart = await findBookingCart(clientId, eventId);
-  const raceParticipants = await findUserEventRaceParticipants(
-    clientId,
-    eventId
-  );
 
-  if (!event) {
+  const booking = await findBookingById(bookingId);
+  const isGuest = pin && Number(pin) === booking?.pin;
+
+  if (!booking || (booking.userId !== clientId && !isGuest)) {
     return redirect('/');
   }
 
+  const eventId = booking.eventId;
+
+  const event = await findEvent(eventId);
+  const cart = await findBookingCart(isGuest ? booking.userId : clientId, eventId);
+  const raceParticipants = await findUserBookingParticipants(bookingId);
+
   if (!raceParticipants || raceParticipants?.length === 0) {
-    const booking = await findBooking(clientId, eventId);
-
-    if (booking) {
-      await removeBooking(clientId, eventId);
-    }
-
     return redirect(`/checkout/cart/${eventId}`);
   }
 
-  const userParticipants = await findUserParticipants(clientId);
-  const savedParticipants = await findUserSavedParticipants(clientId);
+  // cant use clientId when user is a guest - accesses this route with booking PIN
+  // TODO: refactor these functions to use bookingId when we decide to have multiple bookings
+  const userParticipants = await findUserParticipants(isGuest ? booking.userId : clientId);
+  const savedParticipants = await findUserSavedParticipants(isGuest ? booking.userId : clientId);
   const shirtSizes = await findShirtSizes();
 
   return json({
@@ -266,7 +286,9 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     savedParticipants:
       savedParticipants?.length !== 0 ? savedParticipants : null,
     shirtSizes,
-    isAuth: !!authenticatedClient
+    isAuth: !!authenticatedClient,
+    isGuest,
+    bookingId
   });
 };
 
@@ -280,7 +302,9 @@ export default function CheckoutInfoRoute() {
     userParticipants,
     savedParticipants,
     shirtSizes,
-    isAuth
+    isAuth,
+    isGuest,
+    bookingId
   } = useLoaderData<LoaderData>() as LoaderData;
   const [participant, setParticipant] = useState<Participant | null>(
     raceParticipants[0].participant
@@ -492,7 +516,8 @@ export default function CheckoutInfoRoute() {
                     </span>
                   )}
 
-                  {p.participantId === participant?.id &&
+                  {!isGuest &&
+                    p.participantId === participant?.id &&
                     p.race.id === selectedRace && (
                       <button
                         type="button"
@@ -515,22 +540,24 @@ export default function CheckoutInfoRoute() {
                 </div>
               </div>
             ))}
-          <div className="flex flex-col items-center snap-center mt-4">
-            <div
-              className="flex flex-col gap-y-2 border-2 border-b border-gray-500 p-2 mx-2 items-center w-[200px]"
-              onClick={handleOpenAddRaces}
-            >
-              <PlusIcon className="h-7 w-7 dark:text-blueGray-500" />
-              <H6 className="dark:text-blueGray-500">{t('Add Race')}</H6>
+          {!isGuest && (
+            <div className="flex flex-col items-center snap-center mt-4">
+              <div
+                className="flex flex-col gap-y-2 border-2 border-b border-gray-500 p-2 mx-2 items-center w-[200px]"
+                onClick={handleOpenAddRaces}
+              >
+                <PlusIcon className="h-7 w-7 dark:text-blueGray-500" />
+                <H6 className="dark:text-blueGray-500">{t('Add Race')}</H6>
+              </div>
             </div>
-          </div>
+          )}
         </div>
       )}
 
-      {!isAuth && (
+      {!isAuth && !isGuest && (
         <div className="flex flex-row items-center justify-end gap-x-2">
           <H6>{t('Already Have An Account ?')}</H6>
-          <a href={`/login?a=checkout&e=${event.id}`} data-cy="authenticate">
+          <a href={`/login?a=checkout&b=${bookingId}`} data-cy="authenticate">
             <H6 className="dark:text-blueGray-500 cursor-pointer">
               {t('Login')}
             </H6>
@@ -552,6 +579,7 @@ export default function CheckoutInfoRoute() {
             shirtSizes={shirtSizes}
             resetForm={resetForm}
             isSingleParticipant={raceParticipants.length === 1}
+            isReadOnly={isGuest}
           />
           <Notification show={handlerSetShowNotificationFunction}>
             {message}
@@ -564,9 +592,35 @@ export default function CheckoutInfoRoute() {
             error={errors.missingFilledParticipants}
             fetcher={fetcher}
             hash={hash}
-            showUpdateCartButton={true}
-            showFinishRegistrationLabel={true}
-          />
+          >
+            {!isGuest && (
+              <>
+                <div className="flex flex-col items-center w-full">
+                  <input type="hidden" name="hash" value={hash} />
+                  <Button
+                    type="submit"
+                    name="actionId"
+                    value="checkout"
+                    disabled={cart.length === 0}
+                    className="mt-4 w-full"
+                    id="checkout"
+                  >
+                    {t('Finish Registration')}
+                  </Button>
+                </div>
+                <div className="flex justify-end mt-4">
+                  <a
+                    href={`/checkout/cart/${event.id}?a=update`}
+                    data-cy="update-cart"
+                  >
+                    <H6 className="dark:text-blueGray-500 cursor-pointer">
+                      {t('Update Cart')}
+                    </H6>
+                  </a>
+                </div>
+              </>
+            )}
+          </DisplayCart>
         </div>
       </div>
 

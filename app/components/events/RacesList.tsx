@@ -62,6 +62,7 @@ export default function RacesList(props: {
             <div
               key={r.id}
               className="relative flex mb-4 justify-between items-center flex-row flex-wrap border-b p-4 last:border-none border-gray-300 dark:border-gray-300"
+              data-cy={`race-${r.id}`}
             >
               <div className="flex flex-col items-center dark:text-blueGray-500">
                 {index === 0 ? null : (

@@ -516,7 +516,7 @@ P.S. Recebeste este email porque o teu endereço de email foi usado para fazer l
       <h3 style='text-align: center; margin-top: 2rem'>
         Clica no botão para acederes ao teu booking
       </h3>
-      <a href='${domainUrl}/checkout/confirmation/${event.id}' style='display: block; margin: 0 auto; width: 80%; padding: 1.5rem; background: #A6DEE4; border-radius: 7px; border-width: 0; font-size: 1.1rem; text-align: center; font-family: sans-serif; text-decoration: none; color: black'>
+      <a href='${domainUrl}/checkout/info/${booking.id}?p=${booking.pin}' style='display: block; margin: 0 auto; width: 80%; padding: 1.5rem; background: #A6DEE4; border-radius: 7px; border-width: 0; font-size: 1.1rem; text-align: center; font-family: sans-serif; text-decoration: none; color: black'>
       Aceder ao booking
       </a>
       <hr style='width: 20%; height: 0px; border: 1px solid lightgrey; margin-top: 2rem; margin-bottom: 2rem'>

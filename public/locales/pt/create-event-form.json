@@ -92,6 +92,9 @@
   "At least 1 race": "Insira pelo menos uma distância",
   "At Least 1": "Escolha pelo menos um dos métodos",
   "Just Choose One": "Escolha apenas um método",
+  "Insert Valid Price": "Insira um preço válido",
+  "Insert Valid Date": "Insira uma data válida",
+  "Cheaper Early Bird": "Insira um valor menor que o preço da distância",
 
   "Delete": "Apagar Distância",
   "Delete Document": "Apagar documento",

@@ -1,6 +1,6 @@
 import type { ReactElement } from 'react';
 import * as React from 'react';
-import { Fragment, useRef, useState } from 'react';
+import { Fragment, useContext, useRef, useState } from 'react';
 import clsx from 'clsx';
 import { useTranslation } from 'react-i18next';
 import { useDebounceFn } from 'ahooks';
@@ -14,6 +14,7 @@ import { getLocalizedText } from '~/utils/misc';
 
 import { useTheme } from '~/utils/theme-provider';
 import { getI18nText } from '~/components/I18nText';
+import { FormContext } from '~/components/shared/form/UploadForm';
 
 export type Option = {
   value: string | number;
@@ -202,6 +203,15 @@ export default function ComboBox({
   });
 
   const [selected, setSelected] = useState(defaultValue);
+  const formProps = useContext(FormContext);
+
+  if (formProps.readOnly) {
+    return (
+      <div className="font-medium dark:text-white">
+        {options.find((o) => o.value === defaultValue)?.label}
+      </div>
+    );
+  }
 
   function StyleOption({ active }: { active: boolean }) {
     return clsx('relative cursor-default select-none py-2 pl-10 pr-4', {
