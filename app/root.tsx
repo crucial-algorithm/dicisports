@@ -400,6 +400,7 @@ export function CatchBoundary() {
 }
 
 function Footer() {
+  const { t } = useTranslation('common');
   const year = (new Date()).getUTCFullYear();
 
   return (
@@ -415,13 +416,13 @@ function Footer() {
                       to="/privacy"
                       className="dark:text-cadet-blue-700 dark:hover:text-cadet-blue-500"
                     >
-                      Política de Privacidade
+                      {t('Privacy Policy')}
                     </Link>
                     <Link
                       to="/terms"
                       className="dark:text-cadet-blue-700 dark:hover:text-cadet-blue-500"
                     >
-                      Termos e condições
+                      {t('Terms and Conditions')}
                     </Link>
                     <a
                       href="https://www.livroreclamacoes.pt/inicio"
@@ -431,7 +432,7 @@ function Footer() {
                     </a>
                   </div>
                   <p>
-                    © {year} Dicisports
+                    {t('Dicisports Watermark', { year })}
                   </p>
                 </div>
               </div>

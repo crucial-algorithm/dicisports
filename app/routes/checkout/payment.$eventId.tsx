@@ -226,7 +226,7 @@ export default function CheckoutPaymentRoute() {
                 htmlFor="terms"
               >
                 {t('Read and Accepted')}
-                <Link target="_blank" to="/privacy">
+                <Link target="_blank" to="/terms">
                   {t('Terms and Conditions')}
                 </Link>
               </label>
