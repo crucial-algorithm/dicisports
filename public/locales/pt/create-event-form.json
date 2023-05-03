@@ -67,6 +67,7 @@
   "Select a document": "Selecione um documento",
   "Event Published": "Evento publicado com sucesso",
   "Event Unpublished": "Evento despublicado com sucesso",
+  "Regulation": "Regulamento",
 
   "Field required": "Campo obrigatório",
   "Must Be Number": "Insira um número positivo",
@@ -87,6 +88,8 @@
   "No Document": "Nenhum documento encontrado",
   "Not authorized": "Não autorizado",
   "At least 1 race": "Insira pelo menos uma distância",
+  "At Least 1": "Escolha pelo menos um dos métodos",
+  "Just Choose One": "Escolha apenas um método",
 
   "Delete": "Apagar Distância",
   "Delete Document": "Apagar documento",
@@ -98,5 +101,6 @@
   "Are you sure you want to delete race?": "Tem a certeza que quer apagar a corrida? Não há como voltar atrás!",
   "Are you sure you want to delete document?": "Tem a certeza que quer apagar o documento? Não há como voltar atrás!",
   "Are you sure you want to delete event?": "Tem a certeza que quer apagar o evento? Não há como voltar atrás",
-  "Ignore": "Ignorar"
+  "Ignore": "Ignorar",
+  "Or": "Ou"
 }

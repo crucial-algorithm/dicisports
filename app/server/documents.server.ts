@@ -14,7 +14,7 @@ async function findDocument(id: string): Promise<Document | null> {
 
 async function findDocuments(eventId: string): Promise<Document[] | void> {
   return await db.document.findMany({
-    where: { eventId, status: { not: 'deleted' } },
+    where: { eventId, status: { not: 'deleted' }, isRegulation: false },
     orderBy: { position: 'asc' }
   });
 }
@@ -32,6 +32,7 @@ async function createDocument(
       path: document.path,
       createdAt: documentAt,
       updatedAt: documentAt,
+      isRegulation: document.isRegulation,
       eventId: document.eventId
     }
   });
@@ -97,6 +98,30 @@ async function deleteDocument(documentId: string): Promise<void> {
   });
 }
 
+async function findRegulation(eventId: string): Promise<Document | null> {
+  const results = await db.$queryRaw`
+    SELECT *
+    FROM documents
+    WHERE event_id = ${eventId}
+      AND is_regulation = true;
+  `;
+
+  return results.length > 0
+    ? {
+        id: results[0].id,
+        position: results[0].position,
+        label: results[0].label,
+        eventId: results[0].event_id,
+        createdAt: results[0].created_at,
+        updatedAt: results[0].updated_at,
+        path: results[0].path,
+        status: results[0].status,
+        isRegulation: results[0].is_regulation,
+        content: results[0].content ? results[0].content : null
+      }
+    : null;
+}
+
 export {
   findDocument,
   findDocuments,
@@ -104,5 +129,6 @@ export {
   updateDisplayOrderUp,
   updateDisplayOrderDown,
   createDocument,
-  deleteDocument
+  deleteDocument,
+  findRegulation
 };

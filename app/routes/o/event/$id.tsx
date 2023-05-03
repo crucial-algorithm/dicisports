@@ -1,6 +1,11 @@
-import { MapPinIcon, PlusIcon } from '@heroicons/react/24/outline';
+import {
+  ArrowDownTrayIcon,
+  MapPinIcon,
+  PlusIcon,
+  TrashIcon
+} from '@heroicons/react/24/outline';
 import { Role, Status } from '@prisma/client';
-import { Form, useActionData, useLoaderData } from '@remix-run/react';
+import { Form, Link, useActionData, useLoaderData } from '@remix-run/react';
 import type {
   ActionFunction,
   LinksFunction,
@@ -87,6 +92,7 @@ import type {
   User
 } from '~/types';
 import { badRequest } from '~/utils/misc';
+import { findRegulation } from '~/server/documents.server';
 
 type ActionData = {
   hash: number;
@@ -117,6 +123,7 @@ type LoaderData = {
   perks: Array<Perk>;
   races: Array<Race>;
   difficulties: Array<Difficulty>;
+  regulation: Document | null;
 };
 
 type SportEvent = Event & {
@@ -141,6 +148,8 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     return redirect('/');
   }
 
+  const regulation = await findRegulation(eventId);
+
   return json({
     mapToken: MAPBOX_TOKEN,
     imageUploadPreset: CLOUDINARY_UPLOAD_PRESET,
@@ -152,7 +161,8 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     races: await findEventRaces(eventId),
     difficulties: difficulties.map((d) => {
       return { id: d.id, name: d.name };
-    })
+    }),
+    regulation
   });
 };
 
@@ -366,7 +376,8 @@ export default function OrganizerEventRoute() {
     event,
     perks: dbPerks,
     races: dbRaces,
-    difficulties
+    difficulties,
+    regulation
   } = useLoaderData<LoaderData>();
   const actionData = useActionData<ActionData>();
   const [showLocationPicker, setShowLocationPicker] = useState<boolean>(false);
@@ -386,7 +397,9 @@ export default function OrganizerEventRoute() {
   const inputEl = useRef(null);
   const deleteEventForm = useRef<HTMLFormElement>(null);
   const isPublished = event.status === Status.published;
+  const isInlineRegulation = regulation.content !== null;
 
+  console.log('inline? ', isInlineRegulation);
   // Hack: while remix doesn't handle dates properly
   hackyEventRevival(event);
 
@@ -773,6 +786,83 @@ export default function OrganizerEventRoute() {
                 {t('No Documents')}
               </H6>
             </WhenListEmpty>
+          </div>
+
+          <div id="regulation" className="mb-12">
+            <Label
+              htmlFor="regulation"
+              className={clsx(
+                'mb-5 flex justify-between items-center flex-row'
+              )}
+            >
+              {t('Regulation')}
+
+              {!regulation && (
+                <>
+                  <ButtonLink
+                    className="hidden lg:flex"
+                    type="button"
+                    to="reg/new"
+                  >
+                    {t('Upload Regulation')}
+                  </ButtonLink>
+                  <ButtonLink
+                    type="button"
+                    to="reg/new"
+                    size="small"
+                    className="flex lg:hidden"
+                    data-cy="add-regulation"
+                  >
+                    <PlusIcon className="md:h-6 w-6 m-0 inline-block"></PlusIcon>
+                  </ButtonLink>
+                </>
+              )}
+            </Label>
+            {regulation ? (
+              <div className="relative flex mb-4 justify-between items-center flex-row border-b p-4 last:border-none border-gray-300 dark:border-gray-300">
+                {isInlineRegulation ? (
+                  <Link
+                    to={`/o/event/${event.id}/doc/${regulation.id}`}
+                    className="text-lg font-extrabold pl-3 text-gray-700 dark:text-white w-[calc(100%-(24px+24px))] cursor-pointer"
+                    data-cy="regulation-doc"
+                  >
+                    {regulation.label}
+                  </Link>
+                ) : (
+                  <div
+                    className="text-lg font-extrabold pl-3 text-gray-700 dark:text-white w-[calc(100%-(24px+24px))]"
+                    data-cy="regulation-doc"
+                  >
+                    {regulation.label}
+                  </div>
+                )}
+
+                {/*TODO: redirect inline regulations to the display route */}
+                <a
+                  href={
+                    isInlineRegulation
+                      ? '/'
+                      : `/${event.id}/doc/${regulation.id}/view`
+                  }
+                  target="_blank"
+                  rel="noreferrer"
+                  data-cy={`download-${regulation.id}`}
+                >
+                  <ArrowDownTrayIcon className="md:h-6 w-6 m-0 inline-block text-black dark:text-blueGray-500" />
+                </a>
+                <button
+                  name={`delete-${regulation.id}`}
+                  type="button"
+                  className="ml-3 w-[24px] h-[24px] dark:text-blueGray-500"
+                >
+                  <TrashIcon className="md:h-6 w-6 m-0 inline-block" />
+                </button>
+              </div>
+            ) : (
+              <H6 className="text-center p-12" variant="secondary" as="p">
+                {t('No Regulation')}
+              </H6>
+            )}
           </div>
 
           <ButtonGroup className="mt-8">

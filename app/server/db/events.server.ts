@@ -60,7 +60,8 @@ async function findEvent(id: string): Promise<Event | null> {
         where: {
           status: {
             not: Status.deleted
-          }
+          },
+          isRegulation: false
         }
       },
       difficulty: true,

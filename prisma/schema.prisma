@@ -126,15 +126,17 @@ model Event {
 }
 
 model Document {
-  id        String   @id @default(uuid())
-  path      String
-  position  Int      @default(autoincrement())
-  label     String?
-  event     Event    @relation(fields: [eventId], references: [id])
-  eventId   String   @map("event_id")
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-  status    Status   @default(auto)
+  id                String      @id @default(uuid())
+  isRegulation      Boolean     @default(false) @map("is_regulation")
+  content           String?
+  path              String?
+  position          Int         @default(autoincrement())
+  label             String?
+  event             Event       @relation(fields: [eventId], references: [id])
+  eventId           String      @map("event_id")
+  createdAt         DateTime    @default(now()) @map("created_at")
+  updatedAt         DateTime    @updatedAt @map("updated_at")
+  status            Status      @default(auto)
 
   @@map("documents")
 }
