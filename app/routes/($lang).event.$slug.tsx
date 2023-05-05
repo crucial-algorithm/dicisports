@@ -129,6 +129,9 @@ export default function EventDisplayRoute() {
     );
   }
 
+  const isInlineRegulation = !!event.regulationContent;
+  const regulationExists = !!event.regulationContent || !!event.regulationPath;
+
   if (races) {
     const sortedRaces = races
       .sort((a: Race, b: Race) => a.price - b.price)
@@ -173,7 +176,13 @@ export default function EventDisplayRoute() {
           {races
             .sort((a: Race, b: Race) => a.displayOrder - b.displayOrder)
             .map((race: Race, index: number) => (
-              <DisplayRace race={race} key={race.id} index={index} eventId={event.id} areThereRacesInEarlyBird={anyRaceInEarlyBird} />
+              <DisplayRace
+                race={race}
+                key={race.id}
+                index={index}
+                eventId={event.id}
+                areThereRacesInEarlyBird={anyRaceInEarlyBird}
+              />
             ))}
           <WhenListEmpty list={races}>
             <H6
@@ -226,6 +235,22 @@ export default function EventDisplayRoute() {
               dangerouslySetInnerHTML={{ __html: event.directions || '...' }}
             />
           </div>
+        )}
+
+        {regulationExists && (
+          <>
+            <H3>{t('Regulation')}</H3>
+            <div className="flex flex-row flex-wrap mb-8 mt-2">
+              <DisplayRegulation
+                label={t('Regulation')}
+                path={
+                  isInlineRegulation
+                    ? `/${event.slug}/regulation`
+                    : `/${event.id}/doc/regulation/view`
+                }
+              />
+            </div>
+          </>
         )}
 
         <H3>{t('Documents')}</H3>
@@ -450,6 +475,22 @@ function DisplayDocument(props: { document: Document; index: number }) {
         data-cy="document-label"
       >
         {document.label}
+      </a>
+    </div>
+  );
+}
+
+function DisplayRegulation({ path, label }: { path: string; label: string }) {
+  return (
+    <div className="flex items-center border border-black dark:border-white rounded-2xl h-16 p-4 mr-2 mb-2">
+      <a
+        href={path}
+        target="_blank"
+        rel="noreferrer"
+        className="text-black dark:text-white"
+        data-cy="regulation"
+      >
+        {label}
       </a>
     </div>
   );

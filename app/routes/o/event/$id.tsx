@@ -60,7 +60,8 @@ import {
   findEvent,
   publishEvent,
   unpublishEvent,
-  updateEvent
+  updateEvent,
+  updateEventRegulation
 } from '~/server/db/events.server';
 
 import { findEventPerks } from '~/server/db/perks.server';
@@ -92,7 +93,6 @@ import type {
   User
 } from '~/types';
 import { badRequest } from '~/utils/misc';
-import { deleteDocument, findRegulation } from '~/server/documents.server';
 
 type ActionData = {
   hash: number;
@@ -104,7 +104,6 @@ type ActionData = {
     description?: string;
     directions?: string;
     submit?: string;
-    regulation?: string;
   };
 };
 
@@ -150,8 +149,6 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     return redirect('/');
   }
 
-  const regulation = await findRegulation(eventId);
-
   return json({
     mapToken: MAPBOX_TOKEN,
     imageUploadPreset: CLOUDINARY_UPLOAD_PRESET,
@@ -163,8 +160,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     races: await findEventRaces(eventId),
     difficulties: difficulties.map((d) => {
       return { id: d.id, name: d.name };
-    }),
-    regulation
+    })
   });
 };
 
@@ -216,14 +212,6 @@ export const action: ActionFunction = async ({ request, params }) => {
     return redirect(`/o?message=${t('Event Deleted')}`);
   }
 
-  if (actionId === actionIds.deleteRegulation) {
-    const regulation = await findRegulation(event.id as string);
-
-    await deleteDocument(regulation?.id as string);
-
-    return json({});
-  }
-
   const isUpdate = event.status !== 'auto';
   const date = form.get('event-date') as string;
   const image1 = form.get('/file/image/0') as string;
@@ -233,7 +221,6 @@ export const action: ActionFunction = async ({ request, params }) => {
   const image5 = form.get('/file/image/4') as string;
   const location = parseLocation(form.get('location') as string);
   const races: Race[] = (await findEventRaces(event.id)) || [];
-  const regulation: Document | null = await findRegulation(event.id);
   let eventStatus = event.status;
 
   if (eventStatus === Status.auto) {
@@ -258,46 +245,61 @@ export const action: ActionFunction = async ({ request, params }) => {
     image3: processImgField(image3, isUpdate),
     image4: processImgField(image4, isUpdate),
     image5: processImgField(image5, isUpdate),
+    regulationPath: event.regulationPath,
+    regulationContent: event.regulationContent,
     status: eventStatus
   };
 
   const perks: string[] = form.getAll('perks') as string[];
   const newPerks: string[] = form.getAll('new-perk-input') as string[];
 
-  const EventSchema = {
-    name: z
-      .string({ required_error: t('Field Required') })
-      .min(5, { message: t('Min 5 chars') }),
-    sportId: z
-      .number()
-      .nonnegative({ message: t('Nonexistent Sport') })
-      .lte(7, { message: t('Nonexistent Sport') }),
-    startAt: z.date().min(new Date(), { message: t('Future Date') }),
-    location: z.string({
-      required_error: t('Field required'),
-      invalid_type_error: t('Field required')
-    }),
-    useExternalBooking: z.boolean({
-      invalid_type_error: t('Invalid Type')
-    }),
-    externalBookingUrl: z
-      .string({ invalid_type_error: t('Invalid URL') })
-      .url(),
-    description: z
-      .string({
-        invalid_type_error: t('Invalid Type'),
-        required_error: t('Field Required')
-      })
-      .min(1, { message: t('Min 1 chars') })
-      .nullable(),
-    races: z
-      .string({ required_error: t('At least 1 race') })
-      .array()
-      .nonempty(t('At least 1 race')),
-    regulation: z
-      .string({ required_error: t('Add regulation') })
-      .min(1, t('Add regulation'))
-  };
+  const EventSchema = z
+    .object({
+      name: z
+        .string({ required_error: t('Field Required') })
+        .min(5, { message: t('Min 5 chars') }),
+      sportId: z
+        .number()
+        .nonnegative({ message: t('Nonexistent Sport') })
+        .lte(7, { message: t('Nonexistent Sport') }),
+      startAt: z.date().min(new Date(), { message: t('Future Date') }),
+      location: z.string({
+        required_error: t('Field required'),
+        invalid_type_error: t('Field required')
+      }),
+      useExternalBooking: z.boolean({
+        invalid_type_error: t('Invalid Type')
+      }),
+      externalBookingUrl: z
+        .string({ invalid_type_error: t('Invalid URL') })
+        .url(),
+      description: z
+        .string({
+          invalid_type_error: t('Invalid Type'),
+          required_error: t('Field Required')
+        })
+        .min(1, { message: t('Min 1 chars') })
+        .nullable(),
+      races: z
+        .string({ required_error: t('At least 1 race') })
+        .array()
+        .nonempty(t('At least 1 race')),
+      regulationPath: z.string().nullable(),
+      regulationContent: z.string().nullable()
+    })
+    .refine(
+      (s) =>
+        (s.regulationPath === null &&
+          s.regulationContent &&
+          s?.regulationContent?.length > 1) ||
+        (s.regulationPath &&
+          s?.regulationPath?.length > 5 &&
+          s.regulationContent === null),
+      {
+        message: t('Add Regulation'),
+        path: ['submit']
+      }
+    );
 
   if (!data.useExternalBooking) {
     // @ts-ignore Don't like this... can we solve it with z.discriminatedUnion?
@@ -308,10 +310,20 @@ export const action: ActionFunction = async ({ request, params }) => {
   }
 
   try {
+    if (actionId === actionIds.deleteRegulation) {
+      await updateEventRegulation({
+        eventId: event.id as string,
+        regulationPath: null,
+        regulationContent: null
+      });
+
+      return json({});
+    }
+    
     await updateEvent(data, perks, newPerks);
 
     if (actionId === actionIds.publish) {
-      z.object(EventSchema).parse({ ...data, races: races.map((r) => r.id), regulation: regulation.id });
+      z.object(EventSchema).parse({ ...data, races: races.map((r) => r.id) });
 
       if (user.role === Role.ORGANIZER) {
         await publishEvent(event.id as string, data.name);
@@ -394,8 +406,7 @@ export default function OrganizerEventRoute() {
     event,
     perks: dbPerks,
     races: dbRaces,
-    difficulties,
-    regulation
+    difficulties
   } = useLoaderData<LoaderData>();
   const actionData = useActionData<ActionData>();
   const [showLocationPicker, setShowLocationPicker] = useState<boolean>(false);
@@ -426,7 +437,8 @@ export default function OrganizerEventRoute() {
   const inputEl = useRef(null);
   const deleteEventForm = useRef<HTMLFormElement>(null);
   const isPublished = event.status === Status.published;
-  const isInlineRegulation = regulation && regulation.content !== null;
+  const isInlineRegulation = !!event.regulationContent;
+  const regulationExists = !!event.regulationContent || !!event.regulationPath;
 
   // Hack: while remix doesn't handle dates properly
   hackyEventRevival(event);
@@ -852,18 +864,18 @@ export default function OrganizerEventRoute() {
             >
               {t('Regulation')}
 
-              {!regulation && (
+              {!regulationExists && (
                 <>
                   <ButtonLink
                     className="hidden lg:flex"
                     type="button"
-                    to="reg/new"
+                    to="reg"
                   >
                     {t('Upload Regulation')}
                   </ButtonLink>
                   <ButtonLink
                     type="button"
-                    to="reg/new"
+                    to="reg"
                     size="small"
                     className="flex lg:hidden"
                     data-cy="add-regulation"
@@ -873,22 +885,22 @@ export default function OrganizerEventRoute() {
                 </>
               )}
             </Label>
-            {regulation ? (
+            {regulationExists ? (
               <div className="relative flex mb-4 justify-between items-center flex-row border-b p-4 last:border-none border-gray-300 dark:border-gray-300">
                 {isInlineRegulation ? (
                   <Link
-                    to={`/o/event/${event.id}/reg/${regulation.id}`}
+                    to={`/o/event/${event.id}/reg`}
                     className="text-lg font-extrabold pl-3 text-gray-700 dark:text-white w-[calc(100%-(24px+24px))] cursor-pointer"
                     data-cy="regulation-doc"
                   >
-                    {regulation.label}
+                    {t('Regulation')}
                   </Link>
                 ) : (
                   <div
                     className="text-lg font-extrabold pl-3 text-gray-700 dark:text-white w-[calc(100%-(24px+24px))]"
                     data-cy="regulation-doc"
                   >
-                    {regulation.label}
+                    {t('Regulation')}
                   </div>
                 )}
 
@@ -896,16 +908,16 @@ export default function OrganizerEventRoute() {
                   href={
                     isInlineRegulation
                       ? `/${event.slug}/regulation`
-                      : `/${event.id}/doc/${regulation.id}/view`
+                      : `/${event.id}/doc/regulation/view`
                   }
                   target="_blank"
                   rel="noreferrer"
-                  data-cy={`download-${regulation.id}`}
+                  data-cy="download-regulation"
                 >
                   <ArrowDownTrayIcon className="md:h-6 w-6 m-0 inline-block text-black dark:text-blueGray-500" />
                 </a>
                 <button
-                  name={`delete-${regulation.id}`}
+                  name="delete-regulation"
                   type="button"
                   className="ml-3 w-[24px] h-[24px] dark:text-blueGray-500"
                   onClick={handleShowDeleteRegulationWarning}

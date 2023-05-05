@@ -32,7 +32,6 @@ import { sendBookingConfirmationEmail } from '~/server/email.server';
 import { badRequest, getDomainUrl } from '~/utils/misc';
 import i18n from '~/server/i18n.server';
 import InputError from '~/components/shared/form/InputError';
-import { findRegulation } from '~/server/documents.server';
 
 type LoaderData = {
   event: Event;
@@ -163,8 +162,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 
   return json({
     event,
-    cart,
-    regulation: await findRegulation(eventId)
+    cart
   });
 };
 
@@ -177,11 +175,11 @@ type ActionData = {
 
 export default function CheckoutPaymentRoute() {
   const actionData = useActionData<ActionData>();
-  const { event, cart, regulation } = useLoaderData<LoaderData>();
+  const { event, cart } = useLoaderData<LoaderData>();
   const { t } = useTranslation('checkout');
   const fetcher = useFetcher();
 
-  const isInlineRegulation = regulation && regulation.content !== null;
+  const isInlineRegulation = event.regulationContent && true;
 
   return (
     <Main>
@@ -216,7 +214,7 @@ export default function CheckoutPaymentRoute() {
                   to={
                     isInlineRegulation
                       ? `/${event.slug}/regulation`
-                      : `/${event.id}/doc/${regulation.id}/view`
+                      : `/${event.id}/doc/regulation/view`
                   }
                   data-cy="regulation-link"
                 >

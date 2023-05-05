@@ -33,17 +33,12 @@ import UploadForm from '~/components/shared/form/UploadForm';
 import Main from '~/components/shared/Main';
 
 import { requireUser } from '~/server/auth/session.server';
-import {
-  createDocument,
-  findRegulation,
-  updateDocument
-} from '~/server/documents.server';
 import i18n from '~/server/i18n.server';
-import type { CreateDocumentInput, Document, Event } from '~/types';
+import type { Document, Event } from '~/types';
 import { badRequest } from '~/utils/misc';
 import { uploadToS3 } from '~/server/utils/s3';
 import Id from '~/server/utils/Id.server';
-import { findEvent } from '~/server/db/events.server';
+import { findEvent, updateEventRegulation } from '~/server/db/events.server';
 import { NotFound, Unauthorized } from '~/server/utils/misc';
 import TextArea from '~/components/shared/form/TextArea';
 import InputError from '~/components/shared/form/InputError';
@@ -68,10 +63,9 @@ type FormErrors = {
 export const loader: LoaderFunction = async ({ request, params }) => {
   const user = await requireUser(request);
   const eventId = params.eventId as string;
-  const regulationId = params.id as string;
   const t = await i18n.getFixedT(request, RESOURCES_NS);
 
-  if (!eventId || !regulationId) {
+  if (!eventId) {
     return redirect('/o');
   }
 
@@ -85,12 +79,8 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     throw Unauthorized(t('Not authorized'));
   }
 
-  const regulation =
-    regulationId === 'new' ? null : await findRegulation(eventId);
-
   return json({
-    event,
-    regulation
+    event
   });
 };
 
@@ -127,25 +117,20 @@ export const action: ActionFunction = async ({ request, params }) => {
   const form = await unstable_parseMultipartFormData(request, uploadHandler);
 
   const eventId = params.eventId as string;
-  let regulationId = params.id || null;
   const file = form.get('file') as string;
 
   const path = file && file?.length > 0 ? file : null;
-  const regulation = form.get('regulation') as string || null;
+  const regulation = (form.get('regulation') as string) || null;
   const event = await findEvent(eventId);
 
-  if (regulationId === 'new') {
-    regulationId = null;
-  }
-
-  const isInsert = !regulationId;
-  const documentData: CreateDocumentInput = {
-    id: isInsert ? Id() : (regulationId as string),
-    label: t('Regulation'),
-    path,
-    isRegulation: true,
-    content: regulation,
-    eventId
+  const regulationData: {
+    eventId: string;
+    regulationPath: string | null;
+    regulationContent: string | null;
+  } = {
+    eventId,
+    regulationPath: path,
+    regulationContent: regulation
   };
 
   if (!event) {
@@ -156,32 +141,32 @@ export const action: ActionFunction = async ({ request, params }) => {
   }
 
   // @ts-ignore
-  const DocumentSchema = z
+  const RegulationSchema = z
     .object({
-      path: z
+      regulationPath: z
         .string()
         .nullable()
         .refine(
           () => {
-            if (!isInsert) {
-              return true;
-            }
-
-            return documentData.path !== undefined;
+            return regulationData.regulationPath !== undefined;
           },
           {
             message: t('Select a document')
           }
         ),
-      content: z
+      regulationContent: z
         .string()
         .min(5, { message: t('Too Short') })
         .nullable()
     })
     .refine(
       (s) =>
-        (s.content === null && s.path && s?.path?.length > 1) ||
-        (s.content && s?.content?.length > 5 && s.path === null),
+        (s.regulationContent === null &&
+          s.regulationPath &&
+          s?.regulationPath?.length > 1) ||
+        (s.regulationContent &&
+          s?.regulationContent?.length > 5 &&
+          s.regulationPath === null),
       {
         message: t('At Least 1'),
         path: ['submit']
@@ -189,7 +174,7 @@ export const action: ActionFunction = async ({ request, params }) => {
     )
     .refine(
       (s) =>
-        !(s.path && s?.path?.length > 1 && s.content && s?.content?.length > 1),
+        !(s.regulationPath && s?.regulationPath?.length > 1 && s.regulationContent && s?.regulationContent?.length > 1),
       {
         message: t('Just Choose One'),
         path: ['submit']
@@ -197,11 +182,9 @@ export const action: ActionFunction = async ({ request, params }) => {
     );
 
   try {
-    //If actionId is null or !== 'delete' check if there is a document and update or create
-    DocumentSchema.parse(documentData);
-    isInsert
-      ? await createDocument(documentData)
-      : await updateDocument(documentData);
+    RegulationSchema.parse(regulationData);
+
+    await updateEventRegulation(regulationData);
 
     return redirect(`/o/event/${event.id}`);
   } catch (e) {
@@ -223,8 +206,10 @@ export const action: ActionFunction = async ({ request, params }) => {
 };
 
 export default function EventDocumentRoute() {
-  const { event, regulation } = useLoaderData() as LoaderData;
+  const { event } = useLoaderData() as LoaderData;
   const actionData = useActionData() as ActionData;
+  const regulationExists: boolean =
+    !!event.regulationContent || !!event.regulationPath;
 
   const { t } = useTranslation(RESOURCES_NS);
   const [uploadedDocument, setUploadedDocument] = useState<string | null>(null);
@@ -265,7 +250,7 @@ export default function EventDocumentRoute() {
     <Main>
       <UploadForm>
         <div className="p-4">
-          {!regulation && (
+          {!regulationExists && (
             <>
               <FormField
                 label={t('Document')}
@@ -304,11 +289,13 @@ export default function EventDocumentRoute() {
             </div>
           )}
 
-          <FormField label={t(regulation?.id ? 'Regulation' : 'Or')}>
+          <FormField label={t(regulationExists ? 'Regulation' : 'Or')}>
             <TextArea
               name="regulation"
               className="input-text h-80"
-              defaultValue={regulation?.content ? regulation.content : ''}
+              defaultValue={
+                event.regulationContent ? event.regulationContent : ''
+              }
             />
           </FormField>
 
@@ -326,8 +313,12 @@ export default function EventDocumentRoute() {
           >
             {t('Cancel')}
           </ButtonLink>
-          <Button type="submit" name="create-document-button" id="submit-button">
-            {regulation?.id
+          <Button
+            type="submit"
+            name="create-document-button"
+            id="submit-button"
+          >
+            {regulationExists
               ? t('Update Document Button')
               : t('Upload Document Button')}
           </Button>

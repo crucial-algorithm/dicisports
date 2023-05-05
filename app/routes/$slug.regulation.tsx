@@ -7,7 +7,6 @@ import Main from '~/components/shared/Main';
 
 import { CanonicalMeta } from '~/utils/seo';
 import { findEventBySlug } from '~/server/db/events.server';
-import { findRegulation } from '~/server/documents.server';
 import { NotFound } from '~/server/utils/misc';
 import i18n from '~/server/i18n.server';
 
@@ -19,18 +18,12 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     const slug = params.slug as string;
     const event = await findEventBySlug(slug);
 
-    if (!event) {
+    if (!event || !event.regulationContent) {
       throw NotFound(t('No Event'));
     }
 
-    const regulation = await findRegulation(event.id);
-
-    if (!regulation || (regulation && !regulation.content)) {
-      throw NotFound(t('No Regulation'));
-    }
-
     return json({
-      regulation
+      regulation: event.regulationContent
     });
 };
 
@@ -43,7 +36,7 @@ export default function Privacy() {
         <div
           data-cy="regulation"
           className="dark:text-white text-base mr-2 mt-2 whitespace-pre-line prose"
-          dangerouslySetInnerHTML={{ __html: regulation.content || '...' }}
+          dangerouslySetInnerHTML={{ __html: regulation || '...' }}
         />
       </article>
     </Main>

@@ -111,6 +111,8 @@ model Event {
   image4             String?
   image5             String?
   directions         String?
+  regulationPath     String?     @map("regulation_path")
+  regulationContent  String?     @map("regulation_content")
   createdBy          User        @relation(fields: [createdById], references: [id])
   createdById        String      @map("created_by")
   createdAt          DateTime    @default(now()) @map("created_at")
@@ -127,8 +129,6 @@ model Event {
 
 model Document {
   id                String      @id @default(uuid())
-  isRegulation      Boolean     @default(false) @map("is_regulation")
-  content           String?
   path              String?
   position          Int         @default(autoincrement())
   label             String?

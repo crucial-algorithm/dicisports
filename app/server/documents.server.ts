@@ -1,7 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 
 import { db } from '~/server/db.server';
-import type { CreateDocumentInput, DBRawDocument, Document } from '~/types';
+import type { CreateDocumentInput, Document } from '~/types';
 import Id from '~/server/utils/Id.server';
 
 const prisma = new PrismaClient();
@@ -99,31 +99,6 @@ async function deleteDocument(documentId: string): Promise<void> {
   });
 }
 
-async function findRegulation(eventId: string): Promise<Document | null> {
-  const results: DBRawDocument[] = await db.$queryRaw`
-    SELECT *
-    FROM documents
-    WHERE event_id = ${eventId}
-      AND is_regulation = true
-      AND NOT status = 'deleted';
-  `;
-
-  return results.length > 0
-    ? {
-        id: results[0].id,
-        position: results[0].position,
-        label: results[0].label,
-        eventId: results[0].event_id,
-        createdAt: results[0].created_at,
-        updatedAt: results[0].updated_at,
-        path: results[0].path,
-        status: results[0].status,
-        isRegulation: results[0].is_regulation,
-        content: results[0].content ? results[0].content : null
-      }
-    : null;
-}
-
 export {
   findDocument,
   findDocuments,
@@ -131,6 +106,5 @@ export {
   updateDisplayOrderUp,
   updateDisplayOrderDown,
   createDocument,
-  deleteDocument,
-  findRegulation
+  deleteDocument
 };

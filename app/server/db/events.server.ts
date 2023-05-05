@@ -60,8 +60,7 @@ async function findEvent(id: string): Promise<Event | null> {
         where: {
           status: {
             not: Status.deleted
-          },
-          isRegulation: false
+          }
         }
       },
       difficulty: true,
@@ -289,6 +288,26 @@ async function deleteEvent(id: string) {
   });
 }
 
+async function updateEventRegulation({
+  eventId,
+  regulationPath,
+  regulationContent
+}: {
+  eventId: string;
+  regulationPath: string | null;
+  regulationContent: string | null;
+}): Promise<void> {
+  return await db.event.update({
+    where: {
+      id: eventId
+    },
+    data: {
+      regulationContent,
+      regulationPath
+    }
+  });
+}
+
 export {
   findEvents,
   findUserEvents,
@@ -303,5 +322,6 @@ export {
   findUserFavoriteEvents,
   findUserFavoriteEvent,
   getEventResultsByName,
-  deleteEvent
+  deleteEvent,
+  updateEventRegulation
 };

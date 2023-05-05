@@ -169,6 +169,8 @@ type CreateEventInput = {
   image5?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  regulationPath: string | null;
+  regulationContent: string | null;
   status?: EventStatus;
 };
 

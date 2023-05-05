@@ -240,7 +240,7 @@ export const action: ActionFunction = async ({ params, request }) => {
         ]
       }
     )
-    .refine((s) => s.price > s.priceEarlyBird, {
+    .refine((s) => s.priceEarlyBird && (s.price > s.priceEarlyBird), {
       message: t('Cheaper Early Bird'),
       path: ['priceEarlyBird']
     });
