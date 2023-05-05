@@ -84,7 +84,7 @@ describe('Event', () => {
     });
 
     it('Should show an handled message when accessing an unpublished event', () => {
-      cy.visitAndWaitForHydration('/event/trail-do-zezere').get(
+      cy.visitAndWaitForHydration('/event/flavius-challenge-ocr').get(
         'p[data-cy=event-not-found]'
       );
     });
@@ -290,14 +290,14 @@ describe('Event', () => {
       cy.intercept('POST', '/o/event/*_data=routes*')
         .as('publishEvent')
 
-        .visitAndWaitForHydration('/o/event/bQmGXYkbhJetjk6mniMt')
+        .visitAndWaitForHydration('/o/event/TgKZi8NQKNoJQGArd3zc')
 
         .get('#publish')
         .click()
 
         .wait('@publishEvent')
 
-        .visitAndWaitForHydration('/event/trail-do-zezere')
+        .visitAndWaitForHydration('/event/flavius-challenge-ocr')
 
         .get('[data-cy=event-not-found]')
         .should('not.exist');

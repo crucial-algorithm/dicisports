@@ -20,8 +20,10 @@ describe('Checkout', () => {
 
         .wait('@selectRace')
 
-        .url()
-        .should('include', `${Cypress.config().baseUrl}/checkout/info/`);
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.include('/checkout/info/');
+        });
     });
 
     it('Should remove race', () => {
@@ -335,7 +337,7 @@ describe('Checkout', () => {
     });
 
     it('should be able to authenticate and keep booking after completing booking process', () => {
-      bookParticipant('gLqrDfMx6qkTHn6hoZqA', 'LoDjLz7dWQTWk6Th4dRC')
+      bookParticipant('bQmGXYkbhJetjk6mniMt', 'Rd9SETi59X9ava6CPhkY')
         .get('[data-cy=authenticate]')
         .should('exist')
         .click()
@@ -411,7 +413,7 @@ describe('Checkout', () => {
       cy.login();
     });
 
-    it('Should  add race to cart  and redirect to form route from event page', () => {
+    it('Should add race to cart  and redirect to form route from event page', () => {
       cy.intercept('GET', '*?_data=routes*checkout*')
         .as('selectRace')
 
@@ -432,40 +434,40 @@ describe('Checkout', () => {
       cy.intercept('GET', '*?_data=routes*checkout*')
         .as('selectRace')
 
-        .visitAndWaitForHydration('/checkout/cart/gLqrDfMx6qkTHn6hoZqA')
+        .visitAndWaitForHydration('/checkout/cart/bQmGXYkbhJetjk6mniMt')
 
-        .get('#add-race-LoDjLz7dWQTWk6Th4dRC')
+        .get('#add-race-Rd9SETi59X9ava6CPhkY')
         .click()
 
         .wait('@selectRace')
 
-        .get('[data-cy=race-LoDjLz7dWQTWk6Th4dRC-qty]')
+        .get('[data-cy=race-Rd9SETi59X9ava6CPhkY-qty]')
         .contains('1')
 
-        .get('#remove-race-LoDjLz7dWQTWk6Th4dRC')
+        .get('#remove-race-Rd9SETi59X9ava6CPhkY')
         .click()
 
         .wait('@selectRace')
 
-        .get('[data-cy=race-LoDjLz7dWQTWk6Th4dRC-qty]')
+        .get('[data-cy=race-Rd9SETi59X9ava6CPhkY-qty]')
         .contains('0');
     });
 
     it('Should fill form and save participant', () => {
-      registerParticipant('gLqrDfMx6qkTHn6hoZqA', 'LoDjLz7dWQTWk6Th4dRC');
+      registerParticipant('bQmGXYkbhJetjk6mniMt', 'Rd9SETi59X9ava6CPhkY');
     });
 
     it('should contain right amount of races', () => {
-      cy.visitAndWaitForHydration('/checkout/cart/gLqrDfMx6qkTHn6hoZqA')
+      cy.visitAndWaitForHydration('/checkout/cart/bQmGXYkbhJetjk6mniMt')
 
-        .get('#add-race-LoDjLz7dWQTWk6Th4dRC')
+        .get('#add-race-Rd9SETi59X9ava6CPhkY')
         .click()
-        .get('[data-cy=race-LoDjLz7dWQTWk6Th4dRC-qty]')
+        .get('[data-cy=race-Rd9SETi59X9ava6CPhkY-qty]')
         .contains(1)
 
-        .get('#add-race-LoDjLz7dWQTWk6Th4dRC')
+        .get('#add-race-Rd9SETi59X9ava6CPhkY')
         .click()
-        .get('[data-cy=race-LoDjLz7dWQTWk6Th4dRC-qty]')
+        .get('[data-cy=race-Rd9SETi59X9ava6CPhkY-qty]')
         .contains(2)
 
         .get('#checkout')
@@ -521,15 +523,15 @@ describe('Checkout', () => {
     });
 
     it('should book a race', () => {
-      bookParticipant('gLqrDfMx6qkTHn6hoZqA', 'LoDjLz7dWQTWk6Th4dRC');
+      bookParticipant('bQmGXYkbhJetjk6mniMt', 'Rd9SETi59X9ava6CPhkY');
     });
 
     it('should send automated email after completing booking', () => {
-      bookParticipant('gLqrDfMx6qkTHn6hoZqA', 'LoDjLz7dWQTWk6Th4dRC');
+      bookParticipant('bQmGXYkbhJetjk6mniMt', 'Rd9SETi59X9ava6CPhkY');
       cy.request({ method: 'GET', url: Cypress.env('HTTP_CATCHER') }).then(
         ({ body }) => {
           expect(body.subject).to.eq(
-            'Informações do teu booking no evento Trilho Dos Moinhos.'
+            'Informações do teu booking no evento Trail do Zêzere.'
           );
         }
       );

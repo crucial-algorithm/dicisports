@@ -8,9 +8,10 @@
     "lng": -8.302317,
     "location": "Ferreira do Zêzere",
     "useExternalBooking": false,
-    "status": "draft",
+    "status": "published",
     "directions": "Carro: Saida pela A3 direção a Braga",
     "createdById": "gZZCGTHBq9SxdpRFoP8b",
+    "image1": "users/bQmGXYkbhJetjk6mniMt/dYHsESpQXaei35wbKkcB",
     "slug": "trail-do-zezere"
   },
   {
@@ -23,6 +24,7 @@
     "location": "Chaves",
     "useExternalBooking": true,
     "externalBookingUrl": "https://stopandgo.com.pt/events/viii-trilho-dos-reis",
+    "image1": "users/TgKZi8NQKNoJQGArd3zc/nAkLCBjYz3eSv8WnXJFy",
     "status": "draft",
     "createdById": "gZZCGTHBq9SxdpRFoP8b",
     "slug": "flavius-challenge-ocr"

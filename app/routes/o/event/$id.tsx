@@ -104,6 +104,7 @@ type ActionData = {
     description?: string;
     directions?: string;
     submit?: string;
+    regulation?: string;
   };
 };
 
@@ -209,7 +210,7 @@ export const action: ActionFunction = async ({ request, params }) => {
 
   const actionId = form.get('actionId') as string;
 
-  if (actionId === actionIds.delete) {
+  if (actionId === actionIds.deleteEvent) {
     await deleteEvent(event.id as string);
 
     return redirect(`/o?message=${t('Event Deleted')}`);
@@ -218,7 +219,7 @@ export const action: ActionFunction = async ({ request, params }) => {
   if (actionId === actionIds.deleteRegulation) {
     const regulation = await findRegulation(event.id as string);
 
-    await deleteDocument(regulation.id as string);
+    await deleteDocument(regulation?.id as string);
 
     return json({});
   }
@@ -232,6 +233,7 @@ export const action: ActionFunction = async ({ request, params }) => {
   const image5 = form.get('/file/image/4') as string;
   const location = parseLocation(form.get('location') as string);
   const races: Race[] = (await findEventRaces(event.id)) || [];
+  const regulation: Document | null = await findRegulation(event.id);
   let eventStatus = event.status;
 
   if (eventStatus === Status.auto) {
@@ -291,7 +293,10 @@ export const action: ActionFunction = async ({ request, params }) => {
     races: z
       .string({ required_error: t('At least 1 race') })
       .array()
-      .nonempty(t('At least 1 race'))
+      .nonempty(t('At least 1 race')),
+    regulation: z
+      .string({ required_error: t('Add regulation') })
+      .min(1, t('Add regulation'))
   };
 
   if (!data.useExternalBooking) {
@@ -306,7 +311,7 @@ export const action: ActionFunction = async ({ request, params }) => {
     await updateEvent(data, perks, newPerks);
 
     if (actionId === actionIds.publish) {
-      z.object(EventSchema).parse({ ...data, races: races.map((r) => r.id) });
+      z.object(EventSchema).parse({ ...data, races: races.map((r) => r.id), regulation: regulation.id });
 
       if (user.role === Role.ORGANIZER) {
         await publishEvent(event.id as string, data.name);
@@ -913,6 +918,12 @@ export default function OrganizerEventRoute() {
                 {t('No Regulation')}
               </H6>
             )}
+
+            {actionData?.errors?.regulation ? (
+              <InputError className="mt-8" id="error-message">
+                {actionData?.errors?.regulation}
+              </InputError>
+            ) : null}
           </div>
 
           <ButtonGroup className="mt-8">
@@ -969,9 +980,9 @@ export default function OrganizerEventRoute() {
 
       <ConfirmationDialog
         isOpen={deleteModalOpen.showModal}
-        title={deleteModalOpen.title}
-        question={deleteModalOpen.question}
-        primaryLabel={deleteModalOpen.label}
+        title={deleteModalOpen.title as string}
+        question={deleteModalOpen.question as string}
+        primaryLabel={deleteModalOpen.label as string}
         primaryVariant="danger"
         secondaryLabel={t('Ignore')}
         onDismiss={handleDiscardDeleteEvent}
@@ -987,7 +998,11 @@ export default function OrganizerEventRoute() {
         className="hidden"
         ref={deleteEventForm}
       >
-        <input type="hidden" name="actionId" value={deleteModalOpen.action} />
+        <input
+          type="hidden"
+          name="actionId"
+          value={deleteModalOpen.action as string}
+        />
       </Form>
     </Main>
   );
