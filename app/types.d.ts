@@ -111,8 +111,6 @@ type CreateDocumentInput = {
   id: string;
   label: string;
   path?: string | null;
-  isRegulation?: boolean;
-  content?: string | null;
   eventId: string;
 };
 
@@ -120,8 +118,6 @@ type DBRawDocument = {
   id: string;
   label: string | null;
   path: string | null;
-  is_regulation: boolean;
-  content: string | null;
   event_id: string;
   status: Status;
   position: number;

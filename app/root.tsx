@@ -304,7 +304,7 @@ function Html({ lang }: { lang: string }) {
         {pathname !== '/o' && <Navbar />}
         <Outlet />
         <ScrollRestoration />
-        <Footer />
+        {pathname !== '/o' && <Footer />}
         <script
           dangerouslySetInnerHTML={{
             __html: `window.ENV = ${JSON.stringify(data.ENV)}`

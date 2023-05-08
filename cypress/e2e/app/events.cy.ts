@@ -657,7 +657,7 @@ describe('Event', () => {
 
         .location()
         .should((l) => {
-          expect(l.pathname).to.include('/reg/new');
+          expect(l.pathname).to.include('/reg');
         })
 
         .get('input[name=file]')
@@ -692,7 +692,7 @@ describe('Event', () => {
 
         .location()
         .should((l) => {
-          expect(l.pathname).to.include('/reg/new');
+          expect(l.pathname).to.include('/reg');
         })
 
         .write(

@@ -14,7 +14,7 @@ async function findDocument(id: string): Promise<Document | null> {
 
 async function findDocuments(eventId: string): Promise<Document[] | void> {
   return await db.document.findMany({
-    where: { eventId, status: { not: 'deleted' }, isRegulation: false },
+    where: { eventId, status: { not: 'deleted' } },
     orderBy: { position: 'asc' }
   });
 }
@@ -32,8 +32,6 @@ async function createDocument(
       path: document.path,
       createdAt: documentAt,
       updatedAt: documentAt,
-      isRegulation: document.isRegulation,
-      content: document.content,
       eventId: document.eventId
     }
   });
@@ -44,7 +42,7 @@ async function updateDocument(document: CreateDocumentInput): Promise<void> {
 
   await db.document.update({
     where: { id: document.id },
-    data: { label: document.label, updatedAt, content: document.content }
+    data: { label: document.label, updatedAt }
   });
 }
 

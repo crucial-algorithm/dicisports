@@ -319,11 +319,11 @@ export const action: ActionFunction = async ({ request, params }) => {
 
       return json({});
     }
-    
+
     await updateEvent(data, perks, newPerks);
 
     if (actionId === actionIds.publish) {
-      z.object(EventSchema).parse({ ...data, races: races.map((r) => r.id) });
+      EventSchema.parse({ ...data, races: races.map((r) => r.id) });
 
       if (user.role === Role.ORGANIZER) {
         await publishEvent(event.id as string, data.name);
