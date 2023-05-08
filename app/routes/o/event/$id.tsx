@@ -525,7 +525,7 @@ export default function OrganizerEventRoute() {
   return (
     <Main>
       <div className="mb-24">
-        <UploadForm method="post" className="w-full" preventScrollReset={true}>
+        <UploadForm method="post" className="w-full">
           <div className="mb-12 lg:mb-20">
             <div className="flex flex-row items-start justify-between items-center">
               <div>

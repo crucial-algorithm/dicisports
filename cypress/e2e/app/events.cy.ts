@@ -731,7 +731,7 @@ describe('Event', () => {
         .location()
         .should((l) =>
           expect(l.pathname).to.eq(
-            '/o/event/gLqrDfMx6qkTHn6hoZqA/reg/4paKnjmW6LFtTfutNSgc'
+            '/o/event/gLqrDfMx6qkTHn6hoZqA/reg'
           )
         )
 
@@ -742,7 +742,7 @@ describe('Event', () => {
 
         .intercept(
           'POST',
-          '/o/event/gLqrDfMx6qkTHn6hoZqA/reg/4paKnjmW6LFtTfutNSgc*'
+          '/o/event/gLqrDfMx6qkTHn6hoZqA/reg*'
         )
         .as('saveRegulation')
 
