@@ -1,11 +1,11 @@
 import type { Prisma } from '@prisma/client';
-import { PrismaClient } from '@prisma/client';
+import { CheckoutStatus, PrismaClient, Status } from '@prisma/client';
 
 import type {
   DBRawParticipant,
   DBRawUIRaceParticipant,
   Participant,
-  ParticipantInput,
+  ParticipantInput, Race,
   RaceParticipant,
   RaceParticipantInput,
   UIRaceParticipant
@@ -252,6 +252,33 @@ async function findUserBookingParticipants(bookingId: string): Promise<RaceParti
   });
 }
 
+async function findEventRaceParticipants(
+  eventId: string
+): Promise<RaceParticipant[] | null> {
+  return db.raceParticipant.findMany({
+    where: {
+      race: {
+        eventId
+      },
+      participant: {
+        status: {
+          not: Status.auto
+        }
+      },
+      booking: {
+        status: {
+          not: CheckoutStatus.checkout
+        }
+      }
+    },
+    include: {
+      race: true,
+      participant: true,
+      booking: true
+    }
+  });
+}
+
 export {
   addParticipantsToRace,
   findUserEventRaceParticipants,
@@ -264,5 +291,6 @@ export {
   addParticipantToRace,
   findRaceParticipants,
   findUserSavedParticipants,
-  findUserBookingParticipants
+  findUserBookingParticipants,
+  findEventRaceParticipants
 };
