@@ -18,7 +18,7 @@ import {
 import { Link, useActionData, useLoaderData } from '@remix-run/react';
 import clsx from 'clsx';
 import * as React from 'react';
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { useTranslation } from 'react-i18next';
 

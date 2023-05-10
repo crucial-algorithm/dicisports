@@ -5,7 +5,7 @@ import type {
   DBRawParticipant,
   DBRawUIRaceParticipant,
   Participant,
-  ParticipantInput, Race,
+  ParticipantInput,
   RaceParticipant,
   RaceParticipantInput,
   UIRaceParticipant
