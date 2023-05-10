@@ -73,14 +73,15 @@ export const action: ActionFunction = async ({ request, params }) => {
   const regulation: boolean = (form.get('regulation') as string) === 'on';
   const terms: boolean = (form.get('terms') as string) === 'on';
 
-  const PaymentSchema = z.object({
-    terms: z
-      .boolean({ required_error: t('Accept All Terms') })
-      .refine((v) => v, { message: t('Accept All Terms') }),
-    regulation: z
-      .boolean({ required_error: t('Accept All Terms') })
-      .refine((v) => v, { message: t('Accept All Terms') })
-  });
+  const PaymentSchema = z
+    .object({
+      terms: z
+        .boolean({ required_error: t('Accept Dici Terms') })
+        .refine((v) => v, { message: t('Accept Dici Terms') }),
+      regulation: z
+        .boolean({ required_error: t('Accept Event Regulation') })
+        .refine((v) => v, { message: t('Accept Event Regulation') })
+    });
 
   try {
     PaymentSchema.parse({ regulation, terms });
@@ -241,7 +242,7 @@ export default function CheckoutPaymentRoute() {
             </div>
 
             <InputError id="terms-error" className="mb-2">
-              {actionData?.errors?.terms || actionData?.errors?.regulation}
+              {actionData?.errors?.submit || actionData?.errors?.terms || actionData?.errors?.regulation}
             </InputError>
 
             <Button type="submit" name="pay">
