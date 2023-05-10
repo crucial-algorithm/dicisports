@@ -889,7 +889,7 @@ export default function OrganizerEventRoute() {
               <div className="relative flex mb-4 justify-between items-center flex-row border-b p-4 last:border-none border-gray-300 dark:border-gray-300">
                 {isInlineRegulation ? (
                   <Link
-                    to={`/o/event/${event.id}/reg`}
+                    to={`/o/event/${event.id}/regulation`}
                     className="text-lg font-extrabold pl-3 text-gray-700 dark:text-white w-[calc(100%-(24px+24px))] cursor-pointer"
                     data-cy="regulation-doc"
                   >
