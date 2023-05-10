@@ -297,8 +297,9 @@ export default function DashboardRoute() {
       </div>
 
       <Form method="get" preventScrollReset={true} ref={searchForm}>
-        <div className="flex flex-col md:flex-row md:justify-between items-center">
+        <div className="flex flex-col gap-y-4 md:flex-row md:justify-between items-center">
           <Button
+            name="export-participants"
             type="button"
             onClick={handleExportParticipants}
             variant="secondary"
