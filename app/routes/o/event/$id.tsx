@@ -875,7 +875,7 @@ export default function OrganizerEventRoute() {
                   </ButtonLink>
                   <ButtonLink
                     type="button"
-                    to="reg"
+                    to="regulation"
                     size="small"
                     className="flex lg:hidden"
                     data-cy="add-regulation"

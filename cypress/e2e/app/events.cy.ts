@@ -657,7 +657,7 @@ describe('Event', () => {
 
         .location()
         .should((l) => {
-          expect(l.pathname).to.include('/reg');
+          expect(l.pathname).to.include('/regulation');
         })
 
         .get('input[name=file]')
@@ -692,7 +692,7 @@ describe('Event', () => {
 
         .location()
         .should((l) => {
-          expect(l.pathname).to.include('/reg');
+          expect(l.pathname).to.include('/regulation');
         })
 
         .write(
@@ -731,7 +731,7 @@ describe('Event', () => {
         .location()
         .should((l) =>
           expect(l.pathname).to.eq(
-            '/o/event/gLqrDfMx6qkTHn6hoZqA/reg'
+            '/o/event/gLqrDfMx6qkTHn6hoZqA/regulation'
           )
         )
 
@@ -742,7 +742,7 @@ describe('Event', () => {
 
         .intercept(
           'POST',
-          '/o/event/gLqrDfMx6qkTHn6hoZqA/reg*'
+          '/o/event/gLqrDfMx6qkTHn6hoZqA/regulation*'
         )
         .as('saveRegulation')
 
