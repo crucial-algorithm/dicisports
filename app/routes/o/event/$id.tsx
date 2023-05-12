@@ -5,7 +5,7 @@ import {
   TrashIcon
 } from '@heroicons/react/24/outline';
 import { Role, Status } from '@prisma/client';
-import { Form, Link, useActionData, useLoaderData } from '@remix-run/react';
+import { Form, Link, useActionData, useFetcher, useLoaderData } from '@remix-run/react';
 import type {
   ActionFunction,
   LinksFunction,
@@ -411,7 +411,8 @@ export default function OrganizerEventRoute() {
   } = useLoaderData<LoaderData>();
   const actionData = useActionData<ActionData>();
   const [showLocationPicker, setShowLocationPicker] = useState<boolean>(false);
-
+  const fetcher = useFetcher();
+  
   const [perks, setPerks] = useState<Array<StrippedPerk>>(dbPerks);
   const [races, setRaces] = useState<Array<Race>>(dbRaces);
   const [location, setLocation] = useState<DiciLocation | null>(
@@ -496,10 +497,15 @@ export default function OrganizerEventRoute() {
   }
 
   function handleDeleteRegulation() {
-    if (!deleteForm.current) {
-      return;
-    }
-    deleteForm.current.submit();
+    fetcher.submit(
+      {
+        actionId: actionIds.deleteRegulation
+      },
+      {
+        method: 'post'
+      }
+    );
+
     setDeleteRegulationModalOpen(false);
   }
 
@@ -1007,7 +1013,7 @@ export default function OrganizerEventRoute() {
         className="hidden"
         ref={deleteForm}
       >
-        {actionId && <input type="hidden" name="actionId" value={actionId} />}
+        <input type="hidden" name="actionId" value={actionIds.deleteEvent} />
       </Form>
     </Main>
   );
