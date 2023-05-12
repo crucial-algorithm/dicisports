@@ -245,8 +245,8 @@ export default function EventDisplayRoute() {
                 label={t('Regulation')}
                 path={
                   isInlineRegulation
-                    ? `/${event.slug}/regulation`
-                    : `/${event.id}/doc/regulation/view`
+                    ? `/event/${event.slug}/regulation`
+                    : `/event/${event.id}/doc/regulation/view`
                 }
               />
             </div>
@@ -418,7 +418,7 @@ function DisplayRace({ race, index, eventId, areThereRacesInEarlyBird }: Display
           )}
           {race.track && (
             <Link
-              to={`/${eventId}/race/${race.id}/gpx`}
+              to={`/event/${eventId}/race/${race.id}/gpx`}
               target="_blank"
               rel="noreferrer"
               data-cy={`gpx-${race.id}`}
@@ -468,7 +468,7 @@ function DisplayDocument(props: { document: Document; index: number }) {
         {fileExtension[fileExtension.length - 1].toUpperCase()}
       </div>
       <a
-        href={`/${document.eventId}/doc/${document.id}/view`}
+        href={`/event/${document.eventId}/doc/${document.id}/view`}
         target="_blank"
         rel="noreferrer"
         className="text-black dark:text-white"

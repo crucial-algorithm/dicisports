@@ -17,11 +17,13 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   const t = await i18n.getFixedT(request, RESOURCES_NS);
 
   const documentId = params.id as string;
-  const eventId = params.eventId as string;
-  let path: string;
-  let label: string;
+  const document = await findDocument(documentId);
 
-  const event = await findEvent(eventId);
+  if (!document) {
+    throw NotFound(t('No Document'));
+  }
+
+  const event = await findEvent(document.eventId);
 
   if (!event) {
     throw NotFound(t('Event not found'));
@@ -30,26 +32,12 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     throw Unauthorized(t('Not authorized'));
   }
 
-  if (documentId === 'regulation') {
-    label = t('Regulation');
-    path = event.regulationPath as string;
-  } else {
-    const document = await findDocument(documentId);
-
-    if (!document) {
-      throw NotFound(t('No Document'));
-    }
-
-    label = document.label as string;
-    path = document.path as string;
-  }
-
-  const body = await downloadFromS3(path);
+  const body = await downloadFromS3(document.path);
 
   //@ts-ignore
   return new Response(body, {
     headers: {
-      'content-disposition': `inline; filename="${label}.gpx"`
+      'content-disposition': `inline; filename="${document.label}.gpx"`
     }
   });
 };

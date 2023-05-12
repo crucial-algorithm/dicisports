@@ -101,12 +101,15 @@
   "Delete Document": "Apagar documento",
   "Delete Event": "Apagar evento",
   "Delete Event X": "Apagar o evento \"{{name}}\"",
+  "Delete Regulation Label": "Apagar o regulamento",
+  "Delete Regulation": "Apagar regulamento",
   "Event Deleted": "Evento removido!",
   "Delete Race X": "Apagar a corrida \"{{name}}\"",
   "Delete Document X": "Apagar a documento \"{{name}}\"",
   "Are you sure you want to delete race?": "Tem a certeza que quer apagar a corrida? Não há como voltar atrás!",
   "Are you sure you want to delete document?": "Tem a certeza que quer apagar o documento? Não há como voltar atrás!",
   "Are you sure you want to delete event?": "Tem a certeza que quer apagar o evento? Não há como voltar atrás",
+  "Are you sure you want to delete regulation?": "Tem a certeza que quer apagar o regulamento? Não há como voltar atrás",
   "Ignore": "Ignorar",
   "Or": "Ou"
 }

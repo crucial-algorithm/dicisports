@@ -214,8 +214,8 @@ export default function CheckoutPaymentRoute() {
                   target="_blank"
                   to={
                     isInlineRegulation
-                      ? `/${event.slug}/regulation`
-                      : `/${event.id}/doc/regulation/view`
+                      ? `/event/${event.slug}/regulation`
+                      : `/event/${event.id}/doc/regulation/view`
                   }
                   data-cy="regulation-link"
                 >

@@ -206,6 +206,7 @@ export const action: ActionFunction = async ({ request, params }) => {
 
   const actionId = form.get('actionId') as string;
 
+  console.log('action id -->', actionId);
   if (actionId === actionIds.deleteEvent) {
     await deleteEvent(event.id as string);
 
@@ -421,21 +422,13 @@ export default function OrganizerEventRoute() {
         }
       : null
   );
-  const [deleteModalOpen, setDeleteModalOpen] = useState<{
-    showModal: boolean;
-    title: string | null;
-    question: string | null;
-    action: string | null;
-    label: string | null;
-  }>({
-    showModal: false,
-    title: null,
-    question: null,
-    action: null,
-    label: null
-  });
+  const [deleteEventModalOpen, setDeleteEventModalOpen] =
+    useState<boolean>(false);
+  const [deleteRegulationModalOpen, setDeleteRegulationModalOpen] =
+    useState<boolean>(false);
+  const [actionId, setActionId] = useState<null | string>(null);
   const inputEl = useRef(null);
-  const deleteEventForm = useRef<HTMLFormElement>(null);
+  const deleteForm = useRef<HTMLFormElement>(null);
   const isPublished = event.status === Status.published;
   const isInlineRegulation = !!event.regulationContent;
   const regulationExists = !!event.regulationContent || !!event.regulationPath;
@@ -475,47 +468,39 @@ export default function OrganizerEventRoute() {
   }
 
   function handleShowDeleteEventWarning() {
-    setDeleteModalOpen({
-      showModal: true,
-      title: t('Delete Event X', { name: event?.name }),
-      question: t('Are you sure you want to delete event?'),
-      action: actionIds.deleteEvent,
-      label: t('Delete Event')
-    });
+    setActionId(actionIds.deleteEvent);
+    setDeleteEventModalOpen(true);
   }
 
   function handleShowDeleteRegulationWarning() {
-    setDeleteModalOpen({
-      showModal: true,
-      title: t('Delete Regulation'),
-      question: t('Are you sure you want to delete regulation?'),
-      action: actionIds.deleteRegulation,
-      label: t('Delete Regulation')
-    });
+    setActionId(actionIds.deleteRegulation);
+    setDeleteRegulationModalOpen(true);
   }
 
   function handleDiscardDeleteEvent() {
-    setDeleteModalOpen({
-      showModal: false,
-      title: null,
-      question: null,
-      action: null,
-      label: null
-    });
+    setActionId(null);
+    setDeleteEventModalOpen(false);
+  }
+
+  function handleDiscardDeleteRegulation() {
+    setActionId(null);
+    setDeleteRegulationModalOpen(false);
   }
 
   function handleDeleteEvent() {
-    if (!deleteEventForm.current) {
+    if (!deleteForm.current) {
       return;
     }
-    deleteEventForm.current.submit();
-    setDeleteModalOpen({
-      showModal: false,
-      title: null,
-      question: null,
-      action: null,
-      label: null
-    });
+    deleteForm.current.submit();
+    setDeleteEventModalOpen(false);
+  }
+
+  function handleDeleteRegulation() {
+    if (!deleteForm.current) {
+      return;
+    }
+    deleteForm.current.submit();
+    setDeleteRegulationModalOpen(false);
   }
 
   useEffect(() => {
@@ -823,38 +808,6 @@ export default function OrganizerEventRoute() {
             </div>
           </FormField>
 
-          <div id="documents" className="mb-12">
-            <Label
-              htmlFor="documents"
-              className={clsx(
-                'mb-5 flex justify-between items-center flex-row'
-              )}
-            >
-              {t('Documents')}
-
-              <ButtonLink className="hidden lg:flex" type="button" to="doc/new">
-                {t('Upload Document')}
-              </ButtonLink>
-              <ButtonLink
-                type="button"
-                to="doc/new"
-                size="small"
-                className="flex lg:hidden"
-                data-cy="create-document"
-              >
-                <PlusIcon className="md:h-6 w-6 m-0 inline-block"></PlusIcon>
-              </ButtonLink>
-            </Label>
-            <div>
-              <DocumentsList documents={event.documents} eventId={event.id} />
-            </div>
-            <WhenListEmpty list={event.documents}>
-              <H6 className="text-center p-12" variant="secondary" as="p">
-                {t('No Documents')}
-              </H6>
-            </WhenListEmpty>
-          </div>
-
           <div id="regulation" className="mb-12">
             <Label
               htmlFor="regulation"
@@ -869,7 +822,7 @@ export default function OrganizerEventRoute() {
                   <ButtonLink
                     className="hidden lg:flex"
                     type="button"
-                    to="reg"
+                    to="regulation"
                   >
                     {t('Upload Regulation')}
                   </ButtonLink>
@@ -907,8 +860,8 @@ export default function OrganizerEventRoute() {
                 <a
                   href={
                     isInlineRegulation
-                      ? `/${event.slug}/regulation`
-                      : `/${event.id}/doc/regulation/view`
+                      ? `/event/${event.slug}/regulation`
+                      : `/event/${event.id}/regulation/view`
                   }
                   target="_blank"
                   rel="noreferrer"
@@ -936,6 +889,38 @@ export default function OrganizerEventRoute() {
                 {actionData?.errors?.regulation}
               </InputError>
             ) : null}
+          </div>
+
+          <div id="documents" className="mb-12">
+            <Label
+              htmlFor="documents"
+              className={clsx(
+                'mb-5 flex justify-between items-center flex-row'
+              )}
+            >
+              {t('Documents')}
+
+              <ButtonLink className="hidden lg:flex" type="button" to="doc/new">
+                {t('Upload Document')}
+              </ButtonLink>
+              <ButtonLink
+                type="button"
+                to="doc/new"
+                size="small"
+                className="flex lg:hidden"
+                data-cy="create-document"
+              >
+                <PlusIcon className="md:h-6 w-6 m-0 inline-block"></PlusIcon>
+              </ButtonLink>
+            </Label>
+            <div>
+              <DocumentsList documents={event.documents} eventId={event.id} />
+            </div>
+            <WhenListEmpty list={event.documents}>
+              <H6 className="text-center p-12" variant="secondary" as="p">
+                {t('No Documents')}
+              </H6>
+            </WhenListEmpty>
           </div>
 
           <ButtonGroup className="mt-8">
@@ -991,14 +976,26 @@ export default function OrganizerEventRoute() {
       />
 
       <ConfirmationDialog
-        isOpen={deleteModalOpen.showModal}
-        title={deleteModalOpen.title as string}
-        question={deleteModalOpen.question as string}
-        primaryLabel={deleteModalOpen.label as string}
+        isOpen={deleteEventModalOpen}
+        title={t('Delete Event X', { name: event?.name })}
+        question={t('Are you sure you want to delete event?')}
+        primaryLabel={t('Delete Event')}
         primaryVariant="danger"
         secondaryLabel={t('Ignore')}
         onDismiss={handleDiscardDeleteEvent}
         onConfirm={handleDeleteEvent}
+        className="cy-delete-dialog"
+      />
+
+      <ConfirmationDialog
+        isOpen={deleteRegulationModalOpen}
+        title={t('Delete Regulation Label')}
+        question={t('Are you sure you want to delete regulation?')}
+        primaryLabel={t('Delete Regulation')}
+        primaryVariant="danger"
+        secondaryLabel={t('Ignore')}
+        onDismiss={handleDiscardDeleteRegulation}
+        onConfirm={handleDeleteRegulation}
         className="cy-delete-dialog"
       />
 
@@ -1008,13 +1005,9 @@ export default function OrganizerEventRoute() {
         noValidate
         aria-describedby="general-error"
         className="hidden"
-        ref={deleteEventForm}
+        ref={deleteForm}
       >
-        <input
-          type="hidden"
-          name="actionId"
-          value={deleteModalOpen.action as string}
-        />
+        {actionId && <input type="hidden" name="actionId" value={actionId} />}
       </Form>
     </Main>
   );

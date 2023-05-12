@@ -82,7 +82,7 @@ describe('Event', () => {
         2274,
         576,
         granfondo,
-        '/MY4bvgxDbMtGv8rbYe5d/race/xaXaCzs2t7D8DpRNnffM/gpx'
+        '/event/MY4bvgxDbMtGv8rbYe5d/race/xaXaCzs2t7D8DpRNnffM/gpx'
       );
     });
 
@@ -713,7 +713,7 @@ describe('Event', () => {
     });
 
     it('should display regulation', () => {
-      cy.visit('/trilho-dos-moinhos/regulation')
+      cy.visit('/event/trilho-dos-moinhos/regulation')
 
         .get('div[data-cy=regulation]')
         .contains(
@@ -756,7 +756,7 @@ describe('Event', () => {
           expect(l.pathname).to.eq('/o/event/gLqrDfMx6qkTHn6hoZqA')
         )
 
-        .visit('/trilho-dos-moinhos/regulation')
+        .visit('/event/trilho-dos-moinhos/regulation')
 
         .get('div[data-cy=regulation]')
         .contains('Devoluções aceites apenas com justificação válida.');

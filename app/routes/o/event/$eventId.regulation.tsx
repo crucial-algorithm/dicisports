@@ -37,7 +37,6 @@ import i18n from '~/server/i18n.server';
 import type { Document, Event } from '~/types';
 import { badRequest } from '~/utils/misc';
 import { uploadToS3 } from '~/server/utils/s3';
-import Id from '~/server/utils/Id.server';
 import { findEvent, updateEventRegulation } from '~/server/db/events.server';
 import { NotFound, Unauthorized } from '~/server/utils/misc';
 import TextArea from '~/components/shared/form/TextArea';
@@ -103,11 +102,13 @@ export const action: ActionFunction = async ({ request, params }) => {
       const eventId = params.eventId as string;
       const path = require('path');
       const fileExtension = path.parse(filename as string).ext;
+      const currentDate = new Date();
+      const prefix = `events/${currentDate.getFullYear()}${currentDate.getMonth()}/${eventId}/`;
 
       return await uploadToS3(
         Readable.from(data),
-        eventId,
-        Id() + fileExtension
+        prefix,
+        t('Regulation') + fileExtension
       );
     },
     // fallback to memory for everything else

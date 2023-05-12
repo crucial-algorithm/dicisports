@@ -138,7 +138,7 @@ function races() {
       createdAt: now,
       updatedAt: now,
       // then add a week so that tests don't break because of an expired date
-      validUntil: validUntil ? new Date(validUntil.getTime() + 604800000) : null
+      validUntil: validUntil ? new Date(Date.now() + 604800 * 1000) : null
     };
   });
 }
