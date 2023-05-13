@@ -1,7 +1,8 @@
 import { CheckoutStatus } from '@prisma/client';
 import type { ActionFunction, LoaderFunction } from '@remix-run/node';
 import { json, redirect } from '@remix-run/node';
-import { Form, useFetcher, useLoaderData } from '@remix-run/react';
+import { useFetcher, useLoaderData } from '@remix-run/react';
+import { useEffect } from 'react';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -13,6 +14,7 @@ import Main from '~/components/shared/Main';
 import { H2, H6 } from '~/components/shared/typography';
 import { getClientSession } from '~/server/auth/client.server';
 import { getUser } from '~/server/auth/session.server';
+import Config from '~/server/config.server';
 import {
   findBookingById,
   findBookingCart,
@@ -20,18 +22,24 @@ import {
 } from '~/server/db/booking.server';
 import { findEvent } from '~/server/db/events.server';
 import { findUserEventRaceParticipants } from '~/server/db/participant.server';
+import type { KCDHandle } from '~/types';
 import type { Event, UICartRow } from '~/types';
 import { sendBookingConfirmationEmail } from '~/server/email.server';
 import { badRequest, getDomainUrl } from '~/utils/misc';
 import i18n from '~/server/i18n.server';
+import { createPayamentTransaction } from '~/utils/payments';
+import { useTheme } from '~/utils/theme-provider';
 
 type LoaderData = {
   event: Event;
   cart: UICartRow[];
+  formContext: String;
+  transactionID: String;
+  CHECKOUT_FORM_SCRIPT: String;
 };
 
 export const action: ActionFunction = async ({ request, params }) => {
-  const t = await i18n.getFixedT(request, ['checkout']);
+  const t = await i18n.getFixedT(request, [ 'checkout' ]);
 
   const form = await request.formData();
   const anonymousClient = await getClientSession(request);
@@ -85,8 +93,9 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   const anonymousClient = await getClientSession(request);
   const authenticatedClient = await getUser(request);
   const bookingId = params.bookingId as string;
-
   const booking = await findBookingById(bookingId);
+
+  const paymentTransaction = await createPayamentTransaction(bookingId, 5.5);
 
   // We check if user is authenticated -> authenticatedClient, if not, we use the client session -> anonymousClient
   const clientId =
@@ -121,14 +130,87 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 
   return json({
     event,
-    cart
+    cart,
+    formContext: paymentTransaction.formContext,
+    transactionID: paymentTransaction.transactionID,
+    CHECKOUT_FORM_SCRIPT: Config().SIBS_CHECKOUT_FORM_SCRIPT
   });
 };
 
+export const handle: KCDHandle & { id: string; i18n: string[] } = {
+  id: 'root',
+  i18n: ['checkout']
+};
+
+
+const sibsDarkTheme ={
+  layout: 'default',
+  theme: 'default',
+  color: {
+    primary: '#ef7f1a',
+    secondary: '#ef7f1a',
+    border: undefined,
+    surface: undefined,
+    header: {
+      text: '#ffffff',
+      background: '#2f3037' // '#1F2028'
+    },
+    body: {
+      text: '#ffffff',
+      background: '#2f3037' // '#1F2028'
+    }
+  }
+//      font: ''
+};
+
+const sibsLightTheme ={
+  layout: 'default',
+  theme: 'default',
+  color: {
+    primary: '#ef7f1a',
+    secondary: '#ef7f1a',
+    border: undefined,
+    surface: undefined,
+    header: {
+      text: undefined,
+      background: undefined
+    },
+    body: {
+      text: undefined,
+      background: undefined
+    }
+  }
+//      font: ''
+};
+
+
 export default function CheckoutPaymentRoute() {
-  const { event, cart } = useLoaderData<LoaderData>();
+  const { event, cart, formContext, transactionID, CHECKOUT_FORM_SCRIPT } =
+    useLoaderData<LoaderData>();
   const { t } = useTranslation('checkout');
   const fetcher = useFetcher();
+  const [theme] = useTheme();
+  const style = JSON.stringify(theme === 'dark' ? sibsDarkTheme : sibsLightTheme);
+  const formScriptSrc = `${CHECKOUT_FORM_SCRIPT}?id=${transactionID}`;
+
+  console.log('CHECKOUT_FORM_SCRIPT', CHECKOUT_FORM_SCRIPT);
+
+  const formConfig = JSON.stringify({
+    paymentMethodList: [],
+    amount: { value: 5, currency: 'EUR' },
+    language: 'pt',
+    redirectUrl: 'http://localhost:3000/checkout/confirmation/Fd7ttfun8b4wExQF6YbD',
+    customerData: null
+  });
+
+  useEffect(() => {
+    const script = document.createElement('script');
+
+    script.src = formScriptSrc;
+    script.async = true;
+
+    document.body.appendChild(script);
+  }, [formScriptSrc]);
 
   return (
     <Main>
@@ -139,18 +221,13 @@ export default function CheckoutPaymentRoute() {
           </b>
         </H2>
         <H6>
-          <DisplayDate date={new Date(event.startAt)} />
+          <DisplayDate date={new Date(event.startAt)}/>
         </H6>
         <H6>{event.address}</H6>
       </div>
       <div className="flex flex-col md:flex-row mt-8">
-        {/*Payment Form*/}
-        <div className="flex-col w-full md:w-[calc(100%-(480px))] md:pr-4">
-          <Form method="post">
-            <Button type="submit" name="pay">
-              {t('Pay')}
-            </Button>
-          </Form>
+        <div className="flex-col w-full md:w-[calc(100%-(480px))] md:pr-4 sibs">
+          <form className="paymentSPG" spg-context={JSON.stringify(formContext)} spg-config={formConfig} spg-style={style} />
         </div>
         <div className="w-full md:w-[480px]">
           <DisplayCart cart={cart} event={event} fetcher={fetcher}>
@@ -168,5 +245,5 @@ export default function CheckoutPaymentRoute() {
         </div>
       </div>
     </Main>
-  );
+);
 }

@@ -1,25 +1,30 @@
 export type ConfigServer = {
-  env: 'development' | 'production'
-  inDev: () => boolean
-  MAPBOX_TOKEN: string
-  CLOUDINARY_UPLOAD_PRESET: string
-  CLOUDINARY_CLOUD_NAME: string
-  CLOUDINARY_API_KEY: string
-  CLOUDINARY_API_SECRET: string
-  MAGIC_LINK_SECRET: string
-  SESSION_SECRET: string
-  SESSION_EXPIRATION_TIME: number
-  EMAIL_VERIFIER_TOKEN: string
-  MAILGUN_DOMAIN: string | undefined
-  MAILGUN_ENDPOINT: string
-  MAILGUN_SENDING_KEY: string | undefined
-  CONVERT_KIT_FORM: string
-  CONVERT_KIT_API_KEY: string
-  AWS_REGION: string
-  AWS_ACCESS_KEY_ID: string
-  AWS_SECRET_ACCESS_KEY: string
-  AWS_S3_BUCKET: string
-  RELEASE: string
+  env: 'development' | 'production';
+  inDev: () => boolean;
+  MAPBOX_TOKEN: string;
+  CLOUDINARY_UPLOAD_PRESET: string;
+  CLOUDINARY_CLOUD_NAME: string;
+  CLOUDINARY_API_KEY: string;
+  CLOUDINARY_API_SECRET: string;
+  MAGIC_LINK_SECRET: string;
+  SESSION_SECRET: string;
+  SESSION_EXPIRATION_TIME: number;
+  EMAIL_VERIFIER_TOKEN: string;
+  MAILGUN_DOMAIN: string | undefined;
+  MAILGUN_ENDPOINT: string;
+  MAILGUN_SENDING_KEY: string | undefined;
+  CONVERT_KIT_FORM: string;
+  CONVERT_KIT_API_KEY: string;
+  AWS_REGION: string;
+  AWS_ACCESS_KEY_ID: string;
+  AWS_SECRET_ACCESS_KEY: string;
+  AWS_S3_BUCKET: string;
+  RELEASE: string;
+  SIBS_CHECKOUT_FORM_SCRIPT: string;
+  SIBS_API_TOKEN: string;
+  SIBS_URL_ENDPOINT: string;
+  SIBS_TERMINAL_ID: number;
+  SIBS_CLIENT_ID: string;
 }
 
 let config: ConfigServer | null = null;
@@ -51,7 +56,12 @@ export default function Config(): ConfigServer {
     AWS_ACCESS_KEY_ID: extractVar('AWS_ACCESS_KEY_ID'),
     AWS_SECRET_ACCESS_KEY: extractVar('AWS_SECRET_ACCESS_KEY'),
     AWS_S3_BUCKET: extractVar('AWS_S3_BUCKET'),
-    RELEASE: extractVar('RELEASE')
+    RELEASE: extractVar('RELEASE'),
+    SIBS_CHECKOUT_FORM_SCRIPT: extractVar('SIBS_CHECKOUT_FORM_SCRIPT'),
+    SIBS_URL_ENDPOINT: extractVar('SIBS_URL_ENDPOINT'),
+    SIBS_API_TOKEN: extractVar('SIBS_API_TOKEN'),
+    SIBS_TERMINAL_ID: Number(extractVar('SIBS_TERMINAL_ID')),
+    SIBS_CLIENT_ID: extractVar('SIBS_CLIENT_ID')
   };
 
   return config;
