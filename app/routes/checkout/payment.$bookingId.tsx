@@ -1,4 +1,5 @@
 import { CheckoutStatus } from '@prisma/client';
+import type { Payment } from '@prisma/client';
 import type { ActionFunction, LoaderFunction } from '@remix-run/node';
 import { json, redirect } from '@remix-run/node';
 import { useFetcher, useLoaderData } from '@remix-run/react';
@@ -22,24 +23,31 @@ import {
 } from '~/server/db/booking.server';
 import { findEvent } from '~/server/db/events.server';
 import { findUserEventRaceParticipants } from '~/server/db/participant.server';
+import {
+  findExpiredPayments,
+  findPendingPayments
+} from '~/server/db/payments.server';
 import type { KCDHandle } from '~/types';
 import type { Event, UICartRow } from '~/types';
 import { sendBookingConfirmationEmail } from '~/server/email.server';
-import { badRequest, getDomainUrl } from '~/utils/misc';
+import { badRequest, bookingAmount, getDomainUrl } from '~/utils/misc';
 import i18n from '~/server/i18n.server';
-import { createPayamentTransaction } from '~/utils/payments';
+import { createPayamentTransaction } from '~/server/utils/payments';
 import { useTheme } from '~/utils/theme-provider';
 
 type LoaderData = {
   event: Event;
   cart: UICartRow[];
-  formContext: String;
-  transactionID: String;
-  CHECKOUT_FORM_SCRIPT: String;
+  bookingId: string;
+  pendingPayments: Payment[];
+  expiredPayments: Payment[];
+  formContext: string;
+  transactionID: string;
+  CHECKOUT_FORM_SCRIPT: string;
 };
 
 export const action: ActionFunction = async ({ request, params }) => {
-  const t = await i18n.getFixedT(request, [ 'checkout' ]);
+  const t = await i18n.getFixedT(request, ['checkout']);
 
   const form = await request.formData();
   const anonymousClient = await getClientSession(request);
@@ -95,8 +103,6 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   const bookingId = params.bookingId as string;
   const booking = await findBookingById(bookingId);
 
-  const paymentTransaction = await createPayamentTransaction(bookingId, 5.5);
-
   // We check if user is authenticated -> authenticatedClient, if not, we use the client session -> anonymousClient
   const clientId =
     authenticatedClient !== null
@@ -109,7 +115,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 
   const eventId = booking.eventId;
 
-  const event = await findEvent(eventId);
+  const event = (await findEvent(eventId)) as Event;
   const cart = await findBookingCart(clientId, eventId);
   const raceParticipants = await findUserEventRaceParticipants(
     clientId,
@@ -128,12 +134,32 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     );
   }
 
+  const pendingPayments = await findPendingPayments(bookingId);
+
+  if (pendingPayments.length > 0) {
+    return json({
+      bookingId,
+      event,
+      cart,
+      pendingPayments
+    });
+  }
+
+  const expiredPayments = await findExpiredPayments(bookingId);
+  const paymentTransaction = await createPayamentTransaction(
+    booking,
+    event,
+    cart
+  );
+
   return json({
+    bookingId,
     event,
     cart,
     formContext: paymentTransaction.formContext,
     transactionID: paymentTransaction.transactionID,
-    CHECKOUT_FORM_SCRIPT: Config().SIBS_CHECKOUT_FORM_SCRIPT
+    CHECKOUT_FORM_SCRIPT: Config().SIBS_CHECKOUT_FORM_SCRIPT,
+    expiredPayments
   });
 };
 
@@ -142,8 +168,7 @@ export const handle: KCDHandle & { id: string; i18n: string[] } = {
   i18n: ['checkout']
 };
 
-
-const sibsDarkTheme ={
+const sibsDarkTheme = {
   layout: 'default',
   theme: 'default',
   color: {
@@ -160,10 +185,10 @@ const sibsDarkTheme ={
       background: '#2f3037' // '#1F2028'
     }
   }
-//      font: ''
+  //      font: ''
 };
 
-const sibsLightTheme ={
+const sibsLightTheme = {
   layout: 'default',
   theme: 'default',
   color: {
@@ -180,37 +205,22 @@ const sibsLightTheme ={
       background: undefined
     }
   }
-//      font: ''
+  //      font: ''
 };
-
 
 export default function CheckoutPaymentRoute() {
-  const { event, cart, formContext, transactionID, CHECKOUT_FORM_SCRIPT } =
-    useLoaderData<LoaderData>();
+  const {
+    event,
+    cart,
+    bookingId,
+    expiredPayments,
+    pendingPayments,
+    formContext,
+    transactionID,
+    CHECKOUT_FORM_SCRIPT
+  } = useLoaderData() as LoaderData;
   const { t } = useTranslation('checkout');
   const fetcher = useFetcher();
-  const [theme] = useTheme();
-  const style = JSON.stringify(theme === 'dark' ? sibsDarkTheme : sibsLightTheme);
-  const formScriptSrc = `${CHECKOUT_FORM_SCRIPT}?id=${transactionID}`;
-
-  console.log('CHECKOUT_FORM_SCRIPT', CHECKOUT_FORM_SCRIPT);
-
-  const formConfig = JSON.stringify({
-    paymentMethodList: [],
-    amount: { value: 5, currency: 'EUR' },
-    language: 'pt',
-    redirectUrl: 'http://localhost:3000/checkout/confirmation/Fd7ttfun8b4wExQF6YbD',
-    customerData: null
-  });
-
-  useEffect(() => {
-    const script = document.createElement('script');
-
-    script.src = formScriptSrc;
-    script.async = true;
-
-    document.body.appendChild(script);
-  }, [formScriptSrc]);
 
   return (
     <Main>
@@ -221,13 +231,26 @@ export default function CheckoutPaymentRoute() {
           </b>
         </H2>
         <H6>
-          <DisplayDate date={new Date(event.startAt)}/>
+          <DisplayDate date={new Date(event.startAt as unknown as string)} />
         </H6>
-        <H6>{event.address}</H6>
       </div>
       <div className="flex flex-col md:flex-row mt-8">
         <div className="flex-col w-full md:w-[calc(100%-(480px))] md:pr-4 sibs">
-          <form className="paymentSPG" spg-context={JSON.stringify(formContext)} spg-config={formConfig} spg-style={style} />
+          {pendingPayments && pendingPayments.length > 0 && (
+            <DisplayPendingPayments payments={pendingPayments} />
+          )}
+          {!(pendingPayments && pendingPayments.length > 0) && (
+            <>
+            {expiredPayments.length > 0 && <H6>Show expired payments info</H6>}
+              <PaymentForm
+                script={CHECKOUT_FORM_SCRIPT}
+                transactionID={transactionID}
+                cart={cart}
+                bookingId={bookingId}
+                formContext={formContext}
+              />
+            </>
+          )}
         </div>
         <div className="w-full md:w-[480px]">
           <DisplayCart cart={cart} event={event} fetcher={fetcher}>
@@ -245,5 +268,56 @@ export default function CheckoutPaymentRoute() {
         </div>
       </div>
     </Main>
-);
+  );
+}
+
+type PaymentFormProps = {
+  script: string;
+  transactionID: string;
+  cart: UICartRow[];
+  bookingId: string;
+  formContext: string;
+}
+
+function PaymentForm({ script, transactionID, cart, bookingId, formContext }: PaymentFormProps) {
+  const [theme] = useTheme();
+  const style = JSON.stringify(
+    theme === 'dark' ? sibsDarkTheme : sibsLightTheme
+  );
+  const formScriptSrc = `${script}?id=${transactionID}`;
+  const formConfig = JSON.stringify({
+    paymentMethodList: [],
+    amount: { value: bookingAmount(cart), currency: 'EUR' },
+    language: 'pt',
+    redirectUrl: `/checkout/confirmation/${bookingId}`,
+    customerData: null
+  });
+
+  useEffect(() => {
+    const script = document.createElement('script');
+
+    script.src = formScriptSrc;
+    script.async = true;
+
+    document.body.appendChild(script);
+  }, [formScriptSrc]);
+
+  return (
+    <form
+      className="paymentSPG"
+      spg-context={JSON.stringify(formContext)}
+      spg-config={formConfig}
+      spg-style={style}
+    />
+  );
+}
+
+type DisplayPendingPaymentProps = {
+  payments: Payment[]
+}
+
+function DisplayPendingPayments({ payments }: DisplayPendingPaymentProps) {
+  return (
+    <>We wait for your payment {payments.join('|')}</>
+  );
 }

@@ -327,9 +327,51 @@ model Booking {
   createdAt       DateTime          @default(now()) @map("created_at")
   updatedAt       DateTime          @updatedAt @map("updated_at")
   raceParticipant RaceParticipant[]
+  Payment         Payment[]
 
   @@unique([eventId, userId])
   @@map("bookings")
+}
+
+enum PaymentStatus {
+  requested
+  pending
+  paid
+  failed
+  canceled
+  expired
+}
+
+enum PaymentMethod {
+  CARD
+  REFERENCE
+  MBWAY
+}
+
+model Payment {
+  id             String         @id
+  method         PaymentMethod?
+  status         PaymentStatus  @default(requested)
+  amount         Int
+  transactionId  String?        @unique @map("transaction_id")
+  notificationId String?        @unique @map("notification_id")
+  expiresAt      DateTime?      @map("expires_at")
+  bookingId      String         @map("booking_id")
+  booking        Booking        @relation(fields: [bookingId], references: [id])
+  createdAt      DateTime       @default(now()) @map("created_at")
+  updatedAt      DateTime       @updatedAt @map("updated_at")
+
+  @@map("payments")
+}
+
+model PaymentNotification {
+  id            String   @id
+  transactionId String   @map("transaction_id")
+  payload       Json
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@map("payment_notifications")
 }
 
 model ShirtSize {

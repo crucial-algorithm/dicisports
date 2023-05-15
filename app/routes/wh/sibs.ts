@@ -3,6 +3,9 @@ import { createDecipheriv } from 'crypto';
 import type { ActionFunction } from '@remix-run/node';
 import { json } from '@remix-run/router';
 
+import { pay, saveNotification } from '~/server/db/payments.server';
+import type { SibsWebHookSchema } from '~/types';
+
 export const action: ActionFunction = async ({ request }) => {
   const body = await request.text();
 
@@ -14,7 +17,11 @@ export const action: ActionFunction = async ({ request }) => {
   try {
     const payload = decrypt(body, secret, initVector, authTag);
 
-    // TODO: mark payment as fullfield
+    if (payload.paymentStatus === 'Success') {
+      await pay(payload.transactionID, payload.paymentMethod);
+    }
+
+    await saveNotification(payload);
 
     return json({
       statusCode: 200,
@@ -40,14 +47,3 @@ function decrypt(encryptedText: string, key: string, iv: string, authTag: string
 
   return JSON.parse(decryptedText.toString()) as SibsWebHookSchema;
 }
-
-type SibsWebHookSchema = {
-  returnStatus: { statusMsg: string; statusCode: string };
-  paymentStatus: 'Success' | 'Error';
-  paymentMethod: 'MBWAY' | 'REFERENCE' | 'CARD';
-  transactionID: string;
-  amount: { currency: 'EUR'; value: number };
-  merchant: { terminalId: number };
-  paymentType: string;
-  notificationID: string
-};
