@@ -3,6 +3,8 @@ import { createDecipheriv } from 'crypto';
 import type { ActionFunction } from '@remix-run/node';
 import { json } from '@remix-run/router';
 
+import Config from '~/server/config.server';
+
 import { pay, saveNotification } from '~/server/db/payments.server';
 import type { SibsWebHookSchema } from '~/types';
 
@@ -11,7 +13,7 @@ export const action: ActionFunction = async ({ request }) => {
 
   const authTag = request.headers.get('x-authentication-tag') || '';
   const initVector = request.headers.get('x-initialization-vector') || '';
-  const secret = 'O0Bur9uhZkS54NkwFhVyeutED6DhLbOQUBDt3i3W/C4=';
+  const { SIBS_WEBHOOK_SECRET: secret } = Config();
 
 
   try {

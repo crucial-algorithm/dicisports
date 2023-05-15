@@ -25,6 +25,7 @@ export type ConfigServer = {
   SIBS_URL_ENDPOINT: string;
   SIBS_TERMINAL_ID: number;
   SIBS_CLIENT_ID: string;
+  SIBS_WEBHOOK_SECRET: string;
 }
 
 let config: ConfigServer | null = null;
@@ -61,7 +62,8 @@ export default function Config(): ConfigServer {
     SIBS_URL_ENDPOINT: extractVar('SIBS_URL_ENDPOINT'),
     SIBS_API_TOKEN: extractVar('SIBS_API_TOKEN'),
     SIBS_TERMINAL_ID: Number(extractVar('SIBS_TERMINAL_ID')),
-    SIBS_CLIENT_ID: extractVar('SIBS_CLIENT_ID')
+    SIBS_CLIENT_ID: extractVar('SIBS_CLIENT_ID'),
+    SIBS_WEBHOOK_SECRET: extractVar('SIBS_WEBHOOK_SECRET')
   };
 
   return config;
