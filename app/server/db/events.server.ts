@@ -123,6 +123,8 @@ async function updateEvent(
         image3: event.image3,
         image4: event.image4,
         image5: event.image5,
+        regulationContent: event.regulationContent,
+        regulationPath: event.regulationPath,
         description: event.description,
         directions: event.directions,
         status: event.status
@@ -297,7 +299,7 @@ async function updateEventRegulation({
   regulationPath: string | null;
   regulationContent: string | null;
 }): Promise<void> {
-  return await db.event.update({
+  await db.event.update({
     where: {
       id: eventId
     },

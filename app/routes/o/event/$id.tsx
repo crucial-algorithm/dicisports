@@ -1,11 +1,13 @@
-import {
-  ArrowDownTrayIcon,
-  MapPinIcon,
-  PlusIcon,
-  TrashIcon
-} from '@heroicons/react/24/outline';
+import { Readable } from 'stream';
+
+import { MapPinIcon, PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { Role, Status } from '@prisma/client';
-import { Form, Link, useActionData, useFetcher, useLoaderData } from '@remix-run/react';
+import {
+  Form,
+  useActionData,
+  useFetcher,
+  useLoaderData, useNavigate
+} from '@remix-run/react';
 import type {
   ActionFunction,
   LinksFunction,
@@ -21,6 +23,10 @@ import {
 } from '@remix-run/node';
 
 import clsx from 'clsx';
+import { TabPanel, TabView } from 'primereact/tabview';
+
+import type { FileUploadHandlerEvent } from 'primereact/fileupload';
+import { FileUpload } from 'primereact/fileupload';
 
 import mapBoxGlCss from 'mapbox-gl/dist/mapbox-gl.css';
 
@@ -93,6 +99,8 @@ import type {
   User
 } from '~/types';
 import { badRequest } from '~/utils/misc';
+import { uploadToS3 } from '~/server/utils/s3';
+import UploadFile from '~/components/UploadFile';
 
 type ActionData = {
   hash: number;
@@ -111,7 +119,8 @@ const actionIds = {
   publish: 'publish',
   unpublish: 'unpublish',
   deleteEvent: 'delete-event',
-  deleteRegulation: 'delete-regulation'
+  deleteRegulation: 'delete-regulation',
+  uploadRegulation: 'upload-regulation'
 };
 
 const RESOURCES_NS = 'create-event-form';
@@ -206,7 +215,6 @@ export const action: ActionFunction = async ({ request, params }) => {
 
   const actionId = form.get('actionId') as string;
 
-  console.log('action id -->', actionId);
   if (actionId === actionIds.deleteEvent) {
     await deleteEvent(event.id as string);
 
@@ -223,6 +231,10 @@ export const action: ActionFunction = async ({ request, params }) => {
   const location = parseLocation(form.get('location') as string);
   const races: Race[] = (await findEventRaces(event.id)) || [];
   let eventStatus = event.status;
+  const file = form.get('file') as string || null;
+
+  const path = file && file?.length > 0 ? file : null;
+  const regulation = (form.get('regulation') as string) || null;
 
   if (eventStatus === Status.auto) {
     eventStatus = Status.draft;
@@ -246,8 +258,8 @@ export const action: ActionFunction = async ({ request, params }) => {
     image3: processImgField(image3, isUpdate),
     image4: processImgField(image4, isUpdate),
     image5: processImgField(image5, isUpdate),
-    regulationPath: event.regulationPath,
-    regulationContent: event.regulationContent,
+    regulationPath: path || event.regulationPath,
+    regulationContent: regulation || event.regulationContent,
     status: eventStatus
   };
 
@@ -427,7 +439,6 @@ export default function OrganizerEventRoute() {
     useState<boolean>(false);
   const [deleteRegulationModalOpen, setDeleteRegulationModalOpen] =
     useState<boolean>(false);
-  const [actionId, setActionId] = useState<null | string>(null);
   const inputEl = useRef(null);
   const deleteForm = useRef<HTMLFormElement>(null);
   const isPublished = event.status === Status.published;
@@ -469,22 +480,18 @@ export default function OrganizerEventRoute() {
   }
 
   function handleShowDeleteEventWarning() {
-    setActionId(actionIds.deleteEvent);
     setDeleteEventModalOpen(true);
   }
 
   function handleShowDeleteRegulationWarning() {
-    setActionId(actionIds.deleteRegulation);
     setDeleteRegulationModalOpen(true);
   }
 
   function handleDiscardDeleteEvent() {
-    setActionId(null);
     setDeleteEventModalOpen(false);
   }
 
   function handleDiscardDeleteRegulation() {
-    setActionId(null);
     setDeleteRegulationModalOpen(false);
   }
 
@@ -507,6 +514,23 @@ export default function OrganizerEventRoute() {
     );
 
     setDeleteRegulationModalOpen(false);
+  }
+
+  function uploadHandler(e: FileUploadHandlerEvent) {
+    const file = e.files[0];
+
+    fetcher.submit(
+      {
+        //@ts-ignore
+        file: file
+      },
+      {
+        encType: 'multipart/form-data',
+        // submitting to another route, because of a conflict uploading an file and images
+        action: `/o/event/${event.id}/regulation/upload`,
+        method: 'post'
+      }
+    );
   }
 
   useEffect(() => {
@@ -815,80 +839,46 @@ export default function OrganizerEventRoute() {
           </FormField>
 
           <div id="regulation" className="mb-12">
-            <Label
-              htmlFor="regulation"
-              className={clsx(
-                'mb-5 flex justify-between items-center flex-row'
-              )}
-            >
-              {t('Regulation')}
-
-              {!regulationExists && (
-                <>
-                  <ButtonLink
-                    className="hidden lg:flex"
-                    type="button"
-                    to="regulation"
-                  >
-                    {t('Upload Regulation')}
-                  </ButtonLink>
-                  <ButtonLink
-                    type="button"
-                    to="regulation"
-                    size="small"
-                    className="flex lg:hidden"
-                    data-cy="add-regulation"
-                  >
-                    <PlusIcon className="md:h-6 w-6 m-0 inline-block"></PlusIcon>
-                  </ButtonLink>
-                </>
-              )}
-            </Label>
-            {regulationExists ? (
-              <div className="relative flex mb-4 justify-between items-center flex-row border-b p-4 last:border-none border-gray-300 dark:border-gray-300">
-                {isInlineRegulation ? (
-                  <Link
-                    to={`/o/event/${event.id}/regulation`}
-                    className="text-lg font-extrabold pl-3 text-gray-700 dark:text-white w-[calc(100%-(24px+24px))] cursor-pointer"
-                    data-cy="regulation-doc"
-                  >
-                    {t('Regulation')}
-                  </Link>
-                ) : (
-                  <div
-                    className="text-lg font-extrabold pl-3 text-gray-700 dark:text-white w-[calc(100%-(24px+24px))]"
-                    data-cy="regulation-doc"
-                  >
-                    {t('Regulation')}
-                  </div>
-                )}
-
-                <a
-                  href={
-                    isInlineRegulation
-                      ? `/event/${event.slug}/regulation`
-                      : `/event/${event.id}/regulation/view`
-                  }
-                  target="_blank"
-                  rel="noreferrer"
-                  data-cy="download-regulation"
+            <FormField label={t('Regulation')}>
+              <TabView>
+                <TabPanel header={t('Write Regulation')}>
+                  <TextArea
+                    name="regulation"
+                    className="input-text h-80"
+                    defaultValue={
+                      event.regulationContent ? event.regulationContent : ''
+                    }
+                  />
+                </TabPanel>
+                <TabPanel
+                  header={t('Upload Regulation')}
+                  contentClassName="flex items-center justify-center p-4"
                 >
-                  <ArrowDownTrayIcon className="md:h-6 w-6 m-0 inline-block text-black dark:text-blueGray-500" />
-                </a>
-                <button
-                  name="delete-regulation"
-                  type="button"
-                  className="ml-3 w-[24px] h-[24px] dark:text-blueGray-500"
-                  onClick={handleShowDeleteRegulationWarning}
-                >
-                  <TrashIcon className="md:h-6 w-6 m-0 inline-block" />
-                </button>
-              </div>
-            ) : (
-              <H6 className="text-center p-12" variant="secondary" as="p">
-                {t('No Regulation')}
-              </H6>
-            )}
+                  <UploadFile
+                    name="file"
+                    filePath={
+                      event.regulationPath
+                        ? `/event/${event.id}/regulation/view`
+                        : null
+                    }
+                    fileName={t('Regulation')}
+                    deleteButton={
+                      <button
+                        type="button"
+                        onClick={handleShowDeleteRegulationWarning}
+                        className="w-[24px] h-[24px] dark:text-blueGray-500"
+                      >
+                        <TrashIcon className="md:h-6 w-6 m-0 inline-block"></TrashIcon>
+                      </button>
+                    }
+                    mode="basic"
+                    accept=".pdf"
+                    customUpload={true}
+                    uploadHandler={uploadHandler}
+                  />
+                </TabPanel>
+              </TabView>
+            </FormField>
 
             {actionData?.errors?.regulation ? (
               <InputError className="mt-8" id="error-message">
