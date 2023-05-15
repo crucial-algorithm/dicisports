@@ -79,6 +79,13 @@ jobs:
 
           RELEASE: ${{ github.sha }}
 
+          SIBS_CHECKOUT_FORM_SCRIPT: ${{secrets.SIBS_CHECKOUT_FORM_SCRIPT}}
+          SIBS_API_TOKEN: ${{secrets.SIBS_API_TOKEN}}
+          SIBS_URL_ENDPOINT: ${{secrets.SIBS_URL_ENDPOINT}}
+          SIBS_TERMINAL_ID: ${{secrets.SIBS_TERMINAL_ID}}
+          SIBS_CLIENT_ID: ${{secrets.SIBS_CLIENT_ID}}
+          SIBS_WEBHOOK_SECRET: ${{secrets.SIBS_WEBHOOK_SECRET}}
+
       - uses: actions/upload-artifact@v2
         if: failure()
         with:

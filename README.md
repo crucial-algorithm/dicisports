@@ -53,7 +53,7 @@ npm i @prisma/client@latest
 
 
 ### When adding new configs to .env
-Options need to be added to [github actions](https://github.com/crucial-algorithm/dicisports/settings/secrets/actions) so that e2e may successfully run.
+Options need to be added to [github actions](https://github.com/crucial-algorithm/dicisports/settings/secrets/actions) and referenced in the e2e test workflows.
 
 Also, to fly.io (adding multiple is the prefered option)
 ```shell
