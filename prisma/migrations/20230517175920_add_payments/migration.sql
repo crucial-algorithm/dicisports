@@ -1,5 +1,5 @@
 -- CreateEnum
-CREATE TYPE "PaymentStatus" AS ENUM ('requested', 'pending', 'paid', 'failed', 'canceled', 'expired');
+CREATE TYPE "PaymentStatus" AS ENUM ('requested', 'pending', 'submitted', 'paid', 'failed', 'canceled', 'expired');
 
 -- CreateEnum
 CREATE TYPE "PaymentMethod" AS ENUM ('CARD', 'REFERENCE', 'MBWAY');
