@@ -50,3 +50,12 @@ npm i -D @remix-run/dev @remix-run/eslint-config
 npm i --save-dev prisma@latest
 npm i @prisma/client@latest
 ```
+
+
+### When adding new configs to .env
+Options need to be added to [github actions](https://github.com/crucial-algorithm/dicisports/settings/secrets/actions) and referenced in the e2e test workflows.
+
+Also, to fly.io (adding multiple is the prefered option)
+```shell
+flyctl secrets -a <dicistg|diciprd> set VAR_NAME_1=VALUE_1 VAR_NAME_2=VALUE_2
+```
