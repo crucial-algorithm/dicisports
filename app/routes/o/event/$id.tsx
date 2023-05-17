@@ -1,12 +1,10 @@
-import { Readable } from 'stream';
-
 import { MapPinIcon, PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { Role, Status } from '@prisma/client';
 import {
   Form,
   useActionData,
   useFetcher,
-  useLoaderData, useNavigate
+  useLoaderData
 } from '@remix-run/react';
 import type {
   ActionFunction,
@@ -23,10 +21,10 @@ import {
 } from '@remix-run/node';
 
 import clsx from 'clsx';
+import type { TabViewTabChangeEvent } from 'primereact/tabview';
 import { TabPanel, TabView } from 'primereact/tabview';
 
 import type { FileUploadHandlerEvent } from 'primereact/fileupload';
-import { FileUpload } from 'primereact/fileupload';
 
 import mapBoxGlCss from 'mapbox-gl/dist/mapbox-gl.css';
 
@@ -99,7 +97,6 @@ import type {
   User
 } from '~/types';
 import { badRequest } from '~/utils/misc';
-import { uploadToS3 } from '~/server/utils/s3';
 import UploadFile from '~/components/UploadFile';
 
 type ActionData = {
@@ -231,10 +228,15 @@ export const action: ActionFunction = async ({ request, params }) => {
   const location = parseLocation(form.get('location') as string);
   const races: Race[] = (await findEventRaces(event.id)) || [];
   let eventStatus = event.status;
-  const file = form.get('file') as string || null;
 
-  const path = file && file?.length > 0 ? file : null;
-  const regulation = (form.get('regulation') as string) || null;
+  let path = event.regulationPath;
+  const inlineRegulation = (form.get('regulation') as string) || null;
+
+  // we need to make sure that we don't have both uploaded
+  // when we upload a PDF regulation, inline regulation is set to null
+  if (inlineRegulation !== null) {
+    path = null;
+  }
 
   if (eventStatus === Status.auto) {
     eventStatus = Status.draft;
@@ -258,8 +260,8 @@ export const action: ActionFunction = async ({ request, params }) => {
     image3: processImgField(image3, isUpdate),
     image4: processImgField(image4, isUpdate),
     image5: processImgField(image5, isUpdate),
-    regulationPath: path || event.regulationPath,
-    regulationContent: regulation || event.regulationContent,
+    regulationPath: path,
+    regulationContent: inlineRegulation || event.regulationContent,
     status: eventStatus
   };
 
@@ -442,8 +444,7 @@ export default function OrganizerEventRoute() {
   const inputEl = useRef(null);
   const deleteForm = useRef<HTMLFormElement>(null);
   const isPublished = event.status === Status.published;
-  const isInlineRegulation = !!event.regulationContent;
-  const regulationExists = !!event.regulationContent || !!event.regulationPath;
+  const [tabIndex, setTabIndex] = useState<number>(event.regulationPath ? 1 : 0);
 
   // Hack: while remix doesn't handle dates properly
   hackyEventRevival(event);
@@ -526,11 +527,15 @@ export default function OrganizerEventRoute() {
       },
       {
         encType: 'multipart/form-data',
-        // submitting to another route, because of a conflict uploading an file and images
+        // submitting to another route, because of a conflict uploading a file and images
         action: `/o/event/${event.id}/regulation/upload`,
         method: 'post'
       }
     );
+  }
+
+  function onTabChange(e: TabViewTabChangeEvent) {
+    setTabIndex(e.index);
   }
 
   useEffect(() => {
@@ -840,7 +845,7 @@ export default function OrganizerEventRoute() {
 
           <div id="regulation" className="mb-12">
             <FormField label={t('Regulation')}>
-              <TabView>
+              <TabView activeIndex={tabIndex} onTabChange={onTabChange}>
                 <TabPanel header={t('Write Regulation')}>
                   <TextArea
                     name="regulation"
@@ -854,28 +859,39 @@ export default function OrganizerEventRoute() {
                   header={t('Upload Regulation')}
                   contentClassName="flex items-center justify-center p-4"
                 >
-                  <UploadFile
-                    name="file"
-                    filePath={
-                      event.regulationPath
-                        ? `/event/${event.id}/regulation/view`
-                        : null
-                    }
-                    fileName={t('Regulation')}
-                    deleteButton={
-                      <button
-                        type="button"
-                        onClick={handleShowDeleteRegulationWarning}
-                        className="w-[24px] h-[24px] dark:text-blueGray-500"
-                      >
-                        <TrashIcon className="md:h-6 w-6 m-0 inline-block"></TrashIcon>
-                      </button>
-                    }
-                    mode="basic"
-                    accept=".pdf"
-                    customUpload={true}
-                    uploadHandler={uploadHandler}
-                  />
+                  {event.regulationPath ? (
+                    <div className="flex flex-row gap-x-2 items-center border border-black dark:border-white rounded-2xl h-16 p-4 mr-2 mb-2">
+                      <div className="text-center">
+                        <a
+                          href={`/event/${event.id}/regulation/view`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-black dark:text-white"
+                          data-cy="regulation"
+                        >
+                          {t('Regulation')}
+                        </a>
+                        <button
+                          type="button"
+                          onClick={handleShowDeleteRegulationWarning}
+                          className="w-[24px] h-[24px] dark:text-blueGray-500"
+                        >
+                          <TrashIcon className="md:h-6 w-6 m-0 inline-block"></TrashIcon>
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <UploadFile
+                      name="file"
+                      mode="advanced"
+                      accept=".pdf"
+                      customUpload={true}
+                      uploadHandler={uploadHandler}
+                      emptyTemplate={<p className="m-0">Drag and drop files to here to upload.</p>}
+                      contentClassName="p-4"
+                      className="w-full"
+                    />
+                  )}
                 </TabPanel>
               </TabView>
             </FormField>
