@@ -23,6 +23,7 @@ import { getUser } from '~/server/auth/session.server';
 import { findBookingById, findBookingCart } from '~/server/db/booking.server';
 import { findEvent } from '~/server/db/events.server';
 import { findUserEventRaceParticipants } from '~/server/db/participant.server';
+import type { KCDHandle } from '~/types';
 import type { Booking, Event, UICartRow } from '~/types';
 import { badRequest, getDomainUrl } from '~/utils/misc';
 import { sendBookingConfirmationEmail } from '~/server/email.server';
@@ -47,6 +48,11 @@ type ActionData = {
     submit?: string;
   };
   successMessage: string | null;
+};
+
+export const handle: KCDHandle & { id: string; i18n: string[] } = {
+  id: 'payment-confirmed',
+  i18n: ['checkout']
 };
 
 export const action: ActionFunction = async ({ request, params }) => {

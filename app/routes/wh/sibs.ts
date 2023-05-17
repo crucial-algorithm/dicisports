@@ -2,10 +2,12 @@ import { createDecipheriv } from 'crypto';
 
 import type { ActionFunction } from '@remix-run/node';
 import { json } from '@remix-run/router';
+import { CheckoutStatus } from '@prisma/client';
 
 import Config from '~/server/config.server';
+import { updateBookingStatus } from '~/server/db/booking.server';
 
-import { pay, saveNotification } from '~/server/db/payments.server';
+import { findPaymentByTransactionId, pay, saveNotification } from '~/server/db/payments.server';
 import type { SibsWebHookSchema } from '~/types';
 
 export const action: ActionFunction = async ({ request }) => {
@@ -21,6 +23,11 @@ export const action: ActionFunction = async ({ request }) => {
 
     if (payload.paymentStatus === 'Success') {
       await pay(payload.transactionID, payload.paymentMethod);
+      const payment = await findPaymentByTransactionId(payload.transactionID);
+
+      if (payment) {
+        await updateBookingStatus(payment?.bookingId, CheckoutStatus.confirmed);
+      }
     }
 
     await saveNotification(payload);

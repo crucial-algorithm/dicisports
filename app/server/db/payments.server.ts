@@ -1,4 +1,4 @@
-import type { PaymentMethod } from '@prisma/client';
+import type { PaymentMethod, Payment } from '@prisma/client';
 import { PaymentStatus } from '@prisma/client';
 
 import { db } from '~/server/db.server';
@@ -6,12 +6,12 @@ import { db } from '~/server/db.server';
 import Id from '~/server/utils/Id.server';
 import type { SibsWebHookSchema } from '~/types';
 
-async function findPendingPayments(bookingId: string) {
+async function findSubmittedPayments(bookingId: string) {
   return await db.payment.findMany({
     where: {
       bookingId,
       expiresAt: { gte: new Date() },
-      status: PaymentStatus.pending
+      status: PaymentStatus.submitted
     }
   });
 }
@@ -21,8 +21,21 @@ async function findExpiredPayments(bookingId: string) {
     where: {
       bookingId,
       expiresAt: { lte: new Date() },
-      status: PaymentStatus.pending
+      status: PaymentStatus.submitted
     }
+  });
+}
+
+async function findPayment(id: string) {
+  return await db.payment.findUnique({
+    where: { id }
+  });
+}
+
+
+async function findPaymentByTransactionId(id: string): Promise<Payment | null> {
+  return await db.payment.findUnique({
+    where: { transactionId: id }
   });
 }
 
@@ -53,7 +66,17 @@ async function addGatewayTransactionToPayment(
     where: { id },
     data: {
       transactionId,
-      status: PaymentStatus.pending
+      status: PaymentStatus.pending,
+      expiresAt: new Date('2099-12-31') // for now, until we figure out how SIBS is going to comunicate that
+    }
+  });
+}
+
+async function updatePaymentStatus(id: string, status: PaymentStatus) {
+  return await db.payment.update({
+    where: { id },
+    data: {
+      status
     }
   });
 }
@@ -66,6 +89,17 @@ async function pay(gatewayTransactionId: string, method: PaymentMethod) {
       method
     }
   });
+}
+
+
+async function isBookingPaid(bookingId: string) {
+  return (
+    (
+      await db.payment.findMany({
+        where: { bookingId, status: PaymentStatus.paid }
+      })
+    ).length > 0
+  );
 }
 
 async function saveNotification(json: SibsWebHookSchema) {
@@ -88,10 +122,14 @@ async function saveNotification(json: SibsWebHookSchema) {
 }
 
 export {
-  findPendingPayments,
+  findPayment,
+  findPaymentByTransactionId,
+  findSubmittedPayments,
   findExpiredPayments,
   createPaymentRequest,
   addGatewayTransactionToPayment,
   pay,
-  saveNotification
+  isBookingPaid,
+  saveNotification,
+  updatePaymentStatus
 };

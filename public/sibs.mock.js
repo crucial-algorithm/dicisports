@@ -17,6 +17,7 @@ function form() {
   const button = document.createElement('button')
   button.className = 'group relative inline-flex transition opacity-100 text-lg font-medium focus:outline-none disabled:opacity-50 mt-4 w-48';
   button.type = 'submit';
+  button.name = 'pay';
 
   button.appendChild(ring);
   button.appendChild(content);

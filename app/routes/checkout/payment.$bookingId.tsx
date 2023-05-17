@@ -25,7 +25,8 @@ import { findEvent } from '~/server/db/events.server';
 import { findUserEventRaceParticipants } from '~/server/db/participant.server';
 import {
   findExpiredPayments,
-  findPendingPayments
+  findSubmittedPayments,
+  isBookingPaid
 } from '~/server/db/payments.server';
 import type { KCDHandle } from '~/types';
 import type { Event, UICartRow } from '~/types';
@@ -39,7 +40,7 @@ type LoaderData = {
   event: Event;
   cart: UICartRow[];
   bookingId: string;
-  pendingPayments: Payment[];
+  submittedPayments: Payment[];
   expiredPayments: Payment[];
   formContext: string;
   transactionID: string;
@@ -72,12 +73,12 @@ export const action: ActionFunction = async ({ request, params }) => {
   const actionId = form.get('actionId');
 
   if (actionId === 'update-info') {
-    await updateBookingStatus(CheckoutStatus.checkout, clientId, eventId);
+    await updateBookingStatus(bookingId, CheckoutStatus.checkout);
 
     return redirect(`/checkout/info/${bookingId}`);
   }
 
-  await updateBookingStatus(CheckoutStatus.confirmed, clientId, eventId);
+  await updateBookingStatus(bookingId, CheckoutStatus.confirmed);
 
   if (authenticatedClient !== null) {
     const event = await findEvent(eventId);
@@ -109,7 +110,11 @@ export const loader: LoaderFunction = async ({ request, params }) => {
       ? authenticatedClient.id
       : anonymousClient.getClientId();
 
-  if (!booking || booking.userId !== clientId) {
+  if (!booking) {
+    return redirect('/');
+  }
+
+  if (booking.userId !== clientId) {
     return redirect('/');
   }
 
@@ -126,22 +131,29 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     return redirect(`/checkout/cart/${eventId}`);
   }
 
-  if (booking?.status !== CheckoutStatus.pending) {
-    return redirect(
-      `/checkout/${
-        booking?.status === CheckoutStatus.checkout ? 'info' : 'confirmation'
-      }/${bookingId}`
-    );
+  const hasASuccessfullPayment = await isBookingPaid(bookingId);
+
+  if (hasASuccessfullPayment) {
+    // check if for some reason the booking status is inconsistent
+    if (booking.status !== CheckoutStatus.confirmed) {
+      await updateBookingStatus(bookingId, CheckoutStatus.confirmed);
+    }
+
+    return redirect(`/checkout/confirmation/${bookingId}`);
   }
 
-  const pendingPayments = await findPendingPayments(bookingId);
+  if (booking.status == CheckoutStatus.checkout) {
+    return redirect(`/checkout/info/${bookingId}`);
+  }
 
-  if (pendingPayments.length > 0) {
+  const submittedPayments = await findSubmittedPayments(bookingId);
+
+  if (submittedPayments.length > 0) {
     return json({
       bookingId,
       event,
       cart,
-      pendingPayments
+      submittedPayments
     });
   }
 
@@ -164,7 +176,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 };
 
 export const handle: KCDHandle & { id: string; i18n: string[] } = {
-  id: 'root',
+  id: 'payment',
   i18n: ['checkout']
 };
 
@@ -214,7 +226,7 @@ export default function CheckoutPaymentRoute() {
     cart,
     bookingId,
     expiredPayments,
-    pendingPayments,
+    submittedPayments,
     formContext,
     transactionID,
     CHECKOUT_FORM_SCRIPT
@@ -236,10 +248,10 @@ export default function CheckoutPaymentRoute() {
       </div>
       <div className="flex flex-col md:flex-row mt-8">
         <div className="flex-col w-full md:w-[calc(100%-(480px))] md:pr-4 sibs">
-          {pendingPayments && pendingPayments.length > 0 && (
-            <DisplayPendingPayments payments={pendingPayments} />
+          {submittedPayments && submittedPayments.length > 0 && (
+            <DisplayPendingPayments payments={submittedPayments} />
           )}
-          {!(pendingPayments && pendingPayments.length > 0) && (
+          {!(submittedPayments && submittedPayments.length > 0) && (
             <>
             {expiredPayments.length > 0 && <H6>Show expired payments info</H6>}
               <PaymentForm
@@ -316,8 +328,10 @@ type DisplayPendingPaymentProps = {
   payments: Payment[]
 }
 
-function DisplayPendingPayments({ payments }: DisplayPendingPaymentProps) {
+function DisplayPendingPayments(props: DisplayPendingPaymentProps) {
+  const { t } = useTranslation('checkout');
+
   return (
-    <>We wait for your payment {payments.join('|')}</>
+    <div data-cy="waiting-payment-confirmation">{t('Waitting for payment gateway')}</div>
   );
 }

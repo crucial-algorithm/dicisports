@@ -589,7 +589,7 @@ describe('Event', () => {
         .get('[data-cy=race]')
         .should('have.length', 4).and('contain', 'a new race');
     });
-    
+
     it('should update race', () => {
       cy.loginOrganiser()
         .visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d')
@@ -604,6 +604,11 @@ describe('Event', () => {
 
         .get('input[name=name]')
         .type(' updated')
+
+        .pickDate(
+          'earlyBirdValidUntil',
+          new Date(Date.now() + 86400 * 1000).toISOString().split('T')[0]
+        )
 
         .intercept('POST', '/o/event/MY4bvgxDbMtGv8rbYe5d/race/*')
         .as('UpdateRace')

@@ -336,6 +336,7 @@ model Booking {
 enum PaymentStatus {
   requested
   pending
+  submitted
   paid
   failed
   canceled
