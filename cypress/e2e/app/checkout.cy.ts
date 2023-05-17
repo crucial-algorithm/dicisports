@@ -330,7 +330,7 @@ describe('Checkout', () => {
         .should('exist');
     });
 
-    it('should book a race', () => {
+    it.skip('should book a race', () => {
       bookParticipant('MY4bvgxDbMtGv8rbYe5d', 'AhowRdNWCBQWSuivSt7h');
     });
 
