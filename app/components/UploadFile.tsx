@@ -5,8 +5,9 @@ import React from 'react';
 
 type Props = {
   customUpload: boolean;
-  uploadHandler: (f: FileUploadHandlerEvent) => void;
   mode: 'basic' | 'advanced' | undefined;
+  chooseLabel: string;
+  uploadHandler?: (f: FileUploadHandlerEvent) => void;
   emptyTemplate?: ReactElement;
   contentClassName?: string;
   className?: string;
@@ -15,6 +16,7 @@ type Props = {
 export default function UploadFile({
   name,
   mode,
+  chooseLabel,
   accept,
   customUpload,
   uploadHandler,
@@ -32,6 +34,7 @@ export default function UploadFile({
       emptyTemplate={emptyTemplate}
       contentClassName={contentClassName}
       className={className}
+      chooseLabel={chooseLabel}
       auto={true}
     />
   );

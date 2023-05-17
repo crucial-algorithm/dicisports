@@ -1,7 +1,5 @@
 import { Readable } from 'stream';
 
-import * as React from 'react';
-
 import type { ActionFunction, UploadHandler } from '@remix-run/node';
 import {
   json,
@@ -29,7 +27,6 @@ export const action: ActionFunction = async ({ request, params }) => {
   const uploadHandler: UploadHandler = unstable_composeUploadHandlers(
     // our custom upload handler
     async ({ name, data, filename }) => {
-      console.log('data -->', name, filename);
       if (name !== 'file') {
         return undefined;
       }
@@ -40,15 +37,17 @@ export const action: ActionFunction = async ({ request, params }) => {
 
       const eventId = params.eventId as string;
       const path = require('path');
+
       const fileExtension = path.parse(filename as string).ext;
       const currentDate = new Date();
       const prefix = `events/${currentDate.getFullYear()}${currentDate.getMonth()}/${eventId}`;
-
-      return await uploadToS3(
+      const key = await uploadToS3(
         Readable.from(data),
         prefix,
-        t('Regulation') + fileExtension
+        'regulation' + fileExtension
       );
+
+      return `${key}|${filename}`;
     },
     // fallback to memory for everything else
     unstable_createMemoryUploadHandler()
@@ -58,17 +57,24 @@ export const action: ActionFunction = async ({ request, params }) => {
 
   const eventId = params.eventId as string;
   const file = (form.get('file') as string) || null;
+  let filePath: File | string | null = null;
+  let fileName: string | null = null;
 
-  const path = file && file?.length > 0 ? file : null;
+  if (file && file?.length) {
+    [filePath, fileName] = file.split('|');
+  }
+
   const event = await findEvent(eventId);
 
   const regulationData: {
     eventId: string;
     regulationPath: string | null;
+    regulationFileName: string | null;
     regulationContent: null;
   } = {
     eventId,
-    regulationPath: path,
+    regulationPath: filePath,
+    regulationFileName: fileName,
     regulationContent: null
   };
 

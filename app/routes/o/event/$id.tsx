@@ -1,7 +1,8 @@
-import { MapPinIcon, PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { MapPinIcon, PlusIcon } from '@heroicons/react/24/outline';
 import { Role, Status } from '@prisma/client';
 import {
   Form,
+  Link,
   useActionData,
   useFetcher,
   useLoaderData
@@ -230,12 +231,14 @@ export const action: ActionFunction = async ({ request, params }) => {
   let eventStatus = event.status;
 
   let path = event.regulationPath;
+  let regulationFileName = event.regulationFileName;
   const inlineRegulation = (form.get('regulation') as string) || null;
 
   // we need to make sure that we don't have both uploaded
   // when we upload a PDF regulation, inline regulation is set to null
   if (inlineRegulation !== null) {
     path = null;
+    regulationFileName = null;
   }
 
   if (eventStatus === Status.auto) {
@@ -262,6 +265,7 @@ export const action: ActionFunction = async ({ request, params }) => {
     image5: processImgField(image5, isUpdate),
     regulationPath: path,
     regulationContent: inlineRegulation || event.regulationContent,
+    regulationFileName,
     status: eventStatus
   };
 
@@ -439,12 +443,19 @@ export default function OrganizerEventRoute() {
   );
   const [deleteEventModalOpen, setDeleteEventModalOpen] =
     useState<boolean>(false);
-  const [deleteRegulationModalOpen, setDeleteRegulationModalOpen] =
-    useState<boolean>(false);
   const inputEl = useRef(null);
   const deleteForm = useRef<HTMLFormElement>(null);
   const isPublished = event.status === Status.published;
-  const [tabIndex, setTabIndex] = useState<number>(event.regulationPath ? 1 : 0);
+  const [tabIndex, setTabIndex] = useState<number>(
+    event.regulationPath ? 1 : 0
+  );
+  const [fileUploadHandlerEvent, setFileUploadHandlerEvent] =
+    useState<FileUploadHandlerEvent | null>(null);
+  let fileName: string | null = null;
+
+  if (event.regulationPath && event.regulationFileName) {
+    fileName = event.regulationFileName;
+  }
 
   // Hack: while remix doesn't handle dates properly
   hackyEventRevival(event);
@@ -484,16 +495,8 @@ export default function OrganizerEventRoute() {
     setDeleteEventModalOpen(true);
   }
 
-  function handleShowDeleteRegulationWarning() {
-    setDeleteRegulationModalOpen(true);
-  }
-
   function handleDiscardDeleteEvent() {
     setDeleteEventModalOpen(false);
-  }
-
-  function handleDiscardDeleteRegulation() {
-    setDeleteRegulationModalOpen(false);
   }
 
   function handleDeleteEvent() {
@@ -504,22 +507,10 @@ export default function OrganizerEventRoute() {
     setDeleteEventModalOpen(false);
   }
 
-  function handleDeleteRegulation() {
-    fetcher.submit(
-      {
-        actionId: actionIds.deleteRegulation
-      },
-      {
-        method: 'post'
-      }
-    );
+  function uploadHandler(f: FileUploadHandlerEvent) {
+    const file = f.files[0];
 
-    setDeleteRegulationModalOpen(false);
-  }
-
-  function uploadHandler(e: FileUploadHandlerEvent) {
-    const file = e.files[0];
-
+    setFileUploadHandlerEvent(f);
     fetcher.submit(
       {
         //@ts-ignore
@@ -539,8 +530,12 @@ export default function OrganizerEventRoute() {
   }
 
   useEffect(() => {
+    if (fetcher?.data?.ok) {
+      fileUploadHandlerEvent?.options?.clear();
+    }
+
     setRaces(dbRaces);
-  }, [dbRaces]);
+  }, [fileUploadHandlerEvent, fetcher, dbRaces]);
 
   return (
     <Main>
@@ -857,40 +852,32 @@ export default function OrganizerEventRoute() {
                 </TabPanel>
                 <TabPanel
                   header={t('Upload Regulation')}
-                  contentClassName="flex items-center justify-center p-4"
+                  contentClassName="flex flex-col gap-y-2 items-start p-4 w-full"
                 >
-                  {event.regulationPath ? (
-                    <div className="flex flex-row gap-x-2 items-center border border-black dark:border-white rounded-2xl h-16 p-4 mr-2 mb-2">
-                      <div className="text-center">
-                        <a
-                          href={`/event/${event.id}/regulation/view`}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="text-black dark:text-white"
-                          data-cy="regulation"
-                        >
-                          {t('Regulation')}
-                        </a>
-                        <button
-                          type="button"
-                          onClick={handleShowDeleteRegulationWarning}
-                          className="w-[24px] h-[24px] dark:text-blueGray-500"
-                        >
-                          <TrashIcon className="md:h-6 w-6 m-0 inline-block"></TrashIcon>
-                        </button>
-                      </div>
+                  <UploadFile
+                    name="file"
+                    mode="advanced"
+                    chooseLabel={t('Upload Regulation Button')}
+                    accept=".pdf"
+                    customUpload={true}
+                    uploadHandler={uploadHandler}
+                    emptyTemplate={
+                      <p className="m-0">{t('Regulation Dropzone')}</p>
+                    }
+                    contentClassName="p-4"
+                    className="w-full"
+                  />
+                  {event.regulationPath && fileName && (
+                    <div className="text-center">
+                      <Link
+                        to={`/event/${event.id}/regulation/view`}
+                        target="_blank"
+                        rel="noreferrer"
+                        data-cy="regulation"
+                      >
+                        {fileName}
+                      </Link>
                     </div>
-                  ) : (
-                    <UploadFile
-                      name="file"
-                      mode="advanced"
-                      accept=".pdf"
-                      customUpload={true}
-                      uploadHandler={uploadHandler}
-                      emptyTemplate={<p className="m-0">Drag and drop files to here to upload.</p>}
-                      contentClassName="p-4"
-                      className="w-full"
-                    />
                   )}
                 </TabPanel>
               </TabView>
@@ -996,18 +983,6 @@ export default function OrganizerEventRoute() {
         secondaryLabel={t('Ignore')}
         onDismiss={handleDiscardDeleteEvent}
         onConfirm={handleDeleteEvent}
-        className="cy-delete-dialog"
-      />
-
-      <ConfirmationDialog
-        isOpen={deleteRegulationModalOpen}
-        title={t('Delete Regulation Label')}
-        question={t('Are you sure you want to delete regulation?')}
-        primaryLabel={t('Delete Regulation')}
-        primaryVariant="danger"
-        secondaryLabel={t('Ignore')}
-        onDismiss={handleDiscardDeleteRegulation}
-        onConfirm={handleDeleteRegulation}
         className="cy-delete-dialog"
       />
 

@@ -40,7 +40,6 @@ const uploadToS3 = async (
     }
   }).done();
 
-  console.log('here -->', key);
   return key;
 };
 

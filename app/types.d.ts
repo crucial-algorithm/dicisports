@@ -167,6 +167,7 @@ type CreateEventInput = {
   updatedAt?: Date | string;
   regulationPath: string | null;
   regulationContent: string | null;
+  regulationFileName: string | null;
   status?: EventStatus;
 };
 

@@ -125,6 +125,7 @@ async function updateEvent(
         image5: event.image5,
         regulationContent: event.regulationContent,
         regulationPath: event.regulationPath,
+        regulationFileName: event.regulationFileName,
         description: event.description,
         directions: event.directions,
         status: event.status
@@ -293,11 +294,13 @@ async function deleteEvent(id: string) {
 async function updateEventRegulation({
   eventId,
   regulationPath,
-  regulationContent
+  regulationContent,
+  regulationFileName
 }: {
   eventId: string;
   regulationPath: string | null;
   regulationContent: string | null;
+  regulationFileName: string | null;
 }): Promise<void> {
   await db.event.update({
     where: {
@@ -305,7 +308,8 @@ async function updateEventRegulation({
     },
     data: {
       regulationContent,
-      regulationPath
+      regulationPath,
+      regulationFileName
     }
   });
 }
