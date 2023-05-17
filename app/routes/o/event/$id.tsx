@@ -853,6 +853,7 @@ export default function OrganizerEventRoute() {
                 <TabPanel
                   header={t('Upload Regulation')}
                   contentClassName="flex flex-col gap-y-2 items-start p-4 w-full"
+                  id="add-regulation"
                 >
                   <UploadFile
                     name="file"

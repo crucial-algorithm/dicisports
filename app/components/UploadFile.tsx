@@ -26,6 +26,7 @@ export default function UploadFile({
 }: Props) {
   return (
     <FileUpload
+      id="file"
       name={name}
       mode={mode}
       accept={accept}

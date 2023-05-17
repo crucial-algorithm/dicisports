@@ -652,26 +652,18 @@ describe('Event', () => {
 
         .wait('@EventRequests')
 
-        .get('[data-cy=add-regulation]')
+        .get('#pr_id_4_header_1')
         .click()
 
-        .location()
-        .should((l) => {
-          expect(l.pathname).to.include('/regulation');
-        })
-
-        .get('input[name=file]')
-        .selectFile('cypress/assets/sample.pdf', { force: true })
-
-        .get('#submit-button')
-        .click()
+        .get('#file .p-button > input')
+        .selectFile('cypress/assets/sample.pdf', { action: 'drag-drop', force: true })
 
         .wait('@EventRequests')
 
         .location()
         .should((l) => expect(l.pathname).to.include('/o/event/'))
 
-        .get('[data-cy=regulation-doc]')
+        .get('[data-cy=regulation]')
         .should('exist');
     });
 
@@ -687,29 +679,29 @@ describe('Event', () => {
 
         .wait('@EventRequests')
 
-        .get('[data-cy=add-regulation]')
-        .click()
-
-        .location()
-        .should((l) => {
-          expect(l.pathname).to.include('/regulation');
-        })
-
         .write(
           'regulation',
           'Devoluções aceites apenas com justificação válida.'
         )
 
-        .get('#submit-button')
+        .intercept('POST', '/o/event/*_data=routes*')
+        .as('createEvent')
+
+        .get('button[name=create-event]')
         .click()
 
-        .wait('@EventRequests')
+        .wait('@createEvent')
+
+        .reload()
+        .waitForHydration()
 
         .location()
         .should((l) => expect(l.pathname).to.include('/o/event/'))
 
-        .get('[data-cy=regulation-doc]')
-        .should('exist');
+        .get(
+          'div[data-cy=editor-regulation] .ql-editor[contenteditable="true"]'
+        )
+        .contains('Devoluções aceites apenas com justificação válida.');
     });
 
     it('should display regulation', () => {
@@ -725,36 +717,18 @@ describe('Event', () => {
       cy.loginOrganiser()
         .visitAndWaitForHydration('/o/event/gLqrDfMx6qkTHn6hoZqA')
 
-        .get('[data-cy=regulation-doc]')
-        .click()
-
-        .location()
-        .should((l) =>
-          expect(l.pathname).to.eq(
-            '/o/event/gLqrDfMx6qkTHn6hoZqA/regulation'
-          )
-        )
-
         .write(
           'regulation',
           'Devoluções aceites apenas com justificação válida.'
         )
 
-        .intercept(
-          'POST',
-          '/o/event/gLqrDfMx6qkTHn6hoZqA/regulation*'
-        )
-        .as('saveRegulation')
+        .intercept('POST', '/o/event/*_data=routes*')
+        .as('updateEvent')
 
-        .get('#submit-button')
+        .get('button[name=update-event]')
         .click()
 
-        .wait('@saveRegulation')
-
-        .location()
-        .should((l) =>
-          expect(l.pathname).to.eq('/o/event/gLqrDfMx6qkTHn6hoZqA')
-        )
+        .wait('@updateEvent')
 
         .visit('/event/trilho-dos-moinhos/regulation')
 
