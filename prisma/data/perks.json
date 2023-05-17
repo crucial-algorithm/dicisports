@@ -270,5 +270,69 @@
     "isEnabled": false,
     "displayOrder": 33,
     "eventId": "cmWJ3DMDwzJRwMaTQv53"
+  },
+  {
+    "id": "aac",
+    "name": "Saco de brinde",
+    "isDefault": true,
+    "isEnabled": false,
+    "displayOrder": 1,
+    "eventId": "TgKZi8NQKNoJQGArd3zc"
+  },
+  {
+    "id": "aaad",
+    "name": "Bebedouros",
+    "isDefault": true,
+    "isEnabled": true,
+    "displayOrder": 2,
+    "eventId": "TgKZi8NQKNoJQGArd3zc"
+  },
+  {
+    "id": "aae",
+    "name": "Chuveiros",
+    "isDefault": true,
+    "isEnabled": true,
+    "displayOrder": 3,
+    "eventId": "TgKZi8NQKNoJQGArd3zc"
+  },
+  {
+    "id": "aaf",
+    "name": "T-shirts do evento",
+    "isDefault": true,
+    "isEnabled": false,
+    "displayOrder": 4,
+    "eventId": "TgKZi8NQKNoJQGArd3zc"
+  },
+  {
+    "id": "aag",
+    "name": "Medalhas",
+    "isDefault": true,
+    "isEnabled": false,
+    "displayOrder": 5,
+    "eventId": "TgKZi8NQKNoJQGArd3zc"
+  },
+  {
+    "id": "aah",
+    "name": "Resultados cronometrados",
+    "isDefault": true,
+    "isEnabled": true,
+    "displayOrder": 6,
+    "eventId": "TgKZi8NQKNoJQGArd3zc"
+  },
+  {
+    "id": "aai",
+    "name": "Fotos do evento",
+    "isDefault": true,
+    "isEnabled": false,
+    "displayOrder": 7,
+    "eventId": "TgKZi8NQKNoJQGArd3zc"
+  },
+  {
+    "id": "aaj",
+    "name": "Música ao vivo",
+    "isDefault": true,
+    "isEnabled": false,
+    "displayOrder": 8,
+    "eventId": "TgKZi8NQKNoJQGArd3zc"
   }
 ]

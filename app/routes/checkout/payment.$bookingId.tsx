@@ -1,9 +1,16 @@
 import { CheckoutStatus } from '@prisma/client';
 import type { ActionFunction, LoaderFunction } from '@remix-run/node';
 import { json, redirect } from '@remix-run/node';
-import { Form, useFetcher, useLoaderData } from '@remix-run/react';
+import {
+  Form,
+  Link,
+  useActionData,
+  useFetcher,
+  useLoaderData
+} from '@remix-run/react';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
+import { z, ZodError } from 'zod';
 
 import Button from '~/components/shared/Button';
 import DisplayCart from '~/components/shared/DisplayCart';
@@ -24,10 +31,12 @@ import type { Event, UICartRow } from '~/types';
 import { sendBookingConfirmationEmail } from '~/server/email.server';
 import { badRequest, getDomainUrl } from '~/utils/misc';
 import i18n from '~/server/i18n.server';
+import InputError from '~/components/shared/form/InputError';
 
 type LoaderData = {
   event: Event;
   cart: UICartRow[];
+  regulation: Document;
 };
 
 export const action: ActionFunction = async ({ request, params }) => {
@@ -61,7 +70,23 @@ export const action: ActionFunction = async ({ request, params }) => {
     return redirect(`/checkout/info/${bookingId}`);
   }
 
-  await updateBookingStatus(CheckoutStatus.confirmed, clientId, eventId);
+  const regulation: boolean = (form.get('regulation') as string) === 'on';
+  const terms: boolean = (form.get('terms') as string) === 'on';
+
+  const PaymentSchema = z
+    .object({
+      terms: z
+        .boolean({ required_error: t('Accept Dici Terms') })
+        .refine((v) => v, { message: t('Accept Dici Terms') }),
+      regulation: z
+        .boolean({ required_error: t('Accept Event Regulation') })
+        .refine((v) => v, { message: t('Accept Event Regulation') })
+    });
+
+  try {
+    PaymentSchema.parse({ regulation, terms });
+
+    await updateBookingStatus(CheckoutStatus.confirmed, clientId, eventId);
 
   if (authenticatedClient !== null) {
     const event = await findEvent(eventId);
@@ -79,6 +104,23 @@ export const action: ActionFunction = async ({ request, params }) => {
   }
 
   return redirect(`/checkout/confirmation/${bookingId}`);
+  } catch (e) {
+    if (!(e instanceof ZodError)) {
+      const tc = await i18n.getFixedT(request, 'common');
+
+      return badRequest({
+        errors: { submit: tc('500 error message') }
+      });
+    }
+
+    const errors: { [key: string]: string | undefined } = {};
+
+    for (const error of (e as ZodError).errors) {
+      errors[error.path[0]] = error.message;
+    }
+
+    return badRequest({ errors });
+  }
 };
 
 export const loader: LoaderFunction = async ({ request, params }) => {
@@ -125,10 +167,20 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   });
 };
 
+type ActionData = {
+  errors?: {
+    terms?: string;
+    regulation?: string;
+  };
+};
+
 export default function CheckoutPaymentRoute() {
+  const actionData = useActionData<ActionData>();
   const { event, cart } = useLoaderData<LoaderData>();
   const { t } = useTranslation('checkout');
   const fetcher = useFetcher();
+
+  const isInlineRegulation = event.regulationContent && true;
 
   return (
     <Main>
@@ -147,6 +199,52 @@ export default function CheckoutPaymentRoute() {
         {/*Payment Form*/}
         <div className="flex-col w-full md:w-[calc(100%-(480px))] md:pr-4">
           <Form method="post">
+            <div className="flex items-center mb-2">
+              <input
+                name="regulation"
+                type="checkbox"
+                className="w-4 h-4 text-indigo-500 bg-gray-100 rounded border-gray-300 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600"
+              />
+              <label
+                className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300"
+                htmlFor="regulation"
+              >
+                {t('Read and Accepted')}
+                <Link
+                  target="_blank"
+                  to={
+                    isInlineRegulation
+                      ? `/event/${event.slug}/regulation`
+                      : `/event/${event.id}/doc/regulation/view`
+                  }
+                  data-cy="regulation-link"
+                >
+                  {t('Event Regulation')}
+                </Link>
+              </label>
+            </div>
+
+            <div className="flex items-center mb-8">
+              <input
+                name="terms"
+                type="checkbox"
+                className="w-4 h-4 text-indigo-500 bg-gray-100 rounded border-gray-300 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600"
+              />
+              <label
+                className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300"
+                htmlFor="terms"
+              >
+                {t('Read and Accepted')}
+                <Link target="_blank" to="/terms" data-cy="terms-link">
+                  {t('Terms and Conditions')}
+                </Link>
+              </label>
+            </div>
+
+            <InputError id="terms-error" className="mb-2">
+              {actionData?.errors?.submit || actionData?.errors?.terms || actionData?.errors?.regulation}
+            </InputError>
+
             <Button type="submit" name="pay">
               {t('Pay')}
             </Button>

@@ -1,6 +1,12 @@
 import { MapPinIcon, PlusIcon } from '@heroicons/react/24/outline';
 import { Role, Status } from '@prisma/client';
-import { Form, useActionData, useLoaderData } from '@remix-run/react';
+import {
+  Form,
+  Link,
+  useActionData,
+  useFetcher,
+  useLoaderData
+} from '@remix-run/react';
 import type {
   ActionFunction,
   LinksFunction,
@@ -16,6 +22,10 @@ import {
 } from '@remix-run/node';
 
 import clsx from 'clsx';
+import type { TabViewTabChangeEvent } from 'primereact/tabview';
+import { TabPanel, TabView } from 'primereact/tabview';
+
+import type { FileUploadHandlerEvent } from 'primereact/fileupload';
 
 import mapBoxGlCss from 'mapbox-gl/dist/mapbox-gl.css';
 
@@ -55,7 +65,8 @@ import {
   findEvent,
   publishEvent,
   unpublishEvent,
-  updateEvent
+  updateEvent,
+  updateEventRegulation
 } from '~/server/db/events.server';
 
 import { findEventPerks } from '~/server/db/perks.server';
@@ -87,6 +98,7 @@ import type {
   User
 } from '~/types';
 import { badRequest } from '~/utils/misc';
+import UploadFile from '~/components/UploadFile';
 
 type ActionData = {
   hash: number;
@@ -104,7 +116,9 @@ type ActionData = {
 const actionIds = {
   publish: 'publish',
   unpublish: 'unpublish',
-  delete: 'delete'
+  deleteEvent: 'delete-event',
+  deleteRegulation: 'delete-regulation',
+  uploadRegulation: 'upload-regulation'
 };
 
 const RESOURCES_NS = 'create-event-form';
@@ -117,6 +131,7 @@ type LoaderData = {
   perks: Array<Perk>;
   races: Array<Race>;
   difficulties: Array<Difficulty>;
+  regulation: Document | null;
 };
 
 type SportEvent = Event & {
@@ -198,7 +213,7 @@ export const action: ActionFunction = async ({ request, params }) => {
 
   const actionId = form.get('actionId') as string;
 
-  if (actionId === actionIds.delete) {
+  if (actionId === actionIds.deleteEvent) {
     await deleteEvent(event.id as string);
 
     return redirect(`/o?message=${t('Event Deleted')}`);
@@ -214,6 +229,17 @@ export const action: ActionFunction = async ({ request, params }) => {
   const location = parseLocation(form.get('location') as string);
   const races: Race[] = (await findEventRaces(event.id)) || [];
   let eventStatus = event.status;
+
+  let path = event.regulationPath;
+  let regulationFileName = event.regulationFileName;
+  const inlineRegulation = (form.get('regulation') as string) || null;
+
+  // we need to make sure that we don't have both uploaded
+  // when we upload a PDF regulation, inline regulation is set to null
+  if (inlineRegulation !== null) {
+    path = null;
+    regulationFileName = null;
+  }
 
   if (eventStatus === Status.auto) {
     eventStatus = Status.draft;
@@ -237,43 +263,62 @@ export const action: ActionFunction = async ({ request, params }) => {
     image3: processImgField(image3, isUpdate),
     image4: processImgField(image4, isUpdate),
     image5: processImgField(image5, isUpdate),
+    regulationPath: path,
+    regulationContent: inlineRegulation || event.regulationContent,
+    regulationFileName,
     status: eventStatus
   };
 
   const perks: string[] = form.getAll('perks') as string[];
   const newPerks: string[] = form.getAll('new-perk-input') as string[];
 
-  const EventSchema = {
-    name: z
-      .string({ required_error: t('Field Required') })
-      .min(5, { message: t('Min 5 chars') }),
-    sportId: z
-      .number()
-      .nonnegative({ message: t('Nonexistent Sport') })
-      .lte(7, { message: t('Nonexistent Sport') }),
-    startAt: z.date().min(new Date(), { message: t('Future Date') }),
-    location: z.string({
-      required_error: t('Field required'),
-      invalid_type_error: t('Field required')
-    }),
-    useExternalBooking: z.boolean({
-      invalid_type_error: t('Invalid Type')
-    }),
-    externalBookingUrl: z
-      .string({ invalid_type_error: t('Invalid URL') })
-      .url(),
-    description: z
-      .string({
-        invalid_type_error: t('Invalid Type'),
-        required_error: t('Field Required')
-      })
-      .min(1, { message: t('Min 1 chars') })
-      .nullable(),
-    races: z
-      .string({ required_error: t('At least 1 race') })
-      .array()
-      .nonempty(t('At least 1 race'))
-  };
+  const EventSchema = z
+    .object({
+      name: z
+        .string({ required_error: t('Field Required') })
+        .min(5, { message: t('Min 5 chars') }),
+      sportId: z
+        .number()
+        .nonnegative({ message: t('Nonexistent Sport') })
+        .lte(7, { message: t('Nonexistent Sport') }),
+      startAt: z.date().min(new Date(), { message: t('Future Date') }),
+      location: z.string({
+        required_error: t('Field required'),
+        invalid_type_error: t('Field required')
+      }),
+      useExternalBooking: z.boolean({
+        invalid_type_error: t('Invalid Type')
+      }),
+      externalBookingUrl: z
+        .string({ invalid_type_error: t('Invalid URL') })
+        .url(),
+      description: z
+        .string({
+          invalid_type_error: t('Invalid Type'),
+          required_error: t('Field Required')
+        })
+        .min(1, { message: t('Min 1 chars') })
+        .nullable(),
+      races: z
+        .string({ required_error: t('At least 1 race') })
+        .array()
+        .nonempty(t('At least 1 race')),
+      regulationPath: z.string().nullable(),
+      regulationContent: z.string().nullable()
+    })
+    .refine(
+      (s) =>
+        (s.regulationPath === null &&
+          s.regulationContent &&
+          s?.regulationContent?.length > 1) ||
+        (s.regulationPath &&
+          s?.regulationPath?.length > 5 &&
+          s.regulationContent === null),
+      {
+        message: t('Add Regulation'),
+        path: ['submit']
+      }
+    );
 
   if (!data.useExternalBooking) {
     // @ts-ignore Don't like this... can we solve it with z.discriminatedUnion?
@@ -284,10 +329,20 @@ export const action: ActionFunction = async ({ request, params }) => {
   }
 
   try {
+    if (actionId === actionIds.deleteRegulation) {
+      await updateEventRegulation({
+        eventId: event.id as string,
+        regulationPath: null,
+        regulationContent: null
+      });
+
+      return json({});
+    }
+
     await updateEvent(data, perks, newPerks);
 
     if (actionId === actionIds.publish) {
-      z.object(EventSchema).parse({ ...data, races: races.map((r) => r.id) });
+      EventSchema.parse({ ...data, races: races.map((r) => r.id) });
 
       if (user.role === Role.ORGANIZER) {
         await publishEvent(event.id as string, data.name);
@@ -374,7 +429,8 @@ export default function OrganizerEventRoute() {
   } = useLoaderData<LoaderData>();
   const actionData = useActionData<ActionData>();
   const [showLocationPicker, setShowLocationPicker] = useState<boolean>(false);
-
+  const fetcher = useFetcher();
+  
   const [perks, setPerks] = useState<Array<StrippedPerk>>(dbPerks);
   const [races, setRaces] = useState<Array<Race>>(dbRaces);
   const [location, setLocation] = useState<DiciLocation | null>(
@@ -388,8 +444,18 @@ export default function OrganizerEventRoute() {
   const [deleteEventModalOpen, setDeleteEventModalOpen] =
     useState<boolean>(false);
   const inputEl = useRef(null);
-  const deleteEventForm = useRef<HTMLFormElement>(null);
+  const deleteForm = useRef<HTMLFormElement>(null);
   const isPublished = event.status === Status.published;
+  const [tabIndex, setTabIndex] = useState<number>(
+    event.regulationPath ? 1 : 0
+  );
+  const [fileUploadHandlerEvent, setFileUploadHandlerEvent] =
+    useState<FileUploadHandlerEvent | null>(null);
+  let fileName: string | null = null;
+
+  if (event.regulationPath && event.regulationFileName) {
+    fileName = event.regulationFileName;
+  }
 
   // Hack: while remix doesn't handle dates properly
   hackyEventRevival(event);
@@ -434,16 +500,42 @@ export default function OrganizerEventRoute() {
   }
 
   function handleDeleteEvent() {
-    if (!deleteEventForm.current) {
+    if (!deleteForm.current) {
       return;
     }
-    deleteEventForm.current.submit();
+    deleteForm.current.submit();
     setDeleteEventModalOpen(false);
   }
 
+  function uploadHandler(f: FileUploadHandlerEvent) {
+    const file = f.files[0];
+
+    setFileUploadHandlerEvent(f);
+    fetcher.submit(
+      {
+        //@ts-ignore
+        file: file
+      },
+      {
+        encType: 'multipart/form-data',
+        // submitting to another route, because of a conflict uploading a file and images
+        action: `/o/event/${event.id}/regulation/upload`,
+        method: 'post'
+      }
+    );
+  }
+
+  function onTabChange(e: TabViewTabChangeEvent) {
+    setTabIndex(e.index);
+  }
+
   useEffect(() => {
+    if (fetcher?.data?.ok) {
+      fileUploadHandlerEvent?.options?.clear();
+    }
+
     setRaces(dbRaces);
-  }, [dbRaces]);
+  }, [fileUploadHandlerEvent, fetcher, dbRaces]);
 
   return (
     <Main>
@@ -746,6 +838,59 @@ export default function OrganizerEventRoute() {
             </div>
           </FormField>
 
+          <div id="regulation" className="mb-12">
+            <FormField label={t('Regulation')}>
+              <TabView activeIndex={tabIndex} onTabChange={onTabChange}>
+                <TabPanel header={t('Write Regulation')}>
+                  <TextArea
+                    name="regulation"
+                    className="input-text h-80"
+                    defaultValue={
+                      event.regulationContent ? event.regulationContent : ''
+                    }
+                  />
+                </TabPanel>
+                <TabPanel
+                  header={t('Upload Regulation')}
+                  contentClassName="flex flex-col gap-y-2 items-start p-4 w-full"
+                  id="add-regulation"
+                >
+                  <UploadFile
+                    name="file"
+                    mode="advanced"
+                    chooseLabel={t('Upload Regulation Button')}
+                    accept=".pdf"
+                    customUpload={true}
+                    uploadHandler={uploadHandler}
+                    emptyTemplate={
+                      <p className="m-0">{t('Regulation Dropzone')}</p>
+                    }
+                    contentClassName="p-4"
+                    className="w-full"
+                  />
+                  {event.regulationPath && fileName && (
+                    <div className="text-center">
+                      <Link
+                        to={`/event/${event.id}/regulation/view`}
+                        target="_blank"
+                        rel="noreferrer"
+                        data-cy="regulation"
+                      >
+                        {fileName}
+                      </Link>
+                    </div>
+                  )}
+                </TabPanel>
+              </TabView>
+            </FormField>
+
+            {actionData?.errors?.regulation ? (
+              <InputError className="mt-8" id="error-message">
+                {actionData?.errors?.regulation}
+              </InputError>
+            ) : null}
+          </div>
+
           <div id="documents" className="mb-12">
             <Label
               htmlFor="documents"
@@ -848,9 +993,9 @@ export default function OrganizerEventRoute() {
         noValidate
         aria-describedby="general-error"
         className="hidden"
-        ref={deleteEventForm}
+        ref={deleteForm}
       >
-        <input type="hidden" name="actionId" value={actionIds.delete} />
+        <input type="hidden" name="actionId" value={actionIds.deleteEvent} />
       </Form>
     </Main>
   );

@@ -609,8 +609,6 @@ function BookingsList({
     useState<string>(searchedName);
   const searchForm = useRef<HTMLFormElement>(null);
 
-  console.log(searchedName);
-
   function handleSearchedName(value: string) {
     setSearchedParticipantName(value);
     searchForm?.current?.submit();
