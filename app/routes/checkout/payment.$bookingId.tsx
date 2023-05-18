@@ -45,6 +45,7 @@ type LoaderData = {
   formContext: string;
   transactionID: string;
   CHECKOUT_FORM_SCRIPT: string;
+  domainUrl: string;
 };
 
 export const action: ActionFunction = async ({ request, params }) => {
@@ -153,7 +154,8 @@ export const loader: LoaderFunction = async ({ request, params }) => {
       bookingId,
       event,
       cart,
-      submittedPayments
+      submittedPayments,
+      domainUrl: getDomainUrl(request)
     });
   }
 
@@ -171,7 +173,8 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     formContext: paymentTransaction.formContext,
     transactionID: paymentTransaction.transactionID,
     CHECKOUT_FORM_SCRIPT: Config().SIBS_CHECKOUT_FORM_SCRIPT,
-    expiredPayments
+    expiredPayments,
+    domainUrl: getDomainUrl(request)
   });
 };
 
@@ -197,7 +200,6 @@ const sibsDarkTheme = {
       background: '#2f3037' // '#1F2028'
     }
   }
-  //      font: ''
 };
 
 const sibsLightTheme = {
@@ -217,7 +219,6 @@ const sibsLightTheme = {
       background: undefined
     }
   }
-  //      font: ''
 };
 
 export default function CheckoutPaymentRoute() {
@@ -229,7 +230,8 @@ export default function CheckoutPaymentRoute() {
     submittedPayments,
     formContext,
     transactionID,
-    CHECKOUT_FORM_SCRIPT
+    CHECKOUT_FORM_SCRIPT,
+    domainUrl
   } = useLoaderData() as LoaderData;
   const { t } = useTranslation('checkout');
   const fetcher = useFetcher();
@@ -262,6 +264,7 @@ export default function CheckoutPaymentRoute() {
                 cart={cart}
                 bookingId={bookingId}
                 formContext={formContext}
+                domainUrl={domainUrl}
               />
             </>
           )}
@@ -291,6 +294,7 @@ type PaymentFormProps = {
   cart: UICartRow[];
   bookingId: string;
   formContext: string;
+  domainUrl: string;
 };
 
 function PaymentForm({
@@ -298,7 +302,8 @@ function PaymentForm({
   transactionID,
   cart,
   bookingId,
-  formContext
+  formContext,
+  domainUrl
 }: PaymentFormProps) {
   const [theme] = useTheme();
   const style = JSON.stringify(
@@ -309,7 +314,7 @@ function PaymentForm({
     paymentMethodList: [],
     amount: { value: bookingAmount(cart), currency: 'EUR' },
     language: 'pt',
-    redirectUrl: `/checkout/confirmation/${bookingId}`,
+    redirectUrl: `${domainUrl}/checkout/confirmation/${bookingId}`,
     customerData: null
   });
 
