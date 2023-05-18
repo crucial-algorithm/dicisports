@@ -253,7 +253,9 @@ export default function CheckoutPaymentRoute() {
           )}
           {!(submittedPayments && submittedPayments.length > 0) && (
             <>
-            {expiredPayments.length > 0 && <H6>Show expired payments info</H6>}
+              {expiredPayments.length > 0 && (
+                <H6>Show expired payments info</H6>
+              )}
               <PaymentForm
                 script={CHECKOUT_FORM_SCRIPT}
                 transactionID={transactionID}
@@ -289,9 +291,15 @@ type PaymentFormProps = {
   cart: UICartRow[];
   bookingId: string;
   formContext: string;
-}
+};
 
-function PaymentForm({ script, transactionID, cart, bookingId, formContext }: PaymentFormProps) {
+function PaymentForm({
+  script,
+  transactionID,
+  cart,
+  bookingId,
+  formContext
+}: PaymentFormProps) {
   const [theme] = useTheme();
   const style = JSON.stringify(
     theme === 'dark' ? sibsDarkTheme : sibsLightTheme
@@ -317,7 +325,7 @@ function PaymentForm({ script, transactionID, cart, bookingId, formContext }: Pa
   return (
     <form
       className="paymentSPG"
-      spg-context={JSON.stringify(formContext)}
+      spg-context={formContext}
       spg-config={formConfig}
       spg-style={style}
     />
@@ -325,13 +333,15 @@ function PaymentForm({ script, transactionID, cart, bookingId, formContext }: Pa
 }
 
 type DisplayPendingPaymentProps = {
-  payments: Payment[]
-}
+  payments: Payment[];
+};
 
 function DisplayPendingPayments(props: DisplayPendingPaymentProps) {
   const { t } = useTranslation('checkout');
 
   return (
-    <div data-cy="waiting-payment-confirmation">{t('Waitting for payment gateway')}</div>
+    <div data-cy="waiting-payment-confirmation">
+      {t('Waitting for payment gateway')}
+    </div>
   );
 }
