@@ -558,9 +558,9 @@ type SibsWebHookSchema = {
   paymentMethod: PaymentMethod;
   transactionID: string;
   amount: { currency: 'EUR'; value: number };
-  merchant: { terminalId: number };
+  merchant: { terminalId: number; merchantName: string; transactionId: string };
   paymentType: string;
-  notificationID: string
+  notificationID: string;
 };
 
 export {

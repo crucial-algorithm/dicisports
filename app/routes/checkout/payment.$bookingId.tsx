@@ -39,11 +39,11 @@ import { useTheme } from '~/utils/theme-provider';
 type LoaderData = {
   event: Event;
   cart: UICartRow[];
-  bookingId: string;
   submittedPayments: Payment[];
   expiredPayments: Payment[];
   formContext: string;
-  transactionID: string;
+  gatewayTransactionId: string;
+  ourTransactionId: string;
   CHECKOUT_FORM_SCRIPT: string;
   domainUrl: string;
 };
@@ -151,7 +151,6 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 
   if (submittedPayments.length > 0) {
     return json({
-      bookingId,
       event,
       cart,
       submittedPayments,
@@ -160,18 +159,18 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   }
 
   const expiredPayments = await findExpiredPayments(bookingId);
-  const paymentTransaction = await createPayamentTransaction(
+  const { gatewayResponse, ourTransactionId } = await createPayamentTransaction(
     booking,
     event,
     cart
   );
 
   return json({
-    bookingId,
     event,
     cart,
-    formContext: paymentTransaction.formContext,
-    transactionID: paymentTransaction.transactionID,
+    formContext: gatewayResponse.formContext,
+    gatewayTransactionId: gatewayResponse.transactionID,
+    ourTransactionId,
     CHECKOUT_FORM_SCRIPT: Config().SIBS_CHECKOUT_FORM_SCRIPT,
     expiredPayments,
     domainUrl: getDomainUrl(request)
@@ -225,11 +224,11 @@ export default function CheckoutPaymentRoute() {
   const {
     event,
     cart,
-    bookingId,
     expiredPayments,
     submittedPayments,
     formContext,
-    transactionID,
+    gatewayTransactionId,
+    ourTransactionId,
     CHECKOUT_FORM_SCRIPT,
     domainUrl
   } = useLoaderData() as LoaderData;
@@ -260,11 +259,10 @@ export default function CheckoutPaymentRoute() {
               )}
               <PaymentForm
                 script={CHECKOUT_FORM_SCRIPT}
-                transactionID={transactionID}
+                gatewayTransactionId={gatewayTransactionId}
                 cart={cart}
-                bookingId={bookingId}
                 formContext={formContext}
-                domainUrl={domainUrl}
+                redirectUrl={`${domainUrl}/checkout/submitted/${ourTransactionId}`}
               />
             </>
           )}
@@ -290,31 +288,29 @@ export default function CheckoutPaymentRoute() {
 
 type PaymentFormProps = {
   script: string;
-  transactionID: string;
+  gatewayTransactionId: string;
   cart: UICartRow[];
-  bookingId: string;
   formContext: string;
-  domainUrl: string;
+  redirectUrl: string;
 };
 
 function PaymentForm({
   script,
-  transactionID,
+  gatewayTransactionId,
   cart,
-  bookingId,
   formContext,
-  domainUrl
+  redirectUrl
 }: PaymentFormProps) {
   const [theme] = useTheme();
   const style = JSON.stringify(
     theme === 'dark' ? sibsDarkTheme : sibsLightTheme
   );
-  const formScriptSrc = `${script}?id=${transactionID}`;
+  const formScriptSrc = `${script}?id=${gatewayTransactionId}`;
   const formConfig = JSON.stringify({
     paymentMethodList: [],
     amount: { value: bookingAmount(cart), currency: 'EUR' },
     language: 'pt',
-    redirectUrl: `${domainUrl}/checkout/confirmation/${bookingId}`,
+    redirectUrl,
     customerData: null
   });
 

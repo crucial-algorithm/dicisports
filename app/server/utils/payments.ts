@@ -1,5 +1,5 @@
 import Config from '~/server/config.server';
-import { addGatewayTransactionToPayment, createPaymentRequest } from '~/server/db/payments.server';
+import { addGatewayDetailsToPayment, createPaymentRequest } from '~/server/db/payments.server';
 import type { Booking, Event, UICartRow } from '~/types';
 import { bookingAmount } from '~/utils/misc';
 
@@ -56,7 +56,7 @@ export async function createPayamentTransaction(
   booking: Booking,
   event: Event,
   cart: Array<UICartRow>
-): Promise<TransactionResponse> {
+): Promise<{ gatewayResponse: TransactionResponse; ourTransactionId: string }> {
   const {
     SIBS_API_TOKEN: token,
     SIBS_URL_ENDPOINT: url,
@@ -113,6 +113,6 @@ export async function createPayamentTransaction(
   });
   const details = (await z.json()) as TransactionResponse;
 
-  await addGatewayTransactionToPayment(payment.id, details.transactionID);
-  return details;
+  await addGatewayDetailsToPayment(payment.id, details.transactionID, new Date(details.expiry));
+  return { gatewayResponse: details, ourTransactionId: payment.id };
 }
