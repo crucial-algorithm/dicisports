@@ -58,16 +58,17 @@ async function createPaymentRequest(
   });
 }
 
-async function addGatewayTransactionToPayment(
+async function addGatewayDetailsToPayment(
   id: string,
-  transactionId: string
+  transactionId: string,
+  expiresAt: Date
 ) {
   return await db.payment.update({
     where: { id },
     data: {
       transactionId,
       status: PaymentStatus.pending,
-      expiresAt: new Date('2099-12-31') // for now, until we figure out how SIBS is going to comunicate that
+      expiresAt
     }
   });
 }
@@ -127,7 +128,7 @@ export {
   findSubmittedPayments,
   findExpiredPayments,
   createPaymentRequest,
-  addGatewayTransactionToPayment,
+  addGatewayDetailsToPayment,
   pay,
   isBookingPaid,
   saveNotification,
