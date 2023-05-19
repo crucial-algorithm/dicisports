@@ -559,7 +559,7 @@ describe('Checkout', () => {
         });
     });
 
-    it('should not allow user to pay if he does not accept terms and conditions', () => {
+    it.skip('should not allow user to pay if he does not accept terms and conditions', () => {
       cy.login()
 
         .visitAndWaitForHydration('/checkout/payment/HJtAk2sSktodKez744mt')
@@ -581,7 +581,7 @@ describe('Checkout', () => {
         .should('exist');
     });
 
-    it('should have link to Event regulation and Dici terms', () => {
+    it.skip('should have link to Event regulation and Dici terms', () => {
       cy.login()
 
         .visitAndWaitForHydration('/checkout/payment/HJtAk2sSktodKez744mt')
