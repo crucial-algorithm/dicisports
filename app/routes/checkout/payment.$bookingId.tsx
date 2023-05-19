@@ -1,3 +1,4 @@
+import type { Payment } from '@prisma/client';
 import { CheckoutStatus } from '@prisma/client';
 import type { ActionFunction, LoaderFunction } from '@remix-run/node';
 import { json, redirect } from '@remix-run/node';
@@ -9,6 +10,7 @@ import {
   useLoaderData
 } from '@remix-run/react';
 import * as React from 'react';
+import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { z, ZodError } from 'zod';
 
@@ -20,6 +22,7 @@ import Main from '~/components/shared/Main';
 import { H2, H6 } from '~/components/shared/typography';
 import { getClientSession } from '~/server/auth/client.server';
 import { getUser } from '~/server/auth/session.server';
+import Config from '~/server/config.server';
 import {
   findBookingById,
   findBookingCart,
@@ -27,16 +30,30 @@ import {
 } from '~/server/db/booking.server';
 import { findEvent } from '~/server/db/events.server';
 import { findUserEventRaceParticipants } from '~/server/db/participant.server';
-import type { Event, UICartRow } from '~/types';
+import {
+  findExpiredPayments,
+  findSubmittedPayments,
+  isBookingPaid
+} from '~/server/db/payments.server';
+import type { Event, KCDHandle, UICartRow } from '~/types';
 import { sendBookingConfirmationEmail } from '~/server/email.server';
-import { badRequest, getDomainUrl } from '~/utils/misc';
+import { badRequest, bookingAmount, getDomainUrl } from '~/utils/misc';
 import i18n from '~/server/i18n.server';
+import { createPayamentTransaction } from '~/server/utils/payments';
+import { useTheme } from '~/utils/theme-provider';
 import InputError from '~/components/shared/form/InputError';
 
 type LoaderData = {
   event: Event;
   cart: UICartRow[];
   regulation: Document;
+  submittedPayments: Payment[];
+  expiredPayments: Payment[];
+  formContext: string;
+  gatewayTransactionId: string;
+  ourTransactionId: string;
+  CHECKOUT_FORM_SCRIPT: string;
+  domainUrl: string;
 };
 
 export const action: ActionFunction = async ({ request, params }) => {
@@ -65,7 +82,7 @@ export const action: ActionFunction = async ({ request, params }) => {
   const actionId = form.get('actionId');
 
   if (actionId === 'update-info') {
-    await updateBookingStatus(CheckoutStatus.checkout, clientId, eventId);
+    await updateBookingStatus(bookingId, CheckoutStatus.checkout);
 
     return redirect(`/checkout/info/${bookingId}`);
   }
@@ -73,37 +90,36 @@ export const action: ActionFunction = async ({ request, params }) => {
   const regulation: boolean = (form.get('regulation') as string) === 'on';
   const terms: boolean = (form.get('terms') as string) === 'on';
 
-  const PaymentSchema = z
-    .object({
-      terms: z
-        .boolean({ required_error: t('Accept Dici Terms') })
-        .refine((v) => v, { message: t('Accept Dici Terms') }),
-      regulation: z
-        .boolean({ required_error: t('Accept Event Regulation') })
-        .refine((v) => v, { message: t('Accept Event Regulation') })
-    });
+  const TermsAndRegulationSchema = z.object({
+    terms: z
+      .boolean({ required_error: t('Accept Dici Terms') })
+      .refine((v) => v, { message: t('Accept Dici Terms') }),
+    regulation: z
+      .boolean({ required_error: t('Accept Event Regulation') })
+      .refine((v) => v, { message: t('Accept Event Regulation') })
+  });
 
   try {
-    PaymentSchema.parse({ regulation, terms });
+    TermsAndRegulationSchema.parse({ regulation, terms });
 
-    await updateBookingStatus(CheckoutStatus.confirmed, clientId, eventId);
+    await updateBookingStatus(bookingId, CheckoutStatus.confirmed);
 
-  if (authenticatedClient !== null) {
-    const event = await findEvent(eventId);
-    const domainUrl = getDomainUrl(request);
-    const cart = await findBookingCart(clientId, eventId);
+    if (authenticatedClient !== null) {
+      const event = await findEvent(eventId);
+      const domainUrl = getDomainUrl(request);
+      const cart = await findBookingCart(clientId, eventId);
 
-    await sendBookingConfirmationEmail({
-      emailAddress: authenticatedClient.email,
-      event,
-      booking,
-      domainUrl,
-      cart,
-      userName: authenticatedClient.name
-    });
-  }
+      await sendBookingConfirmationEmail({
+        emailAddress: authenticatedClient.email,
+        event,
+        booking,
+        domainUrl,
+        cart,
+        userName: authenticatedClient.name
+      });
+    }
 
-  return redirect(`/checkout/confirmation/${bookingId}`);
+    return redirect(`/checkout/confirmation/${bookingId}`);
   } catch (e) {
     if (!(e instanceof ZodError)) {
       const tc = await i18n.getFixedT(request, 'common');
@@ -127,7 +143,6 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   const anonymousClient = await getClientSession(request);
   const authenticatedClient = await getUser(request);
   const bookingId = params.bookingId as string;
-
   const booking = await findBookingById(bookingId);
 
   // We check if user is authenticated -> authenticatedClient, if not, we use the client session -> anonymousClient
@@ -136,13 +151,17 @@ export const loader: LoaderFunction = async ({ request, params }) => {
       ? authenticatedClient.id
       : anonymousClient.getClientId();
 
-  if (!booking || booking.userId !== clientId) {
+  if (!booking) {
+    return redirect('/');
+  }
+
+  if (booking.userId !== clientId) {
     return redirect('/');
   }
 
   const eventId = booking.eventId;
 
-  const event = await findEvent(eventId);
+  const event = (await findEvent(eventId)) as Event;
   const cart = await findBookingCart(clientId, eventId);
   const raceParticipants = await findUserEventRaceParticipants(
     clientId,
@@ -153,18 +172,92 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     return redirect(`/checkout/cart/${eventId}`);
   }
 
-  if (booking?.status !== CheckoutStatus.pending) {
-    return redirect(
-      `/checkout/${
-        booking?.status === CheckoutStatus.checkout ? 'info' : 'confirmation'
-      }/${bookingId}`
-    );
+  const hasASuccessfullPayment = await isBookingPaid(bookingId);
+
+  if (hasASuccessfullPayment) {
+    // check if for some reason the booking status is inconsistent
+    if (booking.status !== CheckoutStatus.confirmed) {
+      await updateBookingStatus(bookingId, CheckoutStatus.confirmed);
+    }
+
+    return redirect(`/checkout/confirmation/${bookingId}`);
   }
+
+  if (booking.status == CheckoutStatus.checkout) {
+    return redirect(`/checkout/info/${bookingId}`);
+  }
+
+  const submittedPayments = await findSubmittedPayments(bookingId);
+
+  if (submittedPayments.length > 0) {
+    return json({
+      event,
+      cart,
+      submittedPayments,
+      domainUrl: getDomainUrl(request)
+    });
+  }
+
+  const expiredPayments = await findExpiredPayments(bookingId);
+  const { gatewayResponse, ourTransactionId } = await createPayamentTransaction(
+    booking,
+    event,
+    cart
+  );
 
   return json({
     event,
-    cart
+    cart,
+    formContext: gatewayResponse.formContext,
+    gatewayTransactionId: gatewayResponse.transactionID,
+    ourTransactionId,
+    CHECKOUT_FORM_SCRIPT: Config().SIBS_CHECKOUT_FORM_SCRIPT,
+    expiredPayments,
+    domainUrl: getDomainUrl(request)
   });
+};
+
+export const handle: KCDHandle & { id: string; i18n: string[] } = {
+  id: 'payment',
+  i18n: ['checkout']
+};
+
+const sibsDarkTheme = {
+  layout: 'default',
+  theme: 'default',
+  color: {
+    primary: '#ef7f1a',
+    secondary: '#ef7f1a',
+    border: undefined,
+    surface: undefined,
+    header: {
+      text: '#ffffff',
+      background: '#2f3037' // '#1F2028'
+    },
+    body: {
+      text: '#ffffff',
+      background: '#2f3037' // '#1F2028'
+    }
+  }
+};
+
+const sibsLightTheme = {
+  layout: 'default',
+  theme: 'default',
+  color: {
+    primary: '#ef7f1a',
+    secondary: '#ef7f1a',
+    border: undefined,
+    surface: undefined,
+    header: {
+      text: undefined,
+      background: undefined
+    },
+    body: {
+      text: undefined,
+      background: undefined
+    }
+  }
 };
 
 type ActionData = {
@@ -176,7 +269,17 @@ type ActionData = {
 
 export default function CheckoutPaymentRoute() {
   const actionData = useActionData<ActionData>();
-  const { event, cart } = useLoaderData<LoaderData>();
+  const {
+    event,
+    cart,
+    expiredPayments,
+    submittedPayments,
+    formContext,
+    gatewayTransactionId,
+    ourTransactionId,
+    CHECKOUT_FORM_SCRIPT,
+    domainUrl
+  } = useLoaderData() as LoaderData;
   const { t } = useTranslation('checkout');
   const fetcher = useFetcher();
 
@@ -191,9 +294,8 @@ export default function CheckoutPaymentRoute() {
           </b>
         </H2>
         <H6>
-          <DisplayDate date={new Date(event.startAt)} />
+          <DisplayDate date={new Date(event.startAt as unknown as string)} />
         </H6>
-        <H6>{event.address}</H6>
       </div>
       <div className="flex flex-col md:flex-row mt-8">
         {/*Payment Form*/}
@@ -242,13 +344,31 @@ export default function CheckoutPaymentRoute() {
             </div>
 
             <InputError id="terms-error" className="mb-2">
-              {actionData?.errors?.submit || actionData?.errors?.terms || actionData?.errors?.regulation}
+              {actionData?.errors?.submit ||
+                actionData?.errors?.terms ||
+                actionData?.errors?.regulation}
             </InputError>
-
-            <Button type="submit" name="pay">
-              {t('Pay')}
-            </Button>
           </Form>
+        </div>
+
+        <div className="flex-col w-full md:w-[calc(100%-(480px))] md:pr-4 sibs">
+          {submittedPayments && submittedPayments.length > 0 && (
+            <DisplayPendingPayments payments={submittedPayments} />
+          )}
+          {!(submittedPayments && submittedPayments.length > 0) && (
+            <>
+              {expiredPayments.length > 0 && (
+                <H6>Show expired payments info</H6>
+              )}
+              <PaymentForm
+                script={CHECKOUT_FORM_SCRIPT}
+                gatewayTransactionId={gatewayTransactionId}
+                cart={cart}
+                formContext={formContext}
+                redirectUrl={`${domainUrl}/checkout/submitted/${ourTransactionId}`}
+              />
+            </>
+          )}
         </div>
         <div className="w-full md:w-[480px]">
           <DisplayCart cart={cart} event={event} fetcher={fetcher}>
@@ -266,5 +386,66 @@ export default function CheckoutPaymentRoute() {
         </div>
       </div>
     </Main>
+  );
+}
+
+type PaymentFormProps = {
+  script: string;
+  gatewayTransactionId: string;
+  cart: UICartRow[];
+  formContext: string;
+  redirectUrl: string;
+};
+
+function PaymentForm({
+  script,
+  gatewayTransactionId,
+  cart,
+  formContext,
+  redirectUrl
+}: PaymentFormProps) {
+  const [theme] = useTheme();
+  const style = JSON.stringify(
+    theme === 'dark' ? sibsDarkTheme : sibsLightTheme
+  );
+  const formScriptSrc = `${script}?id=${gatewayTransactionId}`;
+  const formConfig = JSON.stringify({
+    paymentMethodList: [],
+    amount: { value: bookingAmount(cart), currency: 'EUR' },
+    language: 'pt',
+    redirectUrl,
+    customerData: null
+  });
+
+  useEffect(() => {
+    const script = document.createElement('script');
+
+    script.src = formScriptSrc;
+    script.async = true;
+
+    document.body.appendChild(script);
+  }, [formScriptSrc]);
+
+  return (
+    <form
+      className="paymentSPG"
+      spg-context={formContext}
+      spg-config={formConfig}
+      spg-style={style}
+    />
+  );
+}
+
+type DisplayPendingPaymentProps = {
+  payments: Payment[];
+};
+
+function DisplayPendingPayments(props: DisplayPendingPaymentProps) {
+  const { t } = useTranslation('checkout');
+
+  return (
+    <div data-cy="waiting-payment-confirmation">
+      {t('Waitting for payment gateway')}
+    </div>
   );
 }

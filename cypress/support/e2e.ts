@@ -26,7 +26,8 @@ Cypress.on('uncaught:exception', (err, runnable) => {
     /hydrat/i.test(err.message) ||
     /Minified React error #418/.test(err.message) ||
     /Minified React error #423/.test(err.message) ||
-    /_getUIString/.test(err.message)
+    /_getUIString/.test(err.message) ||
+    /ResizeObserver loop limit exceeded/.test(err.message)
   ) {
     return false;
   }

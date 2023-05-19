@@ -5,7 +5,7 @@
     "fixed": false,
     "active": true,
     "createdById": "gZZCGTHBq9SxdpRFoP8b",
-    "organiserId": "wu7LhCXXBcHFN9cWzjoG"
+    "organiserId": "qyPfCac23fMByqNa7L6n"
   },
   {
     "code": "GET-FIT-5",
@@ -13,7 +13,7 @@
     "fixed": true,
     "active": true,
     "createdById": "gZZCGTHBq9SxdpRFoP8b",
-    "organiserId": "wu7LhCXXBcHFN9cWzjoG"
+    "organiserId": "qyPfCac23fMByqNa7L6n"
   },
   {
     "code": "CHRISTMAS-30",
@@ -21,6 +21,6 @@
     "fixed": false,
     "active": false,
     "createdById": "gZZCGTHBq9SxdpRFoP8b",
-    "organiserId": "wu7LhCXXBcHFN9cWzjoG"
+    "organiserId": "qyPfCac23fMByqNa7L6n"
   }
 ]

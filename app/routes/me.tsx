@@ -764,7 +764,7 @@ function BookingListEntry({
 
     navigate(
       `/checkout/${route}/${booking.id}${
-        booking.status === 'confirmed' && `?p=${booking.pin}`
+        booking.status === 'confirmed' ? `?p=${booking.pin}` : ''
       }`
     );
   }

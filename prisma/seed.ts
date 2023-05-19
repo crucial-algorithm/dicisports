@@ -67,6 +67,8 @@ async function clear() {
   console.log('cleaning');
   await db.document.deleteMany();
   await db.raceParticipant.deleteMany();
+  await db.payment.deleteMany();
+  await db.paymentNotification.deleteMany();
   await db.booking.deleteMany();
   await db.participant.deleteMany();
   await db.race.deleteMany();

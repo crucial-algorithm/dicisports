@@ -620,6 +620,11 @@ describe('Event', () => {
         .get('input[name=name]')
         .type(' updated')
 
+        .pickDate(
+          'earlyBirdValidUntil',
+          new Date(Date.now() + 86400 * 1000).toISOString().split('T')[0]
+        )
+
         .intercept('POST', '/o/event/MY4bvgxDbMtGv8rbYe5d/race/*')
         .as('UpdateRace')
 
