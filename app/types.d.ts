@@ -102,7 +102,7 @@ type UploadImageMeta = {
   apiKey: string;
 };
 
-type User = {} & Omit<DBUser, 'password' | 'salt'>;
+type User = { organiser?: Organiser | null } & Omit<DBUser, 'password' | 'salt'>;
 type Sport = {
   name: TranslationObject;
 } & DBSport;

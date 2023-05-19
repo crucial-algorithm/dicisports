@@ -38,6 +38,12 @@ import type {
 } from '~/types';
 
 function dbUserToUser(user: DBUser | User): User {
+  if ('organiser' in user) {
+    const { id, name, email, lat, lng, location, role, createdAt, updatedAt, organiser } = user as User;
+
+    return { id, name, email, lat, lng, location, role, createdAt, updatedAt, organiser };
+  }
+
   const { id, name, email, lat, lng, location, role, createdAt, updatedAt } = user;
 
   return { id, name, email, lat, lng, location, role, createdAt, updatedAt };
