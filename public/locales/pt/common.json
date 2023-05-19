@@ -50,5 +50,9 @@
 
   "Heading": "Título",
   "Subheading": "Subtítulo",
-  "Normal":  "Normal"
+  "Normal":  "Normal",
+
+  "Privacy Policy": "Política de Privacidade",
+  "Terms and Conditions": "Termos e condições",
+  "Dicisports Watermark": "© {{year}} Dicisports"
 }

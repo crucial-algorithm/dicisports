@@ -75,5 +75,11 @@
   "Invalid Email": "Email inválido",
   "Booking Confirmation Email Sent": "Informação da inscrição enviada para o teu email.",
 
-  "No Booking": "Esse booking não existe!"
+  "No Booking": "Esse booking não existe!",
+
+  "Accept Dici Terms": "Ups... Verfica que aceitaste os termos e condições",
+  "Accept Event Regulation": "Ups... Verfica que aceitaste o regulamento",
+  "Read and Accepted": "Eu li e aceito",
+  "Terms and Conditions": " os Termos e Condições",
+  "Event Regulation": " o Regulamento do Evento"
 }

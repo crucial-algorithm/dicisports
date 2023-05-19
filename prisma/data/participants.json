@@ -60,5 +60,18 @@
     "shirtSize": 1,
     "postalCode": "4730-000",
     "status": "saved"
+  },
+  {
+    "id": "5Bfq2Asmsuv9LzDKGaTt",
+    "userId": "nTQ8idPqTY8PmhzbsN4u",
+    "firstName": "Alexandre",
+    "lastName": "Rego",
+    "gender": "M",
+    "birthdate": "1980-04-09 00:00:00.000",
+    "phoneNumber": 918203982,
+    "shirtSize": 5,
+    "nationality": 188,
+    "postalCode": "4730-454",
+    "status": "saved"
   }
 ]
