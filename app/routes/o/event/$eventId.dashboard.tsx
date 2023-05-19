@@ -5,6 +5,7 @@ import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Form, useLoaderData } from '@remix-run/react';
 import {
+  ArrowDownTrayIcon,
   ArrowTrendingUpIcon,
   CalendarDaysIcon,
   MapPinIcon
@@ -303,7 +304,9 @@ export default function DashboardRoute() {
             type="button"
             onClick={handleExportParticipants}
             variant="secondary"
+            size="small"
           >
+            <ArrowDownTrayIcon className="h-4 w-4 mr-1" />
             {t('Export Participants')}
           </Button>
 
