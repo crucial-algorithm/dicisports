@@ -627,7 +627,7 @@ export {
   BookingList,
   DBRawBookingList,
   DiscountCode,
-  DBRawDocument
+  DBRawDocument,
   SibsWebHookSchema
 };
 
