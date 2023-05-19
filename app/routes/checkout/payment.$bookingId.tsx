@@ -90,7 +90,7 @@ export const action: ActionFunction = async ({ request, params }) => {
   const regulation: boolean = (form.get('regulation') as string) === 'on';
   const terms: boolean = (form.get('terms') as string) === 'on';
 
-  const PaymentSchema = z.object({
+  const TermsAndRegulationSchema = z.object({
     terms: z
       .boolean({ required_error: t('Accept Dici Terms') })
       .refine((v) => v, { message: t('Accept Dici Terms') }),
@@ -100,7 +100,7 @@ export const action: ActionFunction = async ({ request, params }) => {
   });
 
   try {
-    PaymentSchema.parse({ regulation, terms });
+    TermsAndRegulationSchema.parse({ regulation, terms });
 
     await updateBookingStatus(bookingId, CheckoutStatus.confirmed);
 
