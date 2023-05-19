@@ -1,3 +1,4 @@
+import type { PaymentMethod } from '@prisma/client';
 import type {
   Booking as DBBooking,
   Difficulty as DBDifficulty,
@@ -112,17 +113,6 @@ type CreateDocumentInput = {
   label: string;
   path?: string | null;
   eventId: string;
-};
-
-type DBRawDocument = {
-  id: string;
-  label: string | null;
-  path: string | null;
-  event_id: string;
-  status: Status;
-  position: number;
-  created_at: Date;
-  updated_at: Date;
 };
 
 type GroupType = {
@@ -566,6 +556,17 @@ type OrganiserInput = {
 
 type DiscountCode = DBDiscountCode & {};
 
+type SibsWebHookSchema = {
+  returnStatus: { statusMsg: string; statusCode: string };
+  paymentStatus: 'Success' | 'Error';
+  paymentMethod: PaymentMethod;
+  transactionID: string;
+  amount: { currency: 'EUR'; value: number };
+  merchant: { terminalId: number; merchantName: string; transactionId: string };
+  paymentType: string;
+  notificationID: string;
+};
+
 export {
   NonNullProperties,
   MemberProfile,
@@ -627,6 +628,7 @@ export {
   DBRawBookingList,
   DiscountCode,
   DBRawDocument
+  SibsWebHookSchema
 };
 
 // https://www.i18next.com/overview/typescript#argument-of-type-defaulttfuncreturn-is-not-assignable-to-parameter-of-type-xyz

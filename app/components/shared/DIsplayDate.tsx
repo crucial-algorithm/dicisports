@@ -15,8 +15,13 @@ const months = [
   'December'
 ];
 
-export default function DisplayDate({ date }: { date: Date }) {
+export default function DisplayDate({ date }: { date: Date | null }) {
   const { t } = useTranslation('common');
+
+  if (!date) {
+    return null;
+  }
+
   const day = date.getDate();
   const month = date.getMonth();
   const year = date.getFullYear();

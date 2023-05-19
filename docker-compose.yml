@@ -12,5 +12,7 @@ services:
 
   mailgun:
     image: filipeutter/http-catcher
+    environment:
+      - 'ENDPOINTS=[ { "method": "post", "endpoint": "/sibs-mock-checkout", "response": { "formContext": {"transactionId": "{{merchant.merchantTransactionId}}"}, "transactionID": "{{merchant.merchantTransactionId}}" } }, { "method": "post", "endpoint": "/sibs-mock-form-submit", "response": { "type": "redirect", "url": "http://localhost:3000/checkout/submitted/{{transactionId}}" }, "sideEffect": { "delay": 2000, "url": "http://host.docker.internal:3000/wh/sibs", "method": "post", "headers": [{"key": "X-Authentication-Tag", "value": "{{at}}"}, {"key": "X-Initialization-Vector", "value": "{{iv}}"}, {"key": "Content-Type", "value": "text/plain"}], "body": "{{message}}" } } ]'
     ports:
       - '3001:3001'

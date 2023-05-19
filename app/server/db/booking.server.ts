@@ -15,19 +15,6 @@ import type {
   UICartRow
 } from '~/types';
 
-async function updateBookingStatus(
-  status: CheckoutStatus,
-  userSessionId: string,
-  eventId: string
-): Promise<Booking> {
-  return await db.booking.update({
-    where: { eventId_userId: { eventId, userId: userSessionId } },
-    data: {
-      status
-    }
-  });
-}
-
 async function findBooking(
   userSessionId: string,
   eventId: string
@@ -149,11 +136,23 @@ async function findUserBookingsList(
   return { results: mapped, total };
 }
 
+async function updateBookingStatus(
+  id: string,
+  status: CheckoutStatus
+): Promise<Booking> {
+  return await db.booking.update({
+    where: { id },
+    data: {
+      status
+    }
+  });
+}
+
 async function findBookingById(id: string): Promise<Booking | null> {
   return await db.booking.findUnique({
     where: { id }
   });
-} 
+}
 
 export {
   updateBookingStatus,

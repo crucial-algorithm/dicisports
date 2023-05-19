@@ -217,7 +217,7 @@ export const action: ActionFunction = async ({ request, params }) => {
         });
       }
 
-      await updateBookingStatus(CheckoutStatus.pending, clientId, eventId);
+      await updateBookingStatus(bookingId, CheckoutStatus.pending);
 
       return redirect(`/checkout/payment/${bookingId}`);
     }

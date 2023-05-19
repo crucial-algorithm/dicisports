@@ -329,16 +329,6 @@ export const action: ActionFunction = async ({ request, params }) => {
   }
 
   try {
-    if (actionId === actionIds.deleteRegulation) {
-      await updateEventRegulation({
-        eventId: event.id as string,
-        regulationPath: null,
-        regulationContent: null
-      });
-
-      return json({});
-    }
-
     await updateEvent(data, perks, newPerks);
 
     if (actionId === actionIds.publish) {

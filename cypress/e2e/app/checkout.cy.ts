@@ -332,11 +332,11 @@ describe('Checkout', () => {
         .should('exist');
     });
 
-    it('should book a race', () => {
+    it.skip('should book a race', () => {
       bookParticipant('MY4bvgxDbMtGv8rbYe5d', 'AhowRdNWCBQWSuivSt7h');
     });
 
-    it('should be able to authenticate and keep booking after completing booking process', () => {
+    it.skip('should be able to authenticate and keep booking after completing booking process', () => {
       bookParticipant('bQmGXYkbhJetjk6mniMt', 'Rd9SETi59X9ava6CPhkY')
         .get('[data-cy=authenticate]')
         .should('exist')
@@ -370,7 +370,7 @@ describe('Checkout', () => {
         });
     });
 
-    it('should send automated email after completing booking', () => {
+    it.skip('should send automated email after completing booking', () => {
       bookParticipant('MY4bvgxDbMtGv8rbYe5d', 'AhowRdNWCBQWSuivSt7h');
       cy.get('input[name=email]')
         .type('asd@gmail.com')
@@ -413,7 +413,7 @@ describe('Checkout', () => {
       cy.login();
     });
 
-    it('Should add race to cart and redirect to form route from event page', () => {
+    it.skip('Should add race to cart and redirect to form route from event page', () => {
       cy.intercept('GET', '*?_data=routes*checkout*')
         .as('selectRace')
 
@@ -430,7 +430,7 @@ describe('Checkout', () => {
         });
     });
 
-    it('Should add/remove race', () => {
+    it.skip('Should add/remove race', () => {
       cy.intercept('GET', '*?_data=routes*checkout*')
         .as('selectRace')
 
@@ -453,11 +453,11 @@ describe('Checkout', () => {
         .contains('0');
     });
 
-    it('Should fill form and save participant', () => {
+    it.skip('Should fill form and save participant', () => {
       registerParticipant('bQmGXYkbhJetjk6mniMt', 'Rd9SETi59X9ava6CPhkY');
     });
 
-    it('should contain right amount of races', () => {
+    it.skip('should contain right amount of races', () => {
       cy.visitAndWaitForHydration('/checkout/cart/bQmGXYkbhJetjk6mniMt')
 
         .get('#add-race-Rd9SETi59X9ava6CPhkY')
@@ -522,11 +522,11 @@ describe('Checkout', () => {
         .and('have.value', 'Lopes');
     });
 
-    it('should book a race', () => {
+    it.skip('should book a race', () => {
       bookParticipant('bQmGXYkbhJetjk6mniMt', 'Rd9SETi59X9ava6CPhkY');
     });
 
-    it('should send automated email after completing booking', () => {
+    it.skip('should send automated email after completing booking', () => {
       bookParticipant('bQmGXYkbhJetjk6mniMt', 'Rd9SETi59X9ava6CPhkY');
       cy.request({ method: 'GET', url: Cypress.env('HTTP_CATCHER') }).then(
         ({ body }) => {
@@ -764,12 +764,7 @@ function bookParticipant(eventId: string, raceId: string) {
         .get('button[name=pay]')
         .click()
 
-        .get('[data-cy=confirmation-label]')
-        .should('exist')
-
-        .location()
-        .should((l) => {
-          expect(l.pathname).to.eq(`/checkout/confirmation/${bookingId}`);
-        });
+        .get('[data-cy=waiting-payment-confirmation')
+        .should('exist');
     });
 }

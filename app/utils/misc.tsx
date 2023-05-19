@@ -1,5 +1,7 @@
 import { json } from '@remix-run/node';
 
+import type { UICartRow } from '~/types';
+
 import type { Language, NonNullProperties, TranslationObject } from '~/types';
 
 function getDomainUrl(request: Request) {
@@ -117,6 +119,10 @@ function generateSlug(str: string) {
   return str;
 }
 
+function bookingAmount(cart: UICartRow[]) {
+  return cart.reduce((total, { qty, price }) => total + qty * price, 0);
+}
+
 export {
   getDomainUrl,
   getErrorMessage,
@@ -130,5 +136,6 @@ export {
   timeOfDayToHoursMinutes,
   hoursMinutesToTimeOfDay,
   getLocalizedText,
-  generateSlug
+  generateSlug,
+  bookingAmount
 };
