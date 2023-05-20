@@ -554,7 +554,7 @@ type DiscountCode = DBDiscountCode & {};
 
 type SibsWebHookSchema = {
   returnStatus: { statusMsg: string; statusCode: string };
-  paymentStatus: 'Success' | 'Error';
+  paymentStatus: 'Success' | 'Error' | 'Declined';
   paymentMethod: PaymentMethod;
   transactionID: string;
   amount: { currency: 'EUR'; value: number };
