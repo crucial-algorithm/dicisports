@@ -52,6 +52,17 @@ type TransactionResponse = {
   };
 };
 
+function paymentReferenceIntervals() {
+  const initial = new Date();
+  const final = new Date();
+  const { SIBS_MULTIBANCO_EXPIRATION_DAYS: days } = Config();
+
+  final.setHours(0, 0, 0, 0);
+  final.setDate(final.getDate() + days + 1);
+
+  return { initial, final };
+}
+
 export async function createPayamentTransaction(
   booking: Booking,
   event: Event,
@@ -61,11 +72,13 @@ export async function createPayamentTransaction(
     SIBS_API_TOKEN: token,
     SIBS_URL_ENDPOINT: url,
     SIBS_TERMINAL_ID: terminalId,
-    SIBS_CLIENT_ID: clientId
+    SIBS_CLIENT_ID: clientId,
+    SIBS_MULTIBANCO_ENTITIY: entity
   } = Config();
 
   const amount = bookingAmount(cart);
   const payment = await createPaymentRequest(booking.id, amount);
+  const { initial, final } = paymentReferenceIntervals();
 
   const body = {
     merchant: {
@@ -84,8 +97,8 @@ export async function createPayamentTransaction(
       },
       paymentMethod: ['MBWAY', 'REFERENCE', 'CARD'],
       paymentReference: {
-        initialDatetime: new Date().toISOString(),
-        finalDatetime: new Date().toISOString(),
+        initialDatetime: initial.toISOString(),
+        finalDatetime: final.toISOString(),
         maxAmount: {
           value: amount,
           currency: 'EUR'
@@ -94,10 +107,12 @@ export async function createPayamentTransaction(
           value: amount,
           currency: 'EUR'
         },
-        entity: '24000' // TODO: find out what this is
+        entity
       }
     }
   };
+
+  console.log(body);
 
   const headers = {
     Authorization: `Bearer ${token}`,
@@ -112,6 +127,8 @@ export async function createPayamentTransaction(
     headers
   });
   const details = (await z.json()) as TransactionResponse;
+
+  console.log(details);
 
   await addGatewayDetailsToPayment(payment.id, details.transactionID, new Date(details.expiry));
   return { gatewayResponse: details, ourTransactionId: payment.id };

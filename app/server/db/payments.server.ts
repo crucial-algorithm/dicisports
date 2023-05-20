@@ -92,6 +92,15 @@ async function pay(gatewayTransactionId: string, method: PaymentMethod) {
   });
 }
 
+async function decline(gatewayTransactionId: string) {
+  return await db.payment.update({
+    where: { transactionId: gatewayTransactionId },
+    data: {
+      status: PaymentStatus.failed
+    }
+  });
+}
+
 
 async function isBookingPaid(bookingId: string) {
   return (
@@ -130,6 +139,7 @@ export {
   createPaymentRequest,
   addGatewayDetailsToPayment,
   pay,
+  decline,
   isBookingPaid,
   saveNotification,
   updatePaymentStatus
