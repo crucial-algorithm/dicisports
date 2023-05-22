@@ -7,10 +7,11 @@ import { CheckoutStatus } from '@prisma/client';
 import Config from '~/server/config.server';
 import { updateBookingStatus } from '~/server/db/booking.server';
 
-import { decline, findPaymentByTransactionId, pay, saveNotification } from '~/server/db/payments.server';
+import { decline, findPayment, pay, saveNotification } from '~/server/db/payments.server';
 import type { SibsWebHookSchema } from '~/types';
 
 export const action: ActionFunction = async ({ request }) => {
+  console.log('SIBS webhook called');
   const body = await request.text();
 
   const authTag = request.headers.get('x-authentication-tag') || '';
@@ -27,7 +28,9 @@ export const action: ActionFunction = async ({ request }) => {
 
   try {
     await saveNotification(payload);
-    const payment = await findPaymentByTransactionId(payload.transactionID);
+    // using our transaction ID in case we didn't update the transaction id for the form redirect yet
+    // (we are not sure about the order of calls SIBS we will use since their documentation states it's undeterministic)
+    const payment = await findPayment(payload.merchant.transactionId);
 
     if (!payment) {
       console.log(

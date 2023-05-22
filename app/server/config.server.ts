@@ -28,6 +28,7 @@ export type ConfigServer = {
   SIBS_WEBHOOK_SECRET: string;
   SIBS_MULTIBANCO_ENTITIY: string;
   SIBS_MULTIBANCO_EXPIRATION_DAYS: number;
+  SIBS_CHECK_STATUS_ENDPOINT: string;
 }
 
 let config: ConfigServer | null = null;
@@ -67,7 +68,8 @@ export default function Config(): ConfigServer {
     SIBS_CLIENT_ID: extractVar('SIBS_CLIENT_ID'),
     SIBS_WEBHOOK_SECRET: extractVar('SIBS_WEBHOOK_SECRET'),
     SIBS_MULTIBANCO_ENTITIY: extractVar('SIBS_MULTIBANCO_ENTITIY'),
-    SIBS_MULTIBANCO_EXPIRATION_DAYS: Number(extractVar('SIBS_MULTIBANCO_EXPIRATION_DAYS'))
+    SIBS_MULTIBANCO_EXPIRATION_DAYS: Number(extractVar('SIBS_MULTIBANCO_EXPIRATION_DAYS')),
+    SIBS_CHECK_STATUS_ENDPOINT: extractVar('SIBS_CHECK_STATUS_ENDPOINT')
   };
 
   return config;

@@ -31,7 +31,7 @@ function form() {
     paymentMethod: 'CARD',
     transactionID: context.transactionId,
     amount: { currency: 'EUR', value: 10 },
-    merchant: { terminalId: 1000000 },
+    merchant: { terminalId: 1000000, transactionId: context.transactionId },
     paymentType: 'PURS',
     notificationID: UUIDGenerator()
   };

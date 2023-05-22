@@ -1,3 +1,4 @@
+import { PaymentStatus } from '@prisma/client';
 import type { LoaderFunction } from '@remix-run/node';
 import { redirect } from '@remix-run/node';
 
@@ -6,7 +7,6 @@ import { findPayment, updatePaymentStatus } from '~/server/db/payments.server';
 
 
 export const loader: LoaderFunction = async ({ request, params }) => {
-
   const paymentId = params.transactionId as string;
   const payment = await findPayment(paymentId);
 
@@ -22,7 +22,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     return redirect('/');
   }
 
-  await updatePaymentStatus(paymentId, 'submitted');
+  await updatePaymentStatus(paymentId, PaymentStatus.submitted);
 
   return redirect(`/checkout/payment/${payment.bookingId}`);
 
