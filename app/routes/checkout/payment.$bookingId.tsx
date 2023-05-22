@@ -1,18 +1,20 @@
-import { CheckoutStatus } from '@prisma/client';
+import { CheckoutStatus, PaymentStatus } from '@prisma/client';
 import type { Payment } from '@prisma/client';
 import type { ActionFunction, LoaderFunction } from '@remix-run/node';
 import { json, redirect } from '@remix-run/node';
-import { useFetcher, useLoaderData } from '@remix-run/react';
-import { useEffect } from 'react';
+import { useFetcher, useLoaderData, useNavigate } from '@remix-run/react';
+import { useCallback, useEffect } from 'react';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 
 import Button from '~/components/shared/Button';
 import DisplayCart from '~/components/shared/DisplayCart';
 import DisplayDate from '~/components/shared/DIsplayDate';
+import Multibanco from '~/components/shared/icons/Multibanco';
+import MultibancoContrast from '~/components/shared/icons/MultibancoContrast';
 
 import Main from '~/components/shared/Main';
-import { H2, H6 } from '~/components/shared/typography';
+import { H2, H5, H6 } from '~/components/shared/typography';
 import { getClientSession } from '~/server/auth/client.server';
 import { getUser } from '~/server/auth/session.server';
 import Config from '~/server/config.server';
@@ -233,7 +235,7 @@ export default function CheckoutPaymentRoute() {
     domainUrl
   } = useLoaderData() as LoaderData;
   const { t } = useTranslation('checkout');
-  const fetcher = useFetcher();
+  const displayCartFetcher = useFetcher();
 
   return (
     <Main>
@@ -268,7 +270,7 @@ export default function CheckoutPaymentRoute() {
           )}
         </div>
         <div className="w-full md:w-[480px]">
-          <DisplayCart cart={cart} event={event} fetcher={fetcher}>
+          <DisplayCart cart={cart} event={event} fetcher={displayCartFetcher}>
             <div>
               <Button
                 name="actionId"
@@ -337,12 +339,97 @@ type DisplayPendingPaymentProps = {
   payments: Payment[];
 };
 
-function DisplayPendingPayments(props: DisplayPendingPaymentProps) {
+function DisplayPendingPayments({ payments }: DisplayPendingPaymentProps) {
+  const { t } = useTranslation('checkout');
+  const navigate = useNavigate();
+  const checkPaymentstatus = useFetcher();
+  const payment = payments.sort(
+    ({ createdAt: a }, { createdAt: b }) =>
+      new Date(a).getTime() - new Date(b).getTime()
+  )[0];
+  const url = `/payment-status/${payment.id}`;
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (
+        checkPaymentstatus.state === 'idle' &&
+        (checkPaymentstatus.data == null ||
+          checkPaymentstatus.data.payment?.status === PaymentStatus.submitted)
+      ) {
+        checkPaymentstatus.load(url);
+      }
+    }, 5 * 1000);
+
+    return () => clearInterval(interval);
+  }, [checkPaymentstatus, url]);
+
+  if (!checkPaymentstatus?.data) {
+    if (payment.mbReference) {
+      return <DisplayMultibancoInfo payment={payment} />;
+    }
+
+    return <WaitingPaymentPending />;
+  }
+
+  const upToDatePayment = checkPaymentstatus.data.payment as Payment;
+
+  if (upToDatePayment.status === PaymentStatus.paid) {
+    navigate('.', { replace: true });
+  }
+
+  if (upToDatePayment.mbReference) {
+    return <DisplayMultibancoInfo payment={payment} />;
+  }
+
+  return <WaitingPaymentPending />;
+}
+
+function WaitingPaymentPending(props: {}) {
   const { t } = useTranslation('checkout');
 
   return (
-    <div data-cy="waiting-payment-confirmation">
+    <div
+      data-cy="waiting-payment-confirmation"
+      className="text-lg dark:text-white"
+    >
       {t('Waitting for payment gateway')}
     </div>
   );
+}
+
+function DisplayMultibancoInfo({ payment }: { payment: Payment }) {
+  const { t } = useTranslation('checkout');
+
+  return (
+    <>
+      <H5 className="mb-6">{t('Multibanco Guide')}</H5>
+      <table border={1} className="w-96 text-right text-lg dark:text-white">
+        <tbody>
+        <tr>
+          <td rowSpan={3}>
+            <Multibanco className="w-28 dark:hidden" />
+            <MultibancoContrast className="w-28 hidden dark:block" />
+          </td>
+          <td className="font-bold">{t('Multibanco Entity')}:</td>
+          <td>{payment.mbEntity}</td>
+        </tr>
+        <tr>
+          <td className="font-bold">{t('Multibanco Reference')}:</td>
+          <td>{formatMbReference(String(payment.mbReference))}</td>
+        </tr>
+        <tr>
+          <td className="font-bold">{t('Multibanco Amount')}:</td>
+          <td>{(payment.amount / 1000).toFixed(2)}€</td>
+        </tr>
+        </tbody>
+      </table>
+    </>
+  );
+}
+
+function formatMbReference(reference: string) {
+  return Number(reference)
+    .toLocaleString()
+    .replace(/,/g, ' ')
+    .replace(/\./g, ' ');
 }

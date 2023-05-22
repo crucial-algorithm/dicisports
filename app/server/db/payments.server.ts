@@ -40,7 +40,8 @@ async function findPaymentByTransactionId(id: string): Promise<Payment | null> {
 }
 
 /**
- * Method use to create a payment record to get an id to send to payment gateway
+ * 1st step: Method used to create a payment record to get an id to send to payment gateway.
+ * Called just before the first API call to SIBS
  * @param bookingId
  * @param amount
  */
@@ -58,18 +59,45 @@ async function createPaymentRequest(
   });
 }
 
+
+/**
+ * 2nd step: After creating a checkout in SIBS API, update our payment with info
+ * returned by their API
+ *
+ * @param id
+ * @param transactionId
+ * @param expiresAt
+ */
 async function addGatewayDetailsToPayment(
   id: string,
   transactionId: string,
   expiresAt: Date
 ) {
+
+  const record = await db.payment.findUnique({ where: { id: id } });
+
+  if (!record) {
+    return null;
+  }
+
+  let data: {
+    transactionId: string;
+    status?: PaymentStatus;
+    expiresAt: Date;
+  } = {
+    transactionId,
+    expiresAt
+  };
+
+  // Being extra carefull here: we don't want to risk re-writting state if SIBS calls our
+  // webhook prior to calling our redirect
+  if (record.status === PaymentStatus.requested) {
+    data = { ...data, status: PaymentStatus.pending };
+  }
+
   return await db.payment.update({
     where: { id },
-    data: {
-      transactionId,
-      status: PaymentStatus.pending,
-      expiresAt
-    }
+    data: data
   });
 }
 
@@ -78,6 +106,20 @@ async function updatePaymentStatus(id: string, status: PaymentStatus) {
     where: { id },
     data: {
       status
+    }
+  });
+}
+
+async function addReferenciaMultibancoInfo(
+  id: string,
+  reference: string,
+  entity: string
+) {
+  return await db.payment.update({
+    where: { id },
+    data: {
+      mbReference: reference,
+      mbEntity: entity
     }
   });
 }
@@ -142,5 +184,6 @@ export {
   decline,
   isBookingPaid,
   saveNotification,
-  updatePaymentStatus
+  updatePaymentStatus,
+  addReferenciaMultibancoInfo
 };
