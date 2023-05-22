@@ -340,7 +340,6 @@ type DisplayPendingPaymentProps = {
 };
 
 function DisplayPendingPayments({ payments }: DisplayPendingPaymentProps) {
-  const { t } = useTranslation('checkout');
   const navigate = useNavigate();
   const checkPaymentstatus = useFetcher();
   const payment = payments.sort(
@@ -374,7 +373,7 @@ function DisplayPendingPayments({ payments }: DisplayPendingPaymentProps) {
   const upToDatePayment = checkPaymentstatus.data.payment as Payment;
 
   if (upToDatePayment.status === PaymentStatus.paid) {
-    navigate('.', { replace: true });
+    window.location.reload();
   }
 
   if (upToDatePayment.mbReference) {
