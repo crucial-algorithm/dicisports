@@ -1,4 +1,4 @@
-import { CheckoutStatus, PaymentStatus } from '@prisma/client';
+import { CheckoutStatus, PaymentMethod, PaymentStatus } from '@prisma/client';
 import type { Payment } from '@prisma/client';
 import type { ActionFunction, LoaderFunction } from '@remix-run/node';
 import { json, redirect } from '@remix-run/node';
@@ -14,7 +14,7 @@ import Multibanco from '~/components/shared/icons/Multibanco';
 import MultibancoContrast from '~/components/shared/icons/MultibancoContrast';
 
 import Main from '~/components/shared/Main';
-import { H2, H5, H6 } from '~/components/shared/typography';
+import { H2, H5, H6, Paragraph } from '~/components/shared/typography';
 import { getClientSession } from '~/server/auth/client.server';
 import { getUser } from '~/server/auth/session.server';
 import Config from '~/server/config.server';
@@ -28,7 +28,7 @@ import { findUserEventRaceParticipants } from '~/server/db/participant.server';
 import {
   findExpiredPayments,
   findSubmittedPayments,
-  isBookingPaid
+  isBookingPaid, pay
 } from '~/server/db/payments.server';
 import type { KCDHandle } from '~/types';
 import type { Event, UICartRow } from '~/types';
@@ -252,7 +252,7 @@ export default function CheckoutPaymentRoute() {
       <div className="flex flex-col md:flex-row mt-8">
         <div className="flex-col w-full md:w-[calc(100%-(480px))] md:pr-4 sibs">
           {submittedPayments && submittedPayments.length > 0 && (
-            <DisplayPendingPayments payments={submittedPayments} />
+            <DisplayPendingPaymentsInterval payments={submittedPayments} />
           )}
           {!(submittedPayments && submittedPayments.length > 0) && (
             <>
@@ -339,7 +339,7 @@ type DisplayPendingPaymentProps = {
   payments: Payment[];
 };
 
-function DisplayPendingPayments({ payments }: DisplayPendingPaymentProps) {
+function DisplayPendingPaymentsInterval({ payments }: DisplayPendingPaymentProps) {
   const checkPaymentstatus = useFetcher();
   const payment = payments.sort(
     ({ createdAt: a }, { createdAt: b }) =>
@@ -364,17 +364,7 @@ function DisplayPendingPayments({ payments }: DisplayPendingPaymentProps) {
   }, [checkPaymentstatus, url]);
 
   if (!checkPaymentstatus?.data) {
-    if (payment.mbReference) {
-      return (
-        <DisplayMultibancoInfo
-          entity={String(payment.mbEntity)}
-          reference={payment.mbReference}
-          amount={payment.amount}
-        />
-      );
-    }
-
-    return <WaitingPaymentPending />;
+    return <DisplayPendingPayments payment={payment} />;
   }
 
   const upToDatePayment = checkPaymentstatus.data.payment as Payment;
@@ -388,13 +378,37 @@ function DisplayPendingPayments({ payments }: DisplayPendingPaymentProps) {
     window.location.reload();
   }
 
-  if (upToDatePayment.mbReference) {
+  return <DisplayPendingPayments payment={upToDatePayment} />;
+}
+
+function DisplayPendingPayments({ payment }: {payment: Payment}) {
+  const { t } = useTranslation('checkout');
+
+  if (payment.method === PaymentMethod.REFERENCE && payment.mbReference) {
     return (
       <DisplayMultibancoInfo
-        entity={String(upToDatePayment.mbEntity)}
-        reference={upToDatePayment.mbReference}
-        amount={upToDatePayment.amount}
+        entity={String(payment.mbEntity)}
+        reference={payment.mbReference}
+        amount={payment.amount}
       />
+    );
+  }
+
+  if (payment.method === PaymentMethod.MBWAY || payment.method === PaymentMethod.CARD) {
+    const message = t(
+      payment.method === PaymentMethod.MBWAY
+        ? 'MBWay Instructions'
+        : 'Credit Card Instructions'
+    );
+
+    return (
+      <div className="flex items-center w-fit">
+        <Paragraph className="mr-4">{message}</Paragraph>
+        <div
+          className="text-secondary ml-auto inline-block h-8 w-8 animate-spin rounded-full border-2 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]"
+          role="status"
+        />
+      </div>
     );
   }
 
@@ -428,7 +442,7 @@ function DisplayMultibancoInfo({ entity, reference, amount }: MultibancoProps) {
 
   return (
     <>
-      <H5 className="mb-6">{t('Multibanco Guide')}</H5>
+      <H5 className="mb-6">{t('Multibanco Instructions')}</H5>
       <table border={1} className="w-96 text-right text-lg dark:text-white">
         <tbody>
           <tr>

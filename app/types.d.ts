@@ -573,6 +573,7 @@ type SibsStatusResponse = {
     entity: string;
     reference: string;
     paymentEntity: string;
+    expireDate: string;
     amount: { value: string; currency: 'Eur' };
   };
   paymentMethod: PaymentMethod;
