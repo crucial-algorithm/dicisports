@@ -26,9 +26,9 @@ import {
 import { findEvent } from '~/server/db/events.server';
 import { findUserEventRaceParticipants } from '~/server/db/participant.server';
 import {
-  findExpiredPayments,
+  findUnsuccessfulPayments,
   findSubmittedPayments,
-  isBookingPaid, pay
+  isBookingPaid
 } from '~/server/db/payments.server';
 import type { KCDHandle } from '~/types';
 import type { Event, UICartRow } from '~/types';
@@ -42,7 +42,7 @@ type LoaderData = {
   event: Event;
   cart: UICartRow[];
   submittedPayments: Payment[];
-  expiredPayments: Payment[];
+  unsuccessfulPayments: Payment[];
   formContext: string;
   gatewayTransactionId: string;
   ourTransactionId: string;
@@ -160,7 +160,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     });
   }
 
-  const expiredPayments = await findExpiredPayments(bookingId);
+  const unsuccessfulPayments = await findUnsuccessfulPayments(bookingId);
   const { gatewayResponse, ourTransactionId } = await createPayamentTransaction(
     booking,
     event,
@@ -174,7 +174,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     gatewayTransactionId: gatewayResponse.transactionID,
     ourTransactionId,
     CHECKOUT_FORM_SCRIPT: Config().SIBS_CHECKOUT_FORM_SCRIPT,
-    expiredPayments,
+    unsuccessfulPayments,
     domainUrl: getDomainUrl(request)
   });
 };
@@ -226,7 +226,7 @@ export default function CheckoutPaymentRoute() {
   const {
     event,
     cart,
-    expiredPayments,
+    unsuccessfulPayments,
     submittedPayments,
     formContext,
     gatewayTransactionId,
@@ -256,8 +256,8 @@ export default function CheckoutPaymentRoute() {
           )}
           {!(submittedPayments && submittedPayments.length > 0) && (
             <>
-              {expiredPayments.length > 0 && (
-                <H6>Show expired payments info</H6>
+              {unsuccessfulPayments.length > 0 && (
+                <H6 className="mb-8">{t('We Give Up On Past Payments')}</H6>
               )}
               <PaymentForm
                 script={CHECKOUT_FORM_SCRIPT}
@@ -271,16 +271,18 @@ export default function CheckoutPaymentRoute() {
         </div>
         <div className="w-full md:w-[480px]">
           <DisplayCart cart={cart} event={event} fetcher={displayCartFetcher}>
-            <div>
-              <Button
-                name="actionId"
-                className="mt-4 w-full"
-                type="submit"
-                value="update-info"
-              >
-                {t('Edit info')}
-              </Button>
-            </div>
+            {!submittedPayments || submittedPayments.length === 0 && (
+              <div>
+                <Button
+                  name="actionId"
+                  className="mt-4 w-full"
+                  type="submit"
+                  value="update-info"
+                >
+                  {t('Edit info')}
+                </Button>
+              </div>
+            )}
           </DisplayCart>
         </div>
       </div>

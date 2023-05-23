@@ -16,12 +16,19 @@ async function findSubmittedPayments(bookingId: string) {
   });
 }
 
-async function findExpiredPayments(bookingId: string) {
+async function findUnsuccessfulPayments(bookingId: string) {
   return await db.payment.findMany({
     where: {
       bookingId,
-      expiresAt: { lte: new Date() },
-      status: PaymentStatus.submitted
+      OR: [
+        {
+          expiresAt: { lte: new Date() },
+          status: PaymentStatus.submitted
+        },
+        {
+          status: { in: [PaymentStatus.failed, PaymentStatus.canceled, PaymentStatus.expired] }
+        }
+      ]
     }
   });
 }
@@ -224,7 +231,7 @@ export {
   findPayment,
   findPaymentByTransactionId,
   findSubmittedPayments,
-  findExpiredPayments,
+  findUnsuccessfulPayments,
   createPaymentRequest,
   addGatewayDetailsToPayment,
   pay,

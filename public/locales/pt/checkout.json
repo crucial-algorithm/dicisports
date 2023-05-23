@@ -86,5 +86,7 @@
   "Multibanco Reference": "Referência",
   "Multibanco Amount": "Valor",
   "MBWay Instructions": "Segue as instruções no MBWay para completar o pagamento...",
-  "Credit Card Instructions": "A processar o pagamento no teu cartão..."
+  "Credit Card Instructions": "A processar o pagamento no teu cartão...",
+
+  "We Give Up On Past Payments": "As tentativa(s) anteriore(s) de pagamento falharam. Submete uma nova forma de pagamento."
 }
