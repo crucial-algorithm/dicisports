@@ -155,7 +155,7 @@ export async function getPaymentStatus(payment: Payment) {
 
   const response = (await r.json()) as SibsStatusResponse;
 
-  if (response.returnStatus.statusCode === '000') {
+  if (response?.returnStatus?.statusCode === '000') {
     return response;
   }
 

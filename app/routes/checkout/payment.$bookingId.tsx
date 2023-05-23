@@ -2,8 +2,8 @@ import { CheckoutStatus, PaymentStatus } from '@prisma/client';
 import type { Payment } from '@prisma/client';
 import type { ActionFunction, LoaderFunction } from '@remix-run/node';
 import { json, redirect } from '@remix-run/node';
-import { useFetcher, useLoaderData, useNavigate } from '@remix-run/react';
-import { useCallback, useEffect } from 'react';
+import { useFetcher, useLoaderData } from '@remix-run/react';
+import { useEffect } from 'react';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -340,7 +340,6 @@ type DisplayPendingPaymentProps = {
 };
 
 function DisplayPendingPayments({ payments }: DisplayPendingPaymentProps) {
-  const navigate = useNavigate();
   const checkPaymentstatus = useFetcher();
   const payment = payments.sort(
     ({ createdAt: a }, { createdAt: b }) =>
@@ -350,10 +349,12 @@ function DisplayPendingPayments({ payments }: DisplayPendingPaymentProps) {
 
   useEffect(() => {
     const interval = setInterval(() => {
+      // we should add a "give up" strategy here
       if (
         checkPaymentstatus.state === 'idle' &&
         (checkPaymentstatus.data == null ||
-          checkPaymentstatus.data.payment?.status === PaymentStatus.submitted)
+          checkPaymentstatus.data.payment?.status === PaymentStatus.submitted ||
+          checkPaymentstatus.data.success === false)
       ) {
         checkPaymentstatus.load(url);
       }
@@ -364,7 +365,13 @@ function DisplayPendingPayments({ payments }: DisplayPendingPaymentProps) {
 
   if (!checkPaymentstatus?.data) {
     if (payment.mbReference) {
-      return <DisplayMultibancoInfo payment={payment} />;
+      return (
+        <DisplayMultibancoInfo
+          entity={String(payment.mbEntity)}
+          reference={payment.mbReference}
+          amount={payment.amount}
+        />
+      );
     }
 
     return <WaitingPaymentPending />;
@@ -372,12 +379,23 @@ function DisplayPendingPayments({ payments }: DisplayPendingPaymentProps) {
 
   const upToDatePayment = checkPaymentstatus.data.payment as Payment;
 
+  if (!upToDatePayment) {
+    // we got a response from server, but likely the request to payment gateway failed
+    return <WaitingPaymentPending />;
+  }
+
   if (upToDatePayment.status === PaymentStatus.paid) {
     window.location.reload();
   }
 
   if (upToDatePayment.mbReference) {
-    return <DisplayMultibancoInfo payment={payment} />;
+    return (
+      <DisplayMultibancoInfo
+        entity={String(upToDatePayment.mbEntity)}
+        reference={upToDatePayment.mbReference}
+        amount={upToDatePayment.amount}
+      />
+    );
   }
 
   return <WaitingPaymentPending />;
@@ -396,30 +414,39 @@ function WaitingPaymentPending(props: {}) {
   );
 }
 
-function DisplayMultibancoInfo({ payment }: { payment: Payment }) {
+type MultibancoProps = {
+  entity: string;
+  reference: string;
+  amount: number;
+}
+
+function DisplayMultibancoInfo({ entity, reference, amount }: MultibancoProps) {
   const { t } = useTranslation('checkout');
+
+  // leaving for debug
+  console.log(entity, reference, amount);
 
   return (
     <>
       <H5 className="mb-6">{t('Multibanco Guide')}</H5>
       <table border={1} className="w-96 text-right text-lg dark:text-white">
         <tbody>
-        <tr>
-          <td rowSpan={3}>
-            <Multibanco className="w-28 dark:hidden" />
-            <MultibancoContrast className="w-28 hidden dark:block" />
-          </td>
-          <td className="font-bold">{t('Multibanco Entity')}:</td>
-          <td>{payment.mbEntity}</td>
-        </tr>
-        <tr>
-          <td className="font-bold">{t('Multibanco Reference')}:</td>
-          <td>{formatMbReference(String(payment.mbReference))}</td>
-        </tr>
-        <tr>
-          <td className="font-bold">{t('Multibanco Amount')}:</td>
-          <td>{(payment.amount / 1000).toFixed(2)}€</td>
-        </tr>
+          <tr>
+            <td rowSpan={3}>
+              <Multibanco className="w-28 dark:hidden" />
+              <MultibancoContrast className="w-28 hidden dark:block" />
+            </td>
+            <td className="font-bold">{t('Multibanco Entity')}:</td>
+            <td>{entity}</td>
+          </tr>
+          <tr>
+            <td className="font-bold">{t('Multibanco Reference')}:</td>
+            <td>{formatMbReference(String(reference))}</td>
+          </tr>
+          <tr>
+            <td className="font-bold">{t('Multibanco Amount')}:</td>
+            <td>{(amount / 1000).toFixed(2)}€</td>
+          </tr>
         </tbody>
       </table>
     </>
