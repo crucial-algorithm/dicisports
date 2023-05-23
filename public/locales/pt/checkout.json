@@ -81,8 +81,12 @@
   "Payment not found": "Não foi possível encontrar o pagamento solicitado",
   "Could not retrieve status from payment gateway": "Não foi possível verificar o estado do pagamento junto da SIBS",
 
-  "Multibanco Guide": "Pagamento por Multibanco ou Homebanking",
+  "Multibanco Instructions": "Pagamento por Multibanco ou Homebanking",
   "Multibanco Entity": "Entidade",
   "Multibanco Reference": "Referência",
-  "Multibanco Amount": "Valor"
+  "Multibanco Amount": "Valor",
+  "MBWay Instructions": "Segue as instruções no MBWay para completar o pagamento...",
+  "Credit Card Instructions": "A processar o pagamento no teu cartão...",
+
+  "We Give Up On Past Payments": "As tentativa(s) anteriore(s) de pagamento falharam. Submete uma nova forma de pagamento."
 }

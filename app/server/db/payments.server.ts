@@ -1,5 +1,5 @@
-import type { PaymentMethod, Payment } from '@prisma/client';
-import { PaymentStatus } from '@prisma/client';
+import type { Payment } from '@prisma/client';
+import { PaymentStatus, PaymentMethod } from '@prisma/client';
 
 import { db } from '~/server/db.server';
 
@@ -16,12 +16,19 @@ async function findSubmittedPayments(bookingId: string) {
   });
 }
 
-async function findExpiredPayments(bookingId: string) {
+async function findUnsuccessfulPayments(bookingId: string) {
   return await db.payment.findMany({
     where: {
       bookingId,
-      expiresAt: { lte: new Date() },
-      status: PaymentStatus.submitted
+      OR: [
+        {
+          expiresAt: { lte: new Date() },
+          status: PaymentStatus.submitted
+        },
+        {
+          status: { in: [PaymentStatus.failed, PaymentStatus.canceled, PaymentStatus.expired] }
+        }
+      ]
     }
   });
 }
@@ -101,6 +108,53 @@ async function addGatewayDetailsToPayment(
   });
 }
 
+/**
+ * 3rd step: when form is submitted, SIBS redirects us to a dicisport route that calls this function to register
+ * the payment option the user selected (and extrapolate the payment expiration time)
+ *
+ * @param id
+ * @param method
+ * @param entity
+ * @param reference
+ * @param referenceExpiresAt
+ */
+async function addPaymentMethodDetails(
+  id: string,
+  method: PaymentMethod,
+  entity?: string,
+  reference?: string,
+  referenceExpiresAt?: string
+) {
+
+  console.log('----> in addPaymentMethodDetails');
+
+  let expiresAt: Date | null = null;
+
+  if (method === PaymentMethod.REFERENCE && referenceExpiresAt) {
+    expiresAt = new Date(referenceExpiresAt);
+  }
+
+  if (method === PaymentMethod.MBWAY) {
+    expiresAt = new Date(Date.now() + 4 * 60 * 1000);
+  }
+
+  if (method === PaymentMethod.CARD) {
+    // we wait until payment gateway gives up
+    expiresAt = new Date('2099-12-31');
+  }
+
+  // only update if status is still in submitted (if it's already in fail or paid, it's because webhook was faster)
+  return await db.payment.updateMany({
+    where: { id, status: PaymentStatus.submitted },
+    data: {
+      method,
+      expiresAt: expiresAt ? expiresAt : undefined,
+      mbEntity: entity ? entity : undefined,
+      mbReference: reference ? reference : undefined
+    }
+  });
+}
+
 async function updatePaymentStatus(id: string, status: PaymentStatus) {
   return await db.payment.update({
     where: { id },
@@ -177,7 +231,7 @@ export {
   findPayment,
   findPaymentByTransactionId,
   findSubmittedPayments,
-  findExpiredPayments,
+  findUnsuccessfulPayments,
   createPaymentRequest,
   addGatewayDetailsToPayment,
   pay,
@@ -185,5 +239,6 @@ export {
   isBookingPaid,
   saveNotification,
   updatePaymentStatus,
-  addReferenciaMultibancoInfo
+  addReferenciaMultibancoInfo,
+  addPaymentMethodDetails
 };

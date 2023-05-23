@@ -28,7 +28,7 @@ function form() {
   const payload = {
     returnStatus: { statusMsg: 'Success', statusCode: '000' },
     paymentStatus: 'Success',
-    paymentMethod: 'CARD',
+    paymentMethod: 'REFERENCE',
     transactionID: context.transactionId,
     amount: { currency: 'EUR', value: 10 },
     merchant: { terminalId: 1000000, transactionId: context.transactionId },
