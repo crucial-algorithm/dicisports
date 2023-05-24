@@ -45,6 +45,7 @@ export default function setupPrimeReact() {
       'Dez'
     ],
     today: 'Hoje',
-    clear: 'Limpar'
+    clear: 'Limpar',
+    pending: 'Pendente'
   });
 }

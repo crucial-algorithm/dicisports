@@ -299,6 +299,25 @@ export default function CheckoutPaymentRoute() {
       </div>
       <div className="flex flex-col md:flex-row mt-8">
         {/*Payment Form*/}
+        <div className="flex-col w-full md:w-[calc(100%-(480px))] md:pr-4 sibs">
+          {submittedPayments && submittedPayments.length > 0 && (
+            <DisplayPendingPayments payments={submittedPayments} />
+          )}
+          {!(submittedPayments && submittedPayments.length > 0) && (
+            <>
+              {expiredPayments.length > 0 && (
+                <H6>Show expired payments info</H6>
+              )}
+              <PaymentForm
+                script={CHECKOUT_FORM_SCRIPT}
+                gatewayTransactionId={gatewayTransactionId}
+                cart={cart}
+                formContext={formContext}
+                redirectUrl={`${domainUrl}/checkout/submitted/${ourTransactionId}`}
+              />
+            </>
+          )}
+        </div>
         <div className="flex-col w-full md:w-[calc(100%-(480px))] md:pr-4">
           <Form method="post">
             <div className="flex items-center mb-2">
@@ -351,25 +370,6 @@ export default function CheckoutPaymentRoute() {
           </Form>
         </div>
 
-        <div className="flex-col w-full md:w-[calc(100%-(480px))] md:pr-4 sibs">
-          {submittedPayments && submittedPayments.length > 0 && (
-            <DisplayPendingPayments payments={submittedPayments} />
-          )}
-          {!(submittedPayments && submittedPayments.length > 0) && (
-            <>
-              {expiredPayments.length > 0 && (
-                <H6>Show expired payments info</H6>
-              )}
-              <PaymentForm
-                script={CHECKOUT_FORM_SCRIPT}
-                gatewayTransactionId={gatewayTransactionId}
-                cart={cart}
-                formContext={formContext}
-                redirectUrl={`${domainUrl}/checkout/submitted/${ourTransactionId}`}
-              />
-            </>
-          )}
-        </div>
         <div className="w-full md:w-[480px]">
           <DisplayCart cart={cart} event={event} fetcher={fetcher}>
             <div>

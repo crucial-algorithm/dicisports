@@ -312,7 +312,7 @@ export const action: ActionFunction = async ({ request, params }) => {
           s.regulationContent &&
           s?.regulationContent?.length > 1) ||
         (s.regulationPath &&
-          s?.regulationPath?.length > 5 &&
+          s?.regulationPath?.length > 1 &&
           s.regulationContent === null),
       {
         message: t('Add Regulation'),

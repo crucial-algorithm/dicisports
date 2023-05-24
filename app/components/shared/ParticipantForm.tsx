@@ -27,7 +27,8 @@ export default function ParticipantForm({
   shirtSizes,
   resetForm,
   isSingleParticipant,
-  isReadOnly
+  isReadOnly,
+  children
 }: {
   participant: Participant | null;
   hash: number;
@@ -41,7 +42,7 @@ export default function ParticipantForm({
   resetForm: () => void;
   isSingleParticipant: boolean;
   isReadOnly: boolean;
-}) {
+} & React.ComponentProps<'div'>) {
   const { t, i18n } = useTranslation('checkout');
   const language = i18n.language as Language;
 
@@ -295,6 +296,8 @@ export default function ParticipantForm({
         </>
       )}
 
+      {children}
+
       <input type="hidden" name="hash" value={hash} />
       {!isReadOnly && (
         <ButtonGroup>
@@ -348,4 +351,7 @@ export type FormErrors = {
   postalCode?: string;
   selectedParticipant?: string;
   missingFilledParticipants?: string;
+  submit?: string;
+  terms?: string;
+  regulation?: string;
 };
