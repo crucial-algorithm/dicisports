@@ -44,7 +44,7 @@ export const action: ActionFunction = async ({ request, params }) => {
 
       const fileExtension = path.parse(filename as string).ext;
       const currentDate = new Date();
-      const prefix = `events/${currentDate.getFullYear()}${currentDate.getMonth()}/${eventId}`;
+      const prefix = `events/${currentDate.getFullYear()}${String(currentDate.getMonth() + 1).padStart(2, '0')}/${eventId}`;
       const key = await uploadToS3(
         Readable.from(data),
         prefix,
