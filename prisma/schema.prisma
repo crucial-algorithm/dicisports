@@ -364,6 +364,8 @@ model Payment {
   booking        Booking        @relation(fields: [bookingId], references: [id])
   createdAt      DateTime       @default(now()) @map("created_at")
   updatedAt      DateTime       @updatedAt @map("updated_at")
+  mbReference    String?        @map("mb_reference")
+  mbEntity       String?        @map("mb_entity")
 
   @@map("payments")
 }

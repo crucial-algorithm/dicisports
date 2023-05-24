@@ -60,7 +60,13 @@ function findUserByEmailWithHash(email: string) {
 async function findUserFromSessionId(sessionId: string) {
   const session = await db.session.findUnique({
     where: { id: sessionId },
-    include: { user: true }
+    include: {
+      user: {
+        include: {
+          organiser: true
+        }
+      }
+    }
   });
 
   if (!session) {
