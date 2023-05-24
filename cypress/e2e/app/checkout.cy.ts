@@ -298,7 +298,47 @@ describe('Checkout', () => {
         });
     });
 
-    it('should show validation error if there are registrations with empty participant info', () => {
+    it('should show validation error if there are registrations with empty participant info - missing participants', () => {
+      cy.intercept('GET', '/checkout/cart/*?_data=routes*checkout*')
+        .as('selectRace')
+
+        .intercept('GET', '/checkout/info/*?_data=routes*checkout*')
+        .as('checkout')
+
+        .visitAndWaitForHydration('/checkout/cart/MY4bvgxDbMtGv8rbYe5d')
+
+        .get('#add-race-AhowRdNWCBQWSuivSt7h')
+        .click()
+
+        .wait('@selectRace')
+
+        .get('#checkout')
+        .click()
+
+        .wait('@checkout')
+
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.include('/checkout/info/');
+        })
+
+        .get('input[data-cy=regulation]')
+        .click()
+
+        .get('input[data-cy=terms]')
+        .click()
+
+        .get('#checkout')
+        .click()
+
+        .wait('@checkout')
+        .waitForHydration()
+
+        .get('#checkout-error')
+        .should('exist');
+    });
+
+    it('should show validation error if there are registrations with empty participant info - terms and conditions', () => {
       cy.intercept('GET', '/checkout/cart/*?_data=routes*checkout*')
         .as('selectRace')
 
@@ -328,7 +368,7 @@ describe('Checkout', () => {
         .wait('@checkout')
         .waitForHydration()
 
-        .get('#checkout-error')
+        .get('#terms-error')
         .should('exist');
     });
 

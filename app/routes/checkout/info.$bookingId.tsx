@@ -101,8 +101,6 @@ export const action: ActionFunction = async ({ request, params }) => {
   const regulation: boolean = (form.get('regulation') as string) === 'on';
   const terms: boolean = (form.get('terms') as string) === 'on';
 
-  console.log('checkd --->', regulation, terms);
-
   try {
     const phoneNumber = form.get('phone-number') as string;
     const data: ParticipantInput = {
@@ -622,6 +620,7 @@ export default function CheckoutInfoRoute() {
                 checked={checkedTermsAndRegulation.regulation}
                 onClick={handleCheckRegulation}
                 className="w-4 h-4 text-indigo-500 bg-gray-100 rounded border-gray-300 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600"
+                data-cy="regulation"
               />
               <label
                 className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300"
@@ -649,6 +648,7 @@ export default function CheckoutInfoRoute() {
                 checked={checkedTermsAndRegulation.terms}
                 onClick={handleCheckTerms}
                 className="w-4 h-4 text-indigo-500 bg-gray-100 rounded border-gray-300 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600"
+                data-cy="terms"
               />
               <label
                 className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300"

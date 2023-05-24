@@ -65,8 +65,7 @@ import {
   findEvent,
   publishEvent,
   unpublishEvent,
-  updateEvent,
-  updateEventRegulation
+  updateEvent
 } from '~/server/db/events.server';
 
 import { findEventPerks } from '~/server/db/perks.server';
