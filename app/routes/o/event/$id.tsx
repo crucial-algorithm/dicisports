@@ -520,7 +520,7 @@ export default function OrganizerEventRoute() {
   }
 
   useEffect(() => {
-    if (fetcher?.data?.ok) {
+    if (fetcher?.data?.ok && fetcher?.type === 'actionReload') {
       fileUploadHandlerEvent?.options?.clear();
     }
 
