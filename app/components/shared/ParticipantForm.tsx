@@ -314,7 +314,7 @@ export default function ParticipantForm({
             name="actionId"
             disabled={!participant}
             id="save-button"
-            variant="secondary"
+            variant={selectedParticipant ? 'secondary' : 'primary' }
           >
             {t('Save')}
           </Button>
@@ -325,6 +325,7 @@ export default function ParticipantForm({
               name="actionId"
               disabled={!participant}
               id="save-update-button"
+              variant="primary"
             >
               {t('Save and Update', {
                 first: selectedParticipant.firstName,

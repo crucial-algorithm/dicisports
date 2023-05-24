@@ -613,57 +613,61 @@ export default function CheckoutInfoRoute() {
             isSingleParticipant={raceParticipants.length === 1}
             isReadOnly={isGuest}
           >
-            <div className="flex items-center mb-2">
-              <input
-                name="regulation"
-                type="checkbox"
-                checked={checkedTermsAndRegulation.regulation}
-                onClick={handleCheckRegulation}
-                className="w-4 h-4 text-indigo-500 bg-gray-100 rounded border-gray-300 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600"
-                data-cy="regulation"
-              />
-              <label
-                className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300"
-                htmlFor="regulation"
-              >
-                {t('Read and Accepted')}
-                <Link
-                  target="_blank"
-                  to={
-                    isInlineRegulation
-                      ? `/${i18n.language}/event/${event.slug}/regulation`
-                      : `/${i18n.language}/event/${event.id}/regulation/view`
-                  }
-                  data-cy="regulation-link"
-                >
-                  {t('Event Regulation')}
-                </Link>
-              </label>
-            </div>
+            {!isGuest && (
+              <>
+                <div className="flex items-center mb-2">
+                  <input
+                    name="regulation"
+                    type="checkbox"
+                    checked={checkedTermsAndRegulation.regulation}
+                    onClick={handleCheckRegulation}
+                    className="w-4 h-4 text-indigo-500 bg-gray-100 rounded border-gray-300 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600"
+                    data-cy="regulation"
+                  />
+                  <label
+                    className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300"
+                    htmlFor="regulation"
+                  >
+                    {t('Read and Accepted')}
+                    <Link
+                      target="_blank"
+                      to={
+                        isInlineRegulation
+                          ? `/${i18n.language}/event/${event.slug}/regulation`
+                          : `/${i18n.language}/event/${event.id}/regulation/view`
+                      }
+                      data-cy="regulation-link"
+                    >
+                      {t('Event Regulation')}
+                    </Link>
+                  </label>
+                </div>
 
-            <div className="flex items-center mb-8">
-              <input
-                name="terms"
-                type="checkbox"
-                checked={checkedTermsAndRegulation.terms}
-                onClick={handleCheckTerms}
-                className="w-4 h-4 text-indigo-500 bg-gray-100 rounded border-gray-300 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600"
-                data-cy="terms"
-              />
-              <label
-                className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300"
-                htmlFor="terms"
-              >
-                {t('Read and Accepted')}
-                <Link target="_blank" to="/terms" data-cy="terms-link">
-                  {t('Terms and Conditions')}
-                </Link>
-              </label>
-            </div>
+                <div className="flex items-center mb-8">
+                  <input
+                    name="terms"
+                    type="checkbox"
+                    checked={checkedTermsAndRegulation.terms}
+                    onClick={handleCheckTerms}
+                    className="w-4 h-4 text-indigo-500 bg-gray-100 rounded border-gray-300 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600"
+                    data-cy="terms"
+                  />
+                  <label
+                    className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300"
+                    htmlFor="terms"
+                  >
+                    {t('Read and Accepted')}
+                    <Link target="_blank" to="/terms" data-cy="terms-link">
+                      {t('Terms and Conditions')}
+                    </Link>
+                  </label>
+                </div>
 
-            <InputError id="terms-error" className="mb-2">
-              {errors?.submit || errors?.terms || errors?.regulation}
-            </InputError>
+                <InputError id="terms-error" className="mb-2">
+                  {errors?.submit || errors?.terms || errors?.regulation}
+                </InputError>
+              </>
+            )}
           </ParticipantForm>
           <Notification show={handlerSetShowNotificationFunction}>
             {message}
@@ -680,8 +684,16 @@ export default function CheckoutInfoRoute() {
             {!isGuest && (
               <>
                 <div className="flex flex-col items-center w-full">
-                  <input type="hidden" name="regulation" value={checkedTermsAndRegulation.regulation ? 'on' : 'off'} />
-                  <input type="hidden" name="terms" value={checkedTermsAndRegulation.terms ? 'on' : 'off'} />
+                  <input
+                    type="hidden"
+                    name="regulation"
+                    value={checkedTermsAndRegulation.regulation ? 'on' : 'off'}
+                  />
+                  <input
+                    type="hidden"
+                    name="terms"
+                    value={checkedTermsAndRegulation.terms ? 'on' : 'off'}
+                  />
                   <input type="hidden" name="hash" value={hash} />
                   <Button
                     type="submit"
