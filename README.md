@@ -59,3 +59,19 @@ Also, to fly.io (adding multiple is the prefered option)
 ```shell
 flyctl secrets -a <dicistg|diciprd> set VAR_NAME_1=VALUE_1 VAR_NAME_2=VALUE_2
 ```
+
+
+## Troubleshooting fly.io
+### Restarting database (after finding out it was down)
+```shell
+#get database id to be used next
+fly machine list -a dicistg-db
+
+# Restart
+flyctl machine restart 178150df4202d8 -a dicistg-db
+
+# Expected output
+Restarting machine 178150df4202d8
+  Waiting for 178150df4202d8 to become healthy (started, 3/3)
+Machine 178150df4202d8 restarted successfully! 
+```

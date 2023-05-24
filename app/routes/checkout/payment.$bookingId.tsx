@@ -376,7 +376,10 @@ function DisplayPendingPaymentsInterval({ payments }: DisplayPendingPaymentProps
     return <WaitingPaymentPending />;
   }
 
-  if (upToDatePayment.status === PaymentStatus.paid) {
+  if (
+    upToDatePayment.status === PaymentStatus.paid ||
+    upToDatePayment.status === PaymentStatus.failed
+  ) {
     window.location.reload();
   }
 
