@@ -17,6 +17,10 @@ import { uploadToS3 } from '~/server/utils/s3';
 import { findEvent, updateEventRegulation } from '~/server/db/events.server';
 import { NotFound, Unauthorized } from '~/server/utils/misc';
 
+export const handle = {
+  i18n: ['create-event-form']
+};
+
 const RESOURCES_NS = 'create-event-form';
 
 export const action: ActionFunction = async ({ request, params }) => {
