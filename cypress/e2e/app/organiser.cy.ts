@@ -76,6 +76,27 @@ describe('Organiser', () => {
         .intercept('POST', '/o/us?*')
         .as('SubmitProfile')
 
+        .get('input[name=name]')
+        .type('Montanha dos Amigos')
+
+        .get('input[name=email]')
+        .type('info@montanhadosamigos.com')
+
+        .get('input[name=address]')
+        .type('Rua Custódio José Gomes Vilas Boas, 57')
+
+        .get('input[name=postal-code]')
+        .type('4755-059')
+
+        .get('input[name=city]')
+        .type('Barcelos')
+
+        .get('textarea[name=description]')
+        .type('Montanhas de Aventuras para Viver!')
+
+        .get('input[name="/file/image/0"]')
+        .selectFile('cypress/assets/logo-organiser.jpeg', { force: true })
+
         .get('button[name=save-profile]')
         .click()
 
