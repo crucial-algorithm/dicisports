@@ -34,6 +34,9 @@ describe('Organiser', () => {
         .get('input[name="/file/image/0"]')
         .selectFile('cypress/assets/logo-organiser.jpeg', { force: true })
 
+        .get('input[name=terms]')
+        .click()
+
         .intercept('POST', '/o/us?*')
         .as('SubmitProfile')
 
@@ -53,6 +56,9 @@ describe('Organiser', () => {
         .intercept('POST', '/o/us?*')
         .as('SubmitProfile')
 
+        .get('input[name=terms]')
+        .click()
+
         .get('button[name=save-profile]')
         .click()
 
@@ -61,6 +67,22 @@ describe('Organiser', () => {
         .get('p[role=alert]')
         .should('exist')
         .and('have.length', 7);
+    });
+
+    it('should show terms validation error', () => {
+      cy.login()
+        .visitAndWaitForHydration('/o/us')
+
+        .intercept('POST', '/o/us?*')
+        .as('SubmitProfile')
+
+        .get('button[name=save-profile]')
+        .click()
+
+        .wait('@SubmitProfile')
+
+        .get('#terms-error')
+        .should('exist');
     });
 
     it('should display Organiser profile on event', () => {

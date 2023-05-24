@@ -4,8 +4,8 @@ import { Readable } from 'stream';
 
 import { ArrowDownTrayIcon, TrashIcon } from '@heroicons/react/24/outline';
 import type {
-  LoaderFunction,
   ActionFunction,
+  LoaderFunction,
   UploadHandler
 } from '@remix-run/node';
 import {
@@ -18,7 +18,7 @@ import {
 import { Link, useActionData, useLoaderData } from '@remix-run/react';
 import clsx from 'clsx';
 import * as React from 'react';
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { useTranslation } from 'react-i18next';
 
@@ -40,8 +40,7 @@ import i18n from '~/server/i18n.server';
 import Id from '~/server/utils/Id.server';
 import { NotFound, Unauthorized } from '~/server/utils/misc';
 import { uploadToS3 } from '~/server/utils/s3';
-import type { CreateRaceInput } from '~/types';
-import type { Event, Race } from '~/types';
+import type { CreateRaceInput, Event, Race } from '~/types';
 import {
   badRequest,
   hoursMinutesToTimeOfDay,

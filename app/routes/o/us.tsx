@@ -143,18 +143,21 @@ export const action: ActionFunction = async ({ request }) => {
       .min(2, { message: t('Min 2 Chars') }),
     description: z
       .string({ required_error: t('Field Required') })
-      .min(2, { message: t('Min 2 Chars') }),
-    terms: z
-      .boolean({ required_error: t('Accept Dici Terms') })
-      .refine((v) => v, { message: t('Accept Dici Terms') })
+      .min(2, { message: t('Min 2 Chars') })
   });
 
   try {
-    OrganiserSchema.parse({ ...data, terms });
+    OrganiserSchema.parse(data);
 
     if (isUpdate) {
       await updateOrganiser(data);
     } else {
+      z.object({
+        terms: z
+          .boolean({ required_error: t('Accept Dici Terms') })
+          .refine((v) => v, { message: t('Accept Dici Terms') })
+      }).parse({ terms });
+
       await createOrganiser(data);
     }
 
@@ -299,26 +302,30 @@ export default function UsRoute() {
             </FormField>
           </div>
         </div>
-        <div className="flex items-center mb-8">
-          <input
-            name="terms"
-            type="checkbox"
-            className="w-4 h-4 text-indigo-500 bg-gray-100 rounded border-gray-300 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600"
-          />
-          <label
-            className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300"
-            htmlFor="terms"
-          >
-            {t('Read and Accepted')}
-            <Link target="_blank" to="/terms" data-cy="terms-link">
-              {t('Terms and Conditions')}
-            </Link>
-          </label>
-        </div>
+        {!organiser && (
+          <>
+            <div className="flex items-center mb-8">
+              <input
+                name="terms"
+                type="checkbox"
+                className="w-4 h-4 text-indigo-500 bg-gray-100 rounded border-gray-300 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600"
+              />
+              <label
+                className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300"
+                htmlFor="terms"
+              >
+                {t('Read and Accepted')}
+                <Link target="_blank" to="/terms" data-cy="terms-link">
+                  {t('Terms and Conditions')}
+                </Link>
+              </label>
+            </div>
 
-        <InputError id="terms-error" className="mb-2">
-          {actionData?.errors?.terms}
-        </InputError>
+            <InputError id="terms-error" className="mb-2">
+              {actionData?.errors?.terms}
+            </InputError>
+          </>
+        )}
 
         <ButtonGroup>
           <ButtonLink
