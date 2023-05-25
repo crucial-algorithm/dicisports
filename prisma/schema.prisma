@@ -111,6 +111,9 @@ model Event {
   image4             String?
   image5             String?
   directions         String?
+  regulationPath     String?     @map("regulation_path")
+  regulationContent  String?     @map("regulation_content")
+  regulationFileName String?     @map("regulation_file_name")
   createdBy          User        @relation(fields: [createdById], references: [id])
   createdById        String      @map("created_by")
   createdAt          DateTime    @default(now()) @map("created_at")
@@ -126,15 +129,15 @@ model Event {
 }
 
 model Document {
-  id        String   @id @default(uuid())
-  path      String
-  position  Int      @default(autoincrement())
-  label     String?
-  event     Event    @relation(fields: [eventId], references: [id])
-  eventId   String   @map("event_id")
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-  status    Status   @default(auto)
+  id                String      @id @default(uuid())
+  path              String?
+  position          Int         @default(autoincrement())
+  label             String?
+  event             Event       @relation(fields: [eventId], references: [id])
+  eventId           String      @map("event_id")
+  createdAt         DateTime    @default(now()) @map("created_at")
+  updatedAt         DateTime    @updatedAt @map("updated_at")
+  status            Status      @default(auto)
 
   @@map("documents")
 }

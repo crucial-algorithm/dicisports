@@ -8,9 +8,9 @@
   },
   {
     "id": "Fd7ttfun8b4wExQF6YbD",
-    "status": "pending",
-    "eventId": "gLqrDfMx6qkTHn6hoZqA",
-    "userId": "nTQ8idPqTY8PmhzbsN4u",
+    "status": "checkout",
+    "eventId": "MY4bvgxDbMtGv8rbYe5d",
+    "userId": "HmYkkLPRTETEvcCrJznj",
     "pin": 9817
   },
   {
@@ -19,5 +19,12 @@
     "eventId": "MY4bvgxDbMtGv8rbYe5d",
     "userId": "L6TMRhStPAAF55Rc4Xts",
     "pin": 1987
+  },
+  {
+    "id": "HJtAk2sSktodKez744mt",
+    "status": "pending",
+    "pin": 6053,
+    "eventId": "gLqrDfMx6qkTHn6hoZqA",
+    "userId": "nTQ8idPqTY8PmhzbsN4u"
   }
 ]

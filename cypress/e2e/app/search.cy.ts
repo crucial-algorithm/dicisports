@@ -335,7 +335,7 @@ describe('Search', () => {
           .should('include', 'g=hide')
 
           .get('[data-cy=event-entry]')
-          .should('have.length', 2);
+          .should('have.length', 3);
       });
 
       it('should return Morning groups', () => {

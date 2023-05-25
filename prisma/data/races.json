@@ -55,5 +55,16 @@
     "displayOrder": 5,
     "status": "auto",
     "eventId": "bQmGXYkbhJetjk6mniMt"
+  },
+  {
+    "id": "jShtrEasqZgbjGTXtWyk",
+    "name": "10 KM",
+    "distance": 10,
+    "startTime": 900,
+    "elevationGain": 895,
+    "price": 21,
+    "displayOrder": 6,
+    "status": "auto",
+    "eventId": "TgKZi8NQKNoJQGArd3zc"
   }
 ]

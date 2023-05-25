@@ -3,7 +3,6 @@ import { Status } from '@prisma/client';
 
 import { getUser } from '~/server/auth/session.server';
 import { downloadFromS3 } from '~/server/utils/s3';
-import { findDocument } from '~/server/documents.server';
 import i18n from '~/server/i18n.server';
 
 import { findEvent } from '~/server/db/events.server';
@@ -13,17 +12,11 @@ const RESOURCES_NS = 'create-event-form';
 
 export const loader: LoaderFunction = async ({ request, params }) => {
   const user = await getUser(request);
+  const eventId = params.eventId as string;
 
   const t = await i18n.getFixedT(request, RESOURCES_NS);
 
-  const documentId = params.id as string;
-  const document = await findDocument(documentId);
-
-  if (!document) {
-    throw NotFound(t('No Document'));
-  }
-
-  const event = await findEvent(document.eventId);
+  const event = await findEvent(eventId);
 
   if (!event) {
     throw NotFound(t('Event not found'));
@@ -32,12 +25,12 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     throw Unauthorized(t('Not authorized'));
   }
 
-  const body = await downloadFromS3(document.path);
+  const body = await downloadFromS3(event.regulationPath as string);
 
   //@ts-ignore
   return new Response(body, {
     headers: {
-      'content-disposition': `inline; filename="${document.label}.gpx"`
+      'content-disposition': `inline; filename="${t('Regulation')}.pdf"`
     }
   });
 };

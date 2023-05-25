@@ -6,7 +6,7 @@ import { H1, H3 } from '~/components/shared/typography';
 export default function OrganizersLandingPage() {
   return (
     <Main>
-      <H1 className="mb-8">Vamos-te ajudar a crescer o teu evento</H1>
+      <H1 className="mb-8">Vamos-te ajudar a fazer crescer o teu evento</H1>
       <H3 className="mb-4">Cria o site do evento de forma fácil e rápida</H3>
       <H3 className="mb-4">Alcança novas audiências</H3>
       <H3 className="mb-4">Controla todo o processo de inscrição</H3>

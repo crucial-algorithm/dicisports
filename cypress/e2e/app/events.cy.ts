@@ -66,7 +66,10 @@ describe('Event', () => {
         .contains('PDF')
 
         .get('[data-cy=document-label]')
-        .contains('Regulamento');
+        .contains('Circuito')
+
+        .get('[data-cy=regulation]')
+        .should('exist');
 
       verifyRace('AhowRdNWCBQWSuivSt7s', 'Mediofondo', 102, '08:30', 15, 1804);
       verifyRace('AhowRdNWCBQWSuivSt7h', 'Minifondo', 57, '08:30', 10, 800);
@@ -79,12 +82,12 @@ describe('Event', () => {
         2274,
         576,
         granfondo,
-        '/MY4bvgxDbMtGv8rbYe5d/race/xaXaCzs2t7D8DpRNnffM/gpx'
+        '/event/MY4bvgxDbMtGv8rbYe5d/race/xaXaCzs2t7D8DpRNnffM/gpx'
       );
     });
 
     it('Should show an handled message when accessing an unpublished event', () => {
-      cy.visitAndWaitForHydration('/event/trail-do-zezere').get(
+      cy.visitAndWaitForHydration('/event/flavius-challenge-ocr').get(
         'p[data-cy=event-not-found]'
       );
     });
@@ -290,14 +293,14 @@ describe('Event', () => {
       cy.intercept('POST', '/o/event/*_data=routes*')
         .as('publishEvent')
 
-        .visitAndWaitForHydration('/o/event/bQmGXYkbhJetjk6mniMt')
+        .visitAndWaitForHydration('/o/event/TgKZi8NQKNoJQGArd3zc')
 
         .get('#publish')
         .click()
 
         .wait('@publishEvent')
 
-        .visitAndWaitForHydration('/event/trail-do-zezere')
+        .visitAndWaitForHydration('/event/flavius-challenge-ocr')
 
         .get('[data-cy=event-not-found]')
         .should('not.exist');
@@ -337,7 +340,9 @@ describe('Event', () => {
 
         .location()
         .should((loc) => {
-          expect(loc.pathname).to.contain('/o/event/MY4bvgxDbMtGv8rbYe5d/dashboard');
+          expect(loc.pathname).to.contain(
+            '/o/event/MY4bvgxDbMtGv8rbYe5d/dashboard'
+          );
         })
 
         .visitAndWaitForHydration('/event/love-tiles-douro-granfondo-2023')
@@ -348,7 +353,10 @@ describe('Event', () => {
     });
 
     it('should change race order', () => {
-      cy.intercept('POST', '/o/event/MY4bvgxDbMtGv8rbYe5d/race/AhowRdNWCBQWSuivSt7h/move-down?*')
+      cy.intercept(
+        'POST',
+        '/o/event/MY4bvgxDbMtGv8rbYe5d/race/AhowRdNWCBQWSuivSt7h/move-down?*'
+      )
         .as('MoveRaceDown')
 
         .visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d')
@@ -370,7 +378,10 @@ describe('Event', () => {
     });
 
     it('should change document order', () => {
-      cy.intercept('POST', '/o/event/MY4bvgxDbMtGv8rbYe5d/doc/MY4bvgxDbMtGv8rbYe5d/move-down?*')
+      cy.intercept(
+        'POST',
+        '/o/event/MY4bvgxDbMtGv8rbYe5d/doc/MY4bvgxDbMtGv8rbYe5d/move-down?*'
+      )
         .as('MoveDocumentDown')
 
         .visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d')
@@ -503,7 +514,10 @@ describe('Event', () => {
     it('should delete document', () => {
       cy.visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d')
 
-        .intercept('POST', '/o/event/MY4bvgxDbMtGv8rbYe5d/doc/MY4bvgxDbMtGv8rbYe5d/remove?*')
+        .intercept(
+          'POST',
+          '/o/event/MY4bvgxDbMtGv8rbYe5d/doc/MY4bvgxDbMtGv8rbYe5d/remove?*'
+        )
         .as('DeleteDocument')
 
         .get('button[name=delete-MY4bvgxDbMtGv8rbYe5d]')
@@ -587,7 +601,8 @@ describe('Event', () => {
         .visitAndWaitForHydration('/event/love-tiles-douro-granfondo-2023')
 
         .get('[data-cy=race]')
-        .should('have.length', 4).and('contain', 'a new race');
+        .should('have.length', 4)
+        .and('contain', 'a new race');
     });
 
     it('should update race', () => {
@@ -628,6 +643,102 @@ describe('Event', () => {
         .get('[data-cy=race-name-xaXaCzs2t7D8DpRNnffM]')
         .should('exist')
         .and('contain', 'Granfondo updated');
+    });
+
+    it('should be able to upload a regulation pdf', () => {
+      cy.loginOrganiser()
+
+        .intercept('GET', '/o/event/*?_data=routes*')
+        .as('EventRequests')
+        .visitAndWaitForHydration('/o')
+
+        .get('button[name=create-event]')
+        .click()
+
+        .wait('@EventRequests')
+
+        .get('#pr_id_4_header_1')
+        .click()
+
+        .get('#file .p-button > input')
+        .selectFile('cypress/assets/sample.pdf', { action: 'drag-drop', force: true })
+
+        .wait('@EventRequests')
+
+        .location()
+        .should((l) => expect(l.pathname).to.include('/o/event/'))
+
+        .get('[data-cy=regulation]')
+        .should('exist');
+    });
+
+    it('should be able to upload a regulation inline', () => {
+      cy.loginOrganiser()
+
+        .intercept('GET', '/o/event/*?_data=routes*')
+        .as('EventRequests')
+        .visitAndWaitForHydration('/o')
+
+        .get('button[name=create-event]')
+        .click()
+
+        .wait('@EventRequests')
+
+        .write(
+          'regulation',
+          'Devoluções aceites apenas com justificação válida.'
+        )
+
+        .intercept('POST', '/o/event/*_data=routes*')
+        .as('createEvent')
+
+        .get('button[name=create-event]')
+        .click()
+
+        .wait('@createEvent')
+
+        .reload()
+        .waitForHydration()
+
+        .location()
+        .should((l) => expect(l.pathname).to.include('/o/event/'))
+
+        .get(
+          'div[data-cy=editor-regulation] .ql-editor[contenteditable="true"]'
+        )
+        .contains('Devoluções aceites apenas com justificação válida.');
+    });
+
+    it('should display regulation', () => {
+      cy.visit('/event/trilho-dos-moinhos/regulation')
+
+        .get('div[data-cy=regulation]')
+        .contains(
+          'A inscrição é efetuada online, no site dos Amigos da Montanha, ou na sede da Associação, em Barcelinhos.'
+        );
+    });
+
+    it('should be able to update inline regulation', () => {
+      cy.loginOrganiser()
+        .visitAndWaitForHydration('/o/event/gLqrDfMx6qkTHn6hoZqA')
+
+        .write(
+          'regulation',
+          'Devoluções aceites apenas com justificação válida.'
+        )
+
+        .intercept('POST', '/o/event/*_data=routes*')
+        .as('updateEvent')
+
+        .get('button[name=update-event]')
+        .click()
+
+        .wait('@updateEvent')
+
+        .visit('/event/trilho-dos-moinhos/regulation')
+
+        .get('div[data-cy=regulation]')
+        .contains('Devoluções aceites apenas com justificação válida.');
     });
   });
 });

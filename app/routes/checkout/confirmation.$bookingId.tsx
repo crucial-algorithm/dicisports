@@ -205,45 +205,43 @@ export default function CheckoutConfirmationRoute() {
             </div>
           </div>
 
-          <Form method="post" className="flex flex-col items-start mt-16">
-            <FormField
-              label={t('Mail Confirmation Details')}
-              error={errors.email}
-            >
-              <TextField
-                name="email"
-                className="w-1/2 p-8"
-                placeholder={t('Email Address')}
-                defaultValue={fields.email}
-              />
-            </FormField>
-            <Button name="send-confirmation" type="submit" className="mt-4">
-              {t('Send')}
-            </Button>
-            {errors.submit && (
-              <InputError className="mt-4" id="error-message">
-                {errors.submit}
-              </InputError>
-            )}
-            {successMessage && (
-              <p
-                id="success-message"
-                className="dark:text-blueGray-500 text-gray-500 text-lg mt-2"
+          {!isAuth && (
+            <Form method="post" className="flex flex-col items-start mt-16">
+              <FormField
+                label={t('Mail Confirmation Details')}
+                error={errors.email}
               >
-                <span role="img" aria-label="sparkles">
-                  ✨
-                </span>{' '}
-                {successMessage}
-              </p>
-            )}
-          </Form>
+                <TextField
+                  name="email"
+                  className="w-1/2 p-8"
+                  placeholder={t('Email Address')}
+                  defaultValue={fields.email}
+                />
+              </FormField>
+              <Button name="send-confirmation" type="submit" className="mt-4">
+                {t('Send')}
+              </Button>
+              {errors.submit && (
+                <InputError className="mt-4" id="error-message">
+                  {errors.submit}
+                </InputError>
+              )}
+              {successMessage && (
+                <p
+                  id="success-message"
+                  className="dark:text-blueGray-500 text-gray-500 text-lg mt-2"
+                >
+                  <span role="img" aria-label="sparkles">
+                    ✨
+                  </span>{' '}
+                  {successMessage}
+                </p>
+              )}
+            </Form>
+          )}
         </div>
         <div className="w-full md:w-[480px] mt-4 md:mt-0">
-          <DisplayCart
-            cart={cart}
-            event={event}
-            fetcher={fetcher}
-          />
+          <DisplayCart cart={cart} event={event} fetcher={fetcher} />
         </div>
       </div>
     </Main>

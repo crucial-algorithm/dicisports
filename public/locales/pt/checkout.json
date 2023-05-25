@@ -77,6 +77,12 @@
 
   "No Booking": "Esse booking não existe!",
 
+  "Accept Dici Terms": "Ups... Verfica que aceitaste os termos e condições",
+  "Accept Event Regulation": "Ups... Verfica que aceitaste o regulamento",
+  "Read and Accepted": "Eu li e aceito",
+  "Terms and Conditions": " os Termos e Condições",
+  "Event Regulation": " o Regulamento do Evento",
+
   "Waitting for payment gateway": "A aguardar confirmação do pagamento por parte da SIBS...",
   "Payment not found": "Não foi possível encontrar o pagamento solicitado",
   "Could not retrieve status from payment gateway": "Não foi possível verificar o estado do pagamento junto da SIBS",

@@ -1,11 +1,12 @@
-import { CheckoutStatus, PaymentMethod, PaymentStatus } from '@prisma/client';
 import type { Payment } from '@prisma/client';
+import { CheckoutStatus, PaymentMethod, PaymentStatus } from '@prisma/client';
 import type { ActionFunction, LoaderFunction } from '@remix-run/node';
 import { json, redirect } from '@remix-run/node';
 import { useFetcher, useLoaderData } from '@remix-run/react';
-import { useEffect } from 'react';
 import * as React from 'react';
+import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { z, ZodError } from 'zod';
 
 import Button from '~/components/shared/Button';
 import DisplayCart from '~/components/shared/DisplayCart';
@@ -26,12 +27,11 @@ import {
 import { findEvent } from '~/server/db/events.server';
 import { findUserEventRaceParticipants } from '~/server/db/participant.server';
 import {
-  findUnsuccessfulPayments,
   findSubmittedPayments,
+  findUnsuccessfulPayments,
   isBookingPaid
 } from '~/server/db/payments.server';
-import type { KCDHandle } from '~/types';
-import type { Event, UICartRow } from '~/types';
+import type { Event, KCDHandle, UICartRow } from '~/types';
 import { sendBookingConfirmationEmail } from '~/server/email.server';
 import { badRequest, bookingAmount, getDomainUrl } from '~/utils/misc';
 import i18n from '~/server/i18n.server';
@@ -41,6 +41,7 @@ import { useTheme } from '~/utils/theme-provider';
 type LoaderData = {
   event: Event;
   cart: UICartRow[];
+  regulation: Document;
   submittedPayments: Payment[];
   unsuccessfulPayments: Payment[];
   formContext: string;
@@ -81,24 +82,42 @@ export const action: ActionFunction = async ({ request, params }) => {
     return redirect(`/checkout/info/${bookingId}`);
   }
 
-  await updateBookingStatus(bookingId, CheckoutStatus.confirmed);
+  try {
+    await updateBookingStatus(bookingId, CheckoutStatus.confirmed);
 
-  if (authenticatedClient !== null) {
-    const event = await findEvent(eventId);
-    const domainUrl = getDomainUrl(request);
-    const cart = await findBookingCart(clientId, eventId);
+    if (authenticatedClient !== null) {
+      const event = await findEvent(eventId);
+      const domainUrl = getDomainUrl(request);
+      const cart = await findBookingCart(clientId, eventId);
 
-    await sendBookingConfirmationEmail({
-      emailAddress: authenticatedClient.email,
-      event,
-      booking,
-      domainUrl,
-      cart,
-      userName: authenticatedClient.name
-    });
+      await sendBookingConfirmationEmail({
+        emailAddress: authenticatedClient.email,
+        event,
+        booking,
+        domainUrl,
+        cart,
+        userName: authenticatedClient.name
+      });
+    }
+
+    return redirect(`/checkout/confirmation/${bookingId}`);
+  } catch (e) {
+    if (!(e instanceof ZodError)) {
+      const tc = await i18n.getFixedT(request, 'common');
+
+      return badRequest({
+        errors: { submit: tc('500 error message') }
+      });
+    }
+
+    const errors: { [key: string]: string | undefined } = {};
+
+    for (const error of (e as ZodError).errors) {
+      errors[error.path[0]] = error.message;
+    }
+
+    return badRequest({ errors });
   }
-
-  return redirect(`/checkout/confirmation/${bookingId}`);
 };
 
 export const loader: LoaderFunction = async ({ request, params }) => {
@@ -236,6 +255,10 @@ export default function CheckoutPaymentRoute() {
   } = useLoaderData() as LoaderData;
   const { t } = useTranslation('checkout');
   const displayCartFetcher = useFetcher();
+  const isPaid =
+    submittedPayments &&
+    submittedPayments.filter((p) => (p.status = PaymentStatus.paid)).length ===
+      0;
 
   return (
     <Main>
@@ -271,17 +294,15 @@ export default function CheckoutPaymentRoute() {
         </div>
         <div className="w-full md:w-[480px]">
           <DisplayCart cart={cart} event={event} fetcher={displayCartFetcher}>
-            {!submittedPayments || submittedPayments.length === 0 && (
-              <div>
-                <Button
-                  name="actionId"
-                  className="mt-4 w-full"
-                  type="submit"
-                  value="update-info"
-                >
-                  {t('Edit info')}
-                </Button>
-              </div>
+            {!isPaid && (
+              <Button
+                name="actionId"
+                className="mt-4 w-full"
+                type="submit"
+                value="update-info"
+              >
+                {t('Edit info')}
+              </Button>
             )}
           </DisplayCart>
         </div>
@@ -341,7 +362,9 @@ type DisplayPendingPaymentProps = {
   payments: Payment[];
 };
 
-function DisplayPendingPaymentsInterval({ payments }: DisplayPendingPaymentProps) {
+function DisplayPendingPaymentsInterval({
+  payments
+}: DisplayPendingPaymentProps) {
   const checkPaymentstatus = useFetcher();
   const payment = payments.sort(
     ({ createdAt: a }, { createdAt: b }) =>
@@ -386,7 +409,7 @@ function DisplayPendingPaymentsInterval({ payments }: DisplayPendingPaymentProps
   return <DisplayPendingPayments payment={upToDatePayment} />;
 }
 
-function DisplayPendingPayments({ payment }: {payment: Payment}) {
+function DisplayPendingPayments({ payment }: { payment: Payment }) {
   const { t } = useTranslation('checkout');
 
   if (payment.method === PaymentMethod.REFERENCE && payment.mbReference) {
@@ -399,7 +422,10 @@ function DisplayPendingPayments({ payment }: {payment: Payment}) {
     );
   }
 
-  if (payment.method === PaymentMethod.MBWAY || payment.method === PaymentMethod.CARD) {
+  if (
+    payment.method === PaymentMethod.MBWAY ||
+    payment.method === PaymentMethod.CARD
+  ) {
     const message = t(
       payment.method === PaymentMethod.MBWAY
         ? 'MBWay Instructions'
@@ -437,7 +463,7 @@ type MultibancoProps = {
   entity: string;
   reference: string;
   amount: number;
-}
+};
 
 function DisplayMultibancoInfo({ entity, reference, amount }: MultibancoProps) {
   const { t } = useTranslation('checkout');
