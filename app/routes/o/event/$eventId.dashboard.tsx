@@ -5,6 +5,7 @@ import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Form, useLoaderData } from '@remix-run/react';
 import {
+  ArrowDownTrayIcon,
   ArrowTrendingUpIcon,
   CalendarDaysIcon,
   MapPinIcon
@@ -16,7 +17,7 @@ import {
 } from '@heroicons/react/20/solid';
 import clsx from 'clsx';
 
-import { ButtonLink } from '~/components/shared/Button';
+import Button, { ButtonLink } from '~/components/shared/Button';
 import SearchField from '~/components/shared/SearchField';
 
 import { requireUser } from '~/server/auth/session.server';
@@ -26,9 +27,9 @@ import { H2, H3, H4, H5, H6 } from '~/components/shared/typography';
 import DisplayDate from '~/components/shared/DIsplayDate';
 import I18nText from '~/components/I18nText';
 import Main from '~/components/shared/Main';
-import type { KCDHandle } from '~/types';
 import type {
   Event,
+  KCDHandle,
   Race,
   RaceRevenueRegistrations,
   TranslationObject,
@@ -39,6 +40,7 @@ import {
   findRevenueAndRegistrationsPerRace
 } from '~/server/db/races.server';
 import { findRaceParticipants } from '~/server/db/participant.server';
+import exportRaceParticipantsToExcel from '~/utils/ExportParticipants';
 
 type LoaderData = {
   event: Event;
@@ -64,7 +66,9 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   const user = await requireUser(request);
   const eventId = params.eventId as string;
   const { searchParams } = new URL(request.url);
-  let page = searchParams.get('page')?.length ? Number(searchParams.get('page')) : 0;
+  let page = searchParams.get('page')?.length
+    ? Number(searchParams.get('page'))
+    : 0;
 
   const event = (await findEvent(eventId)) as Event;
 
@@ -228,6 +232,18 @@ export default function DashboardRoute() {
     );
   }
 
+  async function handleExportParticipants() {
+    const res = await fetch(`/action/get-race-participants?e=${event.id}`);
+    const raceParticipants = await res.json();
+    const eventName = (event.name as string).replace(/\s/g, '_');
+
+    await exportRaceParticipantsToExcel({
+      raceParticipants,
+      fileName: `${eventName}_${t('Participants')}`,
+      t
+    });
+  }
+
   return (
     <Main>
       <div className="flex flex-row justify-between mb-8 w-full">
@@ -246,7 +262,7 @@ export default function DashboardRoute() {
         </ButtonLink>
       </div>
 
-      <div className="flex flex-col md:flex-row mt-4 mb-8">
+      <div className="flex flex-col gap-y-2 md:flex-row mt-4 mb-8">
         <div className="w-full md:w-144">
           <DisplayImg
             dataCy="image0"
@@ -269,7 +285,7 @@ export default function DashboardRoute() {
       </div>
 
       <H3>{t('Race Stats')}</H3>
-      <div className="flex flex-col mt-2 scroll-mx-2 items-center md:items-start md:flex-row md:flex-nowrap md:overflow-x-auto pb-10 hide-scrollbar">
+      <div className="flex flex-col mt-2 scroll-mx-2 items-center gap-y-2 md:items-start md:flex-row md:flex-nowrap md:overflow-x-auto pb-10 hide-scrollbar">
         {racesRevenueAndRegistrations.map((r: RaceRevenueRegistrations) => (
           <DisplayRaceStats
             name={r.name}
@@ -282,7 +298,18 @@ export default function DashboardRoute() {
       </div>
 
       <Form method="get" preventScrollReset={true} ref={searchForm}>
-        <div className="flex justify-end">
+        <div className="flex flex-col gap-y-4 md:flex-row md:justify-between items-center">
+          <Button
+            name="export-participants"
+            type="button"
+            onClick={handleExportParticipants}
+            variant="secondary"
+            size="small"
+          >
+            <ArrowDownTrayIcon className="h-4 w-4 mr-1" />
+            {t('Export Participants')}
+          </Button>
+
           <SearchField
             name="searched-name"
             placeholder={t('Search Placeholder')}

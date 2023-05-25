@@ -1,0 +1,53 @@
+import Excel from 'exceljs';
+import { saveAs } from 'file-saver';
+import type { TFunction } from 'i18next';
+
+import type { RaceParticipant } from '~/types';
+
+export default async function exportRaceParticipantsToExcel({
+  raceParticipants,
+  fileName,
+  t
+}: {
+  raceParticipants: RaceParticipant[];
+  fileName: string;
+  t: TFunction;
+}) {
+  const workbook = new Excel.Workbook();
+  const worksheet = workbook.addWorksheet(t('Participants'));
+
+  worksheet.columns = [
+    { header: t('Athlete'), key: 'athlete', width: 20 },
+    { header: t('Team'), key: 'team', width: 20 },
+    { header: t('Age Group'), key: 'ageGroup', width: 10 },
+    { header: t('Status'), key: 'status', width: 20 },
+    { header: t('Dorsal'), key: 'dorsal', width: 10 },
+    { header: t('Race'), key: 'race', width: 20 }
+  ];
+
+  // Set column titles to be bold - setting font family as well since it keeps changing 🤷‍♂️
+  const row = worksheet.getRow(1);
+
+  row.font = { bold: true, name: 'Calibri' };
+
+  raceParticipants.map((r) => {
+    return worksheet.addRow({
+      athlete: `${r.participant.firstName} ${r.participant.lastName}`,
+      team: '-',
+      ageGroup: r.participant.gender,
+      status: t(r.booking?.status as string),
+      dorsal: '-',
+      race: r.race.name
+    });
+  });
+
+  // @ts-ignore
+  const xls64 = await workbook.xlsx.writeBuffer({ base64: true });
+
+  saveAs(
+    new Blob([xls64], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    }),
+    fileName
+  );
+}
