@@ -11,7 +11,7 @@ import {
   unstable_parseMultipartFormData
 } from '@remix-run/node';
 
-import { useActionData, useLoaderData } from '@remix-run/react';
+import { Link, useActionData, useLoaderData } from '@remix-run/react';
 import { useTranslation } from 'react-i18next';
 import { z, ZodError } from 'zod';
 
@@ -34,6 +34,7 @@ import { Paragraph } from '~/components/shared/typography';
 import { uploadImageToCloudinary } from '~/server/storage/cloudinary.server';
 import UploadForm from '~/components/shared/form/UploadForm';
 import Id from '~/server/utils/Id.server';
+import InputError from '~/components/shared/form/InputError';
 
 type ActionData = {
   errors?: {
@@ -45,6 +46,7 @@ type ActionData = {
     city?: string;
     logo?: string;
     description?: string;
+    terms?: string;
   };
 };
 
@@ -87,6 +89,7 @@ export const action: ActionFunction = async ({ request }) => {
 
   const logo = form.get('/file/image/0') as string;
   const savedLogo = form.get('saved-logo') as string;
+  const terms: boolean = (form.get('terms') as string) === 'on';
 
   const data: OrganiserInput = {
     id: organiserId,
@@ -110,7 +113,10 @@ export const action: ActionFunction = async ({ request }) => {
       .min(2, { message: t('Min 2 Chars') }),
     email: z.string().email({ message: t('Valid E-mail') }),
     logo: z
-      .string({ required_error: t('Field Required') })
+      .string({
+        required_error: t('Field Required'),
+        invalid_type_error: t('Field Required')
+      })
       .min(1, { message: t('Field Required') }),
     phoneNumber: z
       .number({
@@ -146,6 +152,12 @@ export const action: ActionFunction = async ({ request }) => {
     if (isUpdate) {
       await updateOrganiser(data);
     } else {
+      z.object({
+        terms: z
+          .boolean({ required_error: t('Accept Dici Terms') })
+          .refine((v) => v, { message: t('Accept Dici Terms') })
+      }).parse({ terms });
+
       await createOrganiser(data);
     }
 
@@ -290,6 +302,31 @@ export default function UsRoute() {
             </FormField>
           </div>
         </div>
+        {!organiser && (
+          <>
+            <div className="flex items-center mb-8">
+              <input
+                name="terms"
+                type="checkbox"
+                className="w-4 h-4 text-indigo-500 bg-gray-100 rounded border-gray-300 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600"
+              />
+              <label
+                className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300"
+                htmlFor="terms"
+              >
+                {t('Read and Accepted')}
+                <Link target="_blank" to="/organizers-terms" data-cy="terms-link">
+                  {t('Terms and Conditions')}
+                </Link>
+              </label>
+            </div>
+
+            <InputError id="terms-error" className="mb-2">
+              {actionData?.errors?.terms}
+            </InputError>
+          </>
+        )}
+
         <ButtonGroup>
           <ButtonLink
             type="button"
