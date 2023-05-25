@@ -82,21 +82,7 @@ export const action: ActionFunction = async ({ request, params }) => {
     return redirect(`/checkout/info/${bookingId}`);
   }
 
-  const regulation: boolean = (form.get('regulation') as string) === 'on';
-  const terms: boolean = (form.get('terms') as string) === 'on';
-
-  const TermsAndRegulationSchema = z.object({
-    terms: z
-      .boolean({ required_error: t('Accept Dici Terms') })
-      .refine((v) => v, { message: t('Accept Dici Terms') }),
-    regulation: z
-      .boolean({ required_error: t('Accept Event Regulation') })
-      .refine((v) => v, { message: t('Accept Event Regulation') })
-  });
-
   try {
-    TermsAndRegulationSchema.parse({ regulation, terms });
-
     await updateBookingStatus(bookingId, CheckoutStatus.confirmed);
 
     if (authenticatedClient !== null) {
