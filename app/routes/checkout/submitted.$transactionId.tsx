@@ -1,12 +1,13 @@
+import { PaymentStatus } from '@prisma/client';
 import type { LoaderFunction } from '@remix-run/node';
 import { redirect } from '@remix-run/node';
 
 import { findBookingById } from '~/server/db/booking.server';
-import { findPayment, updatePaymentStatus } from '~/server/db/payments.server';
+import { addPaymentMethodDetails, findPayment, updatePaymentStatus } from '~/server/db/payments.server';
+import { getPaymentStatus } from '~/server/utils/payments';
 
 
 export const loader: LoaderFunction = async ({ request, params }) => {
-
   const paymentId = params.transactionId as string;
   const payment = await findPayment(paymentId);
 
@@ -22,7 +23,21 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     return redirect('/');
   }
 
-  await updatePaymentStatus(paymentId, 'submitted');
+  await updatePaymentStatus(paymentId, PaymentStatus.submitted);
+
+  const status = await getPaymentStatus(payment);
+
+  console.log('get payment status', status);
+
+  if (status) {
+    await addPaymentMethodDetails(
+      paymentId,
+      status.paymentMethod,
+      status.paymentReference?.entity,
+      status.paymentReference?.reference,
+      status.paymentReference?.expireDate
+    );
+  }
 
   return redirect(`/checkout/payment/${payment.bookingId}`);
 

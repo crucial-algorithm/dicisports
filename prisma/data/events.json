@@ -8,9 +8,12 @@
     "lng": -8.302317,
     "location": "Ferreira do Zêzere",
     "useExternalBooking": false,
-    "status": "draft",
+    "status": "published",
     "directions": "Carro: Saida pela A3 direção a Braga",
     "createdById": "gZZCGTHBq9SxdpRFoP8b",
+    "image1": "users/bQmGXYkbhJetjk6mniMt/dYHsESpQXaei35wbKkcB",
+    "regulationPath": "bQmGXYkbhJetjk6mniMt/j3r7C9DvS65xiEe5dpq6.pdf",
+    "regulationFileName": "regulamento",
     "slug": "trail-do-zezere"
   },
   {
@@ -23,8 +26,10 @@
     "location": "Chaves",
     "useExternalBooking": true,
     "externalBookingUrl": "https://stopandgo.com.pt/events/viii-trilho-dos-reis",
+    "image1": "users/TgKZi8NQKNoJQGArd3zc/nAkLCBjYz3eSv8WnXJFy",
     "status": "draft",
     "createdById": "gZZCGTHBq9SxdpRFoP8b",
+    "regulationContent": "<h1><strong>1. ORGANIZAÇÃO</strong></h1><p><br></p><p>A “FLAVIUS CHALLENGE OCR 2022” é uma corrida de obstáculos, organizada em</p><p>Chaves, pela Associação Wildfun – Desporto, Aventura &amp; Turismo com a</p><p>colaboração da Câmara Municipal de Chaves, da Federação Portuguesa de Corridas</p><p>de Obstáculos (FPOCR) e do Instituto Português do Desporto e da Juventude (IPDJ).</p><p>A prova integra a Liga OCR Portugal 2022 da Federação Portuguesa de Corridas de</p><p>Obstáculos (FPOCR) e tem apuramentos para o OCR European Championships</p><p>2023.</p>",
     "slug": "flavius-challenge-ocr"
   },
   {
@@ -53,6 +58,8 @@
     "description": "O Peso da Régua será ponto de partida e de reencontro, depois de serem atravessados os concelhos de Lamego, Armamar, Tabuaço, Penedono, Foz Coa e São João da Pesqueira.",
     "createdById": "gZZCGTHBq9SxdpRFoP8b",
     "image1": "users/MY4bvgxDbMtGv8rbYe5d/fy6t4MweoJawCkwgpeWH",
+    "regulationPath": "events/202305/MY4bvgxDbMtGv8rbYe5d/regulation.pdf",
+    "regulationFileName": "regulamento_v2.0.pdf",
     "slug": "love-tiles-douro-granfondo-2023"
   },
   {
@@ -68,6 +75,7 @@
     "description": "O BTT Trilho dos Moinhos é um passeio de exaltação à diversão, lazer e camaradagem entre amigos e grupos de ciclistas num cenário de natureza idílica que Barcelos oferece e serve de ‘partida’ para um ano repleto de atividades e eventos de ciclismo.\r\n\r\nTendo como base a admirável cidade de Barcelos e o seu centro histórico, a beleza natural do concelho continua a brindar os participantes ao longo do percurso, distinto pela qualidade e sabedoria que resulta de uma preparação cuidada por uma equipa que também encontra nos trilhos o que mais gosta para os momentos de lazer, uma fusão onde também se incluem, pois claro, os famosos reforços. E esta identificação, embebida em detalhes cuidadosamente preparados pelos Amigos da Montanha, só poderia resultar num evento tão único quanto especialmente memorável.\r\n\r\nSão moinhos que nos têm guiado à descoberta de trilhos, sempre diferentes em cada umas das 15 edições com que já fomos brindados.\r\n\r\nO percurso do Trilho dos Moinhos tem início e fim no centro da cidade de Barcelos (junto ao conhecido campo da feira), sendo este o ponto de referência principal para estacionamento, apoio logístico e apoio médico, além de qualquer assistência adicional.\r\n\r\nPercorrendo montes da proximidade da cidade, os participantes vão atravessar ribeiros, percorrer os melhores trilhos históricos, conhecer vários moinhos de água e claro, divertirem-se imenso num percurso planeado ao detalhe!\r\n\r\nContamos com a tua alegria!",
     "image1": "users/gLqrDfMx6qkTHn6hoZqA/GKFsmgig6XpXgTCymhra",
     "createdById": "gZZCGTHBq9SxdpRFoP8b",
+    "regulationContent": "<h1>Regulamento</h1><h2><strong>Inscrições</strong></h2><p><br></p><p>A inscrição é efetuada online, no site dos Amigos da Montanha, ou na sede da Associação, em Barcelinhos.</p><p><br></p><p>Abertura de inscrições: 01/12/2022;</p><p>Encerramento de Inscrições: às 24h00 de 19/02/2023 ou quando se atingir o limite de inscrições validadas.</p><p><br></p><p><br></p><p>Valor de inscrição:13,00€</p><p><br></p><p>A inscrição inclui:</p><p>&gt; Peúgas;</p><p>&gt; Bidão porta ferramentas;</p><p>&gt; Frontal;</p><p>&gt; Seguro de acidentes pessoais e responsabilidade civil;</p><p>&gt; Abastecimento de sólidos e líquidos;</p><p>&gt; Apoio logístico;</p><p>&gt; Banhos;</p><p>&gt; Sorteio de prémios;</p><p>&gt; Lavagem de bikes;</p><p>&gt; Massagens;</p><p>&gt; Primeiros socorros;</p><p>&gt; Controlo de tempos por chip electrónico;</p><p>&gt; Bifana no pão + cerveja (no final).</p><p><br></p><p><br></p><p>Formas de pagamento:</p><p>&gt; Pagamento Multibanco;</p><p>&gt; Numerário na sede da Associação.</p>",
     "slug": "trilho-dos-moinhos"
   }
 ]

@@ -129,12 +129,20 @@ function documents() {
 }
 
 function races() {
-  return racesSeed.map((r) => ({
-    ...r,
-    createdAt: now,
-    updatedAt: now,
-    validUntil: r.validUntil ? new Date(r.validUntil) : null
-  }));
+  return racesSeed.map((r) => {
+    // verify if it exists
+    const validUntil: Date | null = r.validUntil
+      ? new Date(r.validUntil)
+      : null;
+
+    return {
+      ...r,
+      createdAt: now,
+      updatedAt: now,
+      // then add a week so that tests don't break because of an expired date
+      validUntil: validUntil ? new Date(Date.now() + 604800 * 1000) : null
+    };
+  });
 }
 
 function perks() {

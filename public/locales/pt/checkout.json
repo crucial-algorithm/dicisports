@@ -77,5 +77,22 @@
 
   "No Booking": "Esse booking não existe!",
 
-  "Waitting for payment gateway": "A aguardar confirmação do pagamento por parte da SIBS..."
+  "Accept Dici Terms": "Ups... Verfica que aceitaste os termos e condições",
+  "Accept Event Regulation": "Ups... Verfica que aceitaste o regulamento",
+  "Read and Accepted": "Eu li e aceito",
+  "Terms and Conditions": " os Termos e Condições",
+  "Event Regulation": " o Regulamento do Evento",
+
+  "Waitting for payment gateway": "A aguardar confirmação do pagamento por parte da SIBS...",
+  "Payment not found": "Não foi possível encontrar o pagamento solicitado",
+  "Could not retrieve status from payment gateway": "Não foi possível verificar o estado do pagamento junto da SIBS",
+
+  "Multibanco Instructions": "Pagamento por Multibanco ou Homebanking",
+  "Multibanco Entity": "Entidade",
+  "Multibanco Reference": "Referência",
+  "Multibanco Amount": "Valor",
+  "MBWay Instructions": "Segue as instruções no MBWay para completar o pagamento...",
+  "Credit Card Instructions": "A processar o pagamento no teu cartão...",
+
+  "We Give Up On Past Payments": "As tentativa(s) anteriore(s) de pagamento falharam. Submete uma nova forma de pagamento."
 }

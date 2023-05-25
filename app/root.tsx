@@ -19,7 +19,7 @@ import { useSpinDelay } from 'spin-delay';
 
 import clsx from 'clsx';
 
-import { setConfig } from 'cloudinary-build-url';
+import { buildImageUrl, setConfig } from 'cloudinary-build-url';
 import { useTranslation } from 'react-i18next';
 
 import { locale } from 'primereact/api';
@@ -304,6 +304,7 @@ function Html({ lang }: { lang: string }) {
         {pathname !== '/o' && <Navbar />}
         <Outlet />
         <ScrollRestoration />
+        {pathname !== '/o' && <Footer />}
         <script
           dangerouslySetInnerHTML={{
             __html: `window.ENV = ${JSON.stringify(data.ENV)}`
@@ -395,5 +396,50 @@ export function CatchBoundary() {
         <Scripts />
       </body>
     </html>
+  );
+}
+
+function Footer() {
+  const { t } = useTranslation('common');
+  const year = (new Date()).getUTCFullYear();
+
+  return (
+    <footer className="mt-32">
+      <div className="px-4">
+        <div className="mx-auto max-w-7xl lg:px-8">
+          <div className="border-t border-zinc-100 pb-16 pt-10 dark:border-zinc-700/40">
+            <div className="relative px-2 md:px-4">
+              <div className="mx-auto max-w-2xl md:max-w-5xl">
+                <div className="flex flex-col md:flex-row items-center justify-between gap-6 dark:text-cadet-blue-700 text-[10px] md:text-xs">
+                  <div className="flex gap-3 items-center md:gap-6">
+                    <Link
+                      to="/privacy"
+                      className="dark:text-cadet-blue-700 dark:hover:text-cadet-blue-500"
+                    >
+                      {t('Privacy Policy')}
+                    </Link>
+                    <Link
+                      to="/terms"
+                      className="dark:text-cadet-blue-700 dark:hover:text-cadet-blue-500"
+                    >
+                      {t('Terms and Conditions')}
+                    </Link>
+                    <a
+                      href="https://www.livroreclamacoes.pt/inicio"
+                      className="dark:text-cadet-blue-700 dark:hover:text-cadet-blue-500"
+                    >
+                      <img src={buildImageUrl('product/complaints-logo', {})} alt="" />
+                    </a>
+                  </div>
+                  <p>
+                    {t('Dicisports Watermark', { year })}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </footer>
   );
 }

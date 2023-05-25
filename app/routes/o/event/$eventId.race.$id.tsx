@@ -239,7 +239,7 @@ export const action: ActionFunction = async ({ params, request }) => {
         ]
       }
     )
-    .refine((s) => s.price > s.priceEarlyBird, {
+    .refine((s) => s.priceEarlyBird && (s.price > s.priceEarlyBird), {
       message: t('Cheaper Early Bird'),
       path: ['priceEarlyBird']
     });
@@ -478,7 +478,7 @@ export default function RaceRoute() {
             </div>
             <div>
               <Link
-                to={`/${event.id}/race/${race?.id}/gpx`}
+                to={`/event/${event.id}/race/${race?.id}/gpx`}
                 target="_blank"
                 rel="noreferrer"
                 className="group relative inline-flex ml-14 text-gray-700 dark:text-white"

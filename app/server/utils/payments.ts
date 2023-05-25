@@ -1,6 +1,8 @@
+import type { Payment } from '@prisma/client';
+
 import Config from '~/server/config.server';
 import { addGatewayDetailsToPayment, createPaymentRequest } from '~/server/db/payments.server';
-import type { Booking, Event, UICartRow } from '~/types';
+import type { Booking, Event, SibsStatusResponse, UICartRow } from '~/types';
 import { bookingAmount } from '~/utils/misc';
 
 //  Example response from SIBS:
@@ -63,16 +65,28 @@ function paymentReferenceIntervals() {
   return { initial, final };
 }
 
+function getAuthHeaders() {
+  const {
+    SIBS_API_TOKEN: token,
+    SIBS_CLIENT_ID: clientId
+  } = Config();
+
+  return {
+    Authorization: `Bearer ${token}`,
+    'X-IBM-Client-Id': clientId,
+    'content-type': 'application/json',
+    accept: 'application/json'
+  };
+}
+
 export async function createPayamentTransaction(
   booking: Booking,
   event: Event,
   cart: Array<UICartRow>
 ): Promise<{ gatewayResponse: TransactionResponse; ourTransactionId: string }> {
   const {
-    SIBS_API_TOKEN: token,
     SIBS_URL_ENDPOINT: url,
     SIBS_TERMINAL_ID: terminalId,
-    SIBS_CLIENT_ID: clientId,
     SIBS_MULTIBANCO_ENTITIY: entity
   } = Config();
 
@@ -112,24 +126,38 @@ export async function createPayamentTransaction(
     }
   };
 
-  console.log(body);
-
-  const headers = {
-    Authorization: `Bearer ${token}`,
-    'X-IBM-Client-Id': clientId,
-    'content-type': 'application/json',
-    accept: 'application/json'
-  };
-
-  const z = await fetch(url, {
+  const r = await fetch(url, {
     method: 'post',
     body: JSON.stringify(body),
-    headers
+    headers: getAuthHeaders()
   });
-  const details = (await z.json()) as TransactionResponse;
-
-  console.log(details);
+  const details = (await r.json()) as TransactionResponse;
 
   await addGatewayDetailsToPayment(payment.id, details.transactionID, new Date(details.expiry));
   return { gatewayResponse: details, ourTransactionId: payment.id };
+}
+
+
+export async function getPaymentStatus(payment: Payment) {
+  const { SIBS_CHECK_STATUS_ENDPOINT: url } = Config();
+
+  const r = await fetch(
+    url.replace('{{transactionID}}', String(payment.transactionId)),
+    {
+      method: 'get',
+      headers: getAuthHeaders()
+    }
+  );
+
+  if (!r.ok) {
+    return null;
+  }
+
+  const response = (await r.json()) as SibsStatusResponse;
+
+  if (response?.returnStatus?.statusCode === '000') {
+    return response;
+  }
+
+  return null;
 }

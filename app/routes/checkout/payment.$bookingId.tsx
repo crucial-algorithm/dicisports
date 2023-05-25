@@ -1,18 +1,21 @@
-import { CheckoutStatus } from '@prisma/client';
 import type { Payment } from '@prisma/client';
+import { CheckoutStatus, PaymentMethod, PaymentStatus } from '@prisma/client';
 import type { ActionFunction, LoaderFunction } from '@remix-run/node';
 import { json, redirect } from '@remix-run/node';
 import { useFetcher, useLoaderData } from '@remix-run/react';
-import { useEffect } from 'react';
 import * as React from 'react';
+import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { z, ZodError } from 'zod';
 
 import Button from '~/components/shared/Button';
 import DisplayCart from '~/components/shared/DisplayCart';
 import DisplayDate from '~/components/shared/DIsplayDate';
+import Multibanco from '~/components/shared/icons/Multibanco';
+import MultibancoContrast from '~/components/shared/icons/MultibancoContrast';
 
 import Main from '~/components/shared/Main';
-import { H2, H6 } from '~/components/shared/typography';
+import { H2, H5, H6, Paragraph } from '~/components/shared/typography';
 import { getClientSession } from '~/server/auth/client.server';
 import { getUser } from '~/server/auth/session.server';
 import Config from '~/server/config.server';
@@ -24,12 +27,11 @@ import {
 import { findEvent } from '~/server/db/events.server';
 import { findUserEventRaceParticipants } from '~/server/db/participant.server';
 import {
-  findExpiredPayments,
   findSubmittedPayments,
+  findUnsuccessfulPayments,
   isBookingPaid
 } from '~/server/db/payments.server';
-import type { KCDHandle } from '~/types';
-import type { Event, UICartRow } from '~/types';
+import type { Event, KCDHandle, UICartRow } from '~/types';
 import { sendBookingConfirmationEmail } from '~/server/email.server';
 import { badRequest, bookingAmount, getDomainUrl } from '~/utils/misc';
 import i18n from '~/server/i18n.server';
@@ -39,8 +41,9 @@ import { useTheme } from '~/utils/theme-provider';
 type LoaderData = {
   event: Event;
   cart: UICartRow[];
+  regulation: Document;
   submittedPayments: Payment[];
-  expiredPayments: Payment[];
+  unsuccessfulPayments: Payment[];
   formContext: string;
   gatewayTransactionId: string;
   ourTransactionId: string;
@@ -79,24 +82,42 @@ export const action: ActionFunction = async ({ request, params }) => {
     return redirect(`/checkout/info/${bookingId}`);
   }
 
-  await updateBookingStatus(bookingId, CheckoutStatus.confirmed);
+  try {
+    await updateBookingStatus(bookingId, CheckoutStatus.confirmed);
 
-  if (authenticatedClient !== null) {
-    const event = await findEvent(eventId);
-    const domainUrl = getDomainUrl(request);
-    const cart = await findBookingCart(clientId, eventId);
+    if (authenticatedClient !== null) {
+      const event = await findEvent(eventId);
+      const domainUrl = getDomainUrl(request);
+      const cart = await findBookingCart(clientId, eventId);
 
-    await sendBookingConfirmationEmail({
-      emailAddress: authenticatedClient.email,
-      event,
-      booking,
-      domainUrl,
-      cart,
-      userName: authenticatedClient.name
-    });
+      await sendBookingConfirmationEmail({
+        emailAddress: authenticatedClient.email,
+        event,
+        booking,
+        domainUrl,
+        cart,
+        userName: authenticatedClient.name
+      });
+    }
+
+    return redirect(`/checkout/confirmation/${bookingId}`);
+  } catch (e) {
+    if (!(e instanceof ZodError)) {
+      const tc = await i18n.getFixedT(request, 'common');
+
+      return badRequest({
+        errors: { submit: tc('500 error message') }
+      });
+    }
+
+    const errors: { [key: string]: string | undefined } = {};
+
+    for (const error of (e as ZodError).errors) {
+      errors[error.path[0]] = error.message;
+    }
+
+    return badRequest({ errors });
   }
-
-  return redirect(`/checkout/confirmation/${bookingId}`);
 };
 
 export const loader: LoaderFunction = async ({ request, params }) => {
@@ -158,7 +179,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     });
   }
 
-  const expiredPayments = await findExpiredPayments(bookingId);
+  const unsuccessfulPayments = await findUnsuccessfulPayments(bookingId);
   const { gatewayResponse, ourTransactionId } = await createPayamentTransaction(
     booking,
     event,
@@ -172,7 +193,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     gatewayTransactionId: gatewayResponse.transactionID,
     ourTransactionId,
     CHECKOUT_FORM_SCRIPT: Config().SIBS_CHECKOUT_FORM_SCRIPT,
-    expiredPayments,
+    unsuccessfulPayments,
     domainUrl: getDomainUrl(request)
   });
 };
@@ -224,7 +245,7 @@ export default function CheckoutPaymentRoute() {
   const {
     event,
     cart,
-    expiredPayments,
+    unsuccessfulPayments,
     submittedPayments,
     formContext,
     gatewayTransactionId,
@@ -233,7 +254,11 @@ export default function CheckoutPaymentRoute() {
     domainUrl
   } = useLoaderData() as LoaderData;
   const { t } = useTranslation('checkout');
-  const fetcher = useFetcher();
+  const displayCartFetcher = useFetcher();
+  const isPaid =
+    submittedPayments &&
+    submittedPayments.filter((p) => (p.status = PaymentStatus.paid)).length ===
+      0;
 
   return (
     <Main>
@@ -250,12 +275,12 @@ export default function CheckoutPaymentRoute() {
       <div className="flex flex-col md:flex-row mt-8">
         <div className="flex-col w-full md:w-[calc(100%-(480px))] md:pr-4 sibs">
           {submittedPayments && submittedPayments.length > 0 && (
-            <DisplayPendingPayments payments={submittedPayments} />
+            <DisplayPendingPaymentsInterval payments={submittedPayments} />
           )}
           {!(submittedPayments && submittedPayments.length > 0) && (
             <>
-              {expiredPayments.length > 0 && (
-                <H6>Show expired payments info</H6>
+              {unsuccessfulPayments.length > 0 && (
+                <H6 className="mb-8">{t('We Give Up On Past Payments')}</H6>
               )}
               <PaymentForm
                 script={CHECKOUT_FORM_SCRIPT}
@@ -268,8 +293,8 @@ export default function CheckoutPaymentRoute() {
           )}
         </div>
         <div className="w-full md:w-[480px]">
-          <DisplayCart cart={cart} event={event} fetcher={fetcher}>
-            <div>
+          <DisplayCart cart={cart} event={event} fetcher={displayCartFetcher}>
+            {!isPaid && (
               <Button
                 name="actionId"
                 className="mt-4 w-full"
@@ -278,7 +303,7 @@ export default function CheckoutPaymentRoute() {
               >
                 {t('Edit info')}
               </Button>
-            </div>
+            )}
           </DisplayCart>
         </div>
       </div>
@@ -337,12 +362,145 @@ type DisplayPendingPaymentProps = {
   payments: Payment[];
 };
 
-function DisplayPendingPayments(props: DisplayPendingPaymentProps) {
+function DisplayPendingPaymentsInterval({
+  payments
+}: DisplayPendingPaymentProps) {
+  const checkPaymentstatus = useFetcher();
+  const payment = payments.sort(
+    ({ createdAt: a }, { createdAt: b }) =>
+      new Date(a).getTime() - new Date(b).getTime()
+  )[0];
+  const url = `/payment-status/${payment.id}`;
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      // we should add a "give up" strategy here
+      if (
+        checkPaymentstatus.state === 'idle' &&
+        (checkPaymentstatus.data == null ||
+          checkPaymentstatus.data.payment?.status === PaymentStatus.submitted ||
+          checkPaymentstatus.data.success === false)
+      ) {
+        checkPaymentstatus.load(url);
+      }
+    }, 5 * 1000);
+
+    return () => clearInterval(interval);
+  }, [checkPaymentstatus, url]);
+
+  if (!checkPaymentstatus?.data) {
+    return <DisplayPendingPayments payment={payment} />;
+  }
+
+  const upToDatePayment = checkPaymentstatus.data.payment as Payment;
+
+  if (!upToDatePayment) {
+    // we got a response from server, but likely the request to payment gateway failed
+    return <WaitingPaymentPending />;
+  }
+
+  if (
+    upToDatePayment.status === PaymentStatus.paid ||
+    upToDatePayment.status === PaymentStatus.failed
+  ) {
+    window.location.reload();
+  }
+
+  return <DisplayPendingPayments payment={upToDatePayment} />;
+}
+
+function DisplayPendingPayments({ payment }: { payment: Payment }) {
+  const { t } = useTranslation('checkout');
+
+  if (payment.method === PaymentMethod.REFERENCE && payment.mbReference) {
+    return (
+      <DisplayMultibancoInfo
+        entity={String(payment.mbEntity)}
+        reference={payment.mbReference}
+        amount={payment.amount}
+      />
+    );
+  }
+
+  if (
+    payment.method === PaymentMethod.MBWAY ||
+    payment.method === PaymentMethod.CARD
+  ) {
+    const message = t(
+      payment.method === PaymentMethod.MBWAY
+        ? 'MBWay Instructions'
+        : 'Credit Card Instructions'
+    );
+
+    return (
+      <div className="flex items-center w-fit">
+        <Paragraph className="mr-4">{message}</Paragraph>
+        <div
+          className="text-secondary ml-auto inline-block h-8 w-8 animate-spin rounded-full border-2 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]"
+          role="status"
+        />
+      </div>
+    );
+  }
+
+  return <WaitingPaymentPending />;
+}
+
+function WaitingPaymentPending(props: {}) {
   const { t } = useTranslation('checkout');
 
   return (
-    <div data-cy="waiting-payment-confirmation">
+    <div
+      data-cy="waiting-payment-confirmation"
+      className="text-lg dark:text-white"
+    >
       {t('Waitting for payment gateway')}
     </div>
   );
+}
+
+type MultibancoProps = {
+  entity: string;
+  reference: string;
+  amount: number;
+};
+
+function DisplayMultibancoInfo({ entity, reference, amount }: MultibancoProps) {
+  const { t } = useTranslation('checkout');
+
+  // leaving for debug
+  console.log(entity, reference, amount);
+
+  return (
+    <>
+      <H5 className="mb-6">{t('Multibanco Instructions')}</H5>
+      <table border={1} className="w-96 text-right text-lg dark:text-white">
+        <tbody>
+          <tr>
+            <td rowSpan={3}>
+              <Multibanco className="w-28 dark:hidden" />
+              <MultibancoContrast className="w-28 hidden dark:block" />
+            </td>
+            <td className="font-bold">{t('Multibanco Entity')}:</td>
+            <td>{entity}</td>
+          </tr>
+          <tr>
+            <td className="font-bold">{t('Multibanco Reference')}:</td>
+            <td>{formatMbReference(String(reference))}</td>
+          </tr>
+          <tr>
+            <td className="font-bold">{t('Multibanco Amount')}:</td>
+            <td>{(amount / 1000).toFixed(2)}€</td>
+          </tr>
+        </tbody>
+      </table>
+    </>
+  );
+}
+
+function formatMbReference(reference: string) {
+  return Number(reference)
+    .toLocaleString()
+    .replace(/,/g, ' ')
+    .replace(/\./g, ' ');
 }

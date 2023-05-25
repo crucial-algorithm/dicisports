@@ -1,24 +1,25 @@
 import type { PaymentMethod } from '@prisma/client';
 import type {
-  Group as DBGroup,
-  User as DBUser,
-  GroupSpirit as DBGroupSpirit,
-  GroupType as DBGroupType,
-  Sport as DBSport,
+  Booking as DBBooking,
+  Difficulty as DBDifficulty,
+  DiscountCode as DBDiscountCode,
   Document as DBDocument,
   Event as DBEvent,
+  Group as DBGroup,
+  GroupSchedule as DBGroupSchedule,
+  GroupSpirit as DBGroupSpirit,
+  GroupType as DBGroupType,
+  Organiser as DBOrganiser,
+  Participant as DBParticipant,
+  ParticipantStatus,
   Perk as DBPerk,
   Race as DBRace,
-  GroupSchedule as DBGroupSchedule,
-  Difficulty as DBDifficulty,
   RaceParticipant as DBRaceParticipant,
-  Participant as DBParticipant,
-  Booking as DBBooking,
   ShirtSize as DBShirtSize,
-  Organiser as DBOrganiser,
-  ParticipantStatus,
+  Sport as DBSport,
   Status as EventStatus,
-  DiscountCode as DBDiscountCode
+  User as DBUser,
+  Status
 } from '@prisma/client';
 
 type NonNullProperties<Type> = {
@@ -102,7 +103,7 @@ type UploadImageMeta = {
   apiKey: string;
 };
 
-type User = {} & Omit<DBUser, 'password' | 'salt'>;
+type User = { organiser?: Organiser | null } & Omit<DBUser, 'password' | 'salt'>;
 type Sport = {
   name: TranslationObject;
 } & DBSport;
@@ -110,7 +111,7 @@ type Document = {} & DBDocument;
 type CreateDocumentInput = {
   id: string;
   label: string;
-  path?: string;
+  path?: string | null;
   eventId: string;
 };
 
@@ -154,6 +155,9 @@ type CreateEventInput = {
   image5?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  regulationPath: string | null;
+  regulationContent: string | null;
+  regulationFileName: string | null;
   status?: EventStatus;
 };
 
@@ -563,6 +567,25 @@ type SibsWebHookSchema = {
   notificationID: string;
 };
 
+type SibsStatusResponse = {
+  merchant: { terminalId: number; transactionId: string };
+  transactionID: string;
+  amount: { currency: 'EUR'; value: number };
+  paymentType: string;
+  paymentStatus: 'Success' | 'Error' | 'Declined';
+  paymentReference: {
+    entity: string;
+    reference: string;
+    paymentEntity: string;
+    expireDate: string;
+    amount: { value: string; currency: 'Eur' };
+  };
+  paymentMethod: PaymentMethod;
+  returnStatus: {
+    statusCode: '000' | string
+  }
+};
+
 export {
   NonNullProperties,
   MemberProfile,
@@ -623,7 +646,8 @@ export {
   BookingList,
   DBRawBookingList,
   DiscountCode,
-  SibsWebHookSchema
+  SibsWebHookSchema,
+  SibsStatusResponse
 };
 
 // https://www.i18next.com/overview/typescript#argument-of-type-defaulttfuncreturn-is-not-assignable-to-parameter-of-type-xyz

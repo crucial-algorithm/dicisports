@@ -1,5 +1,5 @@
-import type { PaymentMethod, Payment } from '@prisma/client';
-import { PaymentStatus } from '@prisma/client';
+import type { Payment } from '@prisma/client';
+import { PaymentStatus, PaymentMethod } from '@prisma/client';
 
 import { db } from '~/server/db.server';
 
@@ -16,12 +16,19 @@ async function findSubmittedPayments(bookingId: string) {
   });
 }
 
-async function findExpiredPayments(bookingId: string) {
+async function findUnsuccessfulPayments(bookingId: string) {
   return await db.payment.findMany({
     where: {
       bookingId,
-      expiresAt: { lte: new Date() },
-      status: PaymentStatus.submitted
+      OR: [
+        {
+          expiresAt: { lte: new Date() },
+          status: PaymentStatus.submitted
+        },
+        {
+          status: { in: [PaymentStatus.failed, PaymentStatus.canceled, PaymentStatus.expired] }
+        }
+      ]
     }
   });
 }
@@ -40,7 +47,8 @@ async function findPaymentByTransactionId(id: string): Promise<Payment | null> {
 }
 
 /**
- * Method use to create a payment record to get an id to send to payment gateway
+ * 1st step: Method used to create a payment record to get an id to send to payment gateway.
+ * Called just before the first API call to SIBS
  * @param bookingId
  * @param amount
  */
@@ -58,17 +66,91 @@ async function createPaymentRequest(
   });
 }
 
+
+/**
+ * 2nd step: After creating a checkout in SIBS API, update our payment with info
+ * returned by their API
+ *
+ * @param id
+ * @param transactionId
+ * @param expiresAt
+ */
 async function addGatewayDetailsToPayment(
   id: string,
   transactionId: string,
   expiresAt: Date
 ) {
+
+  const record = await db.payment.findUnique({ where: { id: id } });
+
+  if (!record) {
+    return null;
+  }
+
+  let data: {
+    transactionId: string;
+    status?: PaymentStatus;
+    expiresAt: Date;
+  } = {
+    transactionId,
+    expiresAt
+  };
+
+  // Being extra carefull here: we don't want to risk re-writting state if SIBS calls our
+  // webhook prior to calling our redirect
+  if (record.status === PaymentStatus.requested) {
+    data = { ...data, status: PaymentStatus.pending };
+  }
+
   return await db.payment.update({
     where: { id },
+    data: data
+  });
+}
+
+/**
+ * 3rd step: when form is submitted, SIBS redirects us to a dicisport route that calls this function to register
+ * the payment option the user selected (and extrapolate the payment expiration time)
+ *
+ * @param id
+ * @param method
+ * @param entity
+ * @param reference
+ * @param referenceExpiresAt
+ */
+async function addPaymentMethodDetails(
+  id: string,
+  method: PaymentMethod,
+  entity?: string,
+  reference?: string,
+  referenceExpiresAt?: string
+) {
+
+  console.log('----> in addPaymentMethodDetails');
+
+  let expiresAt: Date | null = null;
+
+  if (method === PaymentMethod.REFERENCE && referenceExpiresAt) {
+    expiresAt = new Date(referenceExpiresAt);
+  }
+
+  if (method === PaymentMethod.MBWAY) {
+    expiresAt = new Date(Date.now() + 4 * 60 * 1000);
+  }
+
+  if (method === PaymentMethod.CARD) {
+    // we wait until payment gateway gives up
+    expiresAt = new Date('2099-12-31');
+  }
+
+  // only update if status is still in submitted (if it's already in fail or paid, it's because webhook was faster)
+  return await db.payment.updateMany({
+    where: { id, status: PaymentStatus.submitted },
     data: {
-      transactionId,
-      status: PaymentStatus.pending,
-      expiresAt
+      method,
+      expiresAt: expiresAt ? expiresAt : undefined,
+      mbEntity: entity ? entity : undefined,
+      mbReference: reference ? reference : undefined
     }
   });
 }
@@ -78,6 +160,20 @@ async function updatePaymentStatus(id: string, status: PaymentStatus) {
     where: { id },
     data: {
       status
+    }
+  });
+}
+
+async function addReferenciaMultibancoInfo(
+  id: string,
+  reference: string,
+  entity: string
+) {
+  return await db.payment.update({
+    where: { id },
+    data: {
+      mbReference: reference,
+      mbEntity: entity
     }
   });
 }
@@ -135,12 +231,14 @@ export {
   findPayment,
   findPaymentByTransactionId,
   findSubmittedPayments,
-  findExpiredPayments,
+  findUnsuccessfulPayments,
   createPaymentRequest,
   addGatewayDetailsToPayment,
   pay,
   decline,
   isBookingPaid,
   saveNotification,
-  updatePaymentStatus
+  updatePaymentStatus,
+  addReferenciaMultibancoInfo,
+  addPaymentMethodDetails
 };

@@ -117,5 +117,19 @@ describe('Dashboard', () => {
         .get('button[data-cy=page-number]')
         .should('not.exist');
     });
+
+    it('should download xlsx with participants information', () => {
+      cy.visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d/dashboard')
+
+        .intercept('GET', '/action/get-race-participants*')
+        .as('ExportParticipants')
+
+        .get('button[name=export-participants]')
+        .should('exist')
+        .click()
+
+        .wait('@ExportParticipants')
+        .readFile('./cypress/downloads/Love_Tiles_Douro_Granfondo_2023_Participantes.xlsx');
+    });
   });
 });
