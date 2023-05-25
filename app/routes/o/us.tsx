@@ -315,7 +315,7 @@ export default function UsRoute() {
                 htmlFor="terms"
               >
                 {t('Read and Accepted')}
-                <Link target="_blank" to="/terms" data-cy="terms-link">
+                <Link target="_blank" to="/organizers-terms" data-cy="terms-link">
                   {t('Terms and Conditions')}
                 </Link>
               </label>
