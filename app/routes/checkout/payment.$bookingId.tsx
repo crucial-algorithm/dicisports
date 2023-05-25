@@ -269,6 +269,10 @@ export default function CheckoutPaymentRoute() {
   } = useLoaderData() as LoaderData;
   const { t } = useTranslation('checkout');
   const displayCartFetcher = useFetcher();
+  const isPaid =
+    submittedPayments &&
+    submittedPayments.filter((p) => (p.status = PaymentStatus.paid)).length ===
+      0;
 
   return (
     <Main>
@@ -304,19 +308,16 @@ export default function CheckoutPaymentRoute() {
         </div>
         <div className="w-full md:w-[480px]">
           <DisplayCart cart={cart} event={event} fetcher={displayCartFetcher}>
-            {!submittedPayments ||
-              (submittedPayments.length === 0 && (
-                <div>
-                  <Button
-                    name="actionId"
-                    className="mt-4 w-full"
-                    type="submit"
-                    value="update-info"
-                  >
-                    {t('Edit info')}
-                  </Button>
-                </div>
-              ))}
+            {!isPaid && (
+              <Button
+                name="actionId"
+                className="mt-4 w-full"
+                type="submit"
+                value="update-info"
+              >
+                {t('Edit info')}
+              </Button>
+            )}
           </DisplayCart>
         </div>
       </div>

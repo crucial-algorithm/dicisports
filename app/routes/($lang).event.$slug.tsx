@@ -21,6 +21,7 @@ import clsx from 'clsx';
 import { InView } from 'react-intersection-observer';
 
 import CopyToClipboard from '~/components/shared/CopyToClipboard';
+import useLang from '~/hooks/useLang';
 
 import {
   findEventBySlug,
@@ -124,13 +125,10 @@ export default function EventDisplayRoute() {
     return (
       <Main>
         <Paragraph data-cy="event-not-found">{t('Event not found')}</Paragraph>
-        <a href="/">{t('Event not found action')}</a>
+        <Link to="/">{t('Event not found action')}</Link>
       </Main>
     );
   }
-
-  const isInlineRegulation = !!event.regulationContent;
-  const regulationExists = !!event.regulationContent || !!event.regulationPath;
 
   if (races) {
     const sortedRaces = races
@@ -237,27 +235,12 @@ export default function EventDisplayRoute() {
           </div>
         )}
 
-        {regulationExists && (
-          <>
-            <H3>{t('Regulation')}</H3>
-            <div className="flex flex-row flex-wrap mb-8 mt-2">
-              <DisplayRegulation
-                label={t('Regulation')}
-                path={
-                  isInlineRegulation
-                    ? `/event/${event.slug}/regulation`
-                    : `/event/${event.id}/doc/regulation/view`
-                }
-              />
-            </div>
-          </>
-        )}
-
         <H3>{t('Documents')}</H3>
         <div
           data-cy="documents-list"
           className="flex flex-row flex-wrap mb-8 mt-2"
         >
+          <DisplayRegulation event={event} />
           {event.documents
             .sort((a: Document, b: Document) => a.position - b.position)
             .map((document: Document, index: number) => (
@@ -293,6 +276,7 @@ type DisplayRaceProps = {
 
 function DisplayRace({ race, index, eventId, areThereRacesInEarlyBird }: DisplayRaceProps) {
   const { t } = useTranslation('event');
+  const lang = useLang();
   const raceTime = displayTimeOfDay(race.startTime);
   const [expanded, setExpanded] = useState<boolean>(false);
   let validDuring: number | null = null;
@@ -452,6 +436,7 @@ function DisplayRace({ race, index, eventId, areThereRacesInEarlyBird }: Display
 }
 
 function DisplayDocument(props: { document: Document; index: number }) {
+  const lang = useLang();
   const { document, index } = props;
   const path = document.path as string;
   const fileExtension = path.split('.');
@@ -467,31 +452,42 @@ function DisplayDocument(props: { document: Document; index: number }) {
       >
         {fileExtension[fileExtension.length - 1].toUpperCase()}
       </div>
-      <a
-        href={`/event/${document.eventId}/doc/${document.id}/view`}
+      <Link
+        to={`/${lang}/event/${document.eventId}/doc/${document.id}/view`}
         target="_blank"
         rel="noreferrer"
         className="text-black dark:text-white"
         data-cy="document-label"
       >
         {document.label}
-      </a>
+      </Link>
     </div>
   );
 }
 
-function DisplayRegulation({ path, label }: { path: string; label: string }) {
+function DisplayRegulation({ event }: { event: Event }) {
+  const { t } = useTranslation('event');
+  const lang = useLang();
+
+  if (!event.regulationContent && !event.regulationPath) {
+    return null;
+  }
+  const isInlineRegulation = !!event.regulationContent;
+  const path = isInlineRegulation
+    ? `/${lang}/event/${event.slug}/regulation`
+    : `/${lang}/event/${event.id}/doc/regulation/view`;
+
   return (
     <div className="flex items-center border border-black dark:border-white rounded-2xl h-16 p-4 mr-2 mb-2">
-      <a
-        href={path}
+      <Link
+        to={path}
         target="_blank"
         rel="noreferrer"
         className="text-black dark:text-white"
         data-cy="regulation"
       >
-        {label}
-      </a>
+        {t('Regulation')}
+      </Link>
     </div>
   );
 }
