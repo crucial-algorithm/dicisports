@@ -8,7 +8,7 @@ import { CheckoutStatus, ParticipantStatus } from '@prisma/client';
 import type { ActionFunction, LoaderFunction } from '@remix-run/node';
 import { json, redirect } from '@remix-run/node';
 
-import { useFetcher, useLoaderData } from '@remix-run/react';
+import { Link, useFetcher, useLoaderData } from '@remix-run/react';
 import clsx from 'clsx';
 import * as React from 'react';
 import { useCallback, useEffect, useState } from 'react';
@@ -58,6 +58,7 @@ import type {
 } from '~/types';
 import { badRequest, displayTimeOfDay } from '~/utils/misc';
 import { Unauthorized } from '~/server/utils/misc';
+import InputError from '~/components/shared/form/InputError';
 
 type LoaderData = {
   event: Event;
@@ -97,6 +98,8 @@ export const action: ActionFunction = async ({ request, params }) => {
 
   const actionId = form.get('actionId');
   const hash = form.get('hash') as string;
+  const regulation: boolean = (form.get('regulation') as string) === 'on';
+  const terms: boolean = (form.get('terms') as string) === 'on';
 
   try {
     const phoneNumber = form.get('phone-number') as string;
@@ -154,6 +157,15 @@ export const action: ActionFunction = async ({ request, params }) => {
         .min(1, { message: t('Field Required') })
     });
 
+    const TermsAndRegulationSchema = z.object({
+      terms: z
+        .boolean({ required_error: t('Accept Dici Terms') })
+        .refine((v) => v, { message: t('Accept Dici Terms') }),
+      regulation: z
+        .boolean({ required_error: t('Accept Event Regulation') })
+        .refine((v) => v, { message: t('Accept Event Regulation') })
+    });
+
     if (actionId === CheckoutInfoActions.updateAndSave) {
       const selectedParticipantId = form.get(
         'selected-participant-id'
@@ -192,6 +204,7 @@ export const action: ActionFunction = async ({ request, params }) => {
       actionId === CheckoutInfoActions.checkout ||
       actionId === CheckoutInfoActions.updateAndCheckout
     ) {
+      TermsAndRegulationSchema.parse({ regulation, terms });
       const raceParticipants = await findUserEventRaceParticipants(
         clientId,
         eventId
@@ -294,7 +307,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 
 export default function CheckoutInfoRoute() {
   const fetcher = useFetcher();
-  const { t } = useTranslation('checkout');
+  const { t, i18n } = useTranslation('checkout');
   const {
     event,
     cart,
@@ -323,12 +336,17 @@ export default function CheckoutInfoRoute() {
   const [missingParticipants, setMissingParticipants] = useState<
     RaceParticipant[]
   >([]);
+  const [checkedTermsAndRegulation, setCheckedTermsAndRegulation] = useState<{
+    terms: boolean;
+    regulation: boolean;
+  }>({ terms: false, regulation: false });
   const initialVisitedParticipants = raceParticipants
     .filter((p) => p.participant.status === 'saved')
     .map((p) => p.participant);
   const isFirstParticipantVisited = initialVisitedParticipants.some(
     (p) => p.id === raceParticipants[0].participantId
   );
+  const isInlineRegulation = event.regulationContent && true;
 
   if (!isFirstParticipantVisited) {
     initialVisitedParticipants.push(raceParticipants[0].participant);
@@ -404,6 +422,20 @@ export default function CheckoutInfoRoute() {
 
     setHash(Date.now());
     setSelectedParticipant(participant);
+  }
+
+  function handleCheckRegulation() {
+    setCheckedTermsAndRegulation({
+      regulation: !checkedTermsAndRegulation.regulation,
+      terms: checkedTermsAndRegulation.terms
+    });
+  }
+
+  function handleCheckTerms() {
+    setCheckedTermsAndRegulation({
+      regulation: checkedTermsAndRegulation.regulation,
+      terms: !checkedTermsAndRegulation.terms
+    });
   }
 
   useEffect(() => {
@@ -580,7 +612,63 @@ export default function CheckoutInfoRoute() {
             resetForm={resetForm}
             isSingleParticipant={raceParticipants.length === 1}
             isReadOnly={isGuest}
-          />
+          >
+            {!isGuest && (
+              <>
+                <div className="flex items-center mb-2">
+                  <input
+                    name="regulation"
+                    type="checkbox"
+                    checked={checkedTermsAndRegulation.regulation}
+                    onClick={handleCheckRegulation}
+                    className="w-4 h-4 text-indigo-500 bg-gray-100 rounded border-gray-300 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600"
+                    data-cy="regulation"
+                  />
+                  <label
+                    className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300"
+                    htmlFor="regulation"
+                  >
+                    {t('Read and Accepted')}
+                    <Link
+                      target="_blank"
+                      to={
+                        isInlineRegulation
+                          ? `/${i18n.language}/event/${event.slug}/regulation`
+                          : `/${i18n.language}/event/${event.id}/regulation/view`
+                      }
+                      data-cy="regulation-link"
+                    >
+                      {t('Event Regulation')}
+                    </Link>
+                  </label>
+                </div>
+
+                <div className="flex items-center mb-8">
+                  <input
+                    name="terms"
+                    type="checkbox"
+                    checked={checkedTermsAndRegulation.terms}
+                    onClick={handleCheckTerms}
+                    className="w-4 h-4 text-indigo-500 bg-gray-100 rounded border-gray-300 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600"
+                    data-cy="terms"
+                  />
+                  <label
+                    className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300"
+                    htmlFor="terms"
+                  >
+                    {t('Read and Accepted')}
+                    <Link target="_blank" to="/terms" data-cy="terms-link">
+                      {t('Terms and Conditions')}
+                    </Link>
+                  </label>
+                </div>
+
+                <InputError id="terms-error" className="mb-2">
+                  {errors?.submit || errors?.terms || errors?.regulation}
+                </InputError>
+              </>
+            )}
+          </ParticipantForm>
           <Notification show={handlerSetShowNotificationFunction}>
             {message}
           </Notification>
@@ -596,6 +684,16 @@ export default function CheckoutInfoRoute() {
             {!isGuest && (
               <>
                 <div className="flex flex-col items-center w-full">
+                  <input
+                    type="hidden"
+                    name="regulation"
+                    value={checkedTermsAndRegulation.regulation ? 'on' : 'off'}
+                  />
+                  <input
+                    type="hidden"
+                    name="terms"
+                    value={checkedTermsAndRegulation.terms ? 'on' : 'off'}
+                  />
                   <input type="hidden" name="hash" value={hash} />
                   <Button
                     type="submit"

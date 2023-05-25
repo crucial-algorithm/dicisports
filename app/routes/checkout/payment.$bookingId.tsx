@@ -1,14 +1,8 @@
 import type { Payment } from '@prisma/client';
-import { CheckoutStatus } from '@prisma/client';
+import { CheckoutStatus, PaymentMethod, PaymentStatus } from '@prisma/client';
 import type { ActionFunction, LoaderFunction } from '@remix-run/node';
 import { json, redirect } from '@remix-run/node';
-import {
-  Form,
-  Link,
-  useActionData,
-  useFetcher,
-  useLoaderData
-} from '@remix-run/react';
+import { useFetcher, useLoaderData } from '@remix-run/react';
 import * as React from 'react';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -17,9 +11,11 @@ import { z, ZodError } from 'zod';
 import Button from '~/components/shared/Button';
 import DisplayCart from '~/components/shared/DisplayCart';
 import DisplayDate from '~/components/shared/DIsplayDate';
+import Multibanco from '~/components/shared/icons/Multibanco';
+import MultibancoContrast from '~/components/shared/icons/MultibancoContrast';
 
 import Main from '~/components/shared/Main';
-import { H2, H6 } from '~/components/shared/typography';
+import { H2, H5, H6, Paragraph } from '~/components/shared/typography';
 import { getClientSession } from '~/server/auth/client.server';
 import { getUser } from '~/server/auth/session.server';
 import Config from '~/server/config.server';
@@ -31,8 +27,8 @@ import {
 import { findEvent } from '~/server/db/events.server';
 import { findUserEventRaceParticipants } from '~/server/db/participant.server';
 import {
-  findExpiredPayments,
   findSubmittedPayments,
+  findUnsuccessfulPayments,
   isBookingPaid
 } from '~/server/db/payments.server';
 import type { Event, KCDHandle, UICartRow } from '~/types';
@@ -41,14 +37,13 @@ import { badRequest, bookingAmount, getDomainUrl } from '~/utils/misc';
 import i18n from '~/server/i18n.server';
 import { createPayamentTransaction } from '~/server/utils/payments';
 import { useTheme } from '~/utils/theme-provider';
-import InputError from '~/components/shared/form/InputError';
 
 type LoaderData = {
   event: Event;
   cart: UICartRow[];
   regulation: Document;
   submittedPayments: Payment[];
-  expiredPayments: Payment[];
+  unsuccessfulPayments: Payment[];
   formContext: string;
   gatewayTransactionId: string;
   ourTransactionId: string;
@@ -87,21 +82,7 @@ export const action: ActionFunction = async ({ request, params }) => {
     return redirect(`/checkout/info/${bookingId}`);
   }
 
-  const regulation: boolean = (form.get('regulation') as string) === 'on';
-  const terms: boolean = (form.get('terms') as string) === 'on';
-
-  const TermsAndRegulationSchema = z.object({
-    terms: z
-      .boolean({ required_error: t('Accept Dici Terms') })
-      .refine((v) => v, { message: t('Accept Dici Terms') }),
-    regulation: z
-      .boolean({ required_error: t('Accept Event Regulation') })
-      .refine((v) => v, { message: t('Accept Event Regulation') })
-  });
-
   try {
-    TermsAndRegulationSchema.parse({ regulation, terms });
-
     await updateBookingStatus(bookingId, CheckoutStatus.confirmed);
 
     if (authenticatedClient !== null) {
@@ -198,7 +179,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     });
   }
 
-  const expiredPayments = await findExpiredPayments(bookingId);
+  const unsuccessfulPayments = await findUnsuccessfulPayments(bookingId);
   const { gatewayResponse, ourTransactionId } = await createPayamentTransaction(
     booking,
     event,
@@ -212,7 +193,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     gatewayTransactionId: gatewayResponse.transactionID,
     ourTransactionId,
     CHECKOUT_FORM_SCRIPT: Config().SIBS_CHECKOUT_FORM_SCRIPT,
-    expiredPayments,
+    unsuccessfulPayments,
     domainUrl: getDomainUrl(request)
   });
 };
@@ -260,19 +241,11 @@ const sibsLightTheme = {
   }
 };
 
-type ActionData = {
-  errors?: {
-    terms?: string;
-    regulation?: string;
-  };
-};
-
 export default function CheckoutPaymentRoute() {
-  const actionData = useActionData<ActionData>();
   const {
     event,
     cart,
-    expiredPayments,
+    unsuccessfulPayments,
     submittedPayments,
     formContext,
     gatewayTransactionId,
@@ -281,9 +254,11 @@ export default function CheckoutPaymentRoute() {
     domainUrl
   } = useLoaderData() as LoaderData;
   const { t } = useTranslation('checkout');
-  const fetcher = useFetcher();
-
-  const isInlineRegulation = event.regulationContent && true;
+  const displayCartFetcher = useFetcher();
+  const isPaid =
+    submittedPayments &&
+    submittedPayments.filter((p) => (p.status = PaymentStatus.paid)).length ===
+      0;
 
   return (
     <Main>
@@ -298,67 +273,14 @@ export default function CheckoutPaymentRoute() {
         </H6>
       </div>
       <div className="flex flex-col md:flex-row mt-8">
-        {/*Payment Form*/}
-        <div className="flex-col w-full md:w-[calc(100%-(480px))] md:pr-4">
-          <Form method="post">
-            <div className="flex items-center mb-2">
-              <input
-                name="regulation"
-                type="checkbox"
-                className="w-4 h-4 text-indigo-500 bg-gray-100 rounded border-gray-300 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600"
-              />
-              <label
-                className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300"
-                htmlFor="regulation"
-              >
-                {t('Read and Accepted')}
-                <Link
-                  target="_blank"
-                  to={
-                    isInlineRegulation
-                      ? `/event/${event.slug}/regulation`
-                      : `/event/${event.id}/doc/regulation/view`
-                  }
-                  data-cy="regulation-link"
-                >
-                  {t('Event Regulation')}
-                </Link>
-              </label>
-            </div>
-
-            <div className="flex items-center mb-8">
-              <input
-                name="terms"
-                type="checkbox"
-                className="w-4 h-4 text-indigo-500 bg-gray-100 rounded border-gray-300 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600"
-              />
-              <label
-                className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300"
-                htmlFor="terms"
-              >
-                {t('Read and Accepted')}
-                <Link target="_blank" to="/terms" data-cy="terms-link">
-                  {t('Terms and Conditions')}
-                </Link>
-              </label>
-            </div>
-
-            <InputError id="terms-error" className="mb-2">
-              {actionData?.errors?.submit ||
-                actionData?.errors?.terms ||
-                actionData?.errors?.regulation}
-            </InputError>
-          </Form>
-        </div>
-
         <div className="flex-col w-full md:w-[calc(100%-(480px))] md:pr-4 sibs">
           {submittedPayments && submittedPayments.length > 0 && (
-            <DisplayPendingPayments payments={submittedPayments} />
+            <DisplayPendingPaymentsInterval payments={submittedPayments} />
           )}
           {!(submittedPayments && submittedPayments.length > 0) && (
             <>
-              {expiredPayments.length > 0 && (
-                <H6>Show expired payments info</H6>
+              {unsuccessfulPayments.length > 0 && (
+                <H6 className="mb-8">{t('We Give Up On Past Payments')}</H6>
               )}
               <PaymentForm
                 script={CHECKOUT_FORM_SCRIPT}
@@ -371,8 +293,8 @@ export default function CheckoutPaymentRoute() {
           )}
         </div>
         <div className="w-full md:w-[480px]">
-          <DisplayCart cart={cart} event={event} fetcher={fetcher}>
-            <div>
+          <DisplayCart cart={cart} event={event} fetcher={displayCartFetcher}>
+            {!isPaid && (
               <Button
                 name="actionId"
                 className="mt-4 w-full"
@@ -381,7 +303,7 @@ export default function CheckoutPaymentRoute() {
               >
                 {t('Edit info')}
               </Button>
-            </div>
+            )}
           </DisplayCart>
         </div>
       </div>
@@ -440,12 +362,145 @@ type DisplayPendingPaymentProps = {
   payments: Payment[];
 };
 
-function DisplayPendingPayments(props: DisplayPendingPaymentProps) {
+function DisplayPendingPaymentsInterval({
+  payments
+}: DisplayPendingPaymentProps) {
+  const checkPaymentstatus = useFetcher();
+  const payment = payments.sort(
+    ({ createdAt: a }, { createdAt: b }) =>
+      new Date(a).getTime() - new Date(b).getTime()
+  )[0];
+  const url = `/payment-status/${payment.id}`;
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      // we should add a "give up" strategy here
+      if (
+        checkPaymentstatus.state === 'idle' &&
+        (checkPaymentstatus.data == null ||
+          checkPaymentstatus.data.payment?.status === PaymentStatus.submitted ||
+          checkPaymentstatus.data.success === false)
+      ) {
+        checkPaymentstatus.load(url);
+      }
+    }, 5 * 1000);
+
+    return () => clearInterval(interval);
+  }, [checkPaymentstatus, url]);
+
+  if (!checkPaymentstatus?.data) {
+    return <DisplayPendingPayments payment={payment} />;
+  }
+
+  const upToDatePayment = checkPaymentstatus.data.payment as Payment;
+
+  if (!upToDatePayment) {
+    // we got a response from server, but likely the request to payment gateway failed
+    return <WaitingPaymentPending />;
+  }
+
+  if (
+    upToDatePayment.status === PaymentStatus.paid ||
+    upToDatePayment.status === PaymentStatus.failed
+  ) {
+    window.location.reload();
+  }
+
+  return <DisplayPendingPayments payment={upToDatePayment} />;
+}
+
+function DisplayPendingPayments({ payment }: { payment: Payment }) {
+  const { t } = useTranslation('checkout');
+
+  if (payment.method === PaymentMethod.REFERENCE && payment.mbReference) {
+    return (
+      <DisplayMultibancoInfo
+        entity={String(payment.mbEntity)}
+        reference={payment.mbReference}
+        amount={payment.amount}
+      />
+    );
+  }
+
+  if (
+    payment.method === PaymentMethod.MBWAY ||
+    payment.method === PaymentMethod.CARD
+  ) {
+    const message = t(
+      payment.method === PaymentMethod.MBWAY
+        ? 'MBWay Instructions'
+        : 'Credit Card Instructions'
+    );
+
+    return (
+      <div className="flex items-center w-fit">
+        <Paragraph className="mr-4">{message}</Paragraph>
+        <div
+          className="text-secondary ml-auto inline-block h-8 w-8 animate-spin rounded-full border-2 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]"
+          role="status"
+        />
+      </div>
+    );
+  }
+
+  return <WaitingPaymentPending />;
+}
+
+function WaitingPaymentPending(props: {}) {
   const { t } = useTranslation('checkout');
 
   return (
-    <div data-cy="waiting-payment-confirmation">
+    <div
+      data-cy="waiting-payment-confirmation"
+      className="text-lg dark:text-white"
+    >
       {t('Waitting for payment gateway')}
     </div>
   );
+}
+
+type MultibancoProps = {
+  entity: string;
+  reference: string;
+  amount: number;
+};
+
+function DisplayMultibancoInfo({ entity, reference, amount }: MultibancoProps) {
+  const { t } = useTranslation('checkout');
+
+  // leaving for debug
+  console.log(entity, reference, amount);
+
+  return (
+    <>
+      <H5 className="mb-6">{t('Multibanco Instructions')}</H5>
+      <table border={1} className="w-96 text-right text-lg dark:text-white">
+        <tbody>
+          <tr>
+            <td rowSpan={3}>
+              <Multibanco className="w-28 dark:hidden" />
+              <MultibancoContrast className="w-28 hidden dark:block" />
+            </td>
+            <td className="font-bold">{t('Multibanco Entity')}:</td>
+            <td>{entity}</td>
+          </tr>
+          <tr>
+            <td className="font-bold">{t('Multibanco Reference')}:</td>
+            <td>{formatMbReference(String(reference))}</td>
+          </tr>
+          <tr>
+            <td className="font-bold">{t('Multibanco Amount')}:</td>
+            <td>{(amount / 1000).toFixed(2)}€</td>
+          </tr>
+        </tbody>
+      </table>
+    </>
+  );
+}
+
+function formatMbReference(reference: string) {
+  return Number(reference)
+    .toLocaleString()
+    .replace(/,/g, ' ')
+    .replace(/\./g, ' ');
 }

@@ -7,40 +7,59 @@ import { CheckoutStatus } from '@prisma/client';
 import Config from '~/server/config.server';
 import { updateBookingStatus } from '~/server/db/booking.server';
 
-import { findPaymentByTransactionId, pay, saveNotification } from '~/server/db/payments.server';
+import { decline, findPayment, pay, saveNotification } from '~/server/db/payments.server';
 import type { SibsWebHookSchema } from '~/types';
 
 export const action: ActionFunction = async ({ request }) => {
+  console.log('SIBS webhook called');
   const body = await request.text();
 
   const authTag = request.headers.get('x-authentication-tag') || '';
   const initVector = request.headers.get('x-initialization-vector') || '';
   const { SIBS_WEBHOOK_SECRET: secret } = Config();
-
+  let payload: SibsWebHookSchema | null = null;
 
   try {
-    const payload = decrypt(body, secret, initVector, authTag);
+    payload = decrypt(body, secret, initVector, authTag);
+  } catch (err) {
+    console.error(err);
+    return new Response(String(err), { status: 500 });
+  }
+
+  try {
+    await saveNotification(payload);
+    // using our transaction ID in case we didn't update the transaction id for the form redirect yet
+    // (we are not sure about the order of calls SIBS we will use since their documentation states it's undeterministic)
+    const payment = await findPayment(payload.merchant.transactionId);
+
+    if (!payment) {
+      console.log(
+        `weird, we got a notification for an unknown payment: ${payload.notificationID}`
+      );
+    }
 
     if (payload.paymentStatus === 'Success') {
+      // update payment status with success
       await pay(payload.transactionID, payload.paymentMethod);
-      const payment = await findPaymentByTransactionId(payload.transactionID);
-
       if (payment) {
-        await updateBookingStatus(payment?.bookingId, CheckoutStatus.confirmed);
+        await updateBookingStatus(payment.bookingId, CheckoutStatus.confirmed);
       }
     }
 
-    await saveNotification(payload);
+    if (payload.paymentStatus === 'Declined') {
+      await decline(payload.transactionID);
+      console.log(`payment with SIBS transaction ${payload.transactionID} was declined`);
+    }
 
-    return json({
-      statusCode: 200,
-      statusMessage: 'Success',
-      notificationID: payload.notificationID
-    });
   } catch(err: unknown) {
-    console.log(err);
-    return new Response(String(err), { status: 500 });
+    console.error(err);
   }
+
+  return json({
+    statusCode: 200,
+    statusMessage: 'Success',
+    notificationID: payload.notificationID
+  });
 };
 
 

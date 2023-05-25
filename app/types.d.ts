@@ -103,7 +103,7 @@ type UploadImageMeta = {
   apiKey: string;
 };
 
-type User = {} & Omit<DBUser, 'password' | 'salt'>;
+type User = { organiser?: Organiser | null } & Omit<DBUser, 'password' | 'salt'>;
 type Sport = {
   name: TranslationObject;
 } & DBSport;
@@ -558,13 +558,32 @@ type DiscountCode = DBDiscountCode & {};
 
 type SibsWebHookSchema = {
   returnStatus: { statusMsg: string; statusCode: string };
-  paymentStatus: 'Success' | 'Error';
+  paymentStatus: 'Success' | 'Error' | 'Declined';
   paymentMethod: PaymentMethod;
   transactionID: string;
   amount: { currency: 'EUR'; value: number };
   merchant: { terminalId: number; merchantName: string; transactionId: string };
   paymentType: string;
   notificationID: string;
+};
+
+type SibsStatusResponse = {
+  merchant: { terminalId: number; transactionId: string };
+  transactionID: string;
+  amount: { currency: 'EUR'; value: number };
+  paymentType: string;
+  paymentStatus: 'Success' | 'Error' | 'Declined';
+  paymentReference: {
+    entity: string;
+    reference: string;
+    paymentEntity: string;
+    expireDate: string;
+    amount: { value: string; currency: 'Eur' };
+  };
+  paymentMethod: PaymentMethod;
+  returnStatus: {
+    statusCode: '000' | string
+  }
 };
 
 export {
@@ -627,7 +646,8 @@ export {
   BookingList,
   DBRawBookingList,
   DiscountCode,
-  SibsWebHookSchema
+  SibsWebHookSchema,
+  SibsStatusResponse
 };
 
 // https://www.i18next.com/overview/typescript#argument-of-type-defaulttfuncreturn-is-not-assignable-to-parameter-of-type-xyz

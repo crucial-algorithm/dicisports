@@ -17,6 +17,10 @@ import { uploadToS3 } from '~/server/utils/s3';
 import { findEvent, updateEventRegulation } from '~/server/db/events.server';
 import { NotFound, Unauthorized } from '~/server/utils/misc';
 
+export const handle = {
+  i18n: ['create-event-form']
+};
+
 const RESOURCES_NS = 'create-event-form';
 
 export const action: ActionFunction = async ({ request, params }) => {
@@ -40,7 +44,7 @@ export const action: ActionFunction = async ({ request, params }) => {
 
       const fileExtension = path.parse(filename as string).ext;
       const currentDate = new Date();
-      const prefix = `events/${currentDate.getFullYear()}${currentDate.getMonth()}/${eventId}`;
+      const prefix = `events/${currentDate.getFullYear()}${String(currentDate.getMonth() + 1).padStart(2, '0')}/${eventId}`;
       const key = await uploadToS3(
         Readable.from(data),
         prefix,

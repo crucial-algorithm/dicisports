@@ -65,8 +65,7 @@ import {
   findEvent,
   publishEvent,
   unpublishEvent,
-  updateEvent,
-  updateEventRegulation
+  updateEvent
 } from '~/server/db/events.server';
 
 import { findEventPerks } from '~/server/db/perks.server';
@@ -312,7 +311,7 @@ export const action: ActionFunction = async ({ request, params }) => {
           s.regulationContent &&
           s?.regulationContent?.length > 1) ||
         (s.regulationPath &&
-          s?.regulationPath?.length > 5 &&
+          s?.regulationPath?.length > 1 &&
           s.regulationContent === null),
       {
         message: t('Add Regulation'),
@@ -520,7 +519,7 @@ export default function OrganizerEventRoute() {
   }
 
   useEffect(() => {
-    if (fetcher?.data?.ok) {
+    if (fetcher?.data?.ok && fetcher?.type === 'actionReload') {
       fileUploadHandlerEvent?.options?.clear();
     }
 

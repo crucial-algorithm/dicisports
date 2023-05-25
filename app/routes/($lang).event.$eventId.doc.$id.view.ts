@@ -32,7 +32,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     throw Unauthorized(t('Not authorized'));
   }
 
-  const body = await downloadFromS3(document.path);
+  const body = await downloadFromS3(document.path as string);
 
   //@ts-ignore
   return new Response(body, {
