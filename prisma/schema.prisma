@@ -280,7 +280,7 @@ model Participant {
   gender           String?           @db.Char(1)
   birthdate        DateTime?
   phoneNumber      Int?              @map("phone_number")
-  identityCard     String?           @map("identity_card") @unique
+  identityCard     String?           @map("identity_card")
   federationNumber Int?              @map("federation_number")
   shirtSize        Int?              @map("shirt_size")
   shirt            ShirtSize?        @relation(fields: [shirtSize], references: [id])
