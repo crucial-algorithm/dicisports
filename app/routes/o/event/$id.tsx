@@ -913,6 +913,19 @@ export default function OrganizerEventRoute() {
           </div>
 
           <ButtonGroup className="mt-8">
+            <ButtonLink type="button" variant="secondary" to="/o">
+              {t('Cancel')}
+            </ButtonLink>
+
+            <Button
+              type="submit"
+              variant="primary"
+              name={event.status === 'auto' ? 'create-event' : 'update-event'}
+            >
+              {event.status === 'auto' ? t('Create Button') : t('Save Button')}
+            </Button>
+          </ButtonGroup>
+          <ButtonGroup className="mt-24 border-t border-gray-300 dark:border-gray-300 pt-6">
             {event.status === 'published' && (
               <Button
                 id="unpublish"
@@ -935,18 +948,6 @@ export default function OrganizerEventRoute() {
               onClick={handleShowDeleteEventWarning}
             >
               {t('Delete Event')}
-            </Button>
-
-            <ButtonLink type="button" variant="secondary" to="/o">
-              {t('Cancel')}
-            </ButtonLink>
-
-            <Button
-              type="submit"
-              variant="primary"
-              name={event.status === 'auto' ? 'create-event' : 'update-event'}
-            >
-              {event.status === 'auto' ? t('Create Button') : t('Save Button')}
             </Button>
           </ButtonGroup>
           {actionData?.errors?.submit && (
