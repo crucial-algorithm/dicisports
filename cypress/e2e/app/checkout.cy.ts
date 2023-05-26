@@ -559,7 +559,7 @@ describe('Checkout', () => {
 
         .get('input[name=last-name]')
         .should('have.length.at.least', 1)
-        .and('have.value', 'Lopes');
+        .and('have.value', 'Rego');
     });
 
     it.skip('should book a race', () => {
@@ -698,7 +698,7 @@ function registerParticipant(eventId: string, raceId: string) {
     .type('937654321')
 
     .get('input[name=identity-card]')
-    .type('987654321')
+    .type('87654321')
 
     .get('input[name=federation-number]')
     .type('8165238')
@@ -769,7 +769,7 @@ function bookParticipant(eventId: string, raceId: string) {
         .type('937654321')
 
         .get('input[name=identity-card]')
-        .type('987654321')
+        .type('87654321')
 
         .get('input[name=federation-number]')
         .type('8165238')

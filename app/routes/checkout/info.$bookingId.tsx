@@ -110,7 +110,7 @@ export const action: ActionFunction = async ({ request, params }) => {
       gender: form.get('gender') as string,
       birthdate: new Date(form.get('birthdate') as string),
       phoneNumber: parseInt(phoneNumber),
-      identityCard: (form.get('identity-card') as string) || null,
+      identityCard: form.get('identity-card') as string,
       federationNumber:
         parseInt(form.get('federation-number') as string) || null,
       shirtSize: parseInt(form.get('shirt') as string),
@@ -145,7 +145,9 @@ export const action: ActionFunction = async ({ request, params }) => {
             val.toString().startsWith('96'),
           t('Invalid number')
         ),
-      identityCard: z.string().nullable(),
+      identityCard: z
+        .string({ required_error: t('Field Required') })
+        .length(8, { message: t('Exactly 8 Chars') }),
       federationNumber: z.number().nullable(),
       shirtSize: z.number({
         required_error: t('Field Required'),

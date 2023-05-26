@@ -9,6 +9,7 @@
     "phoneNumber": 917493827,
     "shirtSize": 1,
     "postalCode": "4730-000",
+    "identityCard": "00000001",
     "status": "saved"
   },
   {
@@ -21,6 +22,7 @@
     "phoneNumber": 969283740,
     "shirtSize": 1,
     "postalCode": "4730-000",
+    "identityCard": "00000000",
     "status": "saved"
   },
   {
@@ -59,6 +61,7 @@
     "phoneNumber": 939203458,
     "shirtSize": 1,
     "postalCode": "4730-000",
+    "identityCard": "00000002",
     "status": "saved"
   },
   {
@@ -72,6 +75,7 @@
     "shirtSize": 5,
     "nationality": 188,
     "postalCode": "4730-454",
+    "identityCard": "00000003",
     "status": "saved"
   },
   {
@@ -84,6 +88,7 @@
     "phoneNumber": 918146512,
     "shirtSize": 1,
     "postalCode": "4730-000",
+    "identityCard": "00000004",
     "status": "saved"
   },
   {
@@ -96,6 +101,7 @@
     "phoneNumber": 938146576,
     "shirtSize": 1,
     "postalCode": "4730-000",
+    "identityCard": "00000005",
     "status": "saved"
   }
 ]

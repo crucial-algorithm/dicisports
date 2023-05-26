@@ -43,6 +43,8 @@
   "Max 9 Number": "Apenas permitidos 9 dígitos",
   "Invalid Option": "Opção inválida",
   "Invalid Type": "Tipo inválido",
+  "Exactly 8 Chars": "Campo deve conter exatamente 8 caracteres",
+
 
   "No Races In Checkout": "Nenhuma distância no carrinho !",
   "Can't Create Booking": "Não foi possível criar o booking",
