@@ -84,6 +84,14 @@ export const action: ActionFunction = async ({ request, params }) => {
     return redirect('/');
   }
 
+  if (booking && booking.status === CheckoutStatus.confirmed) {
+    if (booking.userId === clientId) {
+      return redirect(`/checkout/confirmation/${booking.id}`);
+    }
+
+    return redirect('/');
+  }
+
   const eventId = booking.eventId;
 
   // We check if user is authenticated -> authenticatedClient, if not, we use the client session -> anonymousClient

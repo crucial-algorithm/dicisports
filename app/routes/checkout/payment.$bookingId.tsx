@@ -74,6 +74,14 @@ export const action: ActionFunction = async ({ request, params }) => {
       ? authenticatedClient.id
       : anonymousClient.getClientId();
 
+  if (booking && booking.status === CheckoutStatus.confirmed) {
+    if (booking.userId === clientId) {
+      return redirect(`/checkout/confirmation/${booking.id}`);
+    }
+
+    return redirect('/');
+  }
+
   const actionId = form.get('actionId');
 
   if (actionId === 'update-info') {
