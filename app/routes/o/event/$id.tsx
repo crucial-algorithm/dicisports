@@ -22,14 +22,13 @@ import {
 } from '@remix-run/node';
 
 import clsx from 'clsx';
-import type { TabViewTabChangeEvent } from 'primereact/tabview';
-import { TabPanel, TabView } from 'primereact/tabview';
-
+import { Toast } from 'primereact/toast';
 import type { FileUploadHandlerEvent } from 'primereact/fileupload';
 
 import mapBoxGlCss from 'mapbox-gl/dist/mapbox-gl.css';
 
 import * as React from 'react';
+import type { ChangeEvent } from 'react';
 import { useEffect, useRef, useState } from 'react';
 
 import { useTranslation } from 'react-i18next';
@@ -99,8 +98,14 @@ import type {
 import { badRequest } from '~/utils/misc';
 import UploadFile from '~/components/UploadFile';
 
+type ResponseFeedback = {
+  severity: 'error' | 'success' | 'info' | 'warn';
+  message: string;
+}
+
 type ActionData = {
   hash: number;
+  feedback?: ResponseFeedback;
   errors?: {
     name?: string;
     startAt?: string;
@@ -109,6 +114,8 @@ type ActionData = {
     description?: string;
     directions?: string;
     submit?: string;
+    races?: string;
+    regulation?: string;
   };
 };
 
@@ -126,7 +133,7 @@ type LoaderData = {
   sports: Array<Sport>;
   mapToken: string;
   imageUploadPreset: string;
-  event: SportEvent | null;
+  event: SportEvent;
   perks: Array<Perk>;
   races: Array<Race>;
   difficulties: Array<Difficulty>;
@@ -315,7 +322,7 @@ export const action: ActionFunction = async ({ request, params }) => {
           s.regulationContent === null),
       {
         message: t('Add Regulation'),
-        path: ['submit']
+        path: ['regulation']
       }
     );
 
@@ -327,14 +334,18 @@ export const action: ActionFunction = async ({ request, params }) => {
       .nullable();
   }
 
+  let feedback: ResponseFeedback | undefined;
+
   try {
     await updateEvent(data, perks, newPerks);
+    feedback = { severity: 'success', message: t('Event Saved') };
 
     if (actionId === actionIds.publish) {
       EventSchema.parse({ ...data, races: races.map((r) => r.id) });
 
       if (user.role === Role.ORGANIZER) {
         await publishEvent(event.id as string, data.name);
+        feedback = { severity: 'success', message: t('Event Published') };
       } else {
         // User is not yet an organizer, so let's redirect him to create his organizer profile.
         // We may need to check if he has a profile already and if so, redirect him elsewhere.
@@ -344,6 +355,7 @@ export const action: ActionFunction = async ({ request, params }) => {
 
     if (actionId === actionIds.unpublish) {
       await unpublishEvent(event.id as string);
+      feedback = { severity: 'success', message: t('Event Unpublished') };
     }
 
     const updatedEvent = await findEvent(event.id);
@@ -355,7 +367,7 @@ export const action: ActionFunction = async ({ request, params }) => {
       return redirect(`/o/event/${event.id}/dashboard`);
     }
 
-    return json({});
+    return json({ feedback });
   } catch (e) {
     if (!(e instanceof ZodError)) {
       const tc = await i18n.getFixedT(request, 'common');
@@ -415,11 +427,13 @@ export default function OrganizerEventRoute() {
     perks: dbPerks,
     races: dbRaces,
     difficulties
-  } = useLoaderData<LoaderData>();
-  const actionData = useActionData<ActionData>();
+  } = useLoaderData<LoaderData>() as LoaderData;
+  const actionData = useActionData<ActionData>() as ActionData;
   const [showLocationPicker, setShowLocationPicker] = useState<boolean>(false);
+  const toast = useRef<Toast>(null);
   const fetcher = useFetcher();
-  
+  const feedback = actionData?.feedback;
+
   const [perks, setPerks] = useState<Array<StrippedPerk>>(dbPerks);
   const [races, setRaces] = useState<Array<Race>>(dbRaces);
   const [location, setLocation] = useState<DiciLocation | null>(
@@ -435,8 +449,8 @@ export default function OrganizerEventRoute() {
   const inputEl = useRef(null);
   const deleteForm = useRef<HTMLFormElement>(null);
   const isPublished = event.status === Status.published;
-  const [tabIndex, setTabIndex] = useState<number>(
-    event.regulationPath ? 1 : 0
+  const [regulationOption, setRegulationOption] = useState<'text' | 'file'>(
+    event.regulationPath ? 'file' : 'text'
   );
   const [fileUploadHandlerEvent, setFileUploadHandlerEvent] =
     useState<FileUploadHandlerEvent | null>(null);
@@ -514,8 +528,8 @@ export default function OrganizerEventRoute() {
     );
   }
 
-  function onTabChange(e: TabViewTabChangeEvent) {
-    setTabIndex(e.index);
+  function handleRegulationOption(e: ChangeEvent<HTMLInputElement>) {
+    setRegulationOption(e.target.value as 'text' | 'file');
   }
 
   useEffect(() => {
@@ -524,11 +538,29 @@ export default function OrganizerEventRoute() {
     }
 
     setRaces(dbRaces);
-  }, [fileUploadHandlerEvent, fetcher, dbRaces]);
+  }, [fileUploadHandlerEvent, fetcher, dbRaces, toast, event]);
+
+  useEffect(() => {
+    const main = window.document.querySelector('#organizer-main-container');
+
+    if (!toast.current || !feedback) {
+      return;
+    }
+
+    toast.current.show({
+      severity: feedback.severity,
+      detail: feedback.message,
+      life: 3000
+    });
+
+    main && main.scrollTo({ top: 0, behavior: 'smooth' });
+
+  }, [feedback]);
 
   return (
     <Main>
       <div className="mb-24">
+        <Toast ref={toast} />
         <UploadForm method="post" className="w-full">
           <div className="mb-12 lg:mb-20">
             <div className="flex flex-row items-start justify-between items-center">
@@ -635,9 +667,7 @@ export default function OrganizerEventRoute() {
                 }
                 options={difficulties
                   .sort((a: Difficulty, b: Difficulty) => a.id - b.id)
-                  .map((d: Difficulty) => {
-                    return { value: d.id, label: d.name };
-                  })}
+                  .map((d: Difficulty) => ({ value: d.id, label: d.name }))}
               />
             </FormField>
           </div>
@@ -806,11 +836,11 @@ export default function OrganizerEventRoute() {
                 {t('No Races')}
               </H6>
             </WhenListEmpty>
-            {actionData?.errors?.races ? (
+            {actionData?.errors?.races && (
               <InputError className="mt-8" id="error-message">
                 {actionData?.errors?.races}
               </InputError>
-            ) : null}
+            )}
           </div>
 
           <FormField
@@ -827,58 +857,90 @@ export default function OrganizerEventRoute() {
             </div>
           </FormField>
 
-          <div id="regulation" className="mb-12">
-            <FormField label={t('Regulation')}>
-              <TabView activeIndex={tabIndex} onTabChange={onTabChange}>
-                <TabPanel header={t('Write Regulation')}>
-                  <TextArea
-                    name="regulation"
-                    className="input-text h-80"
-                    defaultValue={
-                      event.regulationContent ? event.regulationContent : ''
-                    }
+          <FormField label={t('Regulation')}>
+            <fieldset>
+              <div className="flex flex-wrap gap-3">
+                <div className="flex items-center">
+                  <input
+                    id="regulation-option-text"
+                    name="regulation-option"
+                    type="radio"
+                    className="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300"
+                    defaultChecked={regulationOption === 'text'}
+                    onChange={handleRegulationOption}
+                    value="text"
                   />
-                </TabPanel>
-                <TabPanel
-                  header={t('Upload Regulation')}
-                  contentClassName="flex flex-col gap-y-2 items-start p-4 w-full"
-                  id="add-regulation"
-                >
-                  <UploadFile
-                    name="file"
-                    mode="advanced"
-                    chooseLabel={t('Upload Regulation Button')}
-                    accept=".pdf"
-                    customUpload={true}
-                    uploadHandler={uploadHandler}
-                    emptyTemplate={
-                      <p className="m-0">{t('Regulation Dropzone')}</p>
-                    }
-                    contentClassName="p-4"
-                    className="w-full"
+                  <label
+                    htmlFor="regulation-option-text"
+                    className="ml-3 block text-sm font-medium text-gray-700"
+                  >
+                    {t('Write Regulation')}
+                  </label>
+                </div>
+                <div className="flex items-center">
+                  <input
+                    id="regulation-option-file"
+                    name="regulation-option"
+                    type="radio"
+                    className="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300"
+                    defaultChecked={regulationOption === 'file'}
+                    onChange={handleRegulationOption}
+                    value="file"
                   />
-                  {event.regulationPath && fileName && (
-                    <div className="text-center">
-                      <Link
-                        to={`/event/${event.id}/regulation/view`}
-                        target="_blank"
-                        rel="noreferrer"
-                        data-cy="regulation"
-                      >
-                        {fileName}
-                      </Link>
-                    </div>
-                  )}
-                </TabPanel>
-              </TabView>
-            </FormField>
+                  <label
+                    htmlFor="regulation-option-file"
+                    className="ml-3 block text-sm font-medium text-gray-700"
+                  >
+                    {t('Upload Regulation')}
+                  </label>
+                </div>
+              </div>
+            </fieldset>
+          </FormField>
 
-            {actionData?.errors?.regulation ? (
-              <InputError className="mt-8" id="error-message">
-                {actionData?.errors?.regulation}
-              </InputError>
-            ) : null}
-          </div>
+          {regulationOption === 'text' && (
+            <TextArea
+              name="regulation"
+              className="input-text h-80 mb-8"
+              defaultValue={
+                event.regulationContent ? event.regulationContent : ''
+              }
+            />
+          )}
+
+          {regulationOption === 'file' && (
+            <div className="h-80 mb-8">
+              <UploadFile
+                name="file"
+                mode="advanced"
+                chooseLabel={t('Upload Regulation Button')}
+                accept=".pdf"
+                customUpload={true}
+                uploadHandler={uploadHandler}
+                emptyTemplate={<p className="m-0">{t('Regulation Dropzone')}</p>}
+                contentClassName="p-4"
+                className="w-full"
+              />
+            </div>
+          )}
+          {event.regulationPath && fileName && (
+            <div className="text-center">
+              <Link
+                to={`/event/${event.id}/regulation/view`}
+                target="_blank"
+                rel="noreferrer"
+                data-cy="regulation"
+              >
+                {fileName}
+              </Link>
+            </div>
+          )}
+
+          {actionData?.errors?.regulation && (
+            <InputError className="mt-8" id="error-message">
+              {actionData?.errors?.regulation}
+            </InputError>
+          )}
 
           <div id="documents" className="mb-12">
             <Label

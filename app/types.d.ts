@@ -359,7 +359,9 @@ type FavoriteEvent = {
   updatedAt?: Date;
 };
 
-type Difficulty = {} & DBDifficulty;
+type Difficulty = {
+  name: string;
+} & DBDifficulty;
 
 type Ticket = {
   race: Race;
