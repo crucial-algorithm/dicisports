@@ -1,7 +1,34 @@
+import { Role } from '@prisma/client';
+import type { LoaderFunction } from '@remix-run/node';
+
+import { json, redirect } from '@remix-run/node';
+
 import { ButtonLink } from '~/components/shared/Button';
 import Main from '~/components/shared/Main';
 import { IsUserAuthenticated, IsUserUnAuthenticated } from '~/components/shared/Roles';
 import { H1, H3 } from '~/components/shared/typography';
+import { getUser } from '~/server/auth/session.server';
+import { findUserEvents } from '~/server/db/events.server';
+
+export const loader: LoaderFunction = async ({ request, params }) => {
+  const user = await getUser(request);
+
+  if (!user) {
+    return json({});
+  }
+
+  const events = await findUserEvents(user.id);
+
+  if (user.role === Role.ORGANIZER) {
+    return redirect('/o');
+  }
+
+  if (events.length >= 0) {
+    return redirect(`/o/event/${events[0].id}`);
+  }
+
+  return json({});
+};
 
 export default function OrganizersLandingPage() {
   return (
