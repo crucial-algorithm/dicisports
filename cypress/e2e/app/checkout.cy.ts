@@ -576,6 +576,34 @@ describe('Checkout', () => {
         }
       );
     });
+
+    it('should display error when submitting form without indetity card filled', () => {
+      cy.intercept('GET', '*?_data=routes*checkout*')
+        .as('selectRace')
+
+        .visitAndWaitForHydration('/event/trail-do-zezere')
+
+        .get('button[name=race-Rd9SETi59X9ava6CPhkY]')
+        .click()
+
+        .wait('@selectRace')
+
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.include('/checkout/info/');
+        })
+
+        .intercept('POST', '*?_data=routes*checkout*')
+        .as('saveParticipant')
+
+        .get('#save-button')
+        .click()
+
+        .wait('@saveParticipant')
+
+        .get('#identity-card-error')
+        .should('exist');
+    });
   });
 
   context('Security', () => {
