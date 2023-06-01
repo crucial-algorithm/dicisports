@@ -675,7 +675,9 @@ describe('Checkout', () => {
             body: formData
           })
           .then((l) => {
-            expect(l.redirects[0]).to.include('/checkout/confirmation/e8pHPLNjnNxKTzoGwtLh');
+            expect(l.redirects[0]).to.include(
+              '/checkout/confirmation/e8pHPLNjnNxKTzoGwtLh'
+            );
           });
       });
 
@@ -683,14 +685,16 @@ describe('Checkout', () => {
         const formData = new FormData();
 
         cy.login()
-            .request({
-              url: '/checkout/payment/e8pHPLNjnNxKTzoGwtLh',
-              method: 'POST',
-              body: formData
-            })
-            .then((l) => {
-              expect(l.redirects[0]).to.include('/checkout/confirmation/e8pHPLNjnNxKTzoGwtLh');
-            });
+          .request({
+            url: '/checkout/payment/e8pHPLNjnNxKTzoGwtLh',
+            method: 'POST',
+            body: formData
+          })
+          .then((l) => {
+            expect(l.redirects[0]).to.include(
+              '/checkout/confirmation/e8pHPLNjnNxKTzoGwtLh'
+            );
+          });
       });
     });
   });
