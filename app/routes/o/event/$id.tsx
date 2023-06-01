@@ -101,7 +101,7 @@ import UploadFile from '~/components/UploadFile';
 type ResponseFeedback = {
   severity: 'error' | 'success' | 'info' | 'warn';
   message: string;
-}
+};
 
 type ActionData = {
   hash: number;
@@ -554,7 +554,6 @@ export default function OrganizerEventRoute() {
     });
 
     main && main.scrollTo({ top: 0, behavior: 'smooth' });
-
   }, [feedback]);
 
   return (
@@ -917,22 +916,23 @@ export default function OrganizerEventRoute() {
                 accept=".pdf"
                 customUpload={true}
                 uploadHandler={uploadHandler}
-                emptyTemplate={<p className="m-0">{t('Regulation Dropzone')}</p>}
+                emptyTemplate={
+                  <p className="m-0">{t('Regulation Dropzone')}</p>
+                }
                 contentClassName="p-4"
                 className="w-full"
               />
-            </div>
-          )}
-          {event.regulationPath && fileName && (
-            <div className="text-center">
-              <Link
-                to={`/event/${event.id}/regulation/view`}
-                target="_blank"
-                rel="noreferrer"
-                data-cy="regulation"
-              >
-                {fileName}
-              </Link>
+
+              {event.regulationPath && fileName && (
+                <Link
+                  to={`/event/${event.id}/regulation/view`}
+                  target="_blank"
+                  rel="noreferrer"
+                  data-cy="regulation"
+                >
+                  {fileName}
+                </Link>
+              )}
             </div>
           )}
 
