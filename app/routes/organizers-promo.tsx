@@ -4,8 +4,12 @@ import type { LoaderFunction } from '@remix-run/node';
 import { json, redirect } from '@remix-run/node';
 
 import { ButtonLink } from '~/components/shared/Button';
+import DisplayImg from '~/components/shared/DisplayImg';
 import Main from '~/components/shared/Main';
-import { IsUserAuthenticated, IsUserUnAuthenticated } from '~/components/shared/Roles';
+import {
+  IsUserAuthenticated,
+  IsUserUnAuthenticated
+} from '~/components/shared/Roles';
 import { H1, H3 } from '~/components/shared/typography';
 import { getUser } from '~/server/auth/session.server';
 import { findUserEvents } from '~/server/db/events.server';
@@ -33,16 +37,77 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 export default function OrganizersLandingPage() {
   return (
     <Main>
-      <H1 className="mb-8">Vamos-te ajudar a fazer crescer o teu evento</H1>
-      <H3 className="mb-4">Cria o site do evento de forma fácil e rápida</H3>
-      <H3 className="mb-4">Alcança novas audiências</H3>
-      <H3 className="mb-4">Controla todo o processo de inscrição</H3>
+      <div className="relative grid grid-cols-4 gap-x-4 md:grid-cols-8 lg:grid-cols-12 lg:gap-x-6 mx-auto max-w-7xl">
+        <H3 className="mb-8 col-span-full">
+          Bem-vindo à DiciSports, a plataforma que lhe permite organizar
+          qualquer tipo de evento desportivo.
+        </H3>
+        <p className="max-w-full text-lg text-secondary prose prose-light dark:prose-dark mb-8 col-span-full">
+          A DiciSports pretende revolucionar a forma como promove os seus
+          eventos e interage com os participantes. Com um interface amigável e
+          ferramentas poderosas facilitamos a gestão de eventos, ajudando-o a
+          alcançar novos patamares de sucesso.
+        </p>
+      </div>
+
+      <div className="relative grid grid-cols-4 gap-x-4 md:grid-cols-8 lg:grid-cols-12 lg:gap-x-6 mx-auto max-w-7xl mb-16">
+        <div className="col-span-full lg:col-span-6">
+          <DisplayImg imageId="product/organizers-1" />
+        </div>
+        <div className="col-span-full lg:col-span-5 lg:col-start-7">
+          <p className="text-xl font-medium md:text-2xl text-black dark:text-white mb-3 mt-3 md:mt-0">
+            Porquê escolher a DiciSports?
+          </p>
+          <div className="flex flex-col gap-8">
+            <p className="max-w-full text-lg text-secondary prose prose-light dark:prose-dark">
+              <strong>Alcance uma vasta audiência:</strong> A DiciSports dispõe
+              de uma rede de atletas que procuram ativamente eventos desportivos
+              emocionantes. Alcance milhares de indivíduos desejosos de
+              ultrapassar os seus limites e participar em eventos memoráveis.
+            </p>
+            <p className="max-w-full text-lg text-secondary prose prose-light dark:prose-dark">
+              <strong>Simplifique a sua gestão:</strong> Simplifique o processo
+              de organização de eventos com nossa plataforma intuitiva. Crie a
+              sua página do evento, capture as inscrições com várias formas de
+              pagamento seguras e comunique com os participantes, economizando
+              tempo e energia.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div className="relative grid grid-cols-4 gap-x-4 md:grid-cols-8 lg:grid-cols-12 lg:gap-x-6 mx-auto max-w-7xl mb-16">
+        <div className="col-span-full lg:mb-0 flex items-start justify-end md:pl-10 lg:col-span-6 lg:col-start-6">
+          <DisplayImg imageId="product/organizers-2c" />
+        </div>
+        <div className="col-span-full pt-6 lg:col-start-1 lg:row-start-1 lg:flex lg:h-full lg:flex-col lg:col-span-5">
+          <div className="flex flex-auto flex-col opacity-100 gap-8">
+            <p className="max-w-full text-lg text-secondary prose prose-light dark:prose-dark">
+              <strong>Aumente a visibilidade do evento:</strong> crie a página
+              do seu evento, destacando os aspectos exclusivos da sua corrida,
+              incluindo todos os detalhes logísticos, mapas dos percursos,
+              descontos, etc.. Além da nossa pesquisa que permite aos
+              interessados filtrar por características dos eventos, a nossa
+              plataforma está optimizada para motores de busca, tornando mais
+              fácil aos participantes descobrir a sua prova e registar-se.
+            </p>
+            <p className="max-w-full text-lg text-secondary prose prose-light dark:prose-dark">
+              <strong>Comunique com os participantes:</strong> mantenha-os
+              informados com nossas ferramentas de comunicação integradas. Envie
+              atualizações, informações da corrida e lembretes aos participantes
+              por e-mail, garantindo uma experiência perfeita para todos os
+              envolvidos.
+            </p>
+          </div>
+        </div>
+      </div>
+
       <IsUserAuthenticated>
-        <ButtonLink to="/o/event/create">Iniciar</ButtonLink>
+        <ButtonLink to="/o/event/create">Cria o teu evento</ButtonLink>
       </IsUserAuthenticated>
       <IsUserUnAuthenticated>
-        <ButtonLink to="/login?a=create-event">Iniciar</ButtonLink>
+        <ButtonLink to="/login?a=create-event">Cria o teu evento</ButtonLink>
       </IsUserUnAuthenticated>
-  </Main>
+    </Main>
   );
 }
