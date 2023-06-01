@@ -84,14 +84,6 @@ export const action: ActionFunction = async ({ request, params }) => {
     return redirect('/');
   }
 
-  if (booking && booking.status === CheckoutStatus.confirmed) {
-    if (booking.userId === clientId) {
-      return redirect(`/checkout/confirmation/${booking.id}`);
-    }
-
-    return redirect('/');
-  }
-
   const eventId = booking.eventId;
 
   // We check if user is authenticated -> authenticatedClient, if not, we use the client session -> anonymousClient
@@ -102,6 +94,14 @@ export const action: ActionFunction = async ({ request, params }) => {
 
   if (booking.userId !== clientId) {
     throw Unauthorized(t('Not authorized'));
+  }
+
+  if (booking && booking.status === CheckoutStatus.confirmed) {
+    if (booking.userId === clientId) {
+      return redirect(`/checkout/confirmation/${booking.id}`);
+    }
+
+    return redirect('/');
   }
 
   const actionId = form.get('actionId');

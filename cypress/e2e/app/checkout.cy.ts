@@ -663,6 +663,36 @@ describe('Checkout', () => {
           expect(l.pathname).to.eq('/checkout/confirmation/e8pHPLNjnNxKTzoGwtLh');
         });
     });
+
+    context('should not be able to update booking', () => {
+      it('/info', () => {
+        const formData = new FormData();
+
+        cy.login()
+          .request({
+            url: '/checkout/info/e8pHPLNjnNxKTzoGwtLh',
+            method: 'POST',
+            body: formData
+          })
+          .then((l) => {
+            expect(l.redirects[0]).to.include('/checkout/confirmation/e8pHPLNjnNxKTzoGwtLh');
+          });
+      });
+
+      it('/payment', () => {
+        const formData = new FormData();
+
+        cy.login()
+            .request({
+              url: '/checkout/payment/e8pHPLNjnNxKTzoGwtLh',
+              method: 'POST',
+              body: formData
+            })
+            .then((l) => {
+              expect(l.redirects[0]).to.include('/checkout/confirmation/e8pHPLNjnNxKTzoGwtLh');
+            });
+      });
+    });
   });
 });
 
