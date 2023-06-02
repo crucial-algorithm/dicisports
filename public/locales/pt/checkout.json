@@ -43,7 +43,7 @@
   "Max 9 Number": "Apenas permitidos 9 dígitos",
   "Invalid Option": "Opção inválida",
   "Invalid Type": "Tipo inválido",
-  "Exactly 8 Chars": "Campo deve conter exatamente 8 caracteres",
+  "Invalid CC Length": "Introduza o seu número de identificação sem dígitos de controlo",
 
 
   "No Races In Checkout": "Nenhuma distância no carrinho !",

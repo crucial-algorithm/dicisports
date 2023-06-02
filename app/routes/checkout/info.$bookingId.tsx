@@ -147,7 +147,7 @@ export const action: ActionFunction = async ({ request, params }) => {
         ),
       identityCard: z
         .string({ required_error: t('Field Required') })
-        .length(8, { message: t('Exactly 8 Chars') }),
+        .length(8, { message: t('Invalid CC Length') }),
       federationNumber: z.number().nullable(),
       shirtSize: z.number({
         required_error: t('Field Required'),
