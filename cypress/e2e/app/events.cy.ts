@@ -657,7 +657,7 @@ describe('Event', () => {
 
         .wait('@EventRequests')
 
-        .get('#pr_id_4_header_1')
+        .get('#regulation-option-file')
         .click()
 
         .get('#file .p-button > input')

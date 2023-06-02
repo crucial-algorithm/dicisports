@@ -96,6 +96,14 @@ export const action: ActionFunction = async ({ request, params }) => {
     throw Unauthorized(t('Not authorized'));
   }
 
+  if (booking && booking.status === CheckoutStatus.confirmed) {
+    if (booking.userId === clientId) {
+      return redirect(`/checkout/confirmation/${booking.id}`);
+    }
+
+    return redirect('/');
+  }
+
   const actionId = form.get('actionId');
   const hash = form.get('hash') as string;
   const regulation: boolean = (form.get('regulation') as string) === 'on';
