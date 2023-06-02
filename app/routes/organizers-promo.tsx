@@ -10,7 +10,7 @@ import {
   IsUserAuthenticated,
   IsUserUnAuthenticated
 } from '~/components/shared/Roles';
-import { H1, H3 } from '~/components/shared/typography';
+import { H3 } from '~/components/shared/typography';
 import { getUser } from '~/server/auth/session.server';
 import { findUserEvents } from '~/server/db/events.server';
 
@@ -21,12 +21,14 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     return json({});
   }
 
+  console.log('---> user:', user);
   const events = await findUserEvents(user.id);
 
   if (user.role === Role.ORGANIZER) {
     return redirect('/o');
   }
 
+  console.log('---> events length and 0', events.length, events[0]);
   if (events.length >= 0) {
     return redirect(`/o/event/${events[0].id}`);
   }
@@ -103,10 +105,10 @@ export default function OrganizersLandingPage() {
       </div>
 
       <IsUserAuthenticated>
-        <ButtonLink to="/o/event/create">Cria o teu evento</ButtonLink>
+        <ButtonLink to="/o/event/create">Crie o seu evento</ButtonLink>
       </IsUserAuthenticated>
       <IsUserUnAuthenticated>
-        <ButtonLink to="/login?a=create-event">Cria o teu evento</ButtonLink>
+        <ButtonLink to="/login?a=create-event">Crie o seu evento</ButtonLink>
       </IsUserUnAuthenticated>
     </Main>
   );
