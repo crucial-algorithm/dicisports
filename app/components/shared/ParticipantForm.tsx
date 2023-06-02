@@ -197,7 +197,7 @@ export default function ParticipantForm({
         >
           <TextField
             name="identity-card"
-            placeholder={t('Optional')}
+            placeholder={t('Required')}
             defaultValue={
               (selectedParticipant?.identityCard as string) ||
               (participant?.identityCard as string)
