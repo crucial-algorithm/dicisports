@@ -3,7 +3,7 @@ import * as React from 'react';
 
 import { useIsAdmin, useIsOrganizer, useUser } from '~/hooks';
 
-type RoleProps = { children: ReactElement<any, any> | ReactElement<any, any>[] | string };
+type RoleProps = { children: ReactElement<any, any> | ReactElement<any, any>[] | string | boolean };
 
 function IsAdmin({ children }: RoleProps) {
   const is = useIsAdmin();
