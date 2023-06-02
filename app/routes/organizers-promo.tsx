@@ -21,15 +21,13 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     return json({});
   }
 
-  console.log('---> user:', user);
   const events = await findUserEvents(user.id);
 
   if (user.role === Role.ORGANIZER) {
     return redirect('/o');
   }
 
-  console.log('---> events length and 0', events.length, events[0]);
-  if (events.length >= 0) {
+  if (events.length > 0) {
     return redirect(`/o/event/${events[0].id}`);
   }
 

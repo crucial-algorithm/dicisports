@@ -27,7 +27,6 @@ import { SunIcon } from './shared/icons/SunIcon';
 import { MoonIcon } from './shared/icons/MoonIcon';
 import { TeamCircle } from './shared/icons/TeamCircle';
 
-
 const LINKS = [
   {
     name: 'Events Menu',
@@ -45,10 +44,19 @@ const LINKS = [
   }
 ];
 
-const MOBILE_LINKS = [{ name: 'Home', to: '/', public: true, roles: [], id: 'home' }, ...LINKS];
+const MOBILE_LINKS = [
+  { name: 'Home', to: '/', public: true, roles: [], id: 'home' },
+  ...LINKS
+];
 
 const links = (
-  list: Array<{ name: string; to: string; public: boolean; roles: string[], id: string }>,
+  list: Array<{
+    name: string;
+    to: string;
+    public: boolean;
+    roles: string[];
+    id: string;
+  }>,
   user: User | null
 ) => {
   return list.filter(
@@ -60,7 +68,10 @@ const links = (
   );
 };
 
-function NavLink({ to, ...rest }: Omit<Parameters<typeof Link>['0'], 'to'> & { to: string }) {
+function NavLink({
+  to,
+  ...rest
+}: Omit<Parameters<typeof Link>['0'], 'to'> & { to: string }) {
   const location = useLocation();
   const isSelected =
     to === location.pathname || location.pathname.startsWith(`${to}/`);
@@ -85,7 +96,13 @@ function NavLink({ to, ...rest }: Omit<Parameters<typeof Link>['0'], 'to'> & { t
 
 const iconTransformOrigin = { transformOrigin: '50% 100px' };
 
-function DarkModeToggle({ variant = 'icon', onToggle }: { variant?: 'icon' | 'labelled', onToggle?: () => void }) {
+function DarkModeToggle({
+  variant = 'icon',
+  onToggle
+}: {
+  variant?: 'icon' | 'labelled';
+  onToggle?: () => void;
+}) {
   const [, setTheme] = useTheme();
   const { t } = useTranslation('common');
 
@@ -136,7 +153,13 @@ function DarkModeToggle({ variant = 'icon', onToggle }: { variant?: 'icon' | 'la
   );
 }
 
-function MobileMenuList({ isExpanded, linkClicked }: { isExpanded: boolean, linkClicked: () => void }) {
+function MobileMenuList({
+  isExpanded,
+  linkClicked
+}: {
+  isExpanded: boolean;
+  linkClicked: () => void;
+}) {
   const { t } = useTranslation('common');
   const shouldReduceMotion = useReducedMotion();
   const { user } = useRootData();
@@ -225,11 +248,15 @@ function MobileMenu() {
 
   return (
     <>
-      <button data-cy="mobile-menu" onClick={handleTriggerMenu} className={clsx(
-        'w-14 h-14 p-1 rounded-full border-2 border-secondary text-primary transition',
-        'inline-flex items-center justify-center',
-        'focus:border-primary focus:outline-none hover:border-primary'
-      )}>
+      <button
+        data-cy="mobile-menu"
+        onClick={handleTriggerMenu}
+        className={clsx(
+          'w-14 h-14 p-1 rounded-full border-2 border-secondary text-primary transition',
+          'inline-flex items-center justify-center',
+          'focus:border-primary focus:outline-none hover:border-primary'
+        )}
+      >
         <svg
           width="32"
           height="32"
@@ -392,9 +419,13 @@ function Navbar() {
         <div className="flex items-center justify-center">
           <ul className="hidden lg:flex">
             <IsNotAnOrganizer>
-              <li className="px-5 py-2">
-                <CTALandingPublishYourEvent cta={t('CTA Publish Your Event')} />
-              </li>
+              {location.pathname !== '/organizers-promo' && (
+                <li className="px-5 py-2">
+                  <CTALandingPublishYourEvent
+                    cta={t('CTA Publish Your Event')}
+                  />
+                </li>
+              )}
             </IsNotAnOrganizer>
           </ul>
           <div className="block lg:hidden">
