@@ -1,9 +1,10 @@
 [
   {
     "id": "aaa",
-    "name": "Abastecimenots",
+    "name": "Abastecimentos",
     "isDefault": true,
     "isEnabled": false,
+    "displayOrder": 1,
     "eventId": "MY4bvgxDbMtGv8rbYe5d"
   },
   {
@@ -11,6 +12,7 @@
     "name": "Chuveiros",
     "isDefault": true,
     "isEnabled": false,
+    "displayOrder": 2,
     "eventId": "MY4bvgxDbMtGv8rbYe5d"
   },
   {
@@ -18,6 +20,7 @@
     "name": "Resultados cronometrados",
     "isDefault": true,
     "isEnabled": true,
+    "displayOrder": 3,
     "eventId": "MY4bvgxDbMtGv8rbYe5d"
   },
   {
@@ -25,6 +28,7 @@
     "name": "Material para teste",
     "isDefault": false,
     "isEnabled": true,
+    "displayOrder": 4,
     "eventId": "MY4bvgxDbMtGv8rbYe5d"
   },
   {
@@ -32,6 +36,7 @@
     "name": "Lanche de oferta",
     "isDefault": false,
     "isEnabled": false,
+    "displayOrder": 5,
     "eventId": "MY4bvgxDbMtGv8rbYe5d"
   },
   {
@@ -39,6 +44,7 @@
     "name": "Abastecimentos",
     "isDefault": true,
     "isEnabled": false,
+    "displayOrder": 6,
     "eventId": "bQmGXYkbhJetjk6mniMt"
   },
   {
@@ -46,6 +52,7 @@
     "name": "Chuveiros",
     "isDefault": true,
     "isEnabled": true,
+    "displayOrder": 7,
     "eventId": "bQmGXYkbhJetjk6mniMt"
   },
   {
@@ -53,6 +60,7 @@
     "name": "Resultados cronometrados",
     "isDefault": true,
     "isEnabled": true,
+    "displayOrder": 8,
     "eventId": "bQmGXYkbhJetjk6mniMt"
   },
   {
@@ -60,6 +68,7 @@
     "name": "Abastecimentos",
     "isDefault": true,
     "isEnabled": false,
+    "displayOrder": 9,
     "eventId": "gLqrDfMx6qkTHn6hoZqA"
   },
   {
@@ -67,6 +76,7 @@
     "name": "Chuveiros",
     "isDefault": true,
     "isEnabled": false,
+    "displayOrder": 10,
     "eventId": "gLqrDfMx6qkTHn6hoZqA"
   },
   {
@@ -74,6 +84,7 @@
     "name": "Resultados cronometrados",
     "isDefault": true,
     "isEnabled": false,
+    "displayOrder": 11,
     "eventId": "gLqrDfMx6qkTHn6hoZqA"
   },
   {
@@ -81,6 +92,7 @@
     "name": "Abastecimentos",
     "isDefault": true,
     "isEnabled": false,
+    "displayOrder": 12,
     "eventId": "cmWJ3DMDwzJRwMaTQv53"
   },
   {
@@ -88,6 +100,7 @@
     "name": "Chuveiros",
     "isDefault": true,
     "isEnabled": true,
+    "displayOrder": 13,
     "eventId": "cmWJ3DMDwzJRwMaTQv53"
   },
   {
@@ -95,6 +108,7 @@
     "name": "Resultados cronometrados",
     "isDefault": true,
     "isEnabled": true,
+    "displayOrder": 13,
     "eventId": "cmWJ3DMDwzJRwMaTQv53"
   },
   {
@@ -102,6 +116,7 @@
     "name": "Abastecimentos",
     "isDefault": true,
     "isEnabled": false,
+    "displayOrder": 14,
     "eventId": "TgKZi8NQKNoJQGArd3zc"
   },
   {
@@ -109,6 +124,7 @@
     "name": "Chuveiros",
     "isDefault": true,
     "isEnabled": true,
+    "displayOrder": 15,
     "eventId": "TgKZi8NQKNoJQGArd3zc"
   },
   {
@@ -116,6 +132,7 @@
     "name": "Resultados cronometrados",
     "isDefault": true,
     "isEnabled": true,
+    "displayOrder": 16,
     "eventId": "TgKZi8NQKNoJQGArd3zc"
   }
 ]
