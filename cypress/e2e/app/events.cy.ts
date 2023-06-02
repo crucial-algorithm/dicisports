@@ -45,18 +45,12 @@ describe('Event', () => {
         .contains(description)
 
         .get('[data-cy=perk]')
-        .should('have.length', 10)
-
-        .get('[name=perk-checkbox-bbb]')
-        .should('be.checked')
+        .should('have.length', 5)
 
         .get('[name=perk-checkbox-ccc]')
         .should('be.checked')
 
-        .get('[name=perk-checkbox-fff]')
-        .should('be.checked')
-
-        .get('[name=perk-checkbox-iii]')
+        .get('[name=perk-checkbox-ddd]')
         .should('be.checked')
 
         .get('[data-cy=directions]')
@@ -203,14 +197,8 @@ describe('Event', () => {
 
         .write('event-description', 'O Peso da Régua será ponto de partida')
 
-        .get('input[data-cy=perk-1]')
-        .check()
-
-        .get('input[data-cy=perk-5]')
-        .check()
-
-        .get('input[data-cy=perk-6]')
-        .check()
+        .get('input[data-cy=perk-0]')
+        .uncheck()
 
         // Create a new race
         .get('a[data-cy=create-race]')
@@ -434,11 +422,11 @@ describe('Event', () => {
           expect(l.pathname).to.eq('/o/event/MY4bvgxDbMtGv8rbYe5d');
         })
 
-        .get('[data-cy=perk-10]')
+        .get('[data-cy=perk-5]')
         .should('exist')
         .and('be.checked')
 
-        .get('[data-cy=perk-label-10]')
+        .get('[data-cy=perk-label-5]')
         .contains('a new perk')
 
         .visitAndWaitForHydration('/event/love-tiles-douro-granfondo-2023')
