@@ -62,7 +62,7 @@ async function createDefaultPerks(
       name: perk.name[language],
       createdAt: perksAt,
       isDefault: true,
-      isEnabled: false,
+      isEnabled: true,
       eventId: eventId
     });
   }

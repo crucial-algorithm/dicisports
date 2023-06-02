@@ -767,7 +767,7 @@ export default function OrganizerEventRoute() {
             </div>
           </FormField>
 
-          <FormField label={t('Perks')}>
+          <FormField label={t('Perks')} description={t('Perks Description')}>
             <div className="grid grid-rows-8 md:grid-rows-6 md:grid-flow-col gap-y-4 md:gap-y-2 mb-2">
               {perks
                 .sort((a, b) => a.displayOrder - b.displayOrder)
