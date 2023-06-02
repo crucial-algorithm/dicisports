@@ -232,12 +232,13 @@ async function findUserSavedParticipants(
   userId: string
 ): Promise<Participant[] | null> {
   const results: Array<DBRawParticipant> = await db.$queryRaw`
-        SELECT *
-        FROM participants p
-        WHERE EXISTS(SELECT 1 FROM bookings b WHERE p.user_id = b.user_id AND b.status = 'confirmed')
-          AND user_id = ${userId}
-          AND status = 'saved';
-    `;
+    SELECT *
+    FROM participants p
+    WHERE EXISTS(SELECT 1 FROM bookings b WHERE p.user_id = b.user_id AND b.status = 'confirmed')
+      AND user_id = ${userId}
+      AND status = 'saved'
+    ORDER BY first_name;
+  `;
 
   return results.map(dbParticipantToParticipant);
 }

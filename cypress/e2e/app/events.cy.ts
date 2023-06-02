@@ -436,7 +436,7 @@ describe('Event', () => {
           expect(l.pathname).to.eq('/event/love-tiles-douro-granfondo-2023');
         })
 
-        .get('label[data-cy=perk-9]')
+        .get('[data-cy^=perk-]')
         .contains('a new perk');
     });
 
