@@ -1,5 +1,5 @@
 import { ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline';
-import { Status } from '@prisma/client';
+import { CheckoutStatus, Status } from '@prisma/client';
 import type { ActionFunction, LoaderFunction } from '@remix-run/node';
 import { json, redirect } from '@remix-run/node';
 import {
@@ -71,10 +71,19 @@ export const action: ActionFunction = async ({ request, params }) => {
   const actionId = form.get('actionId') as string;
   const raceId = form.get('raceId') as string;
 
+  const booking: Booking | null = await findBooking(clientId, eventId);
+
+  if (booking && booking.status === CheckoutStatus.confirmed) {
+    if (booking.userId === clientId) {
+      return redirect(`/checkout/confirmation/${booking.id}`);
+    }
+
+    return redirect('/');
+  }
+
   try {
     // Triggered when user clicks continue in the cart screen
     if (actionId === actions.checkout) {
-      const booking: Booking | null = await findBooking(clientId, eventId);
       const userEventRaceParticipants = await findUserEventRaceParticipants(
         clientId,
         eventId
@@ -145,8 +154,6 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   if (!event || event.status !== Status.published) {
     return redirect('/');
   }
-
-  // const races = await findEventRacesCartQtd(eventId, clientId);
 
   return json({
     event,

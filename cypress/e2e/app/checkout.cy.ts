@@ -650,6 +650,53 @@ describe('Checkout', () => {
             .should('include', 'Regulamento');
         });
     });
+
+    it('should not add participant if booking is already confirmed', () => {
+      cy.login()
+        .visitAndWaitForHydration('/checkout/cart/MY4bvgxDbMtGv8rbYe5d')
+
+        .get('#add-race-AhowRdNWCBQWSuivSt7s')
+        .click()
+
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.eq('/checkout/confirmation/e8pHPLNjnNxKTzoGwtLh');
+        });
+    });
+
+    context('should not be able to update booking', () => {
+      it('/info', () => {
+        const formData = new FormData();
+
+        cy.login()
+          .request({
+            url: '/checkout/info/e8pHPLNjnNxKTzoGwtLh',
+            method: 'POST',
+            body: formData
+          })
+          .then((l) => {
+            expect(l.redirects[0]).to.include(
+              '/checkout/confirmation/e8pHPLNjnNxKTzoGwtLh'
+            );
+          });
+      });
+
+      it('/payment', () => {
+        const formData = new FormData();
+
+        cy.login()
+          .request({
+            url: '/checkout/payment/e8pHPLNjnNxKTzoGwtLh',
+            method: 'POST',
+            body: formData
+          })
+          .then((l) => {
+            expect(l.redirects[0]).to.include(
+              '/checkout/confirmation/e8pHPLNjnNxKTzoGwtLh'
+            );
+          });
+      });
+    });
   });
 });
 
