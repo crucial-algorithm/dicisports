@@ -968,9 +968,14 @@ export default function OrganizerEventRoute() {
               <DocumentsList documents={event.documents} eventId={event.id} />
             </div>
             <WhenListEmpty list={event.documents}>
-              <H6 className="text-center p-12" variant="secondary" as="p">
-                {t('No Documents')}
-              </H6>
+              <div className="text-center p-12">
+                <H6 className="mb-2" as="p">
+                  {t('No Documents - CTA')}
+                </H6>
+                <H6 variant="secondary" as="p">
+                  {t('No Documents')}
+                </H6>
+              </div>
             </WhenListEmpty>
           </div>
 
