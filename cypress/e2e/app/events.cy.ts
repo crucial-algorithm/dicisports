@@ -422,11 +422,11 @@ describe('Event', () => {
           expect(l.pathname).to.eq('/o/event/MY4bvgxDbMtGv8rbYe5d');
         })
 
-        .get('[data-cy=perk-10]')
+        .get('[data-cy=perk-5]')
         .should('exist')
         .and('be.checked')
 
-        .get('[data-cy=perk-label-10]')
+        .get('[data-cy=perk-label-5]')
         .contains('a new perk')
 
         .visitAndWaitForHydration('/event/love-tiles-douro-granfondo-2023')
