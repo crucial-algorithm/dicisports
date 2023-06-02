@@ -1,10 +1,15 @@
 import clsx from 'clsx';
 import React, { useState } from 'react';
-import type { EditorProps, EditorTextChangeEvent } from 'primereact/editor';
+import type { EditorTextChangeEvent } from 'primereact/editor';
 import { Editor } from 'primereact/editor';
 import { useTranslation } from 'react-i18next';
 
-type TextAreaProps = {} & EditorProps;
+type TextAreaProps = {
+  defaultValue?: string | number | readonly string[] | undefined | null;
+  name: string;
+  placeholder?: string;
+  className?: string;
+};
 
 function clearReactWarning() {}
 

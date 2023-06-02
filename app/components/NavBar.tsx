@@ -391,15 +391,6 @@ function Navbar() {
 
         <div className="flex items-center justify-center">
           <ul className="hidden lg:flex">
-            <IsAdmin>
-              <NavLink to="/o" data-cy="events">
-                {t('Events Menu')}
-              </NavLink>
-              <NavLink to="/g/groups" data-cy="groups">
-                {t('Groups Menu')}
-              </NavLink>
-            </IsAdmin>
-
             <IsNotAnOrganizer>
               <li className="px-5 py-2">
                 <CTALandingPublishYourEvent cta={t('CTA Publish Your Event')} />

@@ -66,8 +66,9 @@
   "GPX": "Percurso GPX",
   "Download GPX File": "Percurso (GPX)",
   "Select a document": "Selecione um documento",
-  "Event Published": "Evento publicado com sucesso",
-  "Event Unpublished": "Evento despublicado com sucesso",
+  "Event Saved": "Evento guardado",
+  "Event Published": "Evento publicado",
+  "Event Unpublished": "Evento ocultado",
   "Regulation": "Regulamento",
   "Pending": "Em Processamento",
 
