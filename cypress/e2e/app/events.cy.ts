@@ -649,7 +649,10 @@ describe('Event', () => {
         .click()
 
         .get('#file .p-button > input')
-        .selectFile('cypress/assets/sample.pdf', { action: 'drag-drop', force: true })
+        .selectFile('cypress/assets/sample.pdf', {
+          action: 'drag-drop',
+          force: true
+        })
 
         .wait('@EventRequests')
 
@@ -781,6 +784,32 @@ describe('Event', () => {
         .get('[data-cy=race]')
         .should('have.length', 4)
         .and('contain', 'a new race');
+    });
+    it('should unpublish and publish an event with internal booking', () => {
+      cy.intercept('POST', '/o/event/*_data=routes*')
+        .as('publishAndUnpublishEvent')
+
+        .visitAndWaitForHydration('/o/event/gLqrDfMx6qkTHn6hoZqA')
+
+        .get('#unpublish')
+        .click()
+
+        .wait('@publishAndUnpublishEvent')
+
+        .get('#publish')
+        .click()
+
+        .wait('@publishAndUnpublishEvent')
+
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.eq('/o/event/gLqrDfMx6qkTHn6hoZqA/dashboard');
+        })
+
+        .visitAndWaitForHydration('/event/trilho-dos-moinhos')
+
+        .get('[data-cy=event-not-found]')
+        .should('not.exist');
     });
   });
 });

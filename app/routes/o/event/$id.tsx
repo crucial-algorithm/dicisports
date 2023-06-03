@@ -27,8 +27,8 @@ import type { FileUploadHandlerEvent } from 'primereact/fileupload';
 
 import mapBoxGlCss from 'mapbox-gl/dist/mapbox-gl.css';
 
-import * as React from 'react';
 import type { ChangeEvent } from 'react';
+import * as React from 'react';
 import { useEffect, useRef, useState } from 'react';
 
 import { useTranslation } from 'react-i18next';
@@ -295,9 +295,6 @@ export const action: ActionFunction = async ({ request, params }) => {
       useExternalBooking: z.boolean({
         invalid_type_error: t('Invalid Type')
       }),
-      externalBookingUrl: z
-        .string({ invalid_type_error: t('Invalid URL') })
-        .url(),
       description: z
         .string({
           invalid_type_error: t('Invalid Type'),
@@ -312,6 +309,15 @@ export const action: ActionFunction = async ({ request, params }) => {
       regulationPath: z.string().nullable(),
       regulationContent: z.string().nullable()
     })
+    .and(
+      data.useExternalBooking
+        ? z.object({
+            externalBookingUrl: z
+              .string({ invalid_type_error: t('Invalid URL') })
+              .url({ message: t('Invalid URL') })
+          })
+        : null
+    )
     .refine(
       (s) =>
         (s.regulationPath === null &&
@@ -325,14 +331,6 @@ export const action: ActionFunction = async ({ request, params }) => {
         path: ['regulation']
       }
     );
-
-  if (!data.useExternalBooking) {
-    // @ts-ignore Don't like this... can we solve it with z.discriminatedUnion?
-    EventSchema.externalBookingUrl = z
-      .string({ invalid_type_error: t('Invalid URL') })
-      .url()
-      .nullable();
-  }
 
   let feedback: ResponseFeedback | undefined;
 
