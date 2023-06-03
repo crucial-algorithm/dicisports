@@ -649,7 +649,10 @@ describe('Event', () => {
         .click()
 
         .get('#file .p-button > input')
-        .selectFile('cypress/assets/sample.pdf', { action: 'drag-drop', force: true })
+        .selectFile('cypress/assets/sample.pdf', {
+          action: 'drag-drop',
+          force: true
+        })
 
         .wait('@EventRequests')
 
@@ -727,6 +730,86 @@ describe('Event', () => {
 
         .get('div[data-cy=regulation]')
         .contains('Devoluções aceites apenas com justificação válida.');
+    });
+
+    it('should create race without price early bird', () => {
+      cy.loginOrganiser()
+        .visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d')
+
+        .get('a[data-cy=create-race]')
+        .click()
+
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.match(/.*\/new$/);
+        })
+
+        .get('input[name=name]')
+        .type('a new race')
+
+        .get('input[name=distance]')
+        .type('10')
+
+        .pickOptionFromSelect('hour', 9)
+
+        .get('input[name=elevationGain]')
+        .type('9')
+
+        .get('input[name=elevationLoss]')
+        .type('8')
+
+        .get('input[name=price]')
+        .type('25')
+
+        .write('description', '10km run')
+
+        .get('input[name="track"]')
+        .selectFile('cypress/assets/sample.gpx', { force: true })
+
+        .intercept('POST', '/o/event/MY4bvgxDbMtGv8rbYe5d/race/*')
+        .as('CreateRace')
+
+        .get('button[name=create-race-button]')
+        .click()
+
+        .wait('@CreateRace')
+
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.eq('/o/event/MY4bvgxDbMtGv8rbYe5d');
+        })
+
+        .visitAndWaitForHydration('/event/love-tiles-douro-granfondo-2023')
+
+        .get('[data-cy=race]')
+        .should('have.length', 4)
+        .and('contain', 'a new race');
+    });
+    it('should unpublish and publish an event with internal booking', () => {
+      cy.intercept('POST', '/o/event/*_data=routes*')
+        .as('publishAndUnpublishEvent')
+
+        .visitAndWaitForHydration('/o/event/gLqrDfMx6qkTHn6hoZqA')
+
+        .get('#unpublish')
+        .click()
+
+        .wait('@publishAndUnpublishEvent')
+
+        .get('#publish')
+        .click()
+
+        .wait('@publishAndUnpublishEvent')
+
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.eq('/o/event/gLqrDfMx6qkTHn6hoZqA/dashboard');
+        })
+
+        .visitAndWaitForHydration('/event/trilho-dos-moinhos')
+
+        .get('[data-cy=event-not-found]')
+        .should('not.exist');
     });
   });
 });

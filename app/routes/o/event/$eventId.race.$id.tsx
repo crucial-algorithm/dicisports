@@ -239,7 +239,8 @@ export const action: ActionFunction = async ({ params, request }) => {
         ]
       }
     )
-    .refine((s) => s.priceEarlyBird && (s.price > s.priceEarlyBird), {
+    // if price early bird is null, return true to ignore refine, otherwise it will trigger an error
+    .refine((s) => !s.priceEarlyBird ? true : s.priceEarlyBird && (s.price > s.priceEarlyBird), {
       message: t('Cheaper Early Bird'),
       path: ['priceEarlyBird']
     });
