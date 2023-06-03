@@ -316,7 +316,7 @@ export const action: ActionFunction = async ({ request, params }) => {
               .string({ invalid_type_error: t('Invalid URL') })
               .url({ message: t('Invalid URL') })
           })
-        : null
+        : z.object({})
     )
     .refine(
       (s) =>
