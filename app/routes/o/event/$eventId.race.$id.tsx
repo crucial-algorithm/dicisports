@@ -46,6 +46,7 @@ import {
   hoursMinutesToTimeOfDay,
   timeOfDayToHoursMinutes
 } from '~/utils/misc';
+import ScrollToTop from '~/components/ScrollToTop';
 
 type LoaderData = {
   event: Event;
@@ -281,6 +282,7 @@ export default function RaceRoute() {
   const [hour, minute] = timeOfDayToHoursMinutes(
     race?.startTime ? race.startTime : hoursMinutesToTimeOfDay(9, 0)
   );
+  const main = window.document.querySelector('#organizer-main-container');
 
   function FileListItems(files: File[]) {
     const dt = new ClipboardEvent('').clipboardData || new DataTransfer();
@@ -321,6 +323,8 @@ export default function RaceRoute() {
 
   return (
     <Main>
+      <ScrollToTop element={main} />
+
       <UploadForm>
         <input type="hidden" name="eventId" value={event.id} />
         <input type="hidden" name="raceId" value={race?.id} />
@@ -502,7 +506,7 @@ export default function RaceRoute() {
           <ButtonLink
             variant="secondary"
             type="submit"
-            to={`/o/event/${event.id}`}
+            to={`/o/event/${event.id}#races`}
           >
             {t('Cancel')}
           </ButtonLink>
