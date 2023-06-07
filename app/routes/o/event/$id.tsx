@@ -97,6 +97,7 @@ import type {
 } from '~/types';
 import { badRequest } from '~/utils/misc';
 import UploadFile from '~/components/UploadFile';
+import { findConfirmedBookings } from '~/server/db/booking.server';
 
 type ResponseFeedback = {
   severity: 'error' | 'success' | 'info' | 'warn';
@@ -162,6 +163,8 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     return redirect('/');
   }
 
+  const confirmedBookings = await findConfirmedBookings(eventId);
+
   return json({
     mapToken: MAPBOX_TOKEN,
     imageUploadPreset: CLOUDINARY_UPLOAD_PRESET,
@@ -173,7 +176,8 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     races: await findEventRaces(eventId),
     difficulties: difficulties.map((d) => {
       return { id: d.id, name: d.name };
-    })
+    }),
+    hasRegistrations: confirmedBookings.length > 0
   });
 };
 
@@ -424,7 +428,8 @@ export default function OrganizerEventRoute() {
     event,
     perks: dbPerks,
     races: dbRaces,
-    difficulties
+    difficulties,
+    hasRegistrations
   } = useLoaderData<LoaderData>() as LoaderData;
   const actionData = useActionData<ActionData>() as ActionData;
   const [showLocationPicker, setShowLocationPicker] = useState<boolean>(false);
@@ -990,31 +995,33 @@ export default function OrganizerEventRoute() {
               {event.status === 'auto' ? t('Create Button') : t('Save Button')}
             </Button>
           </ButtonGroup>
-          <ButtonGroup className="mt-24 border-t border-gray-300 dark:border-gray-300 pt-6">
-            {event.status === 'published' && (
-              <Button
-                id="unpublish"
-                className="mb-4 md:mb-0"
-                name="actionId"
-                type="submit"
-                size="medium"
-                variant="danger"
-                data-cy="unpublish"
-                value={actionIds.unpublish}
-              >
-                {t('Unpublish Button')}
-              </Button>
-            )}
+          {event.status !== 'auto' && !hasRegistrations && (
+            <ButtonGroup className="mt-24 border-t border-gray-300 dark:border-gray-300 pt-6">
+              {event.status === 'published' && (
+                <Button
+                  id="unpublish"
+                  className="mb-4 md:mb-0"
+                  name="actionId"
+                  type="submit"
+                  size="medium"
+                  variant="danger"
+                  data-cy="unpublish"
+                  value={actionIds.unpublish}
+                >
+                  {t('Unpublish Button')}
+                </Button>
+              )}
 
-            <Button
-              name="delete-button"
-              type="button"
-              variant="danger"
-              onClick={handleShowDeleteEventWarning}
-            >
-              {t('Delete Event')}
-            </Button>
-          </ButtonGroup>
+              <Button
+                name="delete-button"
+                type="button"
+                variant="danger"
+                onClick={handleShowDeleteEventWarning}
+              >
+                {t('Delete Event')}
+              </Button>
+            </ButtonGroup>
+          )}
           {actionData?.errors?.submit && (
             <InputError className="mt-8" id="500-error-message">
               {actionData?.errors?.submit}
