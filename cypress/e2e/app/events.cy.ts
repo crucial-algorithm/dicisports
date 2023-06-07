@@ -811,6 +811,70 @@ describe('Event', () => {
         .get('[data-cy=event-not-found]')
         .should('not.exist');
     });
+
+    it('should save event changes when adding race/doc - not published', () => {
+      cy.visitAndWaitForHydration('/o/event/TgKZi8NQKNoJQGArd3zc')
+
+        .get('input[name=event-name]')
+        .type(' updated')
+        .should('have.value', 'Flavius Challenge OCR updated')
+
+        .intercept('POST', '/o/event/TgKZi8NQKNoJQGArd3zc*')
+        .as('addNewRace')
+
+        .get('#create-race')
+        .click()
+
+        .wait('@addNewRace')
+
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.match(/.*\/new$/);
+        })
+
+        .get('#cancel-button')
+        .click()
+
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.eq('/o/event/TgKZi8NQKNoJQGArd3zc');
+        })
+
+        .get('input[name=event-name]')
+        .should('have.value', 'Flavius Challenge OCR updated');
+    });
+
+    it('should save event changes when adding race/doc - published', () => {
+      cy.visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d')
+
+        .get('input[name=event-name]')
+        .type(' updated')
+        .should('have.value', 'Love Tiles Douro Granfondo 2023 updated')
+
+        .intercept('POST', '/o/event/MY4bvgxDbMtGv8rbYe5d*')
+        .as('addNewRace')
+
+        .get('#create-race')
+        .click()
+
+        .wait('@addNewRace')
+
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.match(/.*\/new$/);
+        })
+
+        .get('#cancel-button')
+        .click()
+
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.eq('/o/event/MY4bvgxDbMtGv8rbYe5d');
+        })
+
+        .get('input[name=event-name]')
+        .should('have.value', 'Love Tiles Douro Granfondo 2023');
+    });
   });
 });
 

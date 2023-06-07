@@ -124,7 +124,9 @@ const actionIds = {
   unpublish: 'unpublish',
   deleteEvent: 'delete-event',
   deleteRegulation: 'delete-regulation',
-  uploadRegulation: 'upload-regulation'
+  uploadRegulation: 'upload-regulation',
+  addNewRace: 'add-new-race',
+  addNewDocument: 'add-new-doc'
 };
 
 const RESOURCES_NS = 'create-event-form';
@@ -335,6 +337,25 @@ export const action: ActionFunction = async ({ request, params }) => {
   let feedback: ResponseFeedback | undefined;
 
   try {
+    if (actionId === actionIds.addNewRace) {
+      // Only save event changes when it is not published, otherwise just redirect
+      if (eventStatus !== Status.published) {
+        await updateEvent(data, perks, newPerks);
+      }
+
+      console.log('here');
+
+      return redirect('race/new');
+    }
+
+    if (actionId === actionIds.addNewDocument) {
+      if (eventStatus !== Status.published) {
+        await updateEvent(data, perks, newPerks);
+      }
+
+      return redirect('doc/new');
+    }
+
     await updateEvent(data, perks, newPerks);
     feedback = { severity: 'success', message: t('Event Saved') };
 
@@ -812,18 +833,25 @@ export default function OrganizerEventRoute() {
             >
               {t('Distances')}
 
-              <ButtonLink className="hidden lg:flex" to="race/new">
+              <Button
+                className="hidden lg:flex"
+                type="submit"
+                name="actionId"
+                value="add-new-race"
+              >
                 {t('Create Distance')}
-              </ButtonLink>
+              </Button>
 
-              <ButtonLink
+              <Button
                 className="flex lg:hidden"
-                to="race/new"
+                type="submit"
+                name="actionId"
+                value="add-new-race"
                 size="small"
-                data-cy="create-race"
+                id="create-race"
               >
                 <PlusIcon className="md:h-6 w-6 m-0 inline-block" />
-              </ButtonLink>
+              </Button>
             </Label>
             <div>
               <RacesList races={races} eventId={event.id} />
@@ -949,18 +977,24 @@ export default function OrganizerEventRoute() {
             >
               {t('Documents')}
 
-              <ButtonLink className="hidden lg:flex" type="button" to="doc/new">
+              <Button
+                className="hidden lg:flex"
+                type="submit"
+                name="actionId"
+                value="add-new-doc"
+              >
                 {t('Upload Document')}
-              </ButtonLink>
-              <ButtonLink
-                type="button"
-                to="doc/new"
+              </Button>
+              <Button
+                type="submit"
+                name="actionId"
+                value="add-new-doc"
                 size="small"
                 className="flex lg:hidden"
                 data-cy="create-document"
               >
                 <PlusIcon className="md:h-6 w-6 m-0 inline-block"></PlusIcon>
-              </ButtonLink>
+              </Button>
             </Label>
             <div>
               <DocumentsList documents={event.documents} eventId={event.id} />

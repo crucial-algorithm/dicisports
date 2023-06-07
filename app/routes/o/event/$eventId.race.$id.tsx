@@ -507,6 +507,7 @@ export default function RaceRoute() {
             variant="secondary"
             type="submit"
             to={`/o/event/${event.id}#races`}
+            id="cancel-button"
           >
             {t('Cancel')}
           </ButtonLink>
