@@ -265,13 +265,11 @@ describe('Event', () => {
         .intercept('POST', '/o/event/*_data=routes*')
         .as('createEvent')
 
-        .get('button[name=create-event]')
+        .get('button[name=update-event]')
         .click()
 
         .wait('@createEvent')
         .wait('@EventRequests')
-
-        .get('button[name=update-event]')
 
         .get('#publish')
         .should('exist');
