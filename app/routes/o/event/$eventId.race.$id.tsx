@@ -253,7 +253,7 @@ export const action: ActionFunction = async ({ params, request }) => {
       ? await createRace(raceData)
       : await updateRace(raceData, deletedGPX === 'true');
 
-    return redirect(`/o/event/${event.id}`);
+    return redirect(`/o/event/${event.id}#races`);
   } catch (e) {
     if (!(e instanceof ZodError)) {
       console.error(e);
@@ -323,7 +323,7 @@ export default function RaceRoute() {
 
   return (
     <Main>
-      <ScrollToTop element={main} />
+      <ScrollToTop element={main as Element} />
 
       <UploadForm>
         <input type="hidden" name="eventId" value={event.id} />

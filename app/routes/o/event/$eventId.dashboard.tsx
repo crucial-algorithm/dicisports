@@ -248,7 +248,7 @@ export default function DashboardRoute() {
 
   return (
     <Main>
-      <ScrollToTop element={main} />
+      <ScrollToTop element={main as Element} />
 
       <div className="flex flex-row justify-between mb-8 w-full">
         <H2 className="text-sp-light-blue-900">

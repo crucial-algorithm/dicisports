@@ -184,7 +184,7 @@ export const action: ActionFunction = async ({ request, params }) => {
       ? await createDocument(documentData)
       : await updateDocument(documentData);
 
-    return redirect(`/o/event/${event.id}`);
+    return redirect(`/o/event/${event.id}#documents`);
   } catch (e) {
     if (!(e instanceof ZodError)) {
       console.error(e);
@@ -295,7 +295,7 @@ export default function EventDocumentRoute() {
           <ButtonLink
             variant="secondary"
             type="submit"
-            to={`/o/event/${event.id}`}
+            to={`/o/event/${event.id}#documents`}
           >
             {t('Cancel')}
           </ButtonLink>
