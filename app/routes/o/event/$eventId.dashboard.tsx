@@ -41,6 +41,7 @@ import {
 } from '~/server/db/races.server';
 import { findRaceParticipants } from '~/server/db/participant.server';
 import exportRaceParticipantsToExcel from '~/utils/ExportParticipants';
+import ScrollToTop from '~/components/ScrollToTop';
 
 type LoaderData = {
   event: Event;
@@ -142,6 +143,7 @@ export default function DashboardRoute() {
   let minPrice = 0;
   let totalClicks = 0;
   const numberOfPages = Math.ceil(totalRaceParticipants / 10);
+  const main = window.document.querySelector('#organizer-main-container');
 
   const sortedRaces = event.races
     .sort((a: Race, b: Race) => a.price - b.price)
@@ -246,6 +248,8 @@ export default function DashboardRoute() {
 
   return (
     <Main>
+      <ScrollToTop element={main as Element} />
+
       <div className="flex flex-row justify-between mb-8 w-full">
         <H2 className="text-sp-light-blue-900">
           <b data-cy="name" className="break-words w-full">
