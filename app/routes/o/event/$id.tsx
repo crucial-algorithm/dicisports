@@ -991,7 +991,7 @@ export default function OrganizerEventRoute() {
                 value="add-new-doc"
                 size="small"
                 className="flex lg:hidden"
-                data-cy="create-document"
+                id="create-document"
               >
                 <PlusIcon className="md:h-6 w-6 m-0 inline-block"></PlusIcon>
               </Button>

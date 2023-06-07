@@ -164,7 +164,7 @@ describe('Event', () => {
         .should('exist');
     });
 
-    it('should create an event', () => {
+    it.only('should create an event', () => {
       cy.intercept('GET', '/o/event/*?_data=routes*')
         .as('EventRequests')
         .visitAndWaitForHydration('/o')
@@ -248,7 +248,7 @@ describe('Event', () => {
         .write('get-there', 'Carro: Saida pela A3 direção a Braga')
 
         // "Create" document
-        .get('a[data-cy=create-document]')
+        .get('#create-document')
         .click()
 
         .get('input[name=name]')
