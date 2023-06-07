@@ -201,7 +201,7 @@ describe('Event', () => {
         .uncheck()
 
         // Create a new race
-        .get('a[data-cy=create-race]')
+        .get('#create-race')
         .click()
 
         .location()
@@ -535,7 +535,7 @@ describe('Event', () => {
       cy.loginOrganiser()
         .visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d')
 
-        .get('a[data-cy=create-race]')
+        .get('#create-race')
         .click()
 
         .location()
@@ -736,7 +736,7 @@ describe('Event', () => {
       cy.loginOrganiser()
         .visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d')
 
-        .get('a[data-cy=create-race]')
+        .get('#create-race')
         .click()
 
         .location()
