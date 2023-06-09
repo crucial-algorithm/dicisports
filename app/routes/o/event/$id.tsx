@@ -259,7 +259,7 @@ export const action: ActionFunction = async ({ request, params }) => {
     startAt: new Date(date), //TODO: hour
     lat: location.lat,
     lng: location.lng,
-    location: location.address,
+    location: form.get('short-address') as string || null,
     useExternalBooking: form.get('booking') === 'external',
     externalBookingUrl: (form.get('booking-url') as string) || null,
     description: (form.get('event-description') as string) || null,
@@ -674,14 +674,12 @@ export default function OrganizerEventRoute() {
             id="event-location"
             className="w-full"
             error={actionData?.errors?.location}
-            onClick={handleShowMap}
           >
             <TextField
-              name="discard-location"
+              name="short-address"
               id="event-sport"
-              defaultValue={location?.shortAddress}
-              disabled={true}
-              className="cursor-pointer"
+              defaultValue={event?.location || undefined}
+              placeholder={t('Location Placeholder')}
               adornment={
                 <Button
                   name="open-map"
@@ -690,7 +688,7 @@ export default function OrganizerEventRoute() {
                   type="button"
                   onClick={handleShowMap}
                 >
-                  <MapPinIcon className="h-6 w-6 m-0 inline-block" />
+                  {t('Show Map')}
                 </Button>
               }
             />
@@ -699,7 +697,7 @@ export default function OrganizerEventRoute() {
               name="location"
               value={
                 location
-                  ? `${location?.coords}|${location?.shortAddress}`
+                  ? `${location?.coords}`
                   : undefined
               }
             />
