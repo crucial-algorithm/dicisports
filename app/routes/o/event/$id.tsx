@@ -27,7 +27,7 @@ import type { FileUploadHandlerEvent } from 'primereact/fileupload';
 
 import mapBoxGlCss from 'mapbox-gl/dist/mapbox-gl.css';
 
-import type { ChangeEvent, FormEvent } from 'react';
+import type { ChangeEvent } from 'react';
 import * as React from 'react';
 import { useEffect, useRef, useState } from 'react';
 
@@ -346,7 +346,10 @@ export const action: ActionFunction = async ({ request, params }) => {
 
       if (user.role === Role.ORGANIZER) {
         await publishEvent(event.id as string, data.name);
-        feedback = { severity: 'success', message: t('Event Published') };
+
+        return redirect(
+            `/o/event/${event.id}/dashboard?message=${t('Event Published')}`
+        );
       } else {
         // User is not yet an organizer, so let's redirect him to create his organizer profile.
         // We may need to check if he has a profile already and if so, redirect him elsewhere.
@@ -357,15 +360,6 @@ export const action: ActionFunction = async ({ request, params }) => {
     if (actionId === actionIds.unpublish) {
       await unpublishEvent(event.id as string);
       feedback = { severity: 'success', message: t('Event Unpublished') };
-    }
-
-    const updatedEvent = await findEvent(event.id);
-
-    if (
-      updatedEvent?.status === 'published' ||
-      updatedEvent?.status === 'unpublished'
-    ) {
-      return redirect(`/o/event/${event.id}/dashboard`);
     }
 
     return json({ feedback });
@@ -450,9 +444,15 @@ export default function OrganizerEventRoute() {
     useState<boolean>(false);
   const [publishEventModalOpen, setPublishEventModalOpen] =
     useState<boolean>(false);
+  const [unpublishEventModalOpen, setUnpublishEventModalOpen] =
+    useState<boolean>(false);
+  const [isPublish, setIsPublish] = useState<boolean>(false);
+  const [isUnpublish, setIsUnpublish] = useState<boolean>(false);
+
   const inputEl = useRef(null);
   const deleteForm = useRef<HTMLFormElement>(null);
   const eventForm = useRef<HTMLFormElement>(null);
+
   const isPublished = event.status === Status.published;
   const [regulationOption, setRegulationOption] = useState<'text' | 'file'>(
     event.regulationPath ? 'file' : 'text'
@@ -507,8 +507,6 @@ export default function OrganizerEventRoute() {
     setDeleteEventModalOpen(false);
   }
 
-  const [isPublish, setIsPublish] = useState<boolean>(false);
-  
   function handleShowPublishEventDialog() {
     setIsPublish(true);
     setPublishEventModalOpen(true);
@@ -519,12 +517,33 @@ export default function OrganizerEventRoute() {
     setPublishEventModalOpen(false);
   }
 
+  function handleShowUnpublishEventDialog() {
+    setIsUnpublish(true);
+    setUnpublishEventModalOpen(true);
+  }
+
+  function handleDiscardUnpublishEvent() {
+    setIsUnpublish(false);
+    setUnpublishEventModalOpen(false);
+  }
+
   function handlePublishEvent() {
     if (!eventForm.current) {
       return;
     }
+
     eventForm.current.submit();
     setPublishEventModalOpen(false);
+  }
+
+  function handleUnpublishEvent() {
+    if (!eventForm.current) {
+      return;
+    }
+
+    // submitting using ref will cause the page to refresh making it look wierd
+    eventForm.current.submit();
+    setUnpublishEventModalOpen(false);
   }
 
   function handleDeleteEvent() {
@@ -585,13 +604,17 @@ export default function OrganizerEventRoute() {
     <Main>
       <div className="mb-24">
         <Toast ref={toast} />
-        <Form method="post" className="w-full" encType="multipart/form-data" ref={eventForm}>
+        <Form
+          method="post"
+          className="w-full"
+          encType="multipart/form-data"
+          ref={eventForm}
+        >
           {isPublish && (
-            <input
-              type="hidden"
-              name="actionId"
-              value={actionIds.publish}
-            />
+            <input type="hidden" name="actionId" value={actionIds.publish} />
+          )}
+          {isUnpublish && (
+            <input type="hidden" name="actionId" value={actionIds.unpublish} />
           )}
           <div className="mb-12 lg:mb-20">
             <div className="flex flex-row items-start justify-between items-center">
@@ -1029,12 +1052,11 @@ export default function OrganizerEventRoute() {
                 <Button
                   id="unpublish"
                   className="mb-4 md:mb-0"
-                  name="actionId"
-                  type="submit"
+                  type="button"
                   size="medium"
                   variant="danger"
                   data-cy="unpublish"
-                  value={actionIds.unpublish}
+                  onClick={handleShowUnpublishEventDialog}
                 >
                   {t('Unpublish Button')}
                 </Button>
@@ -1085,6 +1107,17 @@ export default function OrganizerEventRoute() {
         secondaryLabel={t('Cancel Publish Event')}
         onDismiss={handleDiscardPublishEvent}
         onConfirm={handlePublishEvent}
+        className="cy-delete-dialog"
+      />
+
+      <ConfirmationDialog
+        isOpen={unpublishEventModalOpen}
+        title={t('Unpublish Event X', { name: event?.name })}
+        question={t('Are you sure you want to unpublish event?')}
+        primaryLabel={t('Confirm Unpublish Event')}
+        secondaryLabel={t('Cancel Unpublish Event')}
+        onDismiss={handleDiscardUnpublishEvent}
+        onConfirm={handleUnpublishEvent}
         className="cy-delete-dialog"
       />
 
