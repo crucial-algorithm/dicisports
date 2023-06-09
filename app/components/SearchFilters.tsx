@@ -27,6 +27,7 @@ function FiltersDialog(props: {
   coords?: string;
   search?: string;
   order: SortMethod;
+  lang: Language;
 }) {
   const { t, i18n } = useTranslation('home');
   const {
@@ -38,9 +39,25 @@ function FiltersDialog(props: {
     onSubmit,
     coords,
     search,
-    order
+    order,
+    lang
   } = props;
-  const sportsOptions: Option[] = sports
+  const sortedSports = sports.sort((a, b) => {
+    const sportA = a.name[lang].toLowerCase();
+    const sportB = b.name[lang].toLowerCase();
+
+    if (sportA < sportB) {
+      return -1;
+    }
+
+    if (sportA < sportB) {
+      return -1;
+    }
+
+    return 0;
+  });
+
+  const sportsOptions: Option[] = sortedSports
     .sort((a, b) => a.id - b.id)
     .map((s) => ({
       value: s.id,

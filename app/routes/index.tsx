@@ -517,6 +517,7 @@ export default function Index() {
           coords={selection ? selection.coords : ''}
           search={selection ? selection.address : ''}
           order={orderBy}
+          lang={lang}
         />
 
         {searchPerformed && (

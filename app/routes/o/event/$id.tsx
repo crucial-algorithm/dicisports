@@ -554,6 +554,21 @@ export default function OrganizerEventRoute() {
     main && main.scrollTo({ top: 0, behavior: 'smooth' });
   }, [feedback]);
 
+  const sortedSports = sports.sort((a, b) => {
+    const sportA = a.name[language].toLowerCase();
+    const sportB = b.name[language].toLowerCase();
+
+    if (sportA < sportB) {
+      return -1;
+    }
+
+    if (sportA < sportB) {
+      return -1;
+    }
+
+    return 0;
+  });
+
   return (
     <Main>
       <div className="mb-24">
@@ -630,9 +645,10 @@ export default function OrganizerEventRoute() {
                 lang={language}
                 placeholder=""
                 defaultValue={event.sportId ? event.sportId : undefined}
-                options={sports.map((s: Sport) => {
-                  return { value: s.id, label: s.name };
-                })}
+                options={sortedSports
+                  .map((s: Sport) => {
+                    return { value: s.id, label: s.name };
+                  })}
               />
             </FormField>
 
