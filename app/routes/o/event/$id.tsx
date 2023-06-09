@@ -27,7 +27,7 @@ import type { FileUploadHandlerEvent } from 'primereact/fileupload';
 
 import mapBoxGlCss from 'mapbox-gl/dist/mapbox-gl.css';
 
-import type { ChangeEvent } from 'react';
+import type { ChangeEvent, FormEvent } from 'react';
 import * as React from 'react';
 import { useEffect, useRef, useState } from 'react';
 
@@ -51,8 +51,6 @@ import InputError from '~/components/shared/form/InputError';
 import Label from '~/components/shared/form/Label';
 import TextArea from '~/components/shared/form/TextArea';
 import TextField from '~/components/shared/form/TextField';
-
-import UploadForm from '~/components/shared/form/UploadForm';
 import UploadImage from '~/components/shared/form/UploadImage';
 import Main from '~/components/shared/Main';
 import { MapDialog } from '~/components/shared/Map';
@@ -139,6 +137,7 @@ type LoaderData = {
   races: Array<Race>;
   difficulties: Array<Difficulty>;
   regulation: Document | null;
+  hasRegistrations: boolean;
 };
 
 type SportEvent = Event & {
@@ -177,7 +176,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     difficulties: difficulties.map((d) => {
       return { id: d.id, name: d.name };
     }),
-    hasRegistrations: confirmedBookings.length > 0
+    hasRegistrations: confirmedBookings && confirmedBookings?.length > 0
   });
 };
 
@@ -449,8 +448,11 @@ export default function OrganizerEventRoute() {
   );
   const [deleteEventModalOpen, setDeleteEventModalOpen] =
     useState<boolean>(false);
+  const [publishEventModalOpen, setPublishEventModalOpen] =
+    useState<boolean>(false);
   const inputEl = useRef(null);
   const deleteForm = useRef<HTMLFormElement>(null);
+  const eventForm = useRef<HTMLFormElement>(null);
   const isPublished = event.status === Status.published;
   const [regulationOption, setRegulationOption] = useState<'text' | 'file'>(
     event.regulationPath ? 'file' : 'text'
@@ -503,6 +505,26 @@ export default function OrganizerEventRoute() {
 
   function handleDiscardDeleteEvent() {
     setDeleteEventModalOpen(false);
+  }
+
+  const [isPublish, setIsPublish] = useState<boolean>(false);
+  
+  function handleShowPublishEventDialog() {
+    setIsPublish(true);
+    setPublishEventModalOpen(true);
+  }
+
+  function handleDiscardPublishEvent() {
+    setIsPublish(false);
+    setPublishEventModalOpen(false);
+  }
+
+  function handlePublishEvent() {
+    if (!eventForm.current) {
+      return;
+    }
+    eventForm.current.submit();
+    setPublishEventModalOpen(false);
   }
 
   function handleDeleteEvent() {
@@ -563,7 +585,14 @@ export default function OrganizerEventRoute() {
     <Main>
       <div className="mb-24">
         <Toast ref={toast} />
-        <UploadForm method="post" className="w-full">
+        <Form method="post" className="w-full" encType="multipart/form-data" ref={eventForm}>
+          {isPublish && (
+            <input
+              type="hidden"
+              name="actionId"
+              value={actionIds.publish}
+            />
+          )}
           <div className="mb-12 lg:mb-20">
             <div className="flex flex-row items-start justify-between items-center">
               <div>
@@ -588,11 +617,10 @@ export default function OrganizerEventRoute() {
                     <Button
                       id="publish"
                       className="mb-4 md:mb-0"
-                      name="actionId"
-                      type="submit"
+                      type="button"
+                      onClick={handleShowPublishEventDialog}
                       size="medium"
                       data-cy="publish"
-                      value={actionIds.publish}
                     >
                       {t('Publish Button')}
                     </Button>
@@ -1027,7 +1055,7 @@ export default function OrganizerEventRoute() {
               {actionData?.errors?.submit}
             </InputError>
           )}
-        </UploadForm>
+        </Form>
       </div>
 
       <MapDialog
@@ -1046,6 +1074,17 @@ export default function OrganizerEventRoute() {
         secondaryLabel={t('Ignore')}
         onDismiss={handleDiscardDeleteEvent}
         onConfirm={handleDeleteEvent}
+        className="cy-delete-dialog"
+      />
+
+      <ConfirmationDialog
+        isOpen={publishEventModalOpen}
+        title={t('Publish Event X', { name: event?.name })}
+        question={t('Are you sure you want to publish event?')}
+        primaryLabel={t('Confirm Publish Event')}
+        secondaryLabel={t('Cancel Publish Event')}
+        onDismiss={handleDiscardPublishEvent}
+        onConfirm={handlePublishEvent}
         className="cy-delete-dialog"
       />
 

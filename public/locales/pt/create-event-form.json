@@ -117,6 +117,10 @@
   "Are you sure you want to delete document?": "Tem a certeza que quer apagar o documento? Não há como voltar atrás!",
   "Are you sure you want to delete event?": "Tem a certeza que quer apagar o evento? Não há como voltar atrás",
   "Are you sure you want to delete regulation?": "Tem a certeza que quer apagar o regulamento? Não há como voltar atrás",
+  "Publish Event X": "Pulbicar o evento \"{{name}}\"",
+  "Are you sure you want to publish event?": "O seu evento irá ficar publico e disponível na nossa pesquisa - tem a certeza que quer continuar?",
+  "Confirm Publish Event": "Sim, publicar",
+  "Cancel Publish Event": "Não, continuar a editar",
   "Ignore": "Ignorar",
   "Or": "Ou"
 }

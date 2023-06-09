@@ -154,15 +154,10 @@ async function findBookingById(id: string): Promise<Booking | null> {
   });
 }
 
-async function findConfirmedBookings(
-  eventId: string
-): Promise<Booking | null> {
-  const res = await db.booking.findMany({
+async function findConfirmedBookings(eventId: string): Promise<Booking[] | null> {
+  return await db.booking.findMany({
     where: { eventId, status: 'confirmed' }
   });
-
-  console.log('results --->', res);
-  return res;
 }
 
 export {
