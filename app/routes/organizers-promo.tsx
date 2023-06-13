@@ -80,7 +80,7 @@ export default function OrganizersLandingPage() {
             <p className="max-w-full text-lg text-secondary prose prose-light dark:prose-dark">
               <strong>Faça uma gestão simplificada:</strong> simplifique o
               processo de gestão de eventos com nossa plataforma intuitiva. Crie
-              a página do seu evento, capture inscrições, com várias formas de
+              a página do seu evento, registe inscrições, com várias formas de
               pagamento associadas, e comunique com os participantes,
               economizando tempo e energia.
             </p>
