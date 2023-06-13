@@ -1,6 +1,5 @@
 import { Role } from '@prisma/client';
 import type { LoaderFunction } from '@remix-run/node';
-
 import { json, redirect } from '@remix-run/node';
 
 import { ButtonLink } from '~/components/shared/Button';
@@ -56,19 +55,20 @@ export default function OrganizersLandingPage() {
         </div>
         <div className="col-span-full lg:col-span-5 lg:col-start-7">
           <p className="text-xl font-medium md:text-2xl text-black dark:text-white mb-3 mt-3 md:mt-0">
-            Porquê escolher a DiciSports?
+            Por que escolher a DiciSports?
           </p>
           <div className="flex flex-col gap-8">
             <p className="max-w-full text-lg text-secondary prose prose-light dark:prose-dark">
-              <strong>Alcance uma vasta audiência:</strong> A DiciSports dispõe
-              de uma rede de atletas que procuram ativamente eventos desportivos
-              emocionantes. Alcance milhares de indivíduos desejosos de
-              ultrapassar os seus limites e participar em eventos memoráveis.
+              <strong>Alcance uma vasta audiência:</strong>
+              Dispomos de uma rede de atletas que procura ativamente eventos
+              desportivos emocionantes. Com a DiciSports poderá comunicar com
+              milhares de pessoas desejosas de ultrapassar os seus limites e
+              participar em eventos memoráveis.
             </p>
             <p className="max-w-full text-lg text-secondary prose prose-light dark:prose-dark">
-              <strong>Simplifique a sua gestão:</strong> Simplifique o processo
-              de organização de eventos com nossa plataforma intuitiva. Crie a
-              sua página do evento, capture as inscrições com várias formas de
+              <strong>Gestão simplificada:</strong> Simplifique o processo de
+              organização de eventos com nossa plataforma intuitiva. Crie a sua
+              página do evento, capture as inscrições com várias formas de
               pagamento seguras e comunique com os participantes, economizando
               tempo e energia.
             </p>
@@ -84,19 +84,18 @@ export default function OrganizersLandingPage() {
           <div className="flex flex-auto flex-col opacity-100 gap-8">
             <p className="max-w-full text-lg text-secondary prose prose-light dark:prose-dark">
               <strong>Aumente a visibilidade do evento:</strong> crie a página
-              do seu evento, destacando os aspectos exclusivos da sua corrida,
+              do seu evento, destacando os aspectos exclusivos da sua prova,
               incluindo todos os detalhes logísticos, mapas dos percursos,
-              descontos, etc.. Além da nossa pesquisa que permite aos
-              interessados filtrar por características dos eventos, a nossa
-              plataforma está optimizada para motores de busca, tornando mais
-              fácil aos participantes descobrir a sua prova e registar-se.
+              descontos, acessibilidades, etc. Além da nossa pesquisa que
+              permite aos interessados filtrar por características dos eventos,
+              a nossa plataforma está optimizada para motores de busca, tornando
+              mais fácil aos participantes descobrir a sua prova e registar-se.
             </p>
             <p className="max-w-full text-lg text-secondary prose prose-light dark:prose-dark">
-              <strong>Comunique com os participantes:</strong> mantenha-os
-              informados com nossas ferramentas de comunicação integradas. Envie
-              atualizações, informações da corrida e lembretes aos participantes
-              por e-mail, garantindo uma experiência perfeita para todos os
-              envolvidos.
+              <strong>Comunique com os participantes:</strong> mantenha os
+              participantes informados com as nossas ferramentas de comunicação
+              integradas. Envie atualizações, informações de corrida e lembretes
+              aos participantes por e-mail, garantindo uma experiência perfeita
             </p>
           </div>
         </div>
