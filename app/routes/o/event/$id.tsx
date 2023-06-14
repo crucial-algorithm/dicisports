@@ -1,4 +1,4 @@
-import { MapPinIcon, PlusIcon } from '@heroicons/react/24/outline';
+import { PlusIcon } from '@heroicons/react/24/outline';
 import { Role, Status } from '@prisma/client';
 import {
   Form,
@@ -20,6 +20,7 @@ import {
   unstable_createMemoryUploadHandler,
   unstable_parseMultipartFormData
 } from '@remix-run/node';
+import type { TFunction } from 'i18next';
 
 import clsx from 'clsx';
 import { Toast } from 'primereact/toast';
@@ -27,7 +28,7 @@ import type { FileUploadHandlerEvent } from 'primereact/fileupload';
 
 import mapBoxGlCss from 'mapbox-gl/dist/mapbox-gl.css';
 
-import type { ChangeEvent } from 'react';
+import type { ChangeEvent, MutableRefObject } from 'react';
 import * as React from 'react';
 import { useEffect, useRef, useState } from 'react';
 
@@ -446,12 +447,15 @@ export default function OrganizerEventRoute() {
     useState<boolean>(false);
   const inputEl = useRef(null);
   const deleteForm = useRef<HTMLFormElement>(null);
+  const locationRef = useRef<HTMLInputElement>(null);
   const isPublished = event.status === Status.published;
   const [regulationOption, setRegulationOption] = useState<'text' | 'file'>(
     event.regulationPath ? 'file' : 'text'
   );
   const [fileUploadHandlerEvent, setFileUploadHandlerEvent] =
     useState<FileUploadHandlerEvent | null>(null);
+  const [hash, setHash] = useState<number>(Date.now());
+
   let fileName: string | null = null;
 
   if (event.regulationPath && event.regulationFileName) {
@@ -467,7 +471,14 @@ export default function OrganizerEventRoute() {
 
   function handleCloseMap(location: DiciLocation | null) {
     setShowLocationPicker(false);
-    setLocation(location);
+
+    if (locationRef?.current?.value.length > 0) {
+      setLocation({ ...location, shortAddress: locationRef?.current?.value });
+    } else {
+      setLocation(location);
+    }
+
+    setHash(Date.now());
   }
 
   function handleOnCreatePerk(e: any) {
@@ -528,6 +539,14 @@ export default function OrganizerEventRoute() {
 
   function handleRegulationOption(e: ChangeEvent<HTMLInputElement>) {
     setRegulationOption(e.target.value as 'text' | 'file');
+  }
+
+  const [shortAddress, setShortAddress] = useState<string>(
+    event?.location ? event?.location : ''
+  );
+
+  function onChange(e: string) {
+    setShortAddress(e);
   }
 
   useEffect(() => {
@@ -669,39 +688,15 @@ export default function OrganizerEventRoute() {
             </FormField>
           </div>
 
-          <FormField
-            label={t('Location')}
-            id="event-location"
-            className="w-full"
-            error={actionData?.errors?.location}
-          >
-            <TextField
-              name="short-address"
-              id="event-sport"
-              defaultValue={event?.location || undefined}
-              placeholder={t('Location Placeholder')}
-              adornment={
-                <Button
-                  name="open-map"
-                  className="mr-2"
-                  variant="adornment"
-                  type="button"
-                  onClick={handleShowMap}
-                >
-                  {t('Show Map')}
-                </Button>
-              }
-            />
-            <input
-              type="hidden"
-              name="location"
-              value={
-                location
-                  ? `${location?.coords}`
-                  : undefined
-              }
-            />
-          </FormField>
+          <Location
+            actionData={actionData}
+            handleShowMap={handleShowMap}
+            t={t}
+            hash={hash}
+            location={location}
+            onChange={onChange}
+            locationRef={locationRef}
+          />
 
           <FormField
             label={t('How Is Booking Going To Be Managed')}
@@ -1051,5 +1046,82 @@ export default function OrganizerEventRoute() {
         <input type="hidden" name="actionId" value={actionIds.deleteEvent} />
       </Form>
     </Main>
+  );
+}
+
+function Location({
+  actionData,
+  handleShowMap,
+  t,
+  hash,
+  location,
+  locationRef
+}: {
+  actionData: ActionData;
+  handleShowMap: () => void;
+  t: TFunction;
+  hash: number;
+  location: DiciLocation | null;
+  locationRef:  MutableRefObject<HTMLInputElement>;
+}) {
+  const [firstRender, setFirstRender] = useState<boolean>(true);
+
+  useEffect(() => {
+    if (!firstRender) {
+      locationRef?.current?.select();
+    }
+
+    setFirstRender(false);
+    //@ts-ignore - Don't add firstRender
+  }, [hash]);
+
+  return (
+    <>
+      <FormField
+        label={t('Location')}
+        id="event-location"
+        className="w-full"
+        error={actionData?.errors?.location}
+      >
+        <TextField
+          key={hash}
+          name="short-address"
+          defaultValue={location?.shortAddress || ''}
+          placeholder={t('Location Placeholder')}
+          adornment={
+            <Button
+              name="open-map"
+              className="mr-2"
+              variant="adornment"
+              type="button"
+              onClick={handleShowMap}
+            >
+              {t('Show Map')}
+            </Button>
+          }
+          input={locationRef}
+        />
+        {location !== null && (
+          <div className="ml-2 mt-2">
+            <a
+              href={`https://www.google.com/maps/search/?api=1&query=${
+                location.coords.split(',')[0]
+              }%2C${location.coords.split(',')[1]}`}
+              target="_blank"
+              rel="noreferrer"
+              data-cy="location-link"
+            >
+              {t('View in Map')}
+            </a>
+          </div>
+        )}
+
+        <input
+          type="hidden"
+          name="location"
+          value={location ? `${location?.coords}` : undefined}
+        />
+      </FormField>
+    </>
   );
 }
