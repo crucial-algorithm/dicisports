@@ -172,8 +172,9 @@ export const action: ActionFunction = async ({ params, request }) => {
     ),
     elevationGain: parseInt(form.get('elevationGain') as string),
     elevationLoss: parseInt(form.get('elevationLoss') as string) || null,
-    price: parseFloat(form.get('price') as string),
-    priceEarlyBird: parseFloat(form.get('priceEarlyBird') as string) || null,
+    price: parseFloat(form.get('price') as string) * 1000,
+    priceEarlyBird:
+      parseFloat(form.get('priceEarlyBird') as string) * 1000 || null,
     validUntil: earlyBirdValidUntil ? new Date(earlyBirdValidUntil) : null,
     raceDescription: (form.get('description') as string) || null,
     track,
@@ -241,10 +242,16 @@ export const action: ActionFunction = async ({ params, request }) => {
       }
     )
     // if price early bird is null, return true to ignore refine, otherwise it will trigger an error
-    .refine((s) => !s.priceEarlyBird ? true : s.priceEarlyBird && (s.price > s.priceEarlyBird), {
-      message: t('Cheaper Early Bird'),
-      path: ['priceEarlyBird']
-    });
+    .refine(
+      (s) =>
+        !s.priceEarlyBird
+          ? true
+          : s.priceEarlyBird && s.price > s.priceEarlyBird,
+      {
+        message: t('Cheaper Early Bird'),
+        path: ['priceEarlyBird']
+      }
+    );
 
   try {
     RaceSchema.parse(raceData);
@@ -385,7 +392,7 @@ export default function RaceRoute() {
             className="w-full"
             placeholder={t('D- Placeholder')}
             defaultValue={race?.elevationLoss as number}
-          ></TextField>
+          />
         </FormField>
 
         <FormField
@@ -398,8 +405,8 @@ export default function RaceRoute() {
             type="number"
             className="w-44"
             placeholder={t('Price Placeholder')}
-            defaultValue={race?.price}
-          ></TextField>
+            defaultValue={race && race.price ? race.price / 1000 : undefined}
+          />
         </FormField>
 
         <div className="flex flex-wrap w-full gap-3.5">
@@ -414,8 +421,12 @@ export default function RaceRoute() {
               type="number"
               className="w-44"
               placeholder={t('Price Early Bird Placeholder')}
-              defaultValue={race?.priceEarlyBird as number}
-            ></TextField>
+              defaultValue={
+                race && race.priceEarlyBird
+                  ? race.priceEarlyBird / 1000
+                  : undefined
+              }
+            />
           </FormField>
 
           <FormField

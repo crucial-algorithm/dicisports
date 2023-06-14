@@ -360,7 +360,7 @@ type FavoriteEvent = {
 };
 
 type Difficulty = {
-  name: string;
+  name: TranslationObject;
 } & DBDifficulty;
 
 type Ticket = {
