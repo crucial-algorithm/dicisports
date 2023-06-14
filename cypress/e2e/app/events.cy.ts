@@ -201,7 +201,7 @@ describe('Event', () => {
         .uncheck()
 
         // Create a new race
-        .get('a[data-cy=create-race]')
+        .get('#create-race')
         .click()
 
         .location()
@@ -248,7 +248,7 @@ describe('Event', () => {
         .write('get-there', 'Carro: Saida pela A3 direção a Braga')
 
         // "Create" document
-        .get('a[data-cy=create-document]')
+        .get('#create-document')
         .click()
 
         .get('input[name=name]')
@@ -265,13 +265,11 @@ describe('Event', () => {
         .intercept('POST', '/o/event/*_data=routes*')
         .as('createEvent')
 
-        .get('button[name=create-event]')
+        .get('button[name=update-event]')
         .click()
 
         .wait('@createEvent')
         .wait('@EventRequests')
-
-        .get('button[name=update-event]')
 
         .get('#publish')
         .should('exist');
@@ -535,7 +533,7 @@ describe('Event', () => {
       cy.loginOrganiser()
         .visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d')
 
-        .get('a[data-cy=create-race]')
+        .get('#create-race')
         .click()
 
         .location()
@@ -736,7 +734,7 @@ describe('Event', () => {
       cy.loginOrganiser()
         .visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d')
 
-        .get('a[data-cy=create-race]')
+        .get('#create-race')
         .click()
 
         .location()
@@ -810,6 +808,70 @@ describe('Event', () => {
 
         .get('[data-cy=event-not-found]')
         .should('not.exist');
+    });
+
+    it('should save event changes when adding race/doc - not published', () => {
+      cy.visitAndWaitForHydration('/o/event/TgKZi8NQKNoJQGArd3zc')
+
+        .get('input[name=event-name]')
+        .type(' updated')
+        .should('have.value', 'Flavius Challenge OCR updated')
+
+        .intercept('POST', '/o/event/TgKZi8NQKNoJQGArd3zc*')
+        .as('addNewRace')
+
+        .get('#create-race')
+        .click()
+
+        .wait('@addNewRace')
+
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.match(/.*\/new$/);
+        })
+
+        .get('#cancel-button')
+        .click()
+
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.eq('/o/event/TgKZi8NQKNoJQGArd3zc');
+        })
+
+        .get('input[name=event-name]')
+        .should('have.value', 'Flavius Challenge OCR updated');
+    });
+
+    it('should save event changes when adding race/doc - published', () => {
+      cy.visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d')
+
+        .get('input[name=event-name]')
+        .type(' updated')
+        .should('have.value', 'Love Tiles Douro Granfondo 2023 updated')
+
+        .intercept('POST', '/o/event/MY4bvgxDbMtGv8rbYe5d*')
+        .as('addNewRace')
+
+        .get('#create-race')
+        .click()
+
+        .wait('@addNewRace')
+
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.match(/.*\/new$/);
+        })
+
+        .get('#cancel-button')
+        .click()
+
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.eq('/o/event/MY4bvgxDbMtGv8rbYe5d');
+        })
+
+        .get('input[name=event-name]')
+        .should('have.value', 'Love Tiles Douro Granfondo 2023');
     });
   });
 });
