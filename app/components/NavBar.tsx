@@ -418,15 +418,17 @@ function Navbar() {
 
         <div className="flex items-center justify-center">
           <ul className="hidden lg:flex">
-            <IsNotAnOrganizer>
-              {location.pathname !== '/organizers-promo' && (
-                <li className="px-5 py-2">
-                  <CTALandingPublishYourEvent
-                    cta={t('CTA Publish Your Event')}
-                  />
-                </li>
-              )}
-            </IsNotAnOrganizer>
+            <IsAdmin>
+              <IsNotAnOrganizer>
+                {location.pathname !== '/organizers-promo' && (
+                  <li className="px-5 py-2">
+                    <CTALandingPublishYourEvent
+                      cta={t('CTA Publish Your Event')}
+                    />
+                  </li>
+                )}
+              </IsNotAnOrganizer>
+            </IsAdmin>
           </ul>
           <div className="block lg:hidden">
             <MobileMenu />
