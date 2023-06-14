@@ -1,6 +1,5 @@
 import * as React from 'react';
 
-import { useId } from '@reach/auto-id';
 import clsx from 'clsx';
 
 import Label from '~/components/shared/form/Label';
@@ -17,17 +16,18 @@ export default function CheckBox({
   name,
   label,
   className,
-  checked
+  checked,
+  id
 }: CheckBoxOptions) {
-  const id = useId() || '';
+  const iid = id || `${name}-${value}`;
 
   return (
     <div className={clsx('flex align-middle justify-between', className)}>
-      <Label variant="secondary" htmlFor={id}>
+      <Label variant="secondary" htmlFor={iid}>
         {typeof label === 'string' ? label : <I18nText text={label} />}
       </Label>
       <input
-        id={id}
+        id={iid}
         name={name}
         value={value}
         type="checkbox"

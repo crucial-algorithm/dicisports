@@ -4,33 +4,76 @@ describe('Groups', () => {
   });
 
   context('General', () => {
-    it('should load groups', () => {
+    it('should load groups in mobile', () => {
       cy.login()
-        .visit('/m/groups')
+        .visitAndWaitForHydration('/me')
+
+        .get('[data-cy=group-entry]')
+        .should('exist')
+        .and('have.length', 2);
+    });
+
+    it.skip('should load groups in desktop', () => {
+      cy.viewport(1024, 768)
+        .login()
+        .visitAndWaitForHydration('/')
+        .get('[data-cy=groups]')
+        .click()
         .get('button[name=create-group]')
         .should('exist');
     });
 
     it('should favorite group', () => {
-      // TODO
-    });
+      cy.intercept('GET', '/?actionId=search*')
+        .as('search')
+        .login()
+        .visitAndWaitForHydration('/?actionId=search&sport=6')
 
-    it('should favorite a group unauthenticated', () => {
-      // TODO
+        .get('#add-favorite-05b72760f9674a2abdcc')
+        .click()
+
+        .wait('@search')
+
+        .get('#remove-favorite')
+        .should('exist')
+
+        .visitAndWaitForHydration('/me')
+
+        .get('[data-cy=favorite-entry]')
+        .should('exist')
+        .and('have.length', 2);
     });
 
     it('should remove group from favorites', () => {
-      // TODO
+      cy.intercept('GET', '/me*')
+        .as('removeFavorite')
+
+        .login()
+        .visitAndWaitForHydration('/me')
+
+        .get('#remove-favorite-eaaf16cc63285c840ad1')
+        .click()
+
+        .wait('@removeFavorite')
+
+        .get('[data-cy=no-favorites]')
+        .should('exist');
     });
   });
 
   context('Security', () => {
-    it('should not access /m/groups when not authenticated', () => {
-      // TODO
+    it('should not access /me when not authenticated', () => {
+      cy.visitAndWaitForHydration('/me')
+        .url()
+        .should('eq', `${Cypress.config().baseUrl}/login`);
     });
 
     it('should not allow a user from editing another user group', () => {
-      // TODO
+      cy.login()
+        .visitAndWaitForHydration('/g/group/d888b22b730daaf3b70e')
+
+        .url()
+        .should('eq', `${Cypress.config().baseUrl}/me`);
     });
   });
 
@@ -38,9 +81,16 @@ describe('Groups', () => {
     beforeEach(() => cy.login());
 
     it('should create a group', () => {
-      cy.visit('/m/groups')
-        .get('button[name=create-group]')
+      cy.visitAndWaitForHydration('/me')
+        .get('[data-cy=create-group]')
         .click()
+
+        .waitForHydration()
+
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.include('/g/group/');
+        })
 
         // fill the form
         .get('input[name=name]')
@@ -62,7 +112,6 @@ describe('Groups', () => {
 
         .pickOptionFromSelect('dayOfWeek', 3)
         .pickOptionFromSelect('hour', 11)
-        .pickOptionFromSelect('minute', 31)
 
         .get('input[name=whatsapp]')
         .type('https://...')
@@ -74,55 +123,61 @@ describe('Groups', () => {
         .type('we do things')
 
         // save group (prepare to wait for the redirect to happen when group is created)
-        .intercept('GET', '/m/groups?message=*')
+        .intercept('GET', '/me?message=*')
         .as('createGroup')
         .get('button[name=save-group]')
         .click()
 
-        .wait('@createGroup', { timeout: 12000 })
+        .wait('@createGroup')
 
         // validate that form was properly created
-        .get('div[data-cy="group-entry"]')
+        .get('[data-cy=group-entry]')
         .should('exist')
 
-        .visit('/group/a-new-group')
+        .visitAndWaitForHydration('/group/a-new-group')
         .wasImageLoaded('img[data-cy=image1]')
         .get('p[data-cy=schedule]')
-        .contains('Terça-Feira, 10:30 | Domingo, 09:00');
+        .contains('Terça-Feira, 10:00 | Domingo, 09:00');
     });
 
     it('should update group', () => {
       const description = 'Grupo organizado pela bikebrothers';
 
-      cy.visit('/m/group/FkoxmH5db6RXqBpExion')
-        .get('textarea')
+      cy.visitAndWaitForHydration('/g/group/FkoxmH5db6RXqBpExion')
+        .get('textarea[name=description]')
         .type(description)
-        .intercept('GET', '/m/groups?message=*')
+        .intercept('GET', '/me?message=*')
         .as('createGroup')
         .get('button[name=save-group]')
         .click()
         .wait('@createGroup')
-        .visit('/group/bike-brothers-domingueira')
+
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.eq('/me');
+        })
+
+        .visitAndWaitForHydration('/group/bike-brothers-domingueira')
         .get('[data-cy=description]')
         .contains(description);
     });
 
     it('should delete group', () => {
-      // eslint-disable-next-line cypress/no-unnecessary-waiting
-      cy.visitAndWaitForHydration('/m/group/FkoxmH5db6RXqBpExion')
+      cy.intercept('GET', '/me?message=*')
+        .as('deleteGroup')
+
+        .visitAndWaitForHydration('/g/group/FkoxmH5db6RXqBpExion')
         .get('button[name=delete]')
         .click()
 
-        .get('[data-cy=delete-dialog]')
+        .get('.cy-delete-dialog')
 
-        .intercept('GET', '/m/groups?message=*')
-        .as('deleteGroup')
-        .get('button[name=confirm-delete]')
+        .get('button.cy-primary')
         .click()
 
         .wait('@deleteGroup')
 
-        .visit('/group/bike-brothers-domingueira')
+        .visitAndWaitForHydration('/group/bike-brothers-domingueira')
         .get('p[data-cy=group-not-found]');
     });
   });

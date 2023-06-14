@@ -8,6 +8,10 @@ declare global {
 
       loginAdmin(): Chainable<void>;
 
+      loginOrganiser(): Chainable<void>;
+
+      pickDate(name: string, date: string, outside?: string): Chainable<void>;
+
       pickOptionFromSelect(name: string, position: number): Chainable<void>;
 
       pickLocationInMap(triggerOpenMapButtonName: string): Chainable<void>;
@@ -16,10 +20,16 @@ declare global {
 
       getRecoverPasswordUrl(): Chainable<string>;
 
+      waitForHydration(): Chainable<void>;
+
       visitAndWaitForHydration(
         url: string,
         options?: Partial<VisitOptions>
       ): Chainable<AUTWindow>;
+
+      assertValueCopiedToClipboard(value: string): Promise<Chainable<void>>;
+
+      write(name: string, value: string): Chainable<void>;
     }
   }
 }
@@ -38,12 +48,39 @@ function loginAdmin() {
   );
 }
 
+function loginOrganiser() {
+  cy.setCookie(
+    'ds_root_session',
+    'eyJfX3Nlc3Npb25faWRfXyI6ImE2ZDg5ZjNiLTFjZWUtNDYzMi1hNzU0LWY4NTc2M2ExOWJmOCJ9.ZB1rREpWNeNPCLgqJs58RGzDa1OrFao%2FGetqg3HBDe4'
+  );
+}
+
 function pickOptionFromSelect(name: string, position: number) {
-  cy.get(`#select-${name}`)
+  cy.get(`button[name=select-${name}]`)
+    .last() // in case we have multiple with the same name, pick the last one 🤷‍
     .click()
 
-    .get(`[class*="-menu"] [class*="-option"]:nth-child(${position})`)
+    .siblings('ul')
+    .children(`:nth-child(${position})`)
     .click();
+}
+
+/**
+ *
+ * @param name
+ * @param date  format yyyy-mm-dd
+ * @param outside  format yyyy-mm-dd
+ */
+function pickDate(name: string, date: string, outside = 'body') {
+  const [year, month, day] = date.split('-').map(Number);
+
+  cy.get(`input[name=${name}]`)
+    .type(`0${date}`) // prefixing with 0 because 1st char is lost 🤷‍
+    .get(`[data-cy-year=${year}][data-cy-month=${month}][data-cy-day=${day}]`)
+    .click({ force: true }) // when within a dialog
+
+    .get(outside)
+    .click(0, 0, { force: true }); // when within a dialog
 }
 
 function pickLocationInMap(triggerOpenMapButtonName: string) {
@@ -72,10 +109,7 @@ function pickLocationInMap(triggerOpenMapButtonName: string) {
 
     .wait('@mapBoxFindAddressFromCoords', { timeout: 10000 })
     .get('button[name=pick-location]:enabled', { timeout: 10000 })
-    .click()
-
-    .get('input[name=discard-location]')
-    .should('have.value', 'Estrada De Torres Novas');
+    .click({ force: true });
 }
 
 function wasImageLoaded(selector: string) {
@@ -92,6 +126,16 @@ function visitAndWaitForHydration(
   cy.visit(url, options).get('body[data-cy=ready]');
 }
 
+function waitForHydration() {
+  cy.get('body[data-cy=ready]');
+}
+
+function writePrimeReactEditor(name: string, value: string) {
+  cy.get(`div[data-cy=editor-${name}] .ql-editor[contenteditable="true"]`)
+    .clear()
+    .type(value);
+}
+
 function getRecoverPasswordUrl() {
   function extractUrl(text: string) {
     const urlRegex = /(https?:\/\/[^\s]+)/g;
@@ -104,23 +148,38 @@ function getRecoverPasswordUrl() {
     return loginLink;
   }
 
-  return cy.request({ method: 'GET', url: Cypress.env('HTTP_CATCHER') })
-    .then(
-      ({ body }) => {
-        const url = extractUrl(body.text);
-        const start = url.search('/magic');
+  return cy
+    .request({ method: 'GET', url: Cypress.env('HTTP_CATCHER') })
+    .then(({ body }) => {
+      const url = extractUrl(body.text);
+      const start = url.search('/magic');
 
-        return url.substr(start);
-      }
-    );
+      return url.substr(start);
+    });
+}
+
+function assertValueCopiedToClipboard(value: string) {
+  cy.window().then((win) => {
+    return win.navigator.clipboard.readText().then((text) => {
+      expect(text).to.eq(Cypress.config().baseUrl + value);
+    });
+  });
 }
 
 Cypress.Commands.add('login', login);
 Cypress.Commands.add('loginAdmin', loginAdmin);
+Cypress.Commands.add('loginOrganiser', loginOrganiser);
 Cypress.Commands.add('pickOptionFromSelect', pickOptionFromSelect);
+Cypress.Commands.add('pickDate', pickDate);
 Cypress.Commands.add('pickLocationInMap', pickLocationInMap);
 Cypress.Commands.add('wasImageLoaded', wasImageLoaded);
 Cypress.Commands.add('visitAndWaitForHydration', visitAndWaitForHydration);
+Cypress.Commands.add('waitForHydration', waitForHydration);
 Cypress.Commands.add('getRecoverPasswordUrl', getRecoverPasswordUrl);
+Cypress.Commands.add(
+  'assertValueCopiedToClipboard',
+  assertValueCopiedToClipboard
+);
+Cypress.Commands.add('write', writePrimeReactEditor);
 
 export {};

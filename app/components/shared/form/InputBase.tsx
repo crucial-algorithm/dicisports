@@ -2,23 +2,6 @@ import type { ChangeEvent } from 'react';
 import React, { useState } from 'react';
 import clsx from 'clsx';
 
-export function inputBaseClasses(className?: string) {
-  return clsx(
-    'w-full rounded-lg focus-ring',
-    'text-base md:text-lg',
-    'bg-gray-100 text-black placeholder-gray-500 font-medium',
-    'dark:disabled:text-blueGray-500 dark:text-white dark:bg-gray-800',
-    'disabled:text-gray-400',
-    {
-      'px-11': !className || className.indexOf('px') < 0,
-      'py-4': !className || className.indexOf('py') < 0
-    },
-    // added to remove border added by @tailwindcss/forms
-    'border-0',
-    className
-  );
-}
-
 type Props = {
   id: string;
   name: string;
@@ -41,7 +24,8 @@ const InputBase: React.FC<Props> = ({
   onChange,
   className,
   readOnly = false,
-  input
+  input,
+  onClick
 }) => {
   const [value, setValue] = useState<string>(defaultValue);
 
@@ -62,9 +46,10 @@ const InputBase: React.FC<Props> = ({
         disabled={disabled}
         onChange={disabled ? undefined : handleOnChange}
         autoComplete={autoComplete}
-        className={inputBaseClasses(className)}
+        className={clsx('input-text', className)}
         readOnly={readOnly}
         ref={input}
+        onClick={onClick}
       />
     );
   }
@@ -79,8 +64,9 @@ const InputBase: React.FC<Props> = ({
       disabled={disabled}
       onChange={disabled ? undefined : handleOnChange}
       autoComplete={autoComplete}
-      className={inputBaseClasses(className)}
+      className={clsx('input-text', className)}
       readOnly={readOnly}
+      onClick={onClick}
     />
   );
 };

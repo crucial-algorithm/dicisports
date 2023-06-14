@@ -1,24 +1,53 @@
 import type {
+  Difficulty as DBDifficulty,
   GroupSpirit as DBGroupSpirit,
   GroupType as DBGroupType,
   Perk as DBPerk,
+  ShirtSize as DBShirtSize,
   Sport as DBSport,
-  Difficulty as DBDifficulty,
-  Status
+  Status,
+  User as DBUser,
+  DiscountCode as DBDiscountCode
 } from '@prisma/client';
 import { Role } from '@prisma/client';
 
 import type {
-  DaysOfWeek,
+  BookingList,
+  DaysOfWeek, DBRawBookingList,
+  DBRawCart,
   DBRawGroup,
+  DBRawParticipant,
+  DBRawRaceQty, DBRawSearchResults,
+  DBRawUICartRow,
+  DBRawUIRaceParticipant,
+  Difficulty, DiscountCode,
   Group,
+  GroupInput,
   GroupSpirit,
   GroupType,
+  PartialCart,
+  Participant,
   Perk,
+  RaceQty, SearchResults,
+  ShirtSize,
   Sport,
   TranslationObject,
-  GroupInput, Difficulty
+  UICartRow,
+  UIRaceParticipant,
+  User
 } from '~/types';
+
+function dbUserToUser(user: DBUser | User): User {
+  if ('organiser' in user) {
+    const { id, name, email, lat, lng, location, role, createdAt, updatedAt, organiser } = user as User;
+
+    return { id, name, email, lat, lng, location, role, createdAt, updatedAt, organiser };
+  }
+
+  const { id, name, email, lat, lng, location, role, createdAt, updatedAt } = user;
+
+  return { id, name, email, lat, lng, location, role, createdAt, updatedAt };
+}
 
 function dbSportToSport(sport: DBSport): Sport {
   const { id, name, createdAt, updatedAt, picture } = sport;
@@ -44,9 +73,18 @@ function dbDifficultyToDifficulty(difficulty: DBDifficulty): Difficulty {
 }
 
 function dbPerkToPerk(perk: DBPerk): Perk {
-  const { id, name, createdAt, isDefault, isEnabled, eventId, displayOrder } = perk;
+  const { id, name, createdAt, isDefault, isEnabled, eventId, displayOrder } =
+    perk;
 
-  return { id, name, createdAt: new Date(createdAt), isDefault, isEnabled, eventId, displayOrder };
+  return {
+    id,
+    name,
+    createdAt: new Date(createdAt),
+    isDefault,
+    isEnabled,
+    eventId,
+    displayOrder
+  };
 }
 
 function dbGroupSpiritToGroupSpirit(group: DBGroupSpirit): GroupSpirit {
@@ -68,6 +106,17 @@ function dbGroupTypeToGroupType(group: DBGroupType): GroupType {
     createdAt,
     updatedAt,
     name: name as TranslationObject
+  };
+}
+
+function dbShirtSizeToShirtSize(shirt: DBShirtSize): ShirtSize {
+  const { id, name, createdAt, updatedAt } = shirt;
+
+  return {
+    id,
+    name: name as TranslationObject,
+    createdAt,
+    updatedAt
   };
 }
 
@@ -129,17 +178,184 @@ function dbRawGroupToGroup(group: DBRawGroup): Group {
     schedules: group.schedules.map((s) => {
       const [id, day, hour] = s.split(':').map(String);
 
-      return { timeOfDay: Number(hour), dayOfWeek: Number(day), groupId: group.id, id };
+      return {
+        timeOfDay: Number(hour),
+        dayOfWeek: Number(day),
+        groupId: group.id,
+        id
+      };
     })
   };
 }
 
+function dbRawSearchResultsToSearchResults(results: DBRawSearchResults): SearchResults {
+  return {
+    entity: results.entity,
+    distance: results.distance,
+    id: results.id,
+    name: results.name,
+    minPrice: results.min_price,
+    difficulty: results.difficulty,
+    startAt: new Date(results.start_at),
+    description: results.description,
+    slug: results.slug,
+    sportId: results.sport_id,
+    groupTypeId: results.group_type_id,
+    groupSpiritId: results.group_spirit_id,
+    lat: results.lat,
+    lng: results.lng,
+    location: results.location,
+    near: results.near,
+    dayOfWeek: results.day_of_week as DaysOfWeek,
+    timeOfDay: results.time_of_day,
+    whatsapp: results.whatsapp,
+    image1: results.image1,
+    image2: results.image2,
+    image3: results.image3,
+    image4: results.image4,
+    image5: results.image5,
+    status: results.status as Status,
+    createdAt: new Date(results.created_at),
+    createdById: results.created_by,
+    updatedAt: new Date(results.updated_at),
+    groupSpirit: {
+      id: 0,
+      name: results.group_spirit,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    },
+    createdBy: {
+      id: results.created_by,
+      name: results.user_name,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      lat: 0,
+      lng: 0,
+      location: '',
+      email: '',
+      role: Role.MEMBER
+    },
+    schedules: results.schedules !== null && results.schedules.length ? results.schedules.map((s) => {
+      const [id, day, hour] = s.split(':').map(String);
+
+      return {
+        timeOfDay: Number(hour),
+        dayOfWeek: Number(day),
+        groupId: results.id,
+        id
+      };
+    }) : null
+  };
+}
+
+function dbUICartToUICart(cart: DBRawUICartRow): UICartRow {
+  return {
+    id: cart.id,
+    raceId: cart.race_id,
+    name: cart.name,
+    price: cart.price,
+    distance: cart.distance,
+    startTime: cart.start_time,
+    order: cart.display_order,
+    qty: Number(cart.qty)
+  };
+}
+
+function dbUIRaceParticipantToUIRaceParticipant(
+  raceParticipant: DBRawUIRaceParticipant
+): UIRaceParticipant {
+  return {
+    id: raceParticipant.id,
+    name: raceParticipant.name,
+    birthdate: raceParticipant.birthdate,
+    gender: raceParticipant.gender,
+    bookingAt: raceParticipant.booking_at,
+    status: raceParticipant.status,
+    raceName: raceParticipant.race_name
+  };
+}
+
+function dbEventRaceCheckoutQtyToEventRaceCheckoutQty(
+  race: DBRawRaceQty
+): RaceQty {
+  return {
+    id: race.id,
+    name: race.name,
+    distance: race.distance,
+    startTime: race.start_time,
+    price: race.price,
+    displayOrder: race.display_order,
+    qty: race.qty
+  };
+}
+
+function dbCartToCart(cart: DBRawCart): PartialCart {
+  return {
+    id: cart.id,
+    raceId: cart.race_id,
+    userId: cart.user_id,
+    createdAt: cart.created_at,
+    updatedAt: cart.updated_at
+  };
+}
+
+function dbParticipantToParticipant(
+  participant: DBRawParticipant
+): Participant {
+  return {
+    id: participant.id,
+    userId: participant.user_id,
+    firstName: participant.first_name,
+    lastName: participant.last_name,
+    gender: participant.gender,
+    birthdate: participant.birthdate,
+    phoneNumber: participant.phone_number,
+    identityCard: participant.identity_card,
+    federationNumber: participant.federation_number,
+    shirtSize: participant.shirt_size,
+    nationality: participant.nationality,
+    postalCode: participant.postal_code,
+    status: participant.status,
+    createdAt: participant.created_at,
+    updatedAt: participant.updated_at
+  };
+}
+
+function dbRawBookingListToBookingList(
+  bookingList: DBRawBookingList
+): BookingList {
+  return {
+    id: bookingList.id,
+    eventName: bookingList.event_name,
+    bookingDate: bookingList.booking_date,
+    status: bookingList.status,
+    pin: bookingList.pin,
+    totalParticipants: Number(bookingList.total_participants)
+  };
+}
+
+function dbDiscountCodeToDiscountCode(discountCode: DBDiscountCode): DiscountCode {
+  const { code, value, fixed, active, createdById, organiserId, createdAt, updatedAt  } = discountCode;
+
+  return { code, value, fixed, active, createdById, organiserId, createdAt, updatedAt };
+}
+
 export {
+  dbUserToUser,
   dbSportToSport,
   dbGroupSpiritToGroupSpirit,
   dbGroupTypeToGroupType,
   dbGroupToGroup,
   dbPerkToPerk,
   dbRawGroupToGroup,
-  dbDifficultyToDifficulty
+  dbDifficultyToDifficulty,
+  dbUICartToUICart,
+  dbEventRaceCheckoutQtyToEventRaceCheckoutQty,
+  dbCartToCart,
+  dbShirtSizeToShirtSize,
+  dbUIRaceParticipantToUIRaceParticipant,
+  dbParticipantToParticipant,
+  dbRawSearchResultsToSearchResults,
+  dbRawBookingListToBookingList,
+  dbDiscountCodeToDiscountCode
 };

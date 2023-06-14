@@ -1,7 +1,7 @@
 [
   {
     "id": "aaa",
-    "name": "Saco de brinde",
+    "name": "Abastecimentos",
     "isDefault": true,
     "isEnabled": false,
     "displayOrder": 1,
@@ -9,15 +9,15 @@
   },
   {
     "id": "bbb",
-    "name": "Bebedouros",
+    "name": "Chuveiros",
     "isDefault": true,
-    "isEnabled": true,
+    "isEnabled": false,
     "displayOrder": 2,
     "eventId": "MY4bvgxDbMtGv8rbYe5d"
   },
   {
     "id": "ccc",
-    "name": "Chuveiros",
+    "name": "Resultados cronometrados",
     "isDefault": true,
     "isEnabled": true,
     "displayOrder": 3,
@@ -25,58 +25,114 @@
   },
   {
     "id": "ddd",
-    "name": "T-shirts do evento",
-    "isDefault": true,
-    "isEnabled": false,
+    "name": "Material para teste",
+    "isDefault": false,
+    "isEnabled": true,
     "displayOrder": 4,
     "eventId": "MY4bvgxDbMtGv8rbYe5d"
   },
   {
     "id": "eee",
-    "name": "Medalhas",
-    "isDefault": true,
+    "name": "Lanche de oferta",
+    "isDefault": false,
     "isEnabled": false,
     "displayOrder": 5,
     "eventId": "MY4bvgxDbMtGv8rbYe5d"
   },
   {
     "id": "fff",
-    "name": "Resultados cronometrados",
+    "name": "Abastecimentos",
     "isDefault": true,
-    "isEnabled": true,
+    "isEnabled": false,
     "displayOrder": 6,
-    "eventId": "MY4bvgxDbMtGv8rbYe5d"
+    "eventId": "bQmGXYkbhJetjk6mniMt"
   },
   {
     "id": "ggg",
-    "name": "Fotos do evento",
+    "name": "Chuveiros",
     "isDefault": true,
-    "isEnabled": false,
+    "isEnabled": true,
     "displayOrder": 7,
-    "eventId": "MY4bvgxDbMtGv8rbYe5d"
+    "eventId": "bQmGXYkbhJetjk6mniMt"
   },
   {
     "id": "hhh",
-    "name": "Música ao vivo",
+    "name": "Resultados cronometrados",
     "isDefault": true,
-    "isEnabled": false,
+    "isEnabled": true,
     "displayOrder": 8,
-    "eventId": "MY4bvgxDbMtGv8rbYe5d"
+    "eventId": "bQmGXYkbhJetjk6mniMt"
   },
   {
     "id": "iii",
-    "name": "Material para teste",
-    "isDefault": false,
-    "isEnabled": true,
+    "name": "Abastecimentos",
+    "isDefault": true,
+    "isEnabled": false,
     "displayOrder": 9,
-    "eventId": "MY4bvgxDbMtGv8rbYe5d"
+    "eventId": "gLqrDfMx6qkTHn6hoZqA"
   },
   {
     "id": "jjj",
-    "name": "Lanche de oferta",
-    "isDefault": false,
+    "name": "Chuveiros",
+    "isDefault": true,
     "isEnabled": false,
     "displayOrder": 10,
-    "eventId": "MY4bvgxDbMtGv8rbYe5d"
+    "eventId": "gLqrDfMx6qkTHn6hoZqA"
+  },
+  {
+    "id": "kkk",
+    "name": "Resultados cronometrados",
+    "isDefault": true,
+    "isEnabled": false,
+    "displayOrder": 11,
+    "eventId": "gLqrDfMx6qkTHn6hoZqA"
+  },
+  {
+    "id": "lll",
+    "name": "Abastecimentos",
+    "isDefault": true,
+    "isEnabled": false,
+    "displayOrder": 12,
+    "eventId": "cmWJ3DMDwzJRwMaTQv53"
+  },
+  {
+    "id": "mmm",
+    "name": "Chuveiros",
+    "isDefault": true,
+    "isEnabled": true,
+    "displayOrder": 13,
+    "eventId": "cmWJ3DMDwzJRwMaTQv53"
+  },
+  {
+    "id": "nnn",
+    "name": "Resultados cronometrados",
+    "isDefault": true,
+    "isEnabled": true,
+    "displayOrder": 13,
+    "eventId": "cmWJ3DMDwzJRwMaTQv53"
+  },
+  {
+    "id": "ooo",
+    "name": "Abastecimentos",
+    "isDefault": true,
+    "isEnabled": false,
+    "displayOrder": 14,
+    "eventId": "TgKZi8NQKNoJQGArd3zc"
+  },
+  {
+    "id": "ppp",
+    "name": "Chuveiros",
+    "isDefault": true,
+    "isEnabled": true,
+    "displayOrder": 15,
+    "eventId": "TgKZi8NQKNoJQGArd3zc"
+  },
+  {
+    "id": "qqq",
+    "name": "Resultados cronometrados",
+    "isDefault": true,
+    "isEnabled": true,
+    "displayOrder": 16,
+    "eventId": "TgKZi8NQKNoJQGArd3zc"
   }
 ]

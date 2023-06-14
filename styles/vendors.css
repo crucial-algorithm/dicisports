@@ -1,6 +1,31 @@
-@import '@reach/menu-button/styles.css';
-@import '@reach/dialog/styles.css';
 @import 'mapbox-gl/dist/mapbox-gl.css';
 @import '@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css';
 @import 'react-responsive-carousel/lib/styles/carousel.min.css';
 
+.date-picker > .p-inputtext.p-component {
+    border: 0;
+    box-shadow: none;
+    margin: 0;
+    height: 30px;
+    @apply text-base dark:text-white md:text-lg font-medium placeholder-gray-500
+    bg-gray-100 dark:bg-gray-800
+    disabled:text-gray-400 dark:disabled:text-blueGray-500
+    ;
+}
+
+.date-picker > .p-inputtext:enabled:focus {
+    border: 0;
+    outline: none;
+    box-shadow: none;
+}
+
+.p-datepicker:not(.p-datepicker-inline),
+.p-datepicker:not(.p-datepicker-inline) .p-datepicker-header,
+.p-datepicker .p-datepicker-header .p-datepicker-title .p-datepicker-year, .p-datepicker .p-datepicker-header .p-datepicker-title .p-datepicker-month
+{
+    @apply dark:bg-gray-800 dark:text-white
+}
+
+.p-datepicker .p-datepicker-header .p-datepicker-title .p-datepicker-month:enabled:hover {
+    color: var(--color-white)
+}

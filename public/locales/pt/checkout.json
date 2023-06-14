@@ -1,0 +1,100 @@
+{
+  "Distance": "Distância",
+  "Hour": "Hora",
+  "Your Tickets": "Os teus bilhetes",
+  "Checkout now": "Completa a tua inscrição",
+  "Finish Registration": "Finalizar inscrição",
+  "Edit info": "Alterar inscrição",
+  "Pay": "Pagar",
+  "Continue": "Continuar",
+
+  "First Name": "Primeiro Nome",
+  "Last Name": "Último Nome",
+  "Gender": "Género",
+  "Phone Number": "Número de telemóvel",
+  "Shirt Size": "Tamanho da camisola",
+  "Native From": "Natural de",
+  "Identity Card": "Cartão de Cidadão",
+  "Postal Code": "Código postal",
+  "Birthdate": "Data de nascimento",
+  "National Federation Number": "Número da Federação",
+  "Participant": "Participante",
+
+  "Gender Placeholder": "Seleciona o teu género",
+  "Shirt Placeholder": "Seleciona o tamanho da tua camisola",
+
+  "Optional": "(Opcional)",
+  "Required": "(Obrigatório)",
+
+  "Female": "Feminino",
+  "Male": "Masculino",
+  "Other": "Outro",
+
+  "Add": "Adicionar",
+  "Save": "Guardar",
+  "Remove": "Remover",
+  "Discard": "Cancelar",
+
+  "Field Required": "Campo obrigatório",
+  "Min 2 Chars": "Insere no mínimo 2 caracteres",
+  "Past Date": "Data tem que estar no passado",
+  "9 Digits": "Número tem de conter 9 dígitos",
+  "Invalid number": "Número inválido",
+  "Max 9 Number": "Apenas permitidos 9 dígitos",
+  "Invalid Option": "Opção inválida",
+  "Invalid Type": "Tipo inválido",
+  "Invalid CC Length": "Introduza o seu número de identificação sem dígitos de controlo",
+
+
+  "No Races In Checkout": "Nenhuma distância no carrinho !",
+  "Can't Create Booking": "Não foi possível criar o booking",
+
+  "Update Cart": "Atualizar carrinho",
+  "Existing Race Participant": "Upss.. Este participante já está a participar nesta distância !",
+  "Participant Selected": "Participante selecionado",
+  "Participant Saved": "Participante guardado",
+  "Participant Saved and Updated": "Participante guardado e atualizado",
+  "Fill": "Preencher",
+  "Participant Reset": "Participante redefinido",
+  "Participant Removed": "Participante removido",
+  "Add Race": "Adicionar inscrição",
+  "Select Participant": "Escolhe um participante existente",
+  "Already Have An Account ?": "Já tens uma conta?",
+
+  "Participant Not Filled": "Completa a informação em falta",
+  "New Participant First Name": "Novo",
+  "New Participant Last Name": "Participante",
+
+  "Thanks For Buying": "Obrigado por te registares com a Dicisports. Por favor imprime esta página com os dados da confirmação, para o caso de quereres mudar algo.",
+  "Confirmation ID": "ID de confirmação",
+  "PIN": "PIN",
+  "Mail Confirmation Details": "Envia-me os detalhes da confirmação para o e-mail:",
+  "Email Address": "E-mail",
+  "Send": "Enviar",
+  "Reset": "Limpar",
+  "Save and Update": "Guardar e atualizar {{first}} {{last}}",
+
+  "Invalid Email": "Email inválido",
+  "Booking Confirmation Email Sent": "Informação da inscrição enviada para o teu email.",
+
+  "No Booking": "Esse booking não existe!",
+
+  "Accept Dici Terms": "Ups... Verfica que aceitaste os termos e condições",
+  "Accept Event Regulation": "Ups... Verfica que aceitaste o regulamento",
+  "Read and Accepted": "Eu li e aceito",
+  "Terms and Conditions": " os Termos e Condições",
+  "Event Regulation": " o Regulamento do Evento",
+
+  "Waitting for payment gateway": "A aguardar confirmação do pagamento por parte da SIBS...",
+  "Payment not found": "Não foi possível encontrar o pagamento solicitado",
+  "Could not retrieve status from payment gateway": "Não foi possível verificar o estado do pagamento junto da SIBS",
+
+  "Multibanco Instructions": "Pagamento por Multibanco ou Homebanking",
+  "Multibanco Entity": "Entidade",
+  "Multibanco Reference": "Referência",
+  "Multibanco Amount": "Valor",
+  "MBWay Instructions": "Segue as instruções no MBWay para completar o pagamento...",
+  "Credit Card Instructions": "A processar o pagamento no teu cartão...",
+
+  "We Give Up On Past Payments": "As tentativa(s) anteriore(s) de pagamento falharam. Submete uma nova forma de pagamento."
+}

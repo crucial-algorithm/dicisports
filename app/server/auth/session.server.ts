@@ -1,3 +1,4 @@
+import { Role } from '@prisma/client';
 import { createCookieSessionStorage, redirect } from 'remix';
 
 import Config from '~/server/config.server';
@@ -204,7 +205,22 @@ async function requireAdminUser(request: Request): Promise<User> {
     session.signOut();
     throw redirect('/login', { headers: await session.getHeaders() });
   }
-  if (user.role !== 'ADMIN') {
+  if (user.role !== Role.ADMIN) {
+    throw redirect('/');
+  }
+  return user;
+}
+
+async function requireOrganizer(request: Request): Promise<User> {
+  const user = await getUser(request);
+
+  if (!user) {
+    const session = await getSession(request);
+
+    session.signOut();
+    throw redirect('/login', { headers: await session.getHeaders() });
+  }
+  if (user.role !== Role.ORGANIZER) {
     throw redirect('/');
   }
   return user;
@@ -309,6 +325,7 @@ export {
   getUserSessionFromMagicLink,
   requireUser,
   requireAdminUser,
+  requireOrganizer,
   getUser,
   sendRecoverPasswordToken
 };

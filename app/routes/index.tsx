@@ -1,8 +1,9 @@
+import { useCreation } from 'ahooks';
 import type { SyntheticEvent } from 'react';
 import * as React from 'react';
-import { useEffect, useRef, useState } from 'react';
-import type { LoaderFunction, MetaFunction } from 'remix';
-import { json } from 'remix';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import type { LoaderFunction, MetaFunction } from '@remix-run/node';
+import { json } from '@remix-run/node';
 import {
   Form,
   Link,
@@ -14,64 +15,52 @@ import { useTranslation } from 'react-i18next';
 
 import {
   AdjustmentsVerticalIcon,
-  ChevronDownIcon,
-  HeartIcon as Favorite,
-  ShareIcon
+  ChevronDownIcon
 } from '@heroicons/react/24/solid';
-
-import { HeartIcon, XCircleIcon } from '@heroicons/react/24/outline';
 
 import clsx from 'clsx';
 
-import type { TFunction } from 'i18next';
-
-import { CopyToClipboard } from 'react-copy-to-clipboard';
-
-import { Dialog } from '@reach/dialog';
+import EventResult from '~/components/SearchEventResult';
+import SportsGrid from '~/components/HomeSportsGrid';
+import GroupResult from '~/components/SearchGroupResult';
+import { FiltersDialog, DisplayFilters } from '~/components/SearchFilters';
 
 import Main from '~/components/shared/Main';
 import { Spacer } from '~/components/shared/Spacer';
-import Button, { ButtonLink } from '~/components/shared/Button';
+import Button from '~/components/shared/Button';
 import type {
   DaysOfWeek,
   DiciLocation,
+  Event,
   Group,
   GroupFilters,
   GroupSpirit,
   Language,
+  SearchResults,
   Sport
 } from '~/types';
-import { findGroups } from '~/server/db/locations.server';
-import GroupEntry from '~/components/GroupEntry';
+import { searchEventsAndGroups } from '~/server/db/search.server';
 
 import SearchLocations from '~/components/SearchLocations';
-import ButtonGroup from '~/components/shared/ButtonGroup';
 
-import { H3, Paragraph } from '~/components/shared/typography';
-import FormField from '~/components/shared/form/FormField';
-import CheckBox from '~/components/shared/form/CheckBox';
-import { findGroupsSpirit } from '~/server/db/groupsSpirit.server';
-import { findSports } from '~/server/db/sports.server';
-import type { Option } from '~/components/shared/form/ComboBox';
-import ComboBox from '~/components/shared/form/ComboBox';
+import { H5, Paragraph } from '~/components/shared/typography';
+import { findGroupsSpirit, findSports } from '~/server/db/reference.server';
 
-import { getLocalizedText, PeekDayOfWeek } from '~/utils/misc';
-
+import Dialog from '~/components/shared/Dialog';
 import HomeLogo from '~/components/shared/HomeLogo';
-import DisplayImg from '~/components/shared/DisplayImg';
 import { findUserFavoriteGroups } from '~/server/db/groups.server';
 import { getUser } from '~/server/auth/session.server';
-import { Notification } from '~/components/shared/NotificationMessage';
 
 import Config from '~/server/config.server';
 import TransitionIndicator from '~/components/shared/TransitionIndicator';
-import WhatsApp from '~/components/shared/icons/WhatsApp';
-import { useRootData } from '~/utils/use-root-data';
+import { useRootData } from '~/hooks';
 import { getLocationSession } from '~/routes/action/set-my-location';
 import { useUserLocation } from '~/utils/LocationProvider';
 import { CanonicalMeta } from '~/utils/seo';
 
-type FilterParams = {
+import { findUserFavoriteEvents } from '~/server/db/events.server';
+
+export type FilterParams = {
   actionId: keyof typeof actions | null;
   coords: string | null;
   search: string | null;
@@ -81,18 +70,21 @@ type FilterParams = {
   sport: number | null;
   dayOfWeek: number | null;
   orderBy: SortMethod;
+  groupsAction: string | null;
 };
 
 type LoaderData = {
   sports: Sport[];
   groupsSpirit: GroupSpirit[];
-  result: ActionData;
-  favorites: Group[];
+  searchResult: ActionData;
+  favoriteGroups: Group[];
+  favoriteEvents: Event[];
   mapToken: string;
+  selectedDayParts: string[] | null;
 };
 
 type ActionData = {
-  results: Group[];
+  results: SearchResults[];
   filters: null | GroupFilters;
   total: number;
   page?: number;
@@ -114,24 +106,25 @@ const dayParts = {
 };
 
 export const handle = {
-  i18n: ['common', 'home', 'm-groups']
+  i18n: ['common', 'home', 'm-groups', 'organizer']
 };
 
-enum SortMethod {
+export enum SortMethod {
   recency = 'recent',
   proximity = 'proximity'
 }
 
 export const meta: MetaFunction = CanonicalMeta;
 
-export const loader: LoaderFunction = async ({ request, params, context }) => {
+export const loader: LoaderFunction = async ({ request }) => {
   const data = parseQueryString(request.url);
   // Initial load
   const user = await getUser(request);
-  const favorites = user ? await findUserFavoriteGroups(user.id) : [];
+  const favoriteGroups = user ? await findUserFavoriteGroups(user.id) : [];
+  const favoriteEvents = user ? await findUserFavoriteEvents(user.id) : [];
 
   let result: ActionData | null = null;
-  const page = data.page || 0;
+  const page = data.actionId === actions.search ? 0 : data.page || 0;
 
   if (
     data.actionId === actions.search ||
@@ -148,11 +141,12 @@ export const loader: LoaderFunction = async ({ request, params, context }) => {
       data.coords
         ? (data.coords.split(',').map(Number) as [number, number])
         : null,
-      data.dayOfWeek || -1,
+      data.dayOfWeek,
       data.actionId === actions.more ? page + 1 : page,
       data.actionId !== actions.more,
       !isNaN(Number(lat)) ? [Number(lat), Number(lng)] : null,
-      data.orderBy === SortMethod.proximity
+      data.orderBy === SortMethod.proximity,
+      data.groupsAction !== 'hide'
     );
   }
 
@@ -161,9 +155,11 @@ export const loader: LoaderFunction = async ({ request, params, context }) => {
   return json({
     sports: await findSports(),
     groupsSpirit: await findGroupsSpirit(),
-    favorites,
-    result,
-    mapToken: MAPBOX_TOKEN
+    favoriteGroups,
+    favoriteEvents,
+    searchResult: result,
+    mapToken: MAPBOX_TOKEN,
+    selectedDayParts: data.dayParts
   });
 };
 
@@ -178,6 +174,7 @@ function parseQueryString(url: string): FilterParams {
   const dayParts = searchParams.getAll('daypart');
   const spirit = searchParams.getAll('spirit');
   const orderBy = searchParams.get('order');
+  const groupsAction = searchParams.get('g');
 
   return {
     actionId,
@@ -185,10 +182,11 @@ function parseQueryString(url: string): FilterParams {
     search,
     page,
     sport,
-    dayOfWeek,
+    dayOfWeek: dayOfWeek === null || dayOfWeek < 0 ? null : dayOfWeek,
     dayParts: dayParts,
     orderBy: (orderBy as SortMethod) || SortMethod.recency,
-    spirit: spirit.map((v) => parseInt(v))
+    spirit: spirit.map((v) => parseInt(v)),
+    groupsAction
   };
 }
 
@@ -237,37 +235,39 @@ async function search(
   spirit: number[] | null,
   sport: number | null,
   searchedLocation: [number, number] | null,
-  dayOfWeek: number,
+  dayOfWeek: number | null,
   page: number,
   reset: boolean = true,
   userLocation: [number, number] | null,
-  orderByProximity: boolean
+  orderByProximity: boolean,
+  showGroups: boolean
 ): Promise<ActionData> {
   const [lat, lng] = searchedLocation ? searchedLocation : [null, null];
   const filters = {
     spirit: spirit || null,
     sport: !sport || sport === -1 ? null : sport,
-    dayOfWeek: dayOfWeek === -1 ? null : dayOfWeek,
+    dayOfWeek: dayOfWeek,
     timeOfDay:
       dayParts === null || dayParts.length === 0
         ? null
         : reduceDayParts(dayParts.map(dayPartToTimeInterval))
   };
-  const { total, results } = await findGroups(
+
+  const { total, results } = await searchEventsAndGroups(
     lat,
     lng,
     filters,
     10,
     page,
     userLocation,
-    orderByProximity
+    orderByProximity,
+    showGroups
   );
 
   return {
     results: results.map((g, index) => {
       return {
         ...g,
-        position: index,
         distance: Math.floor(g.distance || 0) // save some bandwidth
       };
     }),
@@ -278,22 +278,39 @@ async function search(
   };
 }
 
+function useQueryString() {
+  const searchString = useLocation()?.search;
+
+  // parse the string in a useCreation so that the searchParse
+  // object is not recreated on every render if the searchString doesn't change
+  return useCreation(
+    () => parseQueryString(`https://a.com/?${searchString}`),
+    [searchString]
+  );
+}
+
 export default function Index() {
   const { t, i18n } = useTranslation('home');
   const { user } = useRootData();
   const lang = i18n.language as Language;
   const tc = useTranslation('common').t;
-  const { sports, groupsSpirit, result, favorites, mapToken } =
-    useLoaderData<LoaderData>();
+  const {
+    sports,
+    groupsSpirit,
+    searchResult,
+    favoriteGroups,
+    favoriteEvents,
+    mapToken,
+    selectedDayParts
+  } = useLoaderData<LoaderData>() as LoaderData;
   const [selection, setSelection] = useState<DiciLocation | undefined>();
-  const data = result;
-  const [page, setPage] = useState<number>(data?.page || 0);
-  const [groups, setGroups] = useState<Array<Group & { position: number }>>([]);
+  const data = searchResult;
+  const [searchResults, setSearchResults] = useState<Array<SearchResults>>(data?.results || []);
   const [filtersModalOpen, setFiltersModalOpen] = useState<boolean>(false);
-  const [searchPerformed, setSearchPerformed] = useState<boolean>(false);
+  const [searchPerformed, setSearchPerformed] = useState<boolean>(searchResults.length > 0);
   const [address, setAddress] = useState<string>('');
   const location = useLocation();
-  const filters = parseQueryString(`https://a.com/${location.search}`);
+  const filters = useQueryString();
   const [userLocation, setUserLocation] = useUserLocation();
   const locationFetcher = useFetcher();
   const [searchingLocation, setSearchingLocation] = useState<boolean>(false);
@@ -307,11 +324,33 @@ export default function Index() {
       : SortMethod.recency
   );
   const searchForm = useRef<HTMLFormElement | null>(null);
+  const [filtersCacheBurst, setFiltersCacheBurst] = useState<number>(
+    Date.now()
+  );
+
+  const handleSearchLocations = useCallback(
+    (o: DiciLocation | SyntheticEvent<HTMLSelectElement>) => {
+      setSelection(o as DiciLocation);
+    },
+    []
+  );
+
+  const handleOnSubmit = useCallback(() => {
+    setSearchPerformed(true);
+    setFiltersModalOpen(false);
+    setFiltersCacheBurst(Date.now());
+  }, []);
+
+  const handleCloseFilters = useCallback(() => {
+    setFiltersModalOpen(false);
+  }, []);
 
   useEffect(() => {
-    if (!result) {
-      if (groups.length > 0) {
-        setGroups([]);
+    if (!searchResult) {
+      if (searchResults.length > 0) {
+        // we get here when a user navigates back to the home page (by clicking dicisports, for instance)
+        // after having performed a query with results
+        setSearchResults([]);
         setSearchPerformed(false);
         setFiltersModalOpen(false);
       }
@@ -319,18 +358,17 @@ export default function Index() {
     }
     setSearchPerformed(true);
 
-    const { reset, results } = result as ActionData;
+    const { reset, results } = searchResult;
 
-    if (reset) {
-      setPage(0);
-    }
     if (!results) {
       return;
     }
-    const list = reset ? [] : [...groups];
 
-    results.map((r, index) => list.push({ ...r, position: index }));
-    setGroups(list);
+    // reset is used to keep previous groups when "load more results" is used
+    const list = reset ? [] : [...searchResults];
+
+    results.map((r, index) => list.push(r));
+    setSearchResults(list);
     const url = new URL(window.location.href);
 
     setAddress(url.origin);
@@ -341,31 +379,12 @@ export default function Index() {
     return () => {
       window.onpopstate = null;
     };
-  }, [result, location]);
+  }, [searchResult]);
 
-  const showMoreResults = !!data && data.results.length < data.total;
-
-  function handleOnSubmit() {
-    setSearchPerformed(true);
-    setFiltersModalOpen(false);
-  }
-
-  function handleSearchLocations(
-    o: DiciLocation | SyntheticEvent<HTMLSelectElement>
-  ) {
-    setSelection(o as DiciLocation);
-  }
+  const showMoreResults = !!data && searchResults.length < data.total;
 
   function handleOpenFilters() {
     setFiltersModalOpen(true);
-  }
-
-  function handleCloseFilters() {
-    setFiltersModalOpen(false);
-  }
-
-  function handleLoadNextPage() {
-    setPage(page + 1);
   }
 
   function handleResetSearchPerformed() {
@@ -426,7 +445,12 @@ export default function Index() {
         visible={searchingLocation}
         action={t('Searching Location')}
       />
-      <Form method="get" onSubmit={handleOnSubmit}>
+      <Form
+        method="get"
+        onSubmit={handleOnSubmit}
+        autoComplete="off"
+        preventScrollReset={true}
+      >
         <input
           type="hidden"
           value={selection ? selection.coords : ''}
@@ -437,17 +461,35 @@ export default function Index() {
           value={selection ? `${selection.address}` : ''}
           name="search"
         />
-        <input type="hidden" name="page" value={result?.page || 0} />
+        <input type="hidden" name="page" value={searchResult?.page || 0} />
+        <input
+          type="hidden"
+          name="dow"
+          value={
+            filters?.dayOfWeek === null
+              ? ''
+              : (filters?.dayOfWeek as DaysOfWeek)
+          }
+        />
+        <input type="hidden" name="sport" value={filters?.sport || ''} />
+        {selectedDayParts &&
+          selectedDayParts.map((p: string) => (
+            <input key={p} type="hidden" name="daypart" value={p} />
+          ))}
+        {filters?.spirit &&
+          filters.spirit.map((v) => (
+            <input key={v} type="hidden" name="spirit" value={v} />
+          ))}
+        <input type="hidden" name="g" value={filters?.groupsAction || ''} />
         <div className="flex align-middle justify-center">
           <Link to="/" onClick={handleResetSearchPerformed}>
             <HomeLogo className="w-80 h-16 md:w-96 lg:w-144" />
           </Link>
         </div>
         <Spacer size="2xs" />
-        <div className="flex align-middle justify-center">
+        <div className="flex align-middle justify-center items-center">
           <div className="flex flex-col w-full md:w-160 lg:flex-row">
             <SearchLocations
-              ariaLabel={t('Search')}
               onSelect={handleSearchLocations}
               placeholder={t('Search Placeholder')}
               className="px-0 mr-4 w-full search-select"
@@ -457,28 +499,42 @@ export default function Index() {
               name="actionId"
               value={actions.search}
               className="mt-8 w-80 m-auto lg:mt-0 lg:w-auto lg:m-0"
+              id="search-button"
             >
               {t('Search')}
             </Button>
           </div>
         </div>
         <FiltersDialog
+          key={filtersCacheBurst}
           isOpen={filtersModalOpen}
           sports={sports}
           groupsSpirit={groupsSpirit}
           triggerModalClose={handleCloseFilters}
+          onSubmit={handleOnSubmit}
+          // we need to pass all the filters because filters dialog will submit its own form
           filters={filters}
+          coords={selection ? selection.coords : ''}
+          search={selection ? selection.address : ''}
+          order={orderBy}
+          lang={lang}
         />
-        {searchPerformed ? (
+
+        {searchPerformed && (
           <>
             <Spacer size="xs" />
             <div className="pl-6 flex align-middle">
-              <Button size="small" onClick={handleOpenFilters} type="button">
+              <Button
+                size="small"
+                onClick={handleOpenFilters}
+                type="button"
+                name="filters"
+              >
                 <AdjustmentsVerticalIcon className="h-6" />
               </Button>
               <div className="flex mx-2 items-center dark:text-white text-blueGray-500 text-sm">
                 {data?.total
-                  ? t('Number of Groups Found', { total: data?.total })
+                  ? t('Number of Results Found', { total: data?.total })
                   : null}
               </div>
               <DisplayFilters
@@ -490,24 +546,26 @@ export default function Index() {
               />
             </div>
           </>
-        ) : null}
-        {showMoreResults ? (
+        )}
+
+        {showMoreResults && (
           <>
             <div className="mb-8 flex align-middle justify-center absolute bottom-0 w-full">
               <Button
+                id="see-more"
                 name="actionId"
                 value={actions.more}
-                onClick={handleLoadNextPage}
+                formMethod="get"
               >
                 <ChevronDownIcon width="22" /> {t('Load More')}
               </Button>
             </div>
           </>
-        ) : null}
+        )}
 
         {searchPerformed && (
           <div className="flex flex-col justify-center">
-            {groups.length === 0 ? (
+            {searchResults.length === 0 ? (
               <div className="w-full flex justify-center mt-8">
                 <CallToActionToCreateGroup
                   className="text-xl"
@@ -528,6 +586,7 @@ export default function Index() {
                     name="actionId"
                     value={actions.sort}
                     onClick={handleOrderBy}
+                    id="sort-location"
                   >
                     {orderBy === SortMethod.proximity
                       ? t('Order by recency')
@@ -539,55 +598,65 @@ export default function Index() {
           </div>
         )}
       </Form>
+
       {searchPerformed && (
         <>
-          {groups.map((group) => (
-            <GroupResult
-              group={group}
-              key={`${group.id}-${group.position}`}
-              isUserFavorite={
-                favorites.find((g: Group) => g.id === group.id) !== undefined
-              }
-              img={sports.find((s: Sport) => s.id === group.sportId)?.picture}
-              favAddedMessage={t('Favorite Added')}
-              favRemovedMessage={t('Favorite Removed')}
-              copiedToClipMessage={t('Copied to Clipboard')}
-              address={address}
-              location={`${location.pathname}${location.search}`}
-              isLoggedIn={user !== null}
-              userLocation={userLocation}
-              showLocation={orderBy === SortMethod.proximity}
-            />
-          ))}
+          {searchResults.map((r, index) =>
+            r.entity === 'event' ? (
+              <EventResult
+                key={r.id}
+                event={r}
+                img={sports.find((s) => s.id === r.sportId)?.picture}
+                userLocation={userLocation}
+                showLocation={orderBy === SortMethod.proximity}
+                isUserFavorite={favoriteEvents.find((e) => e.id === r.id) !== undefined}
+              />
+            ) : (
+              <GroupResult
+                group={r}
+                key={`${r.id}-${index}`}
+                isUserFavorite={
+                  favoriteGroups.find((g: Group) => g.id === r.id) !== undefined
+                }
+                img={sports.find((s: Sport) => s.id === r.sportId)?.picture}
+                favAddedMessage={t('Favorite Added')}
+                favRemovedMessage={t('Favorite Removed')}
+                copiedToClipMessage={t('Copied to Clipboard')}
+                address={address}
+                location={`${location.pathname}${location.search}`}
+                isLoggedIn={user !== null}
+                userLocation={userLocation}
+                showLocation={orderBy === SortMethod.proximity}
+              />
+            )
+          )}
         </>
       )}
 
-      {!searchPerformed ? (
+      {!searchPerformed && (
         <>
           <Spacer size="3xs" />
           <SportsGrid sports={sports} lang={lang} t={t} />
         </>
-      ) : null}
+      )}
 
       <Dialog
-        onDismiss={handleCloseLocationFailedWarning}
+        onClose={handleCloseLocationFailedWarning}
         isOpen={isLocationFailedWarningOpened}
-        aria-label="Delete your account"
-        className="w-11/12 dark:bg-gray-900 border-2 border-black dark:border-white rounded-lg lg:px-24 lg:py-14 lg:max-w-screen-lg"
-      >
-        <H3 className="mb-4">{t('Failed to find Your Location Title')}</H3>
-        <Paragraph>{t('Failed to find Your Location Hint')}</Paragraph>
-        <Spacer size="2xs" />
-        <div className="flex flex-wrap gap-4 justify-end">
+        aria-label="Location Failed"
+        SecondaryAction={
           <Button
-            variant="danger"
             size="medium"
             type="button"
             onClick={handleCloseLocationFailedWarning}
           >
             {t('Failed to find Your Location Close')}
           </Button>
-        </div>
+        }
+      >
+        <H5 className="mb-4">{t('Failed to find Your Location Title')}</H5>
+        <Paragraph>{t('Failed to find Your Location Hint')}</Paragraph>
+        <Spacer size="2xs" />
       </Dialog>
     </Main>
   );
@@ -601,432 +670,15 @@ function CallToActionToCreateGroup({
   className?: string;
 }) {
   return (
-    <Form method="post" action="/m/group/add">
-      <input type="hidden" name="actionId" value="create" />
-      <button
-        className={clsx(
-          'background-transparent text-orange-600 dark:text-blueGray-500 font-medium',
-          className
-        )}
-      >
-        {label}
-      </button>
-    </Form>
-  );
-}
-
-function GroupResult({
-  group,
-  img,
-  isUserFavorite,
-  favAddedMessage,
-  favRemovedMessage,
-  copiedToClipMessage,
-  address,
-  location,
-  isLoggedIn,
-  userLocation,
-  showLocation
-}: {
-  group: Group;
-  img?: string;
-  isUserFavorite: boolean;
-  favAddedMessage: string;
-  favRemovedMessage: string;
-  copiedToClipMessage: string;
-  address: string;
-  location: string;
-  isLoggedIn: boolean;
-  userLocation: [number, number] | null;
-  showLocation: boolean;
-}) {
-  const favorite = useFetcher();
-  const ref = useRef();
-  const [message, setMessage] = useState<string>(favAddedMessage);
-  let showFavoriteAddedNotification: any = null;
-  let showCopiedToClipboardNotification: any = null;
-
-  function handlerSetShowNotificationFunction(callback: () => void) {
-    showFavoriteAddedNotification = callback;
-  }
-
-  function handlerSetShowNotificationCopyToClipboard(callback: () => void) {
-    showCopiedToClipboardNotification = callback;
-  }
-
-  function handlerClickToCopy() {
-    showCopiedToClipboardNotification();
-  }
-
-  useEffect(() => {
-    if (favorite.type === 'done' && favorite.data.ok) {
-      if (ref.current) {
-        (ref.current as HTMLFormElement).reset();
-      }
-      setMessage(
-        favorite.data.action === 'add' ? favAddedMessage : favRemovedMessage
-      );
-      showFavoriteAddedNotification();
-    }
-  }, [
-    favorite,
-    favAddedMessage,
-    favRemovedMessage,
-    showFavoriteAddedNotification
-  ]);
-
-  const whatsAppLink = isLoggedIn
-    ? group.whatsapp || ''
-    : `/login?a=ws&g=${group.id}&l=${location}`;
-
-  return (
-    <>
-      <GroupEntry
-        group={group}
-        key={group.id}
-        img={img}
-        actions={
-          <ButtonGroup density="compact">
-            {group.whatsapp && (
-              <ButtonLink size="tiny" type="button" to={whatsAppLink}>
-                <WhatsApp className="h-6 w-6 m-0 inline-block fill-white dark:fill-black" />
-              </ButtonLink>
-            )}
-            {/* @ts-ignore */}
-            <CopyToClipboard
-              text={`${address}/group/${group.slug}`}
-              onCopy={handlerClickToCopy}
-            >
-              <Button size="tiny" type="submit">
-                <ShareIcon className="h-6 w-6 m-0 inline-block" />
-              </Button>
-            </CopyToClipboard>
-            <favorite.Form
-              // @ts-ignore
-              ref={ref}
-              method="post"
-              action={`/m/group/fav/${group.id}`}
-            >
-              {isUserFavorite ? (
-                <Button size="tiny" name="action" value="remove">
-                  <Favorite className="h-6 w-6 m-0 inline-block" />
-                </Button>
-              ) : (
-                <Button size="tiny" name="action" value="add">
-                  <HeartIcon className="h-6 w-6 m-0 inline-block" />
-                </Button>
-              )}
-            </favorite.Form>
-            <Notification show={handlerSetShowNotificationFunction}>
-              {message}
-            </Notification>
-            <Notification show={handlerSetShowNotificationCopyToClipboard}>
-              {copiedToClipMessage}
-            </Notification>
-          </ButtonGroup>
-        }
-        footer={
-          <div className="font-medium text-gray-500 dark:text-white flex items-center justify-center">
-            {userLocation && showLocation && (
-              <span>{Math.ceil(group.distance || 0)} km</span>
-            )}
-          </div>
-        }
-      />
-    </>
-  );
-}
-
-function SportsGrid({
-  sports,
-  lang,
-  t
-}: {
-  sports: Sport[];
-  lang: Language;
-  t: TFunction;
-}) {
-  if (!sports) {
-    return null;
-  }
-  const width = 'w-full md:w-56 lg:w-56 xl:w-56';
-
-  return (
-    <div className="w-full m-auto grid grid-flow-row gap-2 md:w-full md:grid-flow-col md:grid-rows-2">
-      {sports
-        .sort((a, b) => a.id - b.id)
-        .map((s) => (
-          <Link to={`?actionId=${actions.search}&sport=${s.id}`} key={s.id}>
-            <DisplayImg
-              imageId={`product/sports/${s.picture}`}
-              key={s.id}
-              alt={getLocalizedText(lang, s.name)}
-              dontMessWithImgSize={true}
-              className={width}
-              variant="Grid"
-            />
-          </Link>
-        ))}
-      {new Array(8 - sports.length).fill(null).map((a, i) => (
-        <a
-          href={`mailto:feedback@dicisports.com?subject=${t(
-            'Add Sport Mail Subject'
-          )}`}
-          key={i}
-        >
-          <DisplayImg
-            imageId={'product/sports/add-sport_xe6eok'}
-            key={i}
-            alt={t('Add Sport')}
-            className={width}
-            dontMessWithImgSize={true}
-            variant="Grid"
-          />
-        </a>
-      ))}
-    </div>
-  );
-}
-
-/**
- * Not using @reach/dialog in order to inline form controls and keep
- * all state in a single form
- *
- * @param props
- * @constructor
- */
-function FiltersDialog(props: {
-  isOpen: boolean;
-  sports: Sport[];
-  groupsSpirit: GroupSpirit[];
-  triggerModalClose: () => void;
-  filters: FilterParams | null;
-}) {
-  const { t, i18n } = useTranslation('home');
-  const { isOpen, sports, groupsSpirit, triggerModalClose, filters } = props;
-  const sportsOptions: Option[] = [];
-
-  sports.map((s) => {
-    sportsOptions.push({
-      value: s.id,
-      label: s.name
-    });
-    return s;
-  });
-  return (
-    <div
-      data-reach-dialog-overlay={true}
-      className={clsx({
-        'hidden ': !isOpen,
-        'z-50 flex h-screen': isOpen
-      })}
-    >
-      <div
-        aria-modal={true}
-        aria-label={t('Filters')}
-        className={clsx(
-          'w-5/6 max-w-lg',
-          'bg-white dark:bg-gray-900 border-2 border-black dark:border-white rounded-lg font-extrabold',
-          {
-            'hidden ': !isOpen,
-            'm-auto': isOpen
-          }
-        )}
-      >
-        <div className="relative">
-          <button
-            type="button"
-            className="absolute top-2 right-2"
-            onClick={triggerModalClose}
-          >
-            <XCircleIcon className="w-8" />
-          </button>
-          <div className="px-6 py-2 flex flex-col items-center lg:px-24 lg:py-14">
-            <H3 className="w-full md:w-112 text-left">{t('Filters')}</H3>
-            <Spacer size="2xs" />
-
-            <FormField
-              label={t('Sport')}
-              id="sport"
-              className="w-full md:w-112"
-            >
-              <ComboBox
-                options={sportsOptions}
-                name="sport"
-                defaultValue={filters?.sport || -1}
-                placeholder={t('All Sports')}
-                lang={i18n.language as Language}
-              />
-            </FormField>
-            <FormField
-              label={t('Day Of Week')}
-              id="day-of-week"
-              className="w-full md:w-112"
-            >
-              <PeekDayOfWeek
-                name="dow"
-                id="day-of-week"
-                defaultValue={filters?.dayOfWeek as DaysOfWeek}
-                addAll={true}
-              />
-            </FormField>
-            <FormField
-              label={t('Day Part')}
-              id="day-part"
-              className="w-full md:w-112"
-            >
-              <CheckBox
-                name="daypart"
-                label={t('Morning')}
-                value={dayParts.morning}
-                checked={filters?.dayParts?.includes(dayParts.morning)}
-                className="mb-2"
-              />
-              <CheckBox
-                name="daypart"
-                label={t('Afternoon')}
-                value={dayParts.afternoon}
-                checked={filters?.dayParts?.includes(dayParts.afternoon)}
-                className="mb-2"
-              />
-              <CheckBox
-                name="daypart"
-                label={t('Evening')}
-                value={dayParts.evening}
-                checked={filters?.dayParts?.includes(dayParts.evening)}
-                className="mb-2"
-              />
-            </FormField>
-            <FormField
-              label={t('Group Spirit')}
-              id="spirit"
-              className="w-full md:w-112"
-            >
-              {groupsSpirit.map((gs) => (
-                <CheckBox
-                  key={gs.id}
-                  name="spirit"
-                  label={gs.name}
-                  value={gs.id}
-                  checked={filters?.spirit?.includes(gs.id)}
-                  className="mb-2"
-                />
-              ))}
-            </FormField>
-            <div className="w-full md:w-112 flex flex-wrap gap-4 justify-end">
-              <Button
-                variant="secondary"
-                type="button"
-                onClick={triggerModalClose}
-              >
-                {t('Cancel')}
-              </Button>
-              <Button
-                variant="primary"
-                size="medium"
-                type="submit"
-                name="actionId"
-                value={actions.search}
-              >
-                {t('Apply Filters')}
-              </Button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function DisplayFilters(props: {
-  filters: FilterParams;
-  sports: Sport[];
-  spirits: GroupSpirit[];
-  t: TFunction;
-  tc: TFunction;
-}) {
-  const { i18n } = useTranslation();
-  const language = i18n.language;
-  const { filters, sports, spirits, t, tc } = props;
-
-  if (!filters) {
-    return null;
-  }
-  const { spirit, sport, dayOfWeek, dayParts } = filters;
-  const label: string[] = [];
-
-  if (dayOfWeek !== null && dayOfWeek >= 0) {
-    label.push(
-      tc(
-        [
-          'Monday',
-          'Tuesday',
-          'Wednesday',
-          'Thursday',
-          'Friday',
-          'Saturday',
-          'Sunday'
-        ][dayOfWeek]
-      )
-    );
-  }
-  // if all day parts are picked, just ignore to save space
-  if (dayParts && dayParts.length > 0 && dayParts.length !== 3) {
-    const parts = semanticOr(
-      dayParts.map((v) => t(v)),
-      t('Or')
-    );
-
-    if (label.length === 1) {
-      label[0] = `${label[0]}, ${parts}`;
-    } else {
-      label.push(parts);
-    }
-  }
-
-  if (spirit && spirit.length > 0 && spirit.length !== 5) {
-    label.push(
-      t('Filter Spirit', {
-        sport: semanticOr(
-          spirit.map((s) => mapIdToName(s, spirits, language as Language)),
-          t('Or')
-        )
-      })
-    );
-  }
-
-  // using h1 for sports based on SEO recommendations from ahrefs
-  return (
-    <div className="flex mx-2 items-center dark:text-white text-blueGray-500 text-sm">
-      {sport && (
-        <h1 className="font-bold">
-          {mapIdToName(sport, sports, language as Language)}{' '}
-        </h1>
+    <Link
+      to="/g/group/add"
+      className={clsx(
+        'background-transparent text-orange-600 dark:text-blueGray-500 font-medium',
+        className
       )}
-      {sport && label.length > 0 && <>&nbsp;|&nbsp;</>}
-      {label.join(' | ')}
-    </div>
+      id="create-your-group"
+    >
+      {label}
+    </Link>
   );
-}
-
-/**
- * Create a human-readable phrase from a list of strings
- * @param list
- * @param or
- */
-function semanticOr(list: string[], or: string) {
-  if (list.length === 1) {
-    return list[0];
-  }
-  return `${list.slice(0, -1).join(', ')} ${or} ${list.slice(-1)}`;
-}
-
-function mapIdToName(
-  id: number,
-  universe: Sport[] | GroupSpirit[],
-  lang: Language
-): string {
-  const entity = universe.find((u) => u.id === id);
-
-  return getLocalizedText(lang, entity?.name);
 }

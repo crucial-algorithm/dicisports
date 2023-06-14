@@ -63,6 +63,20 @@ module.exports = {
         800: '#002C6B',
         900: '#001533'
       },
+      'cadet-blue': {
+        DEFAULT: '#9da0b7',
+        50: '#f5f6f8',
+        100: '#edeef2',
+        200: '#dee1e7',
+        300: '#c9ccd8',
+        400: '#a9adc1',
+        500: '#9da0b7',
+        600: '#8787a4',
+        700: '#74748e',
+        800: '#5f6074',
+        900: '#50505f',
+        950: '#2f3037',
+      },
       team: {
         unknown: 'var(--color-team-unknown)',
         current: 'var(--color-team-current)',
@@ -115,4 +129,4 @@ module.exports = {
     require('@tailwindcss/forms'),
     require('@tailwindcss/line-clamp')
   ]
-}
+};

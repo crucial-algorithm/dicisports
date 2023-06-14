@@ -1,0 +1,1249 @@
+import { PlusIcon } from '@heroicons/react/24/outline';
+import { Role, Status } from '@prisma/client';
+import {
+  Form,
+  Link,
+  useActionData,
+  useFetcher,
+  useLoaderData
+} from '@remix-run/react';
+import type {
+  ActionFunction,
+  LinksFunction,
+  LoaderFunction,
+  UploadHandler
+} from '@remix-run/node';
+import {
+  json,
+  redirect,
+  unstable_composeUploadHandlers,
+  unstable_createMemoryUploadHandler,
+  unstable_parseMultipartFormData
+} from '@remix-run/node';
+import type { TFunction } from 'i18next';
+
+import clsx from 'clsx';
+import { Toast } from 'primereact/toast';
+import type { FileUploadHandlerEvent } from 'primereact/fileupload';
+
+import mapBoxGlCss from 'mapbox-gl/dist/mapbox-gl.css';
+
+import type { ChangeEvent, MutableRefObject } from 'react';
+import * as React from 'react';
+import { useEffect, useRef, useState } from 'react';
+
+import { useTranslation } from 'react-i18next';
+
+import { z, ZodError } from 'zod';
+
+import DocumentsList from '~/components/events/DocumentsList';
+
+import RacesList from '~/components/events/RacesList';
+import PickBookingSystem from '~/components/PickBookingSystem';
+import Button, { ButtonLink } from '~/components/shared/Button';
+import ButtonGroup from '~/components/shared/ButtonGroup';
+import WhenListEmpty from '~/components/shared/Empty';
+import ComboBox from '~/components/shared/form/ComboBox';
+
+import BasicDatePicker from '~/components/shared/form/DatePicker';
+import FormField from '~/components/shared/form/FormField';
+
+import InputError from '~/components/shared/form/InputError';
+import Label from '~/components/shared/form/Label';
+import TextArea from '~/components/shared/form/TextArea';
+import TextField from '~/components/shared/form/TextField';
+import UploadImage from '~/components/shared/form/UploadImage';
+import Main from '~/components/shared/Main';
+import { MapDialog } from '~/components/shared/Map';
+import { H2, H6 } from '~/components/shared/typography';
+import { requireUser } from '~/server/auth/session.server';
+import Config from '~/server/config.server';
+import {
+  deleteEvent,
+  findEvent,
+  publishEvent,
+  unpublishEvent,
+  updateEvent
+} from '~/server/db/events.server';
+
+import { findEventPerks } from '~/server/db/perks.server';
+import { findEventRaces } from '~/server/db/races.server';
+import { findDifficulties, findSports } from '~/server/db/reference.server';
+import i18n from '~/server/i18n.server';
+
+import { uploadImageToCloudinary } from '~/server/storage/cloudinary.server';
+import {
+  NotFound,
+  parseLocation,
+  processImgField,
+  Unauthorized
+} from '~/server/utils/misc';
+import { ConfirmationDialog } from '~/components/shared/Dialog';
+import mapCss from '~/styles/map.css';
+import organizerCss from '~/styles/organizer.css';
+
+import type {
+  CreateEventInput,
+  DiciLocation,
+  Difficulty,
+  Document,
+  Event,
+  Language,
+  Perk,
+  Race,
+  Sport,
+  User
+} from '~/types';
+import { badRequest } from '~/utils/misc';
+import UploadFile from '~/components/UploadFile';
+import { findConfirmedBookings } from '~/server/db/booking.server';
+
+type ResponseFeedback = {
+  severity: 'error' | 'success' | 'info' | 'warn';
+  message: string;
+};
+
+type ActionData = {
+  hash: number;
+  feedback?: ResponseFeedback;
+  errors?: {
+    name?: string;
+    startAt?: string;
+    location?: string;
+    externalBookingUrl?: string;
+    description?: string;
+    directions?: string;
+    submit?: string;
+    races?: string;
+    regulation?: string;
+  };
+};
+
+const actionIds = {
+  publish: 'publish',
+  unpublish: 'unpublish',
+  deleteEvent: 'delete-event',
+  deleteRegulation: 'delete-regulation',
+  uploadRegulation: 'upload-regulation',
+  addNewRace: 'add-new-race',
+  addNewDocument: 'add-new-doc'
+};
+
+const RESOURCES_NS = 'create-event-form';
+
+type LoaderData = {
+  sports: Array<Sport>;
+  mapToken: string;
+  imageUploadPreset: string;
+  event: SportEvent;
+  perks: Array<Perk>;
+  races: Array<Race>;
+  difficulties: Array<Difficulty>;
+  regulation: Document | null;
+  hasRegistrations: boolean;
+};
+
+type SportEvent = Event & {
+  documents?: Array<Document>;
+};
+
+export const handle = {
+  i18n: ['common', 'create-event-form']
+};
+
+export const loader: LoaderFunction = async ({ request, params }) => {
+  const user = await requireUser(request);
+
+  const sports = await findSports();
+  const difficulties = await findDifficulties();
+  const eventId = params.id as string;
+  const event = eventId ? await findEvent(eventId) : null;
+
+  const { MAPBOX_TOKEN, CLOUDINARY_UPLOAD_PRESET } = Config();
+
+  if (!event || event.createdById !== user.id) {
+    return redirect('/');
+  }
+
+  const confirmedBookings = await findConfirmedBookings(eventId);
+
+  return json({
+    mapToken: MAPBOX_TOKEN,
+    imageUploadPreset: CLOUDINARY_UPLOAD_PRESET,
+    event,
+    sports: sports.map((sport) => {
+      return { id: sport.id, name: sport.name };
+    }),
+    perks: await findEventPerks(eventId),
+    races: await findEventRaces(eventId),
+    difficulties: difficulties.map((d) => {
+      return { id: d.id, name: d.name };
+    }),
+    hasRegistrations: confirmedBookings && confirmedBookings?.length > 0
+  });
+};
+
+export const action: ActionFunction = async ({ request, params }) => {
+  const user: User = await requireUser(request);
+
+  const t = await i18n.getFixedT(request, RESOURCES_NS);
+  const uploadHandler: UploadHandler = unstable_composeUploadHandlers(
+    // our custom upload handler
+    async ({ name, data, filename }) => {
+      if (!name.startsWith('/file/image') || !filename) {
+        return undefined;
+      }
+
+      const uploadedImage = await uploadImageToCloudinary(
+        data,
+        params.id || null
+      );
+
+      return uploadedImage.public_id;
+    },
+    // fallback to memory for everything else
+    unstable_createMemoryUploadHandler()
+  );
+
+  const event = params.id ? await findEvent(params.id) : null;
+
+  if (!event) {
+    throw NotFound(t('Event not found'));
+  }
+  if (event.createdById !== user.id) {
+    throw Unauthorized(t('Not authorized'));
+  }
+
+  let form: FormData;
+
+  try {
+    form = await unstable_parseMultipartFormData(request, uploadHandler);
+  } catch (e) {
+    // delete can't be processed with multipart form data 🤷‍♂️
+    form = await request.formData();
+  }
+
+  const actionId = form.get('actionId') as string;
+
+  if (actionId === actionIds.deleteEvent) {
+    await deleteEvent(event.id as string);
+
+    return redirect(`/o?message=${t('Event Deleted')}`);
+  }
+
+  const isUpdate = event.status !== 'auto';
+  const date = form.get('event-date') as string;
+  const image1 = form.get('/file/image/0') as string;
+  const image2 = form.get('/file/image/1') as string;
+  const image3 = form.get('/file/image/2') as string;
+  const image4 = form.get('/file/image/3') as string;
+  const image5 = form.get('/file/image/4') as string;
+  const location = parseLocation(form.get('location') as string);
+  const races: Race[] = (await findEventRaces(event.id)) || [];
+  let eventStatus = event.status;
+
+  let path = event.regulationPath;
+  let regulationFileName = event.regulationFileName;
+  const inlineRegulation = (form.get('regulation') as string) || null;
+
+  // we need to make sure that we don't have both uploaded
+  // when we upload a PDF regulation, inline regulation is set to null
+  if (inlineRegulation !== null) {
+    path = null;
+    regulationFileName = null;
+  }
+
+  if (eventStatus === Status.auto) {
+    eventStatus = Status.draft;
+  }
+
+  const data: CreateEventInput = {
+    id: params.id as string,
+    name: form.get('event-name') as string,
+    sportId: parseInt(form.get('sport') as string),
+    difficultyId: parseInt(form.get('difficulty') as string),
+    startAt: new Date(date), //TODO: hour
+    lat: location.lat,
+    lng: location.lng,
+    location: form.get('short-address') as string || null,
+    useExternalBooking: form.get('booking') === 'external',
+    externalBookingUrl: (form.get('booking-url') as string) || null,
+    description: (form.get('event-description') as string) || null,
+    directions: (form.get('get-there') as string) || null,
+    image1: processImgField(image1, isUpdate),
+    image2: processImgField(image2, isUpdate),
+    image3: processImgField(image3, isUpdate),
+    image4: processImgField(image4, isUpdate),
+    image5: processImgField(image5, isUpdate),
+    regulationPath: path,
+    regulationContent: inlineRegulation || event.regulationContent,
+    regulationFileName,
+    status: eventStatus
+  };
+
+  const perks: string[] = form.getAll('perks') as string[];
+  const newPerks: string[] = form.getAll('new-perk-input') as string[];
+
+  const EventSchema = z
+    .object({
+      name: z
+        .string({ required_error: t('Field Required') })
+        .min(5, { message: t('Min 5 chars') }),
+      sportId: z
+        .number()
+        .nonnegative({ message: t('Nonexistent Sport') })
+        .lte(7, { message: t('Nonexistent Sport') }),
+      startAt: z.date().min(new Date(), { message: t('Future Date') }),
+      location: z.string({
+        required_error: t('Field required'),
+        invalid_type_error: t('Field required')
+      }),
+      useExternalBooking: z.boolean({
+        invalid_type_error: t('Invalid Type')
+      }),
+      description: z
+        .string({
+          invalid_type_error: t('Invalid Type'),
+          required_error: t('Field Required')
+        })
+        .min(1, { message: t('Min 1 chars') })
+        .nullable(),
+      races: z
+        .string({ required_error: t('At least 1 race') })
+        .array()
+        .nonempty(t('At least 1 race')),
+      regulationPath: z.string().nullable(),
+      regulationContent: z.string().nullable()
+    })
+    .and(
+      data.useExternalBooking
+        ? z.object({
+            externalBookingUrl: z
+              .string({ invalid_type_error: t('Invalid URL') })
+              .url({ message: t('Invalid URL') })
+          })
+        : z.object({})
+    )
+    .refine(
+      (s) =>
+        (s.regulationPath === null &&
+          s.regulationContent &&
+          s?.regulationContent?.length > 1) ||
+        (s.regulationPath &&
+          s?.regulationPath?.length > 1 &&
+          s.regulationContent === null),
+      {
+        message: t('Add Regulation'),
+        path: ['regulation']
+      }
+    );
+
+  let feedback: ResponseFeedback | undefined;
+
+  try {
+    if (actionId === actionIds.addNewRace) {
+      // Only save event changes when it is not published, otherwise just redirect
+      if (eventStatus !== Status.published) {
+        await updateEvent(data, perks, newPerks);
+      }
+
+      return redirect('race/new');
+    }
+
+    if (actionId === actionIds.addNewDocument) {
+      if (eventStatus !== Status.published) {
+        await updateEvent(data, perks, newPerks);
+      }
+
+      return redirect('doc/new');
+    }
+
+    if (eventStatus === 'published') {
+      EventSchema.parse({ ...data, races: races.map((r) => r.id) });
+    }
+
+    await updateEvent(data, perks, newPerks);
+    feedback = { severity: 'success', message: t('Event Saved') };
+
+    if (actionId === actionIds.publish) {
+      EventSchema.parse({ ...data, races: races.map((r) => r.id) });
+
+      if (user.role === Role.ORGANIZER) {
+        await publishEvent(event.id as string, data.name);
+
+        return redirect(
+            `/o/event/${event.id}/dashboard?message=${t('Event Published')}`
+        );
+      } else {
+        // User is not yet an organizer, so let's redirect him to create his organizer profile.
+        // We may need to check if he has a profile already and if so, redirect him elsewhere.
+        return redirect('/o/us');
+      }
+    }
+
+    if (actionId === actionIds.unpublish) {
+      await unpublishEvent(event.id as string);
+      feedback = { severity: 'success', message: t('Event Unpublished') };
+    }
+
+    return json({ feedback });
+  } catch (e) {
+    if (!(e instanceof ZodError)) {
+      const tc = await i18n.getFixedT(request, 'common');
+
+      return badRequest({
+        errors: { submit: tc('500 error message') }
+      });
+    }
+
+    const errors: { [key: string]: string | undefined } = {};
+
+    for (const error of (e as ZodError).errors) {
+      errors[error.path[0]] = error.message;
+    }
+
+    return badRequest({ errors });
+  }
+};
+
+export const links: LinksFunction = () => {
+  return [
+    {
+      rel: 'stylesheet',
+      href: mapBoxGlCss
+    },
+    {
+      rel: 'stylesheet',
+      href: mapCss
+    },
+    {
+      rel: 'stylesheet',
+      href: organizerCss
+    }
+  ];
+};
+
+function hackyEventRevival(event: Event | null): void {
+  if (!event) {
+    return;
+  }
+  // @ts-ignore
+  event.startAt = new Date(event.startAt);
+  // @ts-ignore
+  event.endAt = new Date(event.endAt);
+}
+
+export default function OrganizerEventRoute() {
+  type StrippedPerk = Omit<Perk, 'id' | 'eventId' | 'isDefault'> & {
+    id: string | null;
+  };
+  const { t, i18n } = useTranslation('create-event-form');
+  const language = i18n.language as Language;
+  const {
+    sports,
+    mapToken,
+    event,
+    perks: dbPerks,
+    races: dbRaces,
+    difficulties,
+    hasRegistrations
+  } = useLoaderData<LoaderData>() as LoaderData;
+  const actionData = useActionData<ActionData>() as ActionData;
+  const [showLocationPicker, setShowLocationPicker] = useState<boolean>(false);
+  const toast = useRef<Toast>(null);
+  const fetcher = useFetcher();
+  const feedback = actionData?.feedback;
+
+  const [perks, setPerks] = useState<Array<StrippedPerk>>(dbPerks);
+  const [races, setRaces] = useState<Array<Race>>(dbRaces);
+  const [location, setLocation] = useState<DiciLocation | null>(
+    event.location
+      ? {
+          coords: `${event.lat}, ${event.lng}`,
+          shortAddress: event.location
+        }
+      : null
+  );
+  const [deleteEventModalOpen, setDeleteEventModalOpen] =
+    useState<boolean>(false);
+  const [publishEventModalOpen, setPublishEventModalOpen] =
+    useState<boolean>(false);
+  const [unpublishEventModalOpen, setUnpublishEventModalOpen] =
+    useState<boolean>(false);
+  const [isPublish, setIsPublish] = useState<boolean>(false);
+  const [isUnpublish, setIsUnpublish] = useState<boolean>(false);
+
+  const inputEl = useRef(null);
+  const deleteForm = useRef<HTMLFormElement>(null);
+  const eventForm = useRef<HTMLFormElement>(null);
+
+  const locationRef = useRef<HTMLInputElement>(null);
+  const isPublished = event.status === Status.published;
+  const [regulationOption, setRegulationOption] = useState<'text' | 'file'>(
+    event.regulationPath ? 'file' : 'text'
+  );
+  const [fileUploadHandlerEvent, setFileUploadHandlerEvent] =
+    useState<FileUploadHandlerEvent | null>(null);
+  const [hash, setHash] = useState<number>(Date.now());
+
+  let fileName: string | null = null;
+
+  if (event.regulationPath && event.regulationFileName) {
+    fileName = event.regulationFileName;
+  }
+
+  // Hack: while remix doesn't handle dates properly
+  hackyEventRevival(event);
+
+  function handleShowMap() {
+    setShowLocationPicker(true);
+  }
+
+  function handleCloseMap(location: DiciLocation | null) {
+    setShowLocationPicker(false);
+
+    if (locationRef?.current?.value.length > 0) {
+      setLocation({ ...location, shortAddress: locationRef?.current?.value });
+    } else {
+      setLocation(location);
+    }
+
+    setHash(Date.now());
+  }
+
+  function handleOnCreatePerk(e: any) {
+    if (!e.target.value) {
+      return null;
+    }
+
+    const newPerks = [...perks];
+    let max = newPerks[newPerks.length - 1].displayOrder;
+
+    newPerks.push({
+      id: null,
+      name: e?.target?.value,
+      isEnabled: true,
+      displayOrder: ++max,
+      createdAt: new Date()
+    });
+    setPerks(newPerks);
+
+    if (inputEl.current) {
+      (inputEl.current as HTMLInputElement).value = '';
+    }
+  }
+
+  function handleShowDeleteEventWarning() {
+    setDeleteEventModalOpen(true);
+  }
+
+  function handleDiscardDeleteEvent() {
+    setDeleteEventModalOpen(false);
+  }
+
+  function handleShowPublishEventDialog() {
+    setIsPublish(true);
+    setPublishEventModalOpen(true);
+  }
+
+  function handleDiscardPublishEvent() {
+    setIsPublish(false);
+    setPublishEventModalOpen(false);
+  }
+
+  function handleShowUnpublishEventDialog() {
+    setIsUnpublish(true);
+    setUnpublishEventModalOpen(true);
+  }
+
+  function handleDiscardUnpublishEvent() {
+    setIsUnpublish(false);
+    setUnpublishEventModalOpen(false);
+  }
+
+  function handlePublishEvent() {
+    if (!eventForm.current) {
+      return;
+    }
+
+    eventForm.current.submit();
+    setPublishEventModalOpen(false);
+  }
+
+  function handleUnpublishEvent() {
+    if (!eventForm.current) {
+      return;
+    }
+
+    // submitting using ref will cause the page to refresh making it look wierd
+    eventForm.current.submit();
+    setUnpublishEventModalOpen(false);
+  }
+
+  function handleDeleteEvent() {
+    if (!deleteForm.current) {
+      return;
+    }
+    deleteForm.current.submit();
+    setDeleteEventModalOpen(false);
+  }
+
+  function uploadHandler(f: FileUploadHandlerEvent) {
+    const file = f.files[0];
+
+    setFileUploadHandlerEvent(f);
+    fetcher.submit(
+      {
+        //@ts-ignore
+        file: file
+      },
+      {
+        encType: 'multipart/form-data',
+        // submitting to another route, because of a conflict uploading a file and images
+        action: `/o/event/${event.id}/regulation/upload`,
+        method: 'post'
+      }
+    );
+  }
+
+  function handleRegulationOption(e: ChangeEvent<HTMLInputElement>) {
+    setRegulationOption(e.target.value as 'text' | 'file');
+  }
+
+  useEffect(() => {
+    if (fetcher?.data?.ok && fetcher?.type === 'actionReload') {
+      fileUploadHandlerEvent?.options?.clear();
+    }
+
+    setRaces(dbRaces);
+  }, [fileUploadHandlerEvent, fetcher, dbRaces, toast, event]);
+
+  useEffect(() => {
+    const main = window.document.querySelector('#organizer-main-container');
+
+    if (!toast.current || !feedback) {
+      return;
+    }
+
+    toast.current.show({
+      severity: feedback.severity,
+      detail: feedback.message,
+      life: 3000
+    });
+
+    main && main.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [feedback]);
+
+  const sortedSports = sports.sort((a, b) => {
+    const sportA = a.name[language].toLowerCase();
+    const sportB = b.name[language].toLowerCase();
+
+    if (sportA < sportB) {
+      return -1;
+    }
+
+    if (sportA < sportB) {
+      return -1;
+    }
+
+    return 0;
+  });
+
+  return (
+    <Main>
+      <div className="mb-24">
+        <Toast ref={toast} />
+        <Form
+          method="post"
+          className="w-full"
+          encType="multipart/form-data"
+          ref={eventForm}
+        >
+          {isPublish && (
+            <input type="hidden" name="actionId" value={actionIds.publish} />
+          )}
+          {isUnpublish && (
+            <input type="hidden" name="actionId" value={actionIds.unpublish} />
+          )}
+          <div className="mb-12 lg:mb-20">
+            <div className="flex flex-row items-start justify-between items-center">
+              <div>
+                <H2>{t('Create Event')}</H2>
+              </div>
+              {event.status !== Status.auto &&
+                (isPublished ? (
+                  <div className="flex flex-col justify-center md:flex-row">
+                    <ButtonLink
+                      id="preview-button"
+                      className="md:ml-4"
+                      variant="secondary"
+                      size="medium"
+                      to={`/o/event/preview/${event.id}`}
+                      target="_blank"
+                    >
+                      {t('Preview Button')}
+                    </ButtonLink>
+                  </div>
+                ) : (
+                  <div className="flex flex-col justify-center md:flex-row">
+                    <Button
+                      id="publish"
+                      className="mb-4 md:mb-0"
+                      type="button"
+                      onClick={handleShowPublishEventDialog}
+                      size="medium"
+                      data-cy="publish"
+                    >
+                      {t('Publish Button')}
+                    </Button>
+                    <ButtonLink
+                      id="preview-button"
+                      className="md:ml-4"
+                      variant="secondary"
+                      size="medium"
+                      to={`/o/event/preview/${event.id}`}
+                      target="_blank"
+                    >
+                      {t('Preview Button')}
+                    </ButtonLink>
+                  </div>
+                ))}
+            </div>
+          </div>
+          <FormField
+            label={t('Name')}
+            id="event-name"
+            className="col-span-6 sm:col-span-4"
+            error={actionData?.errors?.name}
+          >
+            <TextField
+              name="event-name"
+              id="event-name"
+              placeholder={t('Event Name')}
+              defaultValue={event.name || ''}
+            />
+          </FormField>
+          <div className="flex flex-col flex-wrap md:flex-row">
+            <FormField
+              label={t('Sport')}
+              id="event-sport"
+              className="w-full md:basis-1/3 md:pr-4"
+            >
+              <ComboBox
+                name="sport"
+                id="event-sport"
+                lang={language}
+                placeholder=""
+                defaultValue={event.sportId ? event.sportId : undefined}
+                options={sortedSports
+                  .map((s: Sport) => {
+                    return { value: s.id, label: s.name };
+                  })}
+              />
+            </FormField>
+
+            <FormField
+              label={t('Date')}
+              id="event-date"
+              className="w-full md:basis-1/3 md:pr-4"
+              error={actionData?.errors?.startAt}
+            >
+              <BasicDatePicker
+                name="event-date"
+                date={event?.startAt}
+                minDate={new Date()}
+              />
+            </FormField>
+
+            <FormField
+              label={t('Difficulty')}
+              id="event-difficulty"
+              className="w-full md:basis-1/3"
+            >
+              <ComboBox
+                name="difficulty"
+                id="event-difficulty"
+                lang={language}
+                placeholder=""
+                defaultValue={
+                  event.difficultyId ? event.difficultyId : undefined
+                }
+                options={difficulties
+                  .sort((a: Difficulty, b: Difficulty) => a.id - b.id)
+                  .map((d: Difficulty) => ({ value: d.id, label: d.name }))}
+              />
+            </FormField>
+          </div>
+
+          <Location
+            actionData={actionData}
+            handleShowMap={handleShowMap}
+            t={t}
+            hash={hash}
+            location={location}
+            locationRef={locationRef}
+          />
+
+          <FormField
+            label={t('How Is Booking Going To Be Managed')}
+            error={actionData?.errors?.externalBookingUrl}
+          >
+            <PickBookingSystem
+              name="booking"
+              t={t}
+              useExternal={event?.useExternalBooking}
+              url={event?.externalBookingUrl}
+            />
+          </FormField>
+          <FormField label={t('Event Photos')} id="event-photos">
+            <div className="w-full m-auto flex flex-col md:flex-row justify-begin gap-4 w-full md:grid-flow-col md:grid-rows-1 text-center">
+              <UploadImage
+                index={0}
+                label={t('Hint For Picture 1')}
+                defaultValue={event.image1}
+                className="md:w-1/3"
+              />
+              <UploadImage
+                index={1}
+                label={t('Hint For Picture 2')}
+                defaultValue={event.image2}
+                className="md:w-1/3"
+              />
+              <UploadImage
+                index={2}
+                label={t('Hint For Picture 3')}
+                defaultValue={event.image3}
+                className="md:w-1/3"
+              />
+              <UploadImage
+                index={3}
+                label={t('Hint For Picture 4')}
+                defaultValue={event.image4}
+                className="md:w-1/3"
+              />
+              <UploadImage
+                index={4}
+                label={t('Hint For Picture 5')}
+                defaultValue={event.image4}
+                className="md:w-1/3"
+              />
+            </div>
+          </FormField>
+
+          <FormField
+            label={t('Description')}
+            error={actionData?.errors?.description}
+          >
+            <div className="mt-1 relative rounded-md">
+              <TextArea
+                name="event-description"
+                className="input-text h-80"
+                placeholder={t('Event description')}
+                defaultValue={event.description}
+              />
+            </div>
+          </FormField>
+
+          <FormField label={t('Perks')} description={t('Perks Description')}>
+            <div className="grid grid-rows-8 md:grid-rows-6 md:grid-flow-col gap-y-4 md:gap-y-2 mb-2">
+              {perks
+                .sort((a, b) => a.displayOrder - b.displayOrder)
+                .map((p: any, index: number) => (
+                  <div key={p.id} className="flex items-center mb-1">
+                    <input
+                      data-cy={`perk-${index}`}
+                      type="checkbox"
+                      id={p.id}
+                      name={p.id ? 'perks' : 'new-perk-input'}
+                      value={p.id ? p.id : p.name}
+                      defaultChecked={p.isEnabled}
+                      className="w-4 h-4 text-indigo-500 bg-gray-100 rounded border-gray-300 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600"
+                    />
+                    <label
+                      htmlFor={p.id}
+                      className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300"
+                      data-cy={`perk-label-${index}`}
+                    >
+                      {p.name}
+                    </label>
+                  </div>
+                ))}
+
+              <div>
+                <input
+                  ref={inputEl}
+                  name="new-perk-input"
+                  type="text"
+                  placeholder={t('Type to create new')}
+                  onBlur={handleOnCreatePerk}
+                  className="rounded-lg focus-ring text-sm w-60 md:text-sm bg-gray-100 text-black placeholder-gray-500 font-medium box-border dark:disabled:bg-gray-700 dark:text-white dark:bg-gray-800 disabled:text-gray-700 border-0 sm:col-span-4"
+                />
+              </div>
+            </div>
+          </FormField>
+
+          <div id="races" className="mb-12">
+            <Label
+              htmlFor="races"
+              className={clsx(
+                'mb-5 flex justify-between items-center flex-row'
+              )}
+            >
+              {t('Distances')}
+
+              <Button
+                className="hidden lg:flex"
+                type="submit"
+                name="actionId"
+                value="add-new-race"
+              >
+                {t('Create Distance')}
+              </Button>
+
+              <Button
+                className="flex lg:hidden"
+                type="submit"
+                name="actionId"
+                value="add-new-race"
+                size="small"
+                id="create-race"
+              >
+                <PlusIcon className="md:h-6 w-6 m-0 inline-block" />
+              </Button>
+            </Label>
+            <div>
+              <RacesList races={races} eventId={event.id} />
+            </div>
+            <WhenListEmpty list={races}>
+              <H6 className="text-center p-12" variant="secondary" as="p">
+                {t('No Races')}
+              </H6>
+            </WhenListEmpty>
+            {actionData?.errors?.races && (
+              <InputError className="mt-8" id="error-message">
+                {actionData?.errors?.races}
+              </InputError>
+            )}
+          </div>
+
+          <FormField
+            label={t('Directions')}
+            error={actionData?.errors?.directions}
+          >
+            <div className="mt-2 relative rounded-md">
+              <TextArea
+                name="get-there"
+                className="input-text h-80"
+                placeholder={t('How to get there')}
+                defaultValue={event.directions}
+              />
+            </div>
+          </FormField>
+
+          <FormField label={t('Regulation')}>
+            <fieldset>
+              <div className="flex flex-wrap gap-3">
+                <div className="flex items-center">
+                  <input
+                    id="regulation-option-text"
+                    name="regulation-option"
+                    type="radio"
+                    className="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300"
+                    defaultChecked={regulationOption === 'text'}
+                    onChange={handleRegulationOption}
+                    value="text"
+                  />
+                  <label
+                    htmlFor="regulation-option-text"
+                    className="ml-3 block text-sm font-medium text-gray-700"
+                  >
+                    {t('Write Regulation')}
+                  </label>
+                </div>
+                <div className="flex items-center">
+                  <input
+                    id="regulation-option-file"
+                    name="regulation-option"
+                    type="radio"
+                    className="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300"
+                    defaultChecked={regulationOption === 'file'}
+                    onChange={handleRegulationOption}
+                    value="file"
+                  />
+                  <label
+                    htmlFor="regulation-option-file"
+                    className="ml-3 block text-sm font-medium text-gray-700"
+                  >
+                    {t('Upload Regulation')}
+                  </label>
+                </div>
+              </div>
+            </fieldset>
+          </FormField>
+
+          {regulationOption === 'text' && (
+            <TextArea
+              name="regulation"
+              className="input-text h-80 mb-8"
+              defaultValue={
+                event.regulationContent ? event.regulationContent : ''
+              }
+            />
+          )}
+
+          {regulationOption === 'file' && (
+            <div className="h-80 mb-8">
+              <UploadFile
+                name="file"
+                mode="advanced"
+                chooseLabel={t('Upload Regulation Button')}
+                accept=".pdf"
+                customUpload={true}
+                uploadHandler={uploadHandler}
+                emptyTemplate={
+                  <p className="m-0">{t('Regulation Dropzone')}</p>
+                }
+                contentClassName="p-4"
+                className="w-full"
+              />
+
+              {event.regulationPath && fileName && (
+                <Link
+                  to={`/event/${event.id}/regulation/view`}
+                  target="_blank"
+                  rel="noreferrer"
+                  data-cy="regulation"
+                >
+                  {fileName}
+                </Link>
+              )}
+            </div>
+          )}
+
+          {actionData?.errors?.regulation && (
+            <InputError className="mt-8" id="error-message">
+              {actionData?.errors?.regulation}
+            </InputError>
+          )}
+
+          <div id="documents" className="mb-12">
+            <Label
+              htmlFor="documents"
+              className={clsx(
+                'mb-5 flex justify-between items-center flex-row'
+              )}
+            >
+              {t('Documents')}
+
+              <Button
+                className="hidden lg:flex"
+                type="submit"
+                name="actionId"
+                value="add-new-doc"
+              >
+                {t('Upload Document')}
+              </Button>
+              <Button
+                type="submit"
+                name="actionId"
+                value="add-new-doc"
+                size="small"
+                className="flex lg:hidden"
+                id="create-document"
+              >
+                <PlusIcon className="md:h-6 w-6 m-0 inline-block"></PlusIcon>
+              </Button>
+            </Label>
+            <div>
+              <DocumentsList documents={event.documents} eventId={event.id} />
+            </div>
+            <WhenListEmpty list={event.documents}>
+              <div className="text-center p-12">
+                <H6 className="mb-2" as="p">
+                  {t('No Documents - CTA')}
+                </H6>
+                <H6 variant="secondary" as="p">
+                  {t('No Documents')}
+                </H6>
+              </div>
+            </WhenListEmpty>
+          </div>
+
+          <ButtonGroup className="mt-8">
+            <ButtonLink type="button" variant="secondary" to="/o">
+              {t('Cancel')}
+            </ButtonLink>
+
+            <Button
+              type="submit"
+              variant="primary"
+              name={event.status === 'auto' ? 'create-event' : 'update-event'}
+            >
+              {event.status === 'auto' ? t('Create Button') : t('Save Button')}
+            </Button>
+          </ButtonGroup>
+          {event.status !== 'auto' && !hasRegistrations && (
+            <ButtonGroup className="mt-24 border-t border-gray-300 dark:border-gray-300 pt-6">
+              {event.status === 'published' && (
+                <Button
+                  id="unpublish"
+                  className="mb-4 md:mb-0"
+                  type="button"
+                  size="medium"
+                  variant="danger"
+                  data-cy="unpublish"
+                  onClick={handleShowUnpublishEventDialog}
+                >
+                  {t('Unpublish Button')}
+                </Button>
+              )}
+
+              <Button
+                name="delete-button"
+                type="button"
+                variant="danger"
+                onClick={handleShowDeleteEventWarning}
+              >
+                {t('Delete Event')}
+              </Button>
+            </ButtonGroup>
+          )}
+          {actionData?.errors?.submit && (
+            <InputError className="mt-8" id="500-error-message">
+              {actionData?.errors?.submit}
+            </InputError>
+          )}
+        </Form>
+      </div>
+
+      <MapDialog
+        token={mapToken}
+        defaultValue={location}
+        open={showLocationPicker}
+        onClose={handleCloseMap}
+      />
+
+      <ConfirmationDialog
+        isOpen={deleteEventModalOpen}
+        title={t('Delete Event X', { name: event?.name })}
+        question={t('Are you sure you want to delete event?')}
+        primaryLabel={t('Delete Event')}
+        primaryVariant="danger"
+        secondaryLabel={t('Ignore')}
+        onDismiss={handleDiscardDeleteEvent}
+        onConfirm={handleDeleteEvent}
+        className="cy-delete-dialog"
+      />
+
+      <ConfirmationDialog
+        isOpen={publishEventModalOpen}
+        title={t('Publish Event X', { name: event?.name })}
+        question={t('Are you sure you want to publish event?')}
+        primaryLabel={t('Confirm Publish Event')}
+        secondaryLabel={t('Cancel Publish Event')}
+        onDismiss={handleDiscardPublishEvent}
+        onConfirm={handlePublishEvent}
+        className="cy-delete-dialog"
+      />
+
+      <ConfirmationDialog
+        isOpen={unpublishEventModalOpen}
+        title={t('Unpublish Event X', { name: event?.name })}
+        question={t('Are you sure you want to unpublish event?')}
+        primaryLabel={t('Confirm Unpublish Event')}
+        secondaryLabel={t('Cancel Unpublish Event')}
+        onDismiss={handleDiscardUnpublishEvent}
+        onConfirm={handleUnpublishEvent}
+        className="cy-delete-dialog"
+      />
+
+      <Form
+        id="profile-form"
+        method="post"
+        noValidate
+        aria-describedby="general-error"
+        className="hidden"
+        ref={deleteForm}
+      >
+        <input type="hidden" name="actionId" value={actionIds.deleteEvent} />
+      </Form>
+    </Main>
+  );
+}
+
+function Location({
+  actionData,
+  handleShowMap,
+  t,
+  hash,
+  location,
+  locationRef
+}: {
+  actionData: ActionData;
+  handleShowMap: () => void;
+  t: TFunction;
+  hash: number;
+  location: DiciLocation | null;
+  locationRef:  MutableRefObject<HTMLInputElement>;
+}) {
+  const [firstRender, setFirstRender] = useState<boolean>(true);
+
+  useEffect(() => {
+    if (!firstRender) {
+      locationRef?.current?.select();
+    }
+
+    setFirstRender(false);
+    //@ts-ignore - Don't add firstRender
+  }, [hash]);
+
+  return (
+    <>
+      <FormField
+        label={t('Location')}
+        id="event-location"
+        className="w-full"
+        error={actionData?.errors?.location}
+      >
+        <TextField
+          key={hash}
+          name="short-address"
+          defaultValue={location?.shortAddress || ''}
+          placeholder={t('Location Placeholder')}
+          adornment={
+            <Button
+              name="open-map"
+              className="mr-2"
+              variant="adornment"
+              type="button"
+              onClick={handleShowMap}
+            >
+              {t('Show Map')}
+            </Button>
+          }
+          input={locationRef}
+        />
+        {location !== null && (
+          <div className="ml-2 mt-2">
+            <a
+              href={`https://www.google.com/maps/search/?api=1&query=${
+                location.coords.split(',')[0]
+              }%2C${location.coords.split(',')[1]}`}
+              target="_blank"
+              rel="noreferrer"
+              data-cy="location-link"
+            >
+              {t('View in Map')}
+            </a>
+          </div>
+        )}
+
+        <input
+          type="hidden"
+          name="location"
+          value={location ? `${location?.coords}` : undefined}
+        />
+      </FormField>
+    </>
+  );
+}

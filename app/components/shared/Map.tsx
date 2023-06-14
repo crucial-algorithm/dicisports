@@ -1,12 +1,13 @@
+import clsx from 'clsx';
 import * as React from 'react';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import MapboxGeocoder from '@mapbox/mapbox-gl-geocoder';
-import { Dialog } from '@reach/dialog';
 import { MapPinIcon } from '@heroicons/react/24/solid';
 
 import { useTranslation } from 'react-i18next';
 
+import Dialog from '~/components/shared/Dialog';
 import Button from '~/components/shared/Button';
 import type { DiciLocation } from '~/types';
 
@@ -65,7 +66,9 @@ function Map({
   React.useEffect(() => {
     const node = mapNode.current;
 
-    if (typeof window === 'undefined' || node === null) {return;}
+    if (typeof window === 'undefined' || node === null) {
+      return;
+    }
 
     // otherwise, create a map instance
     const map = new mapboxgl.Map({
@@ -77,17 +80,6 @@ function Map({
       boxZoom: true
     });
 
-    // add the button to "center in current location"
-    map.addControl(
-      new mapboxgl.GeolocateControl({
-        positionOptions: {
-          enableHighAccuracy: true
-        },
-        trackUserLocation: true,
-        showUserHeading: true
-      }), 'bottom-right'
-    );
-
     // Add the control to the map.
     map.addControl(
       new MapboxGeocoder({
@@ -96,6 +88,17 @@ function Map({
         zoom: 15,
         mapboxgl,
         reverseGeocode: false
+      }), 'top-left'
+    );
+
+    // add the button to "center in current location"
+    map.addControl(
+      new mapboxgl.GeolocateControl({
+        positionOptions: {
+          enableHighAccuracy: true
+        },
+        trackUserLocation: true,
+        showUserHeading: true
       }), 'top-left'
     );
 
@@ -130,7 +133,9 @@ function Map({
       const json = await res.json();
       const feature = json.features[0] || null;
 
-      if (!feature) {return null;}
+      if (!feature) {
+        return null;
+      }
       return processMapBoxFeature(feature, lat, lng);
     };
 
@@ -140,24 +145,28 @@ function Map({
   }, []);
 
   return (
-    <div style={{ position: 'relative', left: 0 }} className={className}>
+    <div className={clsx('relative left-0 w-full overflow-hidden h-full')}>
       <Label label={info.address} />
       <Pin />
-      <div ref={mapNode} className="map-container" />
+      <div ref={mapNode} className="h-full"/>
     </div>
   );
 }
 
 function Pin() {
   return (
-    <div className="map-pin">
+    <div className="z-10 absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
       <MapPinIcon className="text-black w-6 h-6" />
     </div>
   );
 }
 
 function Label({ label }: { label: string | null }) {
-  return label ? <div className="map-location-label">{label}</div> : null;
+  return label ? (
+    <div className="z-10 absolute left-1/2 [top:calc(50%-32px)] -translate-x-1/2 -translate-y-1/2 bg-black text-white text-xs font-semibold py-1 px-2.5 rounded-[50px]">
+      {label}
+    </div>
+  ) : null;
 }
 
 /**
@@ -244,20 +253,32 @@ function MapDialog({
     }
   }
 
-  function handleCallback(location: DiciLocation | null) {
-    if (onPickedLocation) {
-      onPickedLocation(location);
-    }
-    setLocation(location);
-  }
-
+  const handleCallback = useCallback(
+    (location: DiciLocation | null) => {
+      if (onPickedLocation) {
+        onPickedLocation(location);
+      }
+      setLocation(location);
+    },
+    [onPickedLocation]
+  );
 
   return (
     <Dialog
+      className="min-w-[98%] md:h-full dark:bg-gray-900 opacity-100 m-0 shadow-none rounded-none map"
       isOpen={open}
-      className="min-w-full h-screen fixed top-0 bottom-0 p-0 dark:bg-gray-900 opacity-100 m-0"
-      onDismiss={handleClose}
+      onClose={handleClose}
       aria-label={t('map')}
+      PrimaryAction={(
+        <Button name="pick-location" onClick={handleClose} disabled={!location}>
+          {t('Pick Location Button')}
+        </Button>
+      )}
+      SecondaryAction={(
+        <Button variant="secondary" onClick={handleClose}>
+          {t('Cancel')}
+        </Button>
+      )}
     >
       <Map
         defaultValue={defaultValue}
@@ -266,14 +287,6 @@ function MapDialog({
         callback={handleCallback}
         placeholder={t('Drag Map to Choose a Location Hint')}
       />
-      <div className="flex flex-row gap-2 justify-end mt-4 pr-2">
-        <Button variant="secondary" onClick={handleClose}>
-          {t('Cancel')}
-        </Button>
-        <Button name="pick-location" onClick={handleClose} disabled={!location}>
-          {t('Pick Location Button')}
-        </Button>
-      </div>
     </Dialog>
   );
 }

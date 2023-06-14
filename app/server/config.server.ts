@@ -1,24 +1,34 @@
 export type ConfigServer = {
-  env: 'development' | 'production'
-  inDev: () => boolean
-  MAPBOX_TOKEN: string
-  CLOUDINARY_UPLOAD_PRESET: string
-  CLOUDINARY_CLOUD_NAME: string
-  CLOUDINARY_API_KEY: string
-  CLOUDINARY_API_SECRET: string
-  MAGIC_LINK_SECRET: string
-  SESSION_SECRET: string
-  SESSION_EXPIRATION_TIME: number
-  EMAIL_VERIFIER_TOKEN: string
-  MAILGUN_DOMAIN: string | undefined
-  MAILGUN_ENDPOINT: string
-  MAILGUN_SENDING_KEY: string | undefined
-  CONVERT_KIT_FORM: string
-  CONVERT_KIT_API_KEY: string
-  AWS_REGION: string
-  AWS_ACCESS_KEY_ID: string
-  AWS_SECRET_ACCESS_KEY: string
-  AWS_S3_BUCKET: string
+  env: 'development' | 'production';
+  inDev: () => boolean;
+  MAPBOX_TOKEN: string;
+  CLOUDINARY_UPLOAD_PRESET: string;
+  CLOUDINARY_CLOUD_NAME: string;
+  CLOUDINARY_API_KEY: string;
+  CLOUDINARY_API_SECRET: string;
+  MAGIC_LINK_SECRET: string;
+  SESSION_SECRET: string;
+  SESSION_EXPIRATION_TIME: number;
+  EMAIL_VERIFIER_TOKEN: string;
+  MAILGUN_DOMAIN: string | undefined;
+  MAILGUN_ENDPOINT: string;
+  MAILGUN_SENDING_KEY: string | undefined;
+  CONVERT_KIT_FORM: string;
+  CONVERT_KIT_API_KEY: string;
+  AWS_REGION: string;
+  AWS_ACCESS_KEY_ID: string;
+  AWS_SECRET_ACCESS_KEY: string;
+  AWS_S3_BUCKET: string;
+  RELEASE: string;
+  SIBS_CHECKOUT_FORM_SCRIPT: string;
+  SIBS_API_TOKEN: string;
+  SIBS_URL_ENDPOINT: string;
+  SIBS_TERMINAL_ID: number;
+  SIBS_CLIENT_ID: string;
+  SIBS_WEBHOOK_SECRET: string;
+  SIBS_MULTIBANCO_ENTITIY: string;
+  SIBS_MULTIBANCO_EXPIRATION_DAYS: number;
+  SIBS_CHECK_STATUS_ENDPOINT: string;
 }
 
 let config: ConfigServer | null = null;
@@ -49,15 +59,26 @@ export default function Config(): ConfigServer {
     AWS_REGION: extractVar('AWS_REGION'),
     AWS_ACCESS_KEY_ID: extractVar('AWS_ACCESS_KEY_ID'),
     AWS_SECRET_ACCESS_KEY: extractVar('AWS_SECRET_ACCESS_KEY'),
-    AWS_S3_BUCKET: extractVar('AWS_S3_BUCKET')
+    AWS_S3_BUCKET: extractVar('AWS_S3_BUCKET'),
+    RELEASE: extractVar('RELEASE'),
+    SIBS_CHECKOUT_FORM_SCRIPT: extractVar('SIBS_CHECKOUT_FORM_SCRIPT'),
+    SIBS_URL_ENDPOINT: extractVar('SIBS_URL_ENDPOINT'),
+    SIBS_API_TOKEN: extractVar('SIBS_API_TOKEN'),
+    SIBS_TERMINAL_ID: Number(extractVar('SIBS_TERMINAL_ID')),
+    SIBS_CLIENT_ID: extractVar('SIBS_CLIENT_ID'),
+    SIBS_WEBHOOK_SECRET: extractVar('SIBS_WEBHOOK_SECRET'),
+    SIBS_MULTIBANCO_ENTITIY: extractVar('SIBS_MULTIBANCO_ENTITIY'),
+    SIBS_MULTIBANCO_EXPIRATION_DAYS: Number(extractVar('SIBS_MULTIBANCO_EXPIRATION_DAYS')),
+    SIBS_CHECK_STATUS_ENDPOINT: extractVar('SIBS_CHECK_STATUS_ENDPOINT')
   };
 
   return config;
 }
 
 function extractVar(varName: string | undefined): string {
-  if (!varName)
-    {throw 'reading config for an empty varName... something is wrong';}
+  if (!varName) {
+    throw 'reading config for an empty varName... something is wrong';
+  }
 
   if (!process.env[varName]) {throw `Missing ${varName} in .env`;}
 

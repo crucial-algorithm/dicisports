@@ -2,6 +2,8 @@ import type { ChangeEvent } from 'react';
 import { useState } from 'react';
 import type { TFunction } from 'i18next';
 
+import FormField from '~/components/shared/form/FormField';
+
 import InputBase from '~/components/shared/form/InputBase';
 
 export type PickBookingSystemOptions = {
@@ -39,12 +41,7 @@ export default function PickBookingSystem({
 
   return (
     <fieldset>
-      <div>
-        <legend className="dark:text-blueGray-500 text-gray-600 text-sm">
-          {t('How Is Booking Going To Be Managed')}
-        </legend>
-      </div>
-      <div className="mt-4 space-y-4">
+      <div className="space-y-4">
         <div className="flex items-center">
           <input
             id={`${name}-internal`}
@@ -79,13 +76,7 @@ export default function PickBookingSystem({
             {t('Manage Booking Externally')}
           </label>
         </div>
-        <div className="col-span-6 sm:col-span-4">
-          <label
-            htmlFor="external-url"
-            className="block text-sm font-medium text-gray-700"
-          >
-            {t('Link to External Booking URL')}
-          </label>
+        <FormField label={t('Link to External Booking URL')}>
           <InputBase
             type="text"
             name={`${name}-url`}
@@ -94,7 +85,7 @@ export default function PickBookingSystem({
             disabled={state.disabled}
             defaultValue={url || ''}
           />
-        </div>
+        </FormField>
       </div>
     </fieldset>
   );

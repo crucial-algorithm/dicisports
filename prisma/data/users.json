@@ -10,6 +10,16 @@
     "role": "ADMIN"
   },
   {
+    "id": "gZZCGTHBq9SxdpRFoP8b",
+    "createdAt": "2022-02-19 10:56:59.959",
+    "updatedAt": "2022-02-19 10:56:59.959",
+    "email": "organiser@gmail.com",
+    "name": "Elisabete Rocha",
+    "password": "17e99f51fac24b10b371fdd7cfb67e7e05dbd10e02524a23fb55df2abb752d9c6b9e739fbcd93bf6c5b52c172027a56e0c9327b480e0278e483dcf5d76221988",
+    "salt": "016323d021965061791b4a14afa918f1",
+    "role": "ORGANIZER"
+  },
+  {
     "id": "nTQ8idPqTY8PmhzbsN4u",
     "createdAt": "2022-02-19 10:56:59.959",
     "updatedAt": "2022-02-19 10:56:59.959",

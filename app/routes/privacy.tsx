@@ -1,4 +1,4 @@
-import type { MetaFunction } from 'remix';
+import type { MetaFunction } from '@remix-run/node';
 
 import PrivacyPolicyPT from '~/markdown/privacy.md';
 import Main from '~/components/shared/Main';

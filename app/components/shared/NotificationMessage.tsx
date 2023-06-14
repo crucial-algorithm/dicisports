@@ -7,20 +7,22 @@ import { PlusIcon } from '@heroicons/react/24/solid';
 
 function NotificationMessage({
   queryStringKey,
-  visibleMs = 4000,
+  visibleMs = 8000,
   visible: controlledVisible,
   autoClose,
   children,
   position = 'bottom-right',
+  onDismiss,
   /* how long to wait before the message is shown, after mount 0 to 1 */
   delay = typeof controlledVisible === 'undefined' ? 1 : 0
 }: {
-  queryStringKey?: string
-  children?: React.ReactNode | React.ReactNode[]
-  position?: 'bottom-right' | 'top-center'
+  queryStringKey?: string;
+  children?: React.ReactNode | React.ReactNode[];
+  position?: 'bottom-right' | 'top-center';
   // make the visibility controlled
-  visible?: boolean
-  delay?: number
+  visible?: boolean;
+  delay?: number;
+  onDismiss?: () => void;
 } & (
   | { autoClose: false; visibleMs?: never }
   | { visibleMs?: number; autoClose?: never }
@@ -40,7 +42,9 @@ function NotificationMessage({
 
   // if the query gets a message after the initial mount then we want to toggle visibility
   React.useEffect(() => {
-    if (hasQueryStringValue) {setIsVisible(true);}
+    if (hasQueryStringValue) {
+      setIsVisible(true);
+    }
   }, [hasQueryStringValue]);
 
   React.useEffect(() => {
@@ -48,8 +52,15 @@ function NotificationMessage({
   }, [message]);
 
   React.useEffect(() => {
-    if (autoClose === false) {return;}
-    if (controlledVisible === false) {return;}
+    if (!latestMessageRef.current) {
+      return;
+    }
+    if (autoClose === false) {
+      return;
+    }
+    if (controlledVisible === false) {
+      return;
+    }
 
     const timeout = setTimeout(() => {
       setIsVisible(false);
@@ -59,7 +70,9 @@ function NotificationMessage({
   }, [queryStringKey, delay, autoClose, controlledVisible, visibleMs, message]);
 
   React.useEffect(() => {
-    if (!latestMessageRef.current) {return;}
+    if (!latestMessageRef.current) {
+      return;
+    }
     if (queryStringKey && searchParams.has(queryStringKey)) {
       const newSearchParams = new URLSearchParams(searchParams);
 
@@ -87,6 +100,7 @@ function NotificationMessage({
 
   function handleClose() {
     setIsVisible(false);
+    onDismiss?.();
   }
 
   return (
@@ -131,11 +145,11 @@ function NotificationMessage({
 }
 
 type NotificationProps = {
-  duration?: number
-  children?: React.ReactNode | React.ReactNode[]
-  position?: 'bottom-right' | 'top-center'
-  show?: (a: () => void) => void
-}
+  duration?: number;
+  children?: React.ReactNode | React.ReactNode[];
+  position?: 'bottom-right' | 'top-center';
+  show?: (a: () => void) => void;
+};
 
 function Notification({
   duration = 3000,
@@ -154,6 +168,7 @@ function Notification({
   function handlerSetVisible() {
     setIsVisible(true);
   }
+
   show(handlerSetVisible);
 
   React.useEffect(() => {
@@ -166,7 +181,7 @@ function Notification({
 
   return (
     <AnimatePresence>
-      {isVisible ? (
+      {isVisible && (
         <motion.div
           initial={{ y: initialY, opacity: 0 }}
           animate={{ y: 0, opacity: 1, transition: { delay } }}
@@ -191,7 +206,7 @@ function Notification({
             </div>
           </div>
         </motion.div>
-      ) : null}
+      )}
     </AnimatePresence>
   );
 }

@@ -3,19 +3,19 @@
  */
 module.exports = {
   extends: [
-    "@remix-run/eslint-config",
-    "@remix-run/eslint-config/node",
-    "@remix-run/eslint-config/jest-testing-library",
-    "plugin:cypress/recommended",
-    "prettier",
+    '@remix-run/eslint-config',
+    '@remix-run/eslint-config/node',
+    '@remix-run/eslint-config/jest-testing-library',
+    'plugin:cypress/recommended',
+    'prettier'
   ],
   // we're using vitest which has a very similar API to jest
   // (so the linting plugins work nicely), but it means we have to explicitly
   // set the jest version.
   settings: {
     jest: {
-      version: 27,
-    },
+      version: 27
+    }
   },
   rules: {
     quotes: [2, 'single', { avoidEscape: true }],
@@ -26,19 +26,33 @@ module.exports = {
     'padding-line-between-statements': [
       'error',
       { blankLine: 'always', prev: ['const', 'let', 'var'], next: '*' },
-      { blankLine: 'any', prev: ['const', 'let', 'var'], next: ['const', 'let', 'var'] }
+      {
+        blankLine: 'any',
+        prev: ['const', 'let', 'var'],
+        next: ['const', 'let', 'var']
+      }
     ],
     'no-multiple-empty-lines': ['error', { max: 2, maxEOF: 0 }],
-    'curly': ['error'],
+    curly: ['error'],
     'no-undef': 'error',
     'prefer-const': 'error',
     'jsx-quotes': ['error', 'prefer-double'],
     'import/first': 'error',
     'import/newline-after-import': 'error',
-    'import/order': ['error', {
-      groups: ['builtin', 'external', 'internal', 'parent', 'sibling', 'index'],
-      'newlines-between': 'always-and-inside-groups'
-    }],
+    'import/order': [
+      'error',
+      {
+        groups: [
+          'builtin',
+          'external',
+          'internal',
+          'parent',
+          'sibling',
+          'index'
+        ],
+        'newlines-between': 'always-and-inside-groups'
+      }
+    ],
     'import/no-unresolved': 'error',
     'import/no-dynamic-require': 'error',
     'import/no-self-import': 'error',
@@ -47,5 +61,7 @@ module.exports = {
     'import/no-mutable-exports': 'error',
     'react/jsx-no-bind': ['error', { allowFunctions: true }],
     'react/jsx-handler-names': ['error'],
-  }
+    'no-only-tests/no-only-tests': 'error'
+  },
+  plugins: ['no-only-tests']
 };

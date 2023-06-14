@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useContext } from 'react';
 
-import HTMLId from '~/utils/HTMLId';
 import InputBase from '~/components/shared/form/InputBase';
+import { FormContext } from '~/components/shared/form/UploadForm';
 
 type Props = {
   name: string;
@@ -11,7 +11,7 @@ type Props = {
   adornment?: React.ReactNode;
   onChange?: (value: any) => void;
   type?: 'text' | 'password' | 'number';
-  input?:  React.RefObject<HTMLInputElement>;
+  input?: React.RefObject<HTMLInputElement>;
 } & React.ComponentProps<'input'>;
 
 const TextField: React.FC<Props> = ({
@@ -25,9 +25,17 @@ const TextField: React.FC<Props> = ({
   disabled,
   id,
   type = 'text',
-  input
+  input,
+  autoComplete,
+  onClick
 }) => {
-  id = id || HTMLId();
+  id = id || '';
+  const formProps = useContext(FormContext);
+
+  if (formProps.readOnly) {
+    return (<div className="font-medium dark:text-white">{defaultValue}</div>);
+  }
+
   if (!adornment) {
     return (
       <InputBase
@@ -42,6 +50,8 @@ const TextField: React.FC<Props> = ({
         readOnly={readOnly}
         disabled={disabled}
         input={input}
+        autoComplete={autoComplete}
+        onClick={onClick}
       />
     );
   }
@@ -60,6 +70,8 @@ const TextField: React.FC<Props> = ({
           readOnly={readOnly}
           disabled={disabled}
           input={input}
+          autoComplete={autoComplete}
+          onClick={onClick}
         />
         <div className="absolute inset-y-0 right-1 flex items-center">
           {adornment}

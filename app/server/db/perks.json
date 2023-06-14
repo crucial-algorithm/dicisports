@@ -1,26 +1,11 @@
 [
   {
-    "name": {"pt":  "Saco de brinde", "en":  "Goodies bag"}
-  },
-  {
-    "name": {"pt":  "Bebedouros", "en":  "Water Stations"}
+    "name": {"pt":  "Abastecimentos", "en":  "Supplies"}
   },
   {
     "name": {"pt": "Chuveiros", "en":  "Showers"}
   },
   {
-    "name": {"pt":  "T-shirts do evento", "en":  "Event t-shirts"}
-  },
-  {
-    "name": {"pt":  "Medalhas", "en":  "Finisher's medal"}
-  },
-  {
     "name": {"pt":  "Resultados cronometrados", "en":  "Chip-timed results"}
-  },
-  {
-    "name": {"pt":  "Fotos do evento", "en":  "Event photos"}
-  },
-  {
-    "name": {"pt":  "Música ao vivo", "en":  "Live music"}
   }
 ]

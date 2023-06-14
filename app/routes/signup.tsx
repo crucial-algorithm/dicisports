@@ -1,6 +1,6 @@
 import { Form, Link, useActionData, useSearchParams } from '@remix-run/react';
-import type { ActionFunction, LoaderFunction, MetaFunction } from 'remix';
-import { json, redirect } from 'remix';
+import type { ActionFunction, LoaderFunction, MetaFunction } from '@remix-run/node';
+import { json, redirect } from '@remix-run/node';
 
 import { z, ZodError } from 'zod';
 
@@ -23,6 +23,8 @@ import { verifyEmailAddress } from '~/server/auth/verifier.server';
 import { addGroupToFavorites } from '~/server/db/groups.server';
 import InputError from '~/components/shared/form/InputError';
 import { CanonicalMeta } from '~/utils/seo';
+import { changeRegistrationToAuthUser, findBooking } from '~/server/db/booking.server';
+import { getClientSession } from '~/server/auth/client.server';
 
 type ActionData = {
   fields: {
@@ -62,7 +64,7 @@ export const action: ActionFunction = async ({ request }) => {
 
   const data = {
     name: form.get('name'),
-    email: form.get('email'),
+    email: form.get('signup-email'),
     confirmation: form.get('confirmation'),
     password: form.get('password')
   };
@@ -85,9 +87,10 @@ export const action: ActionFunction = async ({ request }) => {
   try {
     await Schema.parseAsync(data);
     // split functional validations, so they don't override syntactic ones in schema
-    await z.object({
-      email: z.string()
-    })
+    await z
+      .object({
+        email: z.string()
+      })
       .refine(async (data) => !(await findUserByEmail(data.email)), {
         message: t('User Already Exists'),
         path: ['email']
@@ -95,7 +98,8 @@ export const action: ActionFunction = async ({ request }) => {
       .refine(async (data) => verifyEmailAddress(data.email), {
         message: t('Fake email'),
         path: ['email']
-      }).parseAsync(data);
+      })
+      .parseAsync(data);
 
     const { email, name, password } = data as {
       email: string;
@@ -119,6 +123,32 @@ export const action: ActionFunction = async ({ request }) => {
         console.error(err);
         // do nothing
       }
+    }
+
+    if (postSignUpAction === 'checkout') {
+      try {
+        const clientSession = await getClientSession(request);
+        const eventId = searchParams.get('e') as string;
+        const booking = await findBooking(clientSession.getClientId(), eventId);
+
+        await changeRegistrationToAuthUser(
+          user.id,
+          clientSession.getClientId()
+        );
+
+        return redirect(
+          booking?.status === 'confirmed'
+            ? `/checkout/confirmation/${eventId}`
+            : `/checkout/info/${eventId}`,
+          { headers }
+        );
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    if (postSignUpAction === 'create-event') {
+      return redirect('/o/event/create', { headers });
     }
 
     return redirect('/me', { headers });
@@ -193,19 +223,31 @@ export default function SignUp() {
         }`}
       >
         <FormField label={t('Email')} error={errors?.email} dataCy="email">
-          <TextField name="email" defaultValue={fields?.name} />
+          <TextField name="signup-email" defaultValue={fields?.name} />
         </FormField>
-        <FormField label={t('Confirm Email')} error={errors?.confirmation} dataCy="confirmation">
+        <FormField
+          label={t('Confirm Email')}
+          error={errors?.confirmation}
+          dataCy="confirmation"
+        >
           <TextField name="confirmation" autoComplete="off" />
         </FormField>
         <FormField label={t('Name')} error={errors?.name} dataCy="name">
           <TextField name="name" defaultValue={fields?.name} />
         </FormField>
-        <FormField label={t('Password')} error={errors?.password} dataCy="password">
+        <FormField
+          label={t('Password')}
+          error={errors?.password}
+          dataCy="password"
+        >
           <TextField name="password" type="password" />
         </FormField>
         <ButtonGroup>
-          <ButtonLink variant="secondary" to="/" className="hidden md:inline-flex">
+          <ButtonLink
+            variant="secondary"
+            to="/"
+            className="hidden md:inline-flex"
+          >
             {t('Cancel')}
           </ButtonLink>
           <Button name="create">{t('Create Profile')}</Button>

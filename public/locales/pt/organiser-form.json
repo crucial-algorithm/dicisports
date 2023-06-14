@@ -1,0 +1,33 @@
+{
+  "Name": "Nome",
+  "Description": "Descrição",
+  "Profile Description": "Insira uma descrição",
+  "Profile Photo": "Foto de perfil",
+  "E-mail": "E-mail",
+  "Phone Number": "Número de telemóvel",
+  "Phone Number Placeholder": "(Opcional)",
+  "Address": "Morada",
+  "Postal Code": "Código Postal",
+  "City": "Cidade",
+  "Hint For Profile Picture": "Selecione a sua foto de perfil",
+
+  "Pending Validation": "A sua conta ainda está a ser analisada. Aguarde o nosso contacto.",
+  "Pending Validation Action": "Voltar à página inicial",
+
+  "Field Required": "Campo obrigatório",
+  "Min 2 Chars": "Insira no mínimo 2 caracteres",
+  "9 Digits": "Número tem de conter 9 dígitos",
+  "Invalid number": "Número inválido",
+  "Max 9 Number": "Apenas permitidos 9 dígitos",
+  "Valid E-mail": "Insira um e-mail válido",
+  "Organiser display field": "Este campo estará visível na página do evento",
+  "Read and Accepted": "Eu li e aceito os",
+  "Terms and Conditions": " Termos e Condições",
+
+  "Organiser Profile": "Perfil de organizador",
+  "Organiser Profile - Description": "Antes de puder publicar um evento precisa de criar o seu perfil de organizador. Preencha e submeta este formulário.",
+
+  "Accept Dici Terms": "Verfique que aceitou os termos e condições",
+  "Save": "Guardar",
+  "Cancel": "Cancelar"
+}

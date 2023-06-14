@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import React, { useEffect, useRef, useState } from 'react';
+import React from 'react';
 
 import { useTranslation } from 'react-i18next';
 
@@ -11,6 +11,7 @@ import type { Group, TranslationObject } from '~/types';
 import I18nText from '~/components/I18nText';
 import DisplayImg from '~/components/shared/DisplayImg';
 import { displayTimeOfDay } from '~/utils/misc';
+import ResultEntryDescription from '~/components/shared/ResultEntryDescription';
 
 type Props = {
   actions?: React.ReactNode;
@@ -62,10 +63,11 @@ export default function GroupEntry({ group, actions, footer, img }: Props) {
           <a
             href={`/group/${group.slug}`}
             className="text-lg font-extrabold dark:text-white cursor-default"
+            data-cy="group-name"
           >
             {group.name}
           </a>
-          <span className="mb-4 dark:text-white font-bold capitalize">
+          <span className="mb-4 dark:text-white font-bold capitalize" data-cy="group-schedule">
             {schedule}
           </span>
           <Feature
@@ -82,13 +84,13 @@ export default function GroupEntry({ group, actions, footer, img }: Props) {
               ({t('View in Map')})
             </a>
           </Feature>
-          <div className="flex justify-between align-middle">
+          <div className="flex justify-between align-middle" data-cy="group-spirit">
             <Feature
               label={t('Purpose')}
               value={group.groupSpirit?.name || ''}
             />
           </div>
-          <GroupDescription
+          <ResultEntryDescription
             text={group.description}
             label={t('Description')}
             less={t('Read Less')}
@@ -105,77 +107,6 @@ export default function GroupEntry({ group, actions, footer, img }: Props) {
         <div className="absolute top-0 right-0 p-2 pt-6">{actions}</div>
       )}
     </div>
-  );
-}
-
-function GroupDescription({
-  text,
-  label,
-  more,
-  less
-}: {
-  text: string | null;
-  label: string;
-  more: string;
-  less: string;
-}) {
-  const innerDiv = useRef<HTMLDivElement>(null);
-  const outerDiv = useRef<HTMLDivElement>(null);
-  const [expanded, setExpanded] = useState<boolean>(false);
-  const [heightMetaData, setHeightMetaData] = useState<{
-    isTextLonger: boolean;
-    computed: boolean;
-  }>({ isTextLonger: true, computed: false });
-
-  function handleReadMore() {
-    expanded ? setExpanded(false) : setExpanded(true);
-  }
-
-  useEffect(() => {
-    if (innerDiv.current) {
-      setHeightMetaData({
-        computed: true,
-        isTextLonger: innerDiv.current.offsetHeight > 76
-      });
-    }
-  }, [text]);
-
-  if (!text) {
-    return null;
-  }
-
-  return (
-    <>
-      <div className="flex flex-col align-middle mb-4">
-        <div className="dark:text-blueGray-500 text-sm font-medium mr-2">
-          {label}
-        </div>
-        <div
-          className={clsx({
-            'max-h-[76px] overflow-hidden': !expanded
-          })}
-          ref={outerDiv}
-        >
-          <div
-            ref={innerDiv}
-            className={clsx(
-              'whitespace-pre-wrap max-w-[90ch] dark:text-white text-gray-500 text-base',
-              {
-                'break-words line-clamp-3':
-                  heightMetaData.computed && heightMetaData.isTextLonger && !expanded
-              }
-            )}
-          >
-            {text}
-          </div>
-        </div>
-        {heightMetaData.isTextLonger && (
-          <label className="w-20" role="button" onClick={handleReadMore}>
-            {expanded ? less : more}
-          </label>
-        )}
-      </div>
-    </>
   );
 }
 

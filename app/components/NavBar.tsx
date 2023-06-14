@@ -1,15 +1,7 @@
+import { Role } from '@prisma/client';
 import * as React from 'react';
-import type { PRect } from '@reach/rect';
 import { Link, useLocation } from '@remix-run/react';
 import clsx from 'clsx';
-import {
-  Menu,
-  MenuButton,
-  MenuItems,
-  MenuLink,
-  MenuPopover,
-  useMenuButtonContext
-} from '@reach/menu-button';
 import { useEffect, useState } from 'react';
 import {
   AnimatePresence,
@@ -17,32 +9,54 @@ import {
   useAnimation,
   useReducedMotion
 } from 'framer-motion';
-import type { User } from '@prisma/client';
 import { buildImageUrl } from 'cloudinary-build-url';
 
 import { useTranslation } from 'react-i18next';
 
-import { useRootData } from '~/utils/use-root-data';
+import { ButtonLink } from '~/components/shared/Button';
+import { IsAdmin, IsNotAnOrganizer } from '~/components/shared/Roles';
+import type { Organiser, User } from '~/types';
 
 import { Theme, Themed, useTheme } from '~/utils/theme-provider';
 
 import Logo from '~/components/shared/Logo';
 
+import { useElementState, useRootData } from '~/hooks';
+
 import { SunIcon } from './shared/icons/SunIcon';
 import { MoonIcon } from './shared/icons/MoonIcon';
 import { TeamCircle } from './shared/icons/TeamCircle';
-import { useElementState } from './hooks/useElementState';
-
 
 const LINKS = [
-  { name: 'NAVBAR >>> Events', to: '/organizer', public: false, roles: ['ADMIN'] },
-  { name: 'NAVBAR >>> Meeting Point', to: '/m/groups', public: false, roles: [] }
+  {
+    name: 'Events Menu',
+    to: '/o',
+    public: false,
+    roles: ['ADMIN'],
+    id: 'events'
+  },
+  {
+    name: 'Groups Menu',
+    to: '/g/groups',
+    public: false,
+    roles: [],
+    id: 'groups'
+  }
 ];
 
-const MOBILE_LINKS = [{ name: 'Home', to: '/', public: true, roles: [] }, ...LINKS];
+const MOBILE_LINKS = [
+  { name: 'Home', to: '/', public: true, roles: [], id: 'home' },
+  ...LINKS
+];
 
 const links = (
-  list: Array<{ name: string; to: string; public: boolean; roles: string[] }>,
+  list: Array<{
+    name: string;
+    to: string;
+    public: boolean;
+    roles: string[];
+    id: string;
+  }>,
   user: User | null
 ) => {
   return list.filter(
@@ -83,14 +97,17 @@ function NavLink({
 const iconTransformOrigin = { transformOrigin: '50% 100px' };
 
 function DarkModeToggle({
-  variant = 'icon'
+  variant = 'icon',
+  onToggle
 }: {
-  variant?: 'icon' | 'labelled'
+  variant?: 'icon' | 'labelled';
+  onToggle?: () => void;
 }) {
   const [, setTheme] = useTheme();
   const { t } = useTranslation('common');
 
   function handleOnClick() {
+    onToggle && onToggle();
     setTheme((previousTheme) =>
       previousTheme === Theme.DARK ? Theme.LIGHT : Theme.DARK
     );
@@ -136,9 +153,14 @@ function DarkModeToggle({
   );
 }
 
-function MobileMenuList() {
+function MobileMenuList({
+  isExpanded,
+  linkClicked
+}: {
+  isExpanded: boolean;
+  linkClicked: () => void;
+}) {
   const { t } = useTranslation('common');
-  const { isExpanded } = useMenuButtonContext();
   const shouldReduceMotion = useReducedMotion();
   const { user } = useRootData();
 
@@ -156,20 +178,11 @@ function MobileMenuList() {
     }
   }, [isExpanded]);
 
-  function handlePosition(r: PRect | null) {
-    return {
-      top: `calc(${Number(r?.top) + Number(r?.height)}px + 2.25rem)`, // 2.25 rem = py-9 from navbar
-      left: 0,
-      bottom: 0,
-      right: 0
-    };
-  }
-
   return (
+    // @ts-ignore
     <AnimatePresence>
-      {isExpanded ? (
-        // @ts-ignore
-        <MenuPopover position={handlePosition} style={{ display: 'block' }} className="z-50">
+      {isExpanded && (
+        <div className="fixed top-28 left-0 z-50 w-full h-[calc(100vh-7rem)]">
           <motion.div
             initial={{ y: -50, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
@@ -180,24 +193,25 @@ function MobileMenuList() {
             }}
             className="bg-primary flex flex-col pb-12 h-full border-t border-gray-200 dark:border-gray-600 overflow-y-scroll"
           >
-            <MenuItems className="p-0 bg-transparent border-none">
+            <div className="p-0 bg-transparent border-none flex flex-col">
               {links(MOBILE_LINKS, user).map((link) => (
-                <MenuLink
+                <Link
                   className="hover:bg-secondary focus:bg-secondary text-primary px-5vw py-9 hover:text-team-current border-b border-gray-200 dark:border-gray-600"
                   key={link.to}
-                  as={Link}
                   to={link.to}
+                  onClick={linkClicked}
+                  data-cy={`m-${link.id}`}
                 >
                   {t(link.name)}
-                </MenuLink>
+                </Link>
               ))}
               <div className="noscript-hidden py-9 text-center">
-                <DarkModeToggle variant="labelled" />
+                <DarkModeToggle variant="labelled" onToggle={linkClicked} />
               </div>
-            </MenuItems>
+            </div>
           </motion.div>
-        </MenuPopover>
-      ) : null}
+        </div>
+      )}
     </AnimatePresence>
   );
 }
@@ -220,63 +234,73 @@ const bottomVariants = {
 function MobileMenu() {
   const shouldReduceMotion = useReducedMotion();
   const transition = shouldReduceMotion ? { duration: 0 } : {};
+  const [opened, setOpened] = useState(false);
+
+  function handleTriggerMenu(e: unknown) {
+    setOpened(!opened);
+  }
+
+  function handleLinkClicked() {
+    setOpened(false);
+  }
+
+  const state = opened ? 'open' : 'closed';
 
   return (
-    <Menu>
-      {({ isExpanded }) => {
-        const state = isExpanded ? 'open' : 'closed';
-
-        return (
-          <>
-            <MenuButton className="focus:border-primary hover:border-primary border-secondary text-primary inline-flex items-center justify-center p-1 w-14 h-14 border-2 rounded-full focus:outline-none transition">
-              <svg
-                width="32"
-                height="32"
-                viewBox="0 0 32 32"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <motion.rect
-                  animate={state}
-                  variants={topVariants}
-                  transition={transition}
-                  x="6"
-                  y="9"
-                  width="20"
-                  height="2"
-                  rx="1"
-                  fill="currentColor"
-                />
-                <motion.rect
-                  animate={state}
-                  variants={centerVariants}
-                  transition={transition}
-                  x="6"
-                  y="15"
-                  width="20"
-                  height="2"
-                  rx="1"
-                  fill="currentColor"
-                />
-                <motion.rect
-                  animate={state}
-                  variants={bottomVariants}
-                  transition={transition}
-                  x="6"
-                  y="21"
-                  width="20"
-                  height="2"
-                  rx="1"
-                  fill="currentColor"
-                />
-              </svg>
-            </MenuButton>
-
-            <MobileMenuList />
-          </>
-        );
-      }}
-    </Menu>
+    <>
+      <button
+        data-cy="mobile-menu"
+        onClick={handleTriggerMenu}
+        className={clsx(
+          'w-14 h-14 p-1 rounded-full border-2 border-secondary text-primary transition',
+          'inline-flex items-center justify-center',
+          'focus:border-primary focus:outline-none hover:border-primary'
+        )}
+      >
+        <svg
+          width="32"
+          height="32"
+          viewBox="0 0 32 32"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <motion.rect
+            animate={state}
+            variants={topVariants}
+            transition={transition}
+            x="6"
+            y="9"
+            width="20"
+            height="2"
+            rx="1"
+            fill="currentColor"
+          />
+          <motion.rect
+            animate={state}
+            variants={centerVariants}
+            transition={transition}
+            x="6"
+            y="15"
+            width="20"
+            height="2"
+            rx="1"
+            fill="currentColor"
+          />
+          <motion.rect
+            animate={state}
+            variants={bottomVariants}
+            transition={transition}
+            x="6"
+            y="21"
+            width="20"
+            height="2"
+            rx="1"
+            fill="currentColor"
+          />
+        </svg>
+      </button>
+      <MobileMenuList isExpanded={opened} linkClicked={handleLinkClicked} />
+    </>
   );
 }
 
@@ -289,16 +313,23 @@ const durations = {
   active: 0.25
 };
 
-function ProfileButton({
-  user,
-  magicLinkVerified
-}: {
-  user: User | null
-  magicLinkVerified: boolean | undefined
-}) {
+function to(user: User | null) {
+  if (!user) {
+    return '/login';
+  }
+
+  if (user.role === Role.ORGANIZER) {
+    return '/o';
+  }
+
+  return 'me';
+}
+
+function ProfileButton({ user }: { user: User | null }) {
   const controls = useAnimation();
   const [ref, state] = useElementState();
   const shouldReduceMotion = useReducedMotion();
+  const organiser: Organiser | null = user?.organiser || null;
 
   React.useEffect(() => {
     void controls.start((_, { rotate = 0 }) => {
@@ -325,10 +356,8 @@ function ProfileButton({
   return (
     <Link
       prefetch="intent"
-      to={user ? '/me' : magicLinkVerified ? '/signup' : '/login'}
-      aria-label={
-        user ? 'My Account' : magicLinkVerified ? 'Finish signing up' : 'Login'
-      }
+      to={to(user)}
+      aria-label={user ? 'My Account' : 'Login'}
       className={clsx(
         'inline-flex items-center justify-center ml-4 w-14 h-14 rounded-full focus:outline-none'
       )}
@@ -337,20 +366,30 @@ function ProfileButton({
       <motion.div className="absolute" animate={controls}>
         <TeamCircle size={56} />
       </motion.div>
-      <img
-        className={clsx('inline w-10 rounded-full select-none ', {
-          'scale-150': !user
-        })}
-        src={buildImageUrl(user ? 'product/logo' : 'product/login', {})}
-        alt={user ? 'logo' : 'login'}
-      />
+      {organiser ? (
+        <img
+          src={buildImageUrl(organiser.logo, {
+            transformations: { resize: { type: 'fill', width: 30, height: 30 } }
+          })}
+          className="inline w-10 rounded-full select-none"
+          alt={organiser.name}
+        />
+      ) : (
+        <img
+          className={clsx('inline w-10 rounded-full select-none ', {
+            'scale-150': !user
+          })}
+          src={buildImageUrl(user ? 'product/logo' : 'product/login', {})}
+          alt={user ? 'logo' : 'login'}
+        />
+      )}
     </Link>
   );
 }
 
 function Navbar() {
   const { t } = useTranslation('common');
-  const { requestInfo, user } = useRootData();
+  const { user } = useRootData();
   const [isRoot, setIsRoot] = useState<boolean>(true);
   const location = useLocation();
 
@@ -379,11 +418,17 @@ function Navbar() {
 
         <div className="flex items-center justify-center">
           <ul className="hidden lg:flex">
-            {links(LINKS, user).map((link) => (
-              <NavLink key={link.to} to={link.to}>
-                {t(link.name)}
-              </NavLink>
-            ))}
+            <IsAdmin>
+              <IsNotAnOrganizer>
+                {location.pathname !== '/organizers-promo' && (
+                  <li className="px-5 py-2">
+                    <CTALandingPublishYourEvent
+                      cta={t('CTA Publish Your Event')}
+                    />
+                  </li>
+                )}
+              </IsNotAnOrganizer>
+            </IsAdmin>
           </ul>
           <div className="block lg:hidden">
             <MobileMenu />
@@ -392,13 +437,18 @@ function Navbar() {
             <DarkModeToggle />
           </div>
 
-          <ProfileButton
-            magicLinkVerified={requestInfo.session.magicLinkVerified}
-            user={user}
-          />
+          <ProfileButton user={user} />
         </div>
       </nav>
     </div>
+  );
+}
+
+function CTALandingPublishYourEvent({ cta }: { cta: string }) {
+  return (
+    <ButtonLink to="/organizers-promo" size="x-small" className="py-1">
+      {cta}
+    </ButtonLink>
   );
 }
 

@@ -1,7 +1,8 @@
 import * as React from 'react';
-import type { LinksFunction, LoaderFunction } from 'remix';
-import { json } from 'remix';
+import type { LinksFunction, LoaderFunction } from '@remix-run/node';
+import { json } from '@remix-run/node';
 import {
+  Link,
   Links,
   LiveReload,
   Meta,
@@ -10,21 +11,23 @@ import {
   ScrollRestoration,
   useCatch,
   useLoaderData,
+  useMatches,
   useTransition
 } from '@remix-run/react';
-import { useTranslation } from 'react-i18next';
-
-import type { User } from '@prisma/client';
 
 import { useSpinDelay } from 'spin-delay';
 
 import clsx from 'clsx';
 
-import { setConfig } from 'cloudinary-build-url';
+import { buildImageUrl, setConfig } from 'cloudinary-build-url';
+import { useTranslation } from 'react-i18next';
 
-import { useChangeLanguage } from 'remix-i18next';
+import { locale } from 'primereact/api';
 
-import type { KCDHandle, Sport } from '~/types';
+import primeIcons from 'primeicons/primeicons.css';
+import primeReactCoreCss from 'primereact/resources/primereact.min.css';
+
+import type { KCDHandle, Sport, User } from '~/types';
 import type { Timings } from '~/server/metrics.server';
 import { getServerTimeHeader, time } from '~/server/metrics.server';
 import { getSession } from '~/server/auth/session.server';
@@ -46,11 +49,19 @@ import Config from '~/server/config.server';
 import { LocationProvider } from '~/utils/LocationProvider';
 import { getLocationSession } from '~/routes/action/set-my-location';
 
-import { findSports } from '~/server/db/sports.server';
+import { findSports } from '~/server/db/reference.server';
+
+import HomeLogo from '~/components/shared/HomeLogo';
+import { H3, H6 } from '~/components/shared/typography';
+import { ButtonLink } from '~/components/shared/Button';
+
+import setupPrimeReact from '~/PrimeReact';
 
 import vendorsCss from './styles/vendors.css';
 import mainCss from './styles/main.css';
+import primeReactThemeCss from './styles/primereact-theme.css';
 import tailwind from './styles/tailwind.css';
+
 
 export const links: LinksFunction = () => {
   return [
@@ -79,6 +90,18 @@ export const links: LinksFunction = () => {
     {
       rel: 'stylesheet',
       href: mainCss
+    },
+    {
+      rel: 'stylesheet',
+      href: primeIcons
+    },
+    {
+      rel: 'stylesheet',
+      href: primeReactThemeCss
+    },
+    {
+      rel: 'stylesheet',
+      href: primeReactCoreCss
     }
   ];
 };
@@ -90,19 +113,18 @@ export const handle: KCDHandle & { id: string; i18n: string[] } = {
 
 export type RootLoaderData = {
   user: User | null;
-  ENV: { CLOUDINARY_CLOUD_NAME: string };
+  ENV: { CLOUDINARY_CLOUD_NAME: string, RELEASE: string };
   requestInfo: {
     canonicalUrl: string;
     origin: string;
     path: string;
     session: {
       email: string | undefined;
-      magicLinkVerified: boolean | undefined;
       theme: Theme | null;
       location: [number, number] | null;
     };
   };
-  sports: Array<Sport>
+  sports: Array<Sport>;
 };
 
 export const loader: LoaderFunction = async ({ request }) => {
@@ -128,7 +150,8 @@ export const loader: LoaderFunction = async ({ request }) => {
   const data: RootLoaderData = {
     user,
     ENV: {
-      CLOUDINARY_CLOUD_NAME: Config().CLOUDINARY_CLOUD_NAME
+      CLOUDINARY_CLOUD_NAME: Config().CLOUDINARY_CLOUD_NAME,
+      RELEASE: Config().RELEASE
     },
     requestInfo: {
       canonicalUrl: request.url
@@ -138,7 +161,6 @@ export const loader: LoaderFunction = async ({ request }) => {
       path: new URL(request.url).pathname,
       session: {
         email: loginInfoSession.getEmail(),
-        magicLinkVerified: loginInfoSession.getMagicLinkVerified(),
         theme: themeSession.getTheme(),
         location: locationSession.getLocation()
       }
@@ -237,17 +259,13 @@ function PageLoadingMessage() {
   );
 }
 
-function Html({
-  lang
-}: {
-  lang: string;
-}) {
+function Html({ lang }: { lang: string }) {
   const [theme] = useTheme();
-  const { i18n } = useTranslation();
   const data = useLoaderData<RootLoaderData>() as RootLoaderData;
   const analyticsUrl = 'https://plausible.io/js/plausible.js';
+  const [, { pathname }] = useMatches();
 
-  useChangeLanguage(lang);
+  // useChangeLanguage(lang);
   // script bellow setting window.ENV is not actually being used; Just keeping
   // in case we need other vars to be available and for debugging in production
   setConfig({
@@ -255,17 +273,17 @@ function Html({
   });
 
   // Support for cypress command that waits for HTML to be hydrated
-  React.useEffect(() => {
-    (
+  React.useEffect(() => (
       document.getElementsByTagName('body').item(0) as HTMLBodyElement
-    ).setAttribute('data-cy', 'ready');
-  }, []);
+    ).setAttribute('data-cy', 'ready'),
+    [lang]
+  );
 
   return (
     <html
       lang={lang}
       className={clsx(theme, 'set-color-team-current-red')}
-      dir={i18n.dir()}
+      dir="ltr"
     >
       <head>
         {process.env.NODE_ENV === 'production' && (
@@ -283,9 +301,10 @@ function Html({
       <body className="dark:bg-gray-900 bg-white transition duration-500 w-full">
         <PageLoadingMessage />
         <NotificationMessage queryStringKey="message" delay={0.3} />
-        <Navbar />
+        {pathname !== '/o' && <Navbar />}
         <Outlet />
         <ScrollRestoration />
+        {pathname !== '/o' && <Footer />}
         <script
           dangerouslySetInnerHTML={{
             __html: `window.ENV = ${JSON.stringify(data.ENV)}`
@@ -300,13 +319,17 @@ function Html({
 
 export default function App() {
   // set locale statically
-  const locale = 'pt';
+  const lang = 'pt';
   const data = useLoaderData<RootLoaderData>() as RootLoaderData;
+
+  locale(lang);
+
+  setupPrimeReact();
 
   return (
     <ThemeProvider specifiedTheme={data.requestInfo.session.theme}>
       <LocationProvider userLocation={data.requestInfo.session.location}>
-        <Html lang={locale} />
+        <Html lang={lang} />
       </LocationProvider>
     </ThemeProvider>
   );
@@ -328,8 +351,10 @@ export function ErrorBoundary({ error }: { error: Error }) {
 
 export function CatchBoundary() {
   const caught = useCatch();
+  const { t } = useTranslation('common');
 
   let message;
+  let subMessage;
 
   switch (caught.status) {
     case 401:
@@ -341,9 +366,8 @@ export function CatchBoundary() {
       );
       break;
     case 404:
-      message = (
-        <p>Oops! Looks like you tried to visit a page that does not exist.</p>
-      );
+      message = <p>{t('404 - Message')}</p>;
+      subMessage = <p>{t('404 - Sub Message')}</p>;
       break;
 
     default:
@@ -357,11 +381,65 @@ export function CatchBoundary() {
         <Links />
       </head>
       <body className="dark:bg-gray-900 bg-white transition duration-500">
-        <div>
-          <h1>{message}</h1>
+        <div className="flex justify-center items-center gap-y-2 flex-col h-screen">
+          <Link to="/">
+            <HomeLogo className="w-80 h-16 md:w-96 lg:w-144" />
+          </Link>
+          <div className="flex flex-col items-center">
+            <H3>{message}</H3>
+            {subMessage && <H6 variant="secondary">{subMessage}</H6>}
+          </div>
+          <ButtonLink variant="primary" to={'/'} className="mt-8">
+            {t('Return home')}
+          </ButtonLink>
         </div>
         <Scripts />
       </body>
     </html>
+  );
+}
+
+function Footer() {
+  const { t } = useTranslation('common');
+  const year = (new Date()).getUTCFullYear();
+
+  return (
+    <footer className="mt-32">
+      <div className="px-4">
+        <div className="mx-auto max-w-7xl lg:px-8">
+          <div className="border-t border-zinc-100 pb-16 pt-10 dark:border-zinc-700/40">
+            <div className="relative px-2 md:px-4">
+              <div className="mx-auto max-w-2xl md:max-w-5xl">
+                <div className="flex flex-col md:flex-row items-center justify-between gap-6 dark:text-cadet-blue-700 text-[10px] md:text-xs">
+                  <div className="flex gap-3 items-center md:gap-6">
+                    <Link
+                      to="/privacy"
+                      className="dark:text-cadet-blue-700 dark:hover:text-cadet-blue-500"
+                    >
+                      {t('Privacy Policy')}
+                    </Link>
+                    <Link
+                      to="/terms"
+                      className="dark:text-cadet-blue-700 dark:hover:text-cadet-blue-500"
+                    >
+                      {t('Terms and Conditions')}
+                    </Link>
+                    <a
+                      href="https://www.livroreclamacoes.pt/inicio"
+                      className="dark:text-cadet-blue-700 dark:hover:text-cadet-blue-500"
+                    >
+                      <img src={buildImageUrl('product/complaints-logo', {})} alt="" />
+                    </a>
+                  </div>
+                  <p>
+                    {t('Dicisports Watermark', { year })}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </footer>
   );
 }
