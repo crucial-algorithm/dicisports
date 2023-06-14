@@ -63,7 +63,11 @@ describe('Event', () => {
         .contains('Circuito')
 
         .get('[data-cy=regulation]')
-        .should('exist');
+        .should('exist')
+
+        .get('[data-cy="sticky-price"]')
+        .contains('10€')
+      ;
 
       verifyRace('AhowRdNWCBQWSuivSt7s', 'Mediofondo', 102, '08:30', 15, 1804);
       verifyRace('AhowRdNWCBQWSuivSt7h', 'Minifondo', 57, '08:30', 10, 800);

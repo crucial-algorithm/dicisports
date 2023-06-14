@@ -700,14 +700,14 @@ function StickyPriceTag({
 }) {
   return (
     <div className="flex flex-row justify-between items-center mt-16 top-0 p-4 sticky dark:bg-gray-900 bg-white dark:border-gray-500 drop-shadow-md z-10">
-      <H3 data-cy="price" className="text-sp-light-blue-900 w-full md:ml-2">
+      <H3 className="text-sp-light-blue-900 w-full md:ml-2">
         <b className="break-words">{eventName}</b>
       </H3>
       <div className="flex flex-col md:flex-row items-center">
         <div className="flex flex-col md:justify-start">
           <H6 className="md:ml-2">{t('From')}</H6>
-          <H2 data-cy="price" className="text-sp-light-blue-900 w-full md:ml-2">
-            <b className="break-words">{`${minPrice}€`}</b>
+          <H2 data-cy="sticky-price" className="text-sp-light-blue-900 w-full md:ml-2">
+            <b className="break-words">{`${minPrice / 1000}€`}</b>
           </H2>
         </div>
         <ButtonLink className="md:ml-16" to="#races-list">
