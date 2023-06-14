@@ -11,6 +11,7 @@ import type { Option } from '~/components/shared/form/ComboBox';
 import ComboBox from '~/components/shared/form/ComboBox';
 import FormField from '~/components/shared/form/FormField';
 import PeekDayOfWeek from '~/components/shared/PeekDayOfWeek';
+import { IsAdmin } from '~/components/shared/Roles';
 import { Spacer } from '~/components/shared/Spacer';
 import type { FilterParams, SortMethod } from '~/routes';
 import type { DaysOfWeek, GroupSpirit, Language, Sport } from '~/types';
@@ -158,14 +159,16 @@ function FiltersDialog(props: {
               className="mb-2"
             />
           ))}
-          <Spacer size="3xs" />
-          <CheckBox
-            name="g"
-            label={t('Hide Groups')}
-            value="hide"
-            checked={filters?.groupsAction === 'hide'}
-            className="mb-2"
-          />
+          <IsAdmin>
+            <Spacer size="3xs" />
+            <CheckBox
+              name="g"
+              label={t('Hide Groups')}
+              value="hide"
+              checked={filters?.groupsAction === 'hide'}
+              className="mb-2"
+            />
+          </IsAdmin>
         </FormField>
       </Form>
     </Dialog>

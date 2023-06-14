@@ -276,7 +276,6 @@ type DisplayRaceProps = {
 
 function DisplayRace({ race, index, eventId, areThereRacesInEarlyBird }: DisplayRaceProps) {
   const { t } = useTranslation('event');
-  const lang = useLang();
   const raceTime = displayTimeOfDay(race.startTime);
   const [expanded, setExpanded] = useState<boolean>(false);
   let validDuring: number | null = null;
@@ -294,6 +293,7 @@ function DisplayRace({ race, index, eventId, areThereRacesInEarlyBird }: Display
   function handleSeeMore() {
     expanded ? setExpanded(false) : setExpanded(true);
   }
+
 
   return (
     <div
@@ -333,10 +333,10 @@ function DisplayRace({ race, index, eventId, areThereRacesInEarlyBird }: Display
               <H5
                 className="dark:text-blueGray-500 line-through"
                 data-cy={`race-price-${race.id}`}
-              >{`€${race.price}`}</H5>
+              >{`${race.price / 1000}€`}</H5>
               <H3
                 data-cy={`race-price-${race.id}`}
-              >{`€${race.priceEarlyBird}`}</H3>
+              > {`${(race.priceEarlyBird || 0) / 1000}€`}</H3>
             </div>
 
             <div className="border-b h-2 w-48 mb-2" />
@@ -364,7 +364,7 @@ function DisplayRace({ race, index, eventId, areThereRacesInEarlyBird }: Display
           <H3
             className="items-center"
             data-cy={`race-price-${race.id}`}
-          >{`€${race.price}`}</H3>
+          >{`${race.price / 1000}`}€</H3>
         )}
       </div>
       {expanded && (
@@ -677,7 +677,7 @@ function PriceTag({
                 className="text-sp-light-blue-900 w-full md:ml-2"
               >
                 <b className="break-words">{`${
-                  minPrice ? minPrice : t('Undefined')
+                  minPrice ? minPrice / 1000 : t('Undefined')
                 }€`}</b>
               </H2>
             </div>
@@ -700,14 +700,14 @@ function StickyPriceTag({
 }) {
   return (
     <div className="flex flex-row justify-between items-center mt-16 top-0 p-4 sticky dark:bg-gray-900 bg-white dark:border-gray-500 drop-shadow-md z-10">
-      <H3 data-cy="price" className="text-sp-light-blue-900 w-full md:ml-2">
+      <H3 className="text-sp-light-blue-900 w-full md:ml-2">
         <b className="break-words">{eventName}</b>
       </H3>
       <div className="flex flex-col md:flex-row items-center">
         <div className="flex flex-col md:justify-start">
           <H6 className="md:ml-2">{t('From')}</H6>
-          <H2 data-cy="price" className="text-sp-light-blue-900 w-full md:ml-2">
-            <b className="break-words">{`${minPrice}€`}</b>
+          <H2 data-cy="sticky-price" className="text-sp-light-blue-900 w-full md:ml-2">
+            <b className="break-words">{`${minPrice / 1000}€`}</b>
           </H2>
         </div>
         <ButtonLink className="md:ml-16" to="#races-list">

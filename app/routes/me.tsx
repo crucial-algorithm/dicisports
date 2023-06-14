@@ -23,6 +23,7 @@ import { useTranslation } from 'react-i18next';
 import DisplayDate from '~/components/shared/DIsplayDate';
 
 import ProfileFragment from '~/components/ProfileFragment';
+import { IsAdmin } from '~/components/shared/Roles';
 import SearchField from '~/components/shared/SearchField';
 import { useRootData } from '~/hooks';
 import {
@@ -274,16 +275,18 @@ export default function Me() {
 
   return (
     <Main>
-      <H2 id="booking">{t('Your Bookings')}</H2>
-      <BookingsList
-        bookings={bookings}
-        t={t}
-        searchedName={searchedName}
-        pageNumber={pageNumber}
-        numberOfPages={numberOfPages}
-      />
+      <IsAdmin>
+        <H2 id="booking">{t('Your Bookings')}</H2>
+        <BookingsList
+          bookings={bookings}
+          t={t}
+          searchedName={searchedName}
+          pageNumber={pageNumber}
+          numberOfPages={numberOfPages}
+        />
 
-      <Spacer size="xs" className="border-b mb-8" />
+        <Spacer size="xs" className="border-b mb-8" />
+      </IsAdmin>
 
       <div className="flex flex-row justify-between items-center">
         <H2>{t('Your Groups')}</H2>

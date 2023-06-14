@@ -9,6 +9,9 @@
 // `npx prisma migrate dev --name <descriptive-name>` - generate a migration file for any changes you make to the schema (this will be committed).
 // `npx prisma migrate dev --name <descriptive-name> --create-only` - generate migration script... example: npx prisma migrate dev --name login_with_password --create-only
 
+
+// Currency handling: Integer * 1000
+
 generator client {
   provider        = "prisma-client-js"
   previewFeatures = ["fullTextSearch"]
@@ -129,15 +132,15 @@ model Event {
 }
 
 model Document {
-  id                String      @id @default(uuid())
-  path              String?
-  position          Int         @default(autoincrement())
-  label             String?
-  event             Event       @relation(fields: [eventId], references: [id])
-  eventId           String      @map("event_id")
-  createdAt         DateTime    @default(now()) @map("created_at")
-  updatedAt         DateTime    @updatedAt @map("updated_at")
-  status            Status      @default(auto)
+  id        String   @id @default(uuid())
+  path      String?
+  position  Int      @default(autoincrement())
+  label     String?
+  event     Event    @relation(fields: [eventId], references: [id])
+  eventId   String   @map("event_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  status    Status   @default(auto)
 
   @@map("documents")
 }
@@ -231,8 +234,8 @@ model Race {
   startTime       Int               @map("start_time")
   elevationGain   Int               @map("elevation_gain")
   elevationLoss   Int?              @map("elevation_loss")
-  price           Float
-  priceEarlyBird  Float?            @map("price_early_bird")
+  price           Int
+  priceEarlyBird  Int?              @map("price_early_bird")
   validUntil      DateTime?         @map("valid_until")
   raceDescription String?           @map("race_description")
   displayOrder    Int               @default(autoincrement()) @map("display_order")
@@ -417,7 +420,7 @@ model Organiser {
 
 model DiscountCode {
   code        String    @id @db.VarChar(20)
-  value       Float
+  value       Int
   fixed       Boolean
   active      Boolean
   createdBy   User      @relation(fields: [createdById], references: [id])
