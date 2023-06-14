@@ -276,7 +276,6 @@ type DisplayRaceProps = {
 
 function DisplayRace({ race, index, eventId, areThereRacesInEarlyBird }: DisplayRaceProps) {
   const { t } = useTranslation('event');
-  const lang = useLang();
   const raceTime = displayTimeOfDay(race.startTime);
   const [expanded, setExpanded] = useState<boolean>(false);
   let validDuring: number | null = null;
@@ -294,6 +293,7 @@ function DisplayRace({ race, index, eventId, areThereRacesInEarlyBird }: Display
   function handleSeeMore() {
     expanded ? setExpanded(false) : setExpanded(true);
   }
+
 
   return (
     <div
@@ -333,10 +333,10 @@ function DisplayRace({ race, index, eventId, areThereRacesInEarlyBird }: Display
               <H5
                 className="dark:text-blueGray-500 line-through"
                 data-cy={`race-price-${race.id}`}
-              >{`€${race.price}`}</H5>
+              >{`${race.price / 1000}€`}</H5>
               <H3
                 data-cy={`race-price-${race.id}`}
-              >{`€${race.priceEarlyBird}`}</H3>
+              > {`${(race.priceEarlyBird || 0) / 1000}€`}</H3>
             </div>
 
             <div className="border-b h-2 w-48 mb-2" />
