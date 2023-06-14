@@ -338,6 +338,10 @@ export const action: ActionFunction = async ({ request, params }) => {
   let feedback: ResponseFeedback | undefined;
 
   try {
+    if (eventStatus === 'published') {
+      EventSchema.parse({ ...data, races: races.map((r) => r.id) });
+    }
+
     await updateEvent(data, perks, newPerks);
     feedback = { severity: 'success', message: t('Event Saved') };
 
