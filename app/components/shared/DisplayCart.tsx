@@ -24,7 +24,7 @@ export default function DisplayCart({
   action?: string;
 } & React.ComponentProps<'div'>) {
   const { t } = useTranslation('checkout');
-  let totalPrice = 0;
+  const totalPrice = cart.reduce((acum, c) => c.price * c.qty + acum, 0);
 
   return (
     <fetcher.Form method="post" action={action}>
@@ -45,37 +45,33 @@ export default function DisplayCart({
             >
               <div className="flex flex-row items-center justify-between">
                 <H6>{ticket.name}</H6>
-                <H6>{'x' + ticket.qty}</H6>
+                <H6>x{ticket.qty}</H6>
               </div>
               <div className="flex flex-row items-center justify-between">
-                <H6 className="dark:text-blueGray-500">{ticket.price + '€'}</H6>
                 <H6 className="dark:text-blueGray-500">
-                  {ticket.price * ticket.qty + '€'}
+                  {ticket.price / 1000}€
+                </H6>
+                <H6 className="dark:text-blueGray-500">
+                  {(ticket.price * ticket.qty) / 1000}€
                 </H6>
               </div>
             </div>
           ))}
 
-        {cart.length !== 0 &&
-          cart.map((c) => {
-            totalPrice += c.price * c.qty;
-
-            return totalPrice;
-          }) && (
-            <div className="flex flex-row items-center justify-between mt-4 py-4 border-t-2 border-grey-300">
-              <H6>{t('Total')}</H6>
-              <H6 data-cy="total-price">{totalPrice + '€'}</H6>
-            </div>
-          )}
+        {totalPrice && (
+          <div className="flex flex-row items-center justify-between mt-4 py-4 border-t-2 border-grey-300">
+            <H6>{t('Total')}</H6>
+            <H6 data-cy="total-price">{totalPrice / 1000}€</H6>
+          </div>
+        )}
 
         {children}
         <input type="hidden" name="hash" value={hash} />
         {error && (
-            <InputError id="checkout-error" className="mt-2">
-              {error}
-            </InputError>
+          <InputError id="checkout-error" className="mt-2">
+            {error}
+          </InputError>
         )}
-
       </div>
     </fetcher.Form>
   );

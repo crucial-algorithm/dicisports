@@ -35,7 +35,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 };
 
 function cellDiscountValue({ value, fixed }: DiscountCode) {
-  return `${value}${fixed ? '€' : '%'}`;
+  return `${value / 1000}${fixed ? '€' : '%'}`;
 }
 
 export default function OrganiserDiscountCodesRoute() {

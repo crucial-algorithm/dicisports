@@ -897,7 +897,7 @@ function verifyRace(
     .contains(time)
 
     .get(`[data-cy=race-price-${raceId}]`)
-    .contains(`€${price}`)
+    .contains(`${price}€`)
 
     .get(`label[data-cy=see-more-${raceId}]`)
     .first()

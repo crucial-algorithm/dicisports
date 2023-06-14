@@ -1,7 +1,7 @@
 [
   {
     "code": "SPRING-20",
-    "value": 20,
+    "value": 20000,
     "fixed": false,
     "active": true,
     "createdById": "gZZCGTHBq9SxdpRFoP8b",
@@ -9,7 +9,7 @@
   },
   {
     "code": "GET-FIT-5",
-    "value": 5,
+    "value": 5000,
     "fixed": true,
     "active": true,
     "createdById": "gZZCGTHBq9SxdpRFoP8b",
@@ -17,7 +17,7 @@
   },
   {
     "code": "CHRISTMAS-30",
-    "value": 30,
+    "value": 30000,
     "fixed": false,
     "active": false,
     "createdById": "gZZCGTHBq9SxdpRFoP8b",
