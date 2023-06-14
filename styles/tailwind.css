@@ -16,7 +16,7 @@
         w-screen h-screen px-8
 
         md:top-[50%] md:left-[50%] md:-translate-x-1/2 md:-translate-y-1/2
-        md:w-5/6 md:max-w-[90%] md:min-h-[200px] md:max-h-[90vh] md:h-fit
+        md:w-fit md:max-w-[90%] md:min-h-[200px] md:max-h-[90vh] md:h-fit
         md:m-auto md:px-4
         md:rounded-lg md:border-2 md:border-black
         ;
@@ -35,8 +35,8 @@
     }
 
     .dialog-footer {
-        @apply fixed bottom-4 right-1 flex items-baseline justify-end gap-4
-        md:static md:w-full md:py-2 md:px-1
+        @apply flex items-baseline w-full justify-end gap-4 mb-2
+        md:static md:py-2 md:px-1 md:mb-0
         md:flex-wrap md:justify-end md:items-center
         ;
     }
