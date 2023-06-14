@@ -364,7 +364,7 @@ function DisplayRace({ race, index, eventId, areThereRacesInEarlyBird }: Display
           <H3
             className="items-center"
             data-cy={`race-price-${race.id}`}
-          >{`€${race.price}`}</H3>
+          >{`${race.price / 1000}`}€</H3>
         )}
       </div>
       {expanded && (
@@ -677,7 +677,7 @@ function PriceTag({
                 className="text-sp-light-blue-900 w-full md:ml-2"
               >
                 <b className="break-words">{`${
-                  minPrice ? minPrice : t('Undefined')
+                  minPrice ? minPrice / 1000 : t('Undefined')
                 }€`}</b>
               </H2>
             </div>
