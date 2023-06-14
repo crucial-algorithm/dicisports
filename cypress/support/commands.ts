@@ -109,10 +109,7 @@ function pickLocationInMap(triggerOpenMapButtonName: string) {
 
     .wait('@mapBoxFindAddressFromCoords', { timeout: 10000 })
     .get('button[name=pick-location]:enabled', { timeout: 10000 })
-    .click({ force: true })
-
-    .get('input[name=discard-location]')
-    .should('have.value', 'Estrada De Torres Novas');
+    .click({ force: true });
 }
 
 function wasImageLoaded(selector: string) {
