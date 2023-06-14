@@ -187,6 +187,9 @@ describe('Event', () => {
 
         .pickLocationInMap('open-map')
 
+        .get('input[name=short-address]')
+        .type('Fátima')
+
         .get('#booking-external')
         .check()
         .get('input[name=booking-url]')
