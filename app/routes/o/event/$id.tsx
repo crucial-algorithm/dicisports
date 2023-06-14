@@ -343,8 +343,6 @@ export const action: ActionFunction = async ({ request, params }) => {
         await updateEvent(data, perks, newPerks);
       }
 
-      console.log('here');
-
       return redirect('race/new');
     }
 
