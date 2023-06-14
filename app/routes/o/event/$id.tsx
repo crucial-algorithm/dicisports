@@ -541,14 +541,6 @@ export default function OrganizerEventRoute() {
     setRegulationOption(e.target.value as 'text' | 'file');
   }
 
-  const [shortAddress, setShortAddress] = useState<string>(
-    event?.location ? event?.location : ''
-  );
-
-  function onChange(e: string) {
-    setShortAddress(e);
-  }
-
   useEffect(() => {
     if (fetcher?.data?.ok && fetcher?.type === 'actionReload') {
       fileUploadHandlerEvent?.options?.clear();
@@ -694,7 +686,6 @@ export default function OrganizerEventRoute() {
             t={t}
             hash={hash}
             location={location}
-            onChange={onChange}
             locationRef={locationRef}
           />
 
