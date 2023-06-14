@@ -278,15 +278,22 @@ describe('Event', () => {
     });
 
     it('should publish an event', () => {
-      cy.intercept('POST', '/o/event/*_data=routes*')
-        .as('publishEvent')
-
-        .visitAndWaitForHydration('/o/event/TgKZi8NQKNoJQGArd3zc')
+      cy.visitAndWaitForHydration('/o/event/TgKZi8NQKNoJQGArd3zc')
 
         .get('#publish')
         .click()
 
-        .wait('@publishEvent')
+        .get('.cy-delete-dialog')
+        .should('exist')
+
+        .get('button.cy-primary')
+        .should('exist')
+        .click()
+
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.eq('/o/event/TgKZi8NQKNoJQGArd3zc/dashboard');
+        })
 
         .visitAndWaitForHydration('/event/flavius-challenge-ocr')
 
