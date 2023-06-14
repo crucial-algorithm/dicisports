@@ -150,8 +150,16 @@ export function AutoComplete({
                       <div className="flex items-center">
                         {image.length > 0 && (
                           <img
-                            src={buildImageUrl(image, {})}
-                            className="h-10 flex-shrink-0 absolute"
+                            src={buildImageUrl(image, {
+                              transformations: {
+                                resize: {
+                                  type: 'fill',
+                                  width: 40,
+                                  height: 40
+                                }
+                              }
+                            })}
+                            className="h-10 w-10 flex-shrink-0 absolute"
                             alt=""
                           />
                         )}

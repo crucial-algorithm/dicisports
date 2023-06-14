@@ -30,7 +30,7 @@ import {
   updateOrganiser
 } from '~/server/db/organiser.server';
 import type { Organiser, OrganiserInput } from '~/types';
-import { Paragraph } from '~/components/shared/typography';
+import { H2, H4, Paragraph } from '~/components/shared/typography';
 import { uploadImageToCloudinary } from '~/server/storage/cloudinary.server';
 import UploadForm from '~/components/shared/form/UploadForm';
 import Id from '~/server/utils/Id.server';
@@ -201,6 +201,19 @@ export default function UsRoute() {
   return (
     <Main>
       <UploadForm method="post">
+        <div className="mb-12 lg:mb-20">
+          <div className="flex flex-col-reverse items-start justify-between lg:flex-row lg:items-center">
+            <div>
+              <H2>{t('Organiser Profile')}</H2>
+              {(!organiser || organiser.status !== 'APPROVED') && (
+                <H4 variant="secondary" as="p">
+                  {t('Organiser Profile - Description')}
+                </H4>
+              )}
+            </div>
+          </div>
+        </div>
+
         <input
           type="hidden"
           name="saved-logo"
