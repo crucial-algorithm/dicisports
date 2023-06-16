@@ -19,6 +19,7 @@ import type {
   Sport as DBSport,
   Status as EventStatus,
   User as DBUser,
+  EventTeam as DBEventTeam,
   Status
 } from '@prisma/client';
 
@@ -431,6 +432,7 @@ type RaceParticipant = {
   race: Race;
   participant: Participant;
   booking?: Booking;
+  eventTeam?: EventTeam;
 } & DBRaceParticipant;
 
 type RaceParticipantInput = {
@@ -588,6 +590,8 @@ type SibsStatusResponse = {
   }
 };
 
+type EventTeam = {} & DBEventTeam;
+
 export {
   NonNullProperties,
   MemberProfile,
@@ -649,7 +653,8 @@ export {
   DBRawBookingList,
   DiscountCode,
   SibsWebHookSchema,
-  SibsStatusResponse
+  SibsStatusResponse,
+  EventTeam
 };
 
 // https://www.i18next.com/overview/typescript#argument-of-type-defaulttfuncreturn-is-not-assignable-to-parameter-of-type-xyz

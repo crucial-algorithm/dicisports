@@ -17,6 +17,7 @@ import {
   dbUIRaceParticipantToUIRaceParticipant
 } from '~/server/db/codecs.server';
 import { findBooking } from '~/server/db/booking.server';
+import { createTeam, findEventTeamByName } from '~/server/db/teams.server';
 
 const prisma = new PrismaClient();
 
@@ -243,7 +244,9 @@ async function findUserSavedParticipants(
   return results.map(dbParticipantToParticipant);
 }
 
-async function findUserBookingParticipants(bookingId: string): Promise<RaceParticipant[] | null> {
+async function findUserBookingParticipants(
+  bookingId: string
+): Promise<RaceParticipant[] | null> {
   return db.raceParticipant.findMany({
     where: { bookingId },
     include: {
@@ -280,6 +283,44 @@ async function findEventRaceParticipants(
   });
 }
 
+async function findRaceParticipant(
+  participantId: string,
+  raceId: string
+): Promise<RaceParticipant | null> {
+  // @ts-ignore
+  return await db.raceParticipant.findUnique({
+    where: {
+      participantId_raceId: { participantId, raceId }
+    }
+  });
+}
+
+async function updateRaceParticipantTeam(
+  teamName: string,
+  eventId: string,
+  raceParticipant: RaceParticipant
+): Promise<void> {
+  return await prisma.$transaction(async (prisma) => {
+    const existingTeam = await findEventTeamByName(teamName, eventId, prisma);
+    let teamId: string | null;
+
+    if (!existingTeam) {
+      const newTeam = await createTeam(teamName, eventId, prisma);
+
+      teamId = newTeam.id;
+    } else {
+      teamId = existingTeam.id;
+    }
+
+    await prisma.raceParticipant.update({
+      where: { id: raceParticipant.id },
+      data: {
+        teamId
+      }
+    });
+  });
+}
+
 export {
   addParticipantsToRace,
   findUserEventRaceParticipants,
@@ -293,5 +334,7 @@ export {
   findRaceParticipants,
   findUserSavedParticipants,
   findUserBookingParticipants,
-  findEventRaceParticipants
+  findEventRaceParticipants,
+  findRaceParticipant,
+  updateRaceParticipantTeam
 };

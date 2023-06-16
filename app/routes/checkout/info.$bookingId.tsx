@@ -37,11 +37,12 @@ import {
 } from '~/server/db/booking.server';
 import { findEvent } from '~/server/db/events.server';
 import {
+  findRaceParticipant,
   findUserBookingParticipants,
   findUserEventRaceParticipants,
   findUserParticipants,
   findUserSavedParticipants,
-  updateParticipant,
+  updateParticipant, updateRaceParticipantTeam,
   updateToSelectedParticipant
 } from '~/server/db/participant.server';
 import { findShirtSizes } from '~/server/db/reference.server';
@@ -59,6 +60,7 @@ import type {
 import { badRequest, displayTimeOfDay } from '~/utils/misc';
 import { Unauthorized } from '~/server/utils/misc';
 import InputError from '~/components/shared/form/InputError';
+import { findEventTeams } from '~/server/db/teams.server';
 
 type LoaderData = {
   event: Event;
@@ -108,6 +110,7 @@ export const action: ActionFunction = async ({ request, params }) => {
   const hash = form.get('hash') as string;
   const regulation: boolean = (form.get('regulation') as string) === 'on';
   const terms: boolean = (form.get('terms') as string) === 'on';
+  const teamName = form.get('team-name') as string || null;
 
   try {
     const phoneNumber = form.get('phone-number') as string;
@@ -200,6 +203,18 @@ export const action: ActionFunction = async ({ request, params }) => {
       data.id = selectedParticipantId;
       ParticipantSchema.parse(data);
       await updateParticipant(data);
+      if (teamName !== null && teamName.length > 0) {
+        const raceParticipant = await findRaceParticipant(data.id, raceId);
+
+        if (!raceParticipant) {
+          return badRequest({
+            errors: { selectedParticipant: t('Race Participant Doest no Exist') },
+            hash: parseInt(hash)
+          });
+        }
+        
+        await updateRaceParticipantTeam(teamName, eventId, raceParticipant);
+      }
     }
 
     if (
@@ -208,6 +223,20 @@ export const action: ActionFunction = async ({ request, params }) => {
     ) {
       ParticipantSchema.parse(data);
       await updateParticipant(data);
+      const raceId = form.get('raceId') as string;
+
+      if (teamName !== null && teamName.length > 0) {
+        const raceParticipant = await findRaceParticipant(data.id, raceId);
+
+        if (!raceParticipant) {
+          return badRequest({
+            errors: { selectedParticipant: t('Race Participant Doest no Exist') },
+            hash: parseInt(hash)
+          });
+        }
+
+        await updateRaceParticipantTeam(teamName, eventId, raceParticipant);
+      }
     }
 
     if (
@@ -311,7 +340,8 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     shirtSizes,
     isAuth: !!authenticatedClient,
     isGuest,
-    bookingId
+    bookingId,
+    eventTeams: await findEventTeams(eventId)
   });
 };
 
@@ -327,7 +357,8 @@ export default function CheckoutInfoRoute() {
     shirtSizes,
     isAuth,
     isGuest,
-    bookingId
+    bookingId,
+    eventTeams
   } = useLoaderData<LoaderData>() as LoaderData;
   const [participant, setParticipant] = useState<Participant | null>(
     raceParticipants[0].participant
@@ -622,6 +653,7 @@ export default function CheckoutInfoRoute() {
             resetForm={resetForm}
             isSingleParticipant={raceParticipants.length === 1}
             isReadOnly={isGuest}
+            eventTeams={eventTeams}
           >
             {!isGuest && (
               <>

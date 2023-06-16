@@ -18,7 +18,7 @@ import BasicDatePicker from '~/components/shared/form/DatePicker';
 import FormField from '~/components/shared/form/FormField';
 import TextField from '~/components/shared/form/TextField';
 import countries from '~/server/db/countries.json';
-import type { Language, Participant, ShirtSize } from '~/types';
+import type { EventTeam, Language, Participant, ShirtSize } from '~/types';
 import { FetcherForm, FormContext } from '~/components/shared/form/UploadForm';
 import { useTheme } from '~/utils/theme-provider';
 
@@ -35,7 +35,8 @@ export default function ParticipantForm({
   resetForm,
   isSingleParticipant,
   isReadOnly,
-  children
+  children,
+  eventTeams
 }: {
   participant: Participant | null;
   hash: number;
@@ -49,6 +50,7 @@ export default function ParticipantForm({
   resetForm: () => void;
   isSingleParticipant: boolean;
   isReadOnly: boolean;
+  eventTeams: EventTeam[] | null;
 } & React.ComponentProps<'div'>) {
   const { t, i18n } = useTranslation('checkout');
   const language = i18n.language as Language;
@@ -150,7 +152,7 @@ export default function ParticipantForm({
         </FormField>
 
         <FormField label={t('Team')}>
-          <TeamAutoComplete t={t} />
+          <TeamAutoComplete t={t} dbTeams={eventTeams} defaultValue={'Pernetas'}/>
         </FormField>
       </div>
 
@@ -173,7 +175,7 @@ export default function ParticipantForm({
                 ? new Date(selectedParticipant.birthdate)
                 : participant?.birthdate
                 ? new Date(participant.birthdate)
-                : new Date()
+                : new Date(Date.now() - 63113904 * 10000)
             }
           />
         </FormField>
@@ -299,19 +301,17 @@ export default function ParticipantForm({
       )}
 
       {selectedParticipant && (
-        <>
-          <input
-            type="hidden"
-            name="selected-participant-id"
-            value={selectedParticipant.id}
-          />
-          <input type="hidden" name="raceId" value={raceId as string} />
-        </>
+        <input
+          type="hidden"
+          name="selected-participant-id"
+          value={selectedParticipant.id}
+        />
       )}
 
       {children}
 
       <input type="hidden" name="hash" value={hash} />
+      <input type="hidden" name="raceId" value={raceId as string} />
       {!isReadOnly && (
         <ButtonGroup>
           <Button type="button" variant="secondary" onClick={resetForm}>
@@ -370,13 +370,15 @@ export type FormErrors = {
   regulation?: string;
 };
 
-function TeamAutoComplete({ dbTeams, t, defaultValue }: { dbTeams?: []; t: TFunction; defaultValue?: string }) {
+function TeamAutoComplete({ dbTeams, t, defaultValue }: { dbTeams: EventTeam[] | null; t: TFunction; defaultValue?: string }) {
   const [theme] = useTheme();
   const inDarkMode = theme === 'dark';
   const formProps = useContext(FormContext);
 
   const [query, setQuery] = useState('');
-  const [teams, setTeams] = useState<string[]>(dbTeams || []);
+  const [teams, setTeams] = useState<string[]>(
+    dbTeams ? dbTeams.map((d) => d.name) : []
+  );
   const [activeTeam, setActiveTeam] = useState<string | null>(defaultValue || null);
 
   if (formProps.readOnly) {
@@ -453,7 +455,7 @@ function TeamAutoComplete({ dbTeams, t, defaultValue }: { dbTeams?: []; t: TFunc
               }
             )}
           >
-            {query !== '' && filteredTeams.length === 0 && (
+            {filteredTeams.length === 0 && query !== '' && (
               <Combobox.Option
                 value={query}
                 className={clsx(
