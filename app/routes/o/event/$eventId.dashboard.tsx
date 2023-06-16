@@ -189,7 +189,7 @@ export default function DashboardRoute() {
           <H6 className="md:ml-2">{t('From')}</H6>
           <H2 data-cy="price" className="text-sp-light-blue-900 w-full md:ml-2">
             <b className="break-words">{`${
-              minPrice ? minPrice : t('Undefined')
+              minPrice ? minPrice / 1000 : t('Undefined')
             }€`}</b>
           </H2>
         </div>
