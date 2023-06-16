@@ -51,83 +51,6 @@ type LoaderData = {
   domainUrl: string;
 };
 
-export const action: ActionFunction = async ({ request, params }) => {
-  const t = await i18n.getFixedT(request, ['checkout']);
-
-  const form = await request.formData();
-  const anonymousClient = await getClientSession(request);
-  const authenticatedClient = await getUser(request);
-  const bookingId = params.bookingId as string;
-  const booking = await findBookingById(bookingId);
-
-  if (!booking) {
-    return badRequest({
-      error: t('No Booking')
-    });
-  }
-
-  const eventId = booking.eventId;
-
-  // We check if user is authenticated -> authenticatedClient, if not, we use the client session -> anonymousClient
-  const clientId =
-    authenticatedClient !== null
-      ? authenticatedClient.id
-      : anonymousClient.getClientId();
-
-  if (booking && booking.status === CheckoutStatus.confirmed) {
-    if (booking.userId === clientId) {
-      return redirect(`/checkout/confirmation/${booking.id}`);
-    }
-
-    return redirect('/');
-  }
-
-  const actionId = form.get('actionId');
-
-  if (actionId === 'update-info') {
-    await updateBookingStatus(bookingId, CheckoutStatus.checkout);
-
-    return redirect(`/checkout/info/${bookingId}`);
-  }
-
-  try {
-    await updateBookingStatus(bookingId, CheckoutStatus.confirmed);
-
-    if (authenticatedClient !== null) {
-      const event = await findEvent(eventId);
-      const domainUrl = getDomainUrl(request);
-      const cart = await findBookingCart(clientId, eventId);
-
-      await sendBookingConfirmationEmail({
-        emailAddress: authenticatedClient.email,
-        event,
-        booking,
-        domainUrl,
-        cart,
-        userName: authenticatedClient.name
-      });
-    }
-
-    return redirect(`/checkout/confirmation/${bookingId}`);
-  } catch (e) {
-    if (!(e instanceof ZodError)) {
-      const tc = await i18n.getFixedT(request, 'common');
-
-      return badRequest({
-        errors: { submit: tc('500 error message') }
-      });
-    }
-
-    const errors: { [key: string]: string | undefined } = {};
-
-    for (const error of (e as ZodError).errors) {
-      errors[error.path[0]] = error.message;
-    }
-
-    return badRequest({ errors });
-  }
-};
-
 export const loader: LoaderFunction = async ({ request, params }) => {
   const anonymousClient = await getClientSession(request);
   const authenticatedClient = await getUser(request);
@@ -204,6 +127,84 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     unsuccessfulPayments,
     domainUrl: getDomainUrl(request)
   });
+};
+
+
+export const action: ActionFunction = async ({ request, params }) => {
+  const t = await i18n.getFixedT(request, ['checkout']);
+
+  const form = await request.formData();
+  const anonymousClient = await getClientSession(request);
+  const authenticatedClient = await getUser(request);
+  const bookingId = params.bookingId as string;
+  const booking = await findBookingById(bookingId);
+
+  if (!booking) {
+    return badRequest({
+      error: t('No Booking')
+    });
+  }
+
+  const eventId = booking.eventId;
+
+  // We check if user is authenticated -> authenticatedClient, if not, we use the client session -> anonymousClient
+  const clientId =
+    authenticatedClient !== null
+      ? authenticatedClient.id
+      : anonymousClient.getClientId();
+
+  if (booking && booking.status === CheckoutStatus.confirmed) {
+    if (booking.userId === clientId) {
+      return redirect(`/checkout/confirmation/${booking.id}`);
+    }
+
+    return redirect('/');
+  }
+
+  const actionId = form.get('actionId');
+
+  if (actionId === 'update-info') {
+    await updateBookingStatus(bookingId, CheckoutStatus.checkout);
+
+    return redirect(`/checkout/info/${bookingId}`);
+  }
+
+  try {
+    await updateBookingStatus(bookingId, CheckoutStatus.confirmed);
+
+    if (authenticatedClient !== null) {
+      const event = await findEvent(eventId);
+      const domainUrl = getDomainUrl(request);
+      const cart = await findBookingCart(clientId, eventId);
+
+      await sendBookingConfirmationEmail({
+        emailAddress: authenticatedClient.email,
+        event,
+        booking,
+        domainUrl,
+        cart,
+        userName: authenticatedClient.name
+      });
+    }
+
+    return redirect(`/checkout/confirmation/${bookingId}`);
+  } catch (e) {
+    if (!(e instanceof ZodError)) {
+      const tc = await i18n.getFixedT(request, 'common');
+
+      return badRequest({
+        errors: { submit: tc('500 error message') }
+      });
+    }
+
+    const errors: { [key: string]: string | undefined } = {};
+
+    for (const error of (e as ZodError).errors) {
+      errors[error.path[0]] = error.message;
+    }
+
+    return badRequest({ errors });
+  }
 };
 
 export const handle: KCDHandle & { id: string; i18n: string[] } = {
@@ -341,7 +342,7 @@ function PaymentForm({
   const formScriptSrc = `${script}?id=${gatewayTransactionId}`;
   const formConfig = JSON.stringify({
     paymentMethodList: [],
-    amount: { value: bookingAmount(cart), currency: 'EUR' },
+    amount: { value: bookingAmount(cart) / 1000, currency: 'EUR' },
     language: 'pt',
     redirectUrl,
     customerData: null

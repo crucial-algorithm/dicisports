@@ -75,3 +75,6 @@ Restarting machine 178150df4202d8
   Waiting for 178150df4202d8 to become healthy (started, 3/3)
 Machine 178150df4202d8 restarted successfully! 
 ```
+
+### List env variables 
+fly ssh console -C "printenv" --app diciprd
