@@ -213,11 +213,13 @@ async function findRaceParticipants(
                      p.gender,
                      b.created_at                           as booking_at,
                      b.status,
-                     r.name                                 as race_name
+                     r.name                                 as race_name,
+                     et.name                                as team_name
               FROM race_participants rp
                        INNER JOIN participants p on p.id = rp.participant_id
                        INNER JOIN bookings b on rp.booking_id = b.id
                        INNER JOIN races r on r.id = rp.race_id
+                       LEFT JOIN event_teams et ON rp.team_id = et.id
               WHERE p.status = 'saved'
                 AND first_name || ' ' || last_name ILIKE ${name}
                 AND r.event_id = ${eventId}) as P LIMIT ${pageSize}

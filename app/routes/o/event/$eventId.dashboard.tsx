@@ -359,7 +359,7 @@ export default function DashboardRoute() {
                         data-cy="participant-row"
                       >
                         <TD value={`${rp.name}`} />
-                        <TD value={'-'} />
+                        <TD value={rp.teamName ? rp.teamName : t('Individual')} />
                         <TD value={rp.gender} />
                         <TD value={String(rp.bookingAt).split('T')[0]} />
                         <TD value={t(rp.status)} />

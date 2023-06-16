@@ -452,6 +452,7 @@ type UIRaceParticipant = {
   bookingAt: Date;
   status: string;
   raceName: string;
+  teamName: string | null;
 };
 
 type DBRawUIRaceParticipant = {
@@ -463,6 +464,7 @@ type DBRawUIRaceParticipant = {
   status: string;
   race_name: string;
   records: number;
+  team_name: string | null;
 };
 
 type Participant = {} & DBParticipant;
