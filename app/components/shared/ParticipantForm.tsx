@@ -1,9 +1,11 @@
 import type { FetcherWithComponents } from '@remix-run/react';
 import clsx from 'clsx';
 import * as React from 'react';
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Combobox } from '@headlessui/react';
+
+import { XMarkIcon } from '@heroicons/react/24/outline';
 import { ChevronUpDownIcon } from '@heroicons/react/20/solid';
 import type { TFunction } from 'i18next';
 
@@ -17,7 +19,7 @@ import FormField from '~/components/shared/form/FormField';
 import TextField from '~/components/shared/form/TextField';
 import countries from '~/server/db/countries.json';
 import type { Language, Participant, ShirtSize } from '~/types';
-import { FetcherForm } from '~/components/shared/form/UploadForm';
+import { FetcherForm, FormContext } from '~/components/shared/form/UploadForm';
 import { useTheme } from '~/utils/theme-provider';
 
 export default function ParticipantForm({
@@ -128,23 +130,29 @@ export default function ParticipantForm({
         </FormField>
       </div>
 
-      <FormField
-        label={t('Gender')}
-        error={errors?.gender}
-        dataCy="gender"
-        className="w-48"
-      >
-        <ComboBox
-          name="gender"
-          placeholder={t('Gender Placeholder')}
-          options={genderOptions}
-          lang={language}
-          defaultValue={
-            (selectedParticipant?.gender as string) ||
-            (participant?.gender as string)
-          }
-        />
-      </FormField>
+      <div className="flex flex-col md:flex-row md:gap-x-2">
+        <FormField
+          label={t('Gender')}
+          error={errors?.gender}
+          dataCy="gender"
+          className="w-48"
+        >
+          <ComboBox
+            name="gender"
+            placeholder={t('Gender Placeholder')}
+            options={genderOptions}
+            lang={language}
+            defaultValue={
+              (selectedParticipant?.gender as string) ||
+              (participant?.gender as string)
+            }
+          />
+        </FormField>
+
+        <FormField label={t('Team')}>
+          <TeamAutoComplete t={t} />
+        </FormField>
+      </div>
 
       <div
         className={clsx('flex flex-col md:flex-row', {
@@ -286,10 +294,6 @@ export default function ParticipantForm({
         />
       </FormField>
 
-      <FormField label={t('Team')}>
-        <TeamAutoComplete t={t} />
-      </FormField>
-
       {participant && (
         <input type="hidden" name="participant-id" value={participant.id} />
       )}
@@ -366,12 +370,22 @@ export type FormErrors = {
   regulation?: string;
 };
 
-function TeamAutoComplete({ dbTeams, t }: { dbTeams?: []; t: TFunction }) {
+function TeamAutoComplete({ dbTeams, t, defaultValue }: { dbTeams?: []; t: TFunction; defaultValue?: string }) {
   const [theme] = useTheme();
   const inDarkMode = theme === 'dark';
+  const formProps = useContext(FormContext);
+
   const [query, setQuery] = useState('');
   const [teams, setTeams] = useState<string[]>(dbTeams || []);
-  const [activeTeam, setActiveTeam] = useState<string | null>(null);
+  const [activeTeam, setActiveTeam] = useState<string | null>(defaultValue || null);
+
+  if (formProps.readOnly) {
+    return (
+        <div className="font-medium dark:text-white">
+          {teams.find((t) => t === defaultValue)}
+        </div>
+    );
+  }
 
   const filteredTeams =
     query === ''
@@ -382,7 +396,7 @@ function TeamAutoComplete({ dbTeams, t }: { dbTeams?: []; t: TFunction }) {
     setActiveTeam(team);
 
     if (!teams.includes(team)) {
-      setTeams((existing) => [...existing, team]);
+      setTeams((current) => [...current, team]);
     }
   }
 
@@ -397,48 +411,86 @@ function TeamAutoComplete({ dbTeams, t }: { dbTeams?: []; t: TFunction }) {
     });
   }
 
-  return (
-    <Combobox value={activeTeam} onChange={handleOnSelectTeam} as="div">
-      <div className="relative mt-1 z-100">
-        <div className="relative w-full cursor-default overflow-hidden rounded-lg bg-white text-left shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75 focus-visible:ring-offset-2 focus-visible:ring-offset-teal-300 sm:text-sm">
-          <div>
-            <Combobox.Input
-              name="team-name"
-              className="w-full border-none py-2 pl-3 pr-10 text-sm leading-5 text-gray-900 focus:ring-0"
-              onChange={handleSearch}
-              autoComplete="off"
-            />
-          </div>
+  function handleRemoveSelectedTeam() {
+    setActiveTeam(null);
+  }
 
-          <Combobox.Button className="absolute inset-y-0 right-0 flex items-center pr-2">
-            <ChevronUpDownIcon
-              className="h-5 w-5 text-gray-400"
-              aria-hidden="true"
-            />
-          </Combobox.Button>
-        </div>
-        <Combobox.Options className="absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
-          {query !== '' && filteredTeams.length === 0 && (
-            <Combobox.Option
-              value={query}
-              className="relative cursor-default select-none py-2 px-4 text-gray-700"
-            >
-              {t('Create team: X', { team: query })}
-            </Combobox.Option>
-          )}
-          {filteredTeams.map((person) => {
-            return (
+  return (
+    <div className="flex flex-row items-center gap-x-2">
+      <Combobox
+        value={activeTeam}
+        onChange={handleOnSelectTeam}
+        as="div"
+        className="w-full md:w-72"
+      >
+        <div className="relative mt-1">
+          <div className="z-100">
+            <div>
+              <Combobox.Input
+                name="team-name"
+                className="input-text"
+                onChange={handleSearch}
+                autoComplete="off"
+              />
+            </div>
+
+            <Combobox.Button className="absolute inset-y-0 right-0 flex items-center pr-2">
+              <ChevronUpDownIcon
+                className="h-5 w-5 text-gray-400"
+                aria-hidden="true"
+              />
+            </Combobox.Button>
+          </div>
+          <Combobox.Options
+            className={clsx(
+              'absolute w-full overflow-auto z-10 mt-1 max-h-60 py-1',
+              'rounded-md shadow-lg',
+              'ring-1 ring-black ring-opacity-5',
+              'focus:outline-none sm:text-sm',
+              {
+                'bg-gray-800 text-gray-100': inDarkMode,
+                'bg-white text-base': !inDarkMode
+              }
+            )}
+          >
+            {query !== '' && filteredTeams.length === 0 && (
               <Combobox.Option
-                key={person}
-                value={person}
-                className={handleOptionStyle}
+                value={query}
+                className={clsx(
+                  'relative cursor-default select-none py-2 px-4',
+                  {
+                    'text-gray-700': !inDarkMode,
+                    'text-gray-100': inDarkMode
+                  }
+                )}
               >
-                {person}
+                {t('Create team: X', { team: query })}
               </Combobox.Option>
-            );
-          })}
-        </Combobox.Options>
-      </div>
-    </Combobox>
+            )}
+            {filteredTeams.map((team) => {
+              return (
+                <Combobox.Option
+                  key={team}
+                  value={team}
+                  className={handleOptionStyle}
+                >
+                  {team}
+                </Combobox.Option>
+              );
+            })}
+          </Combobox.Options>
+        </div>
+      </Combobox>
+      {activeTeam && (
+        <button
+          name="remove-schedule"
+          type="button"
+          onClick={handleRemoveSelectedTeam}
+          className="dark:text-blueGray-500"
+        >
+          <XMarkIcon className="h-4 w-4 m-0 inline-block" />
+        </button>
+      )}
+    </div>
   );
 }
