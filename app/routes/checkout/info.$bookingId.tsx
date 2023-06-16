@@ -42,7 +42,8 @@ import {
   findUserEventRaceParticipants,
   findUserParticipants,
   findUserSavedParticipants,
-  updateParticipant, updateRaceParticipantTeam,
+  updateParticipant,
+  updateRaceParticipantTeam,
   updateToSelectedParticipant
 } from '~/server/db/participant.server';
 import { findShirtSizes } from '~/server/db/reference.server';
@@ -50,6 +51,7 @@ import i18n from '~/server/i18n.server';
 
 import type {
   Event,
+  EventTeam,
   Participant,
   ParticipantInput,
   Race,
@@ -72,6 +74,7 @@ type LoaderData = {
   isAuth: boolean;
   isGuest: boolean;
   bookingId: string;
+  eventTeams: EventTeam[];
 };
 
 export const action: ActionFunction = async ({ request, params }) => {
@@ -110,7 +113,7 @@ export const action: ActionFunction = async ({ request, params }) => {
   const hash = form.get('hash') as string;
   const regulation: boolean = (form.get('regulation') as string) === 'on';
   const terms: boolean = (form.get('terms') as string) === 'on';
-  const teamName = form.get('team-name') as string || null;
+  const teamName = (form.get('team-name') as string) || null;
 
   try {
     const phoneNumber = form.get('phone-number') as string;
@@ -208,11 +211,13 @@ export const action: ActionFunction = async ({ request, params }) => {
 
         if (!raceParticipant) {
           return badRequest({
-            errors: { selectedParticipant: t('Race Participant Doest no Exist') },
+            errors: {
+              selectedParticipant: t('Race Participant Doest no Exist')
+            },
             hash: parseInt(hash)
           });
         }
-        
+
         await updateRaceParticipantTeam(teamName, eventId, raceParticipant);
       }
     }
@@ -230,7 +235,9 @@ export const action: ActionFunction = async ({ request, params }) => {
 
         if (!raceParticipant) {
           return badRequest({
-            errors: { selectedParticipant: t('Race Participant Doest no Exist') },
+            errors: {
+              selectedParticipant: t('Race Participant Doest no Exist')
+            },
             hash: parseInt(hash)
           });
         }
@@ -317,7 +324,10 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   const eventId = booking.eventId;
 
   const event = await findEvent(eventId);
-  const cart = await findBookingCart(isGuest ? booking.userId : clientId, eventId);
+  const cart = await findBookingCart(
+    isGuest ? booking.userId : clientId,
+    eventId
+  );
   const raceParticipants = await findUserBookingParticipants(bookingId);
 
   if (!raceParticipants || raceParticipants?.length === 0) {
@@ -326,8 +336,12 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 
   // cant use clientId when user is a guest - accesses this route with booking PIN
   // TODO: refactor these functions to use bookingId when we decide to have multiple bookings
-  const userParticipants = await findUserParticipants(isGuest ? booking.userId : clientId);
-  const savedParticipants = await findUserSavedParticipants(isGuest ? booking.userId : clientId);
+  const userParticipants = await findUserParticipants(
+    isGuest ? booking.userId : clientId
+  );
+  const savedParticipants = await findUserSavedParticipants(
+    isGuest ? booking.userId : clientId
+  );
   const shirtSizes = await findShirtSizes();
 
   return json({
@@ -360,6 +374,9 @@ export default function CheckoutInfoRoute() {
     bookingId,
     eventTeams
   } = useLoaderData<LoaderData>() as LoaderData;
+  const [participantTeam, setParticipantTeam] = useState<string | null>(
+    raceParticipants[0].team?.name || null
+  );
   const [participant, setParticipant] = useState<Participant | null>(
     raceParticipants[0].participant
   );
@@ -409,15 +426,18 @@ export default function CheckoutInfoRoute() {
   }, []);
 
   function handleSetParticipant(e: React.MouseEvent) {
-    const newParticipant = e.currentTarget.id.split('|')[0];
+    const [newParticipant, raceId, raceParticipantId] =
+      e.currentTarget.id.split('|');
     const index = userParticipants.findIndex(
       (a: Participant) => a.id === newParticipant
     );
     const participant = userParticipants[index];
     const isVisited = visitedParticipants.some((v) => v.id === participant.id);
 
+    handleSetParticipantTeam(raceParticipantId);
+
     setParticipant(participant);
-    setSelectedRace(e.currentTarget.id.split('|')[1]);
+    setSelectedRace(raceId);
     setErrors({});
     setHash(Date.now());
     setSelectedParticipant(null);
@@ -425,6 +445,15 @@ export default function CheckoutInfoRoute() {
     if (!isVisited) {
       setVisitedParticipants((p) => [...p, participant]);
     }
+  }
+
+  function handleSetParticipantTeam(raceParticipantId: string) {
+    const index = raceParticipants.findIndex(
+      (rp) => rp.id === raceParticipantId
+    );
+    const rParticipant = raceParticipants[index];
+
+    setParticipantTeam(rParticipant.team);
   }
 
   function handlerSetShowNotificationFunction(callback: () => void) {
@@ -576,7 +605,7 @@ export default function CheckoutInfoRoute() {
                       )
                     }
                   )}
-                  id={p.participantId + '|' + p.race.id}
+                  id={`${p.participantId}|${p.race.id}|${p.id}`}
                   onClick={handleSetParticipant}
                   data-cy={`participant-${index + 1}`}
                 >
@@ -654,6 +683,7 @@ export default function CheckoutInfoRoute() {
             isSingleParticipant={raceParticipants.length === 1}
             isReadOnly={isGuest}
             eventTeams={eventTeams}
+            participantTeam={participantTeam}
           >
             {!isGuest && (
               <>

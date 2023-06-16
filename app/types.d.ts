@@ -432,7 +432,7 @@ type RaceParticipant = {
   race: Race;
   participant: Participant;
   booking?: Booking;
-  eventTeam?: EventTeam;
+  team?: EventTeam | null;
 } & DBRaceParticipant;
 
 type RaceParticipantInput = {

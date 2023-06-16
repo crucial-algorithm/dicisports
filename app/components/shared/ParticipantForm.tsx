@@ -36,7 +36,8 @@ export default function ParticipantForm({
   isSingleParticipant,
   isReadOnly,
   children,
-  eventTeams
+  eventTeams,
+  participantTeam
 }: {
   participant: Participant | null;
   hash: number;
@@ -51,6 +52,7 @@ export default function ParticipantForm({
   isSingleParticipant: boolean;
   isReadOnly: boolean;
   eventTeams: EventTeam[] | null;
+  participantTeam: string | null;
 } & React.ComponentProps<'div'>) {
   const { t, i18n } = useTranslation('checkout');
   const language = i18n.language as Language;
@@ -152,7 +154,11 @@ export default function ParticipantForm({
         </FormField>
 
         <FormField label={t('Team')}>
-          <TeamAutoComplete t={t} dbTeams={eventTeams} defaultValue={'Pernetas'}/>
+          <TeamAutoComplete
+            t={t}
+            dbTeams={eventTeams}
+            defaultValue={participantTeam}
+          />
         </FormField>
       </div>
 

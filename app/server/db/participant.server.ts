@@ -251,7 +251,8 @@ async function findUserBookingParticipants(
     where: { bookingId },
     include: {
       race: true,
-      participant: true
+      participant: true,
+      team: true
     }
   });
 }
@@ -278,7 +279,8 @@ async function findEventRaceParticipants(
     include: {
       race: true,
       participant: true,
-      booking: true
+      booking: true,
+      team: true
     }
   });
 }
