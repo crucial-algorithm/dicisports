@@ -1,7 +1,11 @@
 import type { FetcherWithComponents } from '@remix-run/react';
 import clsx from 'clsx';
 import * as React from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Combobox } from '@headlessui/react';
+import { ChevronUpDownIcon } from '@heroicons/react/20/solid';
+import type { TFunction } from 'i18next';
 
 import { CheckoutInfoActions } from '~/action.keys';
 
@@ -14,6 +18,7 @@ import TextField from '~/components/shared/form/TextField';
 import countries from '~/server/db/countries.json';
 import type { Language, Participant, ShirtSize } from '~/types';
 import { FetcherForm } from '~/components/shared/form/UploadForm';
+import { useTheme } from '~/utils/theme-provider';
 
 export default function ParticipantForm({
   participant,
@@ -281,6 +286,10 @@ export default function ParticipantForm({
         />
       </FormField>
 
+      <FormField label={t('Team')}>
+        <TeamAutoComplete t={t} />
+      </FormField>
+
       {participant && (
         <input type="hidden" name="participant-id" value={participant.id} />
       )}
@@ -314,7 +323,7 @@ export default function ParticipantForm({
             name="actionId"
             disabled={!participant}
             id="save-button"
-            variant={selectedParticipant ? 'secondary' : 'primary' }
+            variant={selectedParticipant ? 'secondary' : 'primary'}
           >
             {t('Save')}
           </Button>
@@ -356,3 +365,80 @@ export type FormErrors = {
   terms?: string;
   regulation?: string;
 };
+
+function TeamAutoComplete({ dbTeams, t }: { dbTeams?: []; t: TFunction }) {
+  const [theme] = useTheme();
+  const inDarkMode = theme === 'dark';
+  const [query, setQuery] = useState('');
+  const [teams, setTeams] = useState<string[]>(dbTeams || []);
+  const [activeTeam, setActiveTeam] = useState<string | null>(null);
+
+  const filteredTeams =
+    query === ''
+      ? teams
+      : teams.filter((t) => t.toLowerCase().includes(query.toLowerCase()));
+
+  function handleOnSelectTeam(team: string) {
+    setActiveTeam(team);
+
+    if (!teams.includes(team)) {
+      setTeams((existing) => [...existing, team]);
+    }
+  }
+
+  function handleSearch(e: React.ChangeEvent<HTMLInputElement>) {
+    setQuery(e.target.value);
+  }
+
+  function handleOptionStyle({ active }: { active: boolean }) {
+    return clsx('relative cursor-default select-none py-2 pl-10 pr-4', {
+      'bg-gray-300 text-gray-700': active && !inDarkMode,
+      'bg-gray-600 text-gray-100': active && inDarkMode
+    });
+  }
+
+  return (
+    <Combobox value={activeTeam} onChange={handleOnSelectTeam} as="div">
+      <div className="relative mt-1 z-100">
+        <div className="relative w-full cursor-default overflow-hidden rounded-lg bg-white text-left shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75 focus-visible:ring-offset-2 focus-visible:ring-offset-teal-300 sm:text-sm">
+          <div>
+            <Combobox.Input
+              name="team-name"
+              className="w-full border-none py-2 pl-3 pr-10 text-sm leading-5 text-gray-900 focus:ring-0"
+              onChange={handleSearch}
+              autoComplete="off"
+            />
+          </div>
+
+          <Combobox.Button className="absolute inset-y-0 right-0 flex items-center pr-2">
+            <ChevronUpDownIcon
+              className="h-5 w-5 text-gray-400"
+              aria-hidden="true"
+            />
+          </Combobox.Button>
+        </div>
+        <Combobox.Options className="absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
+          {query !== '' && filteredTeams.length === 0 && (
+            <Combobox.Option
+              value={query}
+              className="relative cursor-default select-none py-2 px-4 text-gray-700"
+            >
+              {t('Create team: X', { team: query })}
+            </Combobox.Option>
+          )}
+          {filteredTeams.map((person) => {
+            return (
+              <Combobox.Option
+                key={person}
+                value={person}
+                className={handleOptionStyle}
+              >
+                {person}
+              </Combobox.Option>
+            );
+          })}
+        </Combobox.Options>
+      </div>
+    </Combobox>
+  );
+}
