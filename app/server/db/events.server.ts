@@ -1,8 +1,10 @@
-import { PrismaClient, Status } from '@prisma/client';
+import { PrismaClient, Status, Prisma } from '@prisma/client';
+
+import type { Event } from '@prisma/client';
 
 import { db } from '~/server/db.server';
 import Id from '~/server/utils/Id.server';
-import type { CreateEventInput, FavoriteEvent, Language, Event, SearchEventsResults } from '~/types';
+import type { CreateEventInput, FavoriteEvent, Language, SearchEventsResults } from '~/types';
 import {
   createDefaultPerks,
   createPerks,
@@ -12,6 +14,12 @@ import {
 import { generateSlug } from '~/utils/misc';
 
 const prisma = new PrismaClient();
+
+const eventWithRacesDifficultiesAndDocuments = Prisma.validator<Prisma.EventArgs>()({
+  include: { races: true, difficulty: true, documents: true }
+});
+
+type EventWithRacesDifficultiesAndDocuments = Prisma.EventGetPayload<typeof eventWithRacesDifficultiesAndDocuments>
 
 async function findEvents(): Promise<Array<Event>> {
   return db.event.findMany({
@@ -52,7 +60,7 @@ async function findUserEvents(userId: string): Promise<Array<Event>> {
   });
 }
 
-async function findEvent(id: string): Promise<Event | null> {
+async function findEvent(id: string): Promise<EventWithRacesDifficultiesAndDocuments | null> {
   return db.event.findUnique({
     where: { id },
     include: {
@@ -313,6 +321,10 @@ async function updateEventRegulation({
     }
   });
 }
+
+export type {
+  EventWithRacesDifficultiesAndDocuments
+};
 
 export {
   findEvents,

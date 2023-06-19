@@ -4,6 +4,8 @@ import type { FetcherWithComponents } from '@remix-run/react';
 import { Form, Link, useFetcher, useLoaderData } from '@remix-run/react';
 import type { TFunction } from 'i18next';
 
+import type { Event } from '@prisma/client';
+
 import { Status } from '@prisma/client';
 import {
   ArrowTrendingUpIcon,
@@ -23,6 +25,7 @@ import { InView } from 'react-intersection-observer';
 import CopyToClipboard from '~/components/shared/CopyToClipboard';
 import useLang from '~/hooks/useLang';
 
+import type { EventWithRacesDifficultiesAndDocuments } from '~/server/db/events.server';
 import {
   findEventBySlug,
   findUserFavoriteEvent
@@ -34,7 +37,7 @@ import Button, { ButtonLink } from '~/components/shared/Button';
 import { getUser } from '~/server/auth/session.server';
 import { Notification } from '~/components/shared/NotificationMessage';
 import DisplayImg from '~/components/shared/DisplayImg';
-import type { Document, Event, Organiser, Perk, Race, TranslationObject, User } from '~/types';
+import type { Document, Organiser, Perk, Race, TranslationObject, User } from '~/types';
 import { findEventRaces } from '~/server/db/races.server';
 import DisplayDate from '~/components/shared/DIsplayDate';
 import { displayTimeOfDay } from '~/utils/misc';
@@ -44,7 +47,7 @@ import I18nText from '~/components/I18nText';
 import { findOrganiser } from '~/server/db/organiser.server';
 
 type LoaderData = {
-  event: Event;
+  event: EventWithRacesDifficultiesAndDocuments;
   isUserFavorite: boolean;
   races: Race[];
   organiser?: Organiser;
@@ -500,7 +503,7 @@ function PriceTag({
   t,
   isUserFavorite
 }: {
-  event: Event;
+  event: EventWithRacesDifficultiesAndDocuments;
   favorite: FetcherWithComponents<any>;
   minPrice: number;
   setVisiblePriceTag: Dispatch<SetStateAction<boolean>>;

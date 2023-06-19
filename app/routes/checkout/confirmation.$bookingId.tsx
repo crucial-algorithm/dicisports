@@ -11,6 +11,8 @@ import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
 
+import type { Event } from '@prisma/client';
+
 import Button from '~/components/shared/Button';
 import DisplayCart from '~/components/shared/DisplayCart';
 import DisplayDate from '~/components/shared/DIsplayDate';
@@ -24,7 +26,7 @@ import { findBookingById, findBookingCart } from '~/server/db/booking.server';
 import { findEvent } from '~/server/db/events.server';
 import { findUserEventRaceParticipants } from '~/server/db/participant.server';
 import type { KCDHandle } from '~/types';
-import type { Booking, Event, UICartRow } from '~/types';
+import type { Booking, UICartRow } from '~/types';
 import { badRequest, getDomainUrl } from '~/utils/misc';
 import { sendBookingConfirmationEmail } from '~/server/email.server';
 import i18n from '~/server/i18n.server';
