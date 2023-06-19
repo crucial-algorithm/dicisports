@@ -131,5 +131,18 @@ describe('Dashboard', () => {
         .wait('@ExportParticipants')
         .readFile('./cypress/downloads/Love_Tiles_Douro_Granfondo_2023_Participantes.xlsx');
     });
+
+    it('should show race participant team', () => {
+      cy.visitAndWaitForHydration(
+        '/o/event/MY4bvgxDbMtGv8rbYe5d/dashboard?searched-name=lopes'
+      )
+        .get('#participant-3REnDGXqkCekehnPiLkG > td')
+        .eq(1)
+        .contains('Amigos do BTT de Barcelos')
+
+        .get('#participant-L6TMRhStPAAF55Rc4Xts > td')
+        .eq(1)
+        .contains('Individual');
+    });
   });
 });

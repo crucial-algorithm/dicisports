@@ -445,6 +445,73 @@ describe('Checkout', () => {
         .should('exist')
         .and('contain', '20€');
     });
+
+    it('should display current booked teams', () => {
+      cy.intercept('GET', '*?_data=routes*checkout*')
+        .as('selectRace')
+
+        .visitAndWaitForHydration('/checkout/cart/MY4bvgxDbMtGv8rbYe5d')
+
+        .location()
+        .should((loc) => {
+          expect(loc.pathname).to.eq('/checkout/cart/MY4bvgxDbMtGv8rbYe5d');
+        })
+
+        .get('#add-race-AhowRdNWCBQWSuivSt7h')
+        .click()
+
+        .wait('@selectRace')
+
+        .get('#checkout')
+        .click()
+
+        .wait('@selectRace')
+
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.include('/checkout/info/');
+        })
+
+        .get('button[name=teams-button]')
+        .should('exist')
+        .click()
+
+        .get('ul[data-headlessui-state="open"] li:first')
+        .contains('Amigos do BTT de Barcelos');
+    });
+
+    it('should display cta to add team if it does not exist', () => {
+      cy.intercept('GET', '*?_data=routes*checkout*')
+        .as('selectRace')
+
+        .visitAndWaitForHydration('/checkout/cart/MY4bvgxDbMtGv8rbYe5d')
+
+        .location()
+        .should((loc) => {
+          expect(loc.pathname).to.eq('/checkout/cart/MY4bvgxDbMtGv8rbYe5d');
+        })
+
+        .get('#add-race-AhowRdNWCBQWSuivSt7h')
+        .click()
+
+        .wait('@selectRace')
+
+        .get('#checkout')
+        .click()
+
+        .wait('@selectRace')
+
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.include('/checkout/info/');
+        })
+
+        .get('input[name=team-name]')
+        .type('Marretas')
+
+        .get('ul[data-headlessui-state="open"] li:first')
+        .contains('Criar equipa: Marretas');
+    });
   });
 
   context('Maintenance: authenticated', () => {

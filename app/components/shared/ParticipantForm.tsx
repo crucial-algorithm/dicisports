@@ -376,7 +376,7 @@ export type FormErrors = {
   regulation?: string;
 };
 
-function TeamAutoComplete({ dbTeams, t, defaultValue }: { dbTeams: EventTeam[] | null; t: TFunction; defaultValue?: string }) {
+function TeamAutoComplete({ dbTeams, t, defaultValue }: { dbTeams: EventTeam[] | null; t: TFunction; defaultValue: string | null }) {
   const [theme] = useTheme();
   const inDarkMode = theme === 'dark';
   const formProps = useContext(FormContext);
@@ -442,7 +442,7 @@ function TeamAutoComplete({ dbTeams, t, defaultValue }: { dbTeams: EventTeam[] |
               />
             </div>
 
-            <Combobox.Button className="absolute inset-y-0 right-0 flex items-center pr-2">
+            <Combobox.Button className="absolute inset-y-0 right-0 flex items-center pr-2" name="teams-button">
               <ChevronUpDownIcon
                 className="h-5 w-5 text-gray-400"
                 aria-hidden="true"

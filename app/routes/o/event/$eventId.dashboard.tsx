@@ -357,6 +357,7 @@ export default function DashboardRoute() {
                         className="border-b transition duration-300 ease-in-out hover:bg-red"
                         key={rp.id}
                         data-cy="participant-row"
+                        id={`participant-${rp.id}`}
                       >
                         <TD value={`${rp.name}`} />
                         <TD value={rp.teamName ? rp.teamName : t('Individual')} />
