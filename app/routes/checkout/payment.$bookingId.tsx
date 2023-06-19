@@ -6,7 +6,7 @@ import { useFetcher, useLoaderData } from '@remix-run/react';
 import * as React from 'react';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { z, ZodError } from 'zod';
+import { ZodError } from 'zod';
 
 import Button from '~/components/shared/Button';
 import DisplayCart from '~/components/shared/DisplayCart';
@@ -128,7 +128,6 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     domainUrl: getDomainUrl(request)
   });
 };
-
 
 export const action: ActionFunction = async ({ request, params }) => {
   const t = await i18n.getFixedT(request, ['checkout']);
@@ -303,7 +302,7 @@ export default function CheckoutPaymentRoute() {
         </div>
         <div className="w-full md:w-[480px]">
           <DisplayCart cart={cart} event={event} fetcher={displayCartFetcher}>
-            {!isPaid && (
+            {!isPaid && !(submittedPayments && submittedPayments.length > 0) && (
               <Button
                 name="actionId"
                 className="mt-4 w-full"
@@ -401,21 +400,21 @@ function DisplayPendingPaymentsInterval({
     return <DisplayPendingPayments payment={payment} />;
   }
 
-  const upToDatePayment = checkPaymentstatus.data.payment as Payment;
+  const upToDatePaymentData = checkPaymentstatus.data.payment as Payment;
 
-  if (!upToDatePayment) {
+  if (!upToDatePaymentData) {
     // we got a response from server, but likely the request to payment gateway failed
     return <WaitingPaymentPending />;
   }
 
   if (
-    upToDatePayment.status === PaymentStatus.paid ||
-    upToDatePayment.status === PaymentStatus.failed
+    upToDatePaymentData.status === PaymentStatus.paid ||
+    upToDatePaymentData.status === PaymentStatus.failed
   ) {
     window.location.reload();
   }
 
-  return <DisplayPendingPayments payment={upToDatePayment} />;
+  return <DisplayPendingPayments payment={upToDatePaymentData} />;
 }
 
 function DisplayPendingPayments({ payment }: { payment: Payment }) {
