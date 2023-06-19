@@ -830,7 +830,7 @@ export default function OrganizerEventRoute() {
               <UploadImage
                 index={4}
                 label={t('Hint For Picture 5')}
-                defaultValue={event.image4}
+                defaultValue={event.image5}
                 className="md:w-1/3"
               />
             </div>
