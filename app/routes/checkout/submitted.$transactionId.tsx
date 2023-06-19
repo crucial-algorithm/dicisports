@@ -27,8 +27,6 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 
   const status = await getPaymentStatus(payment);
 
-  console.log('get payment status', status);
-
   if (status) {
     await addPaymentMethodDetails(
       paymentId,

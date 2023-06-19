@@ -150,13 +150,17 @@ export async function getPaymentStatus(payment: Payment) {
   );
 
   if (!r.ok) {
+    console.error('[SIBS] Get payment status didn\'t go well', r);
     return null;
   }
 
   const response = (await r.json()) as SibsStatusResponse;
 
   if (response?.returnStatus?.statusCode === '000') {
+    console.log('[SIBS] Successuful get status', response);
     return response;
+  } else {
+    console.error('[SIBS] Unsuccessuful get status', response);
   }
 
   return null;
