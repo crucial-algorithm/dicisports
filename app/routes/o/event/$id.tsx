@@ -194,9 +194,15 @@ export const action: ActionFunction = async ({ request, params }) => {
         return undefined;
       }
 
+      const event = await findEvent(String(params.id));
+
+      if (!event) {
+        return ''; // should never happen
+      }
+
       const uploadedImage = await uploadImageToCloudinary(
         data,
-        params.id || null
+       `events/${event.createdAt.getFullYear()}${String(event.createdAt.getMonth() + 1).padStart(2, '0')}/${params.id}`
       );
 
       return uploadedImage.public_id;
@@ -824,7 +830,7 @@ export default function OrganizerEventRoute() {
               <UploadImage
                 index={4}
                 label={t('Hint For Picture 5')}
-                defaultValue={event.image4}
+                defaultValue={event.image5}
                 className="md:w-1/3"
               />
             </div>
