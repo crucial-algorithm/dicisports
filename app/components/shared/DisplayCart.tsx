@@ -2,7 +2,9 @@ import type { FetcherWithComponents } from '@remix-run/react';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import type { Event, UICartRow } from '~/types';
+import type { Event } from '@prisma/client';
+
+import type { UICartRow } from '~/types';
 import { H4, H5, H6 } from '~/components/shared/typography';
 import DisplayDate from '~/components/shared/DIsplayDate';
 import InputError from '~/components/shared/form/InputError';

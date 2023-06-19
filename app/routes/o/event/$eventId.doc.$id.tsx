@@ -25,6 +25,8 @@ import { useTranslation } from 'react-i18next';
 
 import { z, ZodError } from 'zod';
 
+import type { Event } from '@prisma/client';
+
 import Button, { ButtonLink } from '~/components/shared/Button';
 import ButtonGroup from '~/components/shared/ButtonGroup';
 
@@ -40,7 +42,7 @@ import {
   updateDocument
 } from '~/server/documents.server';
 import i18n from '~/server/i18n.server';
-import type { CreateDocumentInput, Document, Event } from '~/types';
+import type { CreateDocumentInput, Document } from '~/types';
 import { badRequest } from '~/utils/misc';
 import { uploadToS3 } from '~/server/utils/s3';
 import Id from '~/server/utils/Id.server';

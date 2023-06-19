@@ -8,6 +8,8 @@ import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ZodError } from 'zod';
 
+import type { Event } from '@prisma/client';
+
 import Button from '~/components/shared/Button';
 import DisplayCart from '~/components/shared/DisplayCart';
 import DisplayDate from '~/components/shared/DIsplayDate';
@@ -31,7 +33,7 @@ import {
   findUnsuccessfulPayments,
   isBookingPaid
 } from '~/server/db/payments.server';
-import type { Event, KCDHandle, UICartRow } from '~/types';
+import type { KCDHandle, UICartRow } from '~/types';
 import { sendBookingConfirmationEmail } from '~/server/email.server';
 import { badRequest, bookingAmount, getDomainUrl } from '~/utils/misc';
 import i18n from '~/server/i18n.server';
