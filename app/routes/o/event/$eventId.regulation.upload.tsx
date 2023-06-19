@@ -1,3 +1,4 @@
+import * as path from 'path';
 import { Readable } from 'stream';
 
 import type { ActionFunction, UploadHandler } from '@remix-run/node';
@@ -40,11 +41,14 @@ export const action: ActionFunction = async ({ request, params }) => {
       }
 
       const eventId = params.eventId as string;
-      const path = require('path');
+      const event = await findEvent(eventId);
+
+      if (!event) {
+        return ''; // should never happen
+      }
 
       const fileExtension = path.parse(filename as string).ext;
-      const currentDate = new Date();
-      const prefix = `events/${currentDate.getFullYear()}${String(currentDate.getMonth() + 1).padStart(2, '0')}/${eventId}`;
+      const prefix = `events/${event.createdAt.getFullYear()}${String(event.createdAt.getMonth() + 1).padStart(2, '0')}/${eventId}`;
       const key = await uploadToS3(
         Readable.from(data),
         prefix,
