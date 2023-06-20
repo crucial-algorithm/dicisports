@@ -35,6 +35,7 @@ import {
   findBookingCart,
   updateBookingStatus
 } from '~/server/db/booking.server';
+import type { EventWithRacesDifficultiesAndDocuments } from '~/server/db/events.server';
 import { findEvent } from '~/server/db/events.server';
 import {
   findUserBookingParticipants,
@@ -48,7 +49,6 @@ import { findShirtSizes } from '~/server/db/reference.server';
 import i18n from '~/server/i18n.server';
 
 import type {
-  Event,
   Participant,
   ParticipantInput,
   Race,
@@ -61,7 +61,7 @@ import { Unauthorized } from '~/server/utils/misc';
 import InputError from '~/components/shared/form/InputError';
 
 type LoaderData = {
-  event: Event;
+  event: EventWithRacesDifficultiesAndDocuments;
   cart: UICartRow[];
   raceParticipants: RaceParticipant[];
   userParticipants: Participant[];

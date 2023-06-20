@@ -1,7 +1,7 @@
 import React from 'react';
 
 type Props = {
-  list: any[];
+  list: Array<unknown>;
 } & React.ComponentProps<'div'>;
 
 export default function WhenListEmpty({ children, list }: Props) {

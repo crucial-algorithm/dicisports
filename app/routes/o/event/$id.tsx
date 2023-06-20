@@ -58,6 +58,7 @@ import { MapDialog } from '~/components/shared/Map';
 import { H2, H6 } from '~/components/shared/typography';
 import { requireUser } from '~/server/auth/session.server';
 import Config from '~/server/config.server';
+import type { EventWithRacesDifficultiesAndDocuments } from '~/server/db/events.server';
 import {
   deleteEvent,
   findEvent,
@@ -87,7 +88,6 @@ import type {
   DiciLocation,
   Difficulty,
   Document,
-  Event,
   Language,
   Perk,
   Race,
@@ -135,16 +135,12 @@ type LoaderData = {
   sports: Array<Sport>;
   mapToken: string;
   imageUploadPreset: string;
-  event: SportEvent;
+  event: EventWithRacesDifficultiesAndDocuments;
   perks: Array<Perk>;
   races: Array<Race>;
   difficulties: Array<Difficulty>;
   regulation: Document | null;
   hasRegistrations: boolean;
-};
-
-type SportEvent = Event & {
-  documents?: Array<Document>;
 };
 
 export const handle = {
@@ -429,7 +425,7 @@ export const links: LinksFunction = () => {
   ];
 };
 
-function hackyEventRevival(event: Event | null): void {
+function hackyEventRevival(event: EventWithRacesDifficultiesAndDocuments | null): void {
   if (!event) {
     return;
   }
