@@ -23,7 +23,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     return redirect('/');
   }
 
-  await updatePaymentStatus(paymentId, PaymentStatus.submitted);
+  await updatePaymentStatus(paymentId, PaymentStatus.submitted, PaymentStatus.pending);
 
   const status = await getPaymentStatus(payment);
 
