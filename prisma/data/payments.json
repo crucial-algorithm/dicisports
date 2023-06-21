@@ -1,0 +1,16 @@
+[
+  {
+    "id": "n6TRk6zAzWDjc3pKoxvN",
+    "method": "MBWAY",
+    "status": "submitted",
+    "amount": 1000,
+    "transactionId": "G8YzvKqT7xfXu37zdsDJ",
+    "notificationId": null,
+    "expiresAt": null,
+    "bookingId": "HJtAk2sSktodKez744mt",
+    "createdAt": null,
+    "updatedAt": null,
+    "mbEntity": null,
+    "mbReference": null
+  }
+]
