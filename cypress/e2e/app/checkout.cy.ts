@@ -1000,9 +1000,7 @@ async function encryptMessage(secret, value) {
   const encoded = new TextEncoder().encode(value);
   // The iv must never be reused with a given key.
   const iv = window.crypto.getRandomValues(new Uint8Array(6));
-  const additionalData = new TextEncoder().encode(
-    UUIDGenerator().split('-')[0]
-  );
+  const additionalData = new TextEncoder().encode(String(Date.now()));
   const ciphertext = await window.crypto.subtle.encrypt(
     {
       name: 'AES-GCM',
@@ -1043,13 +1041,4 @@ function arrayBufferToBase64(buffer) {
     binary += String.fromCharCode(bytes[i]);
   }
   return window.btoa(binary);
-}
-
-function UUIDGenerator() {
-  return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, (c) =>
-    (
-      c ^
-      (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (c / 4)))
-    ).toString(16)
-  );
 }

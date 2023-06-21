@@ -68,7 +68,6 @@ async function seed() {
 
 async function clear() {
   console.log('cleaning');
-  await db.eventTeam.deleteMany();
   await db.document.deleteMany();
   await db.raceParticipant.deleteMany();
   await db.payment.deleteMany();
