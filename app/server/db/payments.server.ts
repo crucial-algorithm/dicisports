@@ -11,7 +11,7 @@ import type { SibsWebHookSchema } from '~/types';
 // 1.   requested:  We create the "blank" record with "requested" state before requesting
 //                  checkout to SIBS, which is the instruction that starts the payment process
 //                  (SIBS creates a transactionId against our payment id)
-// 2.    pendinng:  Once the previous call to SIBS is returned, we update the payment record with
+// 2.     pending:  Once the previous call to SIBS is returned, we update the payment record with
 //                  SIBS transactionID and change status to "pending"
 // 3.   submitted:  When user submits the payment form, SIBS redirects to an action provided by us
 //                  which will update the state to "submitted"
@@ -235,19 +235,21 @@ async function saveNotification(json: SibsWebHookSchema) {
   // We are not using a transaction because we want to
   // have the best chance to save something, even if we loose
   // one of the operations here
-  await db.payment.update({
+   await db.paymentNotification.create({
+    data: {
+      id: json.notificationID || Id(),
+      transactionId: json.transactionID || '-',
+      payload: json
+    }
+  });
+
+   await db.payment.update({
     where: { transactionId: json.transactionID },
     data: {
       notificationId: json.notificationID
     }
   });
-  await db.paymentNotification.create({
-    data: {
-      id: json.notificationID,
-      transactionId: json.transactionID,
-      payload: json
-    }
-  });
+
 }
 
 export {

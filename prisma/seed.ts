@@ -18,6 +18,7 @@ import participantsSeed from './data/participants.json';
 import raceParticipantsSeed from './data/raceParticipants.json';
 import organiserSeed from './data/organisers.json';
 import discountCodesSeed from './data/discountCodes.json';
+import paymentsSeed from './data/payments.json';
 
 const db = new PrismaClient();
 const now = new Date();
@@ -31,6 +32,7 @@ async function persist(name: string, list: Array<any>, entity: any) {
     .catch((err) => {
       if (err.code === 'P2002') {
         console.log(`${name} already in db. skipping...`);
+        console.error(err);
         return;
       }
       console.error(`error seeding ${name}`, err);
@@ -56,6 +58,7 @@ async function seed() {
   await persist('perks', perks(), db.perk);
   await persist('sessions', sessions(), db.session);
   await persist('bookings', bookings(), db.booking);
+  await persist('payments', payments(), db.payment);
   await persist('participants', participants(), db.participant);
   await persist('race participants', raceParticipants(), db.raceParticipant);
   await persist('discount codes', discountCodes(), db.discountCode);
@@ -65,6 +68,7 @@ async function seed() {
 
 async function clear() {
   console.log('cleaning');
+  await db.eventTeam.deleteMany();
   await db.document.deleteMany();
   await db.raceParticipant.deleteMany();
   await db.payment.deleteMany();
@@ -295,6 +299,17 @@ function discountCodes() {
   return discountCodesSeed.map((v) => {
     return {
       ...v,
+      createdAt: now,
+      updatedAt: now
+    };
+  });
+}
+
+function payments() {
+  return paymentsSeed.map((p) => {
+    return {
+      ...p,
+      expiresAt: new Date(now.getTime() + 3600000),
       createdAt: now,
       updatedAt: now
     };

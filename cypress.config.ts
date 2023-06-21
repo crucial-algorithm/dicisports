@@ -3,6 +3,10 @@ import { execSync } from 'child_process';
 import { defineConfig } from 'cypress';
 import { cypressBrowserPermissionsPlugin } from 'cypress-browser-permissions';
 
+import dotenv from 'dotenv';
+
+dotenv.config();
+
 const { CY_REQUEST_TIMEOUT, CY_RESPONSE_TIMEOUT, CY_DEFAULT_COMMAND_TIMEOUT } =
   process.env;
 
@@ -34,7 +38,11 @@ export default defineConfig({
       }
     },
     setupNodeEvents(on, config) {
+
       config = cypressBrowserPermissionsPlugin(on, config);
+
+      config.env.SIBS_WEBHOOK_SECRET = process.env.SIBS_WEBHOOK_SECRET;
+
       // implement node event listeners here
       on('task', {
         'db:reset'() {

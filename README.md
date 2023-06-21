@@ -60,6 +60,12 @@ Also, to fly.io (adding multiple is the prefered option)
 flyctl secrets -a <dicistg|diciprd> set VAR_NAME_1=VALUE_1 VAR_NAME_2=VALUE_2
 ```
 
+## Testing payments in staging relevant info
+**Credit card:** 4350 7900 4997 6222 | Val: 04/24 | CVV: 972
+
+**MbWay:** PIN: 123 123
+
+**Multibanco:** has to be validated manually, so we can test e2e
 
 ## Troubleshooting fly.io
 ### Restarting database (after finding out it was down)

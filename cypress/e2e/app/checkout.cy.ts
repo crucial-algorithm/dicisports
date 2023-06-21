@@ -688,7 +688,9 @@ describe('Checkout', () => {
 
         .location()
         .should((l) => {
-          expect(l.pathname).to.eq('/checkout/confirmation/e8pHPLNjnNxKTzoGwtLh');
+          expect(l.pathname).to.eq(
+            '/checkout/confirmation/e8pHPLNjnNxKTzoGwtLh'
+          );
         });
     });
 
@@ -725,6 +727,108 @@ describe('Checkout', () => {
           });
       });
     });
+  });
+
+  context('Payments Gateway', () => {
+
+    it('Should keep booking state if payment fails (MBWay Rejected)', () => {
+      const secret = Cypress.env('SIBS_WEBHOOK_SECRET');
+
+      encryptMessage(
+        secret,
+        JSON.stringify({
+          token: {
+            value: '351#931111111',
+            tokenType: 'MobilePhone'
+          },
+          amount: {
+            value: 1,
+            currency: 'EUR'
+          },
+          merchant: {
+            terminalId: 1111111,
+            merchantName: 'CRUCIAL ALGORITHM - UNIPESSOAL LDA',
+            transactionId: 'n6TRk6zAzWDjc3pKoxvN'
+          },
+          paymentType: 'PURS',
+          returnStatus: {
+            statusMsg: 'Declined',
+            statusCode: '01.106.0001',
+            statusDescription:
+              'After the operation was successful, was refused by the cardholder.'
+          },
+          paymentMethod: 'MBWAY',
+          paymentStatus: 'Declined',
+          transactionID: 'G8YzvKqT7xfXu37zdsDJ',
+          notificationID: 'd787b6bc-09c1-4e9c-a9ed-3353e51d7b81',
+          transactionDateTime: new Date().toISOString()
+        })
+      ).then((payload) => {
+        cy.request({
+          url: '/wh/sibs',
+          method: 'POST',
+          body: payload.message,
+          headers: {
+            'x-authentication-tag': payload.at,
+            'x-initialization-vector': payload.iv
+          }
+        }).then((response) => {
+          cy.login()
+            .visitAndWaitForHydration('/me')
+            .get('td[data-cy=status-HJtAk2sSktodKez744mt')
+            .contains('Pendente');
+        });
+      });
+    });
+
+    it('Should update booking state if payment succeeds (MBWAy Accepted)', () => {
+      const secret = Cypress.env('SIBS_WEBHOOK_SECRET');
+
+      encryptMessage(
+        secret,
+        JSON.stringify({
+          token: {
+            value: '351#931111111',
+            tokenType: 'MobilePhone'
+          },
+          amount: {
+            value: 1,
+            currency: 'EUR'
+          },
+          merchant: {
+            terminalId: 1111111,
+            merchantName: 'CRUCIAL ALGORITHM - UNIPESSOAL LDA',
+            transactionId: 'n6TRk6zAzWDjc3pKoxvN'
+          },
+          paymentType: 'PURS',
+          returnStatus: {
+            statusMsg: 'Success',
+            statusCode: '000'
+          },
+          paymentMethod: 'MBWAY',
+          paymentStatus: 'Success',
+          transactionID: 'G8YzvKqT7xfXu37zdsDJ',
+          notificationID: '70293d16-c4ed-4da2-924a-f19c6c4e3f81',
+          transactionDateTime:  new Date().toISOString()
+        })
+      ).then((payload) => {
+        cy.request({
+          url: '/wh/sibs',
+          method: 'POST',
+          body: payload.message,
+          headers: {
+            'x-authentication-tag': payload.at,
+            'x-initialization-vector': payload.iv
+          }
+        }).then((response) => {
+          cy.login()
+            .visitAndWaitForHydration('/me')
+            .get('td[data-cy=status-HJtAk2sSktodKez744mt')
+            .contains('Pendente');
+        });
+      });
+    });
+
   });
 });
 
@@ -882,4 +986,70 @@ function bookParticipant(eventId: string, raceId: string) {
         .get('[data-cy=waiting-payment-confirmation')
         .should('exist');
     });
+}
+
+async function encryptMessage(secret, value) {
+  const key = await window.crypto.subtle.importKey(
+    'raw',
+    base64ToArrayBuffer(secret),
+    'AES-GCM',
+    true,
+    ['encrypt', 'decrypt']
+  );
+
+  const encoded = new TextEncoder().encode(value);
+  // The iv must never be reused with a given key.
+  const iv = window.crypto.getRandomValues(new Uint8Array(6));
+  const additionalData = new TextEncoder().encode(
+    UUIDGenerator().split('-')[0]
+  );
+  const ciphertext = await window.crypto.subtle.encrypt(
+    {
+      name: 'AES-GCM',
+      iv,
+      additionalData // believe this is not being used for anything, but...
+    },
+    key,
+    encoded
+  );
+
+  return {
+    at: arrayBufferToBase64(additionalData),
+    iv: arrayBufferToBase64(iv),
+    message: arrayBufferToBase64(
+      ciphertext.slice(0, ciphertext.byteLength - 16)
+    )
+  };
+}
+
+// https://stackoverflow.com/a/21797381/9014097
+function base64ToArrayBuffer(base64) {
+  const binary_string = window.atob(base64);
+  const len = binary_string.length;
+  const bytes = new Uint8Array(len);
+
+  for (let i = 0; i < len; i++) {
+    bytes[i] = binary_string.charCodeAt(i);
+  }
+  return bytes.buffer;
+}
+
+function arrayBufferToBase64(buffer) {
+  let binary = '';
+  const bytes = new Uint8Array(buffer);
+  const len = bytes.byteLength;
+
+  for (let i = 0; i < len; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return window.btoa(binary);
+}
+
+function UUIDGenerator() {
+  return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, (c) =>
+    (
+      c ^
+      (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (c / 4)))
+    ).toString(16)
+  );
 }
