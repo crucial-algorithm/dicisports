@@ -94,9 +94,9 @@ describe('Event', () => {
 
     it('Should delete event', () => {
       cy.loginOrganiser()
-        .visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d')
+        .visitAndWaitForHydration('/o/event/bQmGXYkbhJetjk6mniMt')
 
-        .intercept('POST', '/o/event/MY4bvgxDbMtGv8rbYe5d*')
+        .intercept('POST', '/o/event/bQmGXYkbhJetjk6mniMt*')
         .as('DeleteEvent')
 
         .get('button[name=delete-button]')
@@ -116,7 +116,7 @@ describe('Event', () => {
           expect(l.pathname).to.eq('/o');
         })
 
-        .get('[data-cy=event-MY4bvgxDbMtGv8rbYe5d]')
+        .get('[data-cy=event-bQmGXYkbhJetjk6mniMt]')
         .should('not.exist');
     });
   });
@@ -186,6 +186,9 @@ describe('Event', () => {
         )
 
         .pickLocationInMap('open-map')
+
+        .get('input[name=short-address]')
+        .type('Fátima')
 
         .get('#booking-external')
         .check()
@@ -276,15 +279,22 @@ describe('Event', () => {
     });
 
     it('should publish an event', () => {
-      cy.intercept('POST', '/o/event/*_data=routes*')
-        .as('publishEvent')
-
-        .visitAndWaitForHydration('/o/event/TgKZi8NQKNoJQGArd3zc')
+      cy.visitAndWaitForHydration('/o/event/TgKZi8NQKNoJQGArd3zc')
 
         .get('#publish')
         .click()
 
-        .wait('@publishEvent')
+        .get('.cy-delete-dialog')
+        .should('exist')
+
+        .get('button.cy-primary')
+        .should('exist')
+        .click()
+
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.eq('/o/event/TgKZi8NQKNoJQGArd3zc/dashboard');
+        })
 
         .visitAndWaitForHydration('/event/flavius-challenge-ocr')
 
@@ -292,18 +302,28 @@ describe('Event', () => {
         .should('not.exist');
     });
 
-    it('should unpbulish an event', () => {
+    it('should unpublish an event', () => {
       cy.intercept('POST', '/o/event/*_data=routes*')
         .as('unpublishEvent')
 
-        .visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d')
+        .visitAndWaitForHydration('/o/event/bQmGXYkbhJetjk6mniMt')
 
         .get('#unpublish')
         .click()
 
-        .wait('@unpublishEvent')
+        .get('.cy-delete-dialog')
+        .should('exist')
 
-        .visitAndWaitForHydration('/event/love-tiles-douro-granfondo-2023')
+        .get('button.cy-primary')
+        .should('exist')
+        .click()
+
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.eq('/o/event/bQmGXYkbhJetjk6mniMt');
+        })
+
+        .visitAndWaitForHydration('/event/trail-do-zezere')
 
         .get('[data-cy=event-not-found]')
         .should('exist');
@@ -327,7 +347,7 @@ describe('Event', () => {
         .location()
         .should((loc) => {
           expect(loc.pathname).to.contain(
-            '/o/event/MY4bvgxDbMtGv8rbYe5d/dashboard'
+            '/o/event/MY4bvgxDbMtGv8rbYe5d'
           );
         })
 
@@ -792,12 +812,27 @@ describe('Event', () => {
         .get('#unpublish')
         .click()
 
-        .wait('@publishAndUnpublishEvent')
+        .get('.cy-delete-dialog')
+        .should('exist')
+
+        .get('button.cy-primary')
+        .should('exist')
+        .click()
+
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.eq('/o/event/gLqrDfMx6qkTHn6hoZqA');
+        })
 
         .get('#publish')
         .click()
 
-        .wait('@publishAndUnpublishEvent')
+        .get('.cy-delete-dialog')
+        .should('exist')
+
+        .get('button.cy-primary')
+        .should('exist')
+        .click()
 
         .location()
         .should((l) => {

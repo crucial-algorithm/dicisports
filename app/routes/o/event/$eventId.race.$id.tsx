@@ -24,6 +24,8 @@ import { useTranslation } from 'react-i18next';
 
 import { z, ZodError } from 'zod';
 
+import type { Event } from '@prisma/client';
+
 import HourOfDay from '~/components/HourOfDay';
 import Button, { ButtonLink } from '~/components/shared/Button';
 import ButtonGroup from '~/components/shared/ButtonGroup';
@@ -40,7 +42,7 @@ import i18n from '~/server/i18n.server';
 import Id from '~/server/utils/Id.server';
 import { NotFound, Unauthorized } from '~/server/utils/misc';
 import { uploadToS3 } from '~/server/utils/s3';
-import type { CreateRaceInput, Event, Race } from '~/types';
+import type { CreateRaceInput, Race } from '~/types';
 import {
   badRequest,
   hoursMinutesToTimeOfDay,

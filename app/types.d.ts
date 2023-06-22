@@ -128,13 +128,6 @@ type GroupInput = {
   description: string | null;
 } & DBGroup;
 
-type Event = {
-  races: Race[];
-  difficulty: Difficulty | null;
-  documents: Document[];
-  status: EventStatus;
-} & DBEvent;
-
 type CreateEventInput = {
   id: string;
   name: string;
@@ -617,7 +610,6 @@ export {
   CreateScheduleInput,
   Sport,
   Document,
-  Event,
   Perk,
   Race,
   CreateEventInput,

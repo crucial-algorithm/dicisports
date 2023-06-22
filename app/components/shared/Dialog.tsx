@@ -5,6 +5,7 @@ import type { ReactElement } from 'react';
 import React from 'react';
 
 import Button from '~/components/shared/Button';
+import ButtonGroup from '~/components/shared/ButtonGroup';
 
 type DialogProps = {
   isOpen: boolean;
@@ -96,12 +97,19 @@ export function ConfirmationDialog({
             </Dialog.Description>
           </div>
           <div className={clsx(className, 'dialog-footer')}>
-            <Button type="button" variant="secondary" onClick={onDismiss}>
-              {secondaryLabel}
-            </Button>
-            <Button type="button" variant={primaryVariant} onClick={onConfirm} className="cy-primary">
-              {primaryLabel}
-            </Button>
+            <ButtonGroup className="w-full md:justify-end">
+              <Button type="button" variant="secondary" onClick={onDismiss}>
+                {secondaryLabel}
+              </Button>
+              <Button
+                type="button"
+                variant={primaryVariant}
+                onClick={onConfirm}
+                className="cy-primary"
+              >
+                {primaryLabel}
+              </Button>
+            </ButtonGroup>
           </div>
         </Dialog.Content>
       </Dialog.Portal>

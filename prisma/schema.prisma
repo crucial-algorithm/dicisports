@@ -12,6 +12,8 @@
 
 // Currency handling: Integer * 1000
 
+// Partial types: https://www.prisma.io/docs/concepts/components/prisma-client/advanced-type-safety/operating-against-partial-structures-of-model-types
+
 generator client {
   provider        = "prisma-client-js"
   previewFeatures = ["fullTextSearch"]
@@ -411,7 +413,7 @@ model Organiser {
   address      String
   postalCode   String          @map("postal_code")
   city         String
-  userId       String          @unique
+  userId       String          @map("user_id") @unique
   user         User            @relation(fields: [userId], references: [id])
   status       OrganiserStatus @default(PENDING)
   createdAt    DateTime        @default(now()) @map("created_at")

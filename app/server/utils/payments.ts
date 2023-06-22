@@ -1,8 +1,8 @@
-import type { Payment } from '@prisma/client';
+import type { Payment, Event } from '@prisma/client';
 
 import Config from '~/server/config.server';
 import { addGatewayDetailsToPayment, createPaymentRequest } from '~/server/db/payments.server';
-import type { Booking, Event, SibsStatusResponse, UICartRow } from '~/types';
+import type { Booking, SibsStatusResponse, UICartRow } from '~/types';
 import { bookingAmount } from '~/utils/misc';
 
 //  Example response from SIBS:
@@ -90,7 +90,7 @@ export async function createPayamentTransaction(
     SIBS_MULTIBANCO_ENTITIY: entity
   } = Config();
 
-  const amount = bookingAmount(cart);
+  const amount = bookingAmount(cart) / 1000;
   const payment = await createPaymentRequest(booking.id, amount);
   const { initial, final } = paymentReferenceIntervals();
 
@@ -150,13 +150,17 @@ export async function getPaymentStatus(payment: Payment) {
   );
 
   if (!r.ok) {
+    console.error('[SIBS] Get payment status didn\'t go well', r);
     return null;
   }
 
   const response = (await r.json()) as SibsStatusResponse;
 
   if (response?.returnStatus?.statusCode === '000') {
+    console.log('[SIBS] Successuful get status', response);
     return response;
+  } else {
+    console.error('[SIBS] Unsuccessuful get status', response);
   }
 
   return null;

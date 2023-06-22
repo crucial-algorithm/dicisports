@@ -13,6 +13,8 @@ import {
 } from '@remix-run/react';
 import { useTranslation } from 'react-i18next';
 
+import type { Event } from '@prisma/client';
+
 import {
   AdjustmentsVerticalIcon,
   ChevronDownIcon
@@ -31,7 +33,6 @@ import Button from '~/components/shared/Button';
 import type {
   DaysOfWeek,
   DiciLocation,
-  Event,
   Group,
   GroupFilters,
   GroupSpirit,
@@ -517,6 +518,7 @@ export default function Index() {
           coords={selection ? selection.coords : ''}
           search={selection ? selection.address : ''}
           order={orderBy}
+          lang={lang}
         />
 
         {searchPerformed && (

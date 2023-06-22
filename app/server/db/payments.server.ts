@@ -6,6 +6,18 @@ import { db } from '~/server/db.server';
 import Id from '~/server/utils/Id.server';
 import type { SibsWebHookSchema } from '~/types';
 
+
+// State Management: requested -> pending -> submitted -> paid | failed
+// 1.   requested:  We create the "blank" record with "requested" state before requesting
+//                  checkout to SIBS, which is the instruction that starts the payment process
+//                  (SIBS creates a transactionId against our payment id)
+// 2.    pendinng:  Once the previous call to SIBS is returned, we update the payment record with
+//                  SIBS transactionID and change status to "pending"
+// 3.   submitted:  When user submits the payment form, SIBS redirects to an action provided by us
+//                  which will update the state to "submitted"
+// 4. paid/failed:  Webhook will update the state accordingly
+
+
 async function findSubmittedPayments(bookingId: string) {
   return await db.payment.findMany({
     where: {
@@ -26,7 +38,13 @@ async function findUnsuccessfulPayments(bookingId: string) {
           status: PaymentStatus.submitted
         },
         {
-          status: { in: [PaymentStatus.failed, PaymentStatus.canceled, PaymentStatus.expired] }
+          status: {
+            in: [
+              PaymentStatus.failed,
+              PaymentStatus.canceled,
+              PaymentStatus.expired
+            ]
+          }
         }
       ]
     }
@@ -38,7 +56,6 @@ async function findPayment(id: string) {
     where: { id }
   });
 }
-
 
 async function findPaymentByTransactionId(id: string): Promise<Payment | null> {
   return await db.payment.findUnique({
@@ -52,10 +69,7 @@ async function findPaymentByTransactionId(id: string): Promise<Payment | null> {
  * @param bookingId
  * @param amount
  */
-async function createPaymentRequest(
-  bookingId: string,
-  amount: number
-) {
+async function createPaymentRequest(bookingId: string, amount: number) {
   return await db.payment.create({
     data: {
       id: Id(),
@@ -65,7 +79,6 @@ async function createPaymentRequest(
     }
   });
 }
-
 
 /**
  * 2nd step: After creating a checkout in SIBS API, update our payment with info
@@ -80,7 +93,6 @@ async function addGatewayDetailsToPayment(
   transactionId: string,
   expiresAt: Date
 ) {
-
   const record = await db.payment.findUnique({ where: { id: id } });
 
   if (!record) {
@@ -125,7 +137,6 @@ async function addPaymentMethodDetails(
   reference?: string,
   referenceExpiresAt?: string
 ) {
-
   console.log('----> in addPaymentMethodDetails');
 
   let expiresAt: Date | null = null;
@@ -155,7 +166,20 @@ async function addPaymentMethodDetails(
   });
 }
 
-async function updatePaymentStatus(id: string, status: PaymentStatus) {
+async function updatePaymentStatus(
+  id: string,
+  status: PaymentStatus,
+  onlyFrom: PaymentStatus | null = null
+) {
+  if (onlyFrom) {
+    return await db.payment.updateMany({
+      where: { id, status: onlyFrom },
+      data: {
+        status
+      }
+    });
+  }
+
   return await db.payment.update({
     where: { id },
     data: {
@@ -196,7 +220,6 @@ async function decline(gatewayTransactionId: string) {
     }
   });
 }
-
 
 async function isBookingPaid(bookingId: string) {
   return (

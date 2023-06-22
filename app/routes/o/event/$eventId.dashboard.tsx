@@ -21,6 +21,7 @@ import Button, { ButtonLink } from '~/components/shared/Button';
 import SearchField from '~/components/shared/SearchField';
 
 import { requireUser } from '~/server/auth/session.server';
+import type { EventWithRacesDifficultiesAndDocuments } from '~/server/db/events.server';
 import { findEvent } from '~/server/db/events.server';
 import DisplayImg from '~/components/shared/DisplayImg';
 import { H2, H3, H4, H5, H6 } from '~/components/shared/typography';
@@ -28,7 +29,6 @@ import DisplayDate from '~/components/shared/DIsplayDate';
 import I18nText from '~/components/I18nText';
 import Main from '~/components/shared/Main';
 import type {
-  Event,
   KCDHandle,
   Race,
   RaceRevenueRegistrations,
@@ -44,7 +44,7 @@ import exportRaceParticipantsToExcel from '~/utils/ExportParticipants';
 import ScrollToTop from '~/components/ScrollToTop';
 
 type LoaderData = {
-  event: Event;
+  event: EventWithRacesDifficultiesAndDocuments;
   racesRevenueAndRegistrations: RaceRevenueRegistrations[];
   raceParticipants: UIRaceParticipant[];
   totalRaceParticipants: number;
@@ -71,7 +71,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     ? Number(searchParams.get('page'))
     : 0;
 
-  const event = (await findEvent(eventId)) as Event;
+  const event = (await findEvent(eventId)) as EventWithRacesDifficultiesAndDocuments;
 
   const racesRevenueAndRegistrations = await findRevenueAndRegistrationsPerRace(
     eventId as string
@@ -188,7 +188,7 @@ export default function DashboardRoute() {
           <H6 className="md:ml-2">{t('From')}</H6>
           <H2 data-cy="price" className="text-sp-light-blue-900 w-full md:ml-2">
             <b className="break-words">{`${
-              minPrice ? minPrice : t('Undefined')
+              minPrice ? minPrice / 1000 : t('Undefined')
             }€`}</b>
           </H2>
         </div>

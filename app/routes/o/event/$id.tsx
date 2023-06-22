@@ -1,4 +1,4 @@
-import { MapPinIcon, PlusIcon } from '@heroicons/react/24/outline';
+import { PlusIcon } from '@heroicons/react/24/outline';
 import { Role, Status } from '@prisma/client';
 import {
   Form,
@@ -20,6 +20,7 @@ import {
   unstable_createMemoryUploadHandler,
   unstable_parseMultipartFormData
 } from '@remix-run/node';
+import type { TFunction } from 'i18next';
 
 import clsx from 'clsx';
 import { Toast } from 'primereact/toast';
@@ -27,7 +28,7 @@ import type { FileUploadHandlerEvent } from 'primereact/fileupload';
 
 import mapBoxGlCss from 'mapbox-gl/dist/mapbox-gl.css';
 
-import type { ChangeEvent } from 'react';
+import type { ChangeEvent, MutableRefObject } from 'react';
 import * as React from 'react';
 import { useEffect, useRef, useState } from 'react';
 
@@ -51,14 +52,13 @@ import InputError from '~/components/shared/form/InputError';
 import Label from '~/components/shared/form/Label';
 import TextArea from '~/components/shared/form/TextArea';
 import TextField from '~/components/shared/form/TextField';
-
-import UploadForm from '~/components/shared/form/UploadForm';
 import UploadImage from '~/components/shared/form/UploadImage';
 import Main from '~/components/shared/Main';
 import { MapDialog } from '~/components/shared/Map';
 import { H2, H6 } from '~/components/shared/typography';
 import { requireUser } from '~/server/auth/session.server';
 import Config from '~/server/config.server';
+import type { EventWithRacesDifficultiesAndDocuments } from '~/server/db/events.server';
 import {
   deleteEvent,
   findEvent,
@@ -88,7 +88,6 @@ import type {
   DiciLocation,
   Difficulty,
   Document,
-  Event,
   Language,
   Perk,
   Race,
@@ -97,6 +96,7 @@ import type {
 } from '~/types';
 import { badRequest } from '~/utils/misc';
 import UploadFile from '~/components/UploadFile';
+import { findConfirmedBookings } from '~/server/db/booking.server';
 
 type ResponseFeedback = {
   severity: 'error' | 'success' | 'info' | 'warn';
@@ -135,15 +135,12 @@ type LoaderData = {
   sports: Array<Sport>;
   mapToken: string;
   imageUploadPreset: string;
-  event: SportEvent;
+  event: EventWithRacesDifficultiesAndDocuments;
   perks: Array<Perk>;
   races: Array<Race>;
   difficulties: Array<Difficulty>;
   regulation: Document | null;
-};
-
-type SportEvent = Event & {
-  documents?: Array<Document>;
+  hasRegistrations: boolean;
 };
 
 export const handle = {
@@ -164,6 +161,8 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     return redirect('/');
   }
 
+  const confirmedBookings = await findConfirmedBookings(eventId);
+
   return json({
     mapToken: MAPBOX_TOKEN,
     imageUploadPreset: CLOUDINARY_UPLOAD_PRESET,
@@ -175,7 +174,8 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     races: await findEventRaces(eventId),
     difficulties: difficulties.map((d) => {
       return { id: d.id, name: d.name };
-    })
+    }),
+    hasRegistrations: confirmedBookings && confirmedBookings?.length > 0
   });
 };
 
@@ -190,9 +190,15 @@ export const action: ActionFunction = async ({ request, params }) => {
         return undefined;
       }
 
+      const event = await findEvent(String(params.id));
+
+      if (!event) {
+        return ''; // should never happen
+      }
+
       const uploadedImage = await uploadImageToCloudinary(
         data,
-        params.id || null
+       `events/${event.createdAt.getFullYear()}${String(event.createdAt.getMonth() + 1).padStart(2, '0')}/${params.id}`
       );
 
       return uploadedImage.public_id;
@@ -261,7 +267,7 @@ export const action: ActionFunction = async ({ request, params }) => {
     startAt: new Date(date), //TODO: hour
     lat: location.lat,
     lng: location.lng,
-    location: location.address,
+    location: form.get('short-address') as string || null,
     useExternalBooking: form.get('booking') === 'external',
     externalBookingUrl: (form.get('booking-url') as string) || null,
     description: (form.get('event-description') as string) || null,
@@ -354,6 +360,10 @@ export const action: ActionFunction = async ({ request, params }) => {
       return redirect('doc/new');
     }
 
+    if (eventStatus === 'published') {
+      EventSchema.parse({ ...data, races: races.map((r) => r.id) });
+    }
+
     await updateEvent(data, perks, newPerks);
     feedback = { severity: 'success', message: t('Event Saved') };
 
@@ -362,7 +372,10 @@ export const action: ActionFunction = async ({ request, params }) => {
 
       if (user.role === Role.ORGANIZER) {
         await publishEvent(event.id as string, data.name);
-        feedback = { severity: 'success', message: t('Event Published') };
+
+        return redirect(
+            `/o/event/${event.id}/dashboard?message=${t('Event Published')}`
+        );
       } else {
         // User is not yet an organizer, so let's redirect him to create his organizer profile.
         // We may need to check if he has a profile already and if so, redirect him elsewhere.
@@ -373,15 +386,6 @@ export const action: ActionFunction = async ({ request, params }) => {
     if (actionId === actionIds.unpublish) {
       await unpublishEvent(event.id as string);
       feedback = { severity: 'success', message: t('Event Unpublished') };
-    }
-
-    const updatedEvent = await findEvent(event.id);
-
-    if (
-      updatedEvent?.status === 'published' ||
-      updatedEvent?.status === 'unpublished'
-    ) {
-      return redirect(`/o/event/${event.id}/dashboard`);
     }
 
     return json({ feedback });
@@ -421,7 +425,7 @@ export const links: LinksFunction = () => {
   ];
 };
 
-function hackyEventRevival(event: Event | null): void {
+function hackyEventRevival(event: EventWithRacesDifficultiesAndDocuments | null): void {
   if (!event) {
     return;
   }
@@ -443,7 +447,8 @@ export default function OrganizerEventRoute() {
     event,
     perks: dbPerks,
     races: dbRaces,
-    difficulties
+    difficulties,
+    hasRegistrations
   } = useLoaderData<LoaderData>() as LoaderData;
   const actionData = useActionData<ActionData>() as ActionData;
   const [showLocationPicker, setShowLocationPicker] = useState<boolean>(false);
@@ -463,14 +468,26 @@ export default function OrganizerEventRoute() {
   );
   const [deleteEventModalOpen, setDeleteEventModalOpen] =
     useState<boolean>(false);
+  const [publishEventModalOpen, setPublishEventModalOpen] =
+    useState<boolean>(false);
+  const [unpublishEventModalOpen, setUnpublishEventModalOpen] =
+    useState<boolean>(false);
+  const [isPublish, setIsPublish] = useState<boolean>(false);
+  const [isUnpublish, setIsUnpublish] = useState<boolean>(false);
+
   const inputEl = useRef(null);
   const deleteForm = useRef<HTMLFormElement>(null);
+  const eventForm = useRef<HTMLFormElement>(null);
+
+  const locationRef = useRef<HTMLInputElement>(null);
   const isPublished = event.status === Status.published;
   const [regulationOption, setRegulationOption] = useState<'text' | 'file'>(
     event.regulationPath ? 'file' : 'text'
   );
   const [fileUploadHandlerEvent, setFileUploadHandlerEvent] =
     useState<FileUploadHandlerEvent | null>(null);
+  const [hash, setHash] = useState<number>(Date.now());
+
   let fileName: string | null = null;
 
   if (event.regulationPath && event.regulationFileName) {
@@ -486,7 +503,14 @@ export default function OrganizerEventRoute() {
 
   function handleCloseMap(location: DiciLocation | null) {
     setShowLocationPicker(false);
-    setLocation(location);
+
+    if (locationRef?.current?.value.length > 0) {
+      setLocation({ ...location, shortAddress: locationRef?.current?.value });
+    } else {
+      setLocation(location);
+    }
+
+    setHash(Date.now());
   }
 
   function handleOnCreatePerk(e: any) {
@@ -517,6 +541,45 @@ export default function OrganizerEventRoute() {
 
   function handleDiscardDeleteEvent() {
     setDeleteEventModalOpen(false);
+  }
+
+  function handleShowPublishEventDialog() {
+    setIsPublish(true);
+    setPublishEventModalOpen(true);
+  }
+
+  function handleDiscardPublishEvent() {
+    setIsPublish(false);
+    setPublishEventModalOpen(false);
+  }
+
+  function handleShowUnpublishEventDialog() {
+    setIsUnpublish(true);
+    setUnpublishEventModalOpen(true);
+  }
+
+  function handleDiscardUnpublishEvent() {
+    setIsUnpublish(false);
+    setUnpublishEventModalOpen(false);
+  }
+
+  function handlePublishEvent() {
+    if (!eventForm.current) {
+      return;
+    }
+
+    eventForm.current.submit();
+    setPublishEventModalOpen(false);
+  }
+
+  function handleUnpublishEvent() {
+    if (!eventForm.current) {
+      return;
+    }
+
+    // submitting using ref will cause the page to refresh making it look wierd
+    eventForm.current.submit();
+    setUnpublishEventModalOpen(false);
   }
 
   function handleDeleteEvent() {
@@ -573,11 +636,37 @@ export default function OrganizerEventRoute() {
     main && main.scrollTo({ top: 0, behavior: 'smooth' });
   }, [feedback]);
 
+  const sortedSports = sports.sort((a, b) => {
+    const sportA = a.name[language].toLowerCase();
+    const sportB = b.name[language].toLowerCase();
+
+    if (sportA < sportB) {
+      return -1;
+    }
+
+    if (sportA < sportB) {
+      return -1;
+    }
+
+    return 0;
+  });
+
   return (
     <Main>
       <div className="mb-24">
         <Toast ref={toast} />
-        <UploadForm method="post" className="w-full">
+        <Form
+          method="post"
+          className="w-full"
+          encType="multipart/form-data"
+          ref={eventForm}
+        >
+          {isPublish && (
+            <input type="hidden" name="actionId" value={actionIds.publish} />
+          )}
+          {isUnpublish && (
+            <input type="hidden" name="actionId" value={actionIds.unpublish} />
+          )}
           <div className="mb-12 lg:mb-20">
             <div className="flex flex-row items-start justify-between items-center">
               <div>
@@ -602,11 +691,10 @@ export default function OrganizerEventRoute() {
                     <Button
                       id="publish"
                       className="mb-4 md:mb-0"
-                      name="actionId"
-                      type="submit"
+                      type="button"
+                      onClick={handleShowPublishEventDialog}
                       size="medium"
                       data-cy="publish"
-                      value={actionIds.publish}
                     >
                       {t('Publish Button')}
                     </Button>
@@ -649,9 +737,10 @@ export default function OrganizerEventRoute() {
                 lang={language}
                 placeholder=""
                 defaultValue={event.sportId ? event.sportId : undefined}
-                options={sports.map((s: Sport) => {
-                  return { value: s.id, label: s.name };
-                })}
+                options={sortedSports
+                  .map((s: Sport) => {
+                    return { value: s.id, label: s.name };
+                  })}
               />
             </FormField>
 
@@ -688,41 +777,14 @@ export default function OrganizerEventRoute() {
             </FormField>
           </div>
 
-          <FormField
-            label={t('Location')}
-            id="event-location"
-            className="w-full"
-            error={actionData?.errors?.location}
-            onClick={handleShowMap}
-          >
-            <TextField
-              name="discard-location"
-              id="event-sport"
-              defaultValue={location?.shortAddress}
-              disabled={true}
-              className="cursor-pointer"
-              adornment={
-                <Button
-                  name="open-map"
-                  className="mr-2"
-                  variant="adornment"
-                  type="button"
-                  onClick={handleShowMap}
-                >
-                  <MapPinIcon className="h-6 w-6 m-0 inline-block" />
-                </Button>
-              }
-            />
-            <input
-              type="hidden"
-              name="location"
-              value={
-                location
-                  ? `${location?.coords}|${location?.shortAddress}`
-                  : undefined
-              }
-            />
-          </FormField>
+          <Location
+            actionData={actionData}
+            handleShowMap={handleShowMap}
+            t={t}
+            hash={hash}
+            location={location}
+            locationRef={locationRef}
+          />
 
           <FormField
             label={t('How Is Booking Going To Be Managed')}
@@ -764,7 +826,7 @@ export default function OrganizerEventRoute() {
               <UploadImage
                 index={4}
                 label={t('Hint For Picture 5')}
-                defaultValue={event.image4}
+                defaultValue={event.image5}
                 className="md:w-1/3"
               />
             </div>
@@ -1022,37 +1084,38 @@ export default function OrganizerEventRoute() {
               {event.status === 'auto' ? t('Create Button') : t('Save Button')}
             </Button>
           </ButtonGroup>
-          <ButtonGroup className="mt-24 border-t border-gray-300 dark:border-gray-300 pt-6">
-            {event.status === 'published' && (
-              <Button
-                id="unpublish"
-                className="mb-4 md:mb-0"
-                name="actionId"
-                type="submit"
-                size="medium"
-                variant="danger"
-                data-cy="unpublish"
-                value={actionIds.unpublish}
-              >
-                {t('Unpublish Button')}
-              </Button>
-            )}
+          {event.status !== 'auto' && !hasRegistrations && (
+            <ButtonGroup className="mt-24 border-t border-gray-300 dark:border-gray-300 pt-6">
+              {event.status === 'published' && (
+                <Button
+                  id="unpublish"
+                  className="mb-4 md:mb-0"
+                  type="button"
+                  size="medium"
+                  variant="danger"
+                  data-cy="unpublish"
+                  onClick={handleShowUnpublishEventDialog}
+                >
+                  {t('Unpublish Button')}
+                </Button>
+              )}
 
-            <Button
-              name="delete-button"
-              type="button"
-              variant="danger"
-              onClick={handleShowDeleteEventWarning}
-            >
-              {t('Delete Event')}
-            </Button>
-          </ButtonGroup>
+              <Button
+                name="delete-button"
+                type="button"
+                variant="danger"
+                onClick={handleShowDeleteEventWarning}
+              >
+                {t('Delete Event')}
+              </Button>
+            </ButtonGroup>
+          )}
           {actionData?.errors?.submit && (
             <InputError className="mt-8" id="500-error-message">
               {actionData?.errors?.submit}
             </InputError>
           )}
-        </UploadForm>
+        </Form>
       </div>
 
       <MapDialog
@@ -1074,6 +1137,28 @@ export default function OrganizerEventRoute() {
         className="cy-delete-dialog"
       />
 
+      <ConfirmationDialog
+        isOpen={publishEventModalOpen}
+        title={t('Publish Event X', { name: event?.name })}
+        question={t('Are you sure you want to publish event?')}
+        primaryLabel={t('Confirm Publish Event')}
+        secondaryLabel={t('Cancel Publish Event')}
+        onDismiss={handleDiscardPublishEvent}
+        onConfirm={handlePublishEvent}
+        className="cy-delete-dialog"
+      />
+
+      <ConfirmationDialog
+        isOpen={unpublishEventModalOpen}
+        title={t('Unpublish Event X', { name: event?.name })}
+        question={t('Are you sure you want to unpublish event?')}
+        primaryLabel={t('Confirm Unpublish Event')}
+        secondaryLabel={t('Cancel Unpublish Event')}
+        onDismiss={handleDiscardUnpublishEvent}
+        onConfirm={handleUnpublishEvent}
+        className="cy-delete-dialog"
+      />
+
       <Form
         id="profile-form"
         method="post"
@@ -1085,5 +1170,82 @@ export default function OrganizerEventRoute() {
         <input type="hidden" name="actionId" value={actionIds.deleteEvent} />
       </Form>
     </Main>
+  );
+}
+
+function Location({
+  actionData,
+  handleShowMap,
+  t,
+  hash,
+  location,
+  locationRef
+}: {
+  actionData: ActionData;
+  handleShowMap: () => void;
+  t: TFunction;
+  hash: number;
+  location: DiciLocation | null;
+  locationRef:  MutableRefObject<HTMLInputElement>;
+}) {
+  const [firstRender, setFirstRender] = useState<boolean>(true);
+
+  useEffect(() => {
+    if (!firstRender) {
+      locationRef?.current?.select();
+    }
+
+    setFirstRender(false);
+    //@ts-ignore - Don't add firstRender
+  }, [hash]);
+
+  return (
+    <>
+      <FormField
+        label={t('Location')}
+        id="event-location"
+        className="w-full"
+        error={actionData?.errors?.location}
+      >
+        <TextField
+          key={hash}
+          name="short-address"
+          defaultValue={location?.shortAddress || ''}
+          placeholder={t('Location Placeholder')}
+          adornment={
+            <Button
+              name="open-map"
+              className="mr-2"
+              variant="adornment"
+              type="button"
+              onClick={handleShowMap}
+            >
+              {t('Show Map')}
+            </Button>
+          }
+          input={locationRef}
+        />
+        {location !== null && (
+          <div className="ml-2 mt-2">
+            <a
+              href={`https://www.google.com/maps/search/?api=1&query=${
+                location.coords.split(',')[0]
+              }%2C${location.coords.split(',')[1]}`}
+              target="_blank"
+              rel="noreferrer"
+              data-cy="location-link"
+            >
+              {t('View in Map')}
+            </a>
+          </div>
+        )}
+
+        <input
+          type="hidden"
+          name="location"
+          value={location ? `${location?.coords}` : undefined}
+        />
+      </FormField>
+    </>
   );
 }

@@ -11,6 +11,8 @@ import {
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 
+import type { Event } from '@prisma/client';
+
 import DisplayCart from '~/components/shared/DisplayCart';
 import DisplayDate from '~/components/shared/DIsplayDate';
 
@@ -33,7 +35,7 @@ import {
 } from '~/server/db/participant.server';
 import { findEventRaces } from '~/server/db/races.server';
 import i18n from '~/server/i18n.server';
-import type { Booking, Event, Race, RaceQty, UICartRow } from '~/types';
+import type { Booking, Race, RaceQty, UICartRow } from '~/types';
 import { badRequest, displayTimeOfDay } from '~/utils/misc';
 import Id from '~/server/utils/Id.server';
 import Button from '~/components/shared/Button';
