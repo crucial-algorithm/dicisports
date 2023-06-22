@@ -134,33 +134,23 @@ export default function ParticipantForm({
         </FormField>
       </div>
 
-      <div className="flex flex-col md:flex-row md:gap-x-2">
-        <FormField
-          label={t('Gender')}
-          error={errors?.gender}
-          dataCy="gender"
-          className="w-48"
-        >
-          <ComboBox
-            name="gender"
-            placeholder={t('Gender Placeholder')}
-            options={genderOptions}
-            lang={language}
-            defaultValue={
-              (selectedParticipant?.gender as string) ||
-              (participant?.gender as string)
-            }
-          />
-        </FormField>
-
-        <FormField label={t('Team')}>
-          <TeamAutoComplete
-            t={t}
-            dbTeams={eventTeams}
-            defaultValue={participantTeam}
-          />
-        </FormField>
-      </div>
+      <FormField
+        label={t('Gender')}
+        error={errors?.gender}
+        dataCy="gender"
+        className="w-48"
+      >
+        <ComboBox
+          name="gender"
+          placeholder={t('Gender Placeholder')}
+          options={genderOptions}
+          lang={language}
+          defaultValue={
+            (selectedParticipant?.gender as string) ||
+            (participant?.gender as string)
+          }
+        />
+      </FormField>
 
       <div
         className={clsx('flex flex-col md:flex-row', {
@@ -243,6 +233,14 @@ export default function ParticipantForm({
           />
         </FormField>
       </div>
+
+      <FormField label={t('Team')}>
+        <TeamAutoComplete
+          t={t}
+          dbTeams={eventTeams}
+          defaultValue={participantTeam}
+        />
+      </FormField>
 
       <FormField
         label={t('Shirt Size')}
@@ -429,9 +427,9 @@ function TeamAutoComplete({ dbTeams, t, defaultValue }: { dbTeams: EventTeam[] |
         value={activeTeam}
         onChange={handleOnSelectTeam}
         as="div"
-        className="w-full md:w-72"
+        className="w-full md:w-80"
       >
-        <div className="relative mt-1">
+        <div className="relative">
           <div className="z-100">
             <div>
               <Combobox.Input

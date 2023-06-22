@@ -154,7 +154,6 @@ export default function DashboardRoute() {
 
   function handleSearchedName(value: string) {
     setSearchedParticipantName(value);
-    searchForm?.current?.submit();
   }
 
   function EventInformation() {

@@ -453,7 +453,7 @@ export default function CheckoutInfoRoute() {
     );
     const rParticipant = raceParticipants[index];
 
-    setParticipantTeam(rParticipant.team);
+    setParticipantTeam(rParticipant.team.name);
   }
 
   function handlerSetShowNotificationFunction(callback: () => void) {

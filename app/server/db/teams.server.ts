@@ -8,6 +8,9 @@ async function findEventTeams(eventId: string): Promise<EventTeam[] | null> {
   return await db.eventTeam.findMany({
     where: {
       eventId
+    },
+    orderBy: {
+      name: 'desc'
     }
   });
 }
