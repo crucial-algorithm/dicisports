@@ -453,7 +453,9 @@ export default function CheckoutInfoRoute() {
     );
     const rParticipant = raceParticipants[index];
 
-    setParticipantTeam(rParticipant.team.name);
+    if (rParticipant.team !== null) {
+      setParticipantTeam(rParticipant.team.name);
+    }
   }
 
   function handlerSetShowNotificationFunction(callback: () => void) {

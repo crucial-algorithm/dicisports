@@ -84,12 +84,12 @@ describe('Dashboard', () => {
 
     it('should search participant by name', () => {
       cy.visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d/dashboard')
-        .intercept('GET', '*?searched-name=Joaquim')
+        .intercept('GET', '*?searched-name=Joaquim*')
         .as('search')
 
         .get('[name=searched-name]')
         .should('exist')
-        .type('Joaquim')
+        .type('Joaquim{enter}')
 
         .wait('@search')
 
@@ -102,12 +102,12 @@ describe('Dashboard', () => {
 
     it('should not retrieve results if there is no matching participant name', () => {
       cy.visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d/dashboard')
-        .intercept('GET', '*?searched-name=barnabe')
+        .intercept('GET', '*?searched-name=barnabe*')
         .as('search')
 
         .get('[name=searched-name]')
         .should('exist')
-        .type('barnabe')
+        .type('barnabe{enter}')
 
         .wait('@search')
 
