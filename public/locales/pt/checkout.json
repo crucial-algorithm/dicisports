@@ -84,6 +84,8 @@
   "Read and Accepted": "Eu li e aceito",
   "Terms and Conditions": " os Termos e Condições",
   "Event Regulation": " o Regulamento do Evento",
+  "Organiser Campaign X": "Quero receber novidades de '{{organiser}}'",
+  "Campaign email placeholder": "Insere o teu email",
 
   "Waitting for payment gateway": "A aguardar confirmação do pagamento por parte da SIBS...",
   "Payment not found": "Não foi possível encontrar o pagamento solicitado",

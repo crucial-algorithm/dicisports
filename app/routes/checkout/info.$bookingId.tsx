@@ -59,6 +59,9 @@ import type {
 import { badRequest, displayTimeOfDay } from '~/utils/misc';
 import { Unauthorized } from '~/server/utils/misc';
 import InputError from '~/components/shared/form/InputError';
+import TextField from '~/components/shared/form/TextField';
+import { findOrganiser } from '~/server/db/organiser.server';
+import { addCampaignEmail } from '~/server/db/compaignEmails.server';
 
 type LoaderData = {
   event: EventWithRacesDifficultiesAndDocuments;
@@ -70,6 +73,7 @@ type LoaderData = {
   isAuth: boolean;
   isGuest: boolean;
   bookingId: string;
+  organiserName: string;
 };
 
 export const action: ActionFunction = async ({ request, params }) => {
@@ -85,6 +89,11 @@ export const action: ActionFunction = async ({ request, params }) => {
   }
 
   const eventId = booking.eventId;
+  const event = await findEvent(eventId);
+
+  if (!event) {
+    return redirect('/');
+  }
 
   // We check if user is authenticated -> authenticatedClient, if not, we use the client session -> anonymousClient
   const clientId =
@@ -108,6 +117,12 @@ export const action: ActionFunction = async ({ request, params }) => {
   const hash = form.get('hash') as string;
   const regulation: boolean = (form.get('regulation') as string) === 'on';
   const terms: boolean = (form.get('terms') as string) === 'on';
+  const organiserCampaign: boolean = (form.get('organiser-campaign') as string) === 'on';
+  const campaignEmail: string | undefined = authenticatedClient
+    ? authenticatedClient.email
+    : (form.get('campaign-email') as string) || undefined;
+
+  console.log('campaign email --->', campaignEmail);
 
   try {
     const phoneNumber = form.get('phone-number') as string;
@@ -167,14 +182,21 @@ export const action: ActionFunction = async ({ request, params }) => {
         .min(1, { message: t('Field Required') })
     });
 
-    const TermsAndRegulationSchema = z.object({
-      terms: z
-        .boolean({ required_error: t('Accept Dici Terms') })
-        .refine((v) => v, { message: t('Accept Dici Terms') }),
-      regulation: z
-        .boolean({ required_error: t('Accept Event Regulation') })
-        .refine((v) => v, { message: t('Accept Event Regulation') })
-    });
+    const TermsAndRegulationSchema = z
+      .object({
+        terms: z
+          .boolean({ required_error: t('Accept Dici Terms') })
+          .refine((v) => v, { message: t('Accept Dici Terms') }),
+        regulation: z
+          .boolean({ required_error: t('Accept Event Regulation') })
+          .refine((v) => v, { message: t('Accept Event Regulation') }),
+        organiserCampaign: z.boolean().optional(),
+        campaignEmail: z.string().email(t('Invalid Email')).optional()
+      })
+      .refine((s) => s.organiserCampaign && s.campaignEmail?.length > 0, {
+        message: t('Invalid Email'),
+        path: ['campaignEmail']
+      });
 
     if (actionId === CheckoutInfoActions.updateAndSave) {
       const selectedParticipantId = form.get(
@@ -214,7 +236,12 @@ export const action: ActionFunction = async ({ request, params }) => {
       actionId === CheckoutInfoActions.checkout ||
       actionId === CheckoutInfoActions.updateAndCheckout
     ) {
-      TermsAndRegulationSchema.parse({ regulation, terms });
+      TermsAndRegulationSchema.parse({
+        regulation,
+        terms,
+        campaignEmail,
+        organiserCampaign
+      });
       const raceParticipants = await findUserEventRaceParticipants(
         clientId,
         eventId
@@ -240,6 +267,14 @@ export const action: ActionFunction = async ({ request, params }) => {
         });
       }
 
+      if (campaignEmail && campaignEmail?.length > 0) {
+        const organiser = await findOrganiser(event.createdById);
+
+        if (organiser) {
+          await addCampaignEmail(campaignEmail, organiser.id);
+        }
+      }
+
       await updateBookingStatus(bookingId, CheckoutStatus.pending);
 
       return redirect(`/checkout/payment/${bookingId}`);
@@ -250,7 +285,7 @@ export const action: ActionFunction = async ({ request, params }) => {
     if (!(e instanceof ZodError)) {
       console.error(e);
       return badRequest({
-        error: 'We dont know what happened'
+        error: t('E-mail already registered')
       });
     }
 
@@ -286,9 +321,14 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   }
 
   const eventId = booking.eventId;
-
   const event = await findEvent(eventId);
+
+  if (!event) {
+    return redirect('/');
+  }
+
   const cart = await findBookingCart(isGuest ? booking.userId : clientId, eventId);
+  const organiser = await findOrganiser(event.createdById);
   const raceParticipants = await findUserBookingParticipants(bookingId);
 
   if (!raceParticipants || raceParticipants?.length === 0) {
@@ -311,7 +351,8 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     shirtSizes,
     isAuth: !!authenticatedClient,
     isGuest,
-    bookingId
+    bookingId,
+    organiserName: organiser?.name as string
   });
 };
 
@@ -327,7 +368,8 @@ export default function CheckoutInfoRoute() {
     shirtSizes,
     isAuth,
     isGuest,
-    bookingId
+    bookingId,
+    organiserName
   } = useLoaderData<LoaderData>() as LoaderData;
   const [participant, setParticipant] = useState<Participant | null>(
     raceParticipants[0].participant
@@ -350,6 +392,8 @@ export default function CheckoutInfoRoute() {
     terms: boolean;
     regulation: boolean;
   }>({ terms: false, regulation: false });
+  const [checkedOrganizerCampaigns, setCheckedOrganizerCampaigns] =
+    useState(false);
   const initialVisitedParticipants = raceParticipants
     .filter((p) => p.participant.status === 'saved')
     .map((p) => p.participant);
@@ -446,6 +490,10 @@ export default function CheckoutInfoRoute() {
       regulation: checkedTermsAndRegulation.regulation,
       terms: !checkedTermsAndRegulation.terms
     });
+  }
+
+  function handleCheckOrganizerCampaign() {
+    setCheckedOrganizerCampaigns(!checkedOrganizerCampaigns);
   }
 
   useEffect(() => {
@@ -653,7 +701,7 @@ export default function CheckoutInfoRoute() {
                   </label>
                 </div>
 
-                <div className="flex items-center mb-8">
+                <div className="flex items-center mb-2">
                   <input
                     name="terms"
                     type="checkbox"
@@ -671,6 +719,40 @@ export default function CheckoutInfoRoute() {
                       {t('Terms and Conditions')}
                     </Link>
                   </label>
+                </div>
+
+                <div className="flex flex-col gap-y-2 mb-8">
+                  <div className="flex items-center">
+                    <input
+                      name="organiser-campaign"
+                      type="checkbox"
+                      checked={checkedOrganizerCampaigns}
+                      onClick={handleCheckOrganizerCampaign}
+                      className="w-4 h-4 text-indigo-500 bg-gray-100 rounded border-gray-300 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600"
+                      data-cy="organiser-campaign"
+                    />
+                    <label
+                      className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300"
+                      htmlFor="organiser-campaign"
+                    >
+                      {t('Organiser Campaign X', { organiser: organiserName })}
+                    </label>
+                  </div>
+
+                  {checkedOrganizerCampaigns && !isAuth && (
+                    <>
+                      <TextField
+                        name="campaign-email"
+                        className="w-full md:w-80"
+                        placeholder={t('Campaign email placeholder')}
+                      />
+                      {errors.campaignEmail && (
+                        <InputError className="mt-4" id="error-message">
+                          {errors.campaignEmail}
+                        </InputError>
+                      )}
+                    </>
+                  )}
                 </div>
 
                 <InputError id="terms-error" className="mb-2">
