@@ -1,26 +1,20 @@
 import type { FetcherWithComponents } from '@remix-run/react';
 import clsx from 'clsx';
 import * as React from 'react';
-import { useContext, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Combobox } from '@headlessui/react';
-
-import { XMarkIcon } from '@heroicons/react/24/outline';
-import { ChevronUpDownIcon } from '@heroicons/react/20/solid';
-import type { TFunction } from 'i18next';
 
 import { CheckoutInfoActions } from '~/action.keys';
 
 import Button from '~/components/shared/Button';
 import ButtonGroup from '~/components/shared/ButtonGroup';
 import ComboBox from '~/components/shared/form/ComboBox';
+import { SelectAutoComplete } from '~/components/shared/form/ComboBox';
 import BasicDatePicker from '~/components/shared/form/DatePicker';
 import FormField from '~/components/shared/form/FormField';
 import TextField from '~/components/shared/form/TextField';
 import countries from '~/server/db/countries.json';
 import type { EventTeam, Language, Participant, ShirtSize } from '~/types';
-import { FetcherForm, FormContext } from '~/components/shared/form/UploadForm';
-import { useTheme } from '~/utils/theme-provider';
+import { FetcherForm } from '~/components/shared/form/UploadForm';
 
 export default function ParticipantForm({
   participant,
@@ -235,9 +229,9 @@ export default function ParticipantForm({
       </div>
 
       <FormField label={t('Team')}>
-        <TeamAutoComplete
+        <SelectAutoComplete
           t={t}
-          dbTeams={eventTeams}
+          options={eventTeams}
           defaultValue={participantTeam}
         />
       </FormField>
@@ -373,130 +367,3 @@ export type FormErrors = {
   terms?: string;
   regulation?: string;
 };
-
-function TeamAutoComplete({ dbTeams, t, defaultValue }: { dbTeams: EventTeam[] | null; t: TFunction; defaultValue: string | null }) {
-  const [theme] = useTheme();
-  const inDarkMode = theme === 'dark';
-  const formProps = useContext(FormContext);
-
-  const [query, setQuery] = useState('');
-  const [teams, setTeams] = useState<string[]>(
-    dbTeams ? dbTeams.map((d) => d.name) : []
-  );
-  const [activeTeam, setActiveTeam] = useState<string | null>(defaultValue || null);
-
-  if (formProps.readOnly) {
-    return (
-        <div className="font-medium dark:text-white">
-          {teams.find((t) => t === defaultValue)}
-        </div>
-    );
-  }
-
-  const filteredTeams =
-    query === ''
-      ? teams
-      : teams.filter((t) => t.toLowerCase().includes(query.toLowerCase()));
-
-  function handleOnSelectTeam(team: string) {
-    setActiveTeam(team);
-
-    if (!teams.includes(team)) {
-      setTeams((current) => [...current, team]);
-    }
-  }
-
-  function handleSearch(e: React.ChangeEvent<HTMLInputElement>) {
-    setQuery(e.target.value);
-  }
-
-  function handleOptionStyle({ active }: { active: boolean }) {
-    return clsx('relative cursor-default select-none py-2 pl-10 pr-4', {
-      'bg-gray-300 text-gray-700': active && !inDarkMode,
-      'bg-gray-600 text-gray-100': active && inDarkMode
-    });
-  }
-
-  function handleRemoveSelectedTeam() {
-    setActiveTeam(null);
-  }
-
-  return (
-    <div className="flex flex-row items-center gap-x-2">
-      <Combobox
-        value={activeTeam}
-        onChange={handleOnSelectTeam}
-        as="div"
-        className="w-full md:w-80"
-      >
-        <div className="relative">
-          <div className="z-100">
-            <div>
-              <Combobox.Input
-                name="team-name"
-                className="input-text"
-                onChange={handleSearch}
-                autoComplete="off"
-              />
-            </div>
-
-            <Combobox.Button className="absolute inset-y-0 right-0 flex items-center pr-2" name="teams-button">
-              <ChevronUpDownIcon
-                className="h-5 w-5 text-gray-400"
-                aria-hidden="true"
-              />
-            </Combobox.Button>
-          </div>
-          <Combobox.Options
-            className={clsx(
-              'absolute w-full overflow-auto z-10 mt-1 max-h-60 py-1',
-              'rounded-md shadow-lg',
-              'ring-1 ring-black ring-opacity-5',
-              'focus:outline-none sm:text-sm',
-              {
-                'bg-gray-800 text-gray-100': inDarkMode,
-                'bg-white text-base': !inDarkMode
-              }
-            )}
-          >
-            {filteredTeams.length === 0 && query !== '' && (
-              <Combobox.Option
-                value={query}
-                className={clsx(
-                  'relative cursor-default select-none py-2 px-4',
-                  {
-                    'text-gray-700': !inDarkMode,
-                    'text-gray-100': inDarkMode
-                  }
-                )}
-              >
-                {t('Create team: X', { team: query })}
-              </Combobox.Option>
-            )}
-            {filteredTeams.map((team) => {
-              return (
-                <Combobox.Option
-                  key={team}
-                  value={team}
-                  className={handleOptionStyle}
-                >
-                  {team}
-                </Combobox.Option>
-              );
-            })}
-          </Combobox.Options>
-        </div>
-      </Combobox>
-      {activeTeam && (
-        <button
-          name="remove-schedule"
-          type="button"
-          onClick={handleRemoveSelectedTeam}
-          className="dark:text-blueGray-500"
-        >
-          <XMarkIcon className="h-4 w-4 m-0 inline-block" />
-        </button>
-      )}
-    </div>
-  );
-}

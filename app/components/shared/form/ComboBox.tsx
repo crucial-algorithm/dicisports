@@ -5,11 +5,14 @@ import clsx from 'clsx';
 import { useTranslation } from 'react-i18next';
 import { useDebounceFn } from 'ahooks';
 import { buildImageUrl } from 'cloudinary-build-url';
+import type { TFunction } from 'i18next';
+import { XMarkIcon } from '@heroicons/react/24/outline';
 
 import { Combobox, Listbox, Transition } from '@headlessui/react';
 import { CheckIcon, ChevronUpDownIcon } from '@heroicons/react/20/solid';
 
 import type { Language, TranslationObject } from '~/types';
+import type { EventTeam } from '~/types';
 import { getLocalizedText } from '~/utils/misc';
 
 import { useTheme } from '~/utils/theme-provider';
@@ -303,5 +306,145 @@ export default function ComboBox({
       </div>
       <input type="hidden" name={name} value={selected} />
     </Listbox>
+  );
+}
+
+export function SelectAutoComplete({
+  options,
+  t,
+  defaultValue
+}: {
+  options: EventTeam[] | null;
+  t: TFunction;
+  defaultValue: string | null;
+}) {
+  const [theme] = useTheme();
+  const inDarkMode = theme === 'dark';
+  const formProps = useContext(FormContext);
+
+  const [query, setQuery] = useState('');
+  const [values, setValues] = useState<string[]>(
+    options ? options.map((d) => d.name) : []
+  );
+  const [activeOption, setActiveOption] = useState<string | null>(
+    defaultValue || null
+  );
+
+  if (formProps.readOnly) {
+    return (
+      <div className="font-medium dark:text-white">
+        {values.find((t) => t === defaultValue)}
+      </div>
+    );
+  }
+
+  const filteredValues =
+    query === ''
+      ? values
+      : values.filter((t) => t.toLowerCase().includes(query.toLowerCase()));
+
+  function handleOnSelectTeam(value: string) {
+    setActiveOption(value);
+
+    if (!values.includes(value)) {
+      setValues((current) => [...current, value]);
+    }
+  }
+
+  function handleSearch(e: React.ChangeEvent<HTMLInputElement>) {
+    setQuery(e.target.value);
+  }
+
+  function handleOptionStyle({ active }: { active: boolean }) {
+    return clsx('relative cursor-default select-none py-2 pl-10 pr-4', {
+      'bg-gray-300 text-gray-700': active && !inDarkMode,
+      'bg-gray-600 text-gray-100': active && inDarkMode
+    });
+  }
+
+  function handleRemoveSelectedTeam() {
+    setActiveOption(null);
+  }
+
+  return (
+    <div className="flex flex-row items-center gap-x-2">
+      <Combobox
+        value={activeOption}
+        onChange={handleOnSelectTeam}
+        as="div"
+        className="w-full md:w-80"
+      >
+        <div className="relative">
+          <div className="z-100">
+            <div>
+              <Combobox.Input
+                name="team-name"
+                className="input-text"
+                onChange={handleSearch}
+                autoComplete="off"
+              />
+            </div>
+
+            <Combobox.Button
+              className="absolute inset-y-0 right-0 flex items-center pr-2"
+              name="teams-button"
+            >
+              <ChevronUpDownIcon
+                className="h-5 w-5 text-gray-400"
+                aria-hidden="true"
+              />
+            </Combobox.Button>
+          </div>
+          <Combobox.Options
+            className={clsx(
+              'absolute w-full overflow-auto z-10 mt-1 max-h-60 py-1',
+              'rounded-md shadow-lg',
+              'ring-1 ring-black ring-opacity-5',
+              'focus:outline-none sm:text-sm',
+              {
+                'bg-gray-800 text-gray-100': inDarkMode,
+                'bg-white text-base': !inDarkMode
+              }
+            )}
+          >
+            {filteredValues.length === 0 && query !== '' && (
+              <Combobox.Option
+                value={query}
+                className={clsx(
+                  'relative cursor-default select-none py-2 px-4',
+                  {
+                    'text-gray-700': !inDarkMode,
+                    'text-gray-100': inDarkMode
+                  }
+                )}
+              >
+                {t('Create team: X', { team: query })}
+              </Combobox.Option>
+            )}
+            {filteredValues.map((v) => {
+              return (
+                <Combobox.Option
+                  key={v}
+                  value={v}
+                  className={handleOptionStyle}
+                >
+                  {v}
+                </Combobox.Option>
+              );
+            })}
+          </Combobox.Options>
+        </div>
+      </Combobox>
+      {activeOption && (
+        <button
+          name="remove-schedule"
+          type="button"
+          onClick={handleRemoveSelectedTeam}
+          className="dark:text-blueGray-500 focus:ring-indigo-500"
+        >
+          <XMarkIcon className="h-4 w-4 m-0 inline-block" />
+        </button>
+      )}
+    </div>
   );
 }
