@@ -1,5 +1,5 @@
-import type { Prisma } from '@prisma/client';
-import { CheckoutStatus, PrismaClient } from '@prisma/client';
+import type { Prisma, CheckoutStatus } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 
 import { db } from '~/server/db.server';
 

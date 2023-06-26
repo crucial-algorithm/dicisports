@@ -445,6 +445,53 @@ describe('Checkout', () => {
         .should('exist')
         .and('contain', '20€');
     });
+
+    it('should display checkbox for organiser campaign and corresponding validations', () => {
+      cy.intercept('GET', '/checkout/cart/*?_data=routes*checkout*')
+        .as('selectRace')
+
+        .intercept('GET', '/checkout/info/*?_data=routes*checkout*')
+        .as('checkout')
+
+        .visitAndWaitForHydration('/checkout/cart/MY4bvgxDbMtGv8rbYe5d')
+
+        .get('#add-race-AhowRdNWCBQWSuivSt7h')
+        .click()
+
+        .wait('@selectRace')
+
+        .get('#checkout')
+        .click()
+
+        .wait('@checkout')
+
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.include('/checkout/info/');
+        })
+
+        .get('input[name=organiser-campaign]')
+        .first()
+        .should('exist')
+        .and('be.visible')
+        .click()
+
+        .get('input[name=campaign-email]')
+        .should('exist')
+        .and('be.visible')
+
+        .get('#checkout')
+        .click()
+
+        .wait('@checkout')
+        .waitForHydration()
+
+        .get('#terms-error')
+        .should('exist')
+
+        .get('#campaign-error')
+        .should('exist');
+    });
   });
 
   context('Maintenance: authenticated', () => {

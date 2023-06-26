@@ -122,8 +122,6 @@ export const action: ActionFunction = async ({ request, params }) => {
     ? authenticatedClient.email
     : (form.get('campaign-email') as string) || undefined;
 
-  console.log('campaign email --->', campaignEmail);
-
   try {
     const phoneNumber = form.get('phone-number') as string;
     const data: ParticipantInput = {
@@ -193,11 +191,16 @@ export const action: ActionFunction = async ({ request, params }) => {
         organiserCampaign: z.boolean().optional(),
         campaignEmail: z.string().email(t('Invalid Email')).optional()
       })
-      .refine((s) => s.organiserCampaign && s.campaignEmail?.length > 0, {
-        message: t('Invalid Email'),
-        path: ['campaignEmail']
-      });
-
+      .refine(
+        (s) =>
+          (!s.organiserCampaign && s.campaignEmail == undefined) ||
+          (s.organiserCampaign && s.campaignEmail !== undefined),
+        {
+          message: t('Invalid Email'),
+          path: ['campaignEmail']
+        }
+      );
+    
     if (actionId === CheckoutInfoActions.updateAndSave) {
       const selectedParticipantId = form.get(
         'selected-participant-id'
@@ -747,7 +750,7 @@ export default function CheckoutInfoRoute() {
                         placeholder={t('Campaign email placeholder')}
                       />
                       {errors.campaignEmail && (
-                        <InputError className="mt-4" id="error-message">
+                        <InputError className="mt-4" id="campaign-error">
                           {errors.campaignEmail}
                         </InputError>
                       )}
@@ -785,6 +788,11 @@ export default function CheckoutInfoRoute() {
                     type="hidden"
                     name="terms"
                     value={checkedTermsAndRegulation.terms ? 'on' : 'off'}
+                  />
+                  <input
+                    type="hidden"
+                    name="organiser-campaign"
+                    value={checkedOrganizerCampaigns ? 'on' : 'off'}
                   />
                   <input type="hidden" name="hash" value={hash} />
                   <Button
