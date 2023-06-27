@@ -512,6 +512,93 @@ describe('Checkout', () => {
         .get('ul[data-headlessui-state="open"] li:first')
         .contains('Criar equipa: Marretas');
     });
+
+    it('should save team', () => {
+      cy.intercept('GET', '*?_data=routes*checkout*')
+        .as('selectRace')
+
+        .visitAndWaitForHydration('/checkout/cart/MY4bvgxDbMtGv8rbYe5d')
+
+        .location()
+        .should((loc) => {
+          expect(loc.pathname).to.eq('/checkout/cart/MY4bvgxDbMtGv8rbYe5d');
+        })
+
+        .get('#add-race-AhowRdNWCBQWSuivSt7h')
+        .click()
+
+        .wait('@selectRace')
+
+        .get('#add-race-AhowRdNWCBQWSuivSt7h')
+        .click()
+
+        .wait('@selectRace')
+
+        .get('#checkout')
+        .click()
+
+        .wait('@selectRace')
+
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.include('/checkout/info/');
+        })
+
+        .get('div[data-cy=participant-1]')
+        .click()
+
+        .get('input[name=first-name]')
+        .type('Nuno')
+
+        .get('input[name=last-name]')
+        .type('Lopes')
+
+        .pickOptionFromSelect('gender', 2)
+
+        .pickDate('birthdate', '2001-09-21')
+
+        .get('input[name=phone-number]')
+        .type('937654321')
+
+        .get('input[name=identity-card]')
+        .type('87654321')
+
+        .get('input[name=federation-number]')
+        .type('8165238')
+
+        .get('input[name=team-name]')
+        .type('Marretas')
+
+        .get('ul[data-headlessui-state="open"] li:first')
+        .contains('Criar equipa: Marretas')
+        .click()
+
+        .pickOptionFromSelect('shirt', 2)
+
+        .pickOptionFromSelect('nationality', 188)
+
+        .get('input[name=postal-code]')
+        .type('4730-454')
+
+        .intercept('POST', '*?_data=routes*checkout*')
+        .as('saveParticipant')
+
+        .get('#save-button')
+        .click()
+
+        .wait('@saveParticipant')
+        .reload()
+        .waitForHydration()
+
+        .get('div[data-cy=participant-2]')
+        .click()
+
+        .get('input[name=team-name]')
+        .type('Marretas')
+
+        .get('ul[data-headlessui-state="open"] li:first')
+        .contains('Marretas');
+    });
   });
 
   context('Maintenance: authenticated', () => {
