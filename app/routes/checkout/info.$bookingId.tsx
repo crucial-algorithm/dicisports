@@ -76,6 +76,11 @@ type LoaderData = {
   organiserName: string;
 };
 
+export const handle: { id: string; i18n: string[] } = {
+  id: 'checkout',
+  i18n: ['checkout']
+};
+
 export const action: ActionFunction = async ({ request, params }) => {
   const t = await i18n.getFixedT(request, 'checkout');
   const form = await request.formData();
@@ -118,9 +123,6 @@ export const action: ActionFunction = async ({ request, params }) => {
   const regulation: boolean = (form.get('regulation') as string) === 'on';
   const terms: boolean = (form.get('terms') as string) === 'on';
   const organiserCampaign: boolean = (form.get('organiser-campaign') as string) === 'on';
-  const campaignEmail: string | undefined = authenticatedClient
-    ? authenticatedClient.email
-    : (form.get('campaign-email') as string) || undefined;
 
   try {
     const phoneNumber = form.get('phone-number') as string;
@@ -180,26 +182,14 @@ export const action: ActionFunction = async ({ request, params }) => {
         .min(1, { message: t('Field Required') })
     });
 
-    const TermsAndRegulationSchema = z
-      .object({
-        terms: z
-          .boolean({ required_error: t('Accept Dici Terms') })
-          .refine((v) => v, { message: t('Accept Dici Terms') }),
-        regulation: z
-          .boolean({ required_error: t('Accept Event Regulation') })
-          .refine((v) => v, { message: t('Accept Event Regulation') }),
-        organiserCampaign: z.boolean().optional(),
-        campaignEmail: z.string().email(t('Invalid Email')).optional()
-      })
-      .refine(
-        (s) =>
-          (!s.organiserCampaign && s.campaignEmail == undefined) ||
-          (s.organiserCampaign && s.campaignEmail !== undefined),
-        {
-          message: t('Invalid Email'),
-          path: ['campaignEmail']
-        }
-      );
+    const TermsAndRegulationSchema = z.object({
+      terms: z
+        .boolean({ required_error: t('Accept Dici Terms') })
+        .refine((v) => v, { message: t('Accept Dici Terms') }),
+      regulation: z
+        .boolean({ required_error: t('Accept Event Regulation') })
+        .refine((v) => v, { message: t('Accept Event Regulation') })
+    });
     
     if (actionId === CheckoutInfoActions.updateAndSave) {
       const selectedParticipantId = form.get(
@@ -241,9 +231,7 @@ export const action: ActionFunction = async ({ request, params }) => {
     ) {
       TermsAndRegulationSchema.parse({
         regulation,
-        terms,
-        campaignEmail,
-        organiserCampaign
+        terms
       });
       const raceParticipants = await findUserEventRaceParticipants(
         clientId,
@@ -270,11 +258,11 @@ export const action: ActionFunction = async ({ request, params }) => {
         });
       }
 
-      if (campaignEmail && campaignEmail?.length > 0) {
+      if (organiserCampaign && authenticatedClient) {
         const organiser = await findOrganiser(event.createdById);
 
         if (organiser) {
-          await addCampaignEmail(campaignEmail, organiser.id);
+          await addCampaignEmail(authenticatedClient.email, organiser.id);
         }
       }
 
@@ -704,7 +692,12 @@ export default function CheckoutInfoRoute() {
                   </label>
                 </div>
 
-                <div className="flex items-center mb-2">
+                <div
+                  className={clsx('flex items-center', {
+                    'mb-2': isAuth,
+                    'mb-8': !isAuth
+                  })}
+                >
                   <input
                     name="terms"
                     type="checkbox"
@@ -724,8 +717,8 @@ export default function CheckoutInfoRoute() {
                   </label>
                 </div>
 
-                <div className="flex flex-col gap-y-2 mb-8">
-                  <div className="flex items-center">
+                {isAuth && (
+                  <div className="flex items-center mb-8">
                     <input
                       name="organiser-campaign"
                       type="checkbox"
@@ -741,22 +734,7 @@ export default function CheckoutInfoRoute() {
                       {t('Organiser Campaign X', { organiser: organiserName })}
                     </label>
                   </div>
-
-                  {checkedOrganizerCampaigns && !isAuth && (
-                    <>
-                      <TextField
-                        name="campaign-email"
-                        className="w-full md:w-80"
-                        placeholder={t('Campaign email placeholder')}
-                      />
-                      {errors.campaignEmail && (
-                        <InputError className="mt-4" id="campaign-error">
-                          {errors.campaignEmail}
-                        </InputError>
-                      )}
-                    </>
-                  )}
-                </div>
+                )}
 
                 <InputError id="terms-error" className="mb-2">
                   {errors?.submit || errors?.terms || errors?.regulation}

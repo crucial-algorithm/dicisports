@@ -1,3 +1,4 @@
+import type { Event } from '@prisma/client';
 import { CheckoutStatus } from '@prisma/client';
 import type { ActionFunction, LoaderFunction } from '@remix-run/node';
 import { json, redirect } from '@remix-run/node';
@@ -8,10 +9,9 @@ import {
   useLoaderData
 } from '@remix-run/react';
 import * as React from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
-
-import type { Event } from '@prisma/client';
 
 import Button from '~/components/shared/Button';
 import DisplayCart from '~/components/shared/DisplayCart';
@@ -25,13 +25,14 @@ import { getUser } from '~/server/auth/session.server';
 import { findBookingById, findBookingCart } from '~/server/db/booking.server';
 import { findEvent } from '~/server/db/events.server';
 import { findUserEventRaceParticipants } from '~/server/db/participant.server';
-import type { KCDHandle } from '~/types';
-import type { Booking, UICartRow } from '~/types';
+import type { Booking, KCDHandle, UICartRow } from '~/types';
 import { badRequest, getDomainUrl } from '~/utils/misc';
 import { sendBookingConfirmationEmail } from '~/server/email.server';
 import i18n from '~/server/i18n.server';
 import InputError from '~/components/shared/form/InputError';
 import FormField from '~/components/shared/form/FormField';
+import { findOrganiser } from '~/server/db/organiser.server';
+import { addCampaignEmail } from '~/server/db/compaignEmails.server';
 
 type LoaderData = {
   registration: Booking;
@@ -39,6 +40,7 @@ type LoaderData = {
   cart: UICartRow;
   isAuth: boolean;
   bookingId: string;
+  organiserName: string;
 };
 
 type ActionData = {
@@ -83,30 +85,57 @@ export const action: ActionFunction = async ({ request, params }) => {
   const domainUrl = getDomainUrl(request);
   const cart = await findBookingCart(clientId, eventId);
   const email = form.get('email') as string;
+  const organiserCampaign: boolean = (form.get('organiser-campaign') as string) === 'on';
+
+  const EmailConfirmationSchema = z
+    .object({
+      email: z
+        .string({ required_error: t('Invalid Email') })
+        .email(t('Invalid Email')),
+      organiserCampaign: z.boolean().optional()
+    })
+    .refine(
+      (s) =>
+        (!s.organiserCampaign && s.email.length > 0) ||
+        (s.organiserCampaign && s.email.length > 0),
+      {
+        message: t('Invalid Email'),
+        path: ['submit']
+      }
+    );
 
   try {
-    z.string().email().parse(email);
+    EmailConfirmationSchema.parse({ email, organiserCampaign });
+
+    if (organiserCampaign) {
+      const organiser = await findOrganiser(event.createdById);
+
+      if (organiser) {
+        await addCampaignEmail(email, organiser.id);
+      }
+    }
+
+    await sendBookingConfirmationEmail({
+      emailAddress: email,
+      event,
+      booking,
+      domainUrl,
+      cart,
+      userName: authenticatedClient !== null ? authenticatedClient.name : null
+    });
+
+    return json({
+      errors: {},
+      fields: { email },
+      successMessage: t('Booking Confirmation Email Sent')
+    });
   } catch (e) {
+    console.log('error: ');
     return json({
       errors: { email: t('Invalid Email') },
       fields: { email }
     });
   }
-
-  await sendBookingConfirmationEmail({
-    emailAddress: email,
-    event,
-    booking,
-    domainUrl,
-    cart,
-    userName: authenticatedClient !== null ? authenticatedClient.name : null
-  });
-
-  return json({
-    errors: {},
-    fields: { email },
-    successMessage: t('Booking Confirmation Email Sent')
-  });
 };
 
 export const loader: LoaderFunction = async ({ request, params }) => {
@@ -146,18 +175,23 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 
   const event = await findEvent(eventId);
   const cart = await findBookingCart(clientId, eventId);
+  const organiser = await findOrganiser(event.createdById);
 
   return json({
     registration: booking,
     event,
     cart,
     isAuth: !!authenticatedClient,
-    bookingId
+    bookingId,
+    organiserName: organiser?.name as string
   });
 };
 
 export default function CheckoutConfirmationRoute() {
-  const { registration, event, cart, isAuth, bookingId } = useLoaderData<LoaderData>();
+  const { registration, event, cart, isAuth, bookingId, organiserName } =
+    useLoaderData<LoaderData>();
+  const [checkedOrganizerCampaigns, setCheckedOrganizerCampaigns] =
+    useState<boolean>(false);
   const { t } = useTranslation('checkout');
   const fetcher = useFetcher();
   const { errors, fields, successMessage } =
@@ -165,6 +199,10 @@ export default function CheckoutConfirmationRoute() {
       errors: { email: '', submit: '' },
       fields: { email: '' }
     };
+
+  function handleCheckOrganizerCampaign() {
+    setCheckedOrganizerCampaigns(!checkedOrganizerCampaigns);
+  }
 
   return (
     <Main>
@@ -215,10 +253,26 @@ export default function CheckoutConfirmationRoute() {
               >
                 <TextField
                   name="email"
-                  className="w-1/2 p-8"
+                  className="w-1/2 p-8 mb-2"
                   placeholder={t('Email Address')}
                   defaultValue={fields.email}
                 />
+                <div className="flex items-center">
+                  <input
+                    name="organiser-campaign"
+                    type="checkbox"
+                    checked={checkedOrganizerCampaigns}
+                    onClick={handleCheckOrganizerCampaign}
+                    className="w-4 h-4 text-indigo-500 bg-gray-100 rounded border-gray-300 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600"
+                    data-cy="organiser-campaign"
+                  />
+                  <label
+                    className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300"
+                    htmlFor="organiser-campaign"
+                  >
+                    {t('Organiser Campaign X', { organiser: organiserName })}
+                  </label>
+                </div>
               </FormField>
               <Button name="send-confirmation" type="submit" className="mt-4">
                 {t('Send')}
