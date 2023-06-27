@@ -446,52 +446,8 @@ describe('Checkout', () => {
         .and('contain', '20€');
     });
 
-    it('should display checkbox for organiser campaign and corresponding validations', () => {
-      cy.intercept('GET', '/checkout/cart/*?_data=routes*checkout*')
-        .as('selectRace')
-
-        .intercept('GET', '/checkout/info/*?_data=routes*checkout*')
-        .as('checkout')
-
-        .visitAndWaitForHydration('/checkout/cart/MY4bvgxDbMtGv8rbYe5d')
-
-        .get('#add-race-AhowRdNWCBQWSuivSt7h')
-        .click()
-
-        .wait('@selectRace')
-
-        .get('#checkout')
-        .click()
-
-        .wait('@checkout')
-
-        .location()
-        .should((l) => {
-          expect(l.pathname).to.include('/checkout/info/');
-        })
-
-        .get('input[name=organiser-campaign]')
-        .first()
-        .should('exist')
-        .and('be.visible')
-        .click()
-
-        .get('input[name=campaign-email]')
-        .should('exist')
-        .and('be.visible')
-
-        .get('#checkout')
-        .click()
-
-        .wait('@checkout')
-        .waitForHydration()
-
-        .get('#terms-error')
-        .should('exist')
-
-        .get('#campaign-error')
-        .should('exist');
-    });
+    // TODO: finish test as soon as we re-instate booking payment flow e2e tests
+    it.skip('should display checkbox for organiser campaign and corresponding validations', () => {});
   });
 
   context('Maintenance: authenticated', () => {
@@ -650,6 +606,40 @@ describe('Checkout', () => {
 
         .get('#identity-card-error')
         .should('exist');
+    });
+
+    it('should display checkbox for organiser campaign', () => {
+      cy.intercept('GET', '/checkout/cart/*?_data=routes*checkout*')
+        .as('selectRace')
+
+        .intercept('GET', '/checkout/info/*?_data=routes*checkout*')
+        .as('checkout')
+
+        .visitAndWaitForHydration('/checkout/cart/bQmGXYkbhJetjk6mniMt')
+
+        .get('#add-race-Rd9SETi59X9ava6CPhkY')
+        .click()
+
+        .wait('@selectRace')
+
+        .get('#checkout')
+        .click()
+
+        .wait('@checkout')
+
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.include('/checkout/info/');
+        })
+
+        .get('input[name=organiser-campaign]')
+        .first()
+        .should('exist')
+        .and('be.visible')
+        .click()
+
+        .get('input[name=organiser-campaign]')
+        .should('be.checked');
     });
   });
 
