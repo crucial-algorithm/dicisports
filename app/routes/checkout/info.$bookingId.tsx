@@ -205,21 +205,20 @@ export const action: ActionFunction = async ({ request, params }) => {
 
       data.id = selectedParticipantId;
       ParticipantSchema.parse(data);
-      await updateParticipant(data);
-      if (teamName !== null && teamName.length > 0) {
-        const raceParticipant = await findRaceParticipant(data.id, raceId);
 
-        if (!raceParticipant) {
-          return badRequest({
-            errors: {
-              selectedParticipant: t('Race Participant Doest no Exist')
-            },
-            hash: parseInt(hash)
-          });
-        }
+      const isIndividual = teamName === t('Individual') || !teamName;
+      const raceParticipant = await findRaceParticipant(data.id, raceId);
 
-        await updateRaceParticipantTeam(teamName, eventId, raceParticipant);
+      if (!raceParticipant) {
+        return badRequest({
+          errors: {
+            selectedParticipant: t('Race Participant does not exist')
+          },
+          hash: parseInt(hash)
+        });
       }
+
+      await updateRaceParticipantTeam(teamName, eventId, raceParticipant, isIndividual);
     }
 
     if (
@@ -230,20 +229,19 @@ export const action: ActionFunction = async ({ request, params }) => {
       await updateParticipant(data);
       const raceId = form.get('raceId') as string;
 
-      if (teamName !== null && teamName.length > 0) {
-        const raceParticipant = await findRaceParticipant(data.id, raceId);
+      const isIndividual = teamName === t('Individual') || !teamName;
+      const raceParticipant = await findRaceParticipant(data.id, raceId);
 
-        if (!raceParticipant) {
-          return badRequest({
-            errors: {
-              selectedParticipant: t('Race Participant Doest no Exist')
-            },
-            hash: parseInt(hash)
-          });
-        }
-
-        await updateRaceParticipantTeam(teamName, eventId, raceParticipant);
+      if (!raceParticipant) {
+        return badRequest({
+          errors: {
+            selectedParticipant: t('Race Participant does not exist')
+          },
+          hash: parseInt(hash)
+        });
       }
+
+      await updateRaceParticipantTeam(teamName, eventId, raceParticipant, isIndividual);
     }
 
     if (
@@ -301,6 +299,8 @@ export const action: ActionFunction = async ({ request, params }) => {
 };
 
 export const loader: LoaderFunction = async ({ request, params }) => {
+  const t = await i18n.getFixedT(request, 'checkout');
+
   const anonymousClient = await getClientSession(request);
   const authenticatedClient = await getUser(request);
   const bookingId = params.bookingId as string;
@@ -344,6 +344,24 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   );
   const shirtSizes = await findShirtSizes();
 
+  const eventTeams = await findEventTeams(eventId);
+
+  if (
+    eventTeams?.length === 0 ||
+    !eventTeams?.find((teams) => teams.name === t('Individual'))
+  ) {
+    console.log('here');
+    const now = new Date();
+
+    eventTeams?.unshift({
+      id: '0',
+      name: t('Individual'),
+      eventId,
+      createdAt: now,
+      updatedAt: now
+    });
+  }
+  
   return json({
     event,
     cart,
@@ -355,7 +373,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     isAuth: !!authenticatedClient,
     isGuest,
     bookingId,
-    eventTeams: await findEventTeams(eventId)
+    eventTeams
   });
 };
 

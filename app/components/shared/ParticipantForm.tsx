@@ -7,8 +7,9 @@ import { CheckoutInfoActions } from '~/action.keys';
 
 import Button from '~/components/shared/Button';
 import ButtonGroup from '~/components/shared/ButtonGroup';
-import ComboBox from '~/components/shared/form/ComboBox';
-import { SelectAutoComplete } from '~/components/shared/form/ComboBox';
+import ComboBox, {
+  SelectAutoComplete
+} from '~/components/shared/form/ComboBox';
 import BasicDatePicker from '~/components/shared/form/DatePicker';
 import FormField from '~/components/shared/form/FormField';
 import TextField from '~/components/shared/form/TextField';
@@ -232,7 +233,7 @@ export default function ParticipantForm({
         <SelectAutoComplete
           t={t}
           options={eventTeams}
-          defaultValue={participantTeam}
+          defaultValue={participantTeam ? participantTeam : t('Individual')}
         />
       </FormField>
 
