@@ -477,6 +477,10 @@ describe('Checkout', () => {
         .click()
 
         .get('ul[data-headlessui-state="open"] li:first')
+        .contains('Individual')
+
+        .get('ul[data-headlessui-state="open"] li')
+        .eq(1)
         .contains('Amigos do BTT de Barcelos');
     });
 
@@ -507,6 +511,7 @@ describe('Checkout', () => {
         })
 
         .get('input[name=team-name]')
+        .clear()
         .type('Marretas')
 
         .get('ul[data-headlessui-state="open"] li:first')
@@ -567,6 +572,7 @@ describe('Checkout', () => {
         .type('8165238')
 
         .get('input[name=team-name]')
+        .clear()
         .type('Marretas')
 
         .get('ul[data-headlessui-state="open"] li:first')
@@ -594,6 +600,7 @@ describe('Checkout', () => {
         .click()
 
         .get('input[name=team-name]')
+        .clear()
         .type('Marretas')
 
         .get('ul[data-headlessui-state="open"] li:first')
