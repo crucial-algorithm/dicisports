@@ -632,13 +632,13 @@ describe('Checkout', () => {
           expect(l.pathname).to.include('/checkout/info/');
         })
 
-        .get('input[name=organiser-campaign]')
+        .get('input[name=add-to-mail-list]')
         .first()
         .should('exist')
         .and('be.visible')
         .click()
 
-        .get('input[name=organiser-campaign]')
+        .get('input[name=add-to-mail-list]')
         .should('be.checked');
     });
   });
