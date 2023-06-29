@@ -8,7 +8,7 @@ import { CheckoutInfoActions } from '~/action.keys';
 import Button from '~/components/shared/Button';
 import ButtonGroup from '~/components/shared/ButtonGroup';
 import ComboBox, {
-  SelectAutoComplete
+  Creatable
 } from '~/components/shared/form/ComboBox';
 import BasicDatePicker from '~/components/shared/form/DatePicker';
 import FormField from '~/components/shared/form/FormField';
@@ -46,7 +46,7 @@ export default function ParticipantForm({
   resetForm: () => void;
   isSingleParticipant: boolean;
   isReadOnly: boolean;
-  eventTeams: EventTeam[] | null;
+  eventTeams: EventTeam[];
   participantTeam: string | null;
 } & React.ComponentProps<'div'>) {
   const { t, i18n } = useTranslation('checkout');
@@ -166,7 +166,7 @@ export default function ParticipantForm({
                 ? new Date(selectedParticipant.birthdate)
                 : participant?.birthdate
                 ? new Date(participant.birthdate)
-                : new Date(Date.now() - 63113904 * 10000)
+                : new Date(Date.now() - 20 * 3600 * 24 * 365 * 1000)
             }
           />
         </FormField>
@@ -230,7 +230,7 @@ export default function ParticipantForm({
       </div>
 
       <FormField label={t('Team')}>
-        <SelectAutoComplete
+        <Creatable
           t={t}
           options={eventTeams}
           defaultValue={participantTeam ? participantTeam : t('Individual')}

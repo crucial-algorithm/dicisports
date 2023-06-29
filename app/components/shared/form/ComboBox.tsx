@@ -309,8 +309,8 @@ export default function ComboBox({
   );
 }
 
-export function SelectAutoComplete({
-  options,
+export function Creatable({
+  options = [],
   t,
   defaultValue
 }: {
@@ -378,7 +378,7 @@ export function SelectAutoComplete({
           <div className="z-100">
             <div>
               <Combobox.Input
-                name="team-name"
+                name="creatable-value"
                 className="input-text"
                 onChange={handleSearch}
                 autoComplete="off"
@@ -418,7 +418,7 @@ export function SelectAutoComplete({
                   }
                 )}
               >
-                {t('Create team: X', { team: query })}
+                {t('Create: X', { value: query })}
               </Combobox.Option>
             )}
             {filteredValues.map((v) => {

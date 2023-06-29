@@ -510,7 +510,7 @@ describe('Checkout', () => {
           expect(l.pathname).to.include('/checkout/info/');
         })
 
-        .get('input[name=team-name]')
+        .get('input[name=creatable-value]')
         .clear()
         .type('Marretas')
 
@@ -571,7 +571,7 @@ describe('Checkout', () => {
         .get('input[name=federation-number]')
         .type('8165238')
 
-        .get('input[name=team-name]')
+        .get('input[name=creatable-value]')
         .clear()
         .type('Marretas')
 
@@ -599,7 +599,7 @@ describe('Checkout', () => {
         .get('div[data-cy=participant-2]')
         .click()
 
-        .get('input[name=team-name]')
+        .get('input[name=creatable-value]')
         .clear()
         .type('Marretas')
 

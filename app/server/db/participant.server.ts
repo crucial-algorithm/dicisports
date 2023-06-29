@@ -291,10 +291,15 @@ async function findRaceParticipant(
   participantId: string,
   raceId: string
 ): Promise<RaceParticipant | null> {
-  // @ts-ignore
   return await db.raceParticipant.findUnique({
     where: {
       participantId_raceId: { participantId, raceId }
+    },
+    include: {
+      race: true,
+      participant: true,
+      booking: true,
+      team: true
     }
   });
 }
