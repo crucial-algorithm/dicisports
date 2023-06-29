@@ -59,9 +59,8 @@ import type {
 import { badRequest, displayTimeOfDay } from '~/utils/misc';
 import { Unauthorized } from '~/server/utils/misc';
 import InputError from '~/components/shared/form/InputError';
-import TextField from '~/components/shared/form/TextField';
 import { findOrganiser } from '~/server/db/organiser.server';
-import { addCampaignEmail } from '~/server/db/compaignEmails.server';
+import { addEmailToMailingList } from '~/server/db/mailingList.server';
 
 type LoaderData = {
   event: EventWithRacesDifficultiesAndDocuments;
@@ -77,7 +76,7 @@ type LoaderData = {
 };
 
 export const handle: { id: string; i18n: string[] } = {
-  id: 'checkout',
+  id: 'participant-form',
   i18n: ['checkout']
 };
 
@@ -122,7 +121,7 @@ export const action: ActionFunction = async ({ request, params }) => {
   const hash = form.get('hash') as string;
   const regulation: boolean = (form.get('regulation') as string) === 'on';
   const terms: boolean = (form.get('terms') as string) === 'on';
-  const organiserCampaign: boolean = (form.get('organiser-campaign') as string) === 'on';
+  const enrollInMailingList: boolean = (form.get('add-to-mail-list') as string) === 'on';
 
   try {
     const phoneNumber = form.get('phone-number') as string;
@@ -190,7 +189,7 @@ export const action: ActionFunction = async ({ request, params }) => {
         .boolean({ required_error: t('Accept Event Regulation') })
         .refine((v) => v, { message: t('Accept Event Regulation') })
     });
-    
+
     if (actionId === CheckoutInfoActions.updateAndSave) {
       const selectedParticipantId = form.get(
         'selected-participant-id'
@@ -258,11 +257,11 @@ export const action: ActionFunction = async ({ request, params }) => {
         });
       }
 
-      if (organiserCampaign && authenticatedClient) {
+      if (enrollInMailingList && authenticatedClient) {
         const organiser = await findOrganiser(event.createdById);
 
         if (organiser) {
-          await addCampaignEmail(authenticatedClient.email, organiser.id);
+          await addEmailToMailingList(authenticatedClient.email, organiser.id);
         }
       }
 
@@ -276,7 +275,7 @@ export const action: ActionFunction = async ({ request, params }) => {
     if (!(e instanceof ZodError)) {
       console.error(e);
       return badRequest({
-        error: t('E-mail already registered')
+        error: 'We dont know what happened'
       });
     }
 
@@ -668,7 +667,7 @@ export default function CheckoutInfoRoute() {
                   <input
                     name="regulation"
                     type="checkbox"
-                    checked={checkedTermsAndRegulation.regulation}
+                    defaultChecked={checkedTermsAndRegulation.regulation}
                     onClick={handleCheckRegulation}
                     className="w-4 h-4 text-indigo-500 bg-gray-100 rounded border-gray-300 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600"
                     data-cy="regulation"
@@ -701,7 +700,7 @@ export default function CheckoutInfoRoute() {
                   <input
                     name="terms"
                     type="checkbox"
-                    checked={checkedTermsAndRegulation.terms}
+                    defaultChecked={checkedTermsAndRegulation.terms}
                     onClick={handleCheckTerms}
                     className="w-4 h-4 text-indigo-500 bg-gray-100 rounded border-gray-300 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600"
                     data-cy="terms"
@@ -720,16 +719,16 @@ export default function CheckoutInfoRoute() {
                 {isAuth && (
                   <div className="flex items-center mb-8">
                     <input
-                      name="organiser-campaign"
+                      name="add-to-mail-list"
                       type="checkbox"
-                      checked={checkedOrganizerCampaigns}
+                      defaultChecked={checkedOrganizerCampaigns}
                       onClick={handleCheckOrganizerCampaign}
                       className="w-4 h-4 text-indigo-500 bg-gray-100 rounded border-gray-300 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600"
-                      data-cy="organiser-campaign"
+                      data-cy="mail-list"
                     />
                     <label
                       className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300"
-                      htmlFor="organiser-campaign"
+                      htmlFor="add-to-mail-list"
                     >
                       {t('Organiser Campaign X', { organiser: organiserName })}
                     </label>
@@ -769,7 +768,7 @@ export default function CheckoutInfoRoute() {
                   />
                   <input
                     type="hidden"
-                    name="organiser-campaign"
+                    name="add-to-mail-list"
                     value={checkedOrganizerCampaigns ? 'on' : 'off'}
                   />
                   <input type="hidden" name="hash" value={hash} />

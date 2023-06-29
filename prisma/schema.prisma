@@ -416,7 +416,7 @@ model Organiser {
   createdAt         DateTime            @default(now()) @map("created_at")
   updatedAt         DateTime            @updatedAt @map("updated_at")
   DiscountCode      DiscountCode[]
-  CampaignEmail     CampaignEmail[]
+  MailingList     MailingList[]
 
   @@map("organizers")
 }
@@ -437,12 +437,12 @@ model DiscountCode {
 }
 
 // Saves email from users that want to receive news from certain organisers
-model CampaignEmail {
+model MailingList {
     email           String
     organiserId     String      @map("organiser_id")
     organiser       Organiser   @relation(fields: [organiserId], references: [id])
     createdAt       DateTime    @default(now()) @map("created_at")
 
     @@unique([email, organiserId])
-    @@map("campaign_emails")
+    @@map("mailing_list")
 }

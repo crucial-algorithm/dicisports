@@ -11,7 +11,7 @@ import {
 import * as React from 'react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { z } from 'zod';
+import { z, ZodError } from 'zod';
 
 import Button from '~/components/shared/Button';
 import DisplayCart from '~/components/shared/DisplayCart';
@@ -32,7 +32,7 @@ import i18n from '~/server/i18n.server';
 import InputError from '~/components/shared/form/InputError';
 import FormField from '~/components/shared/form/FormField';
 import { findOrganiser } from '~/server/db/organiser.server';
-import { addCampaignEmail } from '~/server/db/compaignEmails.server';
+import { addEmailToMailingList } from '~/server/db/mailingList.server';
 
 type LoaderData = {
   registration: Booking;
@@ -82,10 +82,15 @@ export const action: ActionFunction = async ({ request, params }) => {
 
   const eventId = booking.eventId;
   const event = await findEvent(eventId);
+
+  if (!event) {
+    return redirect('/');
+  }
+
   const domainUrl = getDomainUrl(request);
   const cart = await findBookingCart(clientId, eventId);
   const email = form.get('email') as string;
-  const organiserCampaign: boolean = (form.get('organiser-campaign') as string) === 'on';
+  const enrollInMailingList: boolean = (form.get('add-to-mail-list') as string) === 'on';
 
   const EmailConfirmationSchema = z
     .object({
@@ -94,6 +99,8 @@ export const action: ActionFunction = async ({ request, params }) => {
         .email(t('Invalid Email')),
       organiserCampaign: z.boolean().optional()
     })
+    // Check if user checked to enroll in mailing list and provided an email address
+    // Or if he didn't check the box but still provided an email
     .refine(
       (s) =>
         (!s.organiserCampaign && s.email.length > 0) ||
@@ -105,13 +112,16 @@ export const action: ActionFunction = async ({ request, params }) => {
     );
 
   try {
-    EmailConfirmationSchema.parse({ email, organiserCampaign });
+    EmailConfirmationSchema.parse({
+      email,
+      organiserCampaign: enrollInMailingList
+    });
 
-    if (organiserCampaign) {
+    if (enrollInMailingList) {
       const organiser = await findOrganiser(event.createdById);
 
       if (organiser) {
-        await addCampaignEmail(email, organiser.id);
+        await addEmailToMailingList(email, organiser.id);
       }
     }
 
@@ -130,11 +140,19 @@ export const action: ActionFunction = async ({ request, params }) => {
       successMessage: t('Booking Confirmation Email Sent')
     });
   } catch (e) {
-    console.log('error: ');
-    return json({
-      errors: { email: t('Invalid Email') },
-      fields: { email }
-    });
+    if (!(e instanceof ZodError)) {
+      return badRequest({
+        errors: { submit: t('Email in use') }
+      });
+    }
+
+    const errors: { [key: string]: string | undefined } = {};
+
+    for (const error of (e as ZodError).errors) {
+      errors[error.path[0]] = error.message;
+    }
+
+    return badRequest({ errors });
   }
 };
 
@@ -174,6 +192,11 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   }
 
   const event = await findEvent(eventId);
+
+  if (!event) {
+    return redirect('/');
+  }
+
   const cart = await findBookingCart(clientId, eventId);
   const organiser = await findOrganiser(event.createdById);
 
@@ -190,15 +213,11 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 export default function CheckoutConfirmationRoute() {
   const { registration, event, cart, isAuth, bookingId, organiserName } =
     useLoaderData<LoaderData>();
+  const actionData = useActionData<ActionData>() as ActionData;
   const [checkedOrganizerCampaigns, setCheckedOrganizerCampaigns] =
     useState<boolean>(false);
   const { t } = useTranslation('checkout');
   const fetcher = useFetcher();
-  const { errors, fields, successMessage } =
-    (useActionData<ActionData>() as ActionData) || {
-      errors: { email: '', submit: '' },
-      fields: { email: '' }
-    };
 
   function handleCheckOrganizerCampaign() {
     setCheckedOrganizerCampaigns(!checkedOrganizerCampaigns);
@@ -249,26 +268,25 @@ export default function CheckoutConfirmationRoute() {
             <Form method="post" className="flex flex-col items-start mt-16">
               <FormField
                 label={t('Mail Confirmation Details')}
-                error={errors.email}
+                error={actionData?.errors?.email}
               >
                 <TextField
                   name="email"
                   className="w-1/2 p-8 mb-2"
                   placeholder={t('Email Address')}
-                  defaultValue={fields.email}
                 />
                 <div className="flex items-center">
                   <input
-                    name="organiser-campaign"
+                    name="add-to-mail-list"
                     type="checkbox"
                     checked={checkedOrganizerCampaigns}
                     onClick={handleCheckOrganizerCampaign}
                     className="w-4 h-4 text-indigo-500 bg-gray-100 rounded border-gray-300 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600"
-                    data-cy="organiser-campaign"
+                    data-cy="mail-list"
                   />
                   <label
                     className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300"
-                    htmlFor="organiser-campaign"
+                    htmlFor="add-to-mail-list"
                   >
                     {t('Organiser Campaign X', { organiser: organiserName })}
                   </label>
@@ -277,12 +295,12 @@ export default function CheckoutConfirmationRoute() {
               <Button name="send-confirmation" type="submit" className="mt-4">
                 {t('Send')}
               </Button>
-              {errors.submit && (
+              {actionData?.errors?.submit && (
                 <InputError className="mt-4" id="error-message">
-                  {errors.submit}
+                  {actionData.errors.submit}
                 </InputError>
               )}
-              {successMessage && (
+              {actionData?.successMessage && (
                 <p
                   id="success-message"
                   className="dark:text-blueGray-500 text-gray-500 text-lg mt-2"
@@ -290,7 +308,7 @@ export default function CheckoutConfirmationRoute() {
                   <span role="img" aria-label="sparkles">
                     ✨
                   </span>{' '}
-                  {successMessage}
+                  {actionData.successMessage}
                 </p>
               )}
             </Form>

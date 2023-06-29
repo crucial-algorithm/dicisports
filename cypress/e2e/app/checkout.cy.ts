@@ -608,7 +608,7 @@ describe('Checkout', () => {
         .should('exist');
     });
 
-    it('should display checkbox for organiser campaign', () => {
+    it('should display checkbox to enroll in organiser mailing list', () => {
       cy.intercept('GET', '/checkout/cart/*?_data=routes*checkout*')
         .as('selectRace')
 

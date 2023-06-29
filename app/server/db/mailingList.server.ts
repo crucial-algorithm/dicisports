@@ -1,12 +1,12 @@
 import { db } from '~/server/db.server';
 
-async function addCampaignEmail(
+async function addEmailToMailingList(
   email: string,
   organiserId: string
 ): Promise<void> {
   const now = new Date();
 
-  await db.campaignEmail.create({
+  await db.mailingList.create({
     data: {
       email,
       organiserId,
@@ -15,4 +15,4 @@ async function addCampaignEmail(
   });
 }
 
-export { addCampaignEmail };
+export { addEmailToMailingList };
