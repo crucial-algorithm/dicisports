@@ -15,4 +15,18 @@ async function addEmailToMailingList(
   });
 }
 
-export { addEmailToMailingList };
+async function findMailingListEnrolledEmail(email: string, organiserId: string): Promise<{
+  email: string;
+  organiserId: string;
+  createdAt: Date;
+}> {
+  return await db.mailingList.findUnique({
+    where: {
+      email_organiserId: {
+        email, organiserId
+      }
+    }
+  });
+}
+
+export { addEmailToMailingList, findMailingListEnrolledEmail };

@@ -416,7 +416,7 @@ model Organiser {
   createdAt         DateTime            @default(now()) @map("created_at")
   updatedAt         DateTime            @updatedAt @map("updated_at")
   DiscountCode      DiscountCode[]
-  MailingList     MailingList[]
+  MailingList       MailingList[]
 
   @@map("organizers")
 }

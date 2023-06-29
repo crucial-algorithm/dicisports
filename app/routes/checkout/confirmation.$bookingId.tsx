@@ -32,7 +32,10 @@ import i18n from '~/server/i18n.server';
 import InputError from '~/components/shared/form/InputError';
 import FormField from '~/components/shared/form/FormField';
 import { findOrganiser } from '~/server/db/organiser.server';
-import { addEmailToMailingList } from '~/server/db/mailingList.server';
+import {
+  addEmailToMailingList,
+  findMailingListEnrolledEmail
+} from '~/server/db/mailingList.server';
 
 type LoaderData = {
   registration: Booking;
@@ -90,35 +93,30 @@ export const action: ActionFunction = async ({ request, params }) => {
   const domainUrl = getDomainUrl(request);
   const cart = await findBookingCart(clientId, eventId);
   const email = form.get('email') as string;
-  const enrollInMailingList: boolean = (form.get('add-to-mail-list') as string) === 'on';
+  const enrollInMailingList: boolean =
+    (form.get('add-to-mail-list') as string) === 'on';
 
-  const EmailConfirmationSchema = z
-    .object({
-      email: z
-        .string({ required_error: t('Invalid Email') })
-        .email(t('Invalid Email')),
-      organiserCampaign: z.boolean().optional()
-    })
-    // Check if user checked to enroll in mailing list and provided an email address
-    // Or if he didn't check the box but still provided an email
-    .refine(
-      (s) =>
-        (!s.organiserCampaign && s.email.length > 0) ||
-        (s.organiserCampaign && s.email.length > 0),
-      {
-        message: t('Invalid Email'),
-        path: ['submit']
-      }
-    );
+  const EmailConfirmationSchema = z.object({
+    email: z
+      .string({ required_error: t('Invalid Email') })
+      .email(t('Invalid Email'))
+  });
 
   try {
-    EmailConfirmationSchema.parse({
-      email,
-      organiserCampaign: enrollInMailingList
-    });
+    EmailConfirmationSchema.parse({ email });
 
     if (enrollInMailingList) {
       const organiser = await findOrganiser(event.createdById);
+      const isEmailInUse = !!(await findMailingListEnrolledEmail(
+        email,
+        organiser?.id as string
+      ));
+
+      if (isEmailInUse) {
+        return badRequest({
+          errors: { submit: t('Email in use') }
+        });
+      }
 
       if (organiser) {
         await addEmailToMailingList(email, organiser.id);
@@ -141,8 +139,10 @@ export const action: ActionFunction = async ({ request, params }) => {
     });
   } catch (e) {
     if (!(e instanceof ZodError)) {
+      const tc = await i18n.getFixedT(request, 'common');
+
       return badRequest({
-        errors: { submit: t('Email in use') }
+        errors: { submit: tc('500 error message') }
       });
     }
 
