@@ -309,11 +309,13 @@ export default function ComboBox({
 }
 
 export function Creatable({
+  name,
   options: paramsOptions = [],
   t,
   defaultValue,
   lang
 }: {
+  name: string;
   options: Option[];
   t: TFunction;
   defaultValue: string | null;
@@ -414,7 +416,7 @@ export function Creatable({
         onChange={handleOnSelectTeam}
         as="div"
         className="w-full md:w-80"
-        name="creatable-value"
+        name={`creatable-${name}`}
       >
         <div className="relative">
           <div className="z-100">

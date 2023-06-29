@@ -51,11 +51,24 @@ export default function ParticipantForm({
 } & React.ComponentProps<'div'>) {
   const { t, i18n } = useTranslation('checkout');
   const language = i18n.language as Language;
+  const hasDefaultTeamOption = eventTeams.some((et) => et.name === t('Individual'));
 
   const genderOptions = [
     { value: 'F', label: t('Female') },
     { value: 'M', label: t('Male') }
   ];
+
+  if (!hasDefaultTeamOption) {
+    const now = new Date();
+
+    eventTeams.unshift({
+      id: '0',
+      name: t('Individual'),
+      eventId: '',
+      createdAt: now,
+      updatedAt: now
+    });
+  }
 
   return (
     <FetcherForm
@@ -231,6 +244,7 @@ export default function ParticipantForm({
 
       <FormField label={t('Team')}>
         <Creatable
+          name="team"
           t={t}
           options={eventTeams.map((et) => ({
             value: et.id === '0' ? '' : et.name,

@@ -44,7 +44,7 @@ import {
   findUserParticipants,
   findUserSavedParticipants,
   updateParticipant,
-  updateRaceParticipantTeam,
+  updateRaceParticipantTeam, updateRaceParticipantTeamToIndividual,
   updateToSelectedParticipant
 } from '~/server/db/participant.server';
 import { findShirtSizes } from '~/server/db/reference.server';
@@ -113,7 +113,7 @@ export const action: ActionFunction = async ({ request, params }) => {
   const hash = form.get('hash') as string;
   const regulation: boolean = (form.get('regulation') as string) === 'on';
   const terms: boolean = (form.get('terms') as string) === 'on';
-  const teamName = (form.get('team-name') as string) || null;
+  const teamName = (form.get('creatable-team') as string) || null;
 
   try {
     const phoneNumber = form.get('phone-number') as string;
@@ -206,7 +206,6 @@ export const action: ActionFunction = async ({ request, params }) => {
       data.id = selectedParticipantId;
       ParticipantSchema.parse(data);
 
-      const isIndividual = teamName === t('Individual') || !teamName;
       const raceParticipant = await findRaceParticipant(data.id, raceId);
 
       if (!raceParticipant) {
@@ -218,7 +217,11 @@ export const action: ActionFunction = async ({ request, params }) => {
         });
       }
 
-      await updateRaceParticipantTeam(teamName, eventId, raceParticipant, isIndividual);
+      if (!teamName) {
+        await updateRaceParticipantTeamToIndividual(raceParticipant);
+      } else {
+        await updateRaceParticipantTeam(teamName, eventId, raceParticipant);
+      }
     }
 
     if (
@@ -229,7 +232,6 @@ export const action: ActionFunction = async ({ request, params }) => {
       await updateParticipant(data);
       const raceId = form.get('raceId') as string;
 
-      const isIndividual = teamName === t('Individual') || !teamName;
       const raceParticipant = await findRaceParticipant(data.id, raceId);
 
       if (!raceParticipant) {
@@ -241,7 +243,11 @@ export const action: ActionFunction = async ({ request, params }) => {
         });
       }
 
-      await updateRaceParticipantTeam(teamName, eventId, raceParticipant, isIndividual);
+      if (!teamName) {
+        await updateRaceParticipantTeamToIndividual(raceParticipant);
+      } else {
+        await updateRaceParticipantTeam(teamName, eventId, raceParticipant);
+      }
     }
 
     if (
@@ -299,8 +305,6 @@ export const action: ActionFunction = async ({ request, params }) => {
 };
 
 export const loader: LoaderFunction = async ({ request, params }) => {
-  const t = await i18n.getFixedT(request, 'checkout');
-
   const anonymousClient = await getClientSession(request);
   const authenticatedClient = await getUser(request);
   const bookingId = params.bookingId as string;
@@ -345,22 +349,6 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   const shirtSizes = await findShirtSizes();
 
   const eventTeams = await findEventTeams(eventId);
-
-  if (
-    eventTeams?.length === 0 ||
-    !eventTeams?.find((teams) => teams.name === t('Individual'))
-  ) {
-    console.log('here');
-    const now = new Date();
-
-    eventTeams?.unshift({
-      id: '0',
-      name: t('Individual'),
-      eventId,
-      createdAt: now,
-      updatedAt: now
-    });
-  }
   
   return json({
     event,
