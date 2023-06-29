@@ -12,7 +12,6 @@ import { Combobox, Listbox, Transition } from '@headlessui/react';
 import { CheckIcon, ChevronUpDownIcon } from '@heroicons/react/20/solid';
 
 import type { Language, TranslationObject } from '~/types';
-import type { EventTeam } from '~/types';
 import { getLocalizedText } from '~/utils/misc';
 
 import { useTheme } from '~/utils/theme-provider';
@@ -310,30 +309,46 @@ export default function ComboBox({
 }
 
 export function Creatable({
-  options = [],
+  options: paramsOptions = [],
   t,
-  defaultValue
+  defaultValue,
+  lang
 }: {
-  options: EventTeam[] | null;
+  options: Option[];
   t: TFunction;
   defaultValue: string | null;
+  lang?: Language;
 }) {
+  const { i18n } = useTranslation();
   const [theme] = useTheme();
   const inDarkMode = theme === 'dark';
   const formProps = useContext(FormContext);
-
+  const options = paramsOptions.map((o) => {
+    return {
+      value: o.value,
+      label:
+        typeof o.label === 'string'
+          ? o.label
+          : getLocalizedText(lang as Language, o.label),
+      image: o.image || ''
+    };
+  });
+  
   const [query, setQuery] = useState('');
-  const [values, setValues] = useState<string[]>(
-    options ? options.map((d) => d.name) : []
-  );
-  const [activeOption, setActiveOption] = useState<string | null>(
-    defaultValue || null
+  const [values, setValues] =
+    useState<{ value: string | number; label: string }[]>(options);
+  const [activeOption, setActiveOption] = useState<{
+    value: string | number;
+    label: string;
+  } | null>(
+    values.find((v) => v.value === defaultValue || v.label === defaultValue) ||
+      null
   );
 
   if (formProps.readOnly) {
     return (
       <div className="font-medium dark:text-white">
-        {values.find((t) => t === defaultValue)}
+        {values.find((t) => t.value === defaultValue)?.label}
       </div>
     );
   }
@@ -341,13 +356,19 @@ export function Creatable({
   const filteredValues =
     query === ''
       ? values
-      : values.filter((t) => t.toLowerCase().includes(query.toLowerCase()));
+      : values.filter((t) =>
+          t.label.toLowerCase().includes(query.toLowerCase())
+        );
 
   function handleOnSelectTeam(value: string) {
-    setActiveOption(value);
+    const v = values.find((e) => e.value === value || e.label === value);
 
-    if (!values.includes(value)) {
-      setValues((current) => [...current, value]);
+    if (!v) {
+      setValues((current) => [...current, { value, label: value }]);
+
+      setActiveOption({ value, label: value });
+    } else {
+      setActiveOption(v);
     }
   }
 
@@ -366,22 +387,44 @@ export function Creatable({
     setActiveOption(null);
   }
 
+  function display(o: Option | number | string | undefined | null): string {
+    if (o == null) {
+      return '';
+    }
+
+    if (['number', 'string'].includes(typeof o)) {
+      const c = values.find((v) => v.value === o);
+
+      return c?.label || '';
+    }
+
+    const option = o as Option;
+
+    if (typeof option.label === 'string') {
+      return option.label;
+    }
+
+    return getI18nText(option.label, i18n.language as Language);
+  }
+
   return (
     <div className="flex flex-row items-center gap-x-2">
       <Combobox
-        value={activeOption}
+        value={activeOption ? activeOption.value : null}
         onChange={handleOnSelectTeam}
         as="div"
         className="w-full md:w-80"
+        name="creatable-value"
       >
         <div className="relative">
           <div className="z-100">
             <div>
               <Combobox.Input
-                name="creatable-value"
+                key={activeOption?.value}
                 className="input-text"
                 onChange={handleSearch}
                 autoComplete="off"
+                displayValue={display}
               />
             </div>
 
@@ -424,11 +467,11 @@ export function Creatable({
             {filteredValues.map((v) => {
               return (
                 <Combobox.Option
-                  key={v}
-                  value={v}
+                  key={v.value}
+                  value={v.value}
                   className={handleOptionStyle}
                 >
-                  {v}
+                  {v.label}
                 </Combobox.Option>
               );
             })}

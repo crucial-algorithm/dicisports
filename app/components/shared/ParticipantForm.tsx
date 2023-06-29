@@ -232,8 +232,11 @@ export default function ParticipantForm({
       <FormField label={t('Team')}>
         <Creatable
           t={t}
-          options={eventTeams}
-          defaultValue={participantTeam ? participantTeam : t('Individual')}
+          options={eventTeams.map((et) => ({
+            value: et.id === '0' ? '' : et.name,
+            label: et.name
+          }))}
+          defaultValue={participantTeam ? participantTeam : ''}
         />
       </FormField>
 
