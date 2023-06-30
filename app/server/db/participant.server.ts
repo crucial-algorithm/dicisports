@@ -305,20 +305,23 @@ async function findRaceParticipant(
 }
 
 async function updateRaceParticipantTeam(
-  teamName: string,
+  teamName: string | null,
   eventId: string,
   raceParticipant: RaceParticipant
 ): Promise<void> {
   return await prisma.$transaction(async (prisma) => {
-    const existingTeam = await findEventTeamByName(teamName, eventId, prisma);
-    let teamId: string | null;
+    let teamId: string | null = teamName;
 
-    if (!existingTeam) {
-      const newTeam = await createTeam(teamName, eventId, prisma);
+    if (teamName !== null) {
+      const existingTeam = await findEventTeamByName(teamName, eventId, prisma);
 
-      teamId = newTeam.id;
-    } else {
-      teamId = existingTeam.id;
+      if (!existingTeam) {
+        const newTeam = await createTeam(teamName, eventId, prisma);
+
+        teamId = newTeam.id;
+      } else {
+        teamId = existingTeam.id;
+      }
     }
 
     await prisma.raceParticipant.update({
@@ -327,17 +330,6 @@ async function updateRaceParticipantTeam(
         teamId
       }
     });
-  });
-}
-
-async function updateRaceParticipantTeamToIndividual(
-  raceParticipant: RaceParticipant
-): Promise<void> {
-  await prisma.raceParticipant.update({
-    where: { id: raceParticipant.id },
-    data: {
-      teamId: null
-    }
   });
 }
 
@@ -356,6 +348,5 @@ export {
   findUserBookingParticipants,
   findEventRaceParticipants,
   findRaceParticipant,
-  updateRaceParticipantTeam,
-  updateRaceParticipantTeamToIndividual
+  updateRaceParticipantTeam
 };

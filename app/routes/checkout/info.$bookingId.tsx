@@ -45,7 +45,6 @@ import {
   findUserSavedParticipants,
   updateParticipant,
   updateRaceParticipantTeam,
-  updateRaceParticipantTeamToIndividual,
   updateToSelectedParticipant
 } from '~/server/db/participant.server';
 import { findShirtSizes } from '~/server/db/reference.server';
@@ -218,11 +217,7 @@ export const action: ActionFunction = async ({ request, params }) => {
         });
       }
 
-      if (!teamName) {
-        await updateRaceParticipantTeamToIndividual(raceParticipant);
-      } else {
-        await updateRaceParticipantTeam(teamName, eventId, raceParticipant);
-      }
+      await updateRaceParticipantTeam(teamName, eventId, raceParticipant);
     }
 
     if (
@@ -244,11 +239,7 @@ export const action: ActionFunction = async ({ request, params }) => {
         });
       }
 
-      if (!teamName) {
-        await updateRaceParticipantTeamToIndividual(raceParticipant);
-      } else {
-        await updateRaceParticipantTeam(teamName, eventId, raceParticipant);
-      }
+      await updateRaceParticipantTeam(teamName, eventId, raceParticipant);
     }
 
     if (
