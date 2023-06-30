@@ -44,7 +44,8 @@ import {
   findUserParticipants,
   findUserSavedParticipants,
   updateParticipant,
-  updateRaceParticipantTeam, updateRaceParticipantTeamToIndividual,
+  updateRaceParticipantTeam,
+  updateRaceParticipantTeamToIndividual,
   updateToSelectedParticipant
 } from '~/server/db/participant.server';
 import { findShirtSizes } from '~/server/db/reference.server';
@@ -349,7 +350,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   const shirtSizes = await findShirtSizes();
 
   const eventTeams = await findEventTeams(eventId);
-  
+
   return json({
     event,
     cart,
