@@ -355,5 +355,4 @@ export type FormErrors = {
   submit?: string;
   terms?: string;
   regulation?: string;
-  campaignEmail?: string;
 };
