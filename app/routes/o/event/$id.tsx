@@ -116,6 +116,7 @@ type ActionData = {
     submit?: string;
     races?: string;
     regulation?: string;
+    dorsalStartingNumber?: string;
   };
 };
 
@@ -272,6 +273,7 @@ export const action: ActionFunction = async ({ request, params }) => {
     externalBookingUrl: (form.get('booking-url') as string) || null,
     description: (form.get('event-description') as string) || null,
     directions: (form.get('get-there') as string) || null,
+    dorsalStartingNumber: parseInt(form.get('dorsal-number') as string),
     image1: processImgField(image1, isUpdate),
     image2: processImgField(image2, isUpdate),
     image3: processImgField(image3, isUpdate),
@@ -310,6 +312,10 @@ export const action: ActionFunction = async ({ request, params }) => {
         })
         .min(1, { message: t('Min 1 chars') })
         .nullable(),
+      dorsalStartingNumber: z
+        .number()
+        .int({ message: t('Must be int') })
+        .nonnegative({ message: t('Positive number') }),
       races: z
         .string({ required_error: t('At least 1 race') })
         .array()
@@ -737,10 +743,9 @@ export default function OrganizerEventRoute() {
                 lang={language}
                 placeholder=""
                 defaultValue={event.sportId ? event.sportId : undefined}
-                options={sortedSports
-                  .map((s: Sport) => {
-                    return { value: s.id, label: s.name };
-                  })}
+                options={sortedSports.map((s: Sport) => {
+                  return { value: s.id, label: s.name };
+                })}
               />
             </FormField>
 
@@ -776,6 +781,19 @@ export default function OrganizerEventRoute() {
               />
             </FormField>
           </div>
+          <FormField
+            label={t('Dorsal Starting Number')}
+            id="dorsal"
+            className="w-full md:basis-1/3"
+            error={actionData?.errors?.dorsalStartingNumber}
+          >
+            <TextField
+              name="dorsal-number"
+              type="number"
+              placeholder={t('Dorsal placeholder')}
+              defaultValue={event.dorsalStartingNumber || 1}
+            />
+          </FormField>
 
           <Location
             actionData={actionData}
