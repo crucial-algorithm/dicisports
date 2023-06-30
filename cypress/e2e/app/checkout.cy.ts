@@ -472,7 +472,7 @@ describe('Checkout', () => {
           expect(l.pathname).to.include('/checkout/info/');
         })
 
-        .get('button[name=teams-button]')
+        .get('button[name=creatable-button]')
         .should('exist')
         .click()
 

@@ -313,12 +313,16 @@ export function Creatable({
   options: paramsOptions = [],
   t,
   defaultValue,
+  emptyLabel,
+  defaultOption,
   lang
 }: {
   name: string;
   options: Option[];
   t: TFunction;
   defaultValue: string | null;
+  emptyLabel: string;
+  defaultOption?: { value: string | number; label: string };
   lang?: Language;
 }) {
   const { i18n } = useTranslation();
@@ -335,7 +339,7 @@ export function Creatable({
       image: o.image || ''
     };
   });
-  
+
   const [query, setQuery] = useState('');
   const [values, setValues] =
     useState<{ value: string | number; label: string }[]>(options);
@@ -362,15 +366,17 @@ export function Creatable({
           t.label.toLowerCase().includes(query.toLowerCase())
         );
 
-  function handleOnSelectTeam(value: string) {
+  function handleOnSelectOption(value: string) {
     const v = values.find((e) => e.value === value || e.label === value);
 
     if (!v) {
       setValues((current) => [...current, { value, label: value }]);
 
       setActiveOption({ value, label: value });
+      setQuery('');
     } else {
       setActiveOption(v);
+      setQuery('');
     }
   }
 
@@ -385,13 +391,13 @@ export function Creatable({
     });
   }
 
-  function handleRemoveSelectedTeam() {
+  function handleRemoveSelectedOption() {
     setActiveOption(null);
   }
 
   function display(o: Option | number | string | undefined | null): string {
-    if (o == null) {
-      return '';
+    if (o == null || o === '') {
+      return emptyLabel || '';
     }
 
     if (['number', 'string'].includes(typeof o)) {
@@ -413,7 +419,7 @@ export function Creatable({
     <div className="flex flex-row items-center gap-x-2">
       <Combobox
         value={activeOption ? activeOption.value : null}
-        onChange={handleOnSelectTeam}
+        onChange={handleOnSelectOption}
         as="div"
         className="w-full md:w-80"
         name={`creatable-${name}`}
@@ -432,7 +438,7 @@ export function Creatable({
 
             <Combobox.Button
               className="absolute inset-y-0 right-0 flex items-center pr-2"
-              name="teams-button"
+              name="creatable-button"
             >
               <ChevronUpDownIcon
                 className="h-5 w-5 text-gray-400"
@@ -452,6 +458,14 @@ export function Creatable({
               }
             )}
           >
+            {defaultOption && query === '' && (
+              <Combobox.Option
+                value={defaultOption.value}
+                className={handleOptionStyle}
+              >
+                {defaultOption.label}
+              </Combobox.Option>
+            )}
             {filteredValues.length === 0 && query !== '' && (
               <Combobox.Option
                 value={query}
@@ -480,11 +494,11 @@ export function Creatable({
           </Combobox.Options>
         </div>
       </Combobox>
-      {activeOption && (
+      {activeOption && activeOption.value && (
         <button
           name="remove-schedule"
           type="button"
-          onClick={handleRemoveSelectedTeam}
+          onClick={handleRemoveSelectedOption}
           className="dark:text-blueGray-500 focus:ring-indigo-500"
         >
           <XMarkIcon className="h-4 w-4 m-0 inline-block" />
