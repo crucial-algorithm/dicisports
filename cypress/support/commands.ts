@@ -75,7 +75,7 @@ function pickDate(name: string, date: string, outside = 'body') {
   const [year, month, day] = date.split('-').map(Number);
 
   cy.get(`input[name=${name}]`)
-    .should('exist')// this + clear should be enough to delay typing and stop using as 0 prefix
+    .should('exist')// this + clear should be enough to delay typing and stop using 0 as prefix
     .clear()
     .type(date)
     .get(`[data-cy-year=${year}][data-cy-month=${month}][data-cy-day=${day}]`)
