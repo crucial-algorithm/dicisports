@@ -781,19 +781,6 @@ export default function OrganizerEventRoute() {
               />
             </FormField>
           </div>
-          <FormField
-            label={t('Dorsal Starting Number')}
-            id="dorsal"
-            className="w-full md:basis-1/3"
-            error={actionData?.errors?.dorsalStartingNumber}
-          >
-            <TextField
-              name="dorsal-number"
-              type="number"
-              placeholder={t('Dorsal placeholder')}
-              defaultValue={event.dorsalStartingNumber || 1}
-            />
-          </FormField>
 
           <Location
             actionData={actionData}
@@ -815,6 +802,21 @@ export default function OrganizerEventRoute() {
               url={event?.externalBookingUrl}
             />
           </FormField>
+
+          <FormField
+            label={t('Dorsal Starting Number')}
+            id="dorsal"
+            error={actionData?.errors?.dorsalStartingNumber}
+          >
+            <TextField
+              name="dorsal-number"
+              type="number"
+              placeholder={t('Dorsal placeholder')}
+              defaultValue={event.dorsalStartingNumber || 1}
+              className="w-full md:w-48"
+            />
+          </FormField>
+
           <FormField label={t('Event Photos')} id="event-photos">
             <div className="w-full m-auto flex flex-col md:flex-row justify-begin gap-4 w-full md:grid-flow-col md:grid-rows-1 text-center">
               <UploadImage
