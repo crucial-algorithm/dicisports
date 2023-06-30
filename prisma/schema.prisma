@@ -127,6 +127,7 @@ model Event {
   perks              Perk[]
   races              Race[]
   bookings           Booking[]
+  teams              EventTeam[]
 
   favEvents FavoriteEvent[]
 
@@ -315,6 +316,8 @@ model RaceParticipant {
   displayOrder  Int            @default(autoincrement()) @map("display_order")
   bookingId     String         @map("booking_id")
   booking       Booking        @relation(fields: [bookingId], references: [id])
+  teamId        String?        @map("team_id")
+  team          EventTeam?     @relation(fields: [teamId], references: [id])
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -433,4 +436,17 @@ model DiscountCode {
   updatedAt   DateTime  @updatedAt @map("updated_at")
 
   @@map("discount_codes")
+}
+
+model EventTeam {
+    id                  String                  @id
+    name                String
+    eventId             String                  @map("event_id")
+    event               Event                   @relation(fields: [eventId], references: [id])
+    createdAt           DateTime                @default(now()) @map("created_at")
+    updatedAt           DateTime                @updatedAt @map("updated_at")
+    raceParticipants    RaceParticipant[]
+
+    @@unique([name, eventId])
+    @@map("event_teams")
 }

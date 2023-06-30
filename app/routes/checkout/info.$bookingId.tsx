@@ -38,17 +38,20 @@ import {
 import type { EventWithRacesDifficultiesAndDocuments } from '~/server/db/events.server';
 import { findEvent } from '~/server/db/events.server';
 import {
+  findRaceParticipant,
   findUserBookingParticipants,
   findUserEventRaceParticipants,
   findUserParticipants,
   findUserSavedParticipants,
   updateParticipant,
+  updateRaceParticipantTeam,
   updateToSelectedParticipant
 } from '~/server/db/participant.server';
 import { findShirtSizes } from '~/server/db/reference.server';
 import i18n from '~/server/i18n.server';
 
 import type {
+  EventTeam,
   Participant,
   ParticipantInput,
   Race,
@@ -59,6 +62,7 @@ import type {
 import { badRequest, displayTimeOfDay } from '~/utils/misc';
 import { Unauthorized } from '~/server/utils/misc';
 import InputError from '~/components/shared/form/InputError';
+import { findEventTeams } from '~/server/db/teams.server';
 
 type LoaderData = {
   event: EventWithRacesDifficultiesAndDocuments;
@@ -70,6 +74,7 @@ type LoaderData = {
   isAuth: boolean;
   isGuest: boolean;
   bookingId: string;
+  eventTeams: EventTeam[];
 };
 
 export const action: ActionFunction = async ({ request, params }) => {
@@ -108,6 +113,7 @@ export const action: ActionFunction = async ({ request, params }) => {
   const hash = form.get('hash') as string;
   const regulation: boolean = (form.get('regulation') as string) === 'on';
   const terms: boolean = (form.get('terms') as string) === 'on';
+  const teamName = (form.get('creatable-team') as string) || null;
 
   try {
     const phoneNumber = form.get('phone-number') as string;
@@ -199,7 +205,19 @@ export const action: ActionFunction = async ({ request, params }) => {
 
       data.id = selectedParticipantId;
       ParticipantSchema.parse(data);
-      await updateParticipant(data);
+
+      const raceParticipant = await findRaceParticipant(data.id, raceId);
+
+      if (!raceParticipant) {
+        return badRequest({
+          errors: {
+            selectedParticipant: t('Race Participant does not exist')
+          },
+          hash: parseInt(hash)
+        });
+      }
+
+      await updateRaceParticipantTeam(teamName, eventId, raceParticipant);
     }
 
     if (
@@ -208,6 +226,20 @@ export const action: ActionFunction = async ({ request, params }) => {
     ) {
       ParticipantSchema.parse(data);
       await updateParticipant(data);
+      const raceId = form.get('raceId') as string;
+
+      const raceParticipant = await findRaceParticipant(data.id, raceId);
+
+      if (!raceParticipant) {
+        return badRequest({
+          errors: {
+            selectedParticipant: t('Race Participant does not exist')
+          },
+          hash: parseInt(hash)
+        });
+      }
+
+      await updateRaceParticipantTeam(teamName, eventId, raceParticipant);
     }
 
     if (
@@ -288,7 +320,10 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   const eventId = booking.eventId;
 
   const event = await findEvent(eventId);
-  const cart = await findBookingCart(isGuest ? booking.userId : clientId, eventId);
+  const cart = await findBookingCart(
+    isGuest ? booking.userId : clientId,
+    eventId
+  );
   const raceParticipants = await findUserBookingParticipants(bookingId);
 
   if (!raceParticipants || raceParticipants?.length === 0) {
@@ -297,9 +332,15 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 
   // cant use clientId when user is a guest - accesses this route with booking PIN
   // TODO: refactor these functions to use bookingId when we decide to have multiple bookings
-  const userParticipants = await findUserParticipants(isGuest ? booking.userId : clientId);
-  const savedParticipants = await findUserSavedParticipants(isGuest ? booking.userId : clientId);
+  const userParticipants = await findUserParticipants(
+    isGuest ? booking.userId : clientId
+  );
+  const savedParticipants = await findUserSavedParticipants(
+    isGuest ? booking.userId : clientId
+  );
   const shirtSizes = await findShirtSizes();
+
+  const eventTeams = await findEventTeams(eventId);
 
   return json({
     event,
@@ -311,7 +352,8 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     shirtSizes,
     isAuth: !!authenticatedClient,
     isGuest,
-    bookingId
+    bookingId,
+    eventTeams
   });
 };
 
@@ -327,8 +369,12 @@ export default function CheckoutInfoRoute() {
     shirtSizes,
     isAuth,
     isGuest,
-    bookingId
+    bookingId,
+    eventTeams
   } = useLoaderData<LoaderData>() as LoaderData;
+  const [participantTeam, setParticipantTeam] = useState<string | null>(
+    raceParticipants[0].team?.name || null
+  );
   const [participant, setParticipant] = useState<Participant | null>(
     raceParticipants[0].participant
   );
@@ -378,15 +424,18 @@ export default function CheckoutInfoRoute() {
   }, []);
 
   function handleSetParticipant(e: React.MouseEvent) {
-    const newParticipant = e.currentTarget.id.split('|')[0];
+    const [newParticipant, raceId, raceParticipantId] =
+      e.currentTarget.id.split('|');
     const index = userParticipants.findIndex(
       (a: Participant) => a.id === newParticipant
     );
     const participant = userParticipants[index];
     const isVisited = visitedParticipants.some((v) => v.id === participant.id);
 
+    handleSetParticipantTeam(raceParticipantId);
+
     setParticipant(participant);
-    setSelectedRace(e.currentTarget.id.split('|')[1]);
+    setSelectedRace(raceId);
     setErrors({});
     setHash(Date.now());
     setSelectedParticipant(null);
@@ -394,6 +443,17 @@ export default function CheckoutInfoRoute() {
     if (!isVisited) {
       setVisitedParticipants((p) => [...p, participant]);
     }
+  }
+
+  function handleSetParticipantTeam(raceParticipantId: string) {
+    const index = raceParticipants.findIndex(
+      (rp) => rp.id === raceParticipantId
+    );
+    const rParticipant = raceParticipants[index];
+
+    setParticipantTeam(
+      rParticipant.team ? (rParticipant.team.name as string) : null
+    );
   }
 
   function handlerSetShowNotificationFunction(callback: () => void) {
@@ -545,7 +605,7 @@ export default function CheckoutInfoRoute() {
                       )
                     }
                   )}
-                  id={p.participantId + '|' + p.race.id}
+                  id={`${p.participantId}|${p.race.id}|${p.id}`}
                   onClick={handleSetParticipant}
                   data-cy={`participant-${index + 1}`}
                 >
@@ -622,6 +682,8 @@ export default function CheckoutInfoRoute() {
             resetForm={resetForm}
             isSingleParticipant={raceParticipants.length === 1}
             isReadOnly={isGuest}
+            eventTeams={eventTeams}
+            participantTeam={participantTeam}
           >
             {!isGuest && (
               <>
