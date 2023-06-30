@@ -425,7 +425,7 @@ export default function CheckoutInfoRoute() {
     terms: boolean;
     regulation: boolean;
   }>({ terms: false, regulation: false });
-  const [checkedOrganizerCampaigns, setCheckedOrganizerCampaigns] =
+  const [checkedAddToMailingList, setCheckedAddToMailingList] =
     useState(false);
   const initialVisitedParticipants = raceParticipants
     .filter((p) => p.participant.status === 'saved')
@@ -539,8 +539,8 @@ export default function CheckoutInfoRoute() {
     });
   }
 
-  function handleCheckOrganizerCampaign() {
-    setCheckedOrganizerCampaigns(!checkedOrganizerCampaigns);
+  function handleCheckAddToMailingList() {
+    setCheckedAddToMailingList(!checkedAddToMailingList);
   }
 
   useEffect(() => {
@@ -780,8 +780,8 @@ export default function CheckoutInfoRoute() {
                     <input
                       name="add-to-mail-list"
                       type="checkbox"
-                      defaultChecked={checkedOrganizerCampaigns}
-                      onClick={handleCheckOrganizerCampaign}
+                      defaultChecked={checkedAddToMailingList}
+                      onClick={handleCheckAddToMailingList}
                       className="w-4 h-4 text-indigo-500 bg-gray-100 rounded border-gray-300 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600"
                       data-cy="mail-list"
                     />
@@ -789,7 +789,7 @@ export default function CheckoutInfoRoute() {
                       className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300"
                       htmlFor="add-to-mail-list"
                     >
-                      {t('Organiser Campaign X', { organiser: organiserName })}
+                      {t('Add to X Mailing List', { organiser: organiserName })}
                     </label>
                   </div>
                 )}
@@ -828,7 +828,7 @@ export default function CheckoutInfoRoute() {
                   <input
                     type="hidden"
                     name="add-to-mail-list"
-                    value={checkedOrganizerCampaigns ? 'on' : 'off'}
+                    value={checkedAddToMailingList ? 'on' : 'off'}
                   />
                   <input type="hidden" name="hash" value={hash} />
                   <Button

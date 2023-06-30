@@ -214,13 +214,13 @@ export default function CheckoutConfirmationRoute() {
   const { registration, event, cart, isAuth, bookingId, organiserName } =
     useLoaderData<LoaderData>();
   const actionData = useActionData<ActionData>() as ActionData;
-  const [checkedOrganizerCampaigns, setCheckedOrganizerCampaigns] =
+  const [checkedAddToMailingList, setCheckedAddToMailingList] =
     useState<boolean>(false);
   const { t } = useTranslation('checkout');
   const fetcher = useFetcher();
 
-  function handleCheckOrganizerCampaign() {
-    setCheckedOrganizerCampaigns(!checkedOrganizerCampaigns);
+  function handleCheckAddToMailingList() {
+    setCheckedAddToMailingList(!checkedAddToMailingList);
   }
 
   return (
@@ -279,8 +279,8 @@ export default function CheckoutConfirmationRoute() {
                   <input
                     name="add-to-mail-list"
                     type="checkbox"
-                    checked={checkedOrganizerCampaigns}
-                    onClick={handleCheckOrganizerCampaign}
+                    checked={checkedAddToMailingList}
+                    onClick={handleCheckAddToMailingList}
                     className="w-4 h-4 text-indigo-500 bg-gray-100 rounded border-gray-300 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600"
                     data-cy="mail-list"
                   />
@@ -288,7 +288,7 @@ export default function CheckoutConfirmationRoute() {
                     className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300"
                     htmlFor="add-to-mail-list"
                   >
-                    {t('Organiser Campaign X', { organiser: organiserName })}
+                    {t('Add to X Mailing List', { organiser: organiserName })}
                   </label>
                 </div>
               </FormField>
