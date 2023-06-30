@@ -33,7 +33,7 @@ export default async function exportRaceParticipantsToExcel({
   raceParticipants.map((r) => {
     return worksheet.addRow({
       athlete: `${r.participant.firstName} ${r.participant.lastName}`,
-      team: '-',
+      team: r.team ? r.team.name : t('Individual'),
       ageGroup: r.participant.gender,
       status: t(r.booking?.status as string),
       dorsal: '-',

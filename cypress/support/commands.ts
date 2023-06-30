@@ -75,7 +75,9 @@ function pickDate(name: string, date: string, outside = 'body') {
   const [year, month, day] = date.split('-').map(Number);
 
   cy.get(`input[name=${name}]`)
-    .type(`0${date}`) // prefixing with 0 because 1st char is lost 🤷‍
+    .should('exist')// this + clear should be enough to delay typing and stop using 0 as prefix
+    .clear()
+    .type(date)
     .get(`[data-cy-year=${year}][data-cy-month=${month}][data-cy-day=${day}]`)
     .click({ force: true }) // when within a dialog
 

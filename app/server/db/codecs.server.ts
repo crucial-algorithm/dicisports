@@ -271,7 +271,8 @@ function dbUIRaceParticipantToUIRaceParticipant(
     gender: raceParticipant.gender,
     bookingAt: raceParticipant.booking_at,
     status: raceParticipant.status,
-    raceName: raceParticipant.race_name
+    raceName: raceParticipant.race_name,
+    teamName: raceParticipant.team_name
   };
 }
 
