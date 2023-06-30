@@ -428,6 +428,7 @@ export function Creatable({
           <div className="z-100">
             <div>
               <Combobox.Input
+                id={`creatable-${name}`}
                 key={activeOption?.value}
                 className="input-text"
                 onChange={handleSearch}

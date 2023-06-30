@@ -510,12 +510,12 @@ describe('Checkout', () => {
           expect(l.pathname).to.include('/checkout/info/');
         })
 
-        .get('input[name=creatable-value]')
+        .get('#creatable-team')
         .clear()
         .type('Marretas')
 
         .get('ul[data-headlessui-state="open"] li:first')
-        .contains('Criar equipa: Marretas');
+        .contains('Criar: Marretas');
     });
 
     it('should save team', () => {
@@ -571,12 +571,12 @@ describe('Checkout', () => {
         .get('input[name=federation-number]')
         .type('8165238')
 
-        .get('input[name=creatable-value]')
+        .get('#creatable-team')
         .clear()
         .type('Marretas')
 
         .get('ul[data-headlessui-state="open"] li:first')
-        .contains('Criar equipa: Marretas')
+        .contains('Criar: Marretas')
         .click()
 
         .pickOptionFromSelect('shirt', 2)
@@ -599,7 +599,7 @@ describe('Checkout', () => {
         .get('div[data-cy=participant-2]')
         .click()
 
-        .get('input[name=creatable-value]')
+        .get('#creatable-team')
         .clear()
         .type('Marretas')
 
