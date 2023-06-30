@@ -154,7 +154,6 @@ export default function DashboardRoute() {
 
   function handleSearchedName(value: string) {
     setSearchedParticipantName(value);
-    searchForm?.current?.submit();
   }
 
   function EventInformation() {
@@ -357,9 +356,10 @@ export default function DashboardRoute() {
                         className="border-b transition duration-300 ease-in-out hover:bg-red"
                         key={rp.id}
                         data-cy="participant-row"
+                        id={`participant-${rp.id}`}
                       >
                         <TD value={`${rp.name}`} />
-                        <TD value={'-'} />
+                        <TD value={rp.teamName ? rp.teamName : t('Individual')} />
                         <TD value={rp.gender} />
                         <TD value={String(rp.bookingAt).split('T')[0]} />
                         <TD value={t(rp.status)} />
