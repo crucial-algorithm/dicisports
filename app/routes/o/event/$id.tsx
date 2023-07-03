@@ -806,6 +806,7 @@ export default function OrganizerEventRoute() {
           <FormField
             label={t('Dorsal Starting Number')}
             id="dorsal"
+            description={t('Dorsal Starting Number Description')}
             error={actionData?.errors?.dorsalStartingNumber}
           >
             <TextField
