@@ -62,6 +62,8 @@ import type {
 import { badRequest, displayTimeOfDay } from '~/utils/misc';
 import { Unauthorized } from '~/server/utils/misc';
 import InputError from '~/components/shared/form/InputError';
+import { findOrganiser } from '~/server/db/organiser.server';
+import { addEmailToMailingList } from '~/server/db/mailingList.server';
 import { findEventTeams } from '~/server/db/teams.server';
 
 type LoaderData = {
@@ -74,7 +76,13 @@ type LoaderData = {
   isAuth: boolean;
   isGuest: boolean;
   bookingId: string;
+  organiserName: string;
   eventTeams: EventTeam[];
+};
+
+export const handle: { id: string; i18n: string[] } = {
+  id: 'participant-form',
+  i18n: ['checkout']
 };
 
 export const action: ActionFunction = async ({ request, params }) => {
@@ -90,6 +98,11 @@ export const action: ActionFunction = async ({ request, params }) => {
   }
 
   const eventId = booking.eventId;
+  const event = await findEvent(eventId);
+
+  if (!event) {
+    return redirect('/');
+  }
 
   // We check if user is authenticated -> authenticatedClient, if not, we use the client session -> anonymousClient
   const clientId =
@@ -113,6 +126,7 @@ export const action: ActionFunction = async ({ request, params }) => {
   const hash = form.get('hash') as string;
   const regulation: boolean = (form.get('regulation') as string) === 'on';
   const terms: boolean = (form.get('terms') as string) === 'on';
+  const enrollInMailingList: boolean = (form.get('add-to-mail-list') as string) === 'on';
   const teamName = (form.get('creatable-team') as string) || null;
 
   try {
@@ -246,7 +260,10 @@ export const action: ActionFunction = async ({ request, params }) => {
       actionId === CheckoutInfoActions.checkout ||
       actionId === CheckoutInfoActions.updateAndCheckout
     ) {
-      TermsAndRegulationSchema.parse({ regulation, terms });
+      TermsAndRegulationSchema.parse({
+        regulation,
+        terms
+      });
       const raceParticipants = await findUserEventRaceParticipants(
         clientId,
         eventId
@@ -270,6 +287,14 @@ export const action: ActionFunction = async ({ request, params }) => {
           hash: parseInt(hash),
           missingParticipants: JSON.stringify(draftParticipants)
         });
+      }
+
+      if (enrollInMailingList && authenticatedClient) {
+        const organiser = await findOrganiser(event.createdById);
+
+        if (organiser) {
+          await addEmailToMailingList(authenticatedClient.email, organiser.id);
+        }
       }
 
       await updateBookingStatus(bookingId, CheckoutStatus.pending);
@@ -318,12 +343,14 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   }
 
   const eventId = booking.eventId;
-
   const event = await findEvent(eventId);
-  const cart = await findBookingCart(
-    isGuest ? booking.userId : clientId,
-    eventId
-  );
+
+  if (!event) {
+    return redirect('/');
+  }
+
+  const cart = await findBookingCart(isGuest ? booking.userId : clientId, eventId);
+  const organiser = await findOrganiser(event.createdById);
   const raceParticipants = await findUserBookingParticipants(bookingId);
 
   if (!raceParticipants || raceParticipants?.length === 0) {
@@ -353,6 +380,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     isAuth: !!authenticatedClient,
     isGuest,
     bookingId,
+    organiserName: organiser?.name as string,
     eventTeams
   });
 };
@@ -370,6 +398,7 @@ export default function CheckoutInfoRoute() {
     isAuth,
     isGuest,
     bookingId,
+    organiserName,
     eventTeams
   } = useLoaderData<LoaderData>() as LoaderData;
   const [participantTeam, setParticipantTeam] = useState<string | null>(
@@ -396,6 +425,8 @@ export default function CheckoutInfoRoute() {
     terms: boolean;
     regulation: boolean;
   }>({ terms: false, regulation: false });
+  const [checkedOrganizerCampaigns, setCheckedOrganizerCampaigns] =
+    useState(false);
   const initialVisitedParticipants = raceParticipants
     .filter((p) => p.participant.status === 'saved')
     .map((p) => p.participant);
@@ -506,6 +537,10 @@ export default function CheckoutInfoRoute() {
       regulation: checkedTermsAndRegulation.regulation,
       terms: !checkedTermsAndRegulation.terms
     });
+  }
+
+  function handleCheckOrganizerCampaign() {
+    setCheckedOrganizerCampaigns(!checkedOrganizerCampaigns);
   }
 
   useEffect(() => {
@@ -691,7 +726,7 @@ export default function CheckoutInfoRoute() {
                   <input
                     name="regulation"
                     type="checkbox"
-                    checked={checkedTermsAndRegulation.regulation}
+                    defaultChecked={checkedTermsAndRegulation.regulation}
                     onClick={handleCheckRegulation}
                     className="w-4 h-4 text-indigo-500 bg-gray-100 rounded border-gray-300 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600"
                     data-cy="regulation"
@@ -715,11 +750,16 @@ export default function CheckoutInfoRoute() {
                   </label>
                 </div>
 
-                <div className="flex items-center mb-8">
+                <div
+                  className={clsx('flex items-center', {
+                    'mb-2': isAuth,
+                    'mb-8': !isAuth
+                  })}
+                >
                   <input
                     name="terms"
                     type="checkbox"
-                    checked={checkedTermsAndRegulation.terms}
+                    defaultChecked={checkedTermsAndRegulation.terms}
                     onClick={handleCheckTerms}
                     className="w-4 h-4 text-indigo-500 bg-gray-100 rounded border-gray-300 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600"
                     data-cy="terms"
@@ -734,6 +774,25 @@ export default function CheckoutInfoRoute() {
                     </Link>
                   </label>
                 </div>
+
+                {isAuth && (
+                  <div className="flex items-center mb-8">
+                    <input
+                      name="add-to-mail-list"
+                      type="checkbox"
+                      defaultChecked={checkedOrganizerCampaigns}
+                      onClick={handleCheckOrganizerCampaign}
+                      className="w-4 h-4 text-indigo-500 bg-gray-100 rounded border-gray-300 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600"
+                      data-cy="mail-list"
+                    />
+                    <label
+                      className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300"
+                      htmlFor="add-to-mail-list"
+                    >
+                      {t('Organiser Campaign X', { organiser: organiserName })}
+                    </label>
+                  </div>
+                )}
 
                 <InputError id="terms-error" className="mb-2">
                   {errors?.submit || errors?.terms || errors?.regulation}
@@ -765,6 +824,11 @@ export default function CheckoutInfoRoute() {
                     type="hidden"
                     name="terms"
                     value={checkedTermsAndRegulation.terms ? 'on' : 'off'}
+                  />
+                  <input
+                    type="hidden"
+                    name="add-to-mail-list"
+                    value={checkedOrganizerCampaigns ? 'on' : 'off'}
                   />
                   <input type="hidden" name="hash" value={hash} />
                   <Button

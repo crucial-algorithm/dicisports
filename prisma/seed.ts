@@ -82,6 +82,7 @@ async function clear() {
   await db.favoriteGroup.deleteMany();
   await db.group.deleteMany();
   await db.discountCode.deleteMany();
+  await db.mailingList.deleteMany();
   await db.organiser.deleteMany();
   await db.user.deleteMany();
   await db.groupSpirit.deleteMany();

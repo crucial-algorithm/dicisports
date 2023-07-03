@@ -1,3 +1,4 @@
+import type { Event } from '@prisma/client';
 import { CheckoutStatus } from '@prisma/client';
 import type { ActionFunction, LoaderFunction } from '@remix-run/node';
 import { json, redirect } from '@remix-run/node';
@@ -8,10 +9,9 @@ import {
   useLoaderData
 } from '@remix-run/react';
 import * as React from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { z } from 'zod';
-
-import type { Event } from '@prisma/client';
+import { z, ZodError } from 'zod';
 
 import Button from '~/components/shared/Button';
 import DisplayCart from '~/components/shared/DisplayCart';
@@ -25,13 +25,17 @@ import { getUser } from '~/server/auth/session.server';
 import { findBookingById, findBookingCart } from '~/server/db/booking.server';
 import { findEvent } from '~/server/db/events.server';
 import { findUserEventRaceParticipants } from '~/server/db/participant.server';
-import type { KCDHandle } from '~/types';
-import type { Booking, UICartRow } from '~/types';
+import type { Booking, KCDHandle, UICartRow } from '~/types';
 import { badRequest, getDomainUrl } from '~/utils/misc';
 import { sendBookingConfirmationEmail } from '~/server/email.server';
 import i18n from '~/server/i18n.server';
 import InputError from '~/components/shared/form/InputError';
 import FormField from '~/components/shared/form/FormField';
+import { findOrganiser } from '~/server/db/organiser.server';
+import {
+  addEmailToMailingList,
+  findMailingListEnrolledEmail
+} from '~/server/db/mailingList.server';
 
 type LoaderData = {
   registration: Booking;
@@ -39,6 +43,7 @@ type LoaderData = {
   cart: UICartRow;
   isAuth: boolean;
   bookingId: string;
+  organiserName: string;
 };
 
 type ActionData = {
@@ -80,33 +85,75 @@ export const action: ActionFunction = async ({ request, params }) => {
 
   const eventId = booking.eventId;
   const event = await findEvent(eventId);
+
+  if (!event) {
+    return redirect('/');
+  }
+
   const domainUrl = getDomainUrl(request);
   const cart = await findBookingCart(clientId, eventId);
   const email = form.get('email') as string;
+  const enrollInMailingList: boolean =
+    (form.get('add-to-mail-list') as string) === 'on';
+
+  const EmailConfirmationSchema = z.object({
+    email: z
+      .string({ required_error: t('Invalid Email') })
+      .email(t('Invalid Email'))
+  });
 
   try {
-    z.string().email().parse(email);
-  } catch (e) {
-    return json({
-      errors: { email: t('Invalid Email') },
-      fields: { email }
+    EmailConfirmationSchema.parse({ email });
+
+    if (enrollInMailingList) {
+      const organiser = await findOrganiser(event.createdById);
+      const isEmailInUse = !!(await findMailingListEnrolledEmail(
+        email,
+        organiser?.id as string
+      ));
+
+      if (isEmailInUse) {
+        return badRequest({
+          errors: { submit: t('Email in use') }
+        });
+      }
+
+      if (organiser) {
+        await addEmailToMailingList(email, organiser.id);
+      }
+    }
+
+    await sendBookingConfirmationEmail({
+      emailAddress: email,
+      event,
+      booking,
+      domainUrl,
+      cart,
+      userName: authenticatedClient !== null ? authenticatedClient.name : null
     });
+
+    return json({
+      errors: {},
+      fields: { email },
+      successMessage: t('Booking Confirmation Email Sent')
+    });
+  } catch (e) {
+    if (!(e instanceof ZodError)) {
+      const tc = await i18n.getFixedT(request, 'common');
+
+      return badRequest({
+        errors: { submit: tc('500 error message') }
+      });
+    }
+
+    const errors: { [key: string]: string | undefined } = {};
+
+    for (const error of (e as ZodError).errors) {
+      errors[error.path[0]] = error.message;
+    }
+
+    return badRequest({ errors });
   }
-
-  await sendBookingConfirmationEmail({
-    emailAddress: email,
-    event,
-    booking,
-    domainUrl,
-    cart,
-    userName: authenticatedClient !== null ? authenticatedClient.name : null
-  });
-
-  return json({
-    errors: {},
-    fields: { email },
-    successMessage: t('Booking Confirmation Email Sent')
-  });
 };
 
 export const loader: LoaderFunction = async ({ request, params }) => {
@@ -145,26 +192,36 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   }
 
   const event = await findEvent(eventId);
+
+  if (!event) {
+    return redirect('/');
+  }
+
   const cart = await findBookingCart(clientId, eventId);
+  const organiser = await findOrganiser(event.createdById);
 
   return json({
     registration: booking,
     event,
     cart,
     isAuth: !!authenticatedClient,
-    bookingId
+    bookingId,
+    organiserName: organiser?.name as string
   });
 };
 
 export default function CheckoutConfirmationRoute() {
-  const { registration, event, cart, isAuth, bookingId } = useLoaderData<LoaderData>();
+  const { registration, event, cart, isAuth, bookingId, organiserName } =
+    useLoaderData<LoaderData>();
+  const actionData = useActionData<ActionData>() as ActionData;
+  const [checkedOrganizerCampaigns, setCheckedOrganizerCampaigns] =
+    useState<boolean>(false);
   const { t } = useTranslation('checkout');
   const fetcher = useFetcher();
-  const { errors, fields, successMessage } =
-    (useActionData<ActionData>() as ActionData) || {
-      errors: { email: '', submit: '' },
-      fields: { email: '' }
-    };
+
+  function handleCheckOrganizerCampaign() {
+    setCheckedOrganizerCampaigns(!checkedOrganizerCampaigns);
+  }
 
   return (
     <Main>
@@ -211,24 +268,39 @@ export default function CheckoutConfirmationRoute() {
             <Form method="post" className="flex flex-col items-start mt-16">
               <FormField
                 label={t('Mail Confirmation Details')}
-                error={errors.email}
+                error={actionData?.errors?.email}
               >
                 <TextField
                   name="email"
-                  className="w-1/2 p-8"
+                  className="w-1/2 p-8 mb-2"
                   placeholder={t('Email Address')}
-                  defaultValue={fields.email}
                 />
+                <div className="flex items-center">
+                  <input
+                    name="add-to-mail-list"
+                    type="checkbox"
+                    checked={checkedOrganizerCampaigns}
+                    onClick={handleCheckOrganizerCampaign}
+                    className="w-4 h-4 text-indigo-500 bg-gray-100 rounded border-gray-300 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600"
+                    data-cy="mail-list"
+                  />
+                  <label
+                    className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300"
+                    htmlFor="add-to-mail-list"
+                  >
+                    {t('Organiser Campaign X', { organiser: organiserName })}
+                  </label>
+                </div>
               </FormField>
               <Button name="send-confirmation" type="submit" className="mt-4">
                 {t('Send')}
               </Button>
-              {errors.submit && (
+              {actionData?.errors?.submit && (
                 <InputError className="mt-4" id="error-message">
-                  {errors.submit}
+                  {actionData.errors.submit}
                 </InputError>
               )}
-              {successMessage && (
+              {actionData?.successMessage && (
                 <p
                   id="success-message"
                   className="dark:text-blueGray-500 text-gray-500 text-lg mt-2"
@@ -236,7 +308,7 @@ export default function CheckoutConfirmationRoute() {
                   <span role="img" aria-label="sparkles">
                     ✨
                   </span>{' '}
-                  {successMessage}
+                  {actionData.successMessage}
                 </p>
               )}
             </Form>

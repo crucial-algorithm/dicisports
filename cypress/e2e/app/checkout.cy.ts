@@ -446,6 +446,9 @@ describe('Checkout', () => {
         .and('contain', '20€');
     });
 
+    // TODO: finish test as soon as we re-instate booking payment flow e2e tests
+    it.skip('should display checkbox for organiser campaign and corresponding validations', () => {});
+
     it('should display current booked teams', () => {
       cy.intercept('GET', '*?_data=routes*checkout*')
         .as('selectRace')
@@ -764,6 +767,40 @@ describe('Checkout', () => {
 
         .get('#identity-card-error')
         .should('exist');
+    });
+
+    it('should display checkbox to enroll in organiser mailing list', () => {
+      cy.intercept('GET', '/checkout/cart/*?_data=routes*checkout*')
+        .as('selectRace')
+
+        .intercept('GET', '/checkout/info/*?_data=routes*checkout*')
+        .as('checkout')
+
+        .visitAndWaitForHydration('/checkout/cart/bQmGXYkbhJetjk6mniMt')
+
+        .get('#add-race-Rd9SETi59X9ava6CPhkY')
+        .click()
+
+        .wait('@selectRace')
+
+        .get('#checkout')
+        .click()
+
+        .wait('@checkout')
+
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.include('/checkout/info/');
+        })
+
+        .get('input[name=add-to-mail-list]')
+        .first()
+        .should('exist')
+        .and('be.visible')
+        .click()
+
+        .get('input[name=add-to-mail-list]')
+        .should('be.checked');
     });
   });
 

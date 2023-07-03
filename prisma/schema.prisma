@@ -404,21 +404,22 @@ enum OrganiserStatus {
 }
 
 model Organiser {
-  id           String          @id
-  name         String
-  description  String
-  logo         String
-  email        String          @unique
-  phoneNumber  Int?            @unique @map("phone_number")
-  address      String
-  postalCode   String          @map("postal_code")
-  city         String
-  userId       String          @map("user_id") @unique
-  user         User            @relation(fields: [userId], references: [id])
-  status       OrganiserStatus @default(PENDING)
-  createdAt    DateTime        @default(now()) @map("created_at")
-  updatedAt    DateTime        @updatedAt @map("updated_at")
-  DiscountCode DiscountCode[]
+  id                String              @id
+  name              String
+  description       String
+  logo              String
+  email             String              @unique
+  phoneNumber       Int?                @unique @map("phone_number")
+  address           String
+  postalCode        String              @map("postal_code")
+  city              String
+  userId            String              @map("user_id") @unique
+  user              User                @relation(fields: [userId], references: [id])
+  status            OrganiserStatus     @default(PENDING)
+  createdAt         DateTime            @default(now()) @map("created_at")
+  updatedAt         DateTime            @updatedAt @map("updated_at")
+  DiscountCode      DiscountCode[]
+  MailingList       MailingList[]
 
   @@map("organizers")
 }
@@ -436,6 +437,17 @@ model DiscountCode {
   updatedAt   DateTime  @updatedAt @map("updated_at")
 
   @@map("discount_codes")
+}
+
+// Saves email from users that want to receive news from certain organisers
+model MailingList {
+    email           String
+    organiserId     String      @map("organiser_id")
+    organiser       Organiser   @relation(fields: [organiserId], references: [id])
+    createdAt       DateTime    @default(now()) @map("created_at")
+
+    @@unique([email, organiserId])
+    @@map("mailing_list")
 }
 
 model EventTeam {
