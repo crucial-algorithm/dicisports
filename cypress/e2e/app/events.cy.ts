@@ -908,6 +908,45 @@ describe('Event', () => {
         .get('input[name=event-name]')
         .should('have.value', 'Love Tiles Douro Granfondo 2023');
     });
+
+    it('should display and update starting dorsal number', () => {
+      cy.visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d/dashboard')
+        .get('[data-cy="edit"]')
+        .click()
+
+        .location()
+        .should((loc) => {
+          expect(loc.pathname).to.contain('/o/event/MY4bvgxDbMtGv8rbYe5d');
+        })
+
+        .intercept('POST', '/o/event/MY4bvgxDbMtGv8rbYe5d*')
+        .as('UpdateEvent')
+
+        .get('input[name=dorsal-number]')
+        .should('have.value', '1')
+        .clear()
+        .type('200')
+
+        .get('button[name=update-event]')
+        .click()
+
+        .wait('@UpdateEvent')
+
+        .location()
+        .should((loc) => {
+          expect(loc.pathname).to.contain('/o/event/MY4bvgxDbMtGv8rbYe5d');
+        })
+
+        .reload()
+
+        .location()
+        .should((loc) => {
+          expect(loc.pathname).to.contain('/o/event/MY4bvgxDbMtGv8rbYe5d');
+        })
+
+        .get('input[name=dorsal-number]')
+        .should('have.value', '200');
+    });
   });
 });
 

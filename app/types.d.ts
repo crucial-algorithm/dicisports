@@ -142,6 +142,7 @@ type CreateEventInput = {
   externalBookingUrl?: string | null;
   description?: string | null;
   directions: string | null;
+  dorsalStartingNumber: number;
   image1?: string | null;
   image2?: string | null;
   image3?: string | null;

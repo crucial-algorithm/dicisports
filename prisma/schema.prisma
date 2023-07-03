@@ -94,40 +94,41 @@ enum Status {
 }
 
 model Event {
-  id                 String      @id @default(uuid())
-  name               String?
-  slug               String?     @unique
-  sport              Sport?      @relation(fields: [sportId], references: [id])
-  sportId            Int?        @map("sport_id")
-  difficulty         Difficulty? @relation(fields: [difficultyId], references: [id])
-  difficultyId       Int?        @map("difficulty_id")
-  startAt            DateTime?   @map("start_at")
-  endAt              DateTime?   @map("end_at")
-  lat                Float?
-  lng                Float?
-  location           String?
-  useExternalBooking Boolean     @default(false) @map("use_external_booking")
-  externalBookingUrl String?     @map("external_booking_url")
-  description        String?
-  status             Status      @default(auto)
-  image1             String?
-  image2             String?
-  image3             String?
-  image4             String?
-  image5             String?
-  directions         String?
-  regulationPath     String?     @map("regulation_path")
-  regulationContent  String?     @map("regulation_content")
-  regulationFileName String?     @map("regulation_file_name")
-  createdBy          User        @relation(fields: [createdById], references: [id])
-  createdById        String      @map("created_by")
-  createdAt          DateTime    @default(now()) @map("created_at")
-  updatedAt          DateTime    @updatedAt @map("updated_at")
-  documents          Document[]
-  perks              Perk[]
-  races              Race[]
-  bookings           Booking[]
-  teams              EventTeam[]
+  id                    String      @id @default(uuid())
+  name                  String?
+  slug                  String?     @unique
+  sport                 Sport?      @relation(fields: [sportId], references: [id])
+  sportId               Int?        @map("sport_id")
+  difficulty            Difficulty? @relation(fields: [difficultyId], references: [id])
+  difficultyId          Int?        @map("difficulty_id")
+  startAt               DateTime?   @map("start_at")
+  endAt                 DateTime?   @map("end_at")
+  lat                   Float?
+  lng                   Float?
+  location              String?
+  useExternalBooking    Boolean     @default(false) @map("use_external_booking")
+  externalBookingUrl    String?     @map("external_booking_url")
+  description           String?
+  status                Status      @default(auto)
+  image1                String?
+  image2                String?
+  image3                String?
+  image4                String?
+  image5                String?
+  directions            String?
+  regulationPath        String?     @map("regulation_path")
+  regulationContent     String?     @map("regulation_content")
+  regulationFileName    String?     @map("regulation_file_name")
+  dorsalStartingNumber  Int?        @map("dorsal_starting_number")
+  createdBy             User        @relation(fields: [createdById], references: [id])
+  createdById           String      @map("created_by")
+  createdAt             DateTime    @default(now()) @map("created_at")
+  updatedAt             DateTime    @updatedAt @map("updated_at")
+  documents             Document[]
+  perks                 Perk[]
+  races                 Race[]
+  bookings              Booking[]
+  teams                 EventTeam[]
 
   favEvents FavoriteEvent[]
 
