@@ -447,7 +447,7 @@ describe('Checkout', () => {
     });
 
     // TODO: finish test as soon as we re-instate booking payment flow e2e tests
-    it.skip('should display checkbox for organiser campaign and corresponding validations', () => {});
+    it.skip('should display checkbox for organizer campaign and corresponding validations', () => {});
 
     it('should display current booked teams', () => {
       cy.intercept('GET', '*?_data=routes*checkout*')
@@ -769,7 +769,7 @@ describe('Checkout', () => {
         .should('exist');
     });
 
-    it('should display checkbox to enroll in organiser mailing list', () => {
+    it('should display checkbox to enroll in organizer mailing list', () => {
       cy.intercept('GET', '/checkout/cart/*?_data=routes*checkout*')
         .as('selectRace')
 

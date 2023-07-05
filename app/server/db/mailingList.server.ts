@@ -2,28 +2,28 @@ import { db } from '~/server/db.server';
 
 async function addEmailToMailingList(
   email: string,
-  organiserId: string
+  organizerId: string
 ): Promise<void> {
   const now = new Date();
 
   await db.mailingList.create({
     data: {
       email,
-      organiserId,
+      organizerId,
       createdAt: now
     }
   });
 }
 
-async function findMailingListEnrolledEmail(email: string, organiserId: string): Promise<{
+async function findMailingListEnrolledEmail(email: string, organizerId: string): Promise<{
   email: string;
-  organiserId: string;
+  organizerId: string;
   createdAt: Date;
-}> {
+} | null> {
   return await db.mailingList.findUnique({
     where: {
-      email_organiserId: {
-        email, organiserId
+      email_organizerId: {
+        email, organizerId
       }
     }
   });

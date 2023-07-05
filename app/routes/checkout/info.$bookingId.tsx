@@ -62,7 +62,7 @@ import type {
 import { badRequest, displayTimeOfDay } from '~/utils/misc';
 import { Unauthorized } from '~/server/utils/misc';
 import InputError from '~/components/shared/form/InputError';
-import { findOrganiser } from '~/server/db/organiser.server';
+import { findOrganizer } from '~/server/db/organizer.server';
 import { addEmailToMailingList } from '~/server/db/mailingList.server';
 import { findEventTeams } from '~/server/db/teams.server';
 
@@ -76,7 +76,7 @@ type LoaderData = {
   isAuth: boolean;
   isGuest: boolean;
   bookingId: string;
-  organiserName: string;
+  organizerName: string;
   eventTeams: EventTeam[];
 };
 
@@ -290,10 +290,10 @@ export const action: ActionFunction = async ({ request, params }) => {
       }
 
       if (enrollInMailingList && authenticatedClient) {
-        const organiser = await findOrganiser(event.createdById);
+        const organizer = await findOrganizer(event.createdById);
 
-        if (organiser) {
-          await addEmailToMailingList(authenticatedClient.email, organiser.id);
+        if (organizer) {
+          await addEmailToMailingList(authenticatedClient.email, organizer.id);
         }
       }
 
@@ -350,7 +350,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   }
 
   const cart = await findBookingCart(isGuest ? booking.userId : clientId, eventId);
-  const organiser = await findOrganiser(event.createdById);
+  const organizer = await findOrganizer(event.createdById);
   const raceParticipants = await findUserBookingParticipants(bookingId);
 
   if (!raceParticipants || raceParticipants?.length === 0) {
@@ -380,7 +380,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     isAuth: !!authenticatedClient,
     isGuest,
     bookingId,
-    organiserName: organiser?.name as string,
+    organizerName: organizer?.name as string,
     eventTeams
   });
 };
@@ -398,7 +398,7 @@ export default function CheckoutInfoRoute() {
     isAuth,
     isGuest,
     bookingId,
-    organiserName,
+    organizerName,
     eventTeams
   } = useLoaderData<LoaderData>() as LoaderData;
   const [participantTeam, setParticipantTeam] = useState<string | null>(
@@ -789,7 +789,7 @@ export default function CheckoutInfoRoute() {
                       className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300"
                       htmlFor="add-to-mail-list"
                     >
-                      {t('Add to X Mailing List', { organiser: organiserName })}
+                      {t('Add to X Mailing List', { organizer: organizerName })}
                     </label>
                   </div>
                 )}

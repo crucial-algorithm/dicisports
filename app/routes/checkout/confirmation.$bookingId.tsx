@@ -31,7 +31,7 @@ import { sendBookingConfirmationEmail } from '~/server/email.server';
 import i18n from '~/server/i18n.server';
 import InputError from '~/components/shared/form/InputError';
 import FormField from '~/components/shared/form/FormField';
-import { findOrganiser } from '~/server/db/organiser.server';
+import { findOrganizer } from '~/server/db/organizer.server';
 import {
   addEmailToMailingList,
   findMailingListEnrolledEmail
@@ -43,7 +43,7 @@ type LoaderData = {
   cart: UICartRow;
   isAuth: boolean;
   bookingId: string;
-  organiserName: string;
+  organizerName: string;
 };
 
 type ActionData = {
@@ -106,10 +106,10 @@ export const action: ActionFunction = async ({ request, params }) => {
     EmailConfirmationSchema.parse({ email });
 
     if (enrollInMailingList) {
-      const organiser = await findOrganiser(event.createdById);
+      const organizer = await findOrganizer(event.createdById);
       const isEmailInUse = !!(await findMailingListEnrolledEmail(
         email,
-        organiser?.id as string
+        organizer?.id as string
       ));
 
       if (isEmailInUse) {
@@ -118,8 +118,8 @@ export const action: ActionFunction = async ({ request, params }) => {
         });
       }
 
-      if (organiser) {
-        await addEmailToMailingList(email, organiser.id);
+      if (organizer) {
+        await addEmailToMailingList(email, organizer.id);
       }
     }
 
@@ -198,7 +198,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   }
 
   const cart = await findBookingCart(clientId, eventId);
-  const organiser = await findOrganiser(event.createdById);
+  const organizer = await findOrganizer(event.createdById);
 
   return json({
     registration: booking,
@@ -206,12 +206,12 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     cart,
     isAuth: !!authenticatedClient,
     bookingId,
-    organiserName: organiser?.name as string
+    organizerName: organizer?.name as string
   });
 };
 
 export default function CheckoutConfirmationRoute() {
-  const { registration, event, cart, isAuth, bookingId, organiserName } =
+  const { registration, event, cart, isAuth, bookingId, organizerName } =
     useLoaderData<LoaderData>();
   const actionData = useActionData<ActionData>() as ActionData;
   const [checkedAddToMailingList, setCheckedAddToMailingList] =
@@ -288,7 +288,7 @@ export default function CheckoutConfirmationRoute() {
                     className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300"
                     htmlFor="add-to-mail-list"
                   >
-                    {t('Add to X Mailing List', { organiser: organiserName })}
+                    {t('Add to X Mailing List', { organizer: organizerName })}
                   </label>
                 </div>
               </FormField>

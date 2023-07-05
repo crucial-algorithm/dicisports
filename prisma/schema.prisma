@@ -47,7 +47,7 @@ model User {
   favGroups    FavoriteGroup[]
   events       Event[]
   favEvents    FavoriteEvent[]
-  organiser    Organiser?
+  organizer    Organizer?
   DiscountCode DiscountCode[]
 
   @@map("users")
@@ -399,12 +399,12 @@ model ShirtSize {
   @@map("shirt_size")
 }
 
-enum OrganiserStatus {
+enum OrganizerStatus {
   PENDING
   APPROVED
 }
 
-model Organiser {
+model Organizer {
   id                String              @id
   name              String
   description       String
@@ -416,7 +416,7 @@ model Organiser {
   city              String
   userId            String              @map("user_id") @unique
   user              User                @relation(fields: [userId], references: [id])
-  status            OrganiserStatus     @default(PENDING)
+  status            OrganizerStatus     @default(PENDING)
   createdAt         DateTime            @default(now()) @map("created_at")
   updatedAt         DateTime            @updatedAt @map("updated_at")
   DiscountCode      DiscountCode[]
@@ -432,22 +432,22 @@ model DiscountCode {
   active      Boolean
   createdBy   User      @relation(fields: [createdById], references: [id])
   createdById String    @map("created_by") @db.VarChar(20)
-  organiser   Organiser @relation(fields: [organiserId], references: [id])
-  organiserId String    @map("organiser_id") @db.VarChar(20)
+  organizer   Organizer @relation(fields: [organizerId], references: [id])
+  organizerId String    @map("organizer_id") @db.VarChar(20)
   createdAt   DateTime  @default(now()) @map("created_at")
   updatedAt   DateTime  @updatedAt @map("updated_at")
 
   @@map("discount_codes")
 }
 
-// Saves email from users that want to receive news from certain organisers
+// Saves email from users that want to receive news from certain organizers
 model MailingList {
     email           String
-    organiserId     String      @map("organiser_id")
-    organiser       Organiser   @relation(fields: [organiserId], references: [id])
+    organizerId     String      @map("organizer_id")
+    organizer       Organizer   @relation(fields: [organizerId], references: [id])
     createdAt       DateTime    @default(now()) @map("created_at")
 
-    @@unique([email, organiserId])
+    @@unique([email, organizerId])
     @@map("mailing_list")
 }
 

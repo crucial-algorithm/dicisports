@@ -93,7 +93,7 @@ describe('Event', () => {
     });
 
     it('Should delete event', () => {
-      cy.loginOrganiser()
+      cy.loginOrganizer()
         .visitAndWaitForHydration('/o/event/bQmGXYkbhJetjk6mniMt')
 
         .intercept('POST', '/o/event/bQmGXYkbhJetjk6mniMt*')
@@ -140,7 +140,7 @@ describe('Event', () => {
 
   context('Maintenance', () => {
     beforeEach(() => {
-      cy.loginOrganiser();
+      cy.loginOrganizer();
       cy.task('db:reset');
       cy.task('clearDownloadFolder');
     });
@@ -550,7 +550,7 @@ describe('Event', () => {
     });
 
     it('should create race', () => {
-      cy.loginOrganiser()
+      cy.loginOrganizer()
         .visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d')
 
         .get('#create-race')
@@ -612,7 +612,7 @@ describe('Event', () => {
     });
 
     it('should update race', () => {
-      cy.loginOrganiser()
+      cy.loginOrganizer()
         .visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d')
 
         .get('[data-cy=race-xaXaCzs2t7D8DpRNnffM]')
@@ -652,7 +652,7 @@ describe('Event', () => {
     });
 
     it('should be able to upload a regulation pdf', () => {
-      cy.loginOrganiser()
+      cy.loginOrganizer()
 
         .intercept('GET', '/o/event/*?_data=routes*')
         .as('EventRequests')
@@ -682,7 +682,7 @@ describe('Event', () => {
     });
 
     it('should be able to upload a regulation inline', () => {
-      cy.loginOrganiser()
+      cy.loginOrganizer()
 
         .intercept('GET', '/o/event/*?_data=routes*')
         .as('EventRequests')
@@ -728,7 +728,7 @@ describe('Event', () => {
     });
 
     it('should be able to update inline regulation', () => {
-      cy.loginOrganiser()
+      cy.loginOrganizer()
         .visitAndWaitForHydration('/o/event/gLqrDfMx6qkTHn6hoZqA')
 
         .write(
@@ -751,7 +751,7 @@ describe('Event', () => {
     });
 
     it('should create race without price early bird', () => {
-      cy.loginOrganiser()
+      cy.loginOrganizer()
         .visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d')
 
         .get('#create-race')

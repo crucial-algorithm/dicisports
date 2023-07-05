@@ -23,26 +23,26 @@ import DiscountCodeIcon from '~/components/shared/icons/DiscountCodeIcon';
 
 import Logo from '~/components/shared/Logo';
 import { useUser } from '~/hooks';
-import { useOrganiser } from '~/hooks/useOrganiser';
+import { useOrganizer } from '~/hooks/useOrganizer';
 
 import { requireUser } from '~/server/auth/session.server';
-import { findOrganiser } from '~/server/db/organiser.server';
-import type { Organiser, KCDHandle } from '~/types';
+import { findOrganizer } from '~/server/db/organizer.server';
+import type { Organizer, KCDHandle } from '~/types';
 
 export const handle: KCDHandle & { id: string; i18n: string[] } = {
-  id: 'organiser',
+  id: 'organizer',
   i18n: []
 };
 
-export type OrganiserLoaderData = {
-  organiser: Organiser
+export type OrganizerLoaderData = {
+  organizer: Organizer
 };
 
 export const loader: LoaderFunction = async ({ request }) => {
   const user = await requireUser(request);
-  const organiser = await findOrganiser(user.id);
+  const organizer = await findOrganizer(user.id);
 
-  return json({ organiser });
+  return json({ organizer });
 };
 
 export default function OrganizerLayout() {
@@ -153,7 +153,7 @@ function Menu({
 }: MenuProps) {
   const { t } = useTranslation('common');
   const user = useUser();
-  const organiser = useOrganiser();
+  const organizer = useOrganizer();
 
   return (
     <>
@@ -207,19 +207,19 @@ function Menu({
           <MenuEntry
             icon={
               <>
-                {organiser?.logo && (
+                {organizer?.logo && (
                   <img
-                    src={buildImageUrl(organiser.logo, {
+                    src={buildImageUrl(organizer.logo, {
                       transformations: { resize: { type: 'fill', width: 30, height: 30 } }
                     })}
                     className="w-6 inline rounded-full"
-                    alt={organiser.name}
+                    alt={organizer.name}
                   />
                 )}
-                {!organiser?.logo && <BuildingStorefrontIcon className="w-6" />}
+                {!organizer?.logo && <BuildingStorefrontIcon className="w-6" />}
               </>
             }
-            title={organiser?.name || t('Organiser menu')}
+            title={organizer?.name || t('Organizer menu')}
             to="/o/us"
             sideBarCollapsed={sideBarCollapsed}
             onClick={onClick}

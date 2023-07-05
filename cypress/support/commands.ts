@@ -8,7 +8,7 @@ declare global {
 
       loginAdmin(): Chainable<void>;
 
-      loginOrganiser(): Chainable<void>;
+      loginOrganizer(): Chainable<void>;
 
       pickDate(name: string, date: string, outside?: string): Chainable<void>;
 
@@ -48,7 +48,7 @@ function loginAdmin() {
   );
 }
 
-function loginOrganiser() {
+function loginOrganizer() {
   cy.setCookie(
     'ds_root_session',
     'eyJfX3Nlc3Npb25faWRfXyI6ImE2ZDg5ZjNiLTFjZWUtNDYzMi1hNzU0LWY4NTc2M2ExOWJmOCJ9.ZB1rREpWNeNPCLgqJs58RGzDa1OrFao%2FGetqg3HBDe4'
@@ -170,7 +170,7 @@ function assertValueCopiedToClipboard(value: string) {
 
 Cypress.Commands.add('login', login);
 Cypress.Commands.add('loginAdmin', loginAdmin);
-Cypress.Commands.add('loginOrganiser', loginOrganiser);
+Cypress.Commands.add('loginOrganizer', loginOrganizer);
 Cypress.Commands.add('pickOptionFromSelect', pickOptionFromSelect);
 Cypress.Commands.add('pickDate', pickDate);
 Cypress.Commands.add('pickLocationInMap', pickLocationInMap);

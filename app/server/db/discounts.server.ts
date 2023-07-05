@@ -2,13 +2,13 @@ import { db } from '~/server/db.server';
 import { dbDiscountCodeToDiscountCode } from '~/server/db/codecs.server';
 
 
-async function findDiscountCodesForOrganiser(organiserId: string) {
+async function findDiscountCodesForOrganizer(organizerId: string) {
 
   return (await db.discountCode.findMany({
     where: {
-      organiserId
+      organizerId
     }
   })).map(dbDiscountCodeToDiscountCode);
 }
 
-export { findDiscountCodesForOrganiser };
+export { findDiscountCodesForOrganizer };

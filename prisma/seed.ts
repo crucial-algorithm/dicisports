@@ -16,7 +16,7 @@ import sportsSeed from './data/sports.json';
 import bookingsSeed from './data/bookings.json';
 import participantsSeed from './data/participants.json';
 import raceParticipantsSeed from './data/raceParticipants.json';
-import organiserSeed from './data/organisers.json';
+import organizerSeed from './data/organizers.json';
 import discountCodesSeed from './data/discountCodes.json';
 import eventTeamsSeed from './data/eventTeams.json';
 
@@ -49,7 +49,7 @@ async function seed() {
   await persist('shirt sizes', shirtSizes(), db.shirtSize);
 
   await persist('users', users(), db.user);
-  await persist('organisers', organisers(), db.organiser);
+  await persist('organizers', organizers(), db.organizer);
   await persist('groups', groups(), db.group);
   await persist('events', events(), db.event);
   await persist('documents', documents(), db.document);
@@ -83,7 +83,7 @@ async function clear() {
   await db.group.deleteMany();
   await db.discountCode.deleteMany();
   await db.mailingList.deleteMany();
-  await db.organiser.deleteMany();
+  await db.organizer.deleteMany();
   await db.user.deleteMany();
   await db.groupSpirit.deleteMany();
   await db.groupType.deleteMany();
@@ -285,8 +285,8 @@ function raceParticipants() {
   });
 }
 
-function organisers() {
-  return organiserSeed.map((o) => {
+function organizers() {
+  return organizerSeed.map((o) => {
     return {
       ...o,
       createdAt: now,
