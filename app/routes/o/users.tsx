@@ -5,11 +5,11 @@ import { H3, Paragraph } from '~/components/shared/typography';
 import UnderConstruction from '~/components/shared/UnderConstruction';
 
 export const handle: { i18n: string[] } = {
-  i18n: ['organiser-users']
+  i18n: ['organizer-users']
 };
 
-export default function OrganiserUsersRoute() {
-  const { t } = useTranslation('organiser-users');
+export default function OrganizerUsersRoute() {
+  const { t } = useTranslation('organizer-users');
 
   return (
     <Main>

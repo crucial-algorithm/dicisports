@@ -12,8 +12,8 @@ import Button from '~/components/shared/Button';
 import Main from '~/components/shared/Main';
 import SearchField from '~/components/shared/SearchField';
 import { requireUser } from '~/server/auth/session.server';
-import { findDiscountCodesForOrganiser } from '~/server/db/discounts.server';
-import { findOrganiser } from '~/server/db/organiser.server';
+import { findDiscountCodesForOrganizer } from '~/server/db/discounts.server';
+import { findOrganizer } from '~/server/db/organizer.server';
 import type { DiscountCode } from '~/types';
 
 export const handle = {
@@ -22,14 +22,14 @@ export const handle = {
 
 export const loader: LoaderFunction = async ({ request, params }) => {
   const user = await requireUser(request);
-  const organiser = await findOrganiser(user.id);
+  const organizer = await findOrganizer(user.id);
 
-  if (!organiser) {
-    console.log('weird to be here without an organiser');
+  if (!organizer) {
+    console.log('weird to be here without an organizer');
     return json({ discounts: [] });
   }
 
-  const discounts = await findDiscountCodesForOrganiser(organiser.id);
+  const discounts = await findDiscountCodesForOrganizer(organizer.id);
 
   return json({ discounts });
 };
@@ -38,7 +38,7 @@ function cellDiscountValue({ value, fixed }: DiscountCode) {
   return `${value / 1000}${fixed ? '€' : '%'}`;
 }
 
-export default function OrganiserDiscountCodesRoute() {
+export default function OrganizerDiscountCodesRoute() {
   const { discounts: existingDiscounts } = useLoaderData() as {
     discounts: DiscountCode[];
   };
