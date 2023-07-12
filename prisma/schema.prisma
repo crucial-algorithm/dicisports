@@ -129,6 +129,7 @@ model Event {
   bookings              Booking[]
   teams                 EventTeam[]
   eventCount            EventCount?
+  raceParticipant       RaceParticipant[]
 
   favEvents FavoriteEvent[]
 
@@ -319,14 +320,15 @@ model RaceParticipant {
   booking       Booking        @relation(fields: [bookingId], references: [id])
   teamId        String?        @map("team_id")
   team          EventTeam?     @relation(fields: [teamId], references: [id])
+  eventId       String?         @map("event_id")
+  event         Event?          @relation(fields: [eventId], references: [id])
   dorsal        Int?
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
   @@unique([participantId, raceId])
-  // Since dorsal number is based on event, we can use raceId-dorsal as a unique reference
-  @@unique([raceId, dorsal])
+  @@unique([eventId, dorsal])
   @@map("race_participants")
 }
 

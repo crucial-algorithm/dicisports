@@ -333,6 +333,22 @@ async function updateRaceParticipantTeam(
   });
 }
 
+async function assignParticipantsDorsalNumber(
+  raceParticipants: RaceParticipant[]
+): Promise<void> {
+  return await db.$transaction(async (tx) => {
+    await tx.$executeRaw`SELECT count FROM event_count FOR UPDATE;`;
+
+    // TODO: change enhanced for to map
+    for (const rp of raceParticipants) {
+      await tx.$executeRaw`UPDATE event_count SET count = count + 1;`;
+      await tx.$executeRaw`UPDATE race_participants
+                         SET dorsal = (SELECT count FROM event_count)
+                         WHERE id = ${rp.id};`;
+    }
+  });
+}
+
 export {
   addParticipantsToRace,
   findUserEventRaceParticipants,
@@ -348,5 +364,6 @@ export {
   findUserBookingParticipants,
   findEventRaceParticipants,
   findRaceParticipant,
-  updateRaceParticipantTeam
+  updateRaceParticipantTeam,
+  assignParticipantsDorsalNumber
 };

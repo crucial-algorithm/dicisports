@@ -140,7 +140,7 @@ async function findRevenueAndRegistrationsPerRace(
                count(rp.id)           as registrations,
                r.price * count(rp.id) as revenue
         FROM races r
-                 LEFT JOIN (SELECT rp.id, event_id, race_id
+                 LEFT JOIN (SELECT rp.id, b.event_id, race_id
                             FROM race_participants rp
                                      INNER JOIN bookings b on rp.booking_id = b.id
                             WHERE b.status = '${CheckoutStatus.confirmed}') as rp on r.id = rp.race_id

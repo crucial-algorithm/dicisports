@@ -9,6 +9,8 @@ import { updateBookingStatus } from '~/server/db/booking.server';
 
 import { decline, findPayment, pay, saveNotification } from '~/server/db/payments.server';
 import type { SibsWebHookSchema } from '~/types';
+import { assignParticipantsDorsalNumber, findUserBookingParticipants } from '~/server/db/participant.server';
+import type { RaceParticipant } from '~/types';
 
 export const action: ActionFunction = async ({ request }) => {
   console.log('SIBS webhook called');
@@ -42,6 +44,13 @@ export const action: ActionFunction = async ({ request }) => {
       // update payment status with success
       await pay(payload.transactionID, payload.paymentMethod);
       if (payment) {
+        const raceParticipants: RaceParticipant[] | null = await findUserBookingParticipants(payment.bookingId);
+
+        if (!raceParticipants) {
+          return new Response('No race participants', { status: 500 });
+        }
+
+        await assignParticipantsDorsalNumber(raceParticipants);
         await updateBookingStatus(payment.bookingId, CheckoutStatus.confirmed);
       }
     }

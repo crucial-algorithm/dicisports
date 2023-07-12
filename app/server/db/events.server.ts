@@ -1,10 +1,14 @@
-import { PrismaClient, Status, Prisma } from '@prisma/client';
-
 import type { Event } from '@prisma/client';
+import { Prisma, PrismaClient, Status } from '@prisma/client';
 
 import { db } from '~/server/db.server';
 import Id from '~/server/utils/Id.server';
-import type { CreateEventInput, FavoriteEvent, Language, SearchEventsResults } from '~/types';
+import type {
+  CreateEventInput,
+  FavoriteEvent,
+  Language,
+  SearchEventsResults
+} from '~/types';
 import {
   createDefaultPerks,
   createPerks,
@@ -12,7 +16,7 @@ import {
   resetEventPerks
 } from '~/server/db/perks.server';
 import { generateSlug } from '~/utils/misc';
-import { createEventCount, updateEventCount } from '~/server/db/eventCount.server';
+import { upsertEventCount } from '~/server/db/eventCount.server';
 
 const prisma = new PrismaClient();
 
@@ -108,7 +112,7 @@ async function createDraftEvent(
     });
 
     await createDefaultPerks(eventId, language, tx);
-    await createEventCount(0, eventId, tx);
+    await upsertEventCount(eventId, 0, tx);
   });
 }
 
@@ -144,7 +148,7 @@ async function updateEvent(
         status: event.status
       }
     });
-    await updateEventCount(event.dorsalStartingNumber, event.id, prisma);
+    await upsertEventCount(event.id, event.dorsalStartingNumber, prisma);
     await resetEventPerks(event.id, perks, prisma);
     await enableEventPerks(perks, prisma);
     await createPerks(
