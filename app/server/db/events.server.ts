@@ -12,11 +12,12 @@ import {
   resetEventPerks
 } from '~/server/db/perks.server';
 import { generateSlug } from '~/utils/misc';
+import { createEventCount, updateEventCount } from '~/server/db/eventCount.server';
 
 const prisma = new PrismaClient();
 
 const eventWithRacesDifficultiesAndDocuments = Prisma.validator<Prisma.EventArgs>()({
-  include: { races: true, difficulty: true, documents: true }
+  include: { races: true, difficulty: true, documents: true, eventCount: true }
 });
 
 type EventWithRacesDifficultiesAndDocuments = Prisma.EventGetPayload<typeof eventWithRacesDifficultiesAndDocuments>
@@ -72,7 +73,8 @@ async function findEvent(id: string): Promise<EventWithRacesDifficultiesAndDocum
         }
       },
       difficulty: true,
-      races: true
+      races: true,
+      eventCount: true
     }
   });
 }
@@ -85,26 +87,29 @@ async function createDraftEvent(
   const eventId = id ? id : Id();
   const eventAt = new Date();
 
-  await db.event.create({
-    data: {
-      id: eventId,
-      name: null,
-      sportId: 1,
-      difficultyId: 1,
-      startAt: eventAt,
-      endAt: null,
-      lat: null,
-      lng: null,
-      location: null,
-      useExternalBooking: false,
-      externalBookingUrl: null,
-      createdById,
-      createdAt: eventAt,
-      updatedAt: eventAt
-    }
-  });
+  return await prisma.$transaction(async (tx) => {
+    await tx.event.create({
+      data: {
+        id: eventId,
+        name: null,
+        sportId: 1,
+        difficultyId: 1,
+        startAt: eventAt,
+        endAt: null,
+        lat: null,
+        lng: null,
+        location: null,
+        useExternalBooking: false,
+        externalBookingUrl: null,
+        createdById,
+        createdAt: eventAt,
+        updatedAt: eventAt
+      }
+    });
 
-  await createDefaultPerks(eventId, language);
+    await createDefaultPerks(eventId, language, tx);
+    await createEventCount(0, eventId, tx);
+  });
 }
 
 async function updateEvent(
@@ -131,7 +136,6 @@ async function updateEvent(
         image3: event.image3,
         image4: event.image4,
         image5: event.image5,
-        dorsalStartingNumber: event.dorsalStartingNumber,
         regulationContent: event.regulationContent,
         regulationPath: event.regulationPath,
         regulationFileName: event.regulationFileName,
@@ -140,6 +144,7 @@ async function updateEvent(
         status: event.status
       }
     });
+    await updateEventCount(event.dorsalStartingNumber, event.id, prisma);
     await resetEventPerks(event.id, perks, prisma);
     await enableEventPerks(perks, prisma);
     await createPerks(
