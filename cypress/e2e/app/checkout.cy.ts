@@ -765,6 +765,14 @@ describe('Checkout', () => {
         .get('#identity-card-error')
         .should('exist');
     });
+
+    it.only('should have correct dorsal numbers', () => {
+      cy.visitAndWaitForHydration('/checkout/payment/qR4nqWpTdQy8QZu29ANu')
+        .get('button[name=pay]')
+        .should('exist')
+
+        .click();
+    });
   });
 
   context('Security', () => {

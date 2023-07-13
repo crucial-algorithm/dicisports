@@ -336,16 +336,38 @@ async function updateRaceParticipantTeam(
 async function assignParticipantsDorsalNumber(
   raceParticipants: RaceParticipant[]
 ): Promise<void> {
-  return await db.$transaction(async (tx) => {
-    await tx.$executeRaw`SELECT count FROM event_count FOR UPDATE;`;
+  const eventId = raceParticipants[0].eventId as string;
 
-    // TODO: change enhanced for to map
-    for (const rp of raceParticipants) {
-      await tx.$executeRaw`UPDATE event_count SET count = count + 1;`;
-      await tx.$executeRaw`UPDATE race_participants
-                         SET dorsal = (SELECT count FROM event_count)
-                         WHERE id = ${rp.id};`;
-    }
+  return await db.$transaction(async (tx) => {
+    await Promise.all(
+      raceParticipants.map(async (rp) => {
+        const result: { dorsal: number }[] = await tx.$queryRaw`SELECT dorsal
+                                                            FROM event_dorsal_count
+                                                            WHERE event_id = ${eventId} FOR UPDATE;`;
+
+        const dorsal = result[0].dorsal;
+
+        await tx.eventDorsalCount.update({
+          where: {
+            eventId
+          },
+          data: {
+            dorsal: {
+              increment: 1
+            }
+          }
+        });
+
+        await tx.raceParticipant.update({
+          where: {
+            id: rp.id
+          },
+          data: {
+            dorsal
+          }
+        });
+      })
+    );
   });
 }
 

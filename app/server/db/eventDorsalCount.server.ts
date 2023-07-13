@@ -11,16 +11,16 @@ async function upsertEventCount(
 ) {
   const now = new Date();
 
-  return await (tx || db).eventCount.upsert({
+  return await (tx || db).eventDorsalCount.upsert({
     where: {
       eventId
     },
     update: {
-      count: dorsal
+      dorsal
     },
     create: {
       id: Id(),
-      count: dorsal,
+      dorsal,
       eventId,
       createdAt: now,
       updatedAt: now

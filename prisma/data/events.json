@@ -14,8 +14,7 @@
     "image1": "users/bQmGXYkbhJetjk6mniMt/dYHsESpQXaei35wbKkcB",
     "regulationPath": "bQmGXYkbhJetjk6mniMt/j3r7C9DvS65xiEe5dpq6.pdf",
     "regulationFileName": "regulamento",
-    "slug": "trail-do-zezere",
-    "dorsalStartingNumber": 100
+    "slug": "trail-do-zezere"
   },
   {
     "id": "TgKZi8NQKNoJQGArd3zc",
@@ -31,8 +30,7 @@
     "status": "draft",
     "createdById": "gZZCGTHBq9SxdpRFoP8b",
     "regulationContent": "<h1><strong>1. ORGANIZAÇÃO</strong></h1><p><br></p><p>A “FLAVIUS CHALLENGE OCR 2022” é uma corrida de obstáculos, organizada em</p><p>Chaves, pela Associação Wildfun – Desporto, Aventura &amp; Turismo com a</p><p>colaboração da Câmara Municipal de Chaves, da Federação Portuguesa de Corridas</p><p>de Obstáculos (FPOCR) e do Instituto Português do Desporto e da Juventude (IPDJ).</p><p>A prova integra a Liga OCR Portugal 2022 da Federação Portuguesa de Corridas de</p><p>Obstáculos (FPOCR) e tem apuramentos para o OCR European Championships</p><p>2023.</p>",
-    "slug": "flavius-challenge-ocr",
-    "dorsalStartingNumber": 50
+    "slug": "flavius-challenge-ocr"
   },
   {
     "id": "cmWJ3DMDwzJRwMaTQv53",
@@ -62,8 +60,7 @@
     "image1": "users/MY4bvgxDbMtGv8rbYe5d/fy6t4MweoJawCkwgpeWH",
     "regulationPath": "events/202305/MY4bvgxDbMtGv8rbYe5d/regulation.pdf",
     "regulationFileName": "regulamento_v2.0.pdf",
-    "slug": "love-tiles-douro-granfondo-2023",
-    "dorsalStartingNumber": 1
+    "slug": "love-tiles-douro-granfondo-2023"
   },
   {
     "id": "gLqrDfMx6qkTHn6hoZqA",
@@ -79,7 +76,24 @@
     "image1": "users/gLqrDfMx6qkTHn6hoZqA/GKFsmgig6XpXgTCymhra",
     "createdById": "gZZCGTHBq9SxdpRFoP8b",
     "regulationContent": "<h1>Regulamento</h1><h2><strong>Inscrições</strong></h2><p><br></p><p>A inscrição é efetuada online, no site dos Amigos da Montanha, ou na sede da Associação, em Barcelinhos.</p><p><br></p><p>Abertura de inscrições: 01/12/2022;</p><p>Encerramento de Inscrições: às 24h00 de 19/02/2023 ou quando se atingir o limite de inscrições validadas.</p><p><br></p><p><br></p><p>Valor de inscrição:13,00€</p><p><br></p><p>A inscrição inclui:</p><p>&gt; Peúgas;</p><p>&gt; Bidão porta ferramentas;</p><p>&gt; Frontal;</p><p>&gt; Seguro de acidentes pessoais e responsabilidade civil;</p><p>&gt; Abastecimento de sólidos e líquidos;</p><p>&gt; Apoio logístico;</p><p>&gt; Banhos;</p><p>&gt; Sorteio de prémios;</p><p>&gt; Lavagem de bikes;</p><p>&gt; Massagens;</p><p>&gt; Primeiros socorros;</p><p>&gt; Controlo de tempos por chip electrónico;</p><p>&gt; Bifana no pão + cerveja (no final).</p><p><br></p><p><br></p><p>Formas de pagamento:</p><p>&gt; Pagamento Multibanco;</p><p>&gt; Numerário na sede da Associação.</p>",
-    "slug": "trilho-dos-moinhos",
-    "dorsalStartingNumber": 200
+    "slug": "trilho-dos-moinhos"
+  },
+  {
+    "id": "5n8epZbHczqAQtQaAh5R",
+    "name": "Viana Granfondo",
+    "sportId": 3,
+    "location": "Praia Norte",
+    "useExternalBooking": false,
+    "status": "published",
+    "directions": null,
+    "image1": "users/events/202307/5n8epZbHczqAQtQaAh5R/2kCC9jyrp89EEQtapfx3",
+    "createdById": "gZZCGTHBq9SxdpRFoP8b",
+    "slug": "viana-granfondo",
+    "difficultyId": 3,
+    "description": "<p>No mês em que Portugal assinala os 50 anos do 25 de Abril, este é o evento certo para festejar a liberdade. Depois do grande êxito da primeira edição, o Viana Granfondo regressa às estradas do Alto Minho a 7 de Abril de 2024, num cenário que compreende praias atlânticas, as águas cristalinas do rio Lima e a imensidão verdejante dos maciços graníticos em que se elevam, entre outros, o mosteiro de São João d'Árga e o santuário de Santa Luzia.</p><p>A opção pelo Viana Granfondo é, por isso mesmo, uma oportunidade ímpar para 'mergulhar' no esplendor do Minho e, em particular, numa região em que as características que o definem se fazem sentir ainda com maior acuidade. Em Viana do Castelo, o pulsar do coração minhoto faz-se sentir com toda a sua força e intensidade.</p><p>É aqui que está a “capital” do Alto Minho e a inigualável marginal da qual partirão para uma grande aventura todos aqueles que não vão querer faltar ao Viana Granfondo 2024. Seja no Minifondo, no Mediofondo ou no Granfondo, a opção por qualquer uma destas distâncias constitui a garantia de um dia inesquecível e repleto de emoções fortes.</p>",
+    "lat": 41.69573755514008,
+    "lng": -8.830981065797829,
+    "regulationPath": "events/202307/5n8epZbHczqAQtQaAh5R/regulation.pdf",
+    "regulationFileName": "sample.pdf"
   }
 ]
