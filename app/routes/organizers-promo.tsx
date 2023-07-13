@@ -60,15 +60,15 @@ export default function OrganizersLandingPage() {
         </IsUserUnAuthenticated>
       </div>
 
-      <div className="relative grid grid-cols-4 gap-x-4 md:grid-cols-8 lg:grid-cols-12 lg:gap-x-6">
+      <div className="relative grid grid-cols-4 gap-x-4 lg:grid-cols-12 lg:gap-x-6">
         <p className="max-w-full text-lg text-secondary prose prose-light dark:prose-dark mb-8 col-span-full">
           {t('Organizer Promo Intro')}
         </p>
       </div>
 
-      <div className="relative grid grid-cols-4 gap-x-4 md:grid-cols-8 lg:grid-cols-12 lg:gap-x-6 mb-16">
-        <div className="col-span-full lg:col-span-6">
-          <DisplayImg imageId="product/organizers-1" />
+      <div className="relative grid grid-cols-4 gap-x-4 lg:grid-cols-12 lg:gap-x-6 mb-10 lg:mb-16">
+        <div className="col-span-full flex items-center justify-center lg:justify-start lg:col-span-6">
+          <DisplayImg imageId="product/organizers-1" dontMessWithImgSize={true} className="max-h-96 max-w-lg w-full" />
         </div>
         <div className="col-span-full lg:col-span-5 lg:col-start-7">
           <p className="text-xl font-medium md:text-2xl text-black dark:text-white mb-3 mt-3 md:mt-0">
@@ -87,9 +87,9 @@ export default function OrganizersLandingPage() {
         </div>
       </div>
 
-      <div className="relative grid grid-cols-4 gap-x-4 md:grid-cols-8 lg:grid-cols-12 lg:gap-x-6 mx-auto max-w-7xl mb-16">
-        <div className="col-span-full lg:mb-0 flex items-start justify-end md:pl-10 lg:col-span-6 lg:col-start-6">
-          <DisplayImg imageId="product/organizers-2c" />
+      <div className="relative grid grid-cols-4 gap-x-4 lg:grid-cols-12 lg:gap-x-6 mx-auto max-w-7xl mb-16">
+        <div className="col-span-full lg:mb-0 flex lg:justify-end items-center justify-center lg:justify-end lg:col-span-6 lg:col-start-6">
+          <DisplayImg imageId="product/organizers-2c" dontMessWithImgSize={true} className="max-h-96 max-w-lg w-full" />
         </div>
         <div className="col-span-full pt-6 lg:col-start-1 lg:row-start-1 lg:flex lg:h-full lg:flex-col lg:col-span-5">
           <div className="flex flex-auto flex-col opacity-100 gap-8">
