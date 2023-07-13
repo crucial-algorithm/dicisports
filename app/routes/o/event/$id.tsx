@@ -812,7 +812,8 @@ export default function OrganizerEventRoute() {
               name="dorsal-number"
               type="number"
               placeholder={t('Dorsal placeholder')}
-              defaultValue={event.dorsalStartingNumber || 1}
+              // We are saving the dorsal number - 1, so increase by 1 to correspond to user input
+              defaultValue={event.eventDorsalCount !== null ? event.eventDorsalCount.dorsal + 1 : 1}
               className="w-full md:w-48"
             />
           </FormField>

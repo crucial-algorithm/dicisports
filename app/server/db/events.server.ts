@@ -148,7 +148,7 @@ async function updateEvent(
         status: event.status
       }
     });
-    await upsertEventCount(event.id, event.dorsalStartingNumber, prisma);
+    await upsertEventCount(event.id, event.dorsalStartingNumber - 1, prisma);
     await resetEventPerks(event.id, perks, prisma);
     await enableEventPerks(perks, prisma);
     await createPerks(
