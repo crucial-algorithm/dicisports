@@ -50,7 +50,7 @@ export const action: ActionFunction = async ({ request }) => {
           return new Response('No race participants', { status: 500 });
         }
 
-        await assignParticipantsDorsalNumber(raceParticipants);
+        await assignParticipantsDorsalNumber(raceParticipants, raceParticipants[0].eventId as string);
         await updateBookingStatus(payment.bookingId, CheckoutStatus.confirmed);
       }
     }
