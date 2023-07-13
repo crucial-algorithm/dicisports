@@ -53,7 +53,7 @@ export const action: ActionFunction = async ({ request }) => {
         eventId as string
       ).then((p) => p?.id);
 
-      await addRaceParticipants(races, clientId, registrationId as string);
+      await addRaceParticipants(races, clientId, registrationId as string, eventId as string);
     }
 
     return json({ ok: true, action: actionId });

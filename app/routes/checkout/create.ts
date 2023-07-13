@@ -64,5 +64,5 @@ export async function createInitialBookingFlow(
     return badRequest({ error: t("Can't Create Booking") });
   }
 
-  await addParticipantsToRace([raceId], clientId, booking.id);
+  await addParticipantsToRace([raceId], clientId, booking.id, eventId);
 }

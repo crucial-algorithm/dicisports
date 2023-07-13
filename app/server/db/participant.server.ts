@@ -39,6 +39,7 @@ async function addParticipantsToRace(
   raceIds: string[],
   clientId: string,
   bookingId: string,
+  eventId: string,
   tx?: Prisma.TransactionClient
 ): Promise<void> {
   return await prisma.$transaction(async (prisma) => {
@@ -54,6 +55,7 @@ async function addParticipantsToRace(
           participantId: participant.id,
           raceId: r,
           bookingId: bookingId,
+          eventId,
           createdAt: now,
           updatedAt: now
         };
@@ -70,6 +72,7 @@ async function addParticipantToRace(
   clientId: string,
   raceId: string,
   bookingId: string,
+  eventId: string,
   tx?: Prisma.TransactionClient
 ): Promise<void> {
   return await prisma.$transaction(async (prisma) => {
@@ -83,6 +86,7 @@ async function addParticipantToRace(
         participantId: participant.id,
         raceId,
         bookingId,
+        eventId,
         createdAt: now,
         updatedAt: now
       }
@@ -189,10 +193,11 @@ async function removeRaceParticipant(
 async function addRaceParticipants(
   raceIds: string[],
   userSessionId: string,
-  registrationId: string
+  registrationId: string,
+  eventId: string
 ): Promise<void> {
   return await prisma.$transaction(async (prisma) => {
-    await addParticipantsToRace(raceIds, userSessionId, registrationId, prisma);
+    await addParticipantsToRace(raceIds, userSessionId, registrationId, eventId, prisma);
   });
 }
 
