@@ -85,6 +85,77 @@ export const handle: { id: string; i18n: string[] } = {
   i18n: ['checkout']
 };
 
+function validateIdentityCard(identityCard: string): boolean {
+  let sum = 0;
+  let secondDigit: boolean = false;
+
+  if (identityCard.length !== 12) {
+    return false;
+  }
+
+  Array.from(identityCard)
+    .reverse()
+    .map((char) => {
+      let value = getCharValue(char.toUpperCase());
+
+      if (secondDigit) {
+        value *= 2;
+
+        if (value > 9) {
+          value -= 9;
+        }
+      }
+
+      secondDigit = !secondDigit;
+      return (sum += value);
+    });
+
+  return sum % 10 === 0;
+}
+
+function getCharValue(value: string) {
+  const mapping = {
+    '0': 0,
+    '1': 1,
+    '2': 2,
+    '3': 3,
+    '4': 4,
+    '5': 5,
+    '6': 6,
+    '7': 7,
+    '8': 8,
+    '9': 9,
+    A: 10,
+    B: 11,
+    C: 12,
+    D: 13,
+    E: 14,
+    F: 15,
+    G: 16,
+    H: 17,
+    I: 18,
+    J: 19,
+    K: 20,
+    L: 21,
+    M: 22,
+    N: 23,
+    O: 24,
+    P: 25,
+    Q: 26,
+    R: 27,
+    S: 28,
+    T: 29,
+    U: 30,
+    V: 31,
+    W: 32,
+    X: 33,
+    Y: 34,
+    Z: 35
+  };
+
+  return mapping[value];
+}
+
 export const action: ActionFunction = async ({ request, params }) => {
   const t = await i18n.getFixedT(request, 'checkout');
   const form = await request.formData();
@@ -145,6 +216,12 @@ export const action: ActionFunction = async ({ request, params }) => {
       nationality: parseInt(form.get('nationality') as string) || null,
       postalCode: form.get('postal-code') as string
     };
+
+    const isIdentityCardValid = validateIdentityCard(
+      data.identityCard?.split('-').join('')
+    );
+
+    console.log('identity card valid --->', isIdentityCardValid);
 
     const ParticipantSchema = z.object({
       firstName: z

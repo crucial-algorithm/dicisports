@@ -3,6 +3,8 @@ import clsx from 'clsx';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { InputMask } from 'primereact/inputmask';
+
 import { CheckoutInfoActions } from '~/action.keys';
 
 import Button from '~/components/shared/Button';
@@ -201,14 +203,7 @@ export default function ParticipantForm({
           error={errors?.identityCard}
           dataCy="identityCard"
         >
-          <TextField
-            name="identity-card"
-            placeholder={t('Required')}
-            defaultValue={
-              (selectedParticipant?.identityCard as string) ||
-              (participant?.identityCard as string)
-            }
-          />
+          <InputMask mask="99999999-9-aa9" name="identity-card" value="12345678-9-aa9" />
         </FormField>
 
         <FormField
