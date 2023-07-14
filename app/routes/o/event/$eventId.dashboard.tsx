@@ -363,7 +363,7 @@ export default function DashboardRoute() {
                         <TD value={rp.gender} />
                         <TD value={String(rp.bookingAt).split('T')[0]} />
                         <TD value={t(rp.status)} />
-                        <TD value={'-'} />
+                        <TD value={rp.dorsal ? String(rp.dorsal) : '-'} />
                         <TD value={rp.raceName} />
                         <td>
                           <button

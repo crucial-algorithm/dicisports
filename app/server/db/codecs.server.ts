@@ -272,7 +272,8 @@ function dbUIRaceParticipantToUIRaceParticipant(
     bookingAt: raceParticipant.booking_at,
     status: raceParticipant.status,
     raceName: raceParticipant.race_name,
-    teamName: raceParticipant.team_name
+    teamName: raceParticipant.team_name,
+    dorsal: raceParticipant.dorsal
   };
 }
 

@@ -947,6 +947,33 @@ describe('Event', () => {
         .get('input[name=dorsal-number]')
         .should('have.value', '200');
     });
+
+    it('should not update dorsal starting number when event has race participants', () => {
+      cy.visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d')
+        .get('button[name=update-event]')
+        .click()
+
+        .location()
+        .should((loc) => {
+          expect(loc.pathname).to.contain('/o/event/MY4bvgxDbMtGv8rbYe5d');
+        })
+
+        .get('input[name=dorsal-number]')
+        .should('have.value', '1')
+        .and('have.prop', 'disabled')
+
+        .reload()
+        .waitForHydration()
+
+        .location()
+        .should((loc) => {
+          expect(loc.pathname).to.contain('/o/event/MY4bvgxDbMtGv8rbYe5d');
+        })
+
+        .get('input[name=dorsal-number]')
+        .should('have.value', '1')
+        .and('have.prop', 'disabled');
+    });
   });
 });
 

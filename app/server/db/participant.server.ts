@@ -219,7 +219,8 @@ async function findRaceParticipants(
                      b.created_at                           as booking_at,
                      b.status,
                      r.name                                 as race_name,
-                     et.name                                as team_name
+                     et.name                                as team_name,
+                     rp.dorsal
               FROM race_participants rp
                        INNER JOIN participants p on p.id = rp.participant_id
                        INNER JOIN bookings b on rp.booking_id = b.id

@@ -766,12 +766,40 @@ describe('Checkout', () => {
         .should('exist');
     });
 
-    it.only('should have correct dorsal numbers', () => {
+    it('should have correct dorsal numbers', () => {
       cy.visitAndWaitForHydration('/checkout/payment/qR4nqWpTdQy8QZu29ANu')
         .get('button[name=pay]')
         .should('exist')
 
-        .click();
+        .click()
+
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.eq(
+            '/checkout/confirmation/qR4nqWpTdQy8QZu29ANu'
+          );
+        })
+
+        // Logging in as Organiser to check if dorsal numbers where assigned
+        .loginOrganiser()
+
+        .reload()
+        .waitForHydration()
+
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.eq('/');
+        })
+
+        .visitAndWaitForHydration('/o/event/5n8epZbHczqAQtQaAh5R/dashboard')
+
+        .get('#participant-pEnBjs83nsBpoXDPST63 > td')
+        .eq(4)
+        .contains('Confirmado')
+
+        .get('#participant-pEnBjs83nsBpoXDPST63 > td')
+        .eq(5)
+        .should('not.contain', '-');
     });
   });
 

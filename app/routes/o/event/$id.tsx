@@ -260,6 +260,9 @@ export const action: ActionFunction = async ({ request, params }) => {
     eventStatus = Status.draft;
   }
 
+  const confirmedBookings = await findConfirmedBookings(event.id);
+  const hasRegistrations = confirmedBookings && confirmedBookings?.length > 0;
+
   const data: CreateEventInput = {
     id: params.id as string,
     name: form.get('event-name') as string,
@@ -268,12 +271,15 @@ export const action: ActionFunction = async ({ request, params }) => {
     startAt: new Date(date), //TODO: hour
     lat: location.lat,
     lng: location.lng,
-    location: form.get('short-address') as string || null,
+    location: (form.get('short-address') as string) || null,
     useExternalBooking: form.get('booking') === 'external',
     externalBookingUrl: (form.get('booking-url') as string) || null,
     description: (form.get('event-description') as string) || null,
     directions: (form.get('get-there') as string) || null,
-    dorsalStartingNumber: parseInt(form.get('dorsal-number') as string),
+    dorsalStartingNumber:
+      eventStatus === Status.published && hasRegistrations && event.eventDorsalCount
+        ? event.eventDorsalCount.dorsal + 1
+        : parseInt(form.get('dorsal-number') as string),
     image1: processImgField(image1, isUpdate),
     image2: processImgField(image2, isUpdate),
     image3: processImgField(image3, isUpdate),
@@ -815,6 +821,7 @@ export default function OrganizerEventRoute() {
               // We are saving the dorsal number - 1, so increase by 1 to correspond to user input
               defaultValue={event.eventDorsalCount !== null ? event.eventDorsalCount.dorsal + 1 : 1}
               className="w-full md:w-48"
+              disabled={isPublished && hasRegistrations}
             />
           </FormField>
 
