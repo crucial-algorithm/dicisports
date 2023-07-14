@@ -784,7 +784,7 @@ describe('Checkout', () => {
         })
 
         // Logging in as Organiser to check if bib numbers where assigned
-        .loginOrganiser()
+        .loginOrganizer()
 
         .reload()
         .waitForHydration()

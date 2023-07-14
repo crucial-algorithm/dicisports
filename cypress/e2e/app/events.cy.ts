@@ -923,7 +923,7 @@ describe('Event', () => {
         .as('UpdateEvent')
 
         .get('input[name=bib-number]')
-        .should('have.value', '1')
+        .should('have.value', '3')
         .clear()
         .type('200')
 
@@ -959,7 +959,7 @@ describe('Event', () => {
         })
 
         .get('input[name=bib-number]')
-        .should('have.value', '1')
+        .should('have.value', '3')
         .and('have.prop', 'disabled')
 
         .reload()
@@ -971,7 +971,7 @@ describe('Event', () => {
         })
 
         .get('input[name=bib-number]')
-        .should('have.value', '1')
+        .should('have.value', '3')
         .and('have.prop', 'disabled');
     });
   });
