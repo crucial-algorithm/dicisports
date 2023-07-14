@@ -113,8 +113,8 @@ function validateIdentityCard(identityCard: string): boolean {
   return sum % 10 === 0;
 }
 
-function getCharValue(value: string) {
-  const mapping = {
+function getCharValue(value: string): number {
+  const charValues = {
     '0': 0,
     '1': 1,
     '2': 2,
@@ -153,7 +153,7 @@ function getCharValue(value: string) {
     Z: 35
   };
 
-  return mapping[value];
+  return charValues[value];
 }
 
 export const action: ActionFunction = async ({ request, params }) => {
@@ -217,11 +217,11 @@ export const action: ActionFunction = async ({ request, params }) => {
       postalCode: form.get('postal-code') as string
     };
 
-    const isIdentityCardValid = validateIdentityCard(
-      data.identityCard?.split('-').join('')
-    );
+    if (data.identityCard.length > 0) {
+      data.identityCard = data.identityCard.split('-').join('');
+    }
 
-    console.log('identity card valid --->', isIdentityCardValid);
+    const isIdentityCardValid = validateIdentityCard(data.identityCard);
 
     const ParticipantSchema = z.object({
       firstName: z
@@ -252,7 +252,9 @@ export const action: ActionFunction = async ({ request, params }) => {
         ),
       identityCard: z
         .string({ required_error: t('Field Required') })
-        .length(8, { message: t('Invalid CC Length') }),
+        .refine((v) => v.length === 12 && isIdentityCardValid, {
+          message: t('Invalid CC')
+        }),
       federationNumber: z.number().nullable(),
       shirtSize: z.number({
         required_error: t('Field Required'),

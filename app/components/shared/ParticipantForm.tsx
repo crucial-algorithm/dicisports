@@ -203,7 +203,7 @@ export default function ParticipantForm({
           error={errors?.identityCard}
           dataCy="identityCard"
         >
-          <InputMask mask="99999999-9-aa9" name="identity-card" value="12345678-9-aa9" />
+          <InputMask mask="99999999-9-aa9" name="identity-card" value="123456789aa9" />
         </FormField>
 
         <FormField
