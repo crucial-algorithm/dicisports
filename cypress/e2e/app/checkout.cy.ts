@@ -776,6 +776,7 @@ describe('Checkout', () => {
 
         .click()
 
+        .waitForHydration()
         .location()
         .should((l) => {
           expect(l.pathname).to.eq(

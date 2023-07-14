@@ -910,20 +910,20 @@ describe('Event', () => {
     });
 
     it('should display and update starting bib number', () => {
-      cy.visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d/dashboard')
+      cy.visitAndWaitForHydration('/o/event/5n8epZbHczqAQtQaAh5R/dashboard')
         .get('[data-cy="edit"]')
         .click()
 
         .location()
         .should((loc) => {
-          expect(loc.pathname).to.contain('/o/event/MY4bvgxDbMtGv8rbYe5d');
+          expect(loc.pathname).to.contain('/o/event/5n8epZbHczqAQtQaAh5R');
         })
 
-        .intercept('POST', '/o/event/MY4bvgxDbMtGv8rbYe5d*')
+        .intercept('POST', '/o/event/5n8epZbHczqAQtQaAh5R*')
         .as('UpdateEvent')
 
         .get('input[name=bib-number]')
-        .should('have.value', '3')
+        .should('have.value', '1')
         .clear()
         .type('200')
 
@@ -934,14 +934,14 @@ describe('Event', () => {
 
         .location()
         .should((loc) => {
-          expect(loc.pathname).to.contain('/o/event/MY4bvgxDbMtGv8rbYe5d');
+          expect(loc.pathname).to.contain('/o/event/5n8epZbHczqAQtQaAh5R');
         })
 
         .reload()
 
         .location()
         .should((loc) => {
-          expect(loc.pathname).to.contain('/o/event/MY4bvgxDbMtGv8rbYe5d');
+          expect(loc.pathname).to.contain('/o/event/5n8epZbHczqAQtQaAh5R');
         })
 
         .get('input[name=bib-number]')
@@ -950,6 +950,10 @@ describe('Event', () => {
 
     it('should not update bib starting number when event has race participants', () => {
       cy.visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d')
+        .get('input[name=bib-number]')
+        .should('have.value', '3')
+        .and('have.prop', 'disabled')
+
         .get('button[name=update-event]')
         .click()
 
@@ -957,10 +961,6 @@ describe('Event', () => {
         .should((loc) => {
           expect(loc.pathname).to.contain('/o/event/MY4bvgxDbMtGv8rbYe5d');
         })
-
-        .get('input[name=bib-number]')
-        .should('have.value', '3')
-        .and('have.prop', 'disabled')
 
         .reload()
         .waitForHydration()

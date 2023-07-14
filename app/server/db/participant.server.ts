@@ -344,10 +344,10 @@ async function assignParticipantsBibNumber(
   eventId: string
 ): Promise<void> {
   return await db.$transaction(async (tx) => {
-    const result: { bibNumber: number }[] = await tx.$queryRaw`SELECT bibNumber
+    const result: { bib_number: number }[] = await tx.$queryRaw`SELECT bib_number
                                                             FROM latest_bib_number
                                                             WHERE event_id = ${eventId} FOR UPDATE;`;
-    let bibNumber = result[0].bibNumber;
+    let bibNumber = result[0].bib_number;
 
     await Promise.all(
       raceParticipants.map(async (rp) => {
