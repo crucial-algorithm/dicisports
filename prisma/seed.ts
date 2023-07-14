@@ -19,7 +19,7 @@ import raceParticipantsSeed from './data/raceParticipants.json';
 import organizerSeed from './data/organizers.json';
 import discountCodesSeed from './data/discountCodes.json';
 import eventTeamsSeed from './data/eventTeams.json';
-import latestDorsalNumberSeed from './data/latestBibNumber.json';
+import latestBibNumberSeed from './data/latestBibNumber.json';
 
 const db = new PrismaClient();
 const now = new Date();
@@ -319,7 +319,7 @@ function eventTeams() {
 }
 
 function latestBibNumber() {
-  return latestDorsalNumberSeed.map((ed) => {
+  return latestBibNumberSeed.map((ed) => {
     return {
       ...ed,
       createdAt: now,

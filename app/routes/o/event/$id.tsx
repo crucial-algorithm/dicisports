@@ -810,7 +810,7 @@ export default function OrganizerEventRoute() {
           </FormField>
 
           <FormField
-            label={t('Dorsal Starting Number')}
+            label={t('Bib Starting Number')}
             id="bib-number"
             description={t('Bib Starting Number Description')}
             error={actionData?.errors?.bibStartingNumber}
