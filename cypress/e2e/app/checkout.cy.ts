@@ -769,7 +769,8 @@ describe('Checkout', () => {
         .should('exist');
     });
 
-    it('should have correct bib numbers', () => {
+    // TODO: remove skip test when booking flow tests are re-instated
+    it.skip('should have correct bib numbers', () => {
       cy.visitAndWaitForHydration('/checkout/payment/qR4nqWpTdQy8QZu29ANu')
         .get('button[name=pay]')
         .should('exist')
