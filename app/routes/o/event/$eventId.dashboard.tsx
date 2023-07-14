@@ -346,7 +346,7 @@ export default function DashboardRoute() {
                       <TH name={t('Age Group')} />
                       <TH name={t('Booking Date')} />
                       <TH name={t('Status')} />
-                      <TH name={t('Dorsal')} />
+                      <TH name={t('Bib Number')} />
                       <TH name={t('Race')} />
                     </tr>
                   </thead>
@@ -363,7 +363,7 @@ export default function DashboardRoute() {
                         <TD value={rp.gender} />
                         <TD value={String(rp.bookingAt).split('T')[0]} />
                         <TD value={t(rp.status)} />
-                        <TD value={rp.dorsal ? String(rp.dorsal) : '-'} />
+                        <TD value={rp.bibNumber ? String(rp.bibNumber) : '-'} />
                         <TD value={rp.raceName} />
                         <td>
                           <button

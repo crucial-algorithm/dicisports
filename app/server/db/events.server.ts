@@ -16,12 +16,12 @@ import {
   resetEventPerks
 } from '~/server/db/perks.server';
 import { generateSlug } from '~/utils/misc';
-import { upsertEventCount } from '~/server/db/eventDorsalCount.server';
+import { upsertEventCount } from '~/server/db/latestBibNumber.server';
 
 const prisma = new PrismaClient();
 
 const eventWithRacesDifficultiesAndDocuments = Prisma.validator<Prisma.EventArgs>()({
-  include: { races: true, difficulty: true, documents: true, eventDorsalCount: true }
+  include: { races: true, difficulty: true, documents: true, latestBibNumber: true }
 });
 
 type EventWithRacesDifficultiesAndDocuments = Prisma.EventGetPayload<typeof eventWithRacesDifficultiesAndDocuments>
@@ -78,7 +78,7 @@ async function findEvent(id: string): Promise<EventWithRacesDifficultiesAndDocum
       },
       difficulty: true,
       races: true,
-      eventDorsalCount: true
+      latestBibNumber: true
     }
   });
 }
@@ -148,7 +148,7 @@ async function updateEvent(
         status: event.status
       }
     });
-    await upsertEventCount(event.id, event.dorsalStartingNumber - 1, prisma);
+    await upsertEventCount(event.id, event.bibStartingNumber - 1, prisma);
     await resetEventPerks(event.id, perks, prisma);
     await enableEventPerks(perks, prisma);
     await createPerks(

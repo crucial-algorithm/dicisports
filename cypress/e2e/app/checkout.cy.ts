@@ -766,7 +766,7 @@ describe('Checkout', () => {
         .should('exist');
     });
 
-    it('should have correct dorsal numbers', () => {
+    it('should have correct bib numbers', () => {
       cy.visitAndWaitForHydration('/checkout/payment/qR4nqWpTdQy8QZu29ANu')
         .get('button[name=pay]')
         .should('exist')
@@ -780,7 +780,7 @@ describe('Checkout', () => {
           );
         })
 
-        // Logging in as Organiser to check if dorsal numbers where assigned
+        // Logging in as Organiser to check if bib numbers where assigned
         .loginOrganiser()
 
         .reload()

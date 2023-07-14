@@ -220,7 +220,7 @@ async function findRaceParticipants(
                      b.status,
                      r.name                                 as race_name,
                      et.name                                as team_name,
-                     rp.dorsal
+                     rp.bib_number
               FROM race_participants rp
                        INNER JOIN participants p on p.id = rp.participant_id
                        INNER JOIN bookings b on rp.booking_id = b.id
@@ -339,37 +339,37 @@ async function updateRaceParticipantTeam(
   });
 }
 
-async function assignParticipantsDorsalNumber(
+async function assignParticipantsBibNumber(
   raceParticipants: RaceParticipant[],
   eventId: string
 ): Promise<void> {
   return await db.$transaction(async (tx) => {
-    const result: { dorsal: number }[] = await tx.$queryRaw`SELECT dorsal
-                                                            FROM event_dorsal_count
+    const result: { bibNumber: number }[] = await tx.$queryRaw`SELECT bibNumber
+                                                            FROM latest_bib_number
                                                             WHERE event_id = ${eventId} FOR UPDATE;`;
-    let dorsal = result[0].dorsal;
+    let bibNumber = result[0].bibNumber;
 
     await Promise.all(
       raceParticipants.map(async (rp) => {
-        dorsal += 1;
+        bibNumber += 1;
 
         await tx.raceParticipant.update({
           where: {
             id: rp.id
           },
           data: {
-            dorsal
+            bibNumber
           }
         });
       })
     );
 
-    await tx.eventDorsalCount.update({
+    await tx.latestBibNumber.update({
       where: {
         eventId
       },
       data: {
-        dorsal
+        bibNumber
       }
     });
   });
@@ -391,5 +391,5 @@ export {
   findEventRaceParticipants,
   findRaceParticipant,
   updateRaceParticipantTeam,
-  assignParticipantsDorsalNumber
+  assignParticipantsBibNumber
 };

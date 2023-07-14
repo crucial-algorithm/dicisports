@@ -116,7 +116,7 @@ type ActionData = {
     submit?: string;
     races?: string;
     regulation?: string;
-    dorsalStartingNumber?: string;
+    bibStartingNumber?: string;
   };
 };
 
@@ -276,10 +276,10 @@ export const action: ActionFunction = async ({ request, params }) => {
     externalBookingUrl: (form.get('booking-url') as string) || null,
     description: (form.get('event-description') as string) || null,
     directions: (form.get('get-there') as string) || null,
-    dorsalStartingNumber:
-      eventStatus === Status.published && hasRegistrations && event.eventDorsalCount
-        ? event.eventDorsalCount.dorsal + 1
-        : parseInt(form.get('dorsal-number') as string),
+    bibStartingNumber:
+      eventStatus === Status.published && hasRegistrations && event.latestBibNumber
+        ? event.latestBibNumber.bibNumber + 1
+        : parseInt(form.get('bib-number') as string),
     image1: processImgField(image1, isUpdate),
     image2: processImgField(image2, isUpdate),
     image3: processImgField(image3, isUpdate),
@@ -318,7 +318,7 @@ export const action: ActionFunction = async ({ request, params }) => {
         })
         .min(1, { message: t('Min 1 chars') })
         .nullable(),
-      dorsalStartingNumber: z
+      bibStartingNumber: z
         .number()
         .int({ message: t('Must be int') })
         .nonnegative({ message: t('Positive number') }),
@@ -810,16 +810,16 @@ export default function OrganizerEventRoute() {
           </FormField>
 
           <FormField
-            label={t('Dorsal Starting Number')}
-            id="dorsal"
-            error={actionData?.errors?.dorsalStartingNumber}
+            label={t('Bib Starting Number')}
+            id="bib-number"
+            error={actionData?.errors?.bibStartingNumber}
           >
             <TextField
-              name="dorsal-number"
+              name="bib-number"
               type="number"
-              placeholder={t('Dorsal placeholder')}
-              // We are saving the dorsal number - 1, so increase by 1 to correspond to user input
-              defaultValue={event.eventDorsalCount !== null ? event.eventDorsalCount.dorsal + 1 : 1}
+              placeholder={t('Bib number placeholder')}
+              // We are saving the bib number - 1, so increase by 1 to correspond to user input
+              defaultValue={event.latestBibNumber !== null ? event.latestBibNumber.bibNumber + 1 : 1}
               className="w-full md:w-48"
               disabled={isPublished && hasRegistrations}
             />

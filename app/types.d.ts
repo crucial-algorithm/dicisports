@@ -142,7 +142,7 @@ type CreateEventInput = {
   externalBookingUrl?: string | null;
   description?: string | null;
   directions: string | null;
-  dorsalStartingNumber: number;
+  bibStartingNumber: number;
   image1?: string | null;
   image2?: string | null;
   image3?: string | null;
@@ -447,7 +447,7 @@ type UIRaceParticipant = {
   status: string;
   raceName: string;
   teamName: string | null;
-  dorsal: number | null;
+  bibNumber: number | null;
 };
 
 type DBRawUIRaceParticipant = {
@@ -460,7 +460,7 @@ type DBRawUIRaceParticipant = {
   race_name: string;
   records: number;
   team_name: string | null;
-  dorsal: number | null;
+  bib_number: number | null;
 };
 
 type Participant = {} & DBParticipant;

@@ -9,7 +9,7 @@ import { updateBookingStatus } from '~/server/db/booking.server';
 
 import { decline, findPayment, pay, saveNotification } from '~/server/db/payments.server';
 import type { SibsWebHookSchema } from '~/types';
-import { assignParticipantsDorsalNumber, findUserBookingParticipants } from '~/server/db/participant.server';
+import { assignParticipantsBibNumber, findUserBookingParticipants } from '~/server/db/participant.server';
 import type { RaceParticipant } from '~/types';
 
 export const action: ActionFunction = async ({ request }) => {
@@ -50,7 +50,7 @@ export const action: ActionFunction = async ({ request }) => {
           return new Response('No race participants', { status: 500 });
         }
 
-        await assignParticipantsDorsalNumber(raceParticipants, raceParticipants[0].eventId as string);
+        await assignParticipantsBibNumber(raceParticipants, raceParticipants[0].eventId as string);
         await updateBookingStatus(payment.bookingId, CheckoutStatus.confirmed);
       }
     }

@@ -6,21 +6,21 @@ import Id from '../utils/Id.server';
 
 async function upsertEventCount(
   eventId: string,
-  dorsal: number = 0,
+  bibNumber: number = 0,
   tx?: Prisma.TransactionClient
 ) {
   const now = new Date();
 
-  return await (tx || db).eventDorsalCount.upsert({
+  return await (tx || db).latestBibNumber.upsert({
     where: {
       eventId
     },
     update: {
-      dorsal
+      bibNumber
     },
     create: {
       id: Id(),
-      dorsal,
+      bibNumber,
       eventId,
       createdAt: now,
       updatedAt: now

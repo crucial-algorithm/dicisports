@@ -1,12 +1,17 @@
 [
   {
     "id": "YeD6748gaf3LtGRKamka",
-    "dorsal": 0,
+    "bibNumber": 0,
     "eventId": "gLqrDfMx6qkTHn6hoZqA"
   },
   {
     "id": "aXiFsBehBA94pdT8DXvS",
-    "dorsal": 0,
+    "bibNumber": 0,
     "eventId": "5n8epZbHczqAQtQaAh5R"
+  },
+  {
+    "id": "MY4bvgxDbMtGv8rbYe5d",
+    "bibNumber": 2,
+    "eventId": "MY4bvgxDbMtGv8rbYe5d"
   }
 ]

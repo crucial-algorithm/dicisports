@@ -909,7 +909,7 @@ describe('Event', () => {
         .should('have.value', 'Love Tiles Douro Granfondo 2023');
     });
 
-    it('should display and update starting dorsal number', () => {
+    it('should display and update starting bib number', () => {
       cy.visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d/dashboard')
         .get('[data-cy="edit"]')
         .click()
@@ -922,7 +922,7 @@ describe('Event', () => {
         .intercept('POST', '/o/event/MY4bvgxDbMtGv8rbYe5d*')
         .as('UpdateEvent')
 
-        .get('input[name=dorsal-number]')
+        .get('input[name=bib-number]')
         .should('have.value', '1')
         .clear()
         .type('200')
@@ -944,11 +944,11 @@ describe('Event', () => {
           expect(loc.pathname).to.contain('/o/event/MY4bvgxDbMtGv8rbYe5d');
         })
 
-        .get('input[name=dorsal-number]')
+        .get('input[name=bib-number]')
         .should('have.value', '200');
     });
 
-    it('should not update dorsal starting number when event has race participants', () => {
+    it('should not update bib starting number when event has race participants', () => {
       cy.visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d')
         .get('button[name=update-event]')
         .click()
@@ -958,7 +958,7 @@ describe('Event', () => {
           expect(loc.pathname).to.contain('/o/event/MY4bvgxDbMtGv8rbYe5d');
         })
 
-        .get('input[name=dorsal-number]')
+        .get('input[name=bib-number]')
         .should('have.value', '1')
         .and('have.prop', 'disabled')
 
@@ -970,7 +970,7 @@ describe('Event', () => {
           expect(loc.pathname).to.contain('/o/event/MY4bvgxDbMtGv8rbYe5d');
         })
 
-        .get('input[name=dorsal-number]')
+        .get('input[name=bib-number]')
         .should('have.value', '1')
         .and('have.prop', 'disabled');
     });
