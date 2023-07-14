@@ -15,7 +15,7 @@ import { useTranslation } from 'react-i18next';
 
 import { ButtonLink } from '~/components/shared/Button';
 import { IsAdmin, IsNotAnOrganizer } from '~/components/shared/Roles';
-import type { Organiser, User } from '~/types';
+import type { Organizer, User } from '~/types';
 
 import { Theme, Themed, useTheme } from '~/utils/theme-provider';
 
@@ -329,7 +329,7 @@ function ProfileButton({ user }: { user: User | null }) {
   const controls = useAnimation();
   const [ref, state] = useElementState();
   const shouldReduceMotion = useReducedMotion();
-  const organiser: Organiser | null = user?.organiser || null;
+  const organizer: Organizer | null = user?.organizer || null;
 
   React.useEffect(() => {
     void controls.start((_, { rotate = 0 }) => {
@@ -366,13 +366,13 @@ function ProfileButton({ user }: { user: User | null }) {
       <motion.div className="absolute" animate={controls}>
         <TeamCircle size={56} />
       </motion.div>
-      {organiser ? (
+      {organizer ? (
         <img
-          src={buildImageUrl(organiser.logo, {
+          src={buildImageUrl(organizer.logo, {
             transformations: { resize: { type: 'fill', width: 30, height: 30 } }
           })}
           className="inline w-10 rounded-full select-none"
-          alt={organiser.name}
+          alt={organizer.name}
         />
       ) : (
         <img

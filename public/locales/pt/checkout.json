@@ -85,6 +85,8 @@
   "Read and Accepted": "Eu li e aceito",
   "Terms and Conditions": " os Termos e Condições",
   "Event Regulation": " o Regulamento do Evento",
+  "Add to X Mailing List": "Quero receber novidades de '{{organizer}}'",
+  "Email in use": "Esse email já está registado",
 
   "Waitting for payment gateway": "A aguardar confirmação do pagamento por parte da SIBS...",
   "Payment not found": "Não foi possível encontrar o pagamento solicitado",

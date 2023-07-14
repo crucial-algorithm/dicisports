@@ -38,10 +38,10 @@ import type {
 } from '~/types';
 
 function dbUserToUser(user: DBUser | User): User {
-  if ('organiser' in user) {
-    const { id, name, email, lat, lng, location, role, createdAt, updatedAt, organiser } = user as User;
+  if ('organizer' in user) {
+    const { id, name, email, lat, lng, location, role, createdAt, updatedAt, organizer } = user as User;
 
-    return { id, name, email, lat, lng, location, role, createdAt, updatedAt, organiser };
+    return { id, name, email, lat, lng, location, role, createdAt, updatedAt, organizer };
   }
 
   const { id, name, email, lat, lng, location, role, createdAt, updatedAt } = user;
@@ -337,9 +337,9 @@ function dbRawBookingListToBookingList(
 }
 
 function dbDiscountCodeToDiscountCode(discountCode: DBDiscountCode): DiscountCode {
-  const { code, value, fixed, active, createdById, organiserId, createdAt, updatedAt  } = discountCode;
+  const { code, value, fixed, active, createdById, organizerId, createdAt, updatedAt  } = discountCode;
 
-  return { code, value, fixed, active, createdById, organiserId, createdAt, updatedAt };
+  return { code, value, fixed, active, createdById, organizerId, createdAt, updatedAt };
 }
 
 export {

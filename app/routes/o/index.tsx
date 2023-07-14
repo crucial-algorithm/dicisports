@@ -30,7 +30,7 @@ export const handle = {
 };
 
 export const loader: LoaderFunction = async ({ request }) => {
-  // TODO: this should be restricted to organisers
+  // TODO: this should be restricted to organizers
   const user = await requireUser(request);
 
   const events = await findUserEvents(user.id);

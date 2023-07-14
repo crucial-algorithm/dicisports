@@ -47,7 +47,7 @@ model User {
   favGroups    FavoriteGroup[]
   events       Event[]
   favEvents    FavoriteEvent[]
-  organiser    Organiser?
+  organizer    Organizer?
   DiscountCode DiscountCode[]
 
   @@map("users")
@@ -404,27 +404,28 @@ model ShirtSize {
   @@map("shirt_size")
 }
 
-enum OrganiserStatus {
+enum OrganizerStatus {
   PENDING
   APPROVED
 }
 
-model Organiser {
-  id           String          @id
-  name         String
-  description  String
-  logo         String
-  email        String          @unique
-  phoneNumber  Int?            @unique @map("phone_number")
-  address      String
-  postalCode   String          @map("postal_code")
-  city         String
-  userId       String          @map("user_id") @unique
-  user         User            @relation(fields: [userId], references: [id])
-  status       OrganiserStatus @default(PENDING)
-  createdAt    DateTime        @default(now()) @map("created_at")
-  updatedAt    DateTime        @updatedAt @map("updated_at")
-  DiscountCode DiscountCode[]
+model Organizer {
+  id                String              @id
+  name              String
+  description       String
+  logo              String
+  email             String              @unique
+  phoneNumber       Int?                @unique @map("phone_number")
+  address           String
+  postalCode        String              @map("postal_code")
+  city              String
+  userId            String              @map("user_id") @unique
+  user              User                @relation(fields: [userId], references: [id])
+  status            OrganizerStatus     @default(PENDING)
+  createdAt         DateTime            @default(now()) @map("created_at")
+  updatedAt         DateTime            @updatedAt @map("updated_at")
+  DiscountCode      DiscountCode[]
+  MailingList       MailingList[]
 
   @@map("organizers")
 }
@@ -436,12 +437,23 @@ model DiscountCode {
   active      Boolean
   createdBy   User      @relation(fields: [createdById], references: [id])
   createdById String    @map("created_by") @db.VarChar(20)
-  organiser   Organiser @relation(fields: [organiserId], references: [id])
-  organiserId String    @map("organiser_id") @db.VarChar(20)
+  organizer   Organizer @relation(fields: [organizerId], references: [id])
+  organizerId String    @map("organizer_id") @db.VarChar(20)
   createdAt   DateTime  @default(now()) @map("created_at")
   updatedAt   DateTime  @updatedAt @map("updated_at")
 
   @@map("discount_codes")
+}
+
+// Saves email from users that want to receive news from certain organizers
+model MailingList {
+    email           String
+    organizerId     String      @map("organizer_id")
+    organizer       Organizer   @relation(fields: [organizerId], references: [id])
+    createdAt       DateTime    @default(now()) @map("created_at")
+
+    @@unique([email, organizerId])
+    @@map("mailing_list")
 }
 
 model EventTeam {

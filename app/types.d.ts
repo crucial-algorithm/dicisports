@@ -4,12 +4,11 @@ import type {
   Difficulty as DBDifficulty,
   DiscountCode as DBDiscountCode,
   Document as DBDocument,
-  Event as DBEvent,
   Group as DBGroup,
   GroupSchedule as DBGroupSchedule,
   GroupSpirit as DBGroupSpirit,
   GroupType as DBGroupType,
-  Organiser as DBOrganiser,
+  Organizer as DBOrganizer,
   Participant as DBParticipant,
   ParticipantStatus,
   Perk as DBPerk,
@@ -19,8 +18,7 @@ import type {
   Sport as DBSport,
   Status as EventStatus,
   User as DBUser,
-  EventTeam as DBEventTeam,
-  Status
+  EventTeam as DBEventTeam
 } from '@prisma/client';
 
 type NonNullProperties<Type> = {
@@ -104,7 +102,8 @@ type UploadImageMeta = {
   apiKey: string;
 };
 
-type User = { organiser?: Organiser | null } & Omit<DBUser, 'password' | 'salt'>;
+type User = { organizer?: Organizer | null } & Omit<DBUser, 'password' | 'salt'>;
+
 type Sport = {
   name: TranslationObject;
 } & DBSport;
@@ -540,10 +539,10 @@ type SearchEventsResults = {
   image5?: string;
 };
 
-type Organiser = DBOrganiser & {};
+type Organizer = DBOrganizer & {};
 
-type OrganiserInput = {
-  // id will be null if the user has no organiser profile and is creating it
+type OrganizerInput = {
+  // id will be null if the user has no organizer profile and is creating it
   id: string | null;
   name: string;
   email: string;
@@ -643,8 +642,8 @@ export {
   DBRawSearchResults,
   SearchResults,
   SearchEventsResults,
-  Organiser,
-  OrganiserInput,
+  Organizer,
+  OrganizerInput,
   EventStatus,
   BookingList,
   DBRawBookingList,
