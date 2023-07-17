@@ -209,7 +209,7 @@ export const action: ActionFunction = async ({ request, params }) => {
       gender: form.get('gender') as string,
       birthdate: new Date(form.get('birthdate') as string),
       phoneNumber: parseInt(phoneNumber),
-      identityCard: form.get('identity-card') as string,
+      identityCard: (form.get('identity-card') as string) || '',
       federationNumber:
         parseInt(form.get('federation-number') as string) || null,
       shirtSize: parseInt(form.get('shirt') as string),
@@ -252,7 +252,7 @@ export const action: ActionFunction = async ({ request, params }) => {
         ),
       identityCard: z
         .string({ required_error: t('Field Required') })
-        .refine((v) => v.length === 12 && isIdentityCardValid, {
+        .refine((v) => v && v.length === 12 && isIdentityCardValid, {
           message: t('Invalid CC')
         }),
       federationNumber: z.number().nullable(),

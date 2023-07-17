@@ -971,7 +971,7 @@ function registerParticipant(eventId: string, raceId: string) {
     .type('937654321')
 
     .get('input[name=identity-card]')
-    .type('87654321')
+    .type('000000000ZZ4')
 
     .get('input[name=federation-number]')
     .type('8165238')
