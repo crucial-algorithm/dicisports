@@ -123,6 +123,72 @@ function bookingAmount(cart: UICartRow[]) {
   return cart.reduce((total, { qty, price }) => total + qty * price, 0);
 }
 
+function validateIdentityCard(identityCard: string): boolean {
+  const digitValues = {
+    '0': 0,
+    '1': 1,
+    '2': 2,
+    '3': 3,
+    '4': 4,
+    '5': 5,
+    '6': 6,
+    '7': 7,
+    '8': 8,
+    '9': 9,
+    A: 10,
+    B: 11,
+    C: 12,
+    D: 13,
+    E: 14,
+    F: 15,
+    G: 16,
+    H: 17,
+    I: 18,
+    J: 19,
+    K: 20,
+    L: 21,
+    M: 22,
+    N: 23,
+    O: 24,
+    P: 25,
+    Q: 26,
+    R: 27,
+    S: 28,
+    T: 29,
+    U: 30,
+    V: 31,
+    W: 32,
+    X: 33,
+    Y: 34,
+    Z: 35
+  };
+  let secondDigit: boolean = false;
+
+  if (identityCard.length !== 12) {
+    return false;
+  }
+
+  const sum = Array.from(identityCard)
+    .reverse()
+    .reduce((total, digit) => {
+      // @ts-ignore
+      let value = digitValues[digit.toUpperCase()];
+
+      if (secondDigit) {
+        value *= 2;
+
+        if (value > 9) {
+          value -= 9;
+        }
+      }
+
+      secondDigit = !secondDigit;
+      return total + value;
+    }, 0);
+
+  return sum % 10 === 0;
+}
+
 export {
   getDomainUrl,
   getErrorMessage,
@@ -137,5 +203,6 @@ export {
   hoursMinutesToTimeOfDay,
   getLocalizedText,
   generateSlug,
-  bookingAmount
+  bookingAmount,
+  validateIdentityCard
 };
