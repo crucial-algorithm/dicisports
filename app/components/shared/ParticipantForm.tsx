@@ -3,21 +3,18 @@ import clsx from 'clsx';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { InputMask } from 'primereact/inputmask';
-
 import { CheckoutInfoActions } from '~/action.keys';
 
 import Button from '~/components/shared/Button';
 import ButtonGroup from '~/components/shared/ButtonGroup';
-import ComboBox, {
-  Creatable
-} from '~/components/shared/form/ComboBox';
+import ComboBox, { Creatable } from '~/components/shared/form/ComboBox';
 import BasicDatePicker from '~/components/shared/form/DatePicker';
 import FormField from '~/components/shared/form/FormField';
 import TextField from '~/components/shared/form/TextField';
 import countries from '~/server/db/countries.json';
 import type { EventTeam, Language, Participant, ShirtSize } from '~/types';
 import { FetcherForm } from '~/components/shared/form/UploadForm';
+import { DiciInputMask } from '~/components/shared/form/InputMask';
 
 export default function ParticipantForm({
   participant,
@@ -203,7 +200,13 @@ export default function ParticipantForm({
           error={errors?.identityCard}
           dataCy="identityCard"
         >
-          <InputMask mask="99999999-9-aa9" name="identity-card" value="123456789aa9" />
+          <DiciInputMask
+            mask="99999999-9-aa9"
+            name="identity-card"
+            value={participant?.identityCard || undefined}
+            placeholder={t('Required')}
+            className="input-text"
+          />
         </FormField>
 
         <FormField

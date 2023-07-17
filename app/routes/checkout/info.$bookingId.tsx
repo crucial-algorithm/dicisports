@@ -217,11 +217,11 @@ export const action: ActionFunction = async ({ request, params }) => {
       postalCode: form.get('postal-code') as string
     };
 
-    if (data.identityCard.length > 0) {
+    if (data.identityCard && data.identityCard.length > 0) {
       data.identityCard = data.identityCard.split('-').join('');
     }
 
-    const isIdentityCardValid = validateIdentityCard(data.identityCard);
+    const isIdentityCardValid = validateIdentityCard(data.identityCard as string);
 
     const ParticipantSchema = z.object({
       firstName: z
