@@ -26,7 +26,7 @@ function DiciInputMask({
       name={name}
       placeholder={placeholder}
       value={value}
-      className={clsx('input-text', className)}
+      className={clsx('dici-input-mask', className)}
       mask={mask}
     />
   );
