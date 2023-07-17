@@ -205,7 +205,6 @@ export default function ParticipantForm({
             name="identity-card"
             value={participant?.identityCard || undefined}
             placeholder={t('Required')}
-            className="input-text"
           />
         </FormField>
 

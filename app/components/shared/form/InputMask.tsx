@@ -2,20 +2,17 @@ import * as React from 'react';
 import type { InputMaskProps } from 'primereact/inputmask';
 import { InputMask } from 'primereact/inputmask';
 import { useContext } from 'react';
+import clsx from 'clsx';
 
 import { FormContext } from '~/components/shared/form/UploadForm';
 
-type InputMaskOptions = {
-  placeHolder?: string;
-} & InputMaskProps;
-
 function DiciInputMask({
   name,
-  placeHolder,
+  placeholder,
   value,
   className,
   mask
-}: InputMaskOptions) {
+}: InputMaskProps) {
   const formProps = useContext(FormContext);
 
   if (formProps.readOnly) {
@@ -27,9 +24,9 @@ function DiciInputMask({
   return (
     <InputMask
       name={name}
-      placeholder={placeHolder}
+      placeholder={placeholder}
       value={value}
-      className={className}
+      className={clsx('input-text', className)}
       mask={mask}
     />
   );
