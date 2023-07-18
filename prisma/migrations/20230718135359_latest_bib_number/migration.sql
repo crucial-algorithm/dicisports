@@ -1,12 +1,12 @@
 /*
   Warnings:
 
-  - You are about to drop the column `dorsal_starting_number` on the `events` table. All the data in the column will be lost.
   - A unique constraint covering the columns `[event_id,bib_number]` on the table `race_participants` will be added. If there are existing duplicate values, this will fail.
 
 */
 -- AlterTable
-ALTER TABLE "events" DROP COLUMN "dorsal_starting_number";
+ALTER TABLE "events" RENAME COLUMN "dorsal_starting_number" TO "bib_starting_number";
+ALTER TABLE "events" ALTER COLUMN "bib_starting_number" SET DEFAULT 1;
 
 -- AlterTable
 ALTER TABLE "race_participants" ADD COLUMN     "bib_number" INTEGER,

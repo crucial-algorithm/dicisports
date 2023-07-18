@@ -276,9 +276,11 @@ export const action: ActionFunction = async ({ request, params }) => {
     externalBookingUrl: (form.get('booking-url') as string) || null,
     description: (form.get('event-description') as string) || null,
     directions: (form.get('get-there') as string) || null,
+    // We shouldn't allow user to update bib starting number when there are booked participants
+    // Otherwise bib numbers will skip, or we'll try to assign already assigned numbers
     bibStartingNumber:
-      eventStatus === Status.published && hasRegistrations && event.latestBibNumber
-        ? event.latestBibNumber.bibNumber + 1
+      eventStatus === Status.published && hasRegistrations
+        ? event.bibStartingNumber as number
         : parseInt(form.get('bib-number') as string),
     image1: processImgField(image1, isUpdate),
     image2: processImgField(image2, isUpdate),
@@ -819,8 +821,7 @@ export default function OrganizerEventRoute() {
               name="bib-number"
               type="number"
               placeholder={t('Bib number placeholder')}
-              // We are saving the bib number - 1, so increase by 1 to correspond to user input
-              defaultValue={event.latestBibNumber !== null ? event.latestBibNumber.bibNumber + 1 : 1}
+              defaultValue={event.bibStartingNumber}
               className="w-full md:w-48"
               disabled={isPublished && hasRegistrations}
             />

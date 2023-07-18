@@ -1,30 +1,35 @@
-import type { Prisma } from '@prisma/client';
+import type { Prisma, LatestBibNumber } from '@prisma/client';
 
 import { db } from '~/server/db.server';
 
-import Id from '../utils/Id.server';
-
-async function upsertEventCount(
+async function createEventLatestBibNumber(
   eventId: string,
-  bibNumber: number = 0,
   tx?: Prisma.TransactionClient
-) {
+): Promise<LatestBibNumber> {
   const now = new Date();
 
-  return await (tx || db).latestBibNumber.upsert({
-    where: {
-      eventId
-    },
-    update: {
-      bibNumber
-    },
-    create: {
+  return await (tx || db).latestBibNumber.create({
+    data: {
       eventId,
-      bibNumber,
       createdAt: now,
       updatedAt: now
     }
   });
 }
 
-export { upsertEventCount };
+async function updateEventLatestBibNumber(
+  eventId: string,
+  bibNumber: number,
+  tx?: Prisma.TransactionClient
+): Promise<LatestBibNumber> {
+  return await (tx || db).latestBibNumber.update({
+    where: {
+      eventId
+    },
+    data: {
+      bibNumber
+    }
+  });
+}
+
+export { createEventLatestBibNumber, updateEventLatestBibNumber };

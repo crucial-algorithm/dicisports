@@ -119,6 +119,7 @@ model Event {
   regulationPath        String?     @map("regulation_path")
   regulationContent     String?     @map("regulation_content")
   regulationFileName    String?     @map("regulation_file_name")
+  bibStartingNumber     Int?        @map("bib_starting_number") @default(1)
   createdBy             User        @relation(fields: [createdById], references: [id])
   createdById           String      @map("created_by")
   createdAt             DateTime    @default(now()) @map("created_at")

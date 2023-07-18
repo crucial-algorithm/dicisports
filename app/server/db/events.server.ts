@@ -16,7 +16,7 @@ import {
   resetEventPerks
 } from '~/server/db/perks.server';
 import { generateSlug } from '~/utils/misc';
-import { upsertEventCount } from '~/server/db/latestBibNumber.server';
+import { createEventLatestBibNumber, updateEventLatestBibNumber } from '~/server/db/latestBibNumber.server';
 
 const prisma = new PrismaClient();
 
@@ -112,7 +112,7 @@ async function createDraftEvent(
     });
 
     await createDefaultPerks(eventId, language, tx);
-    await upsertEventCount(eventId, 0, tx);
+    await createEventLatestBibNumber(eventId, tx);
   });
 }
 
@@ -145,10 +145,10 @@ async function updateEvent(
         regulationFileName: event.regulationFileName,
         description: event.description,
         directions: event.directions,
+        bibStartingNumber: event.bibStartingNumber,
         status: event.status
       }
     });
-    await upsertEventCount(event.id, event.bibStartingNumber - 1, prisma);
     await resetEventPerks(event.id, perks, prisma);
     await enableEventPerks(perks, prisma);
     await createPerks(
@@ -169,24 +169,27 @@ async function updateEvent(
 }
 
 async function publishEvent(eventId: string, name: string): Promise<void> {
-  const event = await findEvent(eventId);
+  return await db.$transaction(async (tx) => {
+    const event = await findEvent(eventId);
 
-  if (!event) {
-    return;
-  }
-
-  let slug = event.slug;
-
-  if (slug === null) {
-    slug = await assignUniqueSlug(name);
-  }
-
-  await db.event.update({
-    where: { id: eventId },
-    data: {
-      slug,
-      status: Status.published
+    if (!event) {
+      return;
     }
+
+    let slug = event.slug;
+
+    if (slug === null) {
+      slug = await assignUniqueSlug(name);
+    }
+
+    await tx.event.update({
+      where: { id: eventId },
+      data: {
+        slug,
+        status: Status.published
+      }
+    });
+    await updateEventLatestBibNumber(eventId, event.bibStartingNumber as number, tx);
   });
 }
 
