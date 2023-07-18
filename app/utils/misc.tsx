@@ -123,8 +123,8 @@ function bookingAmount(cart: UICartRow[]) {
   return cart.reduce((total, { qty, price }) => total + qty * price, 0);
 }
 
-// function to validate identity card according to Autenticação.gov
-// https://www.autenticacao.gov.pt/documents/20126/0/Valida%C3%A7%C3%A3o+de+N%C3%BAmero+de+Documento+do+Cart%C3%A3o+de+Cidad%C3%A3o+%281%29.pdf/7d5745ba-2bcc-e861-3954-bafe9f7591a0?t=1658411665319
+// Function that validates identity card according to Autenticação.gov
+// Check /docs/pt_idcard_validation.pdf for more information
 function validateIdentityCard(identityCard: string): boolean {
   const mapping: { [key: string]: number } = {
     0: 0,
