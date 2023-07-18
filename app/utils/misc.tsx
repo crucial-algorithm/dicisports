@@ -124,17 +124,17 @@ function bookingAmount(cart: UICartRow[]) {
 }
 
 function validateIdentityCard(identityCard: string): boolean {
-  const digitValues = {
-    '0': 0,
-    '1': 1,
-    '2': 2,
-    '3': 3,
-    '4': 4,
-    '5': 5,
-    '6': 6,
-    '7': 7,
-    '8': 8,
-    '9': 9,
+  const mapping: { [key: string]: number } = {
+    0: 0,
+    1: 1,
+    2: 2,
+    3: 3,
+    4: 4,
+    5: 5,
+    6: 6,
+    7: 7,
+    8: 8,
+    9: 9,
     A: 10,
     B: 11,
     C: 12,
@@ -162,7 +162,7 @@ function validateIdentityCard(identityCard: string): boolean {
     Y: 34,
     Z: 35
   };
-  let secondDigit: boolean = false;
+  let oddDigit: boolean = false;
 
   if (identityCard.length !== 12) {
     return false;
@@ -171,10 +171,9 @@ function validateIdentityCard(identityCard: string): boolean {
   const sum = Array.from(identityCard)
     .reverse()
     .reduce((total, digit) => {
-      // @ts-ignore
-      let value = digitValues[digit.toUpperCase()];
+      let value = mapping[digit.toUpperCase()];
 
-      if (secondDigit) {
+      if (oddDigit) {
         value *= 2;
 
         if (value > 9) {
@@ -182,7 +181,7 @@ function validateIdentityCard(identityCard: string): boolean {
         }
       }
 
-      secondDigit = !secondDigit;
+      oddDigit = !oddDigit;
       return total + value;
     }, 0);
 
