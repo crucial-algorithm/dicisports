@@ -146,10 +146,6 @@ export const action: ActionFunction = async ({ request, params }) => {
       postalCode: form.get('postal-code') as string
     };
 
-    if (data.identityCard && data.identityCard.length > 0) {
-      data.identityCard = data.identityCard.split('-').join('');
-    }
-
     const isIdentityCardValid = validateIdentityCard(data.identityCard as string);
 
     const ParticipantSchema = z.object({
@@ -181,7 +177,7 @@ export const action: ActionFunction = async ({ request, params }) => {
         ),
       identityCard: z
         .string({ required_error: t('Field Required') })
-        .refine((v) => v && v.length === 12 && isIdentityCardValid, {
+        .refine((v) => v && isIdentityCardValid, {
           message: t('Invalid CC')
         }),
       federationNumber: z.number().nullable(),

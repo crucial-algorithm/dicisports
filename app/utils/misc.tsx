@@ -123,6 +123,8 @@ function bookingAmount(cart: UICartRow[]) {
   return cart.reduce((total, { qty, price }) => total + qty * price, 0);
 }
 
+// function to validate identity card according to Autenticação.gov
+// https://www.autenticacao.gov.pt/documents/20126/0/Valida%C3%A7%C3%A3o+de+N%C3%BAmero+de+Documento+do+Cart%C3%A3o+de+Cidad%C3%A3o+%281%29.pdf/7d5745ba-2bcc-e861-3954-bafe9f7591a0?t=1658411665319
 function validateIdentityCard(identityCard: string): boolean {
   const mapping: { [key: string]: number } = {
     0: 0,
@@ -163,12 +165,13 @@ function validateIdentityCard(identityCard: string): boolean {
     Z: 35
   };
   let oddDigit: boolean = false;
+  const formattedIdentityCard = identityCard.split('-').join('');
 
-  if (identityCard.length !== 12) {
+  if (formattedIdentityCard.length !== 12) {
     return false;
   }
 
-  const sum = Array.from(identityCard)
+  const sum = Array.from(formattedIdentityCard)
     .reverse()
     .reduce((total, digit) => {
       let value = mapping[digit.toUpperCase()];
