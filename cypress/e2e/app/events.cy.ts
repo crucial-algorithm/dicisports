@@ -951,7 +951,7 @@ describe('Event', () => {
     it('should not update bib starting number when event has race participants', () => {
       cy.visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d')
         .get('input[name=bib-number]')
-        .should('have.value', '3')
+        .should('have.value', '1')
         .and('have.prop', 'disabled')
 
         .get('button[name=update-event]')
@@ -971,7 +971,7 @@ describe('Event', () => {
         })
 
         .get('input[name=bib-number]')
-        .should('have.value', '3')
+        .should('have.value', '1')
         .and('have.prop', 'disabled');
     });
   });

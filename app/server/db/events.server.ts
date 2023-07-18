@@ -119,7 +119,8 @@ async function createDraftEvent(
 async function updateEvent(
   event: CreateEventInput,
   perks: string[],
-  newPerks: string[]
+  newPerks: string[],
+  hasRegistrations: boolean = false
 ): Promise<void> {
   return await prisma.$transaction(async (prisma) => {
     await prisma.event.update({
@@ -165,31 +166,33 @@ async function updateEvent(
         }),
       prisma
     );
+
+    // Only update the latest bib number when there are no registrations
+    if (!hasRegistrations) {
+      await updateEventLatestBibNumber(event.id, event.bibStartingNumber - 1, prisma);
+    }
   });
 }
 
 async function publishEvent(eventId: string, name: string): Promise<void> {
-  return await db.$transaction(async (tx) => {
-    const event = await findEvent(eventId);
+  const event = await findEvent(eventId);
 
-    if (!event) {
-      return;
+  if (!event) {
+    return;
+  }
+
+  let slug = event.slug;
+
+  if (slug === null) {
+    slug = await assignUniqueSlug(name);
+  }
+
+  await db.event.update({
+    where: { id: eventId },
+    data: {
+      slug,
+      status: Status.published
     }
-
-    let slug = event.slug;
-
-    if (slug === null) {
-      slug = await assignUniqueSlug(name);
-    }
-
-    await tx.event.update({
-      where: { id: eventId },
-      data: {
-        slug,
-        status: Status.published
-      }
-    });
-    await updateEventLatestBibNumber(eventId, event.bibStartingNumber as number, tx);
   });
 }
 

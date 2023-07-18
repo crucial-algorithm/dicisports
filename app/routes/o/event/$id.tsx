@@ -261,7 +261,7 @@ export const action: ActionFunction = async ({ request, params }) => {
   }
 
   const confirmedBookings = await findConfirmedBookings(event.id);
-  const hasRegistrations = confirmedBookings && confirmedBookings?.length > 0;
+  const hasRegistrations: boolean = !!confirmedBookings && confirmedBookings?.length > 0;
 
   const data: CreateEventInput = {
     id: params.id as string,
@@ -378,7 +378,7 @@ export const action: ActionFunction = async ({ request, params }) => {
       EventSchema.parse({ ...data, races: races.map((r) => r.id) });
     }
 
-    await updateEvent(data, perks, newPerks);
+    await updateEvent(data, perks, newPerks, hasRegistrations);
     feedback = { severity: 'success', message: t('Event Saved') };
 
     if (actionId === actionIds.publish) {
@@ -407,6 +407,7 @@ export const action: ActionFunction = async ({ request, params }) => {
     if (!(e instanceof ZodError)) {
       const tc = await i18n.getFixedT(request, 'common');
 
+      console.log(e);
       return badRequest({
         errors: { submit: tc('500 error message') }
       });
