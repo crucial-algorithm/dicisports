@@ -19,9 +19,8 @@ async function upsertEventCount(
       bibNumber
     },
     create: {
-      id: Id(),
-      bibNumber,
       eventId,
+      bibNumber,
       createdAt: now,
       updatedAt: now
     }

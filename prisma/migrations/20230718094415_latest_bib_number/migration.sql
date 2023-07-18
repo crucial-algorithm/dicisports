@@ -14,17 +14,13 @@ ADD COLUMN     "event_id" TEXT;
 
 -- CreateTable
 CREATE TABLE "latest_bib_number" (
-    "id" TEXT NOT NULL,
-    "bib_number" INTEGER NOT NULL DEFAULT 0,
     "event_id" TEXT NOT NULL,
+    "bib_number" INTEGER NOT NULL DEFAULT 0,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
 
-    CONSTRAINT "latest_bib_number_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "latest_bib_number_pkey" PRIMARY KEY ("event_id")
 );
-
--- CreateIndex
-CREATE UNIQUE INDEX "latest_bib_number_event_id_key" ON "latest_bib_number"("event_id");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "race_participants_event_id_bib_number_key" ON "race_participants"("event_id", "bib_number");
