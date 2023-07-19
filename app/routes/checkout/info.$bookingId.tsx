@@ -59,7 +59,7 @@ import type {
   ShirtSize,
   UICartRow
 } from '~/types';
-import { badRequest, displayTimeOfDay } from '~/utils/misc';
+import { badRequest, displayTimeOfDay, validateIdentityCard } from '~/utils/misc';
 import { Unauthorized } from '~/server/utils/misc';
 import InputError from '~/components/shared/form/InputError';
 import { findOrganizer } from '~/server/db/organizer.server';
@@ -138,13 +138,15 @@ export const action: ActionFunction = async ({ request, params }) => {
       gender: form.get('gender') as string,
       birthdate: new Date(form.get('birthdate') as string),
       phoneNumber: parseInt(phoneNumber),
-      identityCard: form.get('identity-card') as string,
+      identityCard: (form.get('identity-card') as string) || '',
       federationNumber:
         parseInt(form.get('federation-number') as string) || null,
       shirtSize: parseInt(form.get('shirt') as string),
       nationality: parseInt(form.get('nationality') as string) || null,
       postalCode: form.get('postal-code') as string
     };
+
+    const isIdentityCardValid = validateIdentityCard(data.identityCard as string);
 
     const ParticipantSchema = z.object({
       firstName: z
@@ -175,7 +177,9 @@ export const action: ActionFunction = async ({ request, params }) => {
         ),
       identityCard: z
         .string({ required_error: t('Field Required') })
-        .length(8, { message: t('Invalid CC Length') }),
+        .refine((v) => v && isIdentityCardValid, {
+          message: t('Invalid CC')
+        }),
       federationNumber: z.number().nullable(),
       shirtSize: z.number({
         required_error: t('Field Required'),

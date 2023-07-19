@@ -44,13 +44,13 @@
   "Max 9 Number": "Apenas permitidos 9 dígitos",
   "Invalid Option": "Opção inválida",
   "Invalid Type": "Tipo inválido",
-  "Invalid CC Length": "Introduza o seu número de identificação sem dígitos de controlo",
+  "Invalid CC": "Introduz um número de Cartão de Cidadão válido",
 
-  "No Races In Checkout": "Nenhuma distância no carrinho !",
+  "No Races In Checkout": "Nenhuma distância no carrinho!",
   "Can't Create Booking": "Não foi possível criar o booking",
 
   "Update Cart": "Atualizar carrinho",
-  "Existing Race Participant": "Upss.. Este participante já está a participar nesta distância !",
+  "Existing Race Participant": "Upss.. Este participante já está a participar nesta distância!",
   "Participant Selected": "Participante selecionado",
   "Participant Saved": "Participante guardado",
   "Participant Saved and Updated": "Participante guardado e atualizado",
