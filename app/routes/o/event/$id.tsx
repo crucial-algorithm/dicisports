@@ -61,7 +61,7 @@ import Config from '~/server/config.server';
 import type { EventWithRacesDifficultiesAndDocuments } from '~/server/db/events.server';
 import {
   deleteEvent,
-  findEvent,
+  findEventWithRacesAndDocuments,
   publishEvent,
   unpublishEvent,
   updateEvent
@@ -154,7 +154,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   const sports = await findSports();
   const difficulties = await findDifficulties();
   const eventId = params.id as string;
-  const event = eventId ? await findEvent(eventId) : null;
+  const event = eventId ? await findEventWithRacesAndDocuments(eventId) : null;
 
   const { MAPBOX_TOKEN, CLOUDINARY_UPLOAD_PRESET } = Config();
 
@@ -191,7 +191,7 @@ export const action: ActionFunction = async ({ request, params }) => {
         return undefined;
       }
 
-      const event = await findEvent(String(params.id));
+      const event = await findEventWithRacesAndDocuments(String(params.id));
 
       if (!event) {
         return ''; // should never happen
@@ -208,7 +208,7 @@ export const action: ActionFunction = async ({ request, params }) => {
     unstable_createMemoryUploadHandler()
   );
 
-  const event = params.id ? await findEvent(params.id) : null;
+  const event = params.id ? await findEventWithRacesAndDocuments(params.id) : null;
 
   if (!event) {
     throw NotFound(t('Event not found'));
@@ -822,7 +822,7 @@ export default function OrganizerEventRoute() {
               name="bib-number"
               type="number"
               placeholder={t('Bib number placeholder')}
-              defaultValue={event.bibStartingNumber}
+              defaultValue={event.bibStartingNumber || 1}
               className="w-full md:w-48"
               disabled={isPublished && hasRegistrations}
             />

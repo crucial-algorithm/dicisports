@@ -21,7 +21,7 @@ import { createEventLatestBibNumber, updateEventLatestBibNumber } from '~/server
 const prisma = new PrismaClient();
 
 const eventWithRacesDifficultiesAndDocuments = Prisma.validator<Prisma.EventArgs>()({
-  include: { races: true, difficulty: true, documents: true, latestBibNumber: true }
+  include: { races: true, difficulty: true, documents: true }
 });
 
 type EventWithRacesDifficultiesAndDocuments = Prisma.EventGetPayload<typeof eventWithRacesDifficultiesAndDocuments>
@@ -58,14 +58,29 @@ async function findUserEvents(userId: string): Promise<Array<Event>> {
             not: Status.deleted
           }
         }
-      },
-      difficulty: true,
-      races: true
+      }
     }
   });
 }
 
-async function findEvent(id: string): Promise<EventWithRacesDifficultiesAndDocuments | null> {
+async function findEvent(id: string): Promise<Event | null> {
+  return db.event.findUnique({
+    where: { id },
+    include: {
+      documents: {
+        where: {
+          status: {
+            not: Status.deleted
+          }
+        }
+      }
+    }
+  });
+}
+
+async function findEventWithRacesAndDocuments(
+  id: string
+): Promise<EventWithRacesDifficultiesAndDocuments | null> {
   return db.event.findUnique({
     where: { id },
     include: {
@@ -77,8 +92,7 @@ async function findEvent(id: string): Promise<EventWithRacesDifficultiesAndDocum
         }
       },
       difficulty: true,
-      races: true,
-      latestBibNumber: true
+      races: true
     }
   });
 }
@@ -357,5 +371,6 @@ export {
   findUserFavoriteEvent,
   getEventResultsByName,
   deleteEvent,
-  updateEventRegulation
+  updateEventRegulation,
+  findEventWithRacesAndDocuments
 };
