@@ -410,7 +410,7 @@ describe('Checkout', () => {
         });
     });
 
-    it.skip('should send automated email after completing booking', () => {
+    it.only('should send automated email after completing booking', () => {
       bookParticipant('MY4bvgxDbMtGv8rbYe5d', 'AhowRdNWCBQWSuivSt7h');
       cy.get('input[name=email]')
         .type('asd@gmail.com')
@@ -769,7 +769,7 @@ describe('Checkout', () => {
         .should('exist');
     });
 
-    it('should have correct bib numbers', () => {
+    it.only('should have correct bib numbers', () => {
       cy.intercept('GET', '/payment-status/*')
         .as('GetPaymentStatus')
 

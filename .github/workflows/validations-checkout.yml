@@ -89,7 +89,7 @@ jobs:
           SIBS_WEBHOOK_SECRET: O0Bur9uhZkS54NkwFhVyeutED6DhLbOQUBDt3i3W/C4=
           SIBS_MULTIBANCO_ENTITIY: 2400
           SIBS_MULTIBANCO_EXPIRATION_DAYS: 3
-          SIBS_CHECK_STATUS_ENDPOINT: http://localhost:3001/sibs-status-mock/{{transactionID}}
+          SIBS_CHECK_STATUS_ENDPOINT: http://127.0.0.1:3001/sibs-status-mock/{{transactionID}}
 
       - uses: actions/upload-artifact@v2
         if: failure()
