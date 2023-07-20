@@ -769,13 +769,27 @@ describe('Checkout', () => {
         .should('exist');
     });
 
-    // TODO: remove skip test when booking flow tests are re-instated
-    it.skip('should have correct bib numbers', () => {
-      cy.visitAndWaitForHydration('/checkout/payment/qR4nqWpTdQy8QZu29ANu')
+    it('should have correct bib numbers', () => {
+      cy.intercept('GET', '/payment-status/*')
+        .as('GetPaymentStatus')
+
+        .visitAndWaitForHydration('/checkout/payment/qR4nqWpTdQy8QZu29ANu')
+
         .get('button[name=pay]')
         .should('exist')
 
         .click()
+
+        .location()
+        .then((l) => {
+          if (l.pathname === '/checkout/payment/qR4nqWpTdQy8QZu29ANu') {
+            cy.get('.sibs > h5')
+              .should('exist')
+              .and('contain', 'Pagamento por Multibanco ou Homebanking')
+
+              .wait('@GetPaymentStatus');
+          }
+        })
 
         .waitForHydration()
         .location()
