@@ -410,7 +410,7 @@ describe('Checkout', () => {
         });
     });
 
-    it.only('should send automated email after completing booking', () => {
+    it('should send automated email after completing booking', () => {
       bookParticipant('MY4bvgxDbMtGv8rbYe5d', 'AhowRdNWCBQWSuivSt7h');
       cy.get('input[name=email]')
         .type('asd@gmail.com')
