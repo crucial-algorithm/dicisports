@@ -47,7 +47,7 @@ jobs:
         run: chmod -R 777 .
 
       - name: Cypress e2e tests
-        uses: cypress-io/github-action@v4.2.0
+        uses: cypress-io/github-action@v5
         with:
           browser: chrome
           record: false
