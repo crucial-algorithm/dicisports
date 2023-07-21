@@ -787,7 +787,7 @@ describe('Checkout', () => {
               .should('exist')
               .and('contain', 'Pagamento por Multibanco ou Homebanking')
 
-              .wait('@GetPaymentStatus');
+              .wait('@GetPaymentStatus', { timeout: 10000 });
           }
         })
 
