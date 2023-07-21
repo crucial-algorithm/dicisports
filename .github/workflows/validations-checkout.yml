@@ -38,7 +38,7 @@ jobs:
 
       - name: check iptables
         run: |
-          iptables --help          
+          sudo iptables --help          
 
       - name: Check out repository code
         uses: actions/checkout@v3
