@@ -53,21 +53,12 @@ export default defineConfig({
         // `args` is an array of all the arguments that will
         // be passed to browsers when it launches
         console.log('[PRINTING STUFF] ------> ', launchOptions.args); // print all current args
+        console.log('[BROWSER FAMILY] ------> ', browser.family); // print all current args
 
-        if (browser.family === 'chromium' && browser.name !== 'electron') {
+        if (browser.family === 'chromium') {
           launchOptions.args.push(
             '--unsafely-treat-insecure-origin-as-secure=http://172.18.0.1:3000'
           );
-        }
-
-        if (browser.family === 'firefox') {
-          // auto open devtools
-          launchOptions.args.push('-devtools');
-        }
-
-        if (browser.name === 'electron') {
-          // auto open devtools
-          launchOptions.preferences.devTools = true;
         }
 
         // whatever you return here becomes the launchOptions
