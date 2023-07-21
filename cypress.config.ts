@@ -50,18 +50,13 @@ export default defineConfig({
       });
 
       on('before:browser:launch', (browser, launchOptions) => {
-        // `args` is an array of all the arguments that will
-        // be passed to browsers when it launches
-        console.log('[PRINTING STUFF] ------> ', launchOptions.args); // print all current args
-        console.log('[BROWSER FAMILY] ------> ', browser.family); // print all current args
-
         if (browser.family === 'chromium') {
           launchOptions.args.push(
             '--unsafely-treat-insecure-origin-as-secure=http://172.18.0.1:3000'
           );
         }
 
-        // whatever you return here becomes the launchOptions
+        console.log('[PRINTING STUFF] ------> ', launchOptions.args); // print all current args
         return launchOptions;
       });
     }
