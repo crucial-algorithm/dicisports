@@ -28,6 +28,14 @@ jobs:
           - 3001:3001
 
     steps:
+      - name: Find the host IP address
+        run: |
+          echo "github_host_ip==`hostname -I | awk '{print $1}'`" >> "$GITHUB_ENV"
+
+      - name: Print value for debug
+        run: |
+          echo "${{ env.github_host_ip }}"
+
       - name: Test connection
         run: |
           curl localhost:3001
@@ -58,7 +66,7 @@ jobs:
           CY_REQUEST_TIMEOUT: 15000
           CY_RESPONSE_TIMEOUT: 90000
           CY_DEFAULT_COMMAND_TIMEOUT: 30000
-          CY_BASE_URL: http://172.18.0.1:3000
+          CY_BASE_URL: http://${{ env.github_host_ip }}:3000
 
           DATABASE_URL: postgresql://dici:sports@localhost:5432/dicisports?schema=public&charset=utf8
 
