@@ -49,7 +49,7 @@ jobs:
       - name: Cypress e2e tests
         uses: cypress-io/github-action@v5
         with:
-          browser: chrome
+#          browser: chrome
           record: false
           build: npm run ci:build
           start: npm run dev
