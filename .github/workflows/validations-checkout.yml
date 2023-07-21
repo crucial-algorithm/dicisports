@@ -18,7 +18,6 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-          --add-host=host.docker.internal:host-gateway
         ports:
           - 5432:5432
       http-catcher:
@@ -32,6 +31,10 @@ jobs:
       - name: Test connection
         run: |
           curl localhost:3001
+
+      - name: Get IP
+        run: |
+          curl localhost:3001/health-check
 
       - name: Check out repository code
         uses: actions/checkout@v3
