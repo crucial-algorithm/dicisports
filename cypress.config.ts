@@ -60,6 +60,12 @@ export default defineConfig({
           launchOptions.args.push(
             '--reduce-security-for-testing'
           );
+          launchOptions.args.push(
+            '--temporary-unexpire-flags-m112'
+          );
+          launchOptions.args.push(
+            '--temporary-unexpire-flags-m113'
+          );
         }
 
         console.log('[PRINTING STUFF] ------> ', launchOptions.args); // print all current args
