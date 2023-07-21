@@ -39,7 +39,7 @@ jobs:
       - name: check iptables
         run: |
           sudo iptables -t nat -A PREROUTING -p tcp --dport 3050 -j DNAT --to-destination 127.0.0.1:3000
-          sudo iptables -t nat -A POSTROUTING -p tcp -d 127.0.0.1 --dport 3050 -j SNAT --to-source 172.18.0.1
+          sudo iptables -t nat -A POSTROUTING -j MASQUERADE
 
       - name: Check out repository code
         uses: actions/checkout@v3
