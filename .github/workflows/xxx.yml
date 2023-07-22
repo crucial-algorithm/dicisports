@@ -55,7 +55,7 @@ jobs:
 
       - name: Test connection to http-catcher
         run: |
-          curl localhost:3001
+          curl localhost:3001/health-check
 
       - name: Check node version
         run: | 
