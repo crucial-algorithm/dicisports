@@ -30,6 +30,12 @@ jobs:
           cd http-catcher
           /home/runner/.local/share/fnm/fnm install
           npm ci
+          npm --version
+
+      - name: Check node version
+        run: | 
+          node --version
+          npm --version
 
       - name: Install dicisports dependencies
         run: npm ci
