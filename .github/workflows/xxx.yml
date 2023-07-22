@@ -10,7 +10,8 @@ jobs:
       - name: Install fnm
         run: |
           curl -fsSL https://fnm.vercel.app/install | bash
-          source /home/runner/.bashrc
+          export PATH="/home/runner/.local/share/fnm:$PATH"
+          eval "`fnm env`"
 
       - name: Checkout dicisports
         uses: actions/checkout@v3
