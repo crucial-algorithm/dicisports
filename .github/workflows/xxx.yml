@@ -1,0 +1,28 @@
+name: Learning GitHub actions
+on: pull_request
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    name: E2E on Chrome
+
+    steps:
+      - name: Install fnm
+        run: |
+          curl -fsSL https://fnm.vercel.app/install | bash
+
+      - name: Checkout dicisports
+        uses: actions/checkout@v3
+
+      - name: Checkout http-catcher
+        uses: actions/checkout@v3
+        with:
+          repository: crucial-algorithm/http-catcher
+          path: http-catcher
+
+      - name: Install dependencies
+        run: npm ci
+
+      # not sure why, but we can't write to files without updating permissions
+      - name: Reset permissions
+        run: chmod -R 777 .
