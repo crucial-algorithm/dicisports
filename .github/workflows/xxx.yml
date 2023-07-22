@@ -28,7 +28,7 @@ jobs:
       - name: Install http-catcher dependencies
         run: |
           cd http-catcher
-          /home/runner/.local/share/fnm install
+          /home/runner/.local/share/fnm/fnm install
           npm ci
 
       - name: Install dicisports dependencies
