@@ -10,6 +10,7 @@ jobs:
       - name: Install fnm
         run: |
           curl -fsSL https://fnm.vercel.app/install | bash
+          source /home/runner/.bashrc
 
       - name: Checkout dicisports
         uses: actions/checkout@v3
@@ -17,7 +18,7 @@ jobs:
       - name: Checkout http-catcher
         uses: actions/checkout@v3
         with:
-          repository: crucial-algorithm/http-catcher
+          repository: crucial-algorithm/http-catcher@main
           path: http-catcher
 
       - name: Install dependencies
