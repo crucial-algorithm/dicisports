@@ -18,9 +18,8 @@ jobs:
       - name: Checkout http-catcher
         uses: actions/checkout@v3
         with:
-          repository: crucial-algorithm/http-catcher
+          repository: filipeutter/http-catcher
           path: http-catcher
-          token: ${{ secrets.GH_PAT }}
 
       - name: Install dependencies
         run: npm ci
