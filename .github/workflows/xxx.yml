@@ -20,7 +20,7 @@ jobs:
         with:
           repository: crucial-algorithm/http-catcher
           path: http-catcher
-          github-token: ${{ github.token }}
+          token: ${{ secrets.GH_PAT }}
 
       - name: Install dependencies
         run: npm ci
