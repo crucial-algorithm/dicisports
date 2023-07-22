@@ -7,6 +7,11 @@ jobs:
     name: E2E on Chrome
 
     steps:
+      - name: Check installed node version
+        run: |
+          node --version
+          npm --version
+
       - name: Install fnm
         run: |
           curl -fsSL https://fnm.vercel.app/install | bash
