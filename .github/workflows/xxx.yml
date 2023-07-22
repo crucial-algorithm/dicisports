@@ -21,8 +21,15 @@ jobs:
           repository: crucial-algorithm/http-catcher
           path: http-catcher
 
-      - name: Install dependencies
+      - name: Install dicisports dependencies
         run: npm ci
+
+      - name: Install http-catcher dependencies
+        run: |
+          cd http-catcher
+          fnm install
+          npm ci
+              
 
       # not sure why, but we can't write to files without updating permissions
       - name: Reset permissions
