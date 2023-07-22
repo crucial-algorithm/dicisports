@@ -18,7 +18,7 @@ jobs:
       - name: Checkout http-catcher
         uses: actions/checkout@v3
         with:
-          repository: filipeutter/http-catcher
+          repository: crucial-algorithm/http-catcher
           path: http-catcher
 
       - name: Install dependencies
