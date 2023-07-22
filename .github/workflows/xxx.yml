@@ -10,6 +10,9 @@ jobs:
       - name: Install fnm
         run: |
           curl -fsSL https://fnm.vercel.app/install | bash
+
+      - name: Export fnm to path
+        run: |
           export PATH="/home/runner/.local/share/fnm:$PATH"
           eval "`fnm env`"
 
