@@ -36,6 +36,7 @@ jobs:
           /home/runner/.local/share/fnm/fnm install
           npm ci
           npm --version
+          nohup node index.js & 
 
       - name: Check node version
         run: | 
