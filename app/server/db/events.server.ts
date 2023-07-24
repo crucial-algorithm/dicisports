@@ -1,10 +1,14 @@
-import { PrismaClient, Status, Prisma } from '@prisma/client';
-
 import type { Event } from '@prisma/client';
+import { Prisma, PrismaClient, Status } from '@prisma/client';
 
 import { db } from '~/server/db.server';
 import Id from '~/server/utils/Id.server';
-import type { CreateEventInput, FavoriteEvent, Language, SearchEventsResults } from '~/types';
+import type {
+  CreateEventInput,
+  FavoriteEvent,
+  Language,
+  SearchEventsResults
+} from '~/types';
 import {
   createDefaultPerks,
   createPerks,
@@ -12,6 +16,7 @@ import {
   resetEventPerks
 } from '~/server/db/perks.server';
 import { generateSlug } from '~/utils/misc';
+import { createEventLatestBibNumber, updateEventLatestBibNumber } from '~/server/db/latestBibNumber.server';
 
 const prisma = new PrismaClient();
 
@@ -53,14 +58,29 @@ async function findUserEvents(userId: string): Promise<Array<Event>> {
             not: Status.deleted
           }
         }
-      },
-      difficulty: true,
-      races: true
+      }
     }
   });
 }
 
-async function findEvent(id: string): Promise<EventWithRacesDifficultiesAndDocuments | null> {
+async function findEvent(id: string): Promise<Event | null> {
+  return db.event.findUnique({
+    where: { id },
+    include: {
+      documents: {
+        where: {
+          status: {
+            not: Status.deleted
+          }
+        }
+      }
+    }
+  });
+}
+
+async function findEventWithRacesAndDocuments(
+  id: string
+): Promise<EventWithRacesDifficultiesAndDocuments | null> {
   return db.event.findUnique({
     where: { id },
     include: {
@@ -85,32 +105,36 @@ async function createDraftEvent(
   const eventId = id ? id : Id();
   const eventAt = new Date();
 
-  await db.event.create({
-    data: {
-      id: eventId,
-      name: null,
-      sportId: 1,
-      difficultyId: 1,
-      startAt: eventAt,
-      endAt: null,
-      lat: null,
-      lng: null,
-      location: null,
-      useExternalBooking: false,
-      externalBookingUrl: null,
-      createdById,
-      createdAt: eventAt,
-      updatedAt: eventAt
-    }
-  });
+  return await prisma.$transaction(async (tx) => {
+    await tx.event.create({
+      data: {
+        id: eventId,
+        name: null,
+        sportId: 1,
+        difficultyId: 1,
+        startAt: eventAt,
+        endAt: null,
+        lat: null,
+        lng: null,
+        location: null,
+        useExternalBooking: false,
+        externalBookingUrl: null,
+        createdById,
+        createdAt: eventAt,
+        updatedAt: eventAt
+      }
+    });
 
-  await createDefaultPerks(eventId, language);
+    await createDefaultPerks(eventId, language, tx);
+    await createEventLatestBibNumber(eventId, tx);
+  });
 }
 
 async function updateEvent(
   event: CreateEventInput,
   perks: string[],
-  newPerks: string[]
+  newPerks: string[],
+  hasRegistrations: boolean = false
 ): Promise<void> {
   return await prisma.$transaction(async (prisma) => {
     await prisma.event.update({
@@ -131,12 +155,12 @@ async function updateEvent(
         image3: event.image3,
         image4: event.image4,
         image5: event.image5,
-        dorsalStartingNumber: event.dorsalStartingNumber,
         regulationContent: event.regulationContent,
         regulationPath: event.regulationPath,
         regulationFileName: event.regulationFileName,
         description: event.description,
         directions: event.directions,
+        bibStartingNumber: event.bibStartingNumber,
         status: event.status
       }
     });
@@ -156,6 +180,11 @@ async function updateEvent(
         }),
       prisma
     );
+
+    // Only update the latest bib number when there are no registrations
+    if (!hasRegistrations) {
+      await updateEventLatestBibNumber(event.id, event.bibStartingNumber - 1, prisma);
+    }
   });
 }
 
@@ -342,5 +371,6 @@ export {
   findUserFavoriteEvent,
   getEventResultsByName,
   deleteEvent,
-  updateEventRegulation
+  updateEventRegulation,
+  findEventWithRacesAndDocuments
 };

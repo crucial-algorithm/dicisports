@@ -61,7 +61,7 @@ import Config from '~/server/config.server';
 import type { EventWithRacesDifficultiesAndDocuments } from '~/server/db/events.server';
 import {
   deleteEvent,
-  findEvent,
+  findEventWithRacesAndDocuments,
   publishEvent,
   unpublishEvent,
   updateEvent
@@ -116,7 +116,7 @@ type ActionData = {
     submit?: string;
     races?: string;
     regulation?: string;
-    dorsalStartingNumber?: string;
+    bibStartingNumber?: string;
   };
 };
 
@@ -154,7 +154,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   const sports = await findSports();
   const difficulties = await findDifficulties();
   const eventId = params.id as string;
-  const event = eventId ? await findEvent(eventId) : null;
+  const event = eventId ? await findEventWithRacesAndDocuments(eventId) : null;
 
   const { MAPBOX_TOKEN, CLOUDINARY_UPLOAD_PRESET } = Config();
 
@@ -191,7 +191,7 @@ export const action: ActionFunction = async ({ request, params }) => {
         return undefined;
       }
 
-      const event = await findEvent(String(params.id));
+      const event = await findEventWithRacesAndDocuments(String(params.id));
 
       if (!event) {
         return ''; // should never happen
@@ -208,7 +208,7 @@ export const action: ActionFunction = async ({ request, params }) => {
     unstable_createMemoryUploadHandler()
   );
 
-  const event = params.id ? await findEvent(params.id) : null;
+  const event = params.id ? await findEventWithRacesAndDocuments(params.id) : null;
 
   if (!event) {
     throw NotFound(t('Event not found'));
@@ -260,6 +260,9 @@ export const action: ActionFunction = async ({ request, params }) => {
     eventStatus = Status.draft;
   }
 
+  const confirmedBookings = await findConfirmedBookings(event.id);
+  const hasRegistrations: boolean = !!confirmedBookings && confirmedBookings?.length > 0;
+
   const data: CreateEventInput = {
     id: params.id as string,
     name: form.get('event-name') as string,
@@ -268,12 +271,16 @@ export const action: ActionFunction = async ({ request, params }) => {
     startAt: new Date(date), //TODO: hour
     lat: location.lat,
     lng: location.lng,
-    location: form.get('short-address') as string || null,
+    location: (form.get('short-address') as string) || null,
     useExternalBooking: form.get('booking') === 'external',
     externalBookingUrl: (form.get('booking-url') as string) || null,
     description: (form.get('event-description') as string) || null,
     directions: (form.get('get-there') as string) || null,
-    dorsalStartingNumber: parseInt(form.get('dorsal-number') as string),
+    // We shouldn't allow user to update bib starting number when there are booked participants
+    // Otherwise bib numbers will skip, or we'll try to assign already assigned numbers
+    bibStartingNumber: hasRegistrations
+      ? (event.bibStartingNumber as number)
+      : parseInt(form.get('bib-number') as string),
     image1: processImgField(image1, isUpdate),
     image2: processImgField(image2, isUpdate),
     image3: processImgField(image3, isUpdate),
@@ -312,7 +319,7 @@ export const action: ActionFunction = async ({ request, params }) => {
         })
         .min(1, { message: t('Min 1 chars') })
         .nullable(),
-      dorsalStartingNumber: z
+      bibStartingNumber: z
         .number()
         .int({ message: t('Must be int') })
         .nonnegative({ message: t('Positive number') }),
@@ -370,7 +377,7 @@ export const action: ActionFunction = async ({ request, params }) => {
       EventSchema.parse({ ...data, races: races.map((r) => r.id) });
     }
 
-    await updateEvent(data, perks, newPerks);
+    await updateEvent(data, perks, newPerks, hasRegistrations);
     feedback = { severity: 'success', message: t('Event Saved') };
 
     if (actionId === actionIds.publish) {
@@ -804,17 +811,18 @@ export default function OrganizerEventRoute() {
           </FormField>
 
           <FormField
-            label={t('Dorsal Starting Number')}
-            id="dorsal"
-            description={t('Dorsal Starting Number Description')}
-            error={actionData?.errors?.dorsalStartingNumber}
+            label={t('Bib Starting Number')}
+            id="bib-number"
+            description={t('Bib Starting Number Description')}
+            error={actionData?.errors?.bibStartingNumber}
           >
             <TextField
-              name="dorsal-number"
+              name="bib-number"
               type="number"
-              placeholder={t('Dorsal placeholder')}
-              defaultValue={event.dorsalStartingNumber || 1}
+              placeholder={t('Bib number placeholder')}
+              defaultValue={event.bibStartingNumber || 1}
               className="w-full md:w-48"
+              disabled={isPublished && hasRegistrations}
             />
           </FormField>
 

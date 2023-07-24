@@ -909,20 +909,20 @@ describe('Event', () => {
         .should('have.value', 'Love Tiles Douro Granfondo 2023');
     });
 
-    it('should display and update starting dorsal number', () => {
-      cy.visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d/dashboard')
+    it('should display and update starting bib number', () => {
+      cy.visitAndWaitForHydration('/o/event/5n8epZbHczqAQtQaAh5R/dashboard')
         .get('[data-cy="edit"]')
         .click()
 
         .location()
         .should((loc) => {
-          expect(loc.pathname).to.contain('/o/event/MY4bvgxDbMtGv8rbYe5d');
+          expect(loc.pathname).to.contain('/o/event/5n8epZbHczqAQtQaAh5R');
         })
 
-        .intercept('POST', '/o/event/MY4bvgxDbMtGv8rbYe5d*')
+        .intercept('POST', '/o/event/5n8epZbHczqAQtQaAh5R*')
         .as('UpdateEvent')
 
-        .get('input[name=dorsal-number]')
+        .get('input[name=bib-number]')
         .should('have.value', '1')
         .clear()
         .type('200')
@@ -934,18 +934,45 @@ describe('Event', () => {
 
         .location()
         .should((loc) => {
-          expect(loc.pathname).to.contain('/o/event/MY4bvgxDbMtGv8rbYe5d');
+          expect(loc.pathname).to.contain('/o/event/5n8epZbHczqAQtQaAh5R');
         })
 
         .reload()
 
         .location()
         .should((loc) => {
+          expect(loc.pathname).to.contain('/o/event/5n8epZbHczqAQtQaAh5R');
+        })
+
+        .get('input[name=bib-number]')
+        .should('have.value', '200');
+    });
+
+    it('should not update bib starting number when event has race participants', () => {
+      cy.visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d')
+        .get('input[name=bib-number]')
+        .should('have.value', '1')
+        .and('have.prop', 'disabled')
+
+        .get('button[name=update-event]')
+        .click()
+
+        .location()
+        .should((loc) => {
           expect(loc.pathname).to.contain('/o/event/MY4bvgxDbMtGv8rbYe5d');
         })
 
-        .get('input[name=dorsal-number]')
-        .should('have.value', '200');
+        .reload()
+        .waitForHydration()
+
+        .location()
+        .should((loc) => {
+          expect(loc.pathname).to.contain('/o/event/MY4bvgxDbMtGv8rbYe5d');
+        })
+
+        .get('input[name=bib-number]')
+        .should('have.value', '1')
+        .and('have.prop', 'disabled');
     });
   });
 });

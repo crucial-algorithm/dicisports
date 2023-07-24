@@ -22,7 +22,7 @@ import SearchField from '~/components/shared/SearchField';
 
 import { requireUser } from '~/server/auth/session.server';
 import type { EventWithRacesDifficultiesAndDocuments } from '~/server/db/events.server';
-import { findEvent } from '~/server/db/events.server';
+import { findEventWithRacesAndDocuments } from '~/server/db/events.server';
 import DisplayImg from '~/components/shared/DisplayImg';
 import { H2, H3, H4, H5, H6 } from '~/components/shared/typography';
 import DisplayDate from '~/components/shared/DIsplayDate';
@@ -71,7 +71,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     ? Number(searchParams.get('page'))
     : 0;
 
-  const event = (await findEvent(eventId)) as EventWithRacesDifficultiesAndDocuments;
+  const event = (await findEventWithRacesAndDocuments(eventId)) as EventWithRacesDifficultiesAndDocuments;
 
   const racesRevenueAndRegistrations = await findRevenueAndRegistrationsPerRace(
     eventId as string
@@ -346,7 +346,7 @@ export default function DashboardRoute() {
                       <TH name={t('Age Group')} />
                       <TH name={t('Booking Date')} />
                       <TH name={t('Status')} />
-                      <TH name={t('Dorsal')} />
+                      <TH name={t('Bib Number')} />
                       <TH name={t('Race')} />
                     </tr>
                   </thead>
@@ -363,7 +363,7 @@ export default function DashboardRoute() {
                         <TD value={rp.gender} />
                         <TD value={String(rp.bookingAt).split('T')[0]} />
                         <TD value={t(rp.status)} />
-                        <TD value={'-'} />
+                        <TD value={rp.bibNumber ? String(rp.bibNumber) : '-'} />
                         <TD value={rp.raceName} />
                         <td>
                           <button

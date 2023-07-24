@@ -39,6 +39,7 @@ async function addParticipantsToRace(
   raceIds: string[],
   clientId: string,
   bookingId: string,
+  eventId: string,
   tx?: Prisma.TransactionClient
 ): Promise<void> {
   return await prisma.$transaction(async (prisma) => {
@@ -54,6 +55,7 @@ async function addParticipantsToRace(
           participantId: participant.id,
           raceId: r,
           bookingId: bookingId,
+          eventId,
           createdAt: now,
           updatedAt: now
         };
@@ -70,6 +72,7 @@ async function addParticipantToRace(
   clientId: string,
   raceId: string,
   bookingId: string,
+  eventId: string,
   tx?: Prisma.TransactionClient
 ): Promise<void> {
   return await prisma.$transaction(async (prisma) => {
@@ -83,6 +86,7 @@ async function addParticipantToRace(
         participantId: participant.id,
         raceId,
         bookingId,
+        eventId,
         createdAt: now,
         updatedAt: now
       }
@@ -189,10 +193,11 @@ async function removeRaceParticipant(
 async function addRaceParticipants(
   raceIds: string[],
   userSessionId: string,
-  registrationId: string
+  registrationId: string,
+  eventId: string
 ): Promise<void> {
   return await prisma.$transaction(async (prisma) => {
-    await addParticipantsToRace(raceIds, userSessionId, registrationId, prisma);
+    await addParticipantsToRace(raceIds, userSessionId, registrationId, eventId, prisma);
   });
 }
 
@@ -214,7 +219,8 @@ async function findRaceParticipants(
                      b.created_at                           as booking_at,
                      b.status,
                      r.name                                 as race_name,
-                     et.name                                as team_name
+                     et.name                                as team_name,
+                     rp.bib_number
               FROM race_participants rp
                        INNER JOIN participants p on p.id = rp.participant_id
                        INNER JOIN bookings b on rp.booking_id = b.id
@@ -333,6 +339,42 @@ async function updateRaceParticipantTeam(
   });
 }
 
+async function assignParticipantsBibNumber(
+  raceParticipants: RaceParticipant[],
+  eventId: string
+): Promise<void> {
+  return await db.$transaction(async (tx) => {
+    const result: { bib_number: number }[] = await tx.$queryRaw`SELECT bib_number
+                                                            FROM latest_bib_number
+                                                            WHERE event_id = ${eventId} FOR UPDATE;`;
+    let bibNumber = result[0].bib_number;
+
+    await Promise.all(
+      raceParticipants.map(async (rp) => {
+        bibNumber += 1;
+
+        await tx.raceParticipant.update({
+          where: {
+            id: rp.id
+          },
+          data: {
+            bibNumber
+          }
+        });
+      })
+    );
+
+    await tx.latestBibNumber.update({
+      where: {
+        eventId
+      },
+      data: {
+        bibNumber
+      }
+    });
+  });
+}
+
 export {
   addParticipantsToRace,
   findUserEventRaceParticipants,
@@ -348,5 +390,6 @@ export {
   findUserBookingParticipants,
   findEventRaceParticipants,
   findRaceParticipant,
-  updateRaceParticipantTeam
+  updateRaceParticipantTeam,
+  assignParticipantsBibNumber
 };

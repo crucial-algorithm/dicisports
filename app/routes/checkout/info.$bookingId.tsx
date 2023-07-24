@@ -36,7 +36,7 @@ import {
   updateBookingStatus
 } from '~/server/db/booking.server';
 import type { EventWithRacesDifficultiesAndDocuments } from '~/server/db/events.server';
-import { findEvent } from '~/server/db/events.server';
+import { findEventWithRacesAndDocuments } from '~/server/db/events.server';
 import {
   findRaceParticipant,
   findUserBookingParticipants,
@@ -98,7 +98,7 @@ export const action: ActionFunction = async ({ request, params }) => {
   }
 
   const eventId = booking.eventId;
-  const event = await findEvent(eventId);
+  const event = await findEventWithRacesAndDocuments(eventId);
 
   if (!event) {
     return redirect('/');
@@ -347,7 +347,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   }
 
   const eventId = booking.eventId;
-  const event = await findEvent(eventId);
+  const event = await findEventWithRacesAndDocuments(eventId);
 
   if (!event) {
     return redirect('/');

@@ -769,6 +769,142 @@ describe('Checkout', () => {
         .should('exist');
     });
 
+    it.skip('should have correct bib numbers', () => {
+      cy.intercept('GET', '/payment-status/*')
+        .as('GetPaymentStatus')
+
+        .visitAndWaitForHydration('/checkout/payment/qR4nqWpTdQy8QZu29ANu')
+
+        .get('button[name=pay]')
+        .should('exist')
+
+        .click()
+
+        .location()
+        .then((l) => {
+          if (l.pathname === '/checkout/payment/qR4nqWpTdQy8QZu29ANu') {
+            cy.get('.sibs > h5')
+              .should('exist')
+              .and('contain', 'Pagamento por Multibanco ou Homebanking')
+
+              .wait('@GetPaymentStatus');
+          }
+        })
+
+        .waitForHydration()
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.eq(
+            '/checkout/confirmation/qR4nqWpTdQy8QZu29ANu'
+          );
+        })
+
+        // Logging in as Organiser to check if bib numbers where assigned
+        .loginOrganizer()
+
+        .reload()
+        .waitForHydration()
+
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.eq('/');
+        })
+
+        .visitAndWaitForHydration('/o/event/5n8epZbHczqAQtQaAh5R/dashboard')
+
+        .get('#participant-b2ytMsXPtQMcLxfLJyQm > td')
+        .eq(4)
+        .contains('Confirmado')
+
+        .get('#participant-b2ytMsXPtQMcLxfLJyQm > td')
+        .eq(5)
+        .should('contain', '1');
+    });
+
+    it.skip('should have correct bib numbers after updating initial bib number', () => {
+      // Update initial bib number
+      cy.loginOrganizer()
+        .visitAndWaitForHydration('/o/event/5n8epZbHczqAQtQaAh5R')
+
+        .get('input[name=bib-number]')
+        .should('exist')
+        .clear()
+        .type('20')
+
+        .intercept('POST', '/o/event/5n8epZbHczqAQtQaAh5R*')
+        .as('UpdateEvent')
+
+        .get('button[name=update-event]')
+        .click()
+
+        .wait('@UpdateEvent')
+
+        .location()
+        .should((loc) => {
+          expect(loc.pathname).to.contain('/o/event/5n8epZbHczqAQtQaAh5R');
+        })
+
+        // login as regular to finish booking process
+        .login()
+        .reload()
+        .waitForHydration()
+
+        .location()
+        .should((loc) => {
+          expect(loc.pathname).to.contain('/');
+        })
+
+        .intercept('GET', '/payment-status/*')
+        .as('GetPaymentStatus')
+
+        .visitAndWaitForHydration('/checkout/payment/qR4nqWpTdQy8QZu29ANu')
+
+        .get('button[name=pay]')
+        .should('exist')
+
+        .click()
+
+        .location()
+        .then((l) => {
+          if (l.pathname === '/checkout/payment/qR4nqWpTdQy8QZu29ANu') {
+            cy.get('.sibs > h5')
+              .should('exist')
+              .and('contain', 'Pagamento por Multibanco ou Homebanking')
+
+              .wait('@GetPaymentStatus');
+          }
+        })
+
+        .waitForHydration()
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.eq(
+            '/checkout/confirmation/qR4nqWpTdQy8QZu29ANu'
+          );
+        })
+
+        // Logging in as Organiser to check if bib numbers where assigned
+        .loginOrganizer()
+
+        .reload()
+        .waitForHydration()
+
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.eq('/');
+        })
+
+        .visitAndWaitForHydration('/o/event/5n8epZbHczqAQtQaAh5R/dashboard')
+
+        .get('#participant-b2ytMsXPtQMcLxfLJyQm > td')
+        .eq(4)
+        .contains('Confirmado')
+
+        .get('#participant-b2ytMsXPtQMcLxfLJyQm > td')
+        .eq(5)
+        .should('contain', '20');
+    });
+
     it('should display checkbox to enroll in organizer mailing list', () => {
       cy.intercept('GET', '/checkout/cart/*?_data=routes*checkout*')
         .as('selectRace')

@@ -75,9 +75,9 @@
   "Perks Description": "Desmarque comodidades indisponíveis e/ou adicione outras que não estejam na lista",
   "Show Map": "Abrir Mapa",
   "Location Placeholder": "Ex: Parque Municipal de Exposições",
-  "Dorsal Starting Number": "Primeiro dorsal a atribuir",
-  "Dorsal Starting Number Description": "Preencha com 10 se pretender deixar o 1 a 9 para convidados",
-  "Dorsal placeholder": "Ex: 100",
+  "Bib Starting Number": "Primeiro dorsal a atribuir",
+  "Bib Starting Number Description": "Preencha com 10 se pretender deixar o 1 a 9 para convidados",
+  "Bib number placeholder": "Ex: 100",
 
   "Field required": "Campo obrigatório",
   "Must Be Number": "Insira um número positivo",

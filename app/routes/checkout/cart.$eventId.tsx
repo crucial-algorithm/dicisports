@@ -107,7 +107,7 @@ export const action: ActionFunction = async ({ request, params }) => {
 
         await createInitialBookingFlow(bookingId, clientId, eventId, raceId, t);
       } else {
-        await addParticipantToRace(clientId, raceId, booking.id);
+        await addParticipantToRace(clientId, raceId, booking.id, eventId);
       }
     }
 

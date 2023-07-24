@@ -19,6 +19,7 @@ import raceParticipantsSeed from './data/raceParticipants.json';
 import organizerSeed from './data/organizers.json';
 import discountCodesSeed from './data/discountCodes.json';
 import eventTeamsSeed from './data/eventTeams.json';
+import latestBibNumberSeed from './data/latestBibNumber.json';
 
 const db = new PrismaClient();
 const now = new Date();
@@ -52,6 +53,7 @@ async function seed() {
   await persist('organizers', organizers(), db.organizer);
   await persist('groups', groups(), db.group);
   await persist('events', events(), db.event);
+  await persist('latest bib number', latestBibNumber(), db.latestBibNumber);
   await persist('documents', documents(), db.document);
   await persist('races', races(), db.race);
   await persist('perks', perks(), db.perk);
@@ -77,6 +79,7 @@ async function clear() {
   await db.race.deleteMany();
   await db.perk.deleteMany();
   await db.favoriteEvent.deleteMany();
+  await db.latestBibNumber.deleteMany();
   await db.event.deleteMany();
   await db.groupSchedule.deleteMany();
   await db.favoriteGroup.deleteMany();
@@ -309,6 +312,16 @@ function eventTeams() {
   return eventTeamsSeed.map((v) => {
     return {
       ...v,
+      createdAt: now,
+      updatedAt: now
+    };
+  });
+}
+
+function latestBibNumber() {
+  return latestBibNumberSeed.map((ed) => {
+    return {
+      ...ed,
       createdAt: now,
       updatedAt: now
     };

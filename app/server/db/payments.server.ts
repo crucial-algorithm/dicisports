@@ -243,7 +243,7 @@ async function saveNotification(json: SibsWebHookSchema) {
   });
   await db.paymentNotification.create({
     data: {
-      id: json.notificationID,
+      id: Id(),
       transactionId: json.transactionID,
       payload: json
     }
