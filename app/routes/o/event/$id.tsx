@@ -452,7 +452,7 @@ export default function OrganizerEventRoute() {
   type StrippedPerk = Omit<Perk, 'id' | 'eventId' | 'isDefault'> & {
     id: string | null;
   };
-  const { t, i18n } = useTranslation('create-event-form');
+  const { t, ready, i18n } = useTranslation('create-event-form');
   const language = i18n.language as Language;
   const {
     sports,
@@ -648,6 +648,12 @@ export default function OrganizerEventRoute() {
 
     main && main.scrollTo({ top: 0, behavior: 'smooth' });
   }, [feedback]);
+
+  // Fix to event's missing translations 🤷‍♂️
+  // Found it on this thread https://dev.to/adrai/how-to-internationalize-a-remix-application-2bep
+  if (!ready) {
+    return <H2>Loading...</H2>;
+  }
 
   const sortedSports = sports.sort((a, b) => {
     const sportA = a.name[language].toLowerCase();
