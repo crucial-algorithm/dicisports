@@ -1,4 +1,4 @@
-describe.skip('Event', () => {
+describe('Event', () => {
   before(() => {
     cy.task('db:reset');
     cy.task('clearDownloadFolder');
