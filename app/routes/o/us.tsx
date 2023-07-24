@@ -88,14 +88,13 @@ export const action: ActionFunction = async ({ request }) => {
   const form = await unstable_parseMultipartFormData(request, uploadHandler);
 
   const logo = form.get('/file/image/0') as string;
-  const savedLogo = form.get('saved-logo') as string;
   const terms: boolean = (form.get('terms') as string) === 'on';
 
   const data: OrganizerInput = {
     id: organizerId,
     name: form.get('name') as string,
     email: form.get('email') as string,
-    logo: savedLogo.length > 0? savedLogo : logo,
+    logo: logo,
     phoneNumber:
       (form.get('phone-number') as string).length > 0
         ? parseInt(form.get('phone-number') as string)
@@ -214,11 +213,6 @@ export default function UsRoute() {
           </div>
         </div>
 
-        <input
-          type="hidden"
-          name="saved-logo"
-          value={organizer?.logo ? organizer.logo : ''}
-        />
         <div className="flex flex-col md:grid md:grid-cols-2 md:grid-flow-col md:gap-4">
           <div>
             <FormField
