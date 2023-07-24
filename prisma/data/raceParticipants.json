@@ -96,48 +96,8 @@
   },
   {
     "id": "b2ytMsXPtQMcLxfLJyQm",
-    "participantId": "CfnyMeMo92GswQBuMKse",
-    "raceId": "WRT9GHQKTEgHXfbWk32i",
-    "bookingId": "qR4nqWpTdQy8QZu29ANu",
-    "eventId": "5n8epZbHczqAQtQaAh5R"
-  },
-  {
-    "id": "AWTpqZHnmWkTZCkxgipB",
-    "participantId": "C5XWNwAJxrfriuwAMqJo",
-    "raceId": "WRT9GHQKTEgHXfbWk32i",
-    "status": "checkout",
-    "bookingId": "qR4nqWpTdQy8QZu29ANu",
-    "eventId": "5n8epZbHczqAQtQaAh5R"
-  },
-  {
-    "id": "cxkDhjtqp9YptLPhofzL",
-    "participantId": "PtLmAuYWubqmHCFgpWF2",
-    "raceId": "WRT9GHQKTEgHXfbWk32i",
-    "status": "checkout",
-    "bookingId": "qR4nqWpTdQy8QZu29ANu",
-    "eventId": "5n8epZbHczqAQtQaAh5R"
-  },
-  {
-    "id": "pEnBjs83nsBpoXDPST63",
     "participantId": "sEnZEkphxcgnjdRexCWv",
     "raceId": "WRT9GHQKTEgHXfbWk32i",
-    "status": "checkout",
-    "bookingId": "qR4nqWpTdQy8QZu29ANu",
-    "eventId": "5n8epZbHczqAQtQaAh5R"
-  },
-  {
-    "id": "QYqDWYQE5F4cT6WfGSXd",
-    "participantId": "DoX4NgHgsfW233Fkt8zL",
-    "raceId": "WRT9GHQKTEgHXfbWk32i",
-    "status": "checkout",
-    "bookingId": "qR4nqWpTdQy8QZu29ANu",
-    "eventId": "5n8epZbHczqAQtQaAh5R"
-  },
-  {
-    "id": "4oeqaeiDxpBxXejdNqDB",
-    "participantId": "9tBf5tSLM2LRdeph8Yb3",
-    "raceId": "WRT9GHQKTEgHXfbWk32i",
-    "status": "checkout",
     "bookingId": "qR4nqWpTdQy8QZu29ANu",
     "eventId": "5n8epZbHczqAQtQaAh5R"
   }
