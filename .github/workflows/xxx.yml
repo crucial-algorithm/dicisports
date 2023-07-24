@@ -51,7 +51,7 @@ jobs:
           /home/runner/.local/share/fnm/fnm install
           npm ci
           npm --version
-          export ENDPOINTS=export ENDP=$(curl https://gist.githubusercontent.com/kimile/07ca90a7bed4c6a4ec2c904a8f655993/raw/25363587b18ef65c6754ea930169487f9815d61c/gha-http-catcher-e2e.json | tr -d "\n\r");nohup node index.js &
+          export ENDPOINTS=$(curl https://gist.githubusercontent.com/kimile/07ca90a7bed4c6a4ec2c904a8f655993/raw/25363587b18ef65c6754ea930169487f9815d61c/gha-http-catcher-e2e.json | tr -d "\n\r");nohup node index.js &
 
       - name: Test connection to http-catcher
         run: |
