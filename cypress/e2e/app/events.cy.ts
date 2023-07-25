@@ -1,4 +1,4 @@
-describe.skip('Event', () => {
+describe('Event', () => {
   before(() => {
     cy.task('db:reset');
     cy.task('clearDownloadFolder');
@@ -973,6 +973,28 @@ describe.skip('Event', () => {
         .get('input[name=bib-number]')
         .should('have.value', '1')
         .and('have.prop', 'disabled');
+    });
+
+    it('should contain correct translations on first render', () => {
+      cy.intercept('GET', '/o/event/*?_data=routes*')
+        .as('EventRequests')
+        .visitAndWaitForHydration('/o')
+        .get('button[name=create-event]')
+        .click()
+
+        .wait('@EventRequests')
+
+        .get('div[data-cy=editor-event-description] > div > .p-editor-content > .ql-editor')
+        .invoke('attr', 'data-placeholder')
+        .then((value) => {
+          expect(value).to.eq('A edição deste ano será a melhor de sempre...');
+        })
+
+        .get('div[data-cy=editor-get-there] > div > .p-editor-content > .ql-editor')
+        .invoke('attr', 'data-placeholder')
+        .then((value) => {
+          expect(value).to.eq('Como chegar lá... Onde estacionar...');
+        });
     });
   });
 });

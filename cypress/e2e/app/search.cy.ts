@@ -1,4 +1,4 @@
-describe.skip('Search', () => {
+describe('Search', () => {
   before(() => {
     cy.task('db:reset');
   });

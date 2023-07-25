@@ -278,10 +278,9 @@ export const action: ActionFunction = async ({ request, params }) => {
     directions: (form.get('get-there') as string) || null,
     // We shouldn't allow user to update bib starting number when there are booked participants
     // Otherwise bib numbers will skip, or we'll try to assign already assigned numbers
-    bibStartingNumber:
-      eventStatus === Status.published && hasRegistrations
-        ? event.bibStartingNumber as number
-        : parseInt(form.get('bib-number') as string),
+    bibStartingNumber: hasRegistrations
+      ? (event.bibStartingNumber as number)
+      : parseInt(form.get('bib-number') as string),
     image1: processImgField(image1, isUpdate),
     image2: processImgField(image2, isUpdate),
     image3: processImgField(image3, isUpdate),
@@ -407,7 +406,6 @@ export const action: ActionFunction = async ({ request, params }) => {
     if (!(e instanceof ZodError)) {
       const tc = await i18n.getFixedT(request, 'common');
 
-      console.log(e);
       return badRequest({
         errors: { submit: tc('500 error message') }
       });
@@ -454,7 +452,7 @@ export default function OrganizerEventRoute() {
   type StrippedPerk = Omit<Perk, 'id' | 'eventId' | 'isDefault'> & {
     id: string | null;
   };
-  const { t, i18n } = useTranslation('create-event-form');
+  const { t, ready, i18n } = useTranslation('create-event-form');
   const language = i18n.language as Language;
   const {
     sports,
@@ -650,6 +648,12 @@ export default function OrganizerEventRoute() {
 
     main && main.scrollTo({ top: 0, behavior: 'smooth' });
   }, [feedback]);
+
+  // Fix to event's missing translations 🤷‍♂️
+  // Found it on this thread https://dev.to/adrai/how-to-internationalize-a-remix-application-2bep
+  if (!ready) {
+    return <H2>Loading...</H2>;
+  }
 
   const sortedSports = sports.sort((a, b) => {
     const sportA = a.name[language].toLowerCase();

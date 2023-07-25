@@ -1,4 +1,4 @@
-describe.skip('Groups', () => {
+describe('Groups', () => {
   beforeEach(() => {
     cy.task('db:reset');
   });
