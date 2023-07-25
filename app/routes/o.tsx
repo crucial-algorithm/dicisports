@@ -80,7 +80,7 @@ export default function OrganizerLayout() {
         linkClicked={handleMobileMenuClick}
         pathname={location.pathname}
       />
-      <div className="grow p-2 h-screen overflow-auto" id="organizer-main-container">
+      <div className="grow h-screen overflow-auto" id="organizer-main-container">
         <Outlet />
       </div>
     </div>
