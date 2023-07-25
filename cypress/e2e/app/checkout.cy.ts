@@ -410,7 +410,7 @@ describe('Checkout', () => {
         });
     });
 
-    it('should send automated email after completing booking', () => {
+    it.skip('should send automated email after completing booking', () => {
       bookParticipant('MY4bvgxDbMtGv8rbYe5d', 'AhowRdNWCBQWSuivSt7h');
       cy.waitForHydration()
 

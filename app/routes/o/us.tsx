@@ -59,6 +59,18 @@ export const handle = {
   i18n: ['organizer-form']
 };
 
+function processImageField(
+  value: string | null | File,
+  isUpdate: boolean,
+  organizer: Organizer | null
+) {
+  if ((isUpdate && !value) || value instanceof File) {
+    return organizer ? organizer.logo : '';
+  }
+
+  return value || '';
+}
+
 export const action: ActionFunction = async ({ request }) => {
   const t = await i18n.getFixedT(request, 'organizer-form');
 
@@ -88,14 +100,14 @@ export const action: ActionFunction = async ({ request }) => {
 
   const form = await unstable_parseMultipartFormData(request, uploadHandler);
 
-  const logo = form.get('/file/image/0') as string;
+  const logo = form.get('/file/image/0');
   const terms: boolean = (form.get('terms') as string) === 'on';
 
   const data: OrganizerInput = {
     id: organizerId,
     name: form.get('name') as string,
     email: form.get('email') as string,
-    logo: logo,
+    logo: processImageField(logo, isUpdate, organizer),
     phoneNumber:
       (form.get('phone-number') as string).length > 0
         ? parseInt(form.get('phone-number') as string)

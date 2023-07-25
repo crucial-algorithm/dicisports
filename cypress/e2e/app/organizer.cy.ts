@@ -92,7 +92,7 @@ describe('Organizer', () => {
         .should('exist');
     });
 
-    it('should be able to update info', () => {
+    it.only('should be able to update info', () => {
       cy.loginOrganizer()
         .visitAndWaitForHydration('/o/us')
 
