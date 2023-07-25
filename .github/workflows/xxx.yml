@@ -24,20 +24,6 @@ jobs:
           - 5432:5432
 
     steps:
-      - name: Check installed node version
-        run: |
-          node --version
-          npm --version
-
-      - name: Install fnm
-        run: |
-          curl -fsSL https://fnm.vercel.app/install | bash
-
-      - name: Export fnm to path
-        run: |
-          export PATH="/home/runner/.local/share/fnm:$PATH"
-          eval "`fnm env`"
-
       - name: Checkout dicisports
         uses: actions/checkout@v3
 
@@ -50,21 +36,14 @@ jobs:
       - name: Install http-catcher dependencies
         run: |
           cd http-catcher
-          /home/runner/.local/share/fnm/fnm install
-          npm ci
-          npm --version
           export ENDPOINTS=$(curl $HTTP_CATCHER_CUSTOM_ENDPOINTS | tr -d "\n\r");nohup node index.js &
 
       - name: Test connection to http-catcher
         run: |
           curl localhost:3001/health-check
 
-      - name: Install dicisports node and dependencies
-        run: |
-          /home/runner/.local/share/fnm/fnm install
-          $($FNM_MULTISHELL_PATH/bin/node --version)
-          $($FNM_MULTISHELL_PATH/bin/npm --version)
-          $($FNM_MULTISHELL_PATH/bin/npm ci)
+      - name: Install dicisports dependencies
+        run: npm ci
 
       - name: Check node version
         run: node --version
