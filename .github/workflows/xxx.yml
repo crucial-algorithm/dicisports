@@ -36,6 +36,7 @@ jobs:
       - name: Install http-catcher dependencies
         run: |
           cd http-catcher
+          npm ci
           export ENDPOINTS=$(curl $HTTP_CATCHER_CUSTOM_ENDPOINTS | tr -d "\n\r");nohup node index.js &
 
       - name: Test connection to http-catcher
