@@ -48,29 +48,6 @@ export default defineConfig({
           return null;
         }
       });
-
-      on('before:browser:launch', (browser, launchOptions) => {
-        if (browser.family === 'chromium') {
-          launchOptions.args.push(
-            '--unsafely-treat-insecure-origin-as-secure=http://172.18.0.1:3000'
-          );
-          launchOptions.args.push(
-            '--allow-running-insecure-content'
-          );
-          launchOptions.args.push(
-            '--reduce-security-for-testing'
-          );
-          launchOptions.args.push(
-            '--temporary-unexpire-flags-m112'
-          );
-          launchOptions.args.push(
-            '--temporary-unexpire-flags-m113'
-          );
-        }
-
-        console.log('[PRINTING STUFF] ------> ', launchOptions.args); // print all current args
-        return launchOptions;
-      });
     }
   }
 });

@@ -62,9 +62,9 @@ jobs:
       - name: Install dicisports node and dependencies
         run: |
           /home/runner/.local/share/fnm/fnm install
-          node --version
-          npm --version
-          npm ci
+          $($FNM_MULTISHELL_PATH/bin/node --version)
+          $($FNM_MULTISHELL_PATH/bin/npm --version)
+          $($FNM_MULTISHELL_PATH/bin/npm ci)
 
       - name: Check node version
         run: node --version
