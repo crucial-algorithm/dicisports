@@ -23,7 +23,7 @@ import ButtonGroup from '~/components/shared/ButtonGroup';
 import Button, { ButtonLink } from '~/components/shared/Button';
 import { getUser, requireUser } from '~/server/auth/session.server';
 import i18n from '~/server/i18n.server';
-import { badRequest } from '~/utils/misc';
+import { badRequest, getDomainUrl } from '~/utils/misc';
 import {
   createOrganizer,
   findOrganizer,
@@ -35,6 +35,7 @@ import { uploadImageToCloudinary } from '~/server/storage/cloudinary.server';
 import UploadForm from '~/components/shared/form/UploadForm';
 import Id from '~/server/utils/Id.server';
 import InputError from '~/components/shared/form/InputError';
+import { sendSubmitedOrganizerProfileConfirmation } from '~/server/email.server';
 
 type ActionData = {
   errors?: {
@@ -157,7 +158,15 @@ export const action: ActionFunction = async ({ request }) => {
           .refine((v) => v, { message: t('Accept Dici Terms') })
       }).parse({ terms });
 
+      const domainUrl = getDomainUrl(request);
+
       await createOrganizer(data);
+
+      await sendSubmitedOrganizerProfileConfirmation({
+        emailAddress: data.email,
+        organizerName: data.email,
+        domainUrl
+      });
     }
 
     return json({});
