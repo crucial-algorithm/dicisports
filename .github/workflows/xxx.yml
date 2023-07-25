@@ -1,7 +1,7 @@
 name: Learning GitHub actions
 on: pull_request
 env:
-  HTTP_CATCHER_CUSTOM_ENDPOINTS: https://gist.githubusercontent.com/kimile/07ca90a7bed4c6a4ec2c904a8f655993/raw/e981ba4d42707743075b60a2c608d80bb4504c6f/gha-http-catcher-e2e.json
+  HTTP_CATCHER_CUSTOM_ENDPOINTS: https://gist.githubusercontent.com/kimile/07ca90a7bed4c6a4ec2c904a8f655993/raw/a1b7b8969dd3f294a3529d666020b033b2267a24/gha-http-catcher-e2e.json
 
 jobs:
   e2e:
