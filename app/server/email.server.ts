@@ -592,15 +592,9 @@ P.S.  Se não solicitaste o email, ignora.
       <h2 style="text-align: center">${`Olá ${organizer}!`}</h2>
       
     <h3 style="text-align: center">O seu perfil de Organizador na ${hostname} foi submetido com sucesso! Iremos analisar o
-        seu pedido e entreramos em contacto consigo.</h3>
+        seu pedido e entraremos em contacto consigo.</h3>
 
       <hr style="width: 20%; height: 0px; border: 1px solid lightgrey; margin-top: 2rem; margin-bottom: 2rem">
-        
-      <div style='text-align: center; color: grey; font-size: .8rem; line-height: 1.2rem'>
-        Recebeste este email porque o teu endereço de email foi usado para fazer login em
-        <a href='${domainUrl}' style='color: grey'>${hostname}</a>. Se não solicitaste o email,
-        ignora.
-      </div>
     </div>
   </body>
 </html>
