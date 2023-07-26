@@ -541,13 +541,84 @@ P.S. Recebeste este email porque o teu endereço de email foi usado para fazer l
   await sendEmail(message);
 }
 
+async function sendSubmitedOrganizerProfileConfirmation({
+  emailAddress,
+  organizerName: organizer,
+  domainUrl
+}: {
+  emailAddress: string;
+  organizerName: string;
+  domainUrl: string;
+}) {
+  const sender = '"DiciSports" <noreply@mail.dicisports.com>';
+  const { hostname } = new URL(domainUrl);
+
+  const text = `
+Olá ${organizer},
+
+Obrigado por se registar como organizador no ${hostname}!
+
+P.S.  Se não solicitaste o email, ignora.
+  `.trim();
+
+  const html = `
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html charset=UTF-8" />
+    <style type="text/css">
+      @font-face {
+        font-family: 'Matter';
+        src: url('https://kcd-img.netlify.app/Matter-Medium.woff2') format('woff2'),
+          url('https://kcd-img.netlify.app/Matter-Medium.woff') format('woff');
+        font-weight: 500;
+        font-style: normal;
+        font-display: swap;
+      }
+
+      @font-face {
+        font-family: 'Matter';
+        src: url('https://kcd-img.netlify.app/Matter-Regular.woff2') format('woff2'),
+          url('https://kcd-img.netlify.app/Matter-Regular.woff') format('woff');
+        font-weight: normal;
+        font-style: normal;
+        font-display: swap;
+      }
+    </style>
+  </head>
+  <body style="font-family:Matter, sans-serif;">
+    <div style="margin: 0 auto; max-width: 450px;">
+
+      <h2 style="text-align: center">${`Olá ${organizer}!`}</h2>
+      
+    <h3 style="text-align: center">O seu perfil de Organizador na ${hostname} foi submetido com sucesso! Iremos analisar o
+        seu pedido e entraremos em contacto consigo.</h3>
+
+      <hr style="width: 20%; height: 0px; border: 1px solid lightgrey; margin-top: 2rem; margin-bottom: 2rem">
+    </div>
+  </body>
+</html>
+  `;
+
+  const message = {
+    from: sender,
+    to: emailAddress,
+    subject: 'Registo como organizador no dicisports.com  ✨',
+    text,
+    html
+  };
+
+  await sendEmail(message);
+}
+
 export {
   sendEmail,
   sendMagicLinkEmail,
   sendWhatsAppGroupLink,
   subscribeUser,
   sendRecoverPasswordEmail,
-  sendBookingConfirmationEmail
+  sendBookingConfirmationEmail,
+  sendSubmitedOrganizerProfileConfirmation
 };
 
 /*

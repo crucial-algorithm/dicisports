@@ -23,7 +23,7 @@ import ButtonGroup from '~/components/shared/ButtonGroup';
 import Button, { ButtonLink } from '~/components/shared/Button';
 import { getUser, requireUser } from '~/server/auth/session.server';
 import i18n from '~/server/i18n.server';
-import { badRequest } from '~/utils/misc';
+import { badRequest, getDomainUrl } from '~/utils/misc';
 import {
   createOrganizer,
   findOrganizer,
@@ -35,6 +35,7 @@ import { uploadImageToCloudinary } from '~/server/storage/cloudinary.server';
 import UploadForm from '~/components/shared/form/UploadForm';
 import Id from '~/server/utils/Id.server';
 import InputError from '~/components/shared/form/InputError';
+import { sendSubmitedOrganizerProfileConfirmation } from '~/server/email.server';
 
 type ActionData = {
   errors?: {
@@ -57,6 +58,18 @@ type LoaderData = {
 export const handle = {
   i18n: ['organizer-form']
 };
+
+function processImageField(
+  value: string | null | File,
+  isUpdate: boolean,
+  organizer: Organizer | null
+) {
+  if ((isUpdate && !value) || value instanceof File) {
+    return organizer ? organizer.logo : '';
+  }
+
+  return value || '';
+}
 
 export const action: ActionFunction = async ({ request }) => {
   const t = await i18n.getFixedT(request, 'organizer-form');
@@ -87,15 +100,14 @@ export const action: ActionFunction = async ({ request }) => {
 
   const form = await unstable_parseMultipartFormData(request, uploadHandler);
 
-  const logo = form.get('/file/image/0') as string;
-  const savedLogo = form.get('saved-logo') as string;
+  const logo = form.get('/file/image/0');
   const terms: boolean = (form.get('terms') as string) === 'on';
 
   const data: OrganizerInput = {
     id: organizerId,
     name: form.get('name') as string,
     email: form.get('email') as string,
-    logo: savedLogo.length > 0? savedLogo : logo,
+    logo: processImageField(logo, isUpdate, organizer),
     phoneNumber:
       (form.get('phone-number') as string).length > 0
         ? parseInt(form.get('phone-number') as string)
@@ -158,7 +170,15 @@ export const action: ActionFunction = async ({ request }) => {
           .refine((v) => v, { message: t('Accept Dici Terms') })
       }).parse({ terms });
 
+      const domainUrl = getDomainUrl(request);
+
       await createOrganizer(data);
+
+      await sendSubmitedOrganizerProfileConfirmation({
+        emailAddress: data.email,
+        organizerName: data.email,
+        domainUrl
+      });
     }
 
     return json({});
@@ -214,11 +234,6 @@ export default function UsRoute() {
           </div>
         </div>
 
-        <input
-          type="hidden"
-          name="saved-logo"
-          value={organizer?.logo ? organizer.logo : ''}
-        />
         <div className="flex flex-col md:grid md:grid-cols-2 md:grid-flow-col md:gap-4">
           <div>
             <FormField

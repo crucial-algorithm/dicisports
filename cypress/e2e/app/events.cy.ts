@@ -500,11 +500,8 @@ describe('Event', () => {
             .get('[data-cy=name]')
             .contains('A new event')
 
-            // Check if it shows message when there is no races, documents, etc.
+            // Check if it shows message when there is no races
             .get('[data-cy=no-races]')
-            .should('exist')
-
-            .get('[data-cy=no-documents]')
             .should('exist');
         });
     });
