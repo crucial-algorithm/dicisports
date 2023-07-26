@@ -1,5 +1,6 @@
 [
   {
+    "id": "CGqMmcxkZtdMDW6LWCBT",
     "code": "SPRING-20",
     "value": 20000,
     "fixed": false,
@@ -8,6 +9,7 @@
     "organizerId": "qyPfCac23fMByqNa7L6n"
   },
   {
+    "id": "zWZKBmZowXrns2pP4QQ2",
     "code": "GET-FIT-5",
     "value": 5000,
     "fixed": true,
@@ -16,6 +18,7 @@
     "organizerId": "qyPfCac23fMByqNa7L6n"
   },
   {
+    "id": "LetJmop8m8eK8A8nJQuE",
     "code": "CHRISTMAS-30",
     "value": 30000,
     "fixed": false,

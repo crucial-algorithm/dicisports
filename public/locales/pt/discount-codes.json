@@ -6,5 +6,12 @@
   "Inactive": "Inactivo",
   "Empty results": "Nenhum código de desconto corresponde à sua pesquisa.",
   "Create your 1st discount": "Crie o seu primeiro desconto.",
-  "Create": "Criar Desconto"
+  "Create": "Criar Desconto",
+  "Fixed Value": "Valor fixo",
+  "Non-Fixed Value": "Valor percentual",
+  "Value Description": "(Valor fixo corresponde a um desconto fixo do valor inserido)",
+
+  "Save Button": "Guardar",
+  "Create Button": "Criar",
+  "Cancel Button": "Cancelar"
 }

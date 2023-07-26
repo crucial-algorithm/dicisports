@@ -431,18 +431,26 @@ model Organizer {
   @@map("organizers")
 }
 
-model DiscountCode {
-  code        String    @id @db.VarChar(20)
-  value       Int
-  fixed       Boolean
-  active      Boolean
-  createdBy   User      @relation(fields: [createdById], references: [id])
-  createdById String    @map("created_by") @db.VarChar(20)
-  organizer   Organizer @relation(fields: [organizerId], references: [id])
-  organizerId String    @map("organizer_id") @db.VarChar(20)
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
+enum DiscountCodeStatus {
+  auto
+  deleted
+}
 
+model DiscountCode {
+  id          String              @id
+  code        String
+  value       Int
+  fixed       Boolean         
+  active      Boolean         
+  createdBy   User                @relation(fields: [createdById], references: [id])
+  createdById String              @map("created_by") @db.VarChar(20)
+  organizer   Organizer           @relation(fields: [organizerId], references: [id])
+  organizerId String              @map("organizer_id") @db.VarChar(20)
+  status      DiscountCodeStatus  @default(auto)
+  createdAt   DateTime            @default(now()) @map("created_at")
+  updatedAt   DateTime            @updatedAt @map("updated_at")
+
+  @@unique([code, organizerId])
   @@map("discount_codes")
 }
 

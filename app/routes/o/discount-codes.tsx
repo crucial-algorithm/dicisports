@@ -7,7 +7,7 @@ import { Column } from 'primereact/column';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import Button from '~/components/shared/Button';
+import { ButtonLink } from '~/components/shared/Button';
 
 import Main from '~/components/shared/Main';
 import SearchField from '~/components/shared/SearchField';
@@ -70,15 +70,26 @@ export default function OrganizerDiscountCodesRoute() {
     );
   }
 
+  // TODO: maybe use icons instead of words
+  function actionsBody() {
+    return (
+      <div className="flex flex-row items-center gap-x-2">
+        <button>{t('Delete Button')}</button>
+        <button>{t('Hide Button')}</button>
+        <button>{t('Edit Button')}</button>
+      </div>
+    );
+  }
+
   return (
     <Main>
       <div className="flex flex-row h-16 justify-between gap-4 mb-8 items-center">
         <div className="w-72">
           <SearchField name="search" onChange={filter} />
         </div>
-        <Button name="create" type="button">
+        <ButtonLink id="actionId" to="/o/discount-codes/new">
           {t('Create')}
-        </Button>
+        </ButtonLink>
       </div>
       <DataTable
         value={discounts}
@@ -89,6 +100,7 @@ export default function OrganizerDiscountCodesRoute() {
         <Column field="code" header={t('Code')} />
         <Column field="value" header={t('Value')} body={cellDiscountValue} />
         <Column field="active" header={t('State')} body={cellState} />
+        <Column body={actionsBody} />
       </DataTable>
     </Main>
   );
