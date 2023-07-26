@@ -44,6 +44,7 @@ type LoaderData = {
   isAuth: boolean;
   bookingId: string;
   organizerName: string;
+  appliedDiscount: string | null;
 };
 
 type ActionData = {
@@ -206,12 +207,13 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     cart,
     isAuth: !!authenticatedClient,
     bookingId,
-    organizerName: organizer?.name as string
+    organizerName: organizer?.name as string,
+    appliedDiscount: booking.appliedDiscount
   });
 };
 
 export default function CheckoutConfirmationRoute() {
-  const { registration, event, cart, isAuth, bookingId, organizerName } =
+  const { registration, event, cart, isAuth, bookingId, organizerName, appliedDiscount } =
     useLoaderData<LoaderData>();
   const actionData = useActionData<ActionData>() as ActionData;
   const [checkedAddToMailingList, setCheckedAddToMailingList] =
@@ -221,6 +223,14 @@ export default function CheckoutConfirmationRoute() {
 
   function handleCheckAddToMailingList() {
     setCheckedAddToMailingList(!checkedAddToMailingList);
+  }
+
+  let discountValue: string = '0';
+  let fixed: string = '';
+  let discountCode: string = '';
+
+  if (appliedDiscount) {
+    [discountCode, discountValue, fixed] = appliedDiscount.split('|');
   }
 
   return (
@@ -315,7 +325,13 @@ export default function CheckoutConfirmationRoute() {
           )}
         </div>
         <div className="w-full md:w-[480px] mt-4 md:mt-0">
-          <DisplayCart cart={cart} event={event} fetcher={fetcher} />
+          <DisplayCart
+            cart={cart}
+            event={event}
+            fetcher={fetcher}
+            discountValue={parseInt(discountValue)}
+            fixedDiscount={JSON.parse(fixed)}
+          />
         </div>
       </div>
     </Main>

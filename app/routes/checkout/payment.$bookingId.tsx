@@ -51,6 +51,7 @@ type LoaderData = {
   ourTransactionId: string;
   CHECKOUT_FORM_SCRIPT: string;
   domainUrl: string;
+  appliedDiscount?: string;
 };
 
 export const loader: LoaderFunction = async ({ request, params }) => {
@@ -127,7 +128,8 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     ourTransactionId,
     CHECKOUT_FORM_SCRIPT: Config().SIBS_CHECKOUT_FORM_SCRIPT,
     unsuccessfulPayments,
-    domainUrl: getDomainUrl(request)
+    domainUrl: getDomainUrl(request),
+    appliedDiscount: booking.appliedDiscount
   });
 };
 
@@ -261,7 +263,8 @@ export default function CheckoutPaymentRoute() {
     gatewayTransactionId,
     ourTransactionId,
     CHECKOUT_FORM_SCRIPT,
-    domainUrl
+    domainUrl,
+    appliedDiscount
   } = useLoaderData() as LoaderData;
   const { t } = useTranslation('checkout');
   const displayCartFetcher = useFetcher();
@@ -269,6 +272,14 @@ export default function CheckoutPaymentRoute() {
     submittedPayments &&
     submittedPayments.filter((p) => (p.status = PaymentStatus.paid)).length ===
       0;
+
+  let discountValue: string = '0';
+  let fixed: string = '';
+  let discountCode: string = '';
+
+  if (appliedDiscount) {
+    [discountCode, discountValue, fixed] = appliedDiscount.split('|');
+  }
 
   return (
     <Main>
@@ -303,7 +314,13 @@ export default function CheckoutPaymentRoute() {
           )}
         </div>
         <div className="w-full md:w-[480px]">
-          <DisplayCart cart={cart} event={event} fetcher={displayCartFetcher}>
+          <DisplayCart
+            cart={cart}
+            event={event}
+            fetcher={displayCartFetcher}
+            discountValue={parseInt(discountValue)}
+            fixedDiscount={JSON.parse(fixed)}
+          >
             {!isPaid && !(submittedPayments && submittedPayments.length > 0) && (
               <Button
                 name="actionId"

@@ -8,12 +8,15 @@ import type { UICartRow } from '~/types';
 import { H4, H5, H6 } from '~/components/shared/typography';
 import DisplayDate from '~/components/shared/DIsplayDate';
 import InputError from '~/components/shared/form/InputError';
+import { bookingAmount } from '~/utils/misc';
 
 export default function DisplayCart({
   cart,
   event,
   error,
   fetcher,
+  discountValue,
+  fixedDiscount = false,
   hash,
   children,
   action
@@ -22,11 +25,13 @@ export default function DisplayCart({
   event: Event;
   error?: string;
   fetcher: FetcherWithComponents<any>;
+  discountValue?: number;
+  fixedDiscount?: boolean;
   hash?: number;
   action?: string;
 } & React.ComponentProps<'div'>) {
   const { t } = useTranslation('checkout');
-  const totalPrice = cart.reduce((acum, c) => c.price * c.qty + acum, 0);
+  const totalPrice = bookingAmount(cart, discountValue, fixedDiscount);
 
   return (
     <fetcher.Form method="post" action={action}>

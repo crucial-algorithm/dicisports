@@ -119,8 +119,27 @@ function generateSlug(str: string) {
   return str;
 }
 
-function bookingAmount(cart: UICartRow[]) {
-  return cart.reduce((total, { qty, price }) => total + qty * price, 0);
+function bookingAmount(
+  cart: UICartRow[],
+  discountValue?: number,
+  fixedDiscount: boolean = false
+) {
+  const total = cart.reduce((total, { qty, price }) => total + qty * price, 0);
+  
+  return discountValue
+    ? handleApplyDiscount(total, discountValue, fixedDiscount)
+    : total;
+}
+
+function handleApplyDiscount(
+  total: number,
+  discountValue: number,
+  fixedDiscount: boolean
+): number {
+
+  return fixedDiscount
+    ? total - discountValue
+    : total - total * (discountValue / 1000 / 100);
 }
 
 // Function that validates identity card according to Autenticação.gov
