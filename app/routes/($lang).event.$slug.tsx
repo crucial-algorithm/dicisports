@@ -253,16 +253,6 @@ export default function EventDisplayRoute() {
                 index={index}
               />
             ))}
-          <WhenListEmpty list={event.documents}>
-            <H6
-              className="text-center p-12"
-              variant="secondary"
-              as="p"
-              data-cy="no-documents"
-            >
-              {t('No Documents')}
-            </H6>
-          </WhenListEmpty>
         </div>
         {organizer && <OrganizerFooter organizer={organizer} />}
       </Main>
@@ -729,7 +719,16 @@ function OrganizerFooter({ organizer }: { organizer: Organizer }) {
           <div className="px-4 my-4 w-full">
             <div className="flex flex-row gap-x-2 items-center">
               <div className="w-14 h-14">
-                <DisplayImg imageId={organizer.logo} />
+                <DisplayImg
+                  transformations={{
+                    resize: {
+                      type: 'fill',
+                      width: 56,
+                      height: 56
+                    }
+                  }}
+                  imageId={organizer.logo}
+                />
               </div>
               <H4 data-cy="organizer-name">{organizer.name}</H4>
             </div>

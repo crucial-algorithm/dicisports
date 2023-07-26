@@ -11,33 +11,11 @@ describe('Organizer', () => {
         .location()
         .should((l) => {
           expect(l.pathname).to.eq('/o/us');
-        })
+        });
 
-        .get('input[name=name]')
-        .type('Montanha dos Amigos')
+      fillFormWithOrganizerTemplate();
 
-        .get('input[name=email]')
-        .type('info@montanhadosamigos.com')
-
-        .get('input[name=address]')
-        .type('Rua Custódio José Gomes Vilas Boas, 57')
-
-        .get('input[name=postal-code]')
-        .type('4755-059')
-
-        .get('input[name=city]')
-        .type('Barcelos')
-
-        .get('textarea[name=description]')
-        .type('Montanhas de Aventuras para Viver!')
-
-        .get('input[name="/file/image/0"]')
-        .selectFile('cypress/assets/logo-organizer.jpeg', { force: true })
-
-        .get('input[name=terms]')
-        .click()
-
-        .intercept('POST', '/o/us?*')
+      cy.intercept('POST', '/o/us?*')
         .as('SubmitProfile')
 
         .get('button[name=save-profile]')
@@ -140,6 +118,37 @@ describe('Organizer', () => {
         .get('[data-cy=organizer-name]')
         .contains('Amigos da Montanha2');
     });
+
+    it('should send confirmation email when submiting organizer profile form', () => {
+      cy.login()
+        .visitAndWaitForHydration('/o/us')
+
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.eq('/o/us');
+        });
+
+      fillFormWithOrganizerTemplate();
+
+      cy.intercept('POST', '/o/us?*')
+        .as('SubmitProfile')
+
+        .get('button[name=save-profile]')
+        .click()
+
+        .wait('@SubmitProfile')
+
+        .get('[data-cy=pending-validation]')
+        .should('exist')
+
+        .request({ method: 'GET', url: Cypress.env('HTTP_CATCHER') })
+        .then(({ body }) => {
+          expect(body.to).to.eq('info@montanhadosamigos.com');
+          expect(body.subject).to.eq(
+            'Registo como organizador no dicisports.com  ✨'
+          );
+        });
+    });
   });
 
   context('Security', () => {
@@ -153,3 +162,29 @@ describe('Organizer', () => {
     });
   });
 });
+
+function fillFormWithOrganizerTemplate() {
+  cy.get('input[name=name]')
+    .type('Montanha dos Amigos')
+
+    .get('input[name=email]')
+    .type('info@montanhadosamigos.com')
+
+    .get('input[name=address]')
+    .type('Rua Custódio José Gomes Vilas Boas, 57')
+
+    .get('input[name=postal-code]')
+    .type('4755-059')
+
+    .get('input[name=city]')
+    .type('Barcelos')
+
+    .get('textarea[name=description]')
+    .type('Montanhas de Aventuras para Viver!')
+
+    .get('input[name="/file/image/0"]')
+    .selectFile('cypress/assets/logo-organizer.jpeg', { force: true })
+
+    .get('input[name=terms]')
+    .click();
+}

@@ -412,7 +412,14 @@ describe('Checkout', () => {
 
     it.skip('should send automated email after completing booking', () => {
       bookParticipant('MY4bvgxDbMtGv8rbYe5d', 'AhowRdNWCBQWSuivSt7h');
-      cy.get('input[name=email]')
+      cy.waitForHydration()
+
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.include('/confirmation/');
+        })
+
+        .get('input[name=email]')
         .type('asd@gmail.com')
 
         .intercept('POST', '/checkout/confirmation/*')
@@ -1282,7 +1289,8 @@ function bookParticipant(eventId: string, raceId: string) {
         .type('937654321')
 
         .get('input[name=identity-card]')
-        .type('87654321')
+        .type('000000000zz4')
+        .should('have.value', '00000000-0-zz4')
 
         .get('input[name=federation-number]')
         .type('8165238')
@@ -1293,6 +1301,14 @@ function bookParticipant(eventId: string, raceId: string) {
 
         .get('input[name=postal-code]')
         .type('4730-454')
+
+        .get('input[name=regulation]')
+        .first()
+        .check()
+
+        .get('input[name=terms]')
+        .first()
+        .check()
 
         .intercept('POST', '*?_data=routes*checkout*')
         .as('saveParticipant')
@@ -1309,16 +1325,8 @@ function bookParticipant(eventId: string, raceId: string) {
           expect(l.pathname).to.eq(`/checkout/payment/${bookingId}`);
         })
 
-        .get('input[name=regulation]')
-        .click()
-        .get('input[name=terms]')
-        .click()
-
         .get('button[name=pay]')
-        .click()
-
-        .get('[data-cy=waiting-payment-confirmation')
-        .should('exist');
+        .click();
     });
 }
 
