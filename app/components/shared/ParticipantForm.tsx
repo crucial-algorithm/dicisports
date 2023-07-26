@@ -7,13 +7,14 @@ import { CheckoutInfoActions } from '~/action.keys';
 
 import Button from '~/components/shared/Button';
 import ButtonGroup from '~/components/shared/ButtonGroup';
-import ComboBox from '~/components/shared/form/ComboBox';
+import ComboBox, { Creatable } from '~/components/shared/form/ComboBox';
 import BasicDatePicker from '~/components/shared/form/DatePicker';
 import FormField from '~/components/shared/form/FormField';
 import TextField from '~/components/shared/form/TextField';
 import countries from '~/server/db/countries.json';
-import type { Language, Participant, ShirtSize } from '~/types';
+import type { EventTeam, Language, Participant, ShirtSize } from '~/types';
 import { FetcherForm } from '~/components/shared/form/UploadForm';
+import { DiciInputMask } from '~/components/shared/form/InputMask';
 
 export default function ParticipantForm({
   participant,
@@ -28,7 +29,9 @@ export default function ParticipantForm({
   resetForm,
   isSingleParticipant,
   isReadOnly,
-  children
+  children,
+  eventTeams,
+  participantTeam
 }: {
   participant: Participant | null;
   hash: number;
@@ -42,6 +45,8 @@ export default function ParticipantForm({
   resetForm: () => void;
   isSingleParticipant: boolean;
   isReadOnly: boolean;
+  eventTeams: EventTeam[];
+  participantTeam: string | null;
 } & React.ComponentProps<'div'>) {
   const { t, i18n } = useTranslation('checkout');
   const language = i18n.language as Language;
@@ -160,7 +165,7 @@ export default function ParticipantForm({
                 ? new Date(selectedParticipant.birthdate)
                 : participant?.birthdate
                 ? new Date(participant.birthdate)
-                : new Date()
+                : new Date(Date.now() - 20 * 3600 * 24 * 365 * 1000)
             }
           />
         </FormField>
@@ -195,13 +200,11 @@ export default function ParticipantForm({
           error={errors?.identityCard}
           dataCy="identityCard"
         >
-          <TextField
+          <DiciInputMask
+            mask="99999999-9-aa9"
             name="identity-card"
+            value={participant?.identityCard || undefined}
             placeholder={t('Required')}
-            defaultValue={
-              (selectedParticipant?.identityCard as string) ||
-              (participant?.identityCard as string)
-            }
           />
         </FormField>
 
@@ -222,6 +225,20 @@ export default function ParticipantForm({
           />
         </FormField>
       </div>
+
+      <FormField label={t('Team')}>
+        <Creatable
+          name="team"
+          t={t}
+          options={eventTeams.map((et) => ({
+            value: et.id === '0' ? '' : et.name,
+            label: et.name
+          }))}
+          defaultValue={participantTeam ? participantTeam : ''}
+          emptyLabel={t('Individual')}
+          defaultOption={{ value: '', label: t('Individual') }}
+        />
+      </FormField>
 
       <FormField
         label={t('Shirt Size')}
@@ -286,19 +303,17 @@ export default function ParticipantForm({
       )}
 
       {selectedParticipant && (
-        <>
-          <input
-            type="hidden"
-            name="selected-participant-id"
-            value={selectedParticipant.id}
-          />
-          <input type="hidden" name="raceId" value={raceId as string} />
-        </>
+        <input
+          type="hidden"
+          name="selected-participant-id"
+          value={selectedParticipant.id}
+        />
       )}
 
       {children}
 
       <input type="hidden" name="hash" value={hash} />
+      <input type="hidden" name="raceId" value={raceId as string} />
       {!isReadOnly && (
         <ButtonGroup>
           <Button type="button" variant="secondary" onClick={resetForm}>
@@ -314,7 +329,7 @@ export default function ParticipantForm({
             name="actionId"
             disabled={!participant}
             id="save-button"
-            variant={selectedParticipant ? 'secondary' : 'primary' }
+            variant={selectedParticipant ? 'secondary' : 'primary'}
           >
             {t('Save')}
           </Button>

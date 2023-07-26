@@ -63,7 +63,7 @@ async function findUserFromSessionId(sessionId: string) {
     include: {
       user: {
         include: {
-          organiser: true
+          organizer: true
         }
       }
     }

@@ -235,21 +235,19 @@ async function saveNotification(json: SibsWebHookSchema) {
   // We are not using a transaction because we want to
   // have the best chance to save something, even if we loose
   // one of the operations here
-   await db.paymentNotification.create({
-    data: {
-      id: json.notificationID || Id(),
-      transactionId: json.transactionID || '-',
-      payload: json
-    }
-  });
-
-   await db.payment.update({
+  await db.payment.update({
     where: { transactionId: json.transactionID },
     data: {
       notificationId: json.notificationID
     }
   });
-
+  await db.paymentNotification.create({
+    data: {
+      id: Id(),
+      transactionId: json.transactionID,
+      payload: json
+    }
+  });
 }
 
 export {

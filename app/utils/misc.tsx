@@ -123,6 +123,74 @@ function bookingAmount(cart: UICartRow[]) {
   return cart.reduce((total, { qty, price }) => total + qty * price, 0);
 }
 
+// Function that validates identity card according to Autenticação.gov
+// Check /docs/pt_idcard_validation.pdf for more information
+function validateIdentityCard(identityCard: string): boolean {
+  const mapping: { [key: string]: number } = {
+    0: 0,
+    1: 1,
+    2: 2,
+    3: 3,
+    4: 4,
+    5: 5,
+    6: 6,
+    7: 7,
+    8: 8,
+    9: 9,
+    A: 10,
+    B: 11,
+    C: 12,
+    D: 13,
+    E: 14,
+    F: 15,
+    G: 16,
+    H: 17,
+    I: 18,
+    J: 19,
+    K: 20,
+    L: 21,
+    M: 22,
+    N: 23,
+    O: 24,
+    P: 25,
+    Q: 26,
+    R: 27,
+    S: 28,
+    T: 29,
+    U: 30,
+    V: 31,
+    W: 32,
+    X: 33,
+    Y: 34,
+    Z: 35
+  };
+  let oddDigit: boolean = false;
+  const formattedIdentityCard = identityCard.split('-').join('');
+
+  if (formattedIdentityCard.length !== 12) {
+    return false;
+  }
+
+  const sum = Array.from(formattedIdentityCard)
+    .reverse()
+    .reduce((total, digit) => {
+      let value = mapping[digit.toUpperCase()];
+
+      if (oddDigit) {
+        value *= 2;
+
+        if (value > 9) {
+          value -= 9;
+        }
+      }
+
+      oddDigit = !oddDigit;
+      return total + value;
+    }, 0);
+
+  return sum % 10 === 0;
+}
+
 export {
   getDomainUrl,
   getErrorMessage,
@@ -137,5 +205,6 @@ export {
   hoursMinutesToTimeOfDay,
   getLocalizedText,
   generateSlug,
-  bookingAmount
+  bookingAmount,
+  validateIdentityCard
 };

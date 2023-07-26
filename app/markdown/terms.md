@@ -1,9 +1,9 @@
 # Termos e Condições
 
-### I — Descrição
+## I — Descrição
 Os presentes termos e condições contêm as normas que regulam a inscrição dos participantes na plataforma de inscrição em eventos.
 
-### II — Definições
+## II — Definições
 As definições podem ser usadas no singular ou plural, feminino ou masculino, e têm o significado seguinte:
 
 **Crucial Algorithm** — Crucial Algorithm Unipessoal, Lda, pessoa colectiva número 516151118, com sede na sita na Travessa da Residência, nº 7, Rés do Chão, Esquerdo, Trás, 4715-100 Nogueiró, Braga.
@@ -19,7 +19,7 @@ As definições podem ser usadas no singular ou plural, feminino ou masculino, e
 **Participante** — a entidade que se inscreve no evento através da plataforma de inscrição em eventos.
 
 
-### II — Condições Gerais da Inscrição
+## III — Condições Gerais da Inscrição
 **3.1.** As presentes Condições Gerais de Inscrição (“CGI”) contêm os termos da realização de inscrições através da plataforma, devendo ser lidas atentamente antes da conclusão da inscrição por parte do participante.
 
 **3.2.** As entidades que pretendem fazer a inscrição nos eventos através da plataforma de inscrição em eventos, aceitam os presentes termos e condições, declarando a sua aceitação através da inserção “aceitar” na quadrícula destinada para o efeito nos formulários apresentados pela Crucial Algorithm, designadamente em www.dicisports.com.
@@ -31,7 +31,6 @@ As definições podem ser usadas no singular ou plural, feminino ou masculino, e
 **3.5.** As CGI, a par das Condições Particulares informações e veiculadas aquando da compra, contêm a totalidade dos termos acordados entre a Dicisports e o participante.
 
 **3.6.** Os Participantes reconhecem que a organização do evento é da responsabilidade do Organizador, sendo a Dicisports um intermediário no processamento dos pagamentos.
-
 
 ####  **3.7.** Comunicações, apoio ao Cliente e reclamações
 

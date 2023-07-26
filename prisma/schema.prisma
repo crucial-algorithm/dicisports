@@ -47,7 +47,7 @@ model User {
   favGroups    FavoriteGroup[]
   events       Event[]
   favEvents    FavoriteEvent[]
-  organiser    Organiser?
+  organizer    Organizer?
   DiscountCode DiscountCode[]
 
   @@map("users")
@@ -94,39 +94,43 @@ enum Status {
 }
 
 model Event {
-  id                 String      @id @default(uuid())
-  name               String?
-  slug               String?     @unique
-  sport              Sport?      @relation(fields: [sportId], references: [id])
-  sportId            Int?        @map("sport_id")
-  difficulty         Difficulty? @relation(fields: [difficultyId], references: [id])
-  difficultyId       Int?        @map("difficulty_id")
-  startAt            DateTime?   @map("start_at")
-  endAt              DateTime?   @map("end_at")
-  lat                Float?
-  lng                Float?
-  location           String?
-  useExternalBooking Boolean     @default(false) @map("use_external_booking")
-  externalBookingUrl String?     @map("external_booking_url")
-  description        String?
-  status             Status      @default(auto)
-  image1             String?
-  image2             String?
-  image3             String?
-  image4             String?
-  image5             String?
-  directions         String?
-  regulationPath     String?     @map("regulation_path")
-  regulationContent  String?     @map("regulation_content")
-  regulationFileName String?     @map("regulation_file_name")
-  createdBy          User        @relation(fields: [createdById], references: [id])
-  createdById        String      @map("created_by")
-  createdAt          DateTime    @default(now()) @map("created_at")
-  updatedAt          DateTime    @updatedAt @map("updated_at")
-  documents          Document[]
-  perks              Perk[]
-  races              Race[]
-  bookings           Booking[]
+  id                    String      @id @default(uuid())
+  name                  String?
+  slug                  String?     @unique
+  sport                 Sport?      @relation(fields: [sportId], references: [id])
+  sportId               Int?        @map("sport_id")
+  difficulty            Difficulty? @relation(fields: [difficultyId], references: [id])
+  difficultyId          Int?        @map("difficulty_id")
+  startAt               DateTime?   @map("start_at")
+  endAt                 DateTime?   @map("end_at")
+  lat                   Float?
+  lng                   Float?
+  location              String?
+  useExternalBooking    Boolean     @default(false) @map("use_external_booking")
+  externalBookingUrl    String?     @map("external_booking_url")
+  description           String?
+  status                Status      @default(auto)
+  image1                String?
+  image2                String?
+  image3                String?
+  image4                String?
+  image5                String?
+  directions            String?
+  regulationPath        String?     @map("regulation_path")
+  regulationContent     String?     @map("regulation_content")
+  regulationFileName    String?     @map("regulation_file_name")
+  bibStartingNumber     Int?        @map("bib_starting_number") @default(1)
+  createdBy             User        @relation(fields: [createdById], references: [id])
+  createdById           String      @map("created_by")
+  createdAt             DateTime    @default(now()) @map("created_at")
+  updatedAt             DateTime    @updatedAt @map("updated_at")
+  documents             Document[]
+  perks                 Perk[]
+  races                 Race[]
+  bookings              Booking[]
+  teams                 EventTeam[]
+  latestBibNumber       LatestBibNumber?
+  raceParticipant       RaceParticipant[]
 
   favEvents FavoriteEvent[]
 
@@ -315,11 +319,17 @@ model RaceParticipant {
   displayOrder  Int            @default(autoincrement()) @map("display_order")
   bookingId     String         @map("booking_id")
   booking       Booking        @relation(fields: [bookingId], references: [id])
+  teamId        String?        @map("team_id")
+  team          EventTeam?     @relation(fields: [teamId], references: [id])
+  eventId       String?        @map("event_id")
+  event         Event?         @relation(fields: [eventId], references: [id])
+  bibNumber     Int?           @map("bib_number")
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
   @@unique([participantId, raceId])
+  @@unique([eventId, bibNumber])
   @@map("race_participants")
 }
 
@@ -395,27 +405,28 @@ model ShirtSize {
   @@map("shirt_size")
 }
 
-enum OrganiserStatus {
+enum OrganizerStatus {
   PENDING
   APPROVED
 }
 
-model Organiser {
-  id           String          @id
-  name         String
-  description  String
-  logo         String
-  email        String          @unique
-  phoneNumber  Int?            @unique @map("phone_number")
-  address      String
-  postalCode   String          @map("postal_code")
-  city         String
-  userId       String          @map("user_id") @unique
-  user         User            @relation(fields: [userId], references: [id])
-  status       OrganiserStatus @default(PENDING)
-  createdAt    DateTime        @default(now()) @map("created_at")
-  updatedAt    DateTime        @updatedAt @map("updated_at")
-  DiscountCode DiscountCode[]
+model Organizer {
+  id                String              @id
+  name              String
+  description       String
+  logo              String
+  email             String              @unique
+  phoneNumber       Int?                @unique @map("phone_number")
+  address           String
+  postalCode        String              @map("postal_code")
+  city              String
+  userId            String              @map("user_id") @unique
+  user              User                @relation(fields: [userId], references: [id])
+  status            OrganizerStatus     @default(PENDING)
+  createdAt         DateTime            @default(now()) @map("created_at")
+  updatedAt         DateTime            @updatedAt @map("updated_at")
+  DiscountCode      DiscountCode[]
+  MailingList       MailingList[]
 
   @@map("organizers")
 }
@@ -427,10 +438,44 @@ model DiscountCode {
   active      Boolean
   createdBy   User      @relation(fields: [createdById], references: [id])
   createdById String    @map("created_by") @db.VarChar(20)
-  organiser   Organiser @relation(fields: [organiserId], references: [id])
-  organiserId String    @map("organiser_id") @db.VarChar(20)
+  organizer   Organizer @relation(fields: [organizerId], references: [id])
+  organizerId String    @map("organizer_id") @db.VarChar(20)
   createdAt   DateTime  @default(now()) @map("created_at")
   updatedAt   DateTime  @updatedAt @map("updated_at")
 
   @@map("discount_codes")
+}
+
+// Saves email from users that want to receive news from certain organizers
+model MailingList {
+    email           String
+    organizerId     String      @map("organizer_id")
+    organizer       Organizer   @relation(fields: [organizerId], references: [id])
+    createdAt       DateTime    @default(now()) @map("created_at")
+
+    @@unique([email, organizerId])
+    @@map("mailing_list")
+}
+
+model EventTeam {
+    id                  String                  @id
+    name                String
+    eventId             String                  @map("event_id")
+    event               Event                   @relation(fields: [eventId], references: [id])
+    createdAt           DateTime                @default(now()) @map("created_at")
+    updatedAt           DateTime                @updatedAt @map("updated_at")
+    raceParticipants    RaceParticipant[]
+
+    @@unique([name, eventId])
+    @@map("event_teams")
+}
+
+model LatestBibNumber {
+    eventId             String                  @map("event_id") @id
+    bibNumber           Int                     @default(0) @map("bib_number")
+    event               Event                   @relation(fields: [eventId], references: [id])
+    createdAt           DateTime                @default(now()) @map("created_at")
+    updatedAt           DateTime                @updatedAt @map("updated_at")
+
+    @@map("latest_bib_number")
 }

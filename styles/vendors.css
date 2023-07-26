@@ -29,3 +29,7 @@
 .p-datepicker .p-datepicker-header .p-datepicker-title .p-datepicker-month:enabled:hover {
     color: var(--color-white)
 }
+
+.dici-input-mask.p-inputtext.p-component {
+    @apply input-text
+}

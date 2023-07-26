@@ -5,11 +5,11 @@ import { H3, Paragraph } from '~/components/shared/typography';
 import UnderConstruction from '~/components/shared/UnderConstruction';
 
 export const handle: { i18n: string[] } = {
-  i18n: ['organiser-campaigns']
+  i18n: ['organizer-campaigns']
 };
 
-export default function OrganiserCampaignRoute() {
-  const { t } = useTranslation('organiser-campaigns');
+export default function OrganizerCampaignRoute() {
+  const { t } = useTranslation('organizer-campaigns');
 
   return (
     <Main>

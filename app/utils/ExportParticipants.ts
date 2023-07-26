@@ -21,7 +21,7 @@ export default async function exportRaceParticipantsToExcel({
     { header: t('Team'), key: 'team', width: 20 },
     { header: t('Age Group'), key: 'ageGroup', width: 10 },
     { header: t('Status'), key: 'status', width: 20 },
-    { header: t('Dorsal'), key: 'dorsal', width: 10 },
+    { header: t('Bib Number'), key: 'bibNumber', width: 10 },
     { header: t('Race'), key: 'race', width: 20 }
   ];
 
@@ -33,10 +33,10 @@ export default async function exportRaceParticipantsToExcel({
   raceParticipants.map((r) => {
     return worksheet.addRow({
       athlete: `${r.participant.firstName} ${r.participant.lastName}`,
-      team: '-',
+      team: r.team ? r.team.name : t('Individual'),
       ageGroup: r.participant.gender,
       status: t(r.booking?.status as string),
-      dorsal: '-',
+      bibNumber: r.bibNumber ? r.bibNumber : '-',
       race: r.race.name
     });
   });

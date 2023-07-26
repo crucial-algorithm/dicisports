@@ -19,6 +19,7 @@
   "Birthdate": "Data de nascimento",
   "National Federation Number": "Número da Federação",
   "Participant": "Participante",
+  "Team": "Equipa",
 
   "Gender Placeholder": "Seleciona o teu género",
   "Shirt Placeholder": "Seleciona o tamanho da tua camisola",
@@ -43,14 +44,13 @@
   "Max 9 Number": "Apenas permitidos 9 dígitos",
   "Invalid Option": "Opção inválida",
   "Invalid Type": "Tipo inválido",
-  "Invalid CC Length": "Introduza o seu número de identificação sem dígitos de controlo",
+  "Invalid CC": "Introduz um número de Cartão de Cidadão válido",
 
-
-  "No Races In Checkout": "Nenhuma distância no carrinho !",
+  "No Races In Checkout": "Nenhuma distância no carrinho!",
   "Can't Create Booking": "Não foi possível criar o booking",
 
   "Update Cart": "Atualizar carrinho",
-  "Existing Race Participant": "Upss.. Este participante já está a participar nesta distância !",
+  "Existing Race Participant": "Upss.. Este participante já está a participar nesta distância!",
   "Participant Selected": "Participante selecionado",
   "Participant Saved": "Participante guardado",
   "Participant Saved and Updated": "Participante guardado e atualizado",
@@ -64,6 +64,7 @@
   "Participant Not Filled": "Completa a informação em falta",
   "New Participant First Name": "Novo",
   "New Participant Last Name": "Participante",
+  "Create: X": "Criar: {{value}}",
 
   "Thanks For Buying": "Obrigado por te registares com a Dicisports. Por favor imprime esta página com os dados da confirmação, para o caso de quereres mudar algo.",
   "Confirmation ID": "ID de confirmação",
@@ -84,6 +85,8 @@
   "Read and Accepted": "Eu li e aceito",
   "Terms and Conditions": " os Termos e Condições",
   "Event Regulation": " o Regulamento do Evento",
+  "Add to X Mailing List": "Quero receber novidades de '{{organizer}}'",
+  "Email in use": "Esse email já está registado",
 
   "Waitting for payment gateway": "A aguardar confirmação do pagamento por parte da SIBS...",
   "Payment not found": "Não foi possível encontrar o pagamento solicitado",

@@ -445,6 +445,170 @@ describe('Checkout', () => {
         .should('exist')
         .and('contain', '20€');
     });
+
+    // TODO: finish test as soon as we re-instate booking payment flow e2e tests
+    it.skip('should display checkbox for organizer campaign and corresponding validations', () => {});
+
+    it('should display current booked teams', () => {
+      cy.intercept('GET', '*?_data=routes*checkout*')
+        .as('selectRace')
+
+        .visitAndWaitForHydration('/checkout/cart/MY4bvgxDbMtGv8rbYe5d')
+
+        .location()
+        .should((loc) => {
+          expect(loc.pathname).to.eq('/checkout/cart/MY4bvgxDbMtGv8rbYe5d');
+        })
+
+        .get('#add-race-AhowRdNWCBQWSuivSt7h')
+        .click()
+
+        .wait('@selectRace')
+
+        .get('#checkout')
+        .click()
+
+        .wait('@selectRace')
+
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.include('/checkout/info/');
+        })
+
+        .get('button[name=creatable-button]')
+        .should('exist')
+        .click()
+
+        .get('ul[data-headlessui-state="open"] li:first')
+        .contains('Individual')
+
+        .get('ul[data-headlessui-state="open"] li')
+        .eq(1)
+        .contains('Amigos do BTT de Barcelos');
+    });
+
+    it('should display cta to add team if it does not exist', () => {
+      cy.intercept('GET', '*?_data=routes*checkout*')
+        .as('selectRace')
+
+        .visitAndWaitForHydration('/checkout/cart/MY4bvgxDbMtGv8rbYe5d')
+
+        .location()
+        .should((loc) => {
+          expect(loc.pathname).to.eq('/checkout/cart/MY4bvgxDbMtGv8rbYe5d');
+        })
+
+        .get('#add-race-AhowRdNWCBQWSuivSt7h')
+        .click()
+
+        .wait('@selectRace')
+
+        .get('#checkout')
+        .click()
+
+        .wait('@selectRace')
+
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.include('/checkout/info/');
+        })
+
+        .get('#creatable-team')
+        .clear()
+        .type('Marretas')
+
+        .get('ul[data-headlessui-state="open"] li:first')
+        .contains('Criar: Marretas');
+    });
+
+    it('should save team', () => {
+      cy.intercept('GET', '*?_data=routes*checkout*')
+        .as('selectRace')
+
+        .visitAndWaitForHydration('/checkout/cart/MY4bvgxDbMtGv8rbYe5d')
+
+        .location()
+        .should((loc) => {
+          expect(loc.pathname).to.eq('/checkout/cart/MY4bvgxDbMtGv8rbYe5d');
+        })
+
+        .get('#add-race-AhowRdNWCBQWSuivSt7h')
+        .click()
+
+        .wait('@selectRace')
+
+        .get('#add-race-AhowRdNWCBQWSuivSt7h')
+        .click()
+
+        .wait('@selectRace')
+
+        .get('#checkout')
+        .click()
+
+        .wait('@selectRace')
+
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.include('/checkout/info/');
+        })
+
+        .get('div[data-cy=participant-1]')
+        .click()
+
+        .get('input[name=first-name]')
+        .type('Nuno')
+
+        .get('input[name=last-name]')
+        .type('Lopes')
+
+        .pickOptionFromSelect('gender', 2)
+
+        .pickDate('birthdate', '2001-09-21')
+
+        .get('input[name=phone-number]')
+        .type('937654321')
+
+        .get('input[name=identity-card]')
+        .type('87654321')
+
+        .get('input[name=federation-number]')
+        .type('8165238')
+
+        .get('#creatable-team')
+        .clear()
+        .type('Marretas')
+
+        .get('ul[data-headlessui-state="open"] li:first')
+        .contains('Criar: Marretas')
+        .click()
+
+        .pickOptionFromSelect('shirt', 2)
+
+        .pickOptionFromSelect('nationality', 188)
+
+        .get('input[name=postal-code]')
+        .type('4730-454')
+
+        .intercept('POST', '*?_data=routes*checkout*')
+        .as('saveParticipant')
+
+        .get('#save-button')
+        .click()
+
+        .wait('@saveParticipant')
+        .reload()
+        .waitForHydration()
+
+        .get('div[data-cy=participant-2]')
+        .click()
+
+        .get('#creatable-team')
+        .clear()
+        .type('Marretas')
+
+        .get('ul[data-headlessui-state="open"] li:first')
+        .contains('Marretas');
+    });
   });
 
   context('Maintenance: authenticated', () => {
@@ -603,6 +767,176 @@ describe('Checkout', () => {
 
         .get('#identity-card-error')
         .should('exist');
+    });
+
+    it.skip('should have correct bib numbers', () => {
+      cy.intercept('GET', '/payment-status/*')
+        .as('GetPaymentStatus')
+
+        .visitAndWaitForHydration('/checkout/payment/qR4nqWpTdQy8QZu29ANu')
+
+        .get('button[name=pay]')
+        .should('exist')
+
+        .click()
+
+        .location()
+        .then((l) => {
+          if (l.pathname === '/checkout/payment/qR4nqWpTdQy8QZu29ANu') {
+            cy.get('.sibs > h5')
+              .should('exist')
+              .and('contain', 'Pagamento por Multibanco ou Homebanking')
+
+              .wait('@GetPaymentStatus');
+          }
+        })
+
+        .waitForHydration()
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.eq(
+            '/checkout/confirmation/qR4nqWpTdQy8QZu29ANu'
+          );
+        })
+
+        // Logging in as Organiser to check if bib numbers where assigned
+        .loginOrganizer()
+
+        .reload()
+        .waitForHydration()
+
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.eq('/');
+        })
+
+        .visitAndWaitForHydration('/o/event/5n8epZbHczqAQtQaAh5R/dashboard')
+
+        .get('#participant-b2ytMsXPtQMcLxfLJyQm > td')
+        .eq(4)
+        .contains('Confirmado')
+
+        .get('#participant-b2ytMsXPtQMcLxfLJyQm > td')
+        .eq(5)
+        .should('contain', '1');
+    });
+
+    it.skip('should have correct bib numbers after updating initial bib number', () => {
+      // Update initial bib number
+      cy.loginOrganizer()
+        .visitAndWaitForHydration('/o/event/5n8epZbHczqAQtQaAh5R')
+
+        .get('input[name=bib-number]')
+        .should('exist')
+        .clear()
+        .type('20')
+
+        .intercept('POST', '/o/event/5n8epZbHczqAQtQaAh5R*')
+        .as('UpdateEvent')
+
+        .get('button[name=update-event]')
+        .click()
+
+        .wait('@UpdateEvent')
+
+        .location()
+        .should((loc) => {
+          expect(loc.pathname).to.contain('/o/event/5n8epZbHczqAQtQaAh5R');
+        })
+
+        // login as regular to finish booking process
+        .login()
+        .reload()
+        .waitForHydration()
+
+        .location()
+        .should((loc) => {
+          expect(loc.pathname).to.contain('/');
+        })
+
+        .intercept('GET', '/payment-status/*')
+        .as('GetPaymentStatus')
+
+        .visitAndWaitForHydration('/checkout/payment/qR4nqWpTdQy8QZu29ANu')
+
+        .get('button[name=pay]')
+        .should('exist')
+
+        .click()
+
+        .location()
+        .then((l) => {
+          if (l.pathname === '/checkout/payment/qR4nqWpTdQy8QZu29ANu') {
+            cy.get('.sibs > h5')
+              .should('exist')
+              .and('contain', 'Pagamento por Multibanco ou Homebanking')
+
+              .wait('@GetPaymentStatus');
+          }
+        })
+
+        .waitForHydration()
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.eq(
+            '/checkout/confirmation/qR4nqWpTdQy8QZu29ANu'
+          );
+        })
+
+        // Logging in as Organiser to check if bib numbers where assigned
+        .loginOrganizer()
+
+        .reload()
+        .waitForHydration()
+
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.eq('/');
+        })
+
+        .visitAndWaitForHydration('/o/event/5n8epZbHczqAQtQaAh5R/dashboard')
+
+        .get('#participant-b2ytMsXPtQMcLxfLJyQm > td')
+        .eq(4)
+        .contains('Confirmado')
+
+        .get('#participant-b2ytMsXPtQMcLxfLJyQm > td')
+        .eq(5)
+        .should('contain', '20');
+    });
+
+    it('should display checkbox to enroll in organizer mailing list', () => {
+      cy.intercept('GET', '/checkout/cart/*?_data=routes*checkout*')
+        .as('selectRace')
+
+        .intercept('GET', '/checkout/info/*?_data=routes*checkout*')
+        .as('checkout')
+
+        .visitAndWaitForHydration('/checkout/cart/bQmGXYkbhJetjk6mniMt')
+
+        .get('#add-race-Rd9SETi59X9ava6CPhkY')
+        .click()
+
+        .wait('@selectRace')
+
+        .get('#checkout')
+        .click()
+
+        .wait('@checkout')
+
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.include('/checkout/info/');
+        })
+
+        .get('input[name=add-to-mail-list]')
+        .first()
+        .should('exist')
+        .and('be.visible')
+        .click()
+
+        .get('input[name=add-to-mail-list]')
+        .should('be.checked');
     });
   });
 
@@ -877,7 +1211,7 @@ function registerParticipant(eventId: string, raceId: string) {
     .type('937654321')
 
     .get('input[name=identity-card]')
-    .type('87654321')
+    .type('000000000ZZ4')
 
     .get('input[name=federation-number]')
     .type('8165238')

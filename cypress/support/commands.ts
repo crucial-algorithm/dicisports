@@ -8,7 +8,7 @@ declare global {
 
       loginAdmin(): Chainable<void>;
 
-      loginOrganiser(): Chainable<void>;
+      loginOrganizer(): Chainable<void>;
 
       pickDate(name: string, date: string, outside?: string): Chainable<void>;
 
@@ -48,7 +48,7 @@ function loginAdmin() {
   );
 }
 
-function loginOrganiser() {
+function loginOrganizer() {
   cy.setCookie(
     'ds_root_session',
     'eyJfX3Nlc3Npb25faWRfXyI6ImE2ZDg5ZjNiLTFjZWUtNDYzMi1hNzU0LWY4NTc2M2ExOWJmOCJ9.ZB1rREpWNeNPCLgqJs58RGzDa1OrFao%2FGetqg3HBDe4'
@@ -75,7 +75,9 @@ function pickDate(name: string, date: string, outside = 'body') {
   const [year, month, day] = date.split('-').map(Number);
 
   cy.get(`input[name=${name}]`)
-    .type(`0${date}`) // prefixing with 0 because 1st char is lost 🤷‍
+    .should('exist')// this + clear should be enough to delay typing and stop using 0 as prefix
+    .clear()
+    .type(date)
     .get(`[data-cy-year=${year}][data-cy-month=${month}][data-cy-day=${day}]`)
     .click({ force: true }) // when within a dialog
 
@@ -168,7 +170,7 @@ function assertValueCopiedToClipboard(value: string) {
 
 Cypress.Commands.add('login', login);
 Cypress.Commands.add('loginAdmin', loginAdmin);
-Cypress.Commands.add('loginOrganiser', loginOrganiser);
+Cypress.Commands.add('loginOrganizer', loginOrganizer);
 Cypress.Commands.add('pickOptionFromSelect', pickOptionFromSelect);
 Cypress.Commands.add('pickDate', pickDate);
 Cypress.Commands.add('pickLocationInMap', pickLocationInMap);

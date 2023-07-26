@@ -22,7 +22,7 @@ describe('Dashboard', () => {
 
   context('General', () => {
     beforeEach(() => {
-      cy.loginOrganiser();
+      cy.loginOrganizer();
     });
 
     it('should have correct number of pages', () => {
@@ -84,12 +84,12 @@ describe('Dashboard', () => {
 
     it('should search participant by name', () => {
       cy.visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d/dashboard')
-        .intercept('GET', '*?searched-name=Joaquim')
+        .intercept('GET', '*?searched-name=Joaquim*')
         .as('search')
 
         .get('[name=searched-name]')
         .should('exist')
-        .type('Joaquim')
+        .type('Joaquim{enter}')
 
         .wait('@search')
 
@@ -102,12 +102,12 @@ describe('Dashboard', () => {
 
     it('should not retrieve results if there is no matching participant name', () => {
       cy.visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d/dashboard')
-        .intercept('GET', '*?searched-name=barnabe')
+        .intercept('GET', '*?searched-name=barnabe*')
         .as('search')
 
         .get('[name=searched-name]')
         .should('exist')
-        .type('barnabe')
+        .type('barnabe{enter}')
 
         .wait('@search')
 
@@ -130,6 +130,19 @@ describe('Dashboard', () => {
 
         .wait('@ExportParticipants')
         .readFile('./cypress/downloads/Love_Tiles_Douro_Granfondo_2023_Participantes.xlsx');
+    });
+
+    it('should show race participant team', () => {
+      cy.visitAndWaitForHydration(
+        '/o/event/MY4bvgxDbMtGv8rbYe5d/dashboard?searched-name=lopes'
+      )
+        .get('#participant-3REnDGXqkCekehnPiLkG > td')
+        .eq(1)
+        .contains('Amigos do BTT de Barcelos')
+
+        .get('#participant-L6TMRhStPAAF55Rc4Xts > td')
+        .eq(1)
+        .contains('Individual');
     });
   });
 });

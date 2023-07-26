@@ -1,10 +1,10 @@
-describe('Organiser', () => {
+describe('Organizer', () => {
   beforeEach(() => {
     cy.task('db:reset');
   });
 
   context('Maintenance', () => {
-    it('should create a organiser', () => {
+    it('should create a organizer', () => {
       cy.login()
         .visitAndWaitForHydration('/o/us')
 
@@ -32,7 +32,7 @@ describe('Organiser', () => {
         .type('Montanhas de Aventuras para Viver!')
 
         .get('input[name="/file/image/0"]')
-        .selectFile('cypress/assets/logo-organiser.jpeg', { force: true })
+        .selectFile('cypress/assets/logo-organizer.jpeg', { force: true })
 
         .get('input[name=terms]')
         .click()
@@ -95,7 +95,7 @@ describe('Organiser', () => {
         .type('Montanhas de Aventuras para Viver!')
 
         .get('input[name="/file/image/0"]')
-        .selectFile('cypress/assets/logo-organiser.jpeg', { force: true })
+        .selectFile('cypress/assets/logo-organizer.jpeg', { force: true })
 
         .get('button[name=save-profile]')
         .click()
@@ -106,16 +106,16 @@ describe('Organiser', () => {
         .should('exist');
     });
 
-    it('should display Organiser profile on event', () => {
-      cy.loginOrganiser()
+    it('should display Organizer profile on event', () => {
+      cy.loginOrganizer()
         .visitAndWaitForHydration('/event/trilho-dos-moinhos')
 
-        .get('[data-cy=organiser-profile]')
+        .get('[data-cy=organizer-profile]')
         .should('exist');
     });
 
     it('should be able to update info', () => {
-      cy.loginOrganiser()
+      cy.loginOrganizer()
         .visitAndWaitForHydration('/o/us')
 
         .get('input[name=name]')
@@ -137,7 +137,7 @@ describe('Organiser', () => {
 
         .visitAndWaitForHydration('/event/trilho-dos-moinhos')
 
-        .get('[data-cy=organiser-name]')
+        .get('[data-cy=organizer-name]')
         .contains('Amigos da Montanha2');
     });
   });
