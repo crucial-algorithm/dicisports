@@ -98,4 +98,8 @@
         disabled:text-gray-400 dark:disabled:text-blueGray-500
         focus-ring;
     }
+
+    .dici-input-mask.p-inputtext.p-component {
+        @apply input-text
+    }
 }

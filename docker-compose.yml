@@ -18,3 +18,16 @@ services:
       - '3001:3001'
     extra_hosts:
       - "host.docker.internal:host-gateway"
+
+  dicisports:
+    image: "dicisports:latest"
+    build:
+      context: .
+      dockerfile: Dockerfile-dev
+    ports:
+      - '3000:3000'
+    volumes:
+      - ${PWD}/.:/opt/app
+      - /opt/app/node_modules
+    environment:
+      DATABASE_URL: postgresql://dici:sports@database:5432/dicisports?schema=public&charset=utf8
