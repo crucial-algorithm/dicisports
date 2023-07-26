@@ -55,4 +55,29 @@ async function findDiscountCodeById(id: string): Promise<DiscountCode | null> {
   });
 }
 
-export { findDiscountCodesForOrganizer, upsertDiscountCode, findDiscountCodeById };
+async function deleteDiscountCode(id: string) {
+  return await db.discountCode.update({
+    where: { id },
+    data: {
+      status: DiscountCodeStatus.deleted,
+      active: false
+    }
+  });
+}
+
+async function disableDiscountCode(id: string) {
+  return await db.discountCode.update({
+    where: { id },
+    data: {
+      active: false
+    }
+  });
+}
+
+export {
+  findDiscountCodesForOrganizer,
+  upsertDiscountCode,
+  findDiscountCodeById,
+  deleteDiscountCode,
+  disableDiscountCode
+};

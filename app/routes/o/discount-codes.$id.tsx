@@ -139,7 +139,7 @@ export default function ManageDiscountCodesRoute() {
         >
           <TextField
             name="code"
-            value={discountCode?.code || ''}
+            defaultValue={discountCode?.code || ''}
             className="md:w-72"
           />
         </FormField>
@@ -158,12 +158,12 @@ export default function ManageDiscountCodesRoute() {
             className="mt-4 md:w-48"
             type="number"
             name="discount-value"
-            value={discountCode?.value ? discountCode.value / 1000 : ''}
+            defaultValue={discountCode?.value ? discountCode.value / 1000 : ''}
           />
         </FormField>
         <ButtonGroup>
           <ButtonLink variant="secondary" to="/o/discount-codes">
-            {t('Cancel')}
+            {t('Cancel Button')}
           </ButtonLink>
           <Button type="submit">
             {t(isUpdate ? 'Save Button' : 'Create Button')}

@@ -13,5 +13,14 @@
 
   "Save Button": "Guardar",
   "Create Button": "Criar",
-  "Cancel Button": "Cancelar"
+  "Cancel Button": "Cancelar",
+
+  "Delete Discount X": "Apagar o código de desconto \"{{code}}\"",
+  "Disable Discount X": "Desativar o código de desconto \"{{code}}\"",
+  "Delete Discount": "Apagar Código de Desconto",
+  "Disable Discount": "Desativar Código de Desconto",
+  "Are you sure you want to delete discount code?": "Tem a certeza que quer mesmo apagar o código de desconto? Não há como voltar atrás",
+  "Are you sure you want to disable discount code?": "Tem a certeza que quer mesmo desativar o código de desconto? Não há como voltar atrás",
+  "No, I don't want to delete": "Ignorar",
+  "No, I don't want to disable": "Ignorar"
 }
