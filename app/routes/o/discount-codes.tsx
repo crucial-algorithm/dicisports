@@ -2,11 +2,13 @@ import type { ActionFunction, LoaderFunction } from '@remix-run/node';
 import { json, redirect } from '@remix-run/node';
 import { Role } from '@prisma/client';
 
-import { Form, useLoaderData, useNavigate } from '@remix-run/react';
+import { Form, useActionData, useLoaderData, useNavigate } from '@remix-run/react';
 import clsx from 'clsx';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
-import React, { useRef, useState } from 'react';
+import { Toast } from 'primereact/toast';
+
+import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { ButtonLink } from '~/components/shared/Button';
@@ -18,13 +20,20 @@ import { deleteDiscountCode, findDiscountCodesForOrganizer, disableDiscountCode 
 import { findOrganizer } from '~/server/db/organizer.server';
 import type { DiscountCode } from '~/types';
 import { ConfirmationDialog } from '~/components/shared/Dialog';
+import i18n from '~/server/i18n.server';
 
 export const handle = {
   i18n: ['discount-codes']
 };
 
+type ResponseFeedback = {
+  severity: 'error' | 'success' | 'info' | 'warn';
+  message: string;
+};
+
 export const action: ActionFunction = async ({ request }) => {
   const user = await requireUser(request);
+  const t = await i18n.getFixedT(request, 'discount-codes');
 
   if (user.role !== Role.ORGANIZER) {
     return redirect('/');
@@ -34,20 +43,23 @@ export const action: ActionFunction = async ({ request }) => {
   const actionId = form.get('actionId') as string;
   const discountCodeId = form.get('discount-code') as string;
 
+  let feedback: ResponseFeedback | undefined;
+
   try {
     if (actionId === actionIds.delete) {
       await deleteDiscountCode(discountCodeId);
+      feedback = { severity: 'success', message: t('Discount Deleted') };
     } else {
       await disableDiscountCode(discountCodeId);
+      feedback = { severity: 'success', message: t('Discount Disabled') };
     }
 
-    //TODO: Return success message
-    return json({});
+    return json({ feedback });
   } catch (e) {
     console.log(e);
+    feedback = { severity: 'error', message: t('Error') };
 
-    //TODO: return error message
-    return json({});
+    return json({ feedback });
   }
 };
 
@@ -78,12 +90,18 @@ export default function OrganizerDiscountCodesRoute() {
   const { discounts: existingDiscounts } = useLoaderData() as {
     discounts: DiscountCode[];
   };
+  const actionData = useActionData();
+
   const navigate = useNavigate();
   const [discounts, setDiscounts] = useState(existingDiscounts);
   const [deleteModalOpen, setDeleteModalOpen] = useState<boolean>(false);
   const [disableModalOpen, setDisableModalOpen] = useState<boolean>(false);
   const [selectedDiscount, setSelectedDiscount] = useState<DiscountCode | null>(null);
   const [actionId, setActionId] = useState<string>('');
+
+  const toast = useRef<Toast>(null);
+  const feedback = actionData?.feedback;
+
   const discountActionForm = useRef<HTMLFormElement>(null);
 
   const { t } = useTranslation('discount-codes');
@@ -181,8 +199,21 @@ export default function OrganizerDiscountCodesRoute() {
     handleResetDisableDiscount();
   }
 
+  useEffect(() => {
+    if (!toast.current || !feedback) {
+      return;
+    }
+
+    toast.current.show({
+      severity: feedback.severity,
+      detail: feedback.message,
+      life: 3000
+    });
+  }, [toast, feedback]);
+
   return (
     <Main>
+      <Toast ref={toast} />
       <div className="flex flex-row h-16 justify-between gap-4 mb-8 items-center">
         <div className="w-72">
           <SearchField name="search" onChange={filter} />

@@ -4,11 +4,12 @@ import type { ActionFunction, LoaderFunction } from '@remix-run/node';
 import { json, redirect } from '@remix-run/node';
 import { useFetcher, useLoaderData } from '@remix-run/react';
 import * as React from 'react';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ZodError } from 'zod';
 
 import type { Event } from '@prisma/client';
+import { Toast } from 'primereact/toast';
 
 import Button from '~/components/shared/Button';
 import DisplayCart from '~/components/shared/DisplayCart';
@@ -137,6 +138,11 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   });
 };
 
+type ResponseFeedback = {
+  severity: 'error' | 'success' | 'info' | 'warn';
+  message: string;
+};
+
 export const action: ActionFunction = async ({ request, params }) => {
   const t = await i18n.getFixedT(request, ['checkout']);
 
@@ -182,6 +188,8 @@ export const action: ActionFunction = async ({ request, params }) => {
   }
 
   try {
+  let feedback: ResponseFeedback | undefined;
+
     if (actionId === 'apply-discount') {
       const discountCode = form.get('discount-code') as string;
       const organizer = await findOrganizer(event.createdById);
@@ -189,27 +197,27 @@ export const action: ActionFunction = async ({ request, params }) => {
         discountCode,
         organizer?.id as string
       );
-  
+
       if (!dbDiscountCode) {
-        return badRequest({
-          discountCode: t('No Discount Code')
-        });
+        feedback = { severity: 'error', message: t('No Discount Code') };
+
+        return json({ feedback });
       }
-  
+
       await applyDiscountCode(
         booking.id,
         `${dbDiscountCode.code}|${dbDiscountCode.value}|${dbDiscountCode.fixed}`
       );
-  
-  
-      //TODO: return success message
-      return json({});
+      feedback = { severity: 'success', message: t('Discount Applied') };
+
+      return json({ feedback });
     }
 
     if (actionId === 'remove-discount') {
       await removeBookingDiscount(booking.id);
+      feedback = { severity: 'success', message: t('Discount Removed') };
 
-      return json({});
+      return json({ feedback });
     }
 
     await updateBookingStatus(bookingId, CheckoutStatus.confirmed);
@@ -311,6 +319,9 @@ export default function CheckoutPaymentRoute() {
     submittedPayments &&
     submittedPayments.filter((p) => (p.status = PaymentStatus.paid)).length ===
       0;
+      
+  const toast = useRef<Toast>(null);
+  const feedback = displayCartFetcher?.data?.feedback;
 
   let discountValue: string = '0';
   let fixed: string = '';
@@ -320,8 +331,21 @@ export default function CheckoutPaymentRoute() {
     [discountCode, discountValue, fixed] = appliedDiscount.split('|');
   }
 
+  useEffect(() => {
+    if (!toast.current || !feedback) {
+      return;
+    }
+
+    toast.current.show({
+      severity: feedback.severity,
+      detail: feedback.message,
+      life: 3000
+    });
+  }, [toast, feedback]);
+
   return (
     <Main>
+      <Toast ref={toast} />
       <div className="flex flex-col justify-start space-y-1">
         <H2>
           <b data-cy="name" className="break-words w-full">
