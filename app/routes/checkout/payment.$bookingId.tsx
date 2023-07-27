@@ -22,8 +22,10 @@ import { getClientSession } from '~/server/auth/client.server';
 import { getUser } from '~/server/auth/session.server';
 import Config from '~/server/config.server';
 import {
+  applyDiscountCode,
   findBookingById,
   findBookingCart,
+  removeBookingDiscount,
   updateBookingStatus
 } from '~/server/db/booking.server';
 import { findEvent } from '~/server/db/events.server';
@@ -39,6 +41,8 @@ import { badRequest, bookingAmount, getDomainUrl } from '~/utils/misc';
 import i18n from '~/server/i18n.server';
 import { createPayamentTransaction } from '~/server/utils/payments';
 import { useTheme } from '~/utils/theme-provider';
+import { findDiscountCode } from '~/server/db/discounts.server';
+import { findOrganizer } from '~/server/db/organizer.server';
 
 type LoaderData = {
   event: Event;
@@ -149,6 +153,11 @@ export const action: ActionFunction = async ({ request, params }) => {
   }
 
   const eventId = booking.eventId;
+  const event = await findEvent(eventId);
+
+  if (!event) {
+    return redirect('/');
+  }
 
   // We check if user is authenticated -> authenticatedClient, if not, we use the client session -> anonymousClient
   const clientId =
@@ -173,6 +182,36 @@ export const action: ActionFunction = async ({ request, params }) => {
   }
 
   try {
+    if (actionId === 'apply-discount') {
+      const discountCode = form.get('discount-code') as string;
+      const organizer = await findOrganizer(event.createdById);
+      const dbDiscountCode = await findDiscountCode(
+        discountCode,
+        organizer?.id as string
+      );
+  
+      if (!dbDiscountCode) {
+        return badRequest({
+          discountCode: t('No Discount Code')
+        });
+      }
+  
+      await applyDiscountCode(
+        booking.id,
+        `${dbDiscountCode.code}|${dbDiscountCode.value}|${dbDiscountCode.fixed}`
+      );
+  
+  
+      //TODO: return success message
+      return json({});
+    }
+
+    if (actionId === 'remove-discount') {
+      await removeBookingDiscount(booking.id);
+
+      return json({});
+    }
+
     await updateBookingStatus(bookingId, CheckoutStatus.confirmed);
 
     if (authenticatedClient !== null) {
@@ -319,7 +358,9 @@ export default function CheckoutPaymentRoute() {
             event={event}
             fetcher={displayCartFetcher}
             discountValue={parseInt(discountValue)}
-            fixedDiscount={JSON.parse(fixed)}
+            fixedDiscount={appliedDiscount ? JSON.parse(fixed) : false}
+            discountCode={discountCode}
+            showDiscountCodeInput={true}
           >
             {!isPaid && !(submittedPayments && submittedPayments.length > 0) && (
               <Button
