@@ -7,18 +7,18 @@ import type { DiscountCode, DiscountCodeInput } from '~/types';
 
 import Id from '../utils/Id.server';
 
-
 async function findDiscountCodesForOrganizer(organizerId: string) {
-
-  return (await db.discountCode.findMany({
-    where: {
-      organizerId,
-      status: { not: DiscountCodeStatus.deleted }
-    }, 
-    orderBy: {
-      createdAt: 'asc'
-    }
-  })).map(dbDiscountCodeToDiscountCode);
+  return (
+    await db.discountCode.findMany({
+      where: {
+        organizerId,
+        status: { not: DiscountCodeStatus.deleted }
+      },
+      orderBy: {
+        createdAt: 'asc'
+      }
+    })
+  ).map(dbDiscountCodeToDiscountCode);
 }
 
 async function upsertDiscountCode(data: DiscountCodeInput) {
@@ -46,6 +46,15 @@ async function upsertDiscountCode(data: DiscountCodeInput) {
       createdAt: now,
       updatedAt: now
     }
+  });
+}
+
+async function findDiscountCode(
+  code: string,
+  organizerId: string
+): Promise<DiscountCode | null> {
+  return await db.discountCode.findUnique({
+    where: { code_organizerId: { code, organizerId } }
   });
 }
 
@@ -79,5 +88,6 @@ export {
   upsertDiscountCode,
   findDiscountCodeById,
   deleteDiscountCode,
-  disableDiscountCode
+  disableDiscountCode,
+  findDiscountCode
 };

@@ -10,6 +10,9 @@ import DisplayDate from '~/components/shared/DIsplayDate';
 import InputError from '~/components/shared/form/InputError';
 import { bookingAmount } from '~/utils/misc';
 
+import TextField from './form/TextField';
+import Button from './Button';
+
 export default function DisplayCart({
   cart,
   event,
@@ -17,6 +20,8 @@ export default function DisplayCart({
   fetcher,
   discountValue,
   fixedDiscount = false,
+  showDiscountCodeInput = false,
+  discountCode,
   hash,
   children,
   action
@@ -27,6 +32,8 @@ export default function DisplayCart({
   fetcher: FetcherWithComponents<any>;
   discountValue?: number;
   fixedDiscount?: boolean;
+  showDiscountCodeInput?: boolean;
+  discountCode?: string;
   hash?: number;
   action?: string;
 } & React.ComponentProps<'div'>) {
@@ -64,6 +71,23 @@ export default function DisplayCart({
               </div>
             </div>
           ))}
+
+        {showDiscountCodeInput && (
+          <div className="flex flex-col gap-y-4 mt-8">
+            <TextField
+              name="discount-code"
+              placeholder={t('Dicount Code')}
+              defaultValue={discountCode}
+            />
+            <Button
+              name="actionId"
+              value={discountCode ? 'remove-discount' : 'apply-discount'}
+              type="submit"
+            >
+              {t(discountCode ? 'Remove' : 'Apply Discount')}
+            </Button>
+          </div>
+        )}
 
         {totalPrice && (
           <div className="flex flex-row items-center justify-between mt-4 py-4 border-t-2 border-grey-300">
