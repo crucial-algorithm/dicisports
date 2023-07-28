@@ -16,7 +16,7 @@ jobs:
 
       - name: Test connection to http-catcher
         run: |
-          curl catcher:3001/health-check
+          curl localhost:3001/health-check
 
       - uses: actions/upload-artifact@v2
         if: failure()
