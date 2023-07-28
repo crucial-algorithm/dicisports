@@ -92,7 +92,7 @@ export async function createPayamentTransaction(
 
   function handleAmount(): number {
     if (booking.appliedDiscount) {
-      const [code, value, fixed] = booking.appliedDiscount.split('|');
+      const [, value, fixed] = booking.appliedDiscount.split('|');
 
       return bookingAmount(cart, parseInt(value), JSON.parse(fixed)).total / 1000;
     }

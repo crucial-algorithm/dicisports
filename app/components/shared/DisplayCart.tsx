@@ -17,6 +17,7 @@ export default function DisplayCart({
   cart,
   event,
   error,
+  discountCodeError,
   fetcher,
   appliedDiscount = null,
   showDiscountCodeInput = false,
@@ -27,6 +28,7 @@ export default function DisplayCart({
   cart: UICartRow[];
   event: Event;
   error?: string;
+  discountCodeError?: string;
   fetcher: FetcherWithComponents<any>;
   appliedDiscount?: string | null;
   showDiscountCodeInput?: boolean;
@@ -78,22 +80,29 @@ export default function DisplayCart({
         {showDiscountCodeInput && (
           <>
             {!appliedDiscount ? (
-              <div className="flex flex-row mt-8 justify-between">
-                <TextField
-                  name="discount-code"
-                  placeholder={t('Discount Code')}
-                  defaultValue={discountCode}
-                />
-                <button
-                  id="apply-discount"
-                  name="actionId"
-                  value="apply-discount"
-                  type="submit"
-                  className="dark:text-blueGray-500"
-                >
-                  {t('Apply Discount')}
-                </button>
-              </div>
+              <>
+                <div className="flex flex-row mt-8 justify-between">
+                  <TextField
+                    name="discount-code"
+                    placeholder={t('Discount Code')}
+                    defaultValue={discountCode}
+                  />
+                  <button
+                    id="apply-discount"
+                    name="actionId"
+                    value="apply-discount"
+                    type="submit"
+                    className="dark:text-blueGray-500"
+                  >
+                    {t('Apply Discount')}
+                  </button>
+                </div>
+                {discountCodeError && (
+                  <InputError id="checkout-error" className="mt-2">
+                    {discountCodeError}
+                  </InputError>
+                )}
+              </>
             ) : (
               <div className="mt-8" data-cy="discount-info">
                 <DisplayAppliedDiscount

@@ -1,13 +1,17 @@
 import type { Event, Payment } from '@prisma/client';
-import { CheckoutStatus, DiscountCodeStatus, PaymentMethod, PaymentStatus } from '@prisma/client';
+import {
+  CheckoutStatus,
+  DiscountCodeStatus,
+  PaymentMethod,
+  PaymentStatus
+} from '@prisma/client';
 import type { ActionFunction, LoaderFunction } from '@remix-run/node';
 import { json, redirect } from '@remix-run/node';
 import { useFetcher, useLoaderData } from '@remix-run/react';
 import * as React from 'react';
-import { useEffect, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ZodError } from 'zod';
-import { Toast } from 'primereact/toast';
 
 import Button from '~/components/shared/Button';
 import DisplayCart from '~/components/shared/DisplayCart';
@@ -186,8 +190,6 @@ export const action: ActionFunction = async ({ request, params }) => {
   }
 
   try {
-    let feedback: ResponseFeedback | undefined;
-
     if (actionId === 'apply-discount') {
       const discountCode = form.get('discount-code') as string;
       const organizer = await findOrganizer(event.createdById);
@@ -197,9 +199,7 @@ export const action: ActionFunction = async ({ request, params }) => {
       );
 
       if (!dbDiscountCode || dbDiscountCode.status !== DiscountCodeStatus.auto) {
-        feedback = { severity: 'error', message: t('No Discount Code') };
-
-        return json({ feedback });
+        return badRequest({ errors: { discountError: t('No Discount Code') } });
       }
 
       if (dbDiscountCode.fixed) {
@@ -211,12 +211,9 @@ export const action: ActionFunction = async ({ request, params }) => {
         );
 
         if (totalPrice.total < 0) {
-          feedback = {
-            severity: 'error',
-            message: t('Discount Cannot be applied')
-          };
-
-          return json({ feedback });
+          return badRequest({
+            errors: { discountError: t('Discount Cannot be applied') }
+          });
         }
       }
 
@@ -224,16 +221,14 @@ export const action: ActionFunction = async ({ request, params }) => {
         booking.id,
         `${dbDiscountCode.code}|${dbDiscountCode.value}|${dbDiscountCode.fixed}`
       );
-      feedback = { severity: 'success', message: t('Discount Applied') };
 
-      return json({ feedback });
+      return json({ ok: true });
     }
 
     if (actionId === 'remove-discount') {
       await removeBookingDiscount(booking.id);
-      feedback = { severity: 'success', message: t('Discount Removed') };
 
-      return json({ feedback });
+      return json({ ok: true });
     }
 
     await updateBookingStatus(bookingId, CheckoutStatus.confirmed);
@@ -331,29 +326,30 @@ export default function CheckoutPaymentRoute() {
   } = useLoaderData() as LoaderData;
   const { t } = useTranslation('checkout');
   const displayCartFetcher = useFetcher();
+  const [errors, setErrors] = useState<FormErrors>({});
   const isPaid =
     submittedPayments &&
     submittedPayments.filter((p) => (p.status = PaymentStatus.paid)).length ===
       0;
 
-  const toast = useRef<Toast>(null);
-  const feedback = displayCartFetcher?.data?.feedback;
-
   useEffect(() => {
-    if (!toast.current || !feedback) {
-      return;
+    if (
+      displayCartFetcher.type === 'actionReload' &&
+      displayCartFetcher.data?.errors
+    ) {
+      return setErrors(displayCartFetcher.data.errors as FormErrors);
     }
 
-    toast.current.show({
-      severity: feedback.severity,
-      detail: feedback.message,
-      life: 3000
-    });
-  }, [toast, feedback]);
+    if (
+      displayCartFetcher.type === 'actionReload' &&
+      displayCartFetcher.data?.ok
+    ) {
+      return setErrors({});
+    }
+  }, [displayCartFetcher]);
 
   return (
     <Main>
-      <Toast ref={toast} />
       <div className="flex flex-col justify-start space-y-1">
         <H2>
           <b data-cy="name" className="break-words w-full">
@@ -390,6 +386,7 @@ export default function CheckoutPaymentRoute() {
             event={event}
             fetcher={displayCartFetcher}
             appliedDiscount={appliedDiscount}
+            discountCodeError={errors.discountError}
             showDiscountCodeInput={true}
           >
             {!isPaid && !(submittedPayments && submittedPayments.length > 0) && (
@@ -602,3 +599,7 @@ function formatMbReference(reference: string) {
     .replace(/,/g, ' ')
     .replace(/\./g, ' ');
 }
+
+type FormErrors = {
+  discountError?: string;
+};

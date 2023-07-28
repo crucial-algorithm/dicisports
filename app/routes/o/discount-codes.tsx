@@ -9,7 +9,7 @@ import {
   useNavigate
 } from '@remix-run/react';
 import clsx from 'clsx';
-import { DataTable } from 'primereact/datatable';
+import { DataTable, DataTableRowClickEvent } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Toast } from 'primereact/toast';
 import {
@@ -195,20 +195,12 @@ export default function OrganizerDiscountCodesRoute() {
             <EyeIcon className="h-6 w-6 m-0 inline-block" />
           </button>
         )}
-        <button
-          type="button"
-          id={discount.id}
-          name={`edit-discount-${discount.id}`}
-          onClick={handleEditDiscountCode}
-        >
-          <PencilSquareIcon className="h-6 w-6 m-0 inline-block" />
-        </button>
       </div>
     );
   }
 
-  function handleEditDiscountCode(e: React.MouseEvent) {
-    navigate(e.currentTarget.id);
+  function handleOnRowClick(e: DataTableRowClickEvent) {
+    navigate(e.data.id);
   }
 
   function findDiscountCode(id: string): DiscountCode {
@@ -301,6 +293,8 @@ export default function OrganizerDiscountCodesRoute() {
         paginator
         rows={20}
         emptyMessage={emptyMessage}
+        onRowClick={handleOnRowClick}
+        className="cursor-pointer"
       >
         <Column field="code" header={t('Code')} />
         <Column field="value" header={t('Value')} body={cellDiscountValue} />
