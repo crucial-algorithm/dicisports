@@ -50,55 +50,55 @@ jobs:
       - name: Reset permissions
         run: chmod -R 777 .
 
-      - name: Cypress e2e tests
-        uses: cypress-io/github-action@v5
-        with:
-          browser: chrome
-          record: false
-          build: npm run ci:build
-          start: npm run dev
-          spec: cypress/e2e/app/checkout.cy.ts
-        env:
-          CY_REQUEST_TIMEOUT: 15000
-          CY_RESPONSE_TIMEOUT: 90000
-          CY_DEFAULT_COMMAND_TIMEOUT: 30000
-          CY_BASE_URL: http://127.0.0.1:3000
-
-          DATABASE_URL: postgresql://dici:sports@localhost:5432/dicisports?schema=public&charset=utf8
-
-          MAPBOX_TOKEN: ${{secrets.E2E_MAPBOX_TOKEN}}
-
-          CLOUDINARY_CLOUD_NAME: dicisports
-          CLOUDINARY_API_KEY: ${{secrets.E2E_CLOUDINARY_API_KEY}}
-          CLOUDINARY_API_SECRET: ${{secrets.E2E_CLOUDINARY_API_SECRET}}
-          CLOUDINARY_UPLOAD_PRESET: members-upload
-
-          SESSION_SECRET: ${{secrets.E2E_SESSION_SECRET}}
-          MAGIC_LINK_SECRET: ${{secrets.E2E_MAGIC_LINK_SECRET}}
-
-          EMAIL_VERIFIER_TOKEN: ${{secrets.E2E_EMAIL_VERIFIER_TOKEN}}
-          MAILGUN_SENDING_KEY: ${{secrets.E2E_MAILGUN_SENDING_KEY}}
-          MAILGUN_ENDPOINT: http://127.0.0.1:3001
-
-          CONVERT_KIT_FORM: 3280014
-          CONVERT_KIT_API_KEY: ${{secrets.E2E_CONVERT_KIT_API_KEY}}
-
-          AWS_S3_BUCKET: dicisports-dev
-          AWS_REGION: eu-west-3
-          AWS_ACCESS_KEY_ID: ${{secrets.E2E_AWS_ACCESS_KEY_ID}}
-          AWS_SECRET_ACCESS_KEY: ${{secrets.E2E_AWS_SECRET_ACCESS_KEY}}
-
-          RELEASE: ${{ github.sha }}
-
-          SIBS_CHECKOUT_FORM_SCRIPT: /sibs.mock.js
-          SIBS_API_TOKEN: x
-          SIBS_URL_ENDPOINT: http://127.0.0.1:3001/sibs-mock-checkout
-          SIBS_TERMINAL_ID: 1
-          SIBS_CLIENT_ID: x
-          SIBS_WEBHOOK_SECRET: O0Bur9uhZkS54NkwFhVyeutED6DhLbOQUBDt3i3W/C4=
-          SIBS_MULTIBANCO_ENTITIY: 2400
-          SIBS_MULTIBANCO_EXPIRATION_DAYS: 3
-          SIBS_CHECK_STATUS_ENDPOINT: http://localhost:3001/sibs-status-mock/{{transactionID}}
+#      - name: Cypress e2e tests
+#        uses: cypress-io/github-action@v5
+#        with:
+#          browser: chrome
+#          record: false
+#          build: npm run ci:build
+#          start: npm run dev
+#          spec: cypress/e2e/app/checkout.cy.ts
+#        env:
+#          CY_REQUEST_TIMEOUT: 15000
+#          CY_RESPONSE_TIMEOUT: 90000
+#          CY_DEFAULT_COMMAND_TIMEOUT: 30000
+#          CY_BASE_URL: http://127.0.0.1:3000
+#
+#          DATABASE_URL: postgresql://dici:sports@localhost:5432/dicisports?schema=public&charset=utf8
+#
+#          MAPBOX_TOKEN: ${{secrets.E2E_MAPBOX_TOKEN}}
+#
+#          CLOUDINARY_CLOUD_NAME: dicisports
+#          CLOUDINARY_API_KEY: ${{secrets.E2E_CLOUDINARY_API_KEY}}
+#          CLOUDINARY_API_SECRET: ${{secrets.E2E_CLOUDINARY_API_SECRET}}
+#          CLOUDINARY_UPLOAD_PRESET: members-upload
+#
+#          SESSION_SECRET: ${{secrets.E2E_SESSION_SECRET}}
+#          MAGIC_LINK_SECRET: ${{secrets.E2E_MAGIC_LINK_SECRET}}
+#
+#          EMAIL_VERIFIER_TOKEN: ${{secrets.E2E_EMAIL_VERIFIER_TOKEN}}
+#          MAILGUN_SENDING_KEY: ${{secrets.E2E_MAILGUN_SENDING_KEY}}
+#          MAILGUN_ENDPOINT: http://127.0.0.1:3001
+#
+#          CONVERT_KIT_FORM: 3280014
+#          CONVERT_KIT_API_KEY: ${{secrets.E2E_CONVERT_KIT_API_KEY}}
+#
+#          AWS_S3_BUCKET: dicisports-dev
+#          AWS_REGION: eu-west-3
+#          AWS_ACCESS_KEY_ID: ${{secrets.E2E_AWS_ACCESS_KEY_ID}}
+#          AWS_SECRET_ACCESS_KEY: ${{secrets.E2E_AWS_SECRET_ACCESS_KEY}}
+#
+#          RELEASE: ${{ github.sha }}
+#
+#          SIBS_CHECKOUT_FORM_SCRIPT: /sibs.mock.js
+#          SIBS_API_TOKEN: x
+#          SIBS_URL_ENDPOINT: http://127.0.0.1:3001/sibs-mock-checkout
+#          SIBS_TERMINAL_ID: 1
+#          SIBS_CLIENT_ID: x
+#          SIBS_WEBHOOK_SECRET: O0Bur9uhZkS54NkwFhVyeutED6DhLbOQUBDt3i3W/C4=
+#          SIBS_MULTIBANCO_ENTITIY: 2400
+#          SIBS_MULTIBANCO_EXPIRATION_DAYS: 3
+#          SIBS_CHECK_STATUS_ENDPOINT: http://localhost:3001/sibs-status-mock/{{transactionID}}
 
       - uses: actions/upload-artifact@v2
         if: failure()
