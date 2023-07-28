@@ -12,7 +12,10 @@ jobs:
 
 
       - name: Start services
-        run: docker compose -f docker-compose-ci.yml up &
+        run: |
+          docker compose -f docker-compose-ci.yml up -d --build
+          container_id="$(docker compose -f docker-compose-ci-prod-artefacts.yml ps dicisports -q)"
+          wait_for_container $container_id
 
       - name: Test connection to http-catcher
         run: |
