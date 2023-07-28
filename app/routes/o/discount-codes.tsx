@@ -12,7 +12,12 @@ import clsx from 'clsx';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Toast } from 'primereact/toast';
-
+import {
+  EyeIcon,
+  EyeSlashIcon,
+  PencilSquareIcon,
+  TrashIcon
+} from '@heroicons/react/24/outline';
 import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -23,21 +28,14 @@ import SearchField from '~/components/shared/SearchField';
 import { requireUser } from '~/server/auth/session.server';
 import {
   deleteDiscountCode,
-  findDiscountCodesForOrganizer,
   disableDiscountCode,
-  enableDiscountCode
+  enableDiscountCode,
+  findDiscountCodesForOrganizer
 } from '~/server/db/discounts.server';
 import { findOrganizer } from '~/server/db/organizer.server';
 import type { DiscountCode } from '~/types';
 import { ConfirmationDialog } from '~/components/shared/Dialog';
 import i18n from '~/server/i18n.server';
-import { ShareIcon } from '@heroicons/react/24/solid';
-import {
-  EyeIcon,
-  EyeSlashIcon,
-  PencilIcon, PencilSquareIcon,
-  TrashIcon
-} from '@heroicons/react/24/outline';
 
 export const handle = {
   i18n: ['discount-codes']

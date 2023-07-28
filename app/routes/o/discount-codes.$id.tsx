@@ -68,7 +68,12 @@ export const action: ActionFunction = async ({ request, params }) => {
       .min(1, { message: t('Field Required') }),
     value: z
       .number({ required_error: t('Field Required') })
-      .positive({ message: t('Positive Number') }),
+      .positive({ message: t('Positive Number') })
+      // Validate that non-fixed values don't exceed 100
+      // "|| data.fixed" - A way to ignore <= 100 validation when value is fixed
+      .refine((v) => (!data.fixed && v <= 100) || data.fixed, {
+        message: t('Max 100 %')
+      }),
     fixed: z.boolean()
   });
 
