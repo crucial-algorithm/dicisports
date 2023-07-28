@@ -9,15 +9,11 @@ import {
   useNavigate
 } from '@remix-run/react';
 import clsx from 'clsx';
-import { DataTable, DataTableRowClickEvent } from 'primereact/datatable';
+import type { DataTableRowClickEvent } from 'primereact/datatable';
+import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Toast } from 'primereact/toast';
-import {
-  EyeIcon,
-  EyeSlashIcon,
-  PencilSquareIcon,
-  TrashIcon
-} from '@heroicons/react/24/outline';
+import { EyeIcon, EyeSlashIcon, TrashIcon } from '@heroicons/react/24/outline';
 import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
