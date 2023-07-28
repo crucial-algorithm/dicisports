@@ -90,7 +90,7 @@ export async function createPayamentTransaction(
     SIBS_MULTIBANCO_ENTITIY: entity
   } = Config();
 
-  const amount = bookingAmount(cart) / 1000;
+  const amount = bookingAmount(cart).total / 1000;
   const payment = await createPaymentRequest(booking.id, amount);
   const { initial, final } = paymentReferenceIntervals();
 

@@ -124,11 +124,14 @@ function bookingAmount(
   discountValue?: number,
   fixedDiscount: boolean = false
 ) {
-  const total = cart.reduce((total, { qty, price }) => total + qty * price, 0);
-  
-  return discountValue
-    ? handleApplyDiscount(total, discountValue, fixedDiscount)
-    : total;
+  const subtotal = cart.reduce((total, { qty, price }) => total + qty * price, 0);
+
+  return {
+    subtotal,
+    total: discountValue
+      ? handleApplyDiscount(subtotal, discountValue, fixedDiscount)
+      : subtotal
+  };
 }
 
 function handleApplyDiscount(
