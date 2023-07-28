@@ -49,6 +49,24 @@ async function upsertDiscountCode(data: DiscountCodeInput) {
   });
 }
 
+async function updateDiscountCode(
+  id: string,
+  code: string,
+  value: number,
+  fixed: boolean
+) {
+  return await db.discountCode.update({
+    where: {
+      id
+    },
+    data: {
+      code,
+      value: value * 1000,
+      fixed
+    }
+  });
+}
+
 async function findDiscountCode(
   code: string,
   organizerId: string
@@ -83,11 +101,22 @@ async function disableDiscountCode(id: string) {
   });
 }
 
+async function enableDiscountCode(id: string) {
+  return await db.discountCode.update({
+    where: { id },
+    data: {
+      active: true
+    }
+  });
+}
+
 export {
   findDiscountCodesForOrganizer,
   upsertDiscountCode,
   findDiscountCodeById,
   deleteDiscountCode,
   disableDiscountCode,
-  findDiscountCode
+  findDiscountCode,
+  updateDiscountCode,
+  enableDiscountCode
 };

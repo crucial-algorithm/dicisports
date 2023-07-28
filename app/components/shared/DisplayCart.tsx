@@ -18,10 +18,8 @@ export default function DisplayCart({
   event,
   error,
   fetcher,
-  discountValue,
-  fixedDiscount = false,
+  appliedDiscount = null,
   showDiscountCodeInput = false,
-  discountCode,
   hash,
   children,
   action
@@ -30,15 +28,20 @@ export default function DisplayCart({
   event: Event;
   error?: string;
   fetcher: FetcherWithComponents<any>;
-  discountValue?: number;
-  fixedDiscount?: boolean;
+  appliedDiscount?: string | null;
   showDiscountCodeInput?: boolean;
-  discountCode?: string;
   hash?: number;
   action?: string;
 } & React.ComponentProps<'div'>) {
   const { t } = useTranslation('checkout');
-  const totalPrice = bookingAmount(cart, discountValue, fixedDiscount);
+  const [discountCode, discountValue, fixedDiscount] = appliedDiscount?.split(
+    '|'
+  ) || ['', '', ''];
+  const totalPrice = bookingAmount(
+    cart,
+    discountValue ? parseInt(discountValue) : undefined,
+    fixedDiscount ? JSON.parse(fixedDiscount) : false
+  );
 
   return (
     <fetcher.Form method="post" action={action}>
@@ -76,10 +79,11 @@ export default function DisplayCart({
           <div className="flex flex-col gap-y-4 mt-8">
             <TextField
               name="discount-code"
-              placeholder={t('Dicount Code')}
+              placeholder={t('Discount Code')}
               defaultValue={discountCode}
             />
             <Button
+              id="apply-discount"
               name="actionId"
               value={discountCode ? 'remove-discount' : 'apply-discount'}
               type="submit"

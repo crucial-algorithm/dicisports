@@ -16,7 +16,12 @@ import { ButtonLink } from '~/components/shared/Button';
 import Main from '~/components/shared/Main';
 import SearchField from '~/components/shared/SearchField';
 import { requireUser } from '~/server/auth/session.server';
-import { deleteDiscountCode, findDiscountCodesForOrganizer, disableDiscountCode } from '~/server/db/discounts.server';
+import {
+  deleteDiscountCode,
+  findDiscountCodesForOrganizer,
+  disableDiscountCode,
+  enableDiscountCode
+} from '~/server/db/discounts.server';
 import { findOrganizer } from '~/server/db/organizer.server';
 import type { DiscountCode } from '~/types';
 import { ConfirmationDialog } from '~/components/shared/Dialog';
@@ -49,9 +54,16 @@ export const action: ActionFunction = async ({ request }) => {
     if (actionId === actionIds.delete) {
       await deleteDiscountCode(discountCodeId);
       feedback = { severity: 'success', message: t('Discount Deleted') };
-    } else {
+    }
+    
+    if (actionId === actionIds.disable) {
       await disableDiscountCode(discountCodeId);
       feedback = { severity: 'success', message: t('Discount Disabled') };
+    }
+
+    if (actionId === actionIds.enable) {
+      await enableDiscountCode(discountCodeId);
+      feedback = { severity: 'success', message: t('Discount Enabled') };
     }
 
     return json({ feedback });
@@ -83,7 +95,8 @@ function cellDiscountValue({ value, fixed }: DiscountCode) {
 
 const actionIds = {
   delete: 'delete-discount',
-  disable: 'disable-discount'
+  disable: 'disable-discount',
+  enable: 'enable-discount'
 };
 
 export default function OrganizerDiscountCodesRoute() {
@@ -96,6 +109,7 @@ export default function OrganizerDiscountCodesRoute() {
   const [discounts, setDiscounts] = useState(existingDiscounts);
   const [deleteModalOpen, setDeleteModalOpen] = useState<boolean>(false);
   const [disableModalOpen, setDisableModalOpen] = useState<boolean>(false);
+  const [enableDiscountModalOpen, setEnableDiscountModalOpen] = useState<boolean>(false);
   const [selectedDiscount, setSelectedDiscount] = useState<DiscountCode | null>(null);
   const [actionId, setActionId] = useState<string>('');
 
@@ -131,19 +145,40 @@ export default function OrganizerDiscountCodesRoute() {
     );
   }
 
-  // TODO: maybe use icons instead of words
-  function actionsBody(discount: DiscountCode) {
+  // TODO: icons instead of cta's
+  function ActionsBody(discount: DiscountCode) {
     return (
       <div className="flex flex-row items-center gap-x-2">
-        <button id={discount.id} onClick={handleOpenDeleteDiscountModal}>
+        <button
+          id={discount.id}
+          name={`delete-discount-${discount.id}`}
+          onClick={handleOpenDeleteDiscountModal}
+        >
           {t('Delete Button')}
         </button>
-        {discount.active && (
-          <button id={discount.id} onClick={handleOpenDisableDiscountModal}>
+        {discount.active ? (
+          <button
+            id={discount.id}
+            name={`disable-discount-${discount.id}`}
+            onClick={handleOpenDisableDiscountModal}
+          >
             {t('Disable Button')}
           </button>
+        ) : (
+          <button
+            id={discount.id}
+            name={`enable-discount-${discount.id}`}
+            onClick={handleOpenEnableDiscountModal}
+          >
+            {t('Enable Button')}
+          </button>
         )}
-        <button type="button" id={discount.id} onClick={handleEditDiscountCode}>
+        <button
+          type="button"
+          id={discount.id}
+          name={`edit-discount-${discount.id}`}
+          onClick={handleEditDiscountCode}
+        >
           {t('Edit Button')}
         </button>
       </div>
@@ -170,6 +205,12 @@ export default function OrganizerDiscountCodesRoute() {
     setActionId(actionIds.disable);
   }
 
+  function handleOpenEnableDiscountModal(e: React.MouseEvent) {
+    setEnableDiscountModalOpen(true);
+    setSelectedDiscount(findDiscountCode(e.currentTarget.id));
+    setActionId(actionIds.enable);
+  }
+
   function handleResetDeleteDiscount() {
     setDeleteModalOpen(false);
     setSelectedDiscount(null);
@@ -178,6 +219,12 @@ export default function OrganizerDiscountCodesRoute() {
 
   function handleResetDisableDiscount() {
     setDisableModalOpen(false);
+    setSelectedDiscount(null);
+    setActionId('');
+  }
+
+  function handleResetEnableDiscount() {
+    setEnableDiscountModalOpen(false);
     setSelectedDiscount(null);
     setActionId('');
   }
@@ -199,6 +246,11 @@ export default function OrganizerDiscountCodesRoute() {
     handleResetDisableDiscount();
   }
 
+  function handleConfirmEnable() {
+    handleSubmitForm();
+    handleResetEnableDiscount();
+  }
+
   useEffect(() => {
     if (!toast.current || !feedback) {
       return;
@@ -218,7 +270,7 @@ export default function OrganizerDiscountCodesRoute() {
         <div className="w-72">
           <SearchField name="search" onChange={filter} />
         </div>
-        <ButtonLink id="actionId" to="/o/discount-codes/new">
+        <ButtonLink id="new-discount" to="/o/discount-codes/new">
           {t('Create')}
         </ButtonLink>
       </div>
@@ -231,7 +283,7 @@ export default function OrganizerDiscountCodesRoute() {
         <Column field="code" header={t('Code')} />
         <Column field="value" header={t('Value')} body={cellDiscountValue} />
         <Column field="active" header={t('State')} body={cellState} />
-        <Column body={actionsBody} />
+        <Column body={ActionsBody} />
       </DataTable>
 
       <ConfirmationDialog
@@ -255,6 +307,18 @@ export default function OrganizerDiscountCodesRoute() {
         secondaryLabel={t("No, I don't want to disable")}
         onDismiss={handleResetDisableDiscount}
         onConfirm={handleConfirmHide}
+        className="cy-delete-dialog"
+      />
+
+      <ConfirmationDialog
+        isOpen={enableDiscountModalOpen}
+        title={t('Enable Discount X', { code: selectedDiscount?.code })}
+        question={t('Are you sure you want to enable discount code?')}
+        primaryLabel={t('Enable Discount')}
+        primaryVariant="danger"
+        secondaryLabel={t("No, I don't want to enable")}
+        onDismiss={handleResetEnableDiscount}
+        onConfirm={handleConfirmEnable}
         className="cy-delete-dialog"
       />
 

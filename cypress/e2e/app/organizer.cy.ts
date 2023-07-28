@@ -149,6 +149,140 @@ describe('Organizer', () => {
           );
         });
     });
+
+    it('should create new discount code', () => {
+      cy.loginOrganizer()
+        .visitAndWaitForHydration('/o/discount-codes')
+        .get('#new-discount')
+        .click()
+
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.eq('/o/discount-codes/new');
+        })
+
+        .get('input[name=code]')
+        .type('GET-FIT-35')
+
+        .get('input[name=discount-value]')
+        .type('35')
+
+        .intercept('POST', '/o/discount-codes/new*')
+        .as('CreateDiscount')
+
+        .get('button[name=create-button]')
+        .should('exist')
+        .click()
+
+        .wait('@CreateDiscount')
+
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.eq('/o/discount-codes');
+        })
+
+        .get('tr')
+        .should('have.length', 6)
+        .eq(5)
+        .contains('GET-FIT-35');
+    });
+
+    it('should delete a discount code', () => {
+      cy.loginOrganizer()
+        .visitAndWaitForHydration('/o/discount-codes')
+
+        .get('button[name=delete-discount-zWZKBmZowXrns2pP4QQ2]')
+        .should('exist')
+        .click()
+
+        .get('.cy-delete-dialog')
+        .should('exist')
+
+        .intercept('POST', '/o/discount-codes*')
+        .as('DeleteDiscount')
+
+        .get('button.cy-primary')
+        .should('exist')
+        .click()
+
+        .wait('@DeleteDiscount')
+
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.eq('/o/discount-codes');
+        })
+
+        .get('tr')
+        .should('have.length', 4)
+        .eq(3)
+        .should('not.contain', 'GET-FIT-35');
+    });
+
+    it('should hide a discount code', () => {
+      cy.loginOrganizer()
+        .visitAndWaitForHydration('/o/discount-codes')
+
+        .get('button[name=disable-discount-zWZKBmZowXrns2pP4QQ2]')
+        .should('exist')
+        .click()
+
+        .get('.cy-delete-dialog')
+        .should('exist')
+
+        .intercept('POST', '/o/discount-codes*')
+        .as('DeleteDiscount')
+
+        .get('button.cy-primary')
+        .should('exist')
+        .click()
+
+        .wait('@DeleteDiscount')
+
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.eq('/o/discount-codes');
+        })
+
+        .get('button[name=disable-discount-zWZKBmZowXrns2pP4QQ2]')
+        .should('not.exist');
+    });
+
+    it.only('should edit a discount code', () => {
+      cy.loginOrganizer()
+        .visitAndWaitForHydration('/o/discount-codes')
+
+        .get('button[name=edit-discount-zWZKBmZowXrns2pP4QQ2]')
+        .should('exist')
+        .click()
+
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.eq('/o/discount-codes/zWZKBmZowXrns2pP4QQ2');
+        })
+
+        .get('input[name=code]')
+        .should('have.value', 'GET-FIT-5')
+        .clear()
+        .type('GET-5')
+
+        .intercept('POST', '/o/discount-codes/zWZKBmZowXrns2pP4QQ2*')
+        .as('SaveDiscount')
+
+        .get('button[name=save-button]')
+        .should('exist')
+        .click()
+
+        .wait('@SaveDiscount')
+
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.eq('/o/discount-codes');
+        })
+
+        .get('tr')
+        .should('have.length', 5)
+        .contains('GET-5');
+    });
   });
 
   context('Security', () => {

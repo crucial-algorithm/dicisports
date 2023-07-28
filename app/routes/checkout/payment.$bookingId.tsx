@@ -36,7 +36,7 @@ import {
   findUnsuccessfulPayments,
   isBookingPaid
 } from '~/server/db/payments.server';
-import type { KCDHandle, UICartRow } from '~/types';
+import type { DiscountCode, KCDHandle, UICartRow } from '~/types';
 import { sendBookingConfirmationEmail } from '~/server/email.server';
 import { badRequest, bookingAmount, getDomainUrl } from '~/utils/misc';
 import i18n from '~/server/i18n.server';
@@ -187,8 +187,19 @@ export const action: ActionFunction = async ({ request, params }) => {
     return redirect(`/checkout/info/${bookingId}`);
   }
 
+  async function isDiscountAppliable(discount: DiscountCode): Promise<boolean> {
+    const bookingCart = await findBookingCart(clientId, eventId);
+    const totalPrice = bookingAmount(bookingCart, discount.value, discount.fixed);
+
+    if (totalPrice < 0) {
+      return false;
+    }
+
+    return true;
+  }
+
   try {
-  let feedback: ResponseFeedback | undefined;
+    let feedback: ResponseFeedback | undefined;
 
     if (actionId === 'apply-discount') {
       const discountCode = form.get('discount-code') as string;
@@ -198,10 +209,25 @@ export const action: ActionFunction = async ({ request, params }) => {
         organizer?.id as string
       );
 
-      if (!dbDiscountCode) {
+      if (!dbDiscountCode || !dbDiscountCode.active) {
         feedback = { severity: 'error', message: t('No Discount Code') };
 
         return json({ feedback });
+      }
+
+
+      if (dbDiscountCode.fixed) {
+        const bookingCart = await findBookingCart(clientId, eventId);
+        const totalPrice = bookingAmount(bookingCart, dbDiscountCode.value, dbDiscountCode.fixed);
+    
+        if (totalPrice < 0) {
+          feedback = {
+            severity: 'error',
+            message: t('Discount Cannot be applied')
+          };
+
+          return json({ feedback });
+        }
       }
 
       await applyDiscountCode(
@@ -319,17 +345,9 @@ export default function CheckoutPaymentRoute() {
     submittedPayments &&
     submittedPayments.filter((p) => (p.status = PaymentStatus.paid)).length ===
       0;
-      
+
   const toast = useRef<Toast>(null);
   const feedback = displayCartFetcher?.data?.feedback;
-
-  let discountValue: string = '0';
-  let fixed: string = '';
-  let discountCode: string = '';
-
-  if (appliedDiscount) {
-    [discountCode, discountValue, fixed] = appliedDiscount.split('|');
-  }
 
   useEffect(() => {
     if (!toast.current || !feedback) {
@@ -381,9 +399,7 @@ export default function CheckoutPaymentRoute() {
             cart={cart}
             event={event}
             fetcher={displayCartFetcher}
-            discountValue={parseInt(discountValue)}
-            fixedDiscount={appliedDiscount ? JSON.parse(fixed) : false}
-            discountCode={discountCode}
+            appliedDiscount={appliedDiscount}
             showDiscountCodeInput={true}
           >
             {!isPaid && !(submittedPayments && submittedPayments.length > 0) && (

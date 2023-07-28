@@ -15,7 +15,7 @@ import TextField from '~/components/shared/form/TextField';
 import UploadForm from '~/components/shared/form/UploadForm';
 import { requireUser } from '~/server/auth/session.server';
 import {
-  findDiscountCodeById,
+  findDiscountCodeById, updateDiscountCode,
   upsertDiscountCode
 } from '~/server/db/discounts.server';
 import { findOrganizer } from '~/server/db/organizer.server';
@@ -75,11 +75,15 @@ export const action: ActionFunction = async ({ request, params }) => {
   try {
     DiscountCodeSchema.parse(data);
 
-    await upsertDiscountCode({
-      ...data,
-      organizerId: organizer?.id as string,
-      createdById: user.id
-    });
+    if (isUpdate) {
+      await updateDiscountCode(discountCodeId, data.code, data.value, data.fixed);
+    } else {
+      await upsertDiscountCode({
+        ...data,
+        organizerId: organizer?.id as string,
+        createdById: user.id
+      });
+    }
 
     return redirect(
       `/o/discount-codes?message=${t(
@@ -165,7 +169,7 @@ export default function ManageDiscountCodesRoute() {
           <ButtonLink variant="secondary" to="/o/discount-codes">
             {t('Cancel Button')}
           </ButtonLink>
-          <Button type="submit">
+          <Button name={isUpdate ? 'save-button' : 'create-button'} type="submit">
             {t(isUpdate ? 'Save Button' : 'Create Button')}
           </Button>
         </ButtonGroup>

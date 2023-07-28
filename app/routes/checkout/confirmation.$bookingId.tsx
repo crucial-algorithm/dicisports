@@ -225,14 +225,6 @@ export default function CheckoutConfirmationRoute() {
     setCheckedAddToMailingList(!checkedAddToMailingList);
   }
 
-  let discountValue: string = '0';
-  let fixed: string = '';
-  let discountCode: string = '';
-
-  if (appliedDiscount) {
-    [discountCode, discountValue, fixed] = appliedDiscount.split('|');
-  }
-
   return (
     <Main>
       <div className="flex flex-col justify-start space-y-1 mb-8">
@@ -329,8 +321,7 @@ export default function CheckoutConfirmationRoute() {
             cart={cart}
             event={event}
             fetcher={fetcher}
-            discountValue={parseInt(discountValue)}
-            fixedDiscount={JSON.parse(fixed)}
+            appliedDiscount={appliedDiscount}
           />
         </div>
       </div>

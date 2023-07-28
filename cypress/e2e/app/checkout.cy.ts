@@ -945,6 +945,45 @@ describe('Checkout', () => {
         .get('input[name=add-to-mail-list]')
         .should('be.checked');
     });
+
+    it('should apply discount', () => {
+      cy.intercept('POST', '/checkout/payment/qR4nqWpTdQy8QZu29ANu*')
+        .as('ApplyDiscount')
+
+        .visitAndWaitForHydration('/checkout/payment/qR4nqWpTdQy8QZu29ANu')
+
+        .get('input[name=discount-code]')
+        .clear()
+        .type('GET-FIT-5')
+
+        .get('#apply-discount')
+        .click()
+
+        .wait('@ApplyDiscount')
+
+        .get('[data-cy=total-price]')
+        .contains('40€');
+    });
+
+    it('should not apply discount if discount value surpasses total price', () => {
+      cy.intercept('POST', '/checkout/payment/qR4nqWpTdQy8QZu29ANu*')
+      .as('ApplyDiscount')
+
+      .visitAndWaitForHydration('/checkout/payment/qR4nqWpTdQy8QZu29ANu')
+
+      .get('input[name=discount-code]')
+      .clear()
+      .type('GET-FIT-50')
+
+      .get('#apply-discount')
+      .click()
+
+      .wait('@ApplyDiscount');
+    });
+
+    it.skip('should show applied discount information', () => {
+      //TODO: develop feature
+    });
   });
 
   context('Security', () => {

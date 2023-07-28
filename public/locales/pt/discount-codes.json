@@ -17,10 +17,14 @@
 
   "Delete Discount X": "Apagar o código de desconto \"{{code}}\"",
   "Disable Discount X": "Desativar o código de desconto \"{{code}}\"",
+  "Enable Discount X": "Ativar o código de desconto \"{{code}}\"",
   "Delete Discount": "Apagar Código de Desconto",
   "Disable Discount": "Desativar Código de Desconto",
+  "Enable Discount": "Ativar Código de Desconto",
   "Are you sure you want to delete discount code?": "Tem a certeza que quer mesmo apagar o código de desconto? Não há como voltar atrás",
   "Are you sure you want to disable discount code?": "Tem a certeza que quer mesmo desativar o código de desconto? Não há como voltar atrás",
+  "Are you sure you want to enable discount code?": "Tem a certeza que quer mesmo ativar o código de desconto? Não há como voltar atrás",
   "No, I don't want to delete": "Ignorar",
-  "No, I don't want to disable": "Ignorar"
+  "No, I don't want to disable": "Ignorar",
+  "No, I don't want to enable": "Ignorar"
 }
