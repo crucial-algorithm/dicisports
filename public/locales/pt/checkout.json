@@ -52,8 +52,8 @@
   "Can't Create Booking": "Não foi possível criar o booking",
   "No Discount Code": "Esse código de desconto não existe!",
   "Discount Cannot be applied": "Não é possível aplicar esse código de desconto!",
-  "Discount Applied": "Código de desconto aplicado com sucesso!",
-  "Discount Removed": "Código de desconto removido com sucesso!",
+  "Discount Applied": "Código de desconto aplicado!",
+  "Discount Removed": "Código de desconto removido!",
 
   "Update Cart": "Atualizar carrinho",
   "Existing Race Participant": "Upss.. Este participante já está a participar nesta distância!",

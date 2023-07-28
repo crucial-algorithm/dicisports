@@ -337,9 +337,9 @@ function dbRawBookingListToBookingList(
 }
 
 function dbDiscountCodeToDiscountCode(discountCode: DBDiscountCode): DiscountCode {
-  const { id, code, value, fixed, active, createdById, organizerId, status, createdAt, updatedAt  } = discountCode;
+  const { id, code, value, fixed, createdById, organizerId, status, createdAt, updatedAt  } = discountCode;
 
-  return { id, code, value, fixed, active, createdById, organizerId, status, createdAt, updatedAt };
+  return { id, code, value, fixed, createdById, organizerId, status, createdAt, updatedAt };
 }
 
 export {

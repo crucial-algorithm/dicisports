@@ -1,5 +1,5 @@
 import type { Event, Payment } from '@prisma/client';
-import { CheckoutStatus, PaymentMethod, PaymentStatus } from '@prisma/client';
+import { CheckoutStatus, DiscountCodeStatus, PaymentMethod, PaymentStatus } from '@prisma/client';
 import type { ActionFunction, LoaderFunction } from '@remix-run/node';
 import { json, redirect } from '@remix-run/node';
 import { useFetcher, useLoaderData } from '@remix-run/react';
@@ -196,7 +196,7 @@ export const action: ActionFunction = async ({ request, params }) => {
         organizer?.id as string
       );
 
-      if (!dbDiscountCode || !dbDiscountCode.active) {
+      if (!dbDiscountCode || dbDiscountCode.status !== DiscountCodeStatus.auto) {
         feedback = { severity: 'error', message: t('No Discount Code') };
 
         return json({ feedback });

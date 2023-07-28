@@ -32,8 +32,7 @@ async function upsertDiscountCode(data: DiscountCodeInput) {
       code: data.code,
       value: data.value * 1000,
       fixed: data.fixed,
-      status: DiscountCodeStatus.auto,
-      active: true
+      status: DiscountCodeStatus.auto
     },
     create: {
       id: Id(),
@@ -41,7 +40,6 @@ async function upsertDiscountCode(data: DiscountCodeInput) {
       value: data.value * 1000,
       fixed: data.fixed,
       organizerId: data.organizerId,
-      active: true,
       createdById: data.createdById,
       createdAt: now,
       updatedAt: now
@@ -86,8 +84,7 @@ async function deleteDiscountCode(id: string) {
   return await db.discountCode.update({
     where: { id },
     data: {
-      status: DiscountCodeStatus.deleted,
-      active: false
+      status: DiscountCodeStatus.deleted
     }
   });
 }
@@ -96,7 +93,7 @@ async function disableDiscountCode(id: string) {
   return await db.discountCode.update({
     where: { id },
     data: {
-      active: false
+      status: DiscountCodeStatus.disabled
     }
   });
 }
@@ -105,7 +102,7 @@ async function enableDiscountCode(id: string) {
   return await db.discountCode.update({
     where: { id },
     data: {
-      active: true
+      status: DiscountCodeStatus.auto
     }
   });
 }

@@ -159,7 +159,7 @@ export default function ManageDiscountCodesRoute() {
         >
           <PickValueType
             name="value-type"
-            fixedValue={discountCode?.fixed || true}
+            isFixedValue={discountCode ? discountCode.fixed : true}
             t={t}
           />
           <TextField
@@ -184,11 +184,11 @@ export default function ManageDiscountCodesRoute() {
 
 function PickValueType({
   name,
-  fixedValue = true,
+  isFixedValue = true,
   t
 }: {
   name: string;
-  fixedValue: boolean;
+  isFixedValue: boolean;
   t: TFunction;
 }) {
   return (
@@ -200,7 +200,7 @@ function PickValueType({
             name={name}
             type="radio"
             className="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300"
-            defaultChecked={fixedValue}
+            defaultChecked={isFixedValue}
             value="fixed"
           />
           <label
@@ -216,7 +216,7 @@ function PickValueType({
             name={name}
             type="radio"
             className="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300"
-            defaultChecked={!fixedValue}
+            defaultChecked={!isFixedValue}
             value="non-fixed"
           />
           <label

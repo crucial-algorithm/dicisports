@@ -437,6 +437,7 @@ model Organizer {
 enum DiscountCodeStatus {
   auto
   deleted
+  disabled
 }
 
 model DiscountCode {
@@ -444,7 +445,6 @@ model DiscountCode {
   code        String
   value       Int
   fixed       Boolean         
-  active      Boolean         
   createdBy   User                @relation(fields: [createdById], references: [id])
   createdById String              @map("created_by") @db.VarChar(20)
   organizer   Organizer           @relation(fields: [organizerId], references: [id])

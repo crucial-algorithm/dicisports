@@ -38,9 +38,11 @@
   "No, I don't want to disable": "Ignorar",
   "No, I don't want to enable": "Ignorar",
 
-  "Discount Deleted": "Desconto apagar com sucesso!",
-  "Discount Disabled": "Desconto destivado com sucesso!",
-  "Discount Enabled": "Desconto ativado com sucesso!",
+  "Discount Deleted": "Código de desconto apagado!",
+  "Discount Disabled": "Código de desconto destivado!",
+  "Discount Enabled": "Código de desconto ativado!",
   "Error X": "Ocorreu um erro ao tentar {{action}} o código de desconto. Tente novamente mais tarde.",
-  "Max 100%": "Valor percentual não pode exceder os 100%"
+  "Max 100%": "Valor percentual não pode exceder os 100%",
+  "Success - Update": "Código de desconto atualizado!",
+  "Success - Create": "Código de desconto criado!"
 }

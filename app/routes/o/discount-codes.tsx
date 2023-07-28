@@ -1,6 +1,6 @@
 import type { ActionFunction, LoaderFunction } from '@remix-run/node';
 import { json, redirect } from '@remix-run/node';
-import { Role } from '@prisma/client';
+import { DiscountCodeStatus, Role } from '@prisma/client';
 
 import {
   Form,
@@ -153,15 +153,17 @@ export default function OrganizerDiscountCodesRoute() {
     );
   }
 
-  function cellState({ active }: DiscountCode) {
+  function cellState({ status }: DiscountCode) {
+    const isDiscountActive = status === DiscountCodeStatus.auto;
+
     return (
       <span
         className={clsx('rounded-2xl text-white py-2 px-8 text-sm', {
-          'bg-gray-600': !active,
-          'bg-emerald-600': active
+          'bg-gray-600': !isDiscountActive,
+          'bg-emerald-600': isDiscountActive
         })}
       >
-        {active ? t('Active') : t('Inactive')}
+        {isDiscountActive ? t('Active') : t('Inactive')}
       </span>
     );
   }
@@ -176,7 +178,7 @@ export default function OrganizerDiscountCodesRoute() {
         >
           <TrashIcon className="h-6 w-6 m-0 inline-block" />
         </button>
-        {discount.active ? (
+        {discount.status === DiscountCodeStatus.auto ? (
           <button
             id={discount.id}
             name={`disable-discount-${discount.id}`}
@@ -302,7 +304,7 @@ export default function OrganizerDiscountCodesRoute() {
       >
         <Column field="code" header={t('Code')} />
         <Column field="value" header={t('Value')} body={cellDiscountValue} />
-        <Column field="active" header={t('State')} body={cellState} />
+        <Column field="status" header={t('State')} body={cellState} />
         <Column body={ActionsBody} />
       </DataTable>
 

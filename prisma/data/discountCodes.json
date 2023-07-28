@@ -4,7 +4,6 @@
     "code": "SPRING-20",
     "value": 20000,
     "fixed": false,
-    "active": true,
     "createdById": "gZZCGTHBq9SxdpRFoP8b",
     "organizerId": "qyPfCac23fMByqNa7L6n"
   },
@@ -13,7 +12,6 @@
     "code": "GET-FIT-5",
     "value": 5000,
     "fixed": true,
-    "active": true,
     "createdById": "gZZCGTHBq9SxdpRFoP8b",
     "organizerId": "qyPfCac23fMByqNa7L6n"
   },
@@ -22,7 +20,6 @@
     "code": "CHRISTMAS-30",
     "value": 30000,
     "fixed": false,
-    "active": false,
     "createdById": "gZZCGTHBq9SxdpRFoP8b",
     "organizerId": "qyPfCac23fMByqNa7L6n"
   },
@@ -31,7 +28,6 @@
     "code": "GET-FIT-50",
     "value": 50000,
     "fixed": true,
-    "active": true,
     "createdById": "gZZCGTHBq9SxdpRFoP8b",
     "organizerId": "qyPfCac23fMByqNa7L6n"
   },
@@ -40,7 +36,6 @@
     "code": "GET-FIT-100%",
     "value": 100000,
     "fixed": false,
-    "active": true,
     "createdById": "gZZCGTHBq9SxdpRFoP8b",
     "organizerId": "qyPfCac23fMByqNa7L6n"
   }
