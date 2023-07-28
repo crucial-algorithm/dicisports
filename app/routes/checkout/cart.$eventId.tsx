@@ -251,7 +251,7 @@ function DisplayRace({
     <div className="flex flex-col mb-8 w-full">
       <div className="flex flex-row items-center justify-between">
         <H4>{race.name}</H4>
-        <H5>{race.price + '€'}</H5>
+        <H5>{race.price / 1000 }€</H5>
       </div>
       <div className="flex flex-row mt-2 justify-between items-center">
         <div className="flex flex-row">

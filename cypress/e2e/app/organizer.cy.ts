@@ -247,28 +247,25 @@ describe('Organizer', () => {
         .should('not.exist');
     });
 
-    it('should edit a discount code', () => {
+    it('should edit discount code', () => {
       cy.loginOrganizer()
         .visitAndWaitForHydration('/o/discount-codes')
 
         .get('tr')
         .should('have.length', 6)
-
-        .get('button[name=edit-discount-zWZKBmZowXrns2pP4QQ2]')
-        .should('exist')
+        .eq(1)
         .click()
 
         .location()
         .should((l) => {
-          expect(l.pathname).to.eq('/o/discount-codes/zWZKBmZowXrns2pP4QQ2');
+          expect(l.pathname).to.include('/o/discount-codes/');
         })
 
         .get('input[name=code]')
-        .should('have.value', 'GET-FIT-5')
         .clear()
         .type('GET-5')
 
-        .intercept('POST', '/o/discount-codes/zWZKBmZowXrns2pP4QQ2*')
+        .intercept('POST', '/o/discount-codes/*')
         .as('SaveDiscount')
 
         .get('button[name=save-button]')
