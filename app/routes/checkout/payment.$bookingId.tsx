@@ -210,7 +210,7 @@ export const action: ActionFunction = async ({ request, params }) => {
           dbDiscountCode.fixed
         );
 
-        if (totalPrice.total < 0) {
+        if (totalPrice < 0) {
           return badRequest({
             errors: { discountError: t('Discount Cannot be applied') }
           });
@@ -428,7 +428,7 @@ function PaymentForm({
   const formScriptSrc = `${script}?id=${gatewayTransactionId}`;
   const formConfig = JSON.stringify({
     paymentMethodList: [],
-    amount: { value: bookingAmount(cart).total / 1000, currency: 'EUR' },
+    amount: { value: bookingAmount(cart) / 1000, currency: 'EUR' },
     language: 'pt',
     redirectUrl,
     customerData: null

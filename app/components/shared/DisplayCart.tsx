@@ -39,6 +39,7 @@ export default function DisplayCart({
   const [discountCode, discountValue, fixedDiscount] = appliedDiscount?.split(
     '|'
   ) || ['', '', ''];
+  const subtotal = bookingAmount(cart);
   const totalPrice = bookingAmount(
     cart,
     discountValue ? parseInt(discountValue) : undefined,
@@ -122,13 +123,13 @@ export default function DisplayCart({
               <div className="flex flex-row items-center justify-between">
                 <H6 className="dark:text-blueGray-500">{t('Subtotal')}</H6>
                 <H6 className="dark:text-blueGray-500" data-cy="subtotal-price">
-                  {totalPrice.subtotal / 1000}€
+                  {subtotal / 1000}€
                 </H6>
               </div>
             )}
             <div className="flex flex-row items-center justify-between">
               <H6>{t('Total')}</H6>
-              <H6 data-cy="total-price">{totalPrice.total / 1000}€</H6>
+              <H6 data-cy="total-price">{totalPrice / 1000}€</H6>
             </div>
           </div>
         )}
