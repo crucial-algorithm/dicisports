@@ -2,7 +2,12 @@ import type { ActionFunction, LoaderFunction } from '@remix-run/node';
 import { json, redirect } from '@remix-run/node';
 import { Role } from '@prisma/client';
 
-import { Form, useActionData, useLoaderData, useNavigate } from '@remix-run/react';
+import {
+  Form,
+  useActionData,
+  useLoaderData,
+  useNavigate
+} from '@remix-run/react';
 import clsx from 'clsx';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
@@ -26,6 +31,13 @@ import { findOrganizer } from '~/server/db/organizer.server';
 import type { DiscountCode } from '~/types';
 import { ConfirmationDialog } from '~/components/shared/Dialog';
 import i18n from '~/server/i18n.server';
+import { ShareIcon } from '@heroicons/react/24/solid';
+import {
+  EyeIcon,
+  EyeSlashIcon,
+  PencilIcon, PencilSquareIcon,
+  TrashIcon
+} from '@heroicons/react/24/outline';
 
 export const handle = {
   i18n: ['discount-codes']
@@ -55,7 +67,7 @@ export const action: ActionFunction = async ({ request }) => {
       await deleteDiscountCode(discountCodeId);
       feedback = { severity: 'success', message: t('Discount Deleted') };
     }
-    
+
     if (actionId === actionIds.disable) {
       await disableDiscountCode(discountCodeId);
       feedback = { severity: 'success', message: t('Discount Disabled') };
@@ -73,7 +85,7 @@ export const action: ActionFunction = async ({ request }) => {
       'disable-discount': t('Disable'),
       'delete-discount': t('Remove')
     };
-    
+
     feedback = {
       severity: 'error',
       message: t('Error X', { action: mapping[actionId] })
@@ -117,8 +129,11 @@ export default function OrganizerDiscountCodesRoute() {
   const [discounts, setDiscounts] = useState(existingDiscounts);
   const [deleteModalOpen, setDeleteModalOpen] = useState<boolean>(false);
   const [disableModalOpen, setDisableModalOpen] = useState<boolean>(false);
-  const [enableDiscountModalOpen, setEnableDiscountModalOpen] = useState<boolean>(false);
-  const [selectedDiscount, setSelectedDiscount] = useState<DiscountCode | null>(null);
+  const [enableDiscountModalOpen, setEnableDiscountModalOpen] =
+    useState<boolean>(false);
+  const [selectedDiscount, setSelectedDiscount] = useState<DiscountCode | null>(
+    null
+  );
   const [actionId, setActionId] = useState<string>('');
 
   const toast = useRef<Toast>(null);
@@ -153,16 +168,15 @@ export default function OrganizerDiscountCodesRoute() {
     );
   }
 
-  // TODO: icons instead of cta's
   function ActionsBody(discount: DiscountCode) {
     return (
-      <div className="flex flex-row items-center gap-x-2">
+      <div className="flex flex-row items-center gap-x-4">
         <button
           id={discount.id}
           name={`delete-discount-${discount.id}`}
           onClick={handleOpenDeleteDiscountModal}
         >
-          {t('Delete Button')}
+          <TrashIcon className="h-6 w-6 m-0 inline-block" />
         </button>
         {discount.active ? (
           <button
@@ -170,7 +184,7 @@ export default function OrganizerDiscountCodesRoute() {
             name={`disable-discount-${discount.id}`}
             onClick={handleOpenDisableDiscountModal}
           >
-            {t('Disable Button')}
+            <EyeSlashIcon className="h-6 w-6 m-0 inline-block" />
           </button>
         ) : (
           <button
@@ -178,7 +192,7 @@ export default function OrganizerDiscountCodesRoute() {
             name={`enable-discount-${discount.id}`}
             onClick={handleOpenEnableDiscountModal}
           >
-            {t('Enable Button')}
+            <EyeIcon className="h-6 w-6 m-0 inline-block" />
           </button>
         )}
         <button
@@ -187,7 +201,7 @@ export default function OrganizerDiscountCodesRoute() {
           name={`edit-discount-${discount.id}`}
           onClick={handleEditDiscountCode}
         >
-          {t('Edit Button')}
+          <PencilSquareIcon className="h-6 w-6 m-0 inline-block" />
         </button>
       </div>
     );
