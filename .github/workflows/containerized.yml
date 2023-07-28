@@ -1,0 +1,33 @@
+name: Docker Compose in GHA
+on: pull_request
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    name: E2E on Chrome
+
+    steps:
+      - name: Checkout dicisports
+        uses: actions/checkout@v3
+
+
+      - name: Start services
+        run: |
+          docker compose -f docker-compose-ci.yml up
+
+      - name: Test connection to http-catcher
+        run: |
+          curl catcher:3001/health-check
+
+      - uses: actions/upload-artifact@v2
+        if: failure()
+        with:
+          name: cypress-screenshots
+          path: cypress/screenshots
+
+      - uses: actions/upload-artifact@v2
+        if: always()
+        with:
+          name: cypress-videos
+          path: cypress/videos
+
