@@ -25,12 +25,6 @@ jobs:
                   container_state="$(docker inspect "${container_id}" --format '{{ .State.Status }}')"
                   # echo $container_state
                   if [[ "${container_state}" == "running" ]]; then
-                      health_status="$(docker inspect "${container_id}" --format '{{ .State.Status }}')"
-                      echo "${container_name}: container_state=${container_state}, health_status=${health_status}"
-                      if [[ ${health_status} == "running" ]]; then
-                          waiting_done="true"
-                      fi
-                  else
                       echo "${container_name}: container_state=${container_state}"
                       waiting_done="true"
                   fi
