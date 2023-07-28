@@ -187,17 +187,6 @@ export const action: ActionFunction = async ({ request, params }) => {
     return redirect(`/checkout/info/${bookingId}`);
   }
 
-  async function isDiscountAppliable(discount: DiscountCode): Promise<boolean> {
-    const bookingCart = await findBookingCart(clientId, eventId);
-    const totalPrice = bookingAmount(bookingCart, discount.value, discount.fixed);
-
-    if (totalPrice < 0) {
-      return false;
-    }
-
-    return true;
-  }
-
   try {
     let feedback: ResponseFeedback | undefined;
 
