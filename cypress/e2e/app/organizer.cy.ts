@@ -182,8 +182,8 @@ describe('Organizer', () => {
         })
 
         .get('tr')
-        .should('have.length', 6)
-        .eq(5)
+        .should('have.length', 7)
+        .eq(6)
         .contains('GET-FIT-35');
     });
 
@@ -213,8 +213,8 @@ describe('Organizer', () => {
         })
 
         .get('tr')
-        .should('have.length', 4)
-        .eq(3)
+        .should('have.length', 5)
+        .eq(4)
         .should('not.contain', 'GET-FIT-35');
     });
 
