@@ -12,8 +12,7 @@ jobs:
 
 
       - name: Start services
-        run: |
-          docker compose -f docker-compose-ci.yml up
+        run: docker compose -f docker-compose-ci.yml up &
 
       - name: Test connection to http-catcher
         run: |
