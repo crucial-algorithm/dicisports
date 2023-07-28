@@ -1,4 +1,4 @@
-import type { Payment } from '@prisma/client';
+import type { Event, Payment } from '@prisma/client';
 import { CheckoutStatus, PaymentMethod, PaymentStatus } from '@prisma/client';
 import type { ActionFunction, LoaderFunction } from '@remix-run/node';
 import { json, redirect } from '@remix-run/node';
@@ -7,8 +7,6 @@ import * as React from 'react';
 import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ZodError } from 'zod';
-
-import type { Event } from '@prisma/client';
 import { Toast } from 'primereact/toast';
 
 import Button from '~/components/shared/Button';
@@ -36,7 +34,7 @@ import {
   findUnsuccessfulPayments,
   isBookingPaid
 } from '~/server/db/payments.server';
-import type { DiscountCode, KCDHandle, UICartRow } from '~/types';
+import type { KCDHandle, UICartRow } from '~/types';
 import { sendBookingConfirmationEmail } from '~/server/email.server';
 import { badRequest, bookingAmount, getDomainUrl } from '~/utils/misc';
 import i18n from '~/server/i18n.server';
@@ -204,11 +202,14 @@ export const action: ActionFunction = async ({ request, params }) => {
         return json({ feedback });
       }
 
-
       if (dbDiscountCode.fixed) {
         const bookingCart = await findBookingCart(clientId, eventId);
-        const totalPrice = bookingAmount(bookingCart, dbDiscountCode.value, dbDiscountCode.fixed);
-    
+        const totalPrice = bookingAmount(
+          bookingCart,
+          dbDiscountCode.value,
+          dbDiscountCode.fixed
+        );
+
         if (totalPrice.total < 0) {
           feedback = {
             severity: 'error',
