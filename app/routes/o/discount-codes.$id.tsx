@@ -72,7 +72,7 @@ export const action: ActionFunction = async ({ request, params }) => {
       // Validate that non-fixed values don't exceed 100
       // "|| data.fixed" - A way to ignore <= 100 validation when value is fixed
       .refine((v) => (!data.fixed && v <= 100) || data.fixed, {
-        message: t('Max 100 %')
+        message: t('Max 100%')
       }),
     fixed: z.boolean()
   });

@@ -41,5 +41,6 @@
   "Discount Deleted": "Desconto apagar com sucesso!",
   "Discount Disabled": "Desconto destivado com sucesso!",
   "Discount Enabled": "Desconto ativado com sucesso!",
-  "Error X": "Ocorreu um erro ao tentar {{action}} o código de desconto. Tente novamente mais tarde."
+  "Error X": "Ocorreu um erro ao tentar {{action}} o código de desconto. Tente novamente mais tarde.",
+  "Max 100%": "Valor percentual não pode exceder os 100%"
 }
