@@ -95,7 +95,7 @@ export default function DisplayCart({
                 </button>
               </div>
             ) : (
-              <div className="mt-8">
+              <div className="mt-8" data-cy="discount-info">
                 <DisplayAppliedDiscount
                   code={discountCode}
                   value={parseInt(discountValue)}

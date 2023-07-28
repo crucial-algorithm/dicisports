@@ -7,6 +7,8 @@
   "Edit info": "Alterar inscrição",
   "Pay": "Pagar",
   "Continue": "Continuar",
+  "Total": "Total",
+  "Subtotal": "Subtotal",
 
   "First Name": "Primeiro Nome",
   "Last Name": "Último Nome",
@@ -48,6 +50,10 @@
 
   "No Races In Checkout": "Nenhuma distância no carrinho!",
   "Can't Create Booking": "Não foi possível criar o booking",
+  "No Discount Code": "Esse código de desconto não existe!",
+  "Discount Cannot be applied": "Não é possível aplicar esse código de desconto!",
+  "Discount Applied": "Código de desconto aplicado com sucesso!",
+  "Discount Removed": "Código de desconto removido com sucesso!",
 
   "Update Cart": "Atualizar carrinho",
   "Existing Race Participant": "Upss.. Este participante já está a participar nesta distância!",

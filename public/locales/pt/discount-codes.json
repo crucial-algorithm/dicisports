@@ -9,11 +9,21 @@
   "Create": "Criar Desconto",
   "Fixed Value": "Valor fixo",
   "Non-Fixed Value": "Valor percentual",
-  "Value Description": "(Valor fixo corresponde a um desconto fixo do valor inserido)",
 
   "Save Button": "Guardar",
   "Create Button": "Criar",
   "Cancel Button": "Cancelar",
+  "Enable Button": "Ativar",
+  "Disable Button": "Desativar",
+  "Edit Button": "Editar",
+  "Delete Button": "Apagar",
+
+  "Field Required": "Campo obrigatório",
+  "Positive Number": "Insira um número positivo",
+
+  "Enable": "ativar",
+  "Disable": "desativar",
+  "Remove": "apagar",
 
   "Delete Discount X": "Apagar o código de desconto \"{{code}}\"",
   "Disable Discount X": "Desativar o código de desconto \"{{code}}\"",
@@ -26,5 +36,10 @@
   "Are you sure you want to enable discount code?": "Tem a certeza que quer mesmo ativar o código de desconto? Não há como voltar atrás",
   "No, I don't want to delete": "Ignorar",
   "No, I don't want to disable": "Ignorar",
-  "No, I don't want to enable": "Ignorar"
+  "No, I don't want to enable": "Ignorar",
+
+  "Discount Deleted": "Desconto apagar com sucesso!",
+  "Discount Disabled": "Desconto destivado com sucesso!",
+  "Discount Enabled": "Desconto ativado com sucesso!",
+  "Error X": "Ocorreu um erro ao tentar {{action}} o código de desconto. Tente novamente mais tarde."
 }

@@ -247,9 +247,12 @@ describe('Organizer', () => {
         .should('not.exist');
     });
 
-    it.only('should edit a discount code', () => {
+    it('should edit a discount code', () => {
       cy.loginOrganizer()
         .visitAndWaitForHydration('/o/discount-codes')
+
+        .get('tr')
+        .should('have.length', 6)
 
         .get('button[name=edit-discount-zWZKBmZowXrns2pP4QQ2]')
         .should('exist')
@@ -280,7 +283,7 @@ describe('Organizer', () => {
         })
 
         .get('tr')
-        .should('have.length', 5)
+        .should('have.length', 6)
         .contains('GET-5');
     });
   });

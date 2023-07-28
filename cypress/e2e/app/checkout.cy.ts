@@ -981,8 +981,51 @@ describe('Checkout', () => {
       .wait('@ApplyDiscount');
     });
 
-    it.skip('should show applied discount information', () => {
-      //TODO: develop feature
+    it('should show applied discount information', () => {
+      cy.intercept('POST', '/checkout/payment/qR4nqWpTdQy8QZu29ANu*')
+        .as('ApplyDiscount')
+
+        .visitAndWaitForHydration('/checkout/payment/qR4nqWpTdQy8QZu29ANu')
+
+        .get('input[name=discount-code]')
+        .clear()
+        .type('GET-FIT-5')
+
+        .get('#apply-discount')
+        .click()
+
+        .wait('@ApplyDiscount')
+
+        .get('div[data-cy=discount-info]')
+        .should('exist')
+
+        .get('[data-cy=subtotal-price]')
+        .contains('45€');
+    });
+
+    it('should show 0€ when applying 100% discount', () => {
+      cy.intercept('POST', '/checkout/payment/qR4nqWpTdQy8QZu29ANu*')
+          .as('ApplyDiscount')
+
+          .visitAndWaitForHydration('/checkout/payment/qR4nqWpTdQy8QZu29ANu')
+
+          .get('input[name=discount-code]')
+          .clear()
+          .type('GET-FIT-100%')
+
+          .get('#apply-discount')
+          .click()
+
+          .wait('@ApplyDiscount')
+
+          .get('div[data-cy=discount-info]')
+          .should('exist')
+
+          .get('[data-cy=subtotal-price]')
+          .contains('45€')
+
+          .get('[data-cy=total-price]')
+          .contains('0€');
     });
   });
 

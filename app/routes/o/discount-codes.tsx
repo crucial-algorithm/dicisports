@@ -68,8 +68,16 @@ export const action: ActionFunction = async ({ request }) => {
 
     return json({ feedback });
   } catch (e) {
-    console.log(e);
-    feedback = { severity: 'error', message: t('Error') };
+    const mapping: { [key: string]: string } = {
+      'enable-discount': t('Enable'),
+      'disable-discount': t('Disable'),
+      'delete-discount': t('Remove')
+    };
+    
+    feedback = {
+      severity: 'error',
+      message: t('Error X', { action: mapping[actionId] })
+    };
 
     return json({ feedback });
   }

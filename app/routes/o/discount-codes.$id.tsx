@@ -150,7 +150,6 @@ export default function ManageDiscountCodesRoute() {
         <FormField
           label={t('Value')}
           className="w-full"
-          description={t('Value Description')}
           error={actionData?.errors?.value}
         >
           <PickValueType

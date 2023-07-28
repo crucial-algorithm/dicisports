@@ -34,5 +34,14 @@
     "active": true,
     "createdById": "gZZCGTHBq9SxdpRFoP8b",
     "organizerId": "qyPfCac23fMByqNa7L6n"
+  },
+  {
+    "id": "Fe3DWQjL856zfCsS8pDM",
+    "code": "GET-FIT-100%",
+    "value": 100000,
+    "fixed": false,
+    "active": true,
+    "createdById": "gZZCGTHBq9SxdpRFoP8b",
+    "organizerId": "qyPfCac23fMByqNa7L6n"
   }
 ]
