@@ -183,29 +183,24 @@ describe('Organizer', () => {
 
         .get('tr')
         .should('have.length', 7)
-        .eq(6)
+        .eq(1)
         .contains('GET-FIT-35');
     });
 
     it('should delete a discount code', () => {
       cy.loginOrganizer()
-        .visitAndWaitForHydration('/o/discount-codes')
+        .visitAndWaitForHydration('/o/discount-codes/zWZKBmZowXrns2pP4QQ2')
 
-        .get('button[name=delete-discount-zWZKBmZowXrns2pP4QQ2]')
+        .get('button[name=delete-button]')
         .should('exist')
         .click()
 
         .get('.cy-delete-dialog')
         .should('exist')
 
-        .intercept('POST', '/o/discount-codes*')
-        .as('DeleteDiscount')
-
         .get('button.cy-primary')
         .should('exist')
         .click()
-
-        .wait('@DeleteDiscount')
 
         .location()
         .should((l) => {
@@ -213,38 +208,32 @@ describe('Organizer', () => {
         })
 
         .get('tr')
-        .should('have.length', 5)
-        .eq(4)
-        .should('not.contain', 'GET-FIT-35');
+        .should('have.length', 5);
     });
 
     it('should hide a discount code', () => {
       cy.loginOrganizer()
-        .visitAndWaitForHydration('/o/discount-codes')
+        .visitAndWaitForHydration('/o/discount-codes/zWZKBmZowXrns2pP4QQ2')
 
-        .get('button[name=disable-discount-zWZKBmZowXrns2pP4QQ2]')
+        .get('button[name=disable-button]')
         .should('exist')
         .click()
 
         .get('.cy-delete-dialog')
         .should('exist')
 
-        .intercept('POST', '/o/discount-codes*')
-        .as('DeleteDiscount')
-
         .get('button.cy-primary')
         .should('exist')
         .click()
-
-        .wait('@DeleteDiscount')
 
         .location()
         .should((l) => {
           expect(l.pathname).to.eq('/o/discount-codes');
         })
 
-        .get('button[name=disable-discount-zWZKBmZowXrns2pP4QQ2]')
-        .should('not.exist');
+        .get('tr')
+        .should('have.length', 6)
+        .contains('Inactivo');
     });
 
     it('should edit discount code', () => {

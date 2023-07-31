@@ -287,7 +287,7 @@ export default function ManageDiscountCodesRoute() {
                 type="button"
                 size="medium"
                 variant="danger"
-                data-cy="disable-button"
+                name="disable-button"
                 onClick={handleOpenDisableDiscountModal}
               >
                 {t('Disable Button')}
@@ -298,7 +298,7 @@ export default function ManageDiscountCodesRoute() {
                 type="button"
                 size="medium"
                 variant="danger"
-                data-cy="enable-button"
+                name="enable-button"
                 onClick={handleOpenEnableDiscountModal}
               >
                 {t('Enable Button')}
