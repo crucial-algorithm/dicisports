@@ -1,20 +1,13 @@
-import type { ActionFunction, LoaderFunction } from '@remix-run/node';
-import { json, redirect } from '@remix-run/node';
-import { DiscountCodeStatus, Role } from '@prisma/client';
+import type { LoaderFunction } from '@remix-run/node';
+import { json } from '@remix-run/node';
+import { DiscountCodeStatus } from '@prisma/client';
 
-import {
-  Form,
-  useActionData,
-  useLoaderData,
-  useNavigate
-} from '@remix-run/react';
+import { useLoaderData, useNavigate } from '@remix-run/react';
 import clsx from 'clsx';
 import type { DataTableRowClickEvent } from 'primereact/datatable';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
-import { Toast } from 'primereact/toast';
-import { EyeIcon, EyeSlashIcon, TrashIcon } from '@heroicons/react/24/outline';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { ButtonLink } from '~/components/shared/Button';
@@ -22,24 +15,12 @@ import { ButtonLink } from '~/components/shared/Button';
 import Main from '~/components/shared/Main';
 import SearchField from '~/components/shared/SearchField';
 import { requireUser } from '~/server/auth/session.server';
-import {
-  deleteDiscountCode,
-  disableDiscountCode,
-  enableDiscountCode,
-  findDiscountCodesForOrganizer
-} from '~/server/db/discounts.server';
+import { findDiscountCodesForOrganizer } from '~/server/db/discounts.server';
 import { findOrganizer } from '~/server/db/organizer.server';
 import type { DiscountCode } from '~/types';
-import { ConfirmationDialog } from '~/components/shared/Dialog';
-import i18n from '~/server/i18n.server';
 
 export const handle = {
   i18n: ['discount-codes']
-};
-
-type ResponseFeedback = {
-  severity: 'error' | 'success' | 'info' | 'warn';
-  message: string;
 };
 
 export const loader: LoaderFunction = async ({ request }) => {
@@ -64,13 +45,9 @@ export default function OrganizerDiscountCodesRoute() {
   const { discounts: existingDiscounts } = useLoaderData() as {
     discounts: DiscountCode[];
   };
-  const actionData = useActionData();
 
   const navigate = useNavigate();
   const [discounts, setDiscounts] = useState(existingDiscounts);
-
-  const toast = useRef<Toast>(null);
-  const feedback = actionData?.feedback;
 
   const { t } = useTranslation('discount-codes');
   const emptyMessage =
@@ -105,21 +82,8 @@ export default function OrganizerDiscountCodesRoute() {
     navigate(e.data.id);
   }
 
-  useEffect(() => {
-    if (!toast.current || !feedback) {
-      return;
-    }
-
-    toast.current.show({
-      severity: feedback.severity,
-      detail: feedback.message,
-      life: 3000
-    });
-  }, [toast, feedback]);
-
   return (
     <Main>
-      <Toast ref={toast} />
       <div className="flex flex-row h-16 justify-between gap-4 mb-8 items-center">
         <div className="w-72">
           <SearchField name="search" onChange={filter} />

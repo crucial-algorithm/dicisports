@@ -140,11 +140,6 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   });
 };
 
-type ResponseFeedback = {
-  severity: 'error' | 'success' | 'info' | 'warn';
-  message: string;
-};
-
 export const action: ActionFunction = async ({ request, params }) => {
   const t = await i18n.getFixedT(request, ['checkout']);
 
@@ -198,7 +193,7 @@ export const action: ActionFunction = async ({ request, params }) => {
         organizer?.id as string
       );
 
-      if (!dbDiscountCode || dbDiscountCode.status !== DiscountCodeStatus.auto) {
+      if (!dbDiscountCode || dbDiscountCode.status !== DiscountCodeStatus.active) {
         return badRequest({ errors: { discountError: t('No Discount Code') } });
       }
 
