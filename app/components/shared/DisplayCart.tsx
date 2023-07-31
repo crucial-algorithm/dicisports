@@ -117,7 +117,7 @@ export default function DisplayCart({
           </>
         )}
 
-        {totalPrice > 0 || (totalPrice === 0 && appliedDiscount) && (
+        {(totalPrice > 0 || (totalPrice === 0 && appliedDiscount)) && (
           <div className="flex flex-col gap-y-2 mt-4 py-4 border-t-2 border-grey-300">
             {appliedDiscount && (
               <div className="flex flex-row items-center justify-between">
