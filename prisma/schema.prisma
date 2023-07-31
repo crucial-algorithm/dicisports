@@ -442,7 +442,7 @@ enum DiscountCodeStatus {
 
 model DiscountCode {
   id          String              @id
-  code        String
+  code        String              @db.VarChar(20)
   value       Int
   fixed       Boolean         
   createdBy   User                @relation(fields: [createdById], references: [id])

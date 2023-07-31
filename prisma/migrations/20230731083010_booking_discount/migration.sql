@@ -18,7 +18,6 @@ ALTER TABLE "discount_codes" DROP CONSTRAINT "discount_codes_pkey",
 DROP COLUMN "active",
 ADD COLUMN     "id" TEXT NOT NULL,
 ADD COLUMN     "status" "DiscountCodeStatus" NOT NULL DEFAULT 'auto',
-ALTER COLUMN "code" SET DATA TYPE TEXT,
 ADD CONSTRAINT "discount_codes_pkey" PRIMARY KEY ("id");
 
 -- AlterTable
