@@ -42,53 +42,6 @@ type ResponseFeedback = {
   message: string;
 };
 
-export const action: ActionFunction = async ({ request }) => {
-  const user = await requireUser(request);
-  const t = await i18n.getFixedT(request, 'discount-codes');
-
-  if (user.role !== Role.ORGANIZER) {
-    return redirect('/');
-  }
-
-  const form = await request.formData();
-  const actionId = form.get('actionId') as string;
-  const discountCodeId = form.get('discount-code') as string;
-
-  let feedback: ResponseFeedback | undefined;
-
-  try {
-    if (actionId === actionIds.delete) {
-      await deleteDiscountCode(discountCodeId);
-      feedback = { severity: 'success', message: t('Discount Deleted') };
-    }
-
-    if (actionId === actionIds.disable) {
-      await disableDiscountCode(discountCodeId);
-      feedback = { severity: 'success', message: t('Discount Disabled') };
-    }
-
-    if (actionId === actionIds.enable) {
-      await enableDiscountCode(discountCodeId);
-      feedback = { severity: 'success', message: t('Discount Enabled') };
-    }
-
-    return json({ feedback });
-  } catch (e) {
-    const mapping: { [key: string]: string } = {
-      'enable-discount': t('Enable'),
-      'disable-discount': t('Disable'),
-      'delete-discount': t('Remove')
-    };
-
-    feedback = {
-      severity: 'error',
-      message: t('Error X', { action: mapping[actionId] })
-    };
-
-    return json({ feedback });
-  }
-};
-
 export const loader: LoaderFunction = async ({ request }) => {
   const user = await requireUser(request);
   const organizer = await findOrganizer(user.id);
@@ -107,12 +60,6 @@ function cellDiscountValue({ value, fixed }: DiscountCode) {
   return `${value / 1000}${fixed ? '€' : '%'}`;
 }
 
-const actionIds = {
-  delete: 'delete-discount',
-  disable: 'disable-discount',
-  enable: 'enable-discount'
-};
-
 export default function OrganizerDiscountCodesRoute() {
   const { discounts: existingDiscounts } = useLoaderData() as {
     discounts: DiscountCode[];
@@ -121,19 +68,9 @@ export default function OrganizerDiscountCodesRoute() {
 
   const navigate = useNavigate();
   const [discounts, setDiscounts] = useState(existingDiscounts);
-  const [deleteModalOpen, setDeleteModalOpen] = useState<boolean>(false);
-  const [disableModalOpen, setDisableModalOpen] = useState<boolean>(false);
-  const [enableDiscountModalOpen, setEnableDiscountModalOpen] =
-    useState<boolean>(false);
-  const [selectedDiscount, setSelectedDiscount] = useState<DiscountCode | null>(
-    null
-  );
-  const [actionId, setActionId] = useState<string>('');
 
   const toast = useRef<Toast>(null);
   const feedback = actionData?.feedback;
-
-  const discountActionForm = useRef<HTMLFormElement>(null);
 
   const { t } = useTranslation('discount-codes');
   const emptyMessage =
@@ -150,7 +87,7 @@ export default function OrganizerDiscountCodesRoute() {
   }
 
   function cellState({ status }: DiscountCode) {
-    const isDiscountActive = status === DiscountCodeStatus.auto;
+    const isDiscountActive = status === DiscountCodeStatus.active;
 
     return (
       <span
@@ -164,101 +101,8 @@ export default function OrganizerDiscountCodesRoute() {
     );
   }
 
-  function ActionsBody(discount: DiscountCode) {
-    return (
-      <div className="flex flex-row items-center gap-x-4">
-        <button
-          id={discount.id}
-          name={`delete-discount-${discount.id}`}
-          onClick={handleOpenDeleteDiscountModal}
-        >
-          <TrashIcon className="h-6 w-6 m-0 inline-block" />
-        </button>
-        {discount.status === DiscountCodeStatus.auto ? (
-          <button
-            id={discount.id}
-            name={`disable-discount-${discount.id}`}
-            onClick={handleOpenDisableDiscountModal}
-          >
-            <EyeSlashIcon className="h-6 w-6 m-0 inline-block" />
-          </button>
-        ) : (
-          <button
-            id={discount.id}
-            name={`enable-discount-${discount.id}`}
-            onClick={handleOpenEnableDiscountModal}
-          >
-            <EyeIcon className="h-6 w-6 m-0 inline-block" />
-          </button>
-        )}
-      </div>
-    );
-  }
-
   function handleOnRowClick(e: DataTableRowClickEvent) {
     navigate(e.data.id);
-  }
-
-  function findDiscountCode(id: string): DiscountCode {
-    return discounts.find((d) => d.id === id) as DiscountCode;
-  }
-
-  function handleOpenDeleteDiscountModal(e: React.MouseEvent) {
-    setDeleteModalOpen(true);
-    setSelectedDiscount(findDiscountCode(e.currentTarget.id));
-    setActionId(actionIds.delete);
-  }
-
-  function handleOpenDisableDiscountModal(e: React.MouseEvent) {
-    setDisableModalOpen(true);
-    setSelectedDiscount(findDiscountCode(e.currentTarget.id));
-    setActionId(actionIds.disable);
-  }
-
-  function handleOpenEnableDiscountModal(e: React.MouseEvent) {
-    setEnableDiscountModalOpen(true);
-    setSelectedDiscount(findDiscountCode(e.currentTarget.id));
-    setActionId(actionIds.enable);
-  }
-
-  function handleResetDeleteDiscount() {
-    setDeleteModalOpen(false);
-    setSelectedDiscount(null);
-    setActionId('');
-  }
-
-  function handleResetDisableDiscount() {
-    setDisableModalOpen(false);
-    setSelectedDiscount(null);
-    setActionId('');
-  }
-
-  function handleResetEnableDiscount() {
-    setEnableDiscountModalOpen(false);
-    setSelectedDiscount(null);
-    setActionId('');
-  }
-
-  function handleSubmitForm() {
-    if (!discountActionForm.current) {
-      return;
-    }
-    discountActionForm.current.submit();
-  }
-
-  function handleConfirmDelete() {
-    handleSubmitForm();
-    handleResetDeleteDiscount();
-  }
-
-  function handleConfirmHide() {
-    handleSubmitForm();
-    handleResetDisableDiscount();
-  }
-
-  function handleConfirmEnable() {
-    handleSubmitForm();
-    handleResetEnableDiscount();
   }
 
   useEffect(() => {
@@ -295,60 +139,7 @@ export default function OrganizerDiscountCodesRoute() {
         <Column field="code" header={t('Code')} />
         <Column field="value" header={t('Value')} body={cellDiscountValue} />
         <Column field="status" header={t('State')} body={cellState} />
-        <Column body={ActionsBody} />
       </DataTable>
-
-      <ConfirmationDialog
-        isOpen={deleteModalOpen}
-        title={t('Delete Discount X', { code: selectedDiscount?.code })}
-        question={t('Are you sure you want to delete discount code?')}
-        primaryLabel={t('Delete Discount')}
-        primaryVariant="danger"
-        secondaryLabel={t("No, I don't want to delete")}
-        onDismiss={handleResetDeleteDiscount}
-        onConfirm={handleConfirmDelete}
-        className="cy-delete-dialog"
-      />
-
-      <ConfirmationDialog
-        isOpen={disableModalOpen}
-        title={t('Disable Discount X', { code: selectedDiscount?.code })}
-        question={t('Are you sure you want to disable discount code?')}
-        primaryLabel={t('Disable Discount')}
-        primaryVariant="danger"
-        secondaryLabel={t("No, I don't want to disable")}
-        onDismiss={handleResetDisableDiscount}
-        onConfirm={handleConfirmHide}
-        className="cy-delete-dialog"
-      />
-
-      <ConfirmationDialog
-        isOpen={enableDiscountModalOpen}
-        title={t('Enable Discount X', { code: selectedDiscount?.code })}
-        question={t('Are you sure you want to enable discount code?')}
-        primaryLabel={t('Enable Discount')}
-        primaryVariant="danger"
-        secondaryLabel={t("No, I don't want to enable")}
-        onDismiss={handleResetEnableDiscount}
-        onConfirm={handleConfirmEnable}
-        className="cy-delete-dialog"
-      />
-
-      <Form
-        id="profile-form"
-        method="post"
-        noValidate
-        aria-describedby="general-error"
-        className="hidden"
-        ref={discountActionForm}
-      >
-        <input type="hidden" name="actionId" value={actionId} />
-        <input
-          type="hidden"
-          name="discount-code"
-          value={selectedDiscount?.id}
-        />
-      </Form>
     </Main>
   );
 }

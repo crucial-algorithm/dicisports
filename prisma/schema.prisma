@@ -435,7 +435,7 @@ model Organizer {
 }
 
 enum DiscountCodeStatus {
-  auto
+  active
   deleted
   disabled
 }
@@ -449,7 +449,7 @@ model DiscountCode {
   createdById String              @map("created_by") @db.VarChar(20)
   organizer   Organizer           @relation(fields: [organizerId], references: [id])
   organizerId String              @map("organizer_id") @db.VarChar(20)
-  status      DiscountCodeStatus  @default(auto)
+  status      DiscountCodeStatus  @default(active)
   createdAt   DateTime            @default(now()) @map("created_at")
   updatedAt   DateTime            @updatedAt @map("updated_at")
 

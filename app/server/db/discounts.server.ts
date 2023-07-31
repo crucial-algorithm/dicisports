@@ -15,7 +15,7 @@ async function findDiscountCodesForOrganizer(organizerId: string) {
         status: { not: DiscountCodeStatus.deleted }
       },
       orderBy: {
-        createdAt: 'asc'
+        createdAt: 'desc'
       }
     })
   ).map(dbDiscountCodeToDiscountCode);
@@ -32,7 +32,7 @@ async function upsertDiscountCode(data: DiscountCodeInput) {
       code: data.code,
       value: data.value * 1000,
       fixed: data.fixed,
-      status: DiscountCodeStatus.auto
+      status: DiscountCodeStatus.active
     },
     create: {
       id: Id(),
@@ -102,7 +102,7 @@ async function enableDiscountCode(id: string) {
   return await db.discountCode.update({
     where: { id },
     data: {
-      status: DiscountCodeStatus.auto
+      status: DiscountCodeStatus.active
     }
   });
 }

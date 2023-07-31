@@ -137,7 +137,7 @@ function handleApplyDiscount(
   fixedDiscount: boolean
 ): number {
   if (fixedDiscount) {
-    return subtotal - discountValue > 0 ? subtotal - discountValue : 0;
+    return subtotal - discountValue <= 0 ? 0 : subtotal - discountValue;
   }
 
   return subtotal - subtotal * (discountValue / 1000 / 100);

@@ -8,7 +8,7 @@
 
 */
 -- CreateEnum
-CREATE TYPE "DiscountCodeStatus" AS ENUM ('auto', 'deleted', 'disabled');
+CREATE TYPE "DiscountCodeStatus" AS ENUM ('active', 'deleted', 'disabled');
 
 -- AlterTable
 ALTER TABLE "bookings" ADD COLUMN     "applied_discount" TEXT;
@@ -17,7 +17,7 @@ ALTER TABLE "bookings" ADD COLUMN     "applied_discount" TEXT;
 ALTER TABLE "discount_codes" DROP CONSTRAINT "discount_codes_pkey",
 DROP COLUMN "active",
 ADD COLUMN     "id" TEXT NOT NULL,
-ADD COLUMN     "status" "DiscountCodeStatus" NOT NULL DEFAULT 'auto',
+ADD COLUMN     "status" "DiscountCodeStatus" NOT NULL DEFAULT 'active',
 ADD CONSTRAINT "discount_codes_pkey" PRIMARY KEY ("id");
 
 -- AlterTable
