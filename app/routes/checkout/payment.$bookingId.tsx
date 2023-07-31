@@ -202,21 +202,6 @@ export const action: ActionFunction = async ({ request, params }) => {
         return badRequest({ errors: { discountError: t('No Discount Code') } });
       }
 
-      if (dbDiscountCode.fixed) {
-        const bookingCart = await findBookingCart(clientId, eventId);
-        const totalPrice = bookingAmount(
-          bookingCart,
-          dbDiscountCode.value,
-          dbDiscountCode.fixed
-        );
-
-        if (totalPrice < 0) {
-          return badRequest({
-            errors: { discountError: t('Discount Cannot be applied') }
-          });
-        }
-      }
-
       await applyDiscountCode(
         booking.id,
         `${dbDiscountCode.code}|${dbDiscountCode.value}|${dbDiscountCode.fixed}`
@@ -374,6 +359,7 @@ export default function CheckoutPaymentRoute() {
                 script={CHECKOUT_FORM_SCRIPT}
                 gatewayTransactionId={gatewayTransactionId}
                 cart={cart}
+                appliedDiscount={appliedDiscount}
                 formContext={formContext}
                 redirectUrl={`${domainUrl}/checkout/submitted/${ourTransactionId}`}
               />
@@ -412,6 +398,7 @@ type PaymentFormProps = {
   cart: UICartRow[];
   formContext: string;
   redirectUrl: string;
+  appliedDiscount?: string | null;
 };
 
 function PaymentForm({
@@ -419,16 +406,28 @@ function PaymentForm({
   gatewayTransactionId,
   cart,
   formContext,
-  redirectUrl
+  redirectUrl,
+  appliedDiscount
 }: PaymentFormProps) {
   const [theme] = useTheme();
   const style = JSON.stringify(
     theme === 'dark' ? sibsDarkTheme : sibsLightTheme
   );
   const formScriptSrc = `${script}?id=${gatewayTransactionId}`;
+
+  function handleAmount(): number {
+    if (appliedDiscount) {
+      const [, value, fixed] = appliedDiscount.split('|');
+
+      return bookingAmount(cart, parseInt(value), JSON.parse(fixed));
+    }
+
+    return bookingAmount(cart);
+  }
+
   const formConfig = JSON.stringify({
     paymentMethodList: [],
-    amount: { value: bookingAmount(cart) / 1000, currency: 'EUR' },
+    amount: { value: handleAmount() / 1000, currency: 'EUR' },
     language: 'pt',
     redirectUrl,
     customerData: null

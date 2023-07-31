@@ -965,22 +965,6 @@ describe('Checkout', () => {
         .contains('40€');
     });
 
-    it('should not apply discount if discount value surpasses total price', () => {
-      cy.intercept('POST', '/checkout/payment/qR4nqWpTdQy8QZu29ANu*')
-      .as('ApplyDiscount')
-
-      .visitAndWaitForHydration('/checkout/payment/qR4nqWpTdQy8QZu29ANu')
-
-      .get('input[name=discount-code]')
-      .clear()
-      .type('GET-FIT-50')
-
-      .get('#apply-discount')
-      .click()
-
-      .wait('@ApplyDiscount');
-    });
-
     it('should show applied discount information', () => {
       cy.intercept('POST', '/checkout/payment/qR4nqWpTdQy8QZu29ANu*')
         .as('ApplyDiscount')

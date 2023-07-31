@@ -132,14 +132,15 @@ function bookingAmount(
 }
 
 function handleApplyDiscount(
-  total: number,
+  subtotal: number,
   discountValue: number,
   fixedDiscount: boolean
 ): number {
+  if (fixedDiscount) {
+    return subtotal - discountValue > 0 ? subtotal - discountValue : 0;
+  }
 
-  return fixedDiscount
-    ? total - discountValue
-    : total - total * (discountValue / 1000 / 100);
+  return subtotal - subtotal * (discountValue / 1000 / 100);
 }
 
 // Function that validates identity card according to Autenticação.gov
