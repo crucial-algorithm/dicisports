@@ -36,14 +36,14 @@ export default function DisplayCart({
   action?: string;
 } & React.ComponentProps<'div'>) {
   const { t } = useTranslation('checkout');
-  const [discountCode, discountValue, fixedDiscount] = appliedDiscount?.split(
+  const [discountCode, discountValue, isFixedDiscount] = appliedDiscount?.split(
     '|'
   ) || ['', '', ''];
   const subtotal = bookingAmount(cart);
   const totalPrice = bookingAmount(
     cart,
     discountValue ? parseInt(discountValue) : undefined,
-    fixedDiscount ? JSON.parse(fixedDiscount) : false
+    isFixedDiscount ? JSON.parse(isFixedDiscount) : false
   );
 
   return (
@@ -109,7 +109,7 @@ export default function DisplayCart({
                 <DisplayAppliedDiscount
                   code={discountCode}
                   value={parseInt(discountValue)}
-                  fixed={JSON.parse(fixedDiscount)}
+                  isFixedDiscount={JSON.parse(isFixedDiscount)}
                   t={t}
                 />
               </div>
@@ -149,19 +149,19 @@ export default function DisplayCart({
 function DisplayAppliedDiscount({
   code,
   value,
-  fixed,
+  isFixedDiscount,
   t
 }: {
   code: string;
   value: number;
-  fixed: boolean;
+  isFixedDiscount: boolean;
   t: TFunction;
 }) {
   return (
     <div className="flex flex-col gap-y-2">
       <div className="flex flex-row justify-between">
         <H6>{t('Applied Discount')}</H6>
-        <H6>{`-${value / 1000}${fixed ? '€' : '%'}`}</H6>
+        <H6>{`-${value / 1000}${isFixedDiscount ? '€' : '%'}`}</H6>
       </div>
       <div className="flex flex-row justify-between">
         <H6 className="dark:text-blueGray-500">{code}</H6>
