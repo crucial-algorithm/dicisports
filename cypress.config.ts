@@ -7,7 +7,7 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const { CY_REQUEST_TIMEOUT, CY_RESPONSE_TIMEOUT, CY_DEFAULT_COMMAND_TIMEOUT } =
+const { CY_BASE_URL, MAILGUN_ENDPOINT, CY_REQUEST_TIMEOUT, CY_RESPONSE_TIMEOUT, CY_DEFAULT_COMMAND_TIMEOUT } =
   process.env;
 
 const requestTimeout = CY_REQUEST_TIMEOUT
@@ -29,10 +29,10 @@ export default defineConfig({
   responseTimeout,
   defaultCommandTimeout,
   e2e: {
-    baseUrl: 'http://localhost:3000',
+    baseUrl: CY_BASE_URL,
     experimentalSessionAndOrigin: true,
     env: {
-      HTTP_CATCHER: 'http://localhost:3001/',
+      HTTP_CATCHER: MAILGUN_ENDPOINT,
       browserPermissions: {
         geolocation: 'allow'
       }
