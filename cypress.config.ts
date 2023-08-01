@@ -19,6 +19,8 @@ const responseTimeout = CY_RESPONSE_TIMEOUT
 const defaultCommandTimeout = CY_DEFAULT_COMMAND_TIMEOUT
   ? Number(CY_DEFAULT_COMMAND_TIMEOUT)
   : undefined;
+const baseUrl = CY_BASE_URL ? CY_BASE_URL : 'http://localhost:3000/';
+const HTTP_CATCHER = MAILGUN_ENDPOINT ? MAILGUN_ENDPOINT : 'http://localhost:3001/';
 
 export default defineConfig({
   viewportWidth: 375,
@@ -29,10 +31,10 @@ export default defineConfig({
   responseTimeout,
   defaultCommandTimeout,
   e2e: {
-    baseUrl: CY_BASE_URL,
+    baseUrl,
     experimentalSessionAndOrigin: true,
     env: {
-      HTTP_CATCHER: MAILGUN_ENDPOINT,
+      HTTP_CATCHER,
       browserPermissions: {
         geolocation: 'allow'
       }
