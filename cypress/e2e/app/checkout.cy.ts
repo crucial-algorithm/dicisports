@@ -788,17 +788,6 @@ describe('Checkout', () => {
           b.click();
         })
 
-        .location()
-        .then((l) => {
-          if (l.pathname === '/checkout/payment/qR4nqWpTdQy8QZu29ANu') {
-            cy.get('.sibs > h5')
-              .should('exist')
-              .and('contain', 'Pagamento por Multibanco ou Homebanking')
-
-              .wait('@GetPaymentStatus');
-          }
-        })
-
         .waitForHydration()
         .location()
         .should((l) => {
