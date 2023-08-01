@@ -286,7 +286,6 @@ export default function ManageDiscountCodesRoute() {
                 className="mb-4 md:mb-0"
                 type="button"
                 size="medium"
-                variant="danger"
                 name="disable-button"
                 onClick={handleOpenDisableDiscountModal}
               >
@@ -297,7 +296,6 @@ export default function ManageDiscountCodesRoute() {
                 className="mb-4 md:mb-0"
                 type="button"
                 size="medium"
-                variant="danger"
                 name="enable-button"
                 onClick={handleOpenEnableDiscountModal}
               >

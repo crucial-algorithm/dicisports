@@ -20,8 +20,5 @@ ADD COLUMN     "id" TEXT NOT NULL,
 ADD COLUMN     "status" "DiscountCodeStatus" NOT NULL DEFAULT 'active',
 ADD CONSTRAINT "discount_codes_pkey" PRIMARY KEY ("id");
 
--- AlterTable
-ALTER TABLE "race_participants" ALTER COLUMN "event_id" DROP NOT NULL;
-
 -- CreateIndex
 CREATE UNIQUE INDEX "discount_codes_code_organizer_id_key" ON "discount_codes"("code", "organizer_id");
