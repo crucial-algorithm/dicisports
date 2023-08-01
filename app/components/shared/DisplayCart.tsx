@@ -42,7 +42,7 @@ export default function DisplayCart({
   const subtotal = bookingAmount(cart);
   const totalPrice = bookingAmount(
     cart,
-    discountValue ? parseInt(discountValue) : undefined,
+    discountValue ? Number(discountValue) : undefined,
     isFixedDiscount ? JSON.parse(isFixedDiscount) : false
   );
 
@@ -108,7 +108,7 @@ export default function DisplayCart({
               <div className="mt-8" data-cy="discount-info">
                 <DisplayAppliedDiscount
                   code={discountCode}
-                  value={parseInt(discountValue)}
+                  value={Number(discountValue)}
                   isFixedDiscount={JSON.parse(isFixedDiscount)}
                   t={t}
                 />

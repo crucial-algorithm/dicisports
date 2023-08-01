@@ -414,7 +414,7 @@ function PaymentForm({
     if (appliedDiscount) {
       const [, value, fixed] = appliedDiscount.split('|');
 
-      return bookingAmount(cart, parseInt(value), JSON.parse(fixed));
+      return bookingAmount(cart, Number(value), JSON.parse(fixed));
     }
 
     return bookingAmount(cart);
