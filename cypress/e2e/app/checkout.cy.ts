@@ -776,7 +776,7 @@ describe('Checkout', () => {
         .should('exist');
     });
 
-    it.only('should have correct bib numbers', () => {
+    it('should have correct bib numbers', () => {
       cy.intercept('GET', '/payment-status/*')
         .as('GetPaymentStatus')
 
