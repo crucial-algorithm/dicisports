@@ -54,7 +54,7 @@ jobs:
         uses: cypress-io/github-action@v4.2.0
         with:
           browser: chrome
-          record: true
+          record: false
           build: npm run ci:build
           start: npm run dev
           spec: cypress/e2e/app/checkout.cy.ts
