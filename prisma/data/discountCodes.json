@@ -38,5 +38,14 @@
     "fixed": false,
     "createdById": "gZZCGTHBq9SxdpRFoP8b",
     "organizerId": "qyPfCac23fMByqNa7L6n"
+  },
+  {
+    "id": "GK6mACnFumj3yMbkivPe",
+    "code": "SPRING-30",
+    "value": 30000,
+    "fixed": true,
+    "createdById": "gZZCGTHBq9SxdpRFoP8b",
+    "organizerId": "qyPfCac23fMByqNa7L6n",
+    "status": "disabled"
   }
 ]

@@ -229,7 +229,7 @@ describe('Organizer', () => {
           expect(l.pathname).to.eq('/o/discount-codes/zWZKBmZowXrns2pP4QQ2');
         })
 
-        .get('[data-cy=disable-button]')
+        .get('#disable-button')
         .should('not.exist')
 
         .get('#cancel-button')
@@ -240,9 +240,41 @@ describe('Organizer', () => {
           expect(l.pathname).to.eq('/o/discount-codes');
         })
 
-        .get('tr')
-        .should('have.length', 6)
+        .get('#status-zWZKBmZowXrns2pP4QQ2')
         .contains('Inactivo');
+    });
+
+    it('should activate a discount code', () => {
+      cy.loginOrganizer()
+        .visitAndWaitForHydration('/o/discount-codes/GK6mACnFumj3yMbkivPe')
+
+        .intercept('POST', '/o/discount-codes/GK6mACnFumj3yMbkivPe*')
+        .as('EnableDiscount')
+
+        .get('#enable-button')
+        .should('exist')
+        .click()
+
+        .wait('@EnableDiscount')
+
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.eq('/o/discount-codes/GK6mACnFumj3yMbkivPe');
+        })
+
+        .get('#enable-button')
+        .should('not.exist')
+
+        .get('#cancel-button')
+        .click()
+
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.eq('/o/discount-codes');
+        })
+
+        .get('#status-GK6mACnFumj3yMbkivPe')
+        .contains('Activo');
     });
 
     it('should edit discount code', () => {

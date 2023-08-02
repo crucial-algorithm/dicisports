@@ -293,7 +293,7 @@ export default function ManageDiscountCodesRoute() {
                 size="medium"
                 name="actionId"
                 value={actionIds.enable}
-                data-cy="enable-button"
+                id="enable-button"
                 variant="secondary"
               >
                 {t('Enable Button')}

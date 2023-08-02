@@ -63,11 +63,12 @@ export default function OrganizerDiscountCodesRoute() {
     );
   }
 
-  function cellState({ status }: DiscountCode) {
+  function cellState({ status, id }: DiscountCode) {
     const isDiscountActive = status === DiscountCodeStatus.active;
 
     return (
       <span
+        id={`status-${id}`}
         className={clsx('rounded-2xl text-white py-2 px-8 text-sm', {
           'bg-gray-600': !isDiscountActive,
           'bg-emerald-600': isDiscountActive
