@@ -119,8 +119,28 @@ function generateSlug(str: string) {
   return str;
 }
 
-function bookingAmount(cart: UICartRow[]) {
-  return cart.reduce((total, { qty, price }) => total + qty * price, 0);
+function bookingAmount(
+  cart: UICartRow[],
+  discountValue?: number,
+  isFixedDiscount: boolean = false
+) {
+  const total = cart.reduce((total, { qty, price }) => total + qty * price, 0);
+
+  return discountValue
+    ? handleApplyDiscount(total, discountValue, isFixedDiscount)
+    : total;
+}
+
+function handleApplyDiscount(
+  subtotal: number,
+  discountValue: number,
+  isFixedDiscount: boolean
+): number {
+  if (isFixedDiscount) {
+    return subtotal - discountValue <= 0 ? 0 : subtotal - discountValue;
+  }
+
+  return subtotal - subtotal * (discountValue / 1000 / 100);
 }
 
 // Function that validates identity card according to Autenticação.gov

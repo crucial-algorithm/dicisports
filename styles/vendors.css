@@ -30,6 +30,8 @@
     color: var(--color-white)
 }
 
-.dici-input-mask.p-inputtext.p-component {
-    @apply input-text
+.dici-input-mask.p-inputtext:enabled:focus {
+    outline: none;
+    box-shadow: none;
+    border: 0;
 }

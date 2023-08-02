@@ -149,6 +149,170 @@ describe('Organizer', () => {
           );
         });
     });
+
+    it('should create new discount code', () => {
+      cy.loginOrganizer()
+        .visitAndWaitForHydration('/o/discount-codes')
+        .get('#new-discount')
+        .click()
+
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.eq('/o/discount-codes/new');
+        })
+
+        .get('input[name=code]')
+        .type('GET-FIT-35')
+
+        .get('input[name=discount-value]')
+        .type('35')
+
+        .intercept('POST', '/o/discount-codes/new*')
+        .as('CreateDiscount')
+
+        .get('button[name=create-button]')
+        .should('exist')
+        .click()
+
+        .wait('@CreateDiscount')
+
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.eq('/o/discount-codes');
+        })
+
+        .get('tr')
+        .should('have.length', 8)
+        .eq(1)
+        .contains('GET-FIT-35');
+    });
+
+    it('should delete a discount code', () => {
+      cy.loginOrganizer()
+        .visitAndWaitForHydration('/o/discount-codes/zWZKBmZowXrns2pP4QQ2')
+
+        .get('button[name=delete-button]')
+        .should('exist')
+        .click()
+
+        .get('.cy-delete-dialog')
+        .should('exist')
+
+        .get('button.cy-primary')
+        .should('exist')
+        .click()
+
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.eq('/o/discount-codes');
+        })
+
+        .get('tr')
+        .should('have.length', 6);
+    });
+
+    it('should hide a discount code', () => {
+      cy.loginOrganizer()
+        .visitAndWaitForHydration('/o/discount-codes/zWZKBmZowXrns2pP4QQ2')
+
+        .intercept('POST', '/o/discount-codes/zWZKBmZowXrns2pP4QQ2*')
+        .as('DisableDiscount')
+
+        .get('#disable-button')
+        .should('exist')
+        .click()
+
+        .wait('@DisableDiscount')
+
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.eq('/o/discount-codes/zWZKBmZowXrns2pP4QQ2');
+        })
+
+        .get('#disable-button')
+        .should('not.exist')
+
+        .get('#cancel-button')
+        .click()
+
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.eq('/o/discount-codes');
+        })
+
+        .get('#status-zWZKBmZowXrns2pP4QQ2')
+        .contains('Inactivo');
+    });
+
+    it('should activate a discount code', () => {
+      cy.loginOrganizer()
+        .visitAndWaitForHydration('/o/discount-codes/GK6mACnFumj3yMbkivPe')
+
+        .intercept('POST', '/o/discount-codes/GK6mACnFumj3yMbkivPe*')
+        .as('EnableDiscount')
+
+        .get('#enable-button')
+        .should('exist')
+        .click()
+
+        .wait('@EnableDiscount')
+
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.eq('/o/discount-codes/GK6mACnFumj3yMbkivPe');
+        })
+
+        .get('#enable-button')
+        .should('not.exist')
+
+        .get('#cancel-button')
+        .click()
+
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.eq('/o/discount-codes');
+        })
+
+        .get('#status-GK6mACnFumj3yMbkivPe')
+        .contains('Activo');
+    });
+
+    it('should edit discount code', () => {
+      cy.loginOrganizer()
+        .visitAndWaitForHydration('/o/discount-codes')
+
+        .get('tr')
+        .should('have.length', 7)
+        .eq(1)
+        .click()
+
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.include('/o/discount-codes/');
+        })
+
+        .get('input[name=code]')
+        .clear()
+        .type('GET-5')
+
+        .intercept('POST', '/o/discount-codes/*')
+        .as('SaveDiscount')
+
+        .get('button[name=save-button]')
+        .should('exist')
+        .click()
+
+        .wait('@SaveDiscount')
+
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.eq('/o/discount-codes');
+        })
+
+        .get('tr')
+        .should('have.length', 7)
+        .contains('GET-5');
+    });
   });
 
   context('Security', () => {
