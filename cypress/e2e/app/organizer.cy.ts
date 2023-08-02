@@ -215,15 +215,24 @@ describe('Organizer', () => {
       cy.loginOrganizer()
         .visitAndWaitForHydration('/o/discount-codes/zWZKBmZowXrns2pP4QQ2')
 
-        .get('button[name=disable-button]')
+        .intercept('POST', '/o/discount-codes/zWZKBmZowXrns2pP4QQ2*')
+        .as('DisableDiscount')
+
+        .get('#disable-button')
         .should('exist')
         .click()
 
-        .get('.cy-delete-dialog')
-        .should('exist')
+        .wait('@DisableDiscount')
 
-        .get('button.cy-primary')
-        .should('exist')
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.eq('/o/discount-codes/zWZKBmZowXrns2pP4QQ2');
+        })
+
+        .get('[data-cy=disable-button]')
+        .should('not.exist')
+
+        .get('#cancel-button')
         .click()
 
         .location()

@@ -262,7 +262,7 @@ export default function ManageDiscountCodesRoute() {
           />
         </FormField>
         <ButtonGroup>
-          <ButtonLink variant="secondary" to="/o/discount-codes">
+          <ButtonLink id="cancel-button" variant="secondary" to="/o/discount-codes">
             {t('Cancel Button')}
           </ButtonLink>
           <Button
@@ -281,7 +281,7 @@ export default function ManageDiscountCodesRoute() {
                 size="medium"
                 name="actionId"
                 value={actionIds.disable}
-                data-cy="disable-button"
+                id="disable-button"
                 variant="secondary"
               >
                 {t('Disable Button')}
