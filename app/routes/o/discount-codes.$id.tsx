@@ -1,12 +1,13 @@
 import { Role } from '@prisma/client';
 import * as React from 'react';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { ActionFunction, LoaderFunction } from '@remix-run/node';
 import { Form, useActionData, useLoaderData } from '@remix-run/react';
 import type { TFunction } from 'i18next';
 import { useTranslation } from 'react-i18next';
 import { json, redirect } from 'react-router';
 import { z, ZodError } from 'zod';
+import { Toast } from 'primereact/toast';
 
 import Button, { ButtonLink } from '~/components/shared/Button';
 import ButtonGroup from '~/components/shared/ButtonGroup';
@@ -52,6 +53,11 @@ const actionIds = {
   enable: 'enable-discount'
 };
 
+type ResponseFeedback = {
+  severity: 'error' | 'success' | 'info' | 'warn';
+  message: string;
+};
+
 export const action: ActionFunction = async ({ request, params }) => {
   const t = await i18n.getFixedT(request, 'discount-codes');
 
@@ -92,6 +98,8 @@ export const action: ActionFunction = async ({ request, params }) => {
     fixed: z.boolean()
   });
 
+  let feedback: ResponseFeedback | undefined;
+
   try {
     if (actionId === actionIds.delete) {
       await deleteDiscountCode(discountCodeId);
@@ -101,14 +109,16 @@ export const action: ActionFunction = async ({ request, params }) => {
 
     if (actionId === actionIds.disable) {
       await disableDiscountCode(discountCodeId);
+      feedback = { severity: 'success', message: t('Discount Disabled') };
 
-      return redirect(`/o/discount-codes?message=${t('Discount Disabled')}`);
+      return json({ feedback });
     }
 
     if (actionId === actionIds.enable) {
       await enableDiscountCode(discountCodeId);
+      feedback = { severity: 'success', message: t('Discount Enabled') };
 
-      return redirect(`/o/discount-codes?message=${t('Discount Enabled')}`);
+      return json({ feedback });
     }
 
     DiscountCodeSchema.parse(data);
@@ -173,12 +183,10 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 export default function ManageDiscountCodesRoute() {
   const { discountCode } = useLoaderData<LoaderData>();
   const actionData = useActionData<ActionData>();
+  const toast = useRef<Toast>(null);
+  const feedback = actionData?.feedback;
 
   const [deleteModalOpen, setDeleteModalOpen] = useState<boolean>(false);
-  const [disableModalOpen, setDisableModalOpen] = useState<boolean>(false);
-  const [enableDiscountModalOpen, setEnableDiscountModalOpen] =
-    useState<boolean>(false);
-  const [actionId, setActionId] = useState<string>('');
 
   const { t } = useTranslation('discount-codes');
   const isUpdate = !!discountCode;
@@ -187,32 +195,10 @@ export default function ManageDiscountCodesRoute() {
 
   function handleOpenDeleteDiscountModal() {
     setDeleteModalOpen(true);
-    setActionId(actionIds.delete);
-  }
-
-  function handleOpenDisableDiscountModal() {
-    setDisableModalOpen(true);
-    setActionId(actionIds.disable);
-  }
-
-  function handleOpenEnableDiscountModal() {
-    setEnableDiscountModalOpen(true);
-    setActionId(actionIds.enable);
   }
 
   function handleResetDeleteDiscount() {
     setDeleteModalOpen(false);
-    setActionId('');
-  }
-
-  function handleResetDisableDiscount() {
-    setDisableModalOpen(false);
-    setActionId('');
-  }
-
-  function handleResetEnableDiscount() {
-    setEnableDiscountModalOpen(false);
-    setActionId('');
   }
 
   function handleSubmitForm() {
@@ -227,18 +213,25 @@ export default function ManageDiscountCodesRoute() {
     handleResetDeleteDiscount();
   }
 
-  function handleConfirmHide() {
-    handleSubmitForm();
-    handleResetDisableDiscount();
-  }
+  useEffect(() => {
+    const main = window.document.querySelector('#organizer-main-container');
 
-  function handleConfirmEnable() {
-    handleSubmitForm();
-    handleResetEnableDiscount();
-  }
+    if (!toast.current || !feedback) {
+      return;
+    }
+
+    toast.current.show({
+      severity: feedback.severity,
+      detail: feedback.message,
+      life: 3000
+    });
+
+    main && main.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [feedback]);
 
   return (
     <Main>
+      <Toast ref={toast} />
       <UploadForm method="post" ref={discountActionForm}>
         <FormField
           label={t('Code')}
@@ -284,20 +277,24 @@ export default function ManageDiscountCodesRoute() {
             {discountCode.status === 'active' ? (
               <Button
                 className="mb-4 md:mb-0"
-                type="button"
+                type="submit"
                 size="medium"
-                name="disable-button"
-                onClick={handleOpenDisableDiscountModal}
+                name="actionId"
+                value={actionIds.disable}
+                data-cy="disable-button"
+                variant="secondary"
               >
                 {t('Disable Button')}
               </Button>
             ) : (
               <Button
                 className="mb-4 md:mb-0"
-                type="button"
+                type="submit"
                 size="medium"
-                name="enable-button"
-                onClick={handleOpenEnableDiscountModal}
+                name="actionId"
+                value={actionIds.enable}
+                data-cy="enable-button"
+                variant="secondary"
               >
                 {t('Enable Button')}
               </Button>
@@ -325,30 +322,7 @@ export default function ManageDiscountCodesRoute() {
           onConfirm={handleConfirmDelete}
           className="cy-delete-dialog"
         />
-
-        <ConfirmationDialog
-          isOpen={disableModalOpen}
-          title={t('Disable Discount X', { code: discountCode?.code })}
-          question={t('Are you sure you want to disable discount code?')}
-          primaryLabel={t('Disable Discount')}
-          primaryVariant="danger"
-          secondaryLabel={t("No, I don't want to disable")}
-          onDismiss={handleResetDisableDiscount}
-          onConfirm={handleConfirmHide}
-          className="cy-delete-dialog"
-        />
-
-        <ConfirmationDialog
-          isOpen={enableDiscountModalOpen}
-          title={t('Enable Discount X', { code: discountCode?.code })}
-          question={t('Are you sure you want to enable discount code?')}
-          primaryLabel={t('Enable Discount')}
-          primaryVariant="danger"
-          secondaryLabel={t("No, I don't want to enable")}
-          onDismiss={handleResetEnableDiscount}
-          onConfirm={handleConfirmEnable}
-          className="cy-delete-dialog"
-        />
+        <input type="hidden" name="discount-code" value={discountCode?.id} />
       </UploadForm>
 
       <Form
@@ -359,7 +333,7 @@ export default function ManageDiscountCodesRoute() {
         className="hidden"
         ref={discountActionForm}
       >
-        <input type="hidden" name="actionId" value={actionId} />
+        <input type="hidden" name="actionId" value={actionIds.delete} />
         <input type="hidden" name="discount-code" value={discountCode?.id} />
       </Form>
     </Main>
