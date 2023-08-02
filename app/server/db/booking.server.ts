@@ -160,6 +160,25 @@ async function findConfirmedBookings(eventId: string): Promise<Booking[] | null>
   });
 }
 
+// discountInfo contains applyied discount information - discount code|value|fixed
+async function applyDiscountCode(id: string, discountInfo: string) {
+  return await db.booking.update({
+    where: { id },
+    data: {
+      appliedDiscount: discountInfo
+    }
+  });
+}
+
+async function removeBookingDiscount(id: string) {
+  return await db.booking.update({
+    where: { id },
+    data: {
+      appliedDiscount: null
+    }
+  });
+}
+
 export {
   updateBookingStatus,
   findBooking,
@@ -169,5 +188,7 @@ export {
   changeRegistrationToAuthUser,
   findUserBookingsList,
   findBookingById,
-  findConfirmedBookings
+  findConfirmedBookings,
+  applyDiscountCode,
+  removeBookingDiscount
 };

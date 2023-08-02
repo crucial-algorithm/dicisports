@@ -4,7 +4,37 @@
   "State": "Estado",
   "Active": "Activo",
   "Inactive": "Inactivo",
-  "Empty results": "Nenhum código de desconto corresponde à sua pesquisa.",
+  "Empty results": "Nenhum desconto corresponde à sua pesquisa.",
   "Create your 1st discount": "Crie o seu primeiro desconto.",
-  "Create": "Criar Desconto"
+  "Create": "Criar Desconto",
+  "Fixed Value": "Valor fixo",
+  "Non-Fixed Value": "Valor percentual",
+
+  "Save Button": "Guardar",
+  "Create Button": "Criar",
+  "Cancel Button": "Cancelar",
+  "Enable Button": "Ativar",
+  "Disable Button": "Desativar",
+  "Edit Button": "Editar",
+  "Delete Button": "Apagar Desconto",
+
+  "Field Required": "Campo obrigatório",
+  "Positive Number": "Insira um número positivo",
+
+  "Enable": "ativar",
+  "Disable": "desativar",
+  "Remove": "apagar",
+
+  "Delete Discount X": "Apagar o desconto \"{{code}}\"",
+  "Delete Discount": "Apagar Desconto",
+  "Are you sure you want to delete discount code?": "Tem a certeza que quer apagar o desconto? Não há como voltar atrás",
+  "No, I don't want to delete": "Ignorar",
+
+  "Discount Deleted": "Desconto apagado!",
+  "Discount Disabled": "Desconto destivado!",
+  "Discount Enabled": "Desconto ativado!",
+  "Error X": "Ocorreu um erro ao tentar {{action}} o desconto. Tente novamente mais tarde.",
+  "Max 100%": "Valor percentual não pode exceder os 100%",
+  "Success - Update": "Desconto atualizado!",
+  "Success - Create": "Desconto criado!"
 }

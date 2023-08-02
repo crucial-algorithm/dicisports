@@ -557,6 +557,14 @@ type OrganizerInput = {
 
 type DiscountCode = DBDiscountCode & {};
 
+type DiscountCodeInput = {
+  code: string;
+  value: number;
+  fixed: boolean;
+  organizerId: string;
+  createdById: string;
+};
+
 type SibsWebHookSchema = {
   returnStatus: { statusMsg: string; statusCode: string };
   paymentStatus: 'Success' | 'Error' | 'Declined';
@@ -648,6 +656,7 @@ export {
   BookingList,
   DBRawBookingList,
   DiscountCode,
+  DiscountCodeInput,
   SibsWebHookSchema,
   SibsStatusResponse,
   EventTeam

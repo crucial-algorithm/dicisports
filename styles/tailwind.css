@@ -98,4 +98,10 @@
         disabled:text-gray-400 dark:disabled:text-blueGray-500
         focus-ring;
     }
+
+    /*This is a class declared to override Prime React input mask styles*/
+    /*Since input-text is a custom class, we need to declare this one here - inside a @layer - in order to work/not throw an error*/
+    .dici-input-mask.p-inputtext.p-component {
+        @apply input-text
+    }
 }
