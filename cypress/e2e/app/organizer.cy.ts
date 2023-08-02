@@ -182,7 +182,7 @@ describe('Organizer', () => {
         })
 
         .get('tr')
-        .should('have.length', 7)
+        .should('have.length', 8)
         .eq(1)
         .contains('GET-FIT-35');
     });
@@ -208,7 +208,7 @@ describe('Organizer', () => {
         })
 
         .get('tr')
-        .should('have.length', 5);
+        .should('have.length', 6);
     });
 
     it('should hide a discount code', () => {
@@ -282,7 +282,7 @@ describe('Organizer', () => {
         .visitAndWaitForHydration('/o/discount-codes')
 
         .get('tr')
-        .should('have.length', 6)
+        .should('have.length', 7)
         .eq(1)
         .click()
 
@@ -310,7 +310,7 @@ describe('Organizer', () => {
         })
 
         .get('tr')
-        .should('have.length', 6)
+        .should('have.length', 7)
         .contains('GET-5');
     });
   });
