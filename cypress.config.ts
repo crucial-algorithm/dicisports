@@ -7,7 +7,14 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const { CY_BASE_URL, MAILGUN_ENDPOINT, CY_REQUEST_TIMEOUT, CY_RESPONSE_TIMEOUT, CY_DEFAULT_COMMAND_TIMEOUT } =
+const {
+  CY_BASE_URL,
+  MAILGUN_ENDPOINT,
+  CY_REQUEST_TIMEOUT,
+  CY_RESPONSE_TIMEOUT,
+  CY_DEFAULT_COMMAND_TIMEOUT,
+  SIBS_WEBHOOK_SECRET
+} =
   process.env;
 
 const requestTimeout = CY_REQUEST_TIMEOUT
@@ -35,6 +42,7 @@ export default defineConfig({
     experimentalSessionAndOrigin: true,
     env: {
       HTTP_CATCHER,
+      SIBS_WEBHOOK_SECRET,
       browserPermissions: {
         geolocation: 'allow'
       }
@@ -42,8 +50,6 @@ export default defineConfig({
     setupNodeEvents(on, config) {
 
       config = cypressBrowserPermissionsPlugin(on, config);
-
-      config.env.SIBS_WEBHOOK_SECRET = process.env.SIBS_WEBHOOK_SECRET;
 
       // implement node event listeners here
       on('task', {

@@ -1065,99 +1065,107 @@ describe('Checkout', () => {
     it('Should keep booking state if payment fails (MBWay Rejected)', () => {
       const secret = Cypress.env('SIBS_WEBHOOK_SECRET');
 
-      encryptMessage(
-        secret,
-        JSON.stringify({
-          token: {
-            value: '351#931111111',
-            tokenType: 'MobilePhone'
-          },
-          amount: {
-            value: 1,
-            currency: 'EUR'
-          },
-          merchant: {
-            terminalId: 1111111,
-            merchantName: 'CRUCIAL ALGORITHM - UNIPESSOAL LDA',
-            transactionId: 'n6TRk6zAzWDjc3pKoxvN'
-          },
-          paymentType: 'PURS',
-          returnStatus: {
-            statusMsg: 'Declined',
-            statusCode: '01.106.0001',
-            statusDescription:
-              'After the operation was successful, was refused by the cardholder.'
-          },
-          paymentMethod: 'MBWAY',
-          paymentStatus: 'Declined',
-          transactionID: 'G8YzvKqT7xfXu37zdsDJ',
-          notificationID: 'd787b6bc-09c1-4e9c-a9ed-3353e51d7b81',
-          transactionDateTime: new Date().toISOString()
-        })
-      ).then((payload) => {
-        cy.request({
-          url: '/wh/sibs',
-          method: 'POST',
-          body: payload.message,
-          headers: {
-            'x-authentication-tag': payload.at,
-            'x-initialization-vector': payload.iv
-          }
-        }).then((response) => {
-          cy.login()
-            .visitAndWaitForHydration('/me')
-            .get('td[data-cy=status-HJtAk2sSktodKez744mt')
-            .contains('Pendente');
+      cy.wrap(null)
+        .then(() =>
+          encryptMessage(
+            secret,
+            JSON.stringify({
+              token: {
+                value: '351#931111111',
+                tokenType: 'MobilePhone'
+              },
+              amount: {
+                value: 1,
+                currency: 'EUR'
+              },
+              merchant: {
+                terminalId: 1111111,
+                merchantName: 'CRUCIAL ALGORITHM - UNIPESSOAL LDA',
+                transactionId: 'n6TRk6zAzWDjc3pKoxvN'
+              },
+              paymentType: 'PURS',
+              returnStatus: {
+                statusMsg: 'Declined',
+                statusCode: '01.106.0001',
+                statusDescription:
+                  'After the operation was successful, was refused by the cardholder.'
+              },
+              paymentMethod: 'MBWAY',
+              paymentStatus: 'Declined',
+              transactionID: 'G8YzvKqT7xfXu37zdsDJ',
+              notificationID: 'd787b6bc-09c1-4e9c-a9ed-3353e51d7b81',
+              transactionDateTime: new Date().toISOString()
+            })
+          )
+        )
+        .then((payload) => {
+          cy.request({
+            url: '/wh/sibs',
+            method: 'POST',
+            body: payload.message,
+            headers: {
+              'x-authentication-tag': payload.at,
+              'x-initialization-vector': payload.iv
+            }
+          }).then((response) => {
+            cy.login()
+              .visitAndWaitForHydration('/me')
+              .get('td[data-cy=status-HJtAk2sSktodKez744mt')
+              .contains('Pendente');
+          });
         });
-      });
     });
 
     it('Should update booking state if payment succeeds (MBWAy Accepted)', () => {
       const secret = Cypress.env('SIBS_WEBHOOK_SECRET');
 
-      encryptMessage(
-        secret,
-        JSON.stringify({
-          token: {
-            value: '351#931111111',
-            tokenType: 'MobilePhone'
-          },
-          amount: {
-            value: 1,
-            currency: 'EUR'
-          },
-          merchant: {
-            terminalId: 1111111,
-            merchantName: 'CRUCIAL ALGORITHM - UNIPESSOAL LDA',
-            transactionId: 'n6TRk6zAzWDjc3pKoxvN'
-          },
-          paymentType: 'PURS',
-          returnStatus: {
-            statusMsg: 'Success',
-            statusCode: '000'
-          },
-          paymentMethod: 'MBWAY',
-          paymentStatus: 'Success',
-          transactionID: 'G8YzvKqT7xfXu37zdsDJ',
-          notificationID: '70293d16-c4ed-4da2-924a-f19c6c4e3f81',
-          transactionDateTime:  new Date().toISOString()
-        })
-      ).then((payload) => {
-        cy.request({
-          url: '/wh/sibs',
-          method: 'POST',
-          body: payload.message,
-          headers: {
-            'x-authentication-tag': payload.at,
-            'x-initialization-vector': payload.iv
-          }
-        }).then((response) => {
-          cy.login()
-            .visitAndWaitForHydration('/me')
-            .get('td[data-cy=status-HJtAk2sSktodKez744mt')
-            .contains('Pendente');
+      cy.wrap(null)
+        .then(() =>
+          encryptMessage(
+            secret,
+            JSON.stringify({
+              token: {
+                value: '351#931111111',
+                tokenType: 'MobilePhone'
+              },
+              amount: {
+                value: 1,
+                currency: 'EUR'
+              },
+              merchant: {
+                terminalId: 1111111,
+                merchantName: 'CRUCIAL ALGORITHM - UNIPESSOAL LDA',
+                transactionId: 'n6TRk6zAzWDjc3pKoxvN'
+              },
+              paymentType: 'PURS',
+              returnStatus: {
+                statusMsg: 'Success',
+                statusCode: '000'
+              },
+              paymentMethod: 'MBWAY',
+              paymentStatus: 'Success',
+              transactionID: 'G8YzvKqT7xfXu37zdsDJ',
+              notificationID: '70293d16-c4ed-4da2-924a-f19c6c4e3f81',
+              transactionDateTime: new Date().toISOString()
+            })
+          )
+        )
+        .then((payload) => {
+          cy.request({
+            url: '/wh/sibs',
+            method: 'POST',
+            body: payload.message,
+            headers: {
+              'x-authentication-tag': payload.at,
+              'x-initialization-vector': payload.iv
+            }
+          }).then((response) => {
+            cy.login()
+              .visitAndWaitForHydration('/me')
+              .get('td[data-cy=status-HJtAk2sSktodKez744mt')
+              .contains('Confirmado');
+          });
         });
-      });
     });
 
   });
