@@ -371,7 +371,7 @@ export default function CheckoutPaymentRoute() {
             fetcher={displayCartFetcher}
             appliedDiscount={appliedDiscount}
             discountCodeError={errors.discountError}
-            showDiscountCodeInput={true}
+            showDiscountCodeInput={!isPaid && !(submittedPayments && submittedPayments.length > 0)}
           >
             {!isPaid && !(submittedPayments && submittedPayments.length > 0) && (
               <Button
