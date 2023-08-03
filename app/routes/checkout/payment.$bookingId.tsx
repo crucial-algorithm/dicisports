@@ -176,6 +176,12 @@ export const action: ActionFunction = async ({ request, params }) => {
     return redirect('/');
   }
 
+  const submittedPayments = await findSubmittedPayments(bookingId);
+
+  if (submittedPayments) {
+    return badRequest({ error: t('Ongoing payment') });
+  }
+
   const actionId = form.get('actionId');
 
   if (actionId === 'update-info') {
@@ -372,6 +378,7 @@ export default function CheckoutPaymentRoute() {
           >
             {!isPaid && !(submittedPayments && submittedPayments.length > 0) && (
               <Button
+                id="update-info"
                 name="actionId"
                 className="mt-4 w-full"
                 type="submit"

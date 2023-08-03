@@ -12,5 +12,19 @@
     "updatedAt": null,
     "mbEntity": null,
     "mbReference": null
+  },
+  {
+    "id": "5h9g4ZFmcLhWJoZYt4oe",
+    "method": "REFERENCE",
+    "status": "failed",
+    "amount": 45000,
+    "transactionId": "5h9g4ZFmcLhWJoZYt4oe",
+    "notificationId": null,
+    "expiresAt": null,
+    "bookingId": "qR4nqWpTdQy8QZu29ANu",
+    "createdAt": null,
+    "updatedAt": null,
+    "mbEntity": null,
+    "mbReference": null
   }
 ]

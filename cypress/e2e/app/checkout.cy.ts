@@ -979,27 +979,50 @@ describe('Checkout', () => {
 
     it('should show 0€ when applying 100% discount', () => {
       cy.intercept('POST', '/checkout/payment/qR4nqWpTdQy8QZu29ANu*')
-          .as('ApplyDiscount')
+        .as('ApplyDiscount')
 
-          .visitAndWaitForHydration('/checkout/payment/qR4nqWpTdQy8QZu29ANu')
+        .visitAndWaitForHydration('/checkout/payment/qR4nqWpTdQy8QZu29ANu')
 
-          .get('input[name=discount-code]')
-          .clear()
-          .type('GET-FIT-100%')
+        .get('input[name=discount-code]')
+        .clear()
+        .type('GET-FIT-100%')
 
-          .get('#apply-discount')
-          .click()
+        .get('#apply-discount')
+        .click()
 
-          .wait('@ApplyDiscount')
+        .wait('@ApplyDiscount')
 
-          .get('div[data-cy=discount-info]')
-          .should('exist')
+        .get('div[data-cy=discount-info]')
+        .should('exist')
 
-          .get('[data-cy=subtotal-price]')
-          .contains('45€')
+        .get('[data-cy=subtotal-price]')
+        .contains('45€')
 
-          .get('[data-cy=total-price]')
-          .contains('0€');
+        .get('[data-cy=total-price]')
+        .contains('0€');
+    });
+
+    it('should not be able to update booking when having an ongoing payment', () => {
+      const formData = new FormData();
+
+      formData.append('actionId', 'update-info');
+
+      cy.visitAndWaitForHydration('/checkout/payment/HJtAk2sSktodKez744mt')
+        .get('#update-info')
+        .should('not.exist')
+
+        // We should also test for users trying to make a POST request searching for exploits
+        .request({
+          url: '/checkout/payment/HJtAk2sSktodKez744mt',
+          method: 'POST',
+          body: formData,
+          // This prevents cypress from returning test as failed because of status 400
+          failOnStatusCode: false
+        })
+        .then((res) => {
+          // If he tries to do it while having an ongoing payment, we should return a bad request
+          expect(res.status).to.eq(400);
+        });
     });
   });
 
@@ -1127,7 +1150,6 @@ describe('Checkout', () => {
   });
 
   context('Payments Gateway', () => {
-
     it('Should keep booking state if payment fails (MBWay Rejected)', () => {
       const secret = Cypress.env('SIBS_WEBHOOK_SECRET');
 
@@ -1234,6 +1256,54 @@ describe('Checkout', () => {
         });
     });
 
+    // This one also applies to the test that a failed payment will be marked as payed
+    // if a call with a successful payment is made
+    // TODO: address if we should break this test into two, making a new booking in seed data with a failed payment
+    it('should update booking state if payment succeeds (REFERENCE)', () => {
+      const secret = Cypress.env('SIBS_WEBHOOK_SECRET');
+
+      cy.wrap(null)
+        .then(() =>
+          encryptMessage(
+            secret,
+            JSON.stringify({
+              amount: {
+                value: 10,
+                currency: 'EUR'
+              },
+              merchant: {
+                terminalId: 1000000,
+                transactionId: '5h9g4ZFmcLhWJoZYt4oe'
+              },
+              paymentType: 'PURS',
+              returnStatus: {
+                statusMsg: 'Success',
+                statusCode: '000'
+              },
+              paymentMethod: 'REFERENCE',
+              paymentStatus: 'Success',
+              transactionID: '5h9g4ZFmcLhWJoZYt4oe',
+              notificationID: '898bd108-639b-4711-ab96-56a4047a72a4'
+            })
+          )
+        )
+        .then((payload) => {
+          cy.request({
+            url: '/wh/sibs/',
+            method: 'POST',
+            body: payload.message,
+            headers: {
+              'x-authentication-tag': payload.at,
+              'x-initialization-vector': payload.iv
+            }
+          }).then(() => {
+            cy.login()
+              .visitAndWaitForHydration('/me')
+              .get('td[data-cy=status-qR4nqWpTdQy8QZu29ANu')
+              .contains('Confirmado');
+          });
+        });
+    });
   });
 });
 
