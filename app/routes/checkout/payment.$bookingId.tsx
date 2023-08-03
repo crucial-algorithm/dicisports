@@ -178,7 +178,7 @@ export const action: ActionFunction = async ({ request, params }) => {
 
   const submittedPayments = await findSubmittedPayments(bookingId);
 
-  if (submittedPayments) {
+  if (submittedPayments && submittedPayments.length > 0) {
     return badRequest({ error: t('Ongoing payment') });
   }
 
