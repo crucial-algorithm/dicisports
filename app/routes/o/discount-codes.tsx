@@ -99,11 +99,10 @@ export default function OrganizerDiscountCodesRoute() {
         rows={20}
         emptyMessage={emptyMessage}
         onRowClick={handleOnRowClick}
-        className="cursor-pointer"
       >
-        <Column field="code" header={t('Code')} />
-        <Column field="value" header={t('Value')} body={cellDiscountValue} />
-        <Column field="status" header={t('State')} body={cellState} />
+        <Column field="code" bodyClassName="cursor-pointer" header={t('Code')} />
+        <Column field="value" bodyClassName="cursor-pointer" header={t('Value')} body={cellDiscountValue} />
+        <Column field="status" bodyClassName="cursor-pointer" header={t('State')} body={cellState} />
       </DataTable>
     </Main>
   );
