@@ -77,5 +77,27 @@
     "displayOrder": 7,
     "status": "auto",
     "eventId": "5n8epZbHczqAQtQaAh5R"
+  },
+  {
+    "id": "2Q8dMm4gz7b2GeuGRocj",
+    "name": "Caminhada",
+    "distance": 5,
+    "startTime": 1000,
+    "elevationGain": 0,
+    "price": 5000,
+    "displayOrder": 8,
+    "status": "auto",
+    "eventId": "nGhb8Lu8xdg3oJk4N4g6"
+  },
+  {
+    "id": "wDMrbG6adqoJK2R4xQWu",
+    "name": "Corrida",
+    "distance": 10,
+    "startTime": 1000,
+    "elevationGain": 0,
+    "price": 15000,
+    "displayOrder": 9,
+    "status": "auto",
+    "eventId": "nGhb8Lu8xdg3oJk4N4g6"
   }
 ]

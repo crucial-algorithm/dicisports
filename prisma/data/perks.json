@@ -158,5 +158,29 @@
     "isEnabled": true,
     "displayOrder": 19,
     "eventId": "5n8epZbHczqAQtQaAh5R"
+  },
+  {
+    "id": "ExfTpXXAx3kpguLiKumh",
+    "name": "Chuveiros",
+    "isDefault": true,
+    "isEnabled": false,
+    "displayOrder": 20,
+    "eventId": "nGhb8Lu8xdg3oJk4N4g6"
+  },
+  {
+    "id": "NgQudDk2b2xzdaWQgnZe",
+    "name": "Abastecimentos",
+    "isDefault": true,
+    "isEnabled": true,
+    "displayOrder": 21,
+    "eventId": "nGhb8Lu8xdg3oJk4N4g6"
+  },
+  {
+    "id": "MEC4EL6SLqCzQcW86XBY",
+    "name": "Resultados cronometrados",
+    "isDefault": true,
+    "isEnabled": true,
+    "displayOrder": 22,
+    "eventId": "nGhb8Lu8xdg3oJk4N4g6"
   }
 ]
