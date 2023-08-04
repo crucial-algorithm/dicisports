@@ -120,14 +120,22 @@ export default function DisplayCart({
         {(totalPrice > 0 || (totalPrice === 0 && appliedDiscount)) && (
           <div className="flex flex-col gap-y-2 mt-4 py-4 border-t-2 border-grey-300">
             {appliedDiscount && (
-              <div className="flex flex-row items-center justify-between">
-                <H6 className="dark:text-blueGray-500">{t('Subtotal')}</H6>
-                <H6 className="dark:text-blueGray-500" data-cy="subtotal-price">
-                  {subtotal / 1000}€
-                </H6>
-              </div>
+              <>
+                <div className="flex flex-row items-center justify-between">
+                  <H6 className="text-gray-400 dark:text-blueGray-500">{t('Subtotal')}</H6>
+                  <H6 className="text-gray-400 dark:text-blueGray-500" data-cy="subtotal-price">
+                    {subtotal / 1000}€
+                  </H6>
+                </div>
+                <div className="flex flex-row items-center justify-between">
+                  <H6 className="text-gray-400 dark:text-blueGray-500">{t('Discount')}</H6>
+                  <H6 className="text-gray-400 dark:text-blueGray-500" data-cy="discount">
+                    {(totalPrice - subtotal) / 1000}€
+                  </H6>
+                </div>
+              </>
             )}
-            <div className="flex flex-row items-center justify-between">
+            <div className="flex flex-row items-center justify-between mt-2">
               <H6>{t('Total')}</H6>
               <H6 data-cy="total-price">{totalPrice / 1000}€</H6>
             </div>
