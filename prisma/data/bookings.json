@@ -33,5 +33,13 @@
     "pin": 1693,
     "eventId": "5n8epZbHczqAQtQaAh5R",
     "userId": "nTQ8idPqTY8PmhzbsN4u"
+  },
+  {
+    "id": "uj3tsN7auCRx8citYiA2",
+    "status": "pending",
+    "pin": 1303,
+    "eventId": "nGhb8Lu8xdg3oJk4N4g6",
+    "userId": "nTQ8idPqTY8PmhzbsN4u",
+    "appliedDiscount": "GET-FIT-5|5000|true"
   }
 ]

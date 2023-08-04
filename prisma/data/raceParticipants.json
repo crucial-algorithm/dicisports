@@ -100,5 +100,13 @@
     "raceId": "WRT9GHQKTEgHXfbWk32i",
     "bookingId": "qR4nqWpTdQy8QZu29ANu",
     "eventId": "5n8epZbHczqAQtQaAh5R"
+  },
+  {
+    "id": "bGRuH6z8CZG5ufpjbthT",
+    "participantId": "dCieNujaqmmWwCjjjchi",
+    "raceId": "wDMrbG6adqoJK2R4xQWu",
+    "status": "checkout",
+    "bookingId": "uj3tsN7auCRx8citYiA2",
+    "eventId": "nGhb8Lu8xdg3oJk4N4g6"
   }
 ]

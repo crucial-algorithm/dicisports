@@ -9,7 +9,7 @@
     "phoneNumber": 917493827,
     "shirtSize": 1,
     "postalCode": "4730-000",
-    "identityCard": "000000000ZZ4",
+    "identityCard": "00000000-0-ZZ4",
     "status": "saved"
   },
   {
@@ -22,7 +22,7 @@
     "phoneNumber": 969283740,
     "shirtSize": 1,
     "postalCode": "4730-000",
-    "identityCard": "000000000ZZ4",
+    "identityCard": "00000000-0-ZZ4",
     "status": "saved"
   },
   {
@@ -61,7 +61,7 @@
     "phoneNumber": 939203458,
     "shirtSize": 1,
     "postalCode": "4730-000",
-    "identityCard": "000000000ZZ4",
+    "identityCard": "00000000-0-ZZ4",
     "status": "saved"
   },
   {
@@ -75,7 +75,7 @@
     "shirtSize": 5,
     "nationality": 188,
     "postalCode": "4730-454",
-    "identityCard": "00000003",
+    "identityCard": "00000000-0-ZZ4",
     "status": "saved"
   },
   {
@@ -88,7 +88,7 @@
     "phoneNumber": 918146512,
     "shirtSize": 1,
     "postalCode": "4730-000",
-    "identityCard": "000000000ZZ4",
+    "identityCard": "00000000-0-ZZ4",
     "status": "saved"
   },
   {
@@ -101,7 +101,7 @@
     "phoneNumber": 938146576,
     "shirtSize": 1,
     "postalCode": "4730-000",
-    "identityCard": "000000000ZZ4",
+    "identityCard": "00000000-0-ZZ4",
     "status": "saved"
   },
   {
@@ -112,7 +112,7 @@
     "gender": "M",
     "birthdate": "2003-07-17 00:00:00.000",
     "phoneNumber": 937774372,
-    "identityCard": "12345678",
+    "identityCard": "00000000-0-ZZ4",
     "shirtSize": 3,
     "nationality": 188,
     "postalCode": "4730-454",
@@ -128,7 +128,22 @@
     "phoneNumber": 938146578,
     "shirtSize": 1,
     "postalCode": "4730-000",
-    "identityCard": "10000005",
+    "identityCard": "00000000-0-ZZ4",
+    "status": "saved"
+  },
+  {
+    "id": "dCieNujaqmmWwCjjjchi",
+    "userId": "xip7n8bdJkFyHxaCiEi6",
+    "firstName": "Alexandre",
+    "lastName": "Rego",
+    "gender": "M",
+    "birthdate": "2003-08-09 00:00:00.000",
+    "phoneNumber": 960000000,
+    "identityCard": "00000000-0-ZZ4",
+    "federationNumber": null,
+    "shirtSize": 5,
+    "nationality": 188,
+    "postalCode": "4730-000",
     "status": "saved"
   }
 ]
