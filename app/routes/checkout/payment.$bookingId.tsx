@@ -364,7 +364,7 @@ export default function CheckoutPaymentRoute() {
             </>
           )}
         </div>
-        <div className="w-full md:w-[480px]">
+        <div className="w-full mt-4 md:mt-0 md:w-[480px]">
           <DisplayCart
             cart={cart}
             event={event}
