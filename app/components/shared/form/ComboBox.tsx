@@ -5,6 +5,8 @@ import clsx from 'clsx';
 import { useTranslation } from 'react-i18next';
 import { useDebounceFn } from 'ahooks';
 import { buildImageUrl } from 'cloudinary-build-url';
+import type { TFunction } from 'i18next';
+import { XMarkIcon } from '@heroicons/react/24/outline';
 
 import { Combobox, Listbox, Transition } from '@headlessui/react';
 import { CheckIcon, ChevronUpDownIcon } from '@heroicons/react/20/solid';
@@ -303,5 +305,206 @@ export default function ComboBox({
       </div>
       <input type="hidden" name={name} value={selected} />
     </Listbox>
+  );
+}
+
+export function Creatable({
+  name,
+  options: paramsOptions = [],
+  t,
+  defaultValue,
+  emptyLabel,
+  defaultOption,
+  lang
+}: {
+  name: string;
+  options: Option[];
+  t: TFunction;
+  defaultValue: string | null;
+  emptyLabel: string;
+  defaultOption?: { value: string | number; label: string };
+  lang?: Language;
+}) {
+  const { i18n } = useTranslation();
+  const [theme] = useTheme();
+  const inDarkMode = theme === 'dark';
+  const formProps = useContext(FormContext);
+  const options = paramsOptions.map((o) => {
+    return {
+      value: o.value,
+      label:
+        typeof o.label === 'string'
+          ? o.label
+          : getLocalizedText(lang as Language, o.label),
+      image: o.image || ''
+    };
+  });
+
+  const [query, setQuery] = useState('');
+  const [values, setValues] =
+    useState<{ value: string | number; label: string }[]>(options);
+  const [activeOption, setActiveOption] = useState<{
+    value: string | number;
+    label: string;
+  } | null>(
+    values.find((v) => v.value === defaultValue || v.label === defaultValue) ||
+      null
+  );
+
+  if (formProps.readOnly) {
+    return (
+      <div className="font-medium dark:text-white">
+        {values.find((t) => t.value === defaultValue)?.label}
+      </div>
+    );
+  }
+
+  const filteredValues =
+    query === ''
+      ? values
+      : values.filter((t) =>
+          t.label.toLowerCase().includes(query.toLowerCase())
+        );
+
+  function handleOnSelectOption(value: string) {
+    const v = values.find((e) => e.value === value || e.label === value);
+
+    if (!v) {
+      setValues((current) => [...current, { value, label: value }]);
+
+      setActiveOption({ value, label: value });
+      setQuery('');
+    } else {
+      setActiveOption(v);
+      setQuery('');
+    }
+  }
+
+  function handleSearch(e: React.ChangeEvent<HTMLInputElement>) {
+    setQuery(e.target.value);
+  }
+
+  function handleOptionStyle({ active }: { active: boolean }) {
+    return clsx('relative cursor-default select-none py-2 pl-10 pr-4', {
+      'bg-gray-300 text-gray-700': active && !inDarkMode,
+      'bg-gray-600 text-gray-100': active && inDarkMode
+    });
+  }
+
+  function handleRemoveSelectedOption() {
+    setActiveOption(null);
+  }
+
+  function display(o: Option | number | string | undefined | null): string {
+    if (o == null || o === '') {
+      return emptyLabel || '';
+    }
+
+    if (['number', 'string'].includes(typeof o)) {
+      const c = values.find((v) => v.value === o);
+
+      return c?.label || '';
+    }
+
+    const option = o as Option;
+
+    if (typeof option.label === 'string') {
+      return option.label;
+    }
+
+    return getI18nText(option.label, i18n.language as Language);
+  }
+
+  return (
+    <div className="flex flex-row items-center gap-x-2">
+      <Combobox
+        value={activeOption ? activeOption.value : null}
+        onChange={handleOnSelectOption}
+        as="div"
+        className="w-full md:w-80"
+        name={`creatable-${name}`}
+      >
+        <div className="relative">
+          <div className="z-100">
+            <div>
+              <Combobox.Input
+                id={`creatable-${name}`}
+                key={activeOption?.value}
+                className="input-text"
+                onChange={handleSearch}
+                autoComplete="off"
+                displayValue={display}
+              />
+            </div>
+
+            <Combobox.Button
+              className="absolute inset-y-0 right-0 flex items-center pr-2"
+              name="creatable-button"
+            >
+              <ChevronUpDownIcon
+                className="h-5 w-5 text-gray-400"
+                aria-hidden="true"
+              />
+            </Combobox.Button>
+          </div>
+          <Combobox.Options
+            className={clsx(
+              'absolute w-full overflow-auto z-10 mt-1 max-h-60 py-1',
+              'rounded-md shadow-lg',
+              'ring-1 ring-black ring-opacity-5',
+              'focus:outline-none sm:text-sm',
+              {
+                'bg-gray-800 text-gray-100': inDarkMode,
+                'bg-white text-base': !inDarkMode
+              }
+            )}
+          >
+            {defaultOption && query === '' && (
+              <Combobox.Option
+                value={defaultOption.value}
+                className={handleOptionStyle}
+              >
+                {defaultOption.label}
+              </Combobox.Option>
+            )}
+            {filteredValues.length === 0 && query !== '' && (
+              <Combobox.Option
+                value={query}
+                className={clsx(
+                  'relative cursor-default select-none py-2 px-4',
+                  {
+                    'text-gray-700': !inDarkMode,
+                    'text-gray-100': inDarkMode
+                  }
+                )}
+              >
+                {t('Create: X', { value: query })}
+              </Combobox.Option>
+            )}
+            {filteredValues.map((v) => {
+              return (
+                <Combobox.Option
+                  key={v.value}
+                  value={v.value}
+                  className={handleOptionStyle}
+                >
+                  {v.label}
+                </Combobox.Option>
+              );
+            })}
+          </Combobox.Options>
+        </div>
+      </Combobox>
+      {activeOption && activeOption.value && (
+        <button
+          name="remove-schedule"
+          type="button"
+          onClick={handleRemoveSelectedOption}
+          className="dark:text-blueGray-500 focus:ring-indigo-500"
+        >
+          <XMarkIcon className="h-4 w-4 m-0 inline-block" />
+        </button>
+      )}
+    </div>
   );
 }

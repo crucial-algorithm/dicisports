@@ -1,14 +1,17 @@
-import type { Payment } from '@prisma/client';
-import { CheckoutStatus, PaymentMethod, PaymentStatus } from '@prisma/client';
+import type { Event, Payment } from '@prisma/client';
+import {
+  CheckoutStatus,
+  DiscountCodeStatus,
+  PaymentMethod,
+  PaymentStatus
+} from '@prisma/client';
 import type { ActionFunction, LoaderFunction } from '@remix-run/node';
 import { json, redirect } from '@remix-run/node';
 import { useFetcher, useLoaderData } from '@remix-run/react';
 import * as React from 'react';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ZodError } from 'zod';
-
-import type { Event } from '@prisma/client';
 
 import Button from '~/components/shared/Button';
 import DisplayCart from '~/components/shared/DisplayCart';
@@ -22,8 +25,10 @@ import { getClientSession } from '~/server/auth/client.server';
 import { getUser } from '~/server/auth/session.server';
 import Config from '~/server/config.server';
 import {
+  applyDiscountCode,
   findBookingById,
   findBookingCart,
+  removeBookingDiscount,
   updateBookingStatus
 } from '~/server/db/booking.server';
 import { findEvent } from '~/server/db/events.server';
@@ -39,6 +44,8 @@ import { badRequest, bookingAmount, getDomainUrl } from '~/utils/misc';
 import i18n from '~/server/i18n.server';
 import { createPayamentTransaction } from '~/server/utils/payments';
 import { useTheme } from '~/utils/theme-provider';
+import { findDiscountCode } from '~/server/db/discounts.server';
+import { findOrganizer } from '~/server/db/organizer.server';
 
 type LoaderData = {
   event: Event;
@@ -51,6 +58,7 @@ type LoaderData = {
   ourTransactionId: string;
   CHECKOUT_FORM_SCRIPT: string;
   domainUrl: string;
+  appliedDiscount?: string;
 };
 
 export const loader: LoaderFunction = async ({ request, params }) => {
@@ -108,6 +116,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
       event,
       cart,
       submittedPayments,
+      appliedDiscount: booking.appliedDiscount,
       domainUrl: getDomainUrl(request)
     });
   }
@@ -127,7 +136,8 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     ourTransactionId,
     CHECKOUT_FORM_SCRIPT: Config().SIBS_CHECKOUT_FORM_SCRIPT,
     unsuccessfulPayments,
-    domainUrl: getDomainUrl(request)
+    domainUrl: getDomainUrl(request),
+    appliedDiscount: booking.appliedDiscount
   });
 };
 
@@ -147,6 +157,11 @@ export const action: ActionFunction = async ({ request, params }) => {
   }
 
   const eventId = booking.eventId;
+  const event = await findEvent(eventId);
+
+  if (!event) {
+    return redirect('/');
+  }
 
   // We check if user is authenticated -> authenticatedClient, if not, we use the client session -> anonymousClient
   const clientId =
@@ -171,6 +186,34 @@ export const action: ActionFunction = async ({ request, params }) => {
   }
 
   try {
+    if (actionId === 'apply-discount') {
+      const discountCode = form.get('discount-code') as string;
+      const organizer = await findOrganizer(event.createdById);
+      const dbDiscountCode = await findDiscountCode(
+        discountCode,
+        organizer?.id as string
+      );
+
+      if (!dbDiscountCode || dbDiscountCode.status !== DiscountCodeStatus.active) {
+        return badRequest({ errors: { discountError: t('No Discount Code') } });
+      }
+      const cart = await findBookingCart(clientId, eventId);
+
+      await applyDiscountCode(
+        booking.id,
+        `${dbDiscountCode.code}|${dbDiscountCode.value}|${dbDiscountCode.fixed}`,
+        cart
+      );
+
+      return json({ ok: true });
+    }
+
+    if (actionId === 'remove-discount') {
+      await removeBookingDiscount(booking.id);
+
+      return json({ ok: true });
+    }
+
     await updateBookingStatus(bookingId, CheckoutStatus.confirmed);
 
     if (authenticatedClient !== null) {
@@ -261,14 +304,32 @@ export default function CheckoutPaymentRoute() {
     gatewayTransactionId,
     ourTransactionId,
     CHECKOUT_FORM_SCRIPT,
-    domainUrl
+    domainUrl,
+    appliedDiscount
   } = useLoaderData() as LoaderData;
   const { t } = useTranslation('checkout');
   const displayCartFetcher = useFetcher();
+  const [errors, setErrors] = useState<FormErrors>({});
   const isPaid =
     submittedPayments &&
     submittedPayments.filter((p) => (p.status = PaymentStatus.paid)).length ===
       0;
+
+  useEffect(() => {
+    if (
+      displayCartFetcher.type === 'actionReload' &&
+      displayCartFetcher.data?.errors
+    ) {
+      return setErrors(displayCartFetcher.data.errors as FormErrors);
+    }
+
+    if (
+      displayCartFetcher.type === 'actionReload' &&
+      displayCartFetcher.data?.ok
+    ) {
+      return setErrors({});
+    }
+  }, [displayCartFetcher]);
 
   return (
     <Main>
@@ -296,14 +357,22 @@ export default function CheckoutPaymentRoute() {
                 script={CHECKOUT_FORM_SCRIPT}
                 gatewayTransactionId={gatewayTransactionId}
                 cart={cart}
+                appliedDiscount={appliedDiscount}
                 formContext={formContext}
                 redirectUrl={`${domainUrl}/checkout/submitted/${ourTransactionId}`}
               />
             </>
           )}
         </div>
-        <div className="w-full md:w-[480px]">
-          <DisplayCart cart={cart} event={event} fetcher={displayCartFetcher}>
+        <div className="w-full mt-4 md:mt-0 md:w-[480px]">
+          <DisplayCart
+            cart={cart}
+            event={event}
+            fetcher={displayCartFetcher}
+            appliedDiscount={appliedDiscount}
+            discountCodeError={errors.discountError}
+            showDiscountCodeInput={!isPaid && !(submittedPayments && submittedPayments.length > 0)}
+          >
             {!isPaid && !(submittedPayments && submittedPayments.length > 0) && (
               <Button
                 name="actionId"
@@ -327,6 +396,7 @@ type PaymentFormProps = {
   cart: UICartRow[];
   formContext: string;
   redirectUrl: string;
+  appliedDiscount?: string | null;
 };
 
 function PaymentForm({
@@ -334,16 +404,28 @@ function PaymentForm({
   gatewayTransactionId,
   cart,
   formContext,
-  redirectUrl
+  redirectUrl,
+  appliedDiscount
 }: PaymentFormProps) {
   const [theme] = useTheme();
   const style = JSON.stringify(
     theme === 'dark' ? sibsDarkTheme : sibsLightTheme
   );
   const formScriptSrc = `${script}?id=${gatewayTransactionId}`;
+
+  function handleAmount(): number {
+    if (appliedDiscount) {
+      const [, value, fixed] = appliedDiscount.split('|');
+
+      return bookingAmount(cart, Number(value), JSON.parse(fixed));
+    }
+
+    return bookingAmount(cart);
+  }
+
   const formConfig = JSON.stringify({
     paymentMethodList: [],
-    amount: { value: bookingAmount(cart) / 1000, currency: 'EUR' },
+    amount: { value: handleAmount() / 1000, currency: 'EUR' },
     language: 'pt',
     redirectUrl,
     customerData: null
@@ -514,3 +596,7 @@ function formatMbReference(reference: string) {
     .replace(/,/g, ' ')
     .replace(/\./g, ' ');
 }
+
+type FormErrors = {
+  discountError?: string;
+};

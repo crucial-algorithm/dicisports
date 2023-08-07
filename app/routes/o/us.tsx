@@ -23,18 +23,19 @@ import ButtonGroup from '~/components/shared/ButtonGroup';
 import Button, { ButtonLink } from '~/components/shared/Button';
 import { getUser, requireUser } from '~/server/auth/session.server';
 import i18n from '~/server/i18n.server';
-import { badRequest } from '~/utils/misc';
+import { badRequest, getDomainUrl } from '~/utils/misc';
 import {
-  createOrganiser,
-  findOrganiser,
-  updateOrganiser
-} from '~/server/db/organiser.server';
-import type { Organiser, OrganiserInput } from '~/types';
+  createOrganizer,
+  findOrganizer,
+  updateOrganizer
+} from '~/server/db/organizer.server';
+import type { Organizer, OrganizerInput } from '~/types';
 import { H2, H4, Paragraph } from '~/components/shared/typography';
 import { uploadImageToCloudinary } from '~/server/storage/cloudinary.server';
 import UploadForm from '~/components/shared/form/UploadForm';
 import Id from '~/server/utils/Id.server';
 import InputError from '~/components/shared/form/InputError';
+import { sendSubmitedOrganizerProfileConfirmation } from '~/server/email.server';
 
 type ActionData = {
   errors?: {
@@ -51,21 +52,33 @@ type ActionData = {
 };
 
 type LoaderData = {
-  organiser: Organiser;
+  organizer: Organizer;
 };
 
 export const handle = {
-  i18n: ['organiser-form']
+  i18n: ['organizer-form']
 };
 
+function processImageField(
+  value: string | null | File,
+  isUpdate: boolean,
+  organizer: Organizer | null
+) {
+  if ((isUpdate && !value) || value instanceof File) {
+    return organizer ? organizer.logo : '';
+  }
+
+  return value || '';
+}
+
 export const action: ActionFunction = async ({ request }) => {
-  const t = await i18n.getFixedT(request, 'organiser-form');
+  const t = await i18n.getFixedT(request, 'organizer-form');
 
   const user = await getUser(request);
-  const organiser = await findOrganiser(user?.id as string);
-  const isUpdate: boolean = !!organiser;
+  const organizer = await findOrganizer(user?.id as string);
+  const isUpdate: boolean = !!organizer;
 
-  const organiserId = organiser ? organiser.id : Id();
+  const organizerId = organizer ? organizer.id : Id();
 
   const uploadHandler: UploadHandler = unstable_composeUploadHandlers(
     // our custom upload handler
@@ -76,7 +89,7 @@ export const action: ActionFunction = async ({ request }) => {
 
       const uploadedImage = await uploadImageToCloudinary(
         data,
-        organiserId || null
+        organizerId || null
       );
 
       return uploadedImage.public_id;
@@ -87,15 +100,14 @@ export const action: ActionFunction = async ({ request }) => {
 
   const form = await unstable_parseMultipartFormData(request, uploadHandler);
 
-  const logo = form.get('/file/image/0') as string;
-  const savedLogo = form.get('saved-logo') as string;
+  const logo = form.get('/file/image/0');
   const terms: boolean = (form.get('terms') as string) === 'on';
 
-  const data: OrganiserInput = {
-    id: organiserId,
+  const data: OrganizerInput = {
+    id: organizerId,
     name: form.get('name') as string,
     email: form.get('email') as string,
-    logo: savedLogo.length > 0? savedLogo : logo,
+    logo: processImageField(logo, isUpdate, organizer),
     phoneNumber:
       (form.get('phone-number') as string).length > 0
         ? parseInt(form.get('phone-number') as string)
@@ -107,7 +119,7 @@ export const action: ActionFunction = async ({ request }) => {
     userId: user?.id as string
   };
 
-  const OrganiserSchema = z.object({
+  const OrganizerSchema = z.object({
     name: z
       .string({ required_error: t('Field Required') })
       .min(2, { message: t('Min 2 Chars') }),
@@ -147,10 +159,10 @@ export const action: ActionFunction = async ({ request }) => {
   });
 
   try {
-    OrganiserSchema.parse(data);
+    OrganizerSchema.parse(data);
 
     if (isUpdate) {
-      await updateOrganiser(data);
+      await updateOrganizer(data);
     } else {
       z.object({
         terms: z
@@ -158,7 +170,15 @@ export const action: ActionFunction = async ({ request }) => {
           .refine((v) => v, { message: t('Accept Dici Terms') })
       }).parse({ terms });
 
-      await createOrganiser(data);
+      const domainUrl = getDomainUrl(request);
+
+      await createOrganizer(data);
+
+      await sendSubmitedOrganizerProfileConfirmation({
+        emailAddress: data.email,
+        organizerName: data.email,
+        domainUrl
+      });
     }
 
     return json({});
@@ -182,20 +202,20 @@ export const action: ActionFunction = async ({ request }) => {
 
 export const loader: LoaderFunction = async ({ request }) => {
   const user = await requireUser(request);
-  const organiser = await findOrganiser(user.id as string);
+  const organizer = await findOrganizer(user.id as string);
 
   return json({
-    organiser
+    organizer
   });
 };
 
 export default function UsRoute() {
-  const { t } = useTranslation('organiser-form');
-  const { organiser } = useLoaderData<LoaderData>() as LoaderData;
+  const { t } = useTranslation('organizer-form');
+  const { organizer } = useLoaderData<LoaderData>() as LoaderData;
   const actionData = useActionData<ActionData>() as ActionData;
 
-  if (organiser && organiser.status === 'PENDING') {
-    return <PendingOrganiserMessage />;
+  if (organizer && organizer.status === 'PENDING') {
+    return <PendingOrganizerMessage />;
   }
 
   return (
@@ -204,30 +224,25 @@ export default function UsRoute() {
         <div className="mb-12 lg:mb-20">
           <div className="flex flex-col-reverse items-start justify-between lg:flex-row lg:items-center">
             <div>
-              <H2>{t('Organiser Profile')}</H2>
-              {(!organiser || organiser.status !== 'APPROVED') && (
+              <H2>{t('Organizer Profile')}</H2>
+              {(!organizer || organizer.status !== 'APPROVED') && (
                 <H4 variant="secondary" as="p">
-                  {t('Organiser Profile - Description')}
+                  {t('Organizer Profile - Description')}
                 </H4>
               )}
             </div>
           </div>
         </div>
 
-        <input
-          type="hidden"
-          name="saved-logo"
-          value={organiser?.logo ? organiser.logo : ''}
-        />
         <div className="flex flex-col md:grid md:grid-cols-2 md:grid-flow-col md:gap-4">
           <div>
             <FormField
               data-cy="name"
               label={t('Name')}
               error={actionData?.errors?.name}
-              description={t('Organiser display field')}
+              description={t('Organizer display field')}
             >
-              <TextField name="name" defaultValue={organiser?.name || ''} />
+              <TextField name="name" defaultValue={organizer?.name || ''} />
             </FormField>
 
             <FormField
@@ -235,7 +250,7 @@ export default function UsRoute() {
               label={t('E-mail')}
               error={actionData?.errors?.email}
             >
-              <TextField name="email" defaultValue={organiser?.email || ''} />
+              <TextField name="email" defaultValue={organizer?.email || ''} />
             </FormField>
 
             <FormField
@@ -246,7 +261,7 @@ export default function UsRoute() {
                 name="phone-number"
                 type="number"
                 placeholder={t('Phone Number Placeholder')}
-                defaultValue={organiser?.phoneNumber || ''}
+                defaultValue={organizer?.phoneNumber || ''}
               />
             </FormField>
 
@@ -257,7 +272,7 @@ export default function UsRoute() {
             >
               <TextField
                 name="address"
-                defaultValue={organiser?.address || ''}
+                defaultValue={organizer?.address || ''}
               />
             </FormField>
 
@@ -270,7 +285,7 @@ export default function UsRoute() {
               >
                 <TextField
                   name="postal-code"
-                  defaultValue={organiser?.postalCode || ''}
+                  defaultValue={organizer?.postalCode || ''}
                 />
               </FormField>
 
@@ -280,14 +295,14 @@ export default function UsRoute() {
                 className="w-1/2 md:w-full"
                 error={actionData?.errors?.city}
               >
-                <TextField name="city" defaultValue={organiser?.city || ''} />
+                <TextField name="city" defaultValue={organizer?.city || ''} />
               </FormField>
             </div>
 
             <FormField
               label={t('Description')}
               error={actionData?.errors?.description}
-              description={t('Organiser display field')}
+              description={t('Organizer display field')}
             >
               <div className="mt-1 relative rounded-md shadow-sm">
                 <textarea
@@ -296,7 +311,7 @@ export default function UsRoute() {
                   placeholder={t('Profile Description')}
                   rows={5}
                   cols={50}
-                  defaultValue={organiser?.description || ''}
+                  defaultValue={organizer?.description || ''}
                 />
               </div>
             </FormField>
@@ -305,17 +320,17 @@ export default function UsRoute() {
             <FormField
               label={t('Profile Photo')}
               error={actionData?.errors?.logo}
-              description={t('Organiser display field')}
+              description={t('Organizer display field')}
             >
               <UploadImage
                 index={0}
                 label={t('Hint For Profile Picture')}
-                defaultValue={organiser?.logo || ''}
+                defaultValue={organizer?.logo || ''}
               />
             </FormField>
           </div>
         </div>
-        {!organiser && (
+        {!organizer && (
           <>
             <div className="flex items-center mb-8">
               <input
@@ -344,7 +359,7 @@ export default function UsRoute() {
           <ButtonLink
             type="button"
             variant="secondary"
-            to={!organiser || organiser?.status === 'PENDING' ? '/' : '/o'}
+            to={!organizer || organizer?.status === 'PENDING' ? '/' : '/o'}
           >
             {t('Cancel')}
           </ButtonLink>
@@ -358,8 +373,8 @@ export default function UsRoute() {
   );
 }
 
-function PendingOrganiserMessage() {
-  const { t } = useTranslation('organiser-form');
+function PendingOrganizerMessage() {
+  const { t } = useTranslation('organizer-form');
 
   return (
     <Main>

@@ -66,5 +66,16 @@
     "displayOrder": 6,
     "status": "auto",
     "eventId": "TgKZi8NQKNoJQGArd3zc"
+  },
+  {
+    "id": "WRT9GHQKTEgHXfbWk32i",
+    "name": "Granfondo",
+    "distance": 152,
+    "startTime": 900,
+    "elevationGain": 6000,
+    "price": 45000,
+    "displayOrder": 7,
+    "status": "auto",
+    "eventId": "5n8epZbHczqAQtQaAh5R"
   }
 ]

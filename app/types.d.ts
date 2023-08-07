@@ -4,12 +4,11 @@ import type {
   Difficulty as DBDifficulty,
   DiscountCode as DBDiscountCode,
   Document as DBDocument,
-  Event as DBEvent,
   Group as DBGroup,
   GroupSchedule as DBGroupSchedule,
   GroupSpirit as DBGroupSpirit,
   GroupType as DBGroupType,
-  Organiser as DBOrganiser,
+  Organizer as DBOrganizer,
   Participant as DBParticipant,
   ParticipantStatus,
   Perk as DBPerk,
@@ -19,7 +18,7 @@ import type {
   Sport as DBSport,
   Status as EventStatus,
   User as DBUser,
-  Status
+  EventTeam as DBEventTeam
 } from '@prisma/client';
 
 type NonNullProperties<Type> = {
@@ -103,7 +102,8 @@ type UploadImageMeta = {
   apiKey: string;
 };
 
-type User = { organiser?: Organiser | null } & Omit<DBUser, 'password' | 'salt'>;
+type User = { organizer?: Organizer | null } & Omit<DBUser, 'password' | 'salt'>;
+
 type Sport = {
   name: TranslationObject;
 } & DBSport;
@@ -141,6 +141,7 @@ type CreateEventInput = {
   externalBookingUrl?: string | null;
   description?: string | null;
   directions: string | null;
+  bibStartingNumber: number;
   image1?: string | null;
   image2?: string | null;
   image3?: string | null;
@@ -424,6 +425,7 @@ type RaceParticipant = {
   race: Race;
   participant: Participant;
   booking?: Booking;
+  team?: EventTeam | null;
 } & DBRaceParticipant;
 
 type RaceParticipantInput = {
@@ -443,6 +445,8 @@ type UIRaceParticipant = {
   bookingAt: Date;
   status: string;
   raceName: string;
+  teamName: string | null;
+  bibNumber: number | null;
 };
 
 type DBRawUIRaceParticipant = {
@@ -454,6 +458,8 @@ type DBRawUIRaceParticipant = {
   status: string;
   race_name: string;
   records: number;
+  team_name: string | null;
+  bib_number: number | null;
 };
 
 type Participant = {} & DBParticipant;
@@ -533,10 +539,10 @@ type SearchEventsResults = {
   image5?: string;
 };
 
-type Organiser = DBOrganiser & {};
+type Organizer = DBOrganizer & {};
 
-type OrganiserInput = {
-  // id will be null if the user has no organiser profile and is creating it
+type OrganizerInput = {
+  // id will be null if the user has no organizer profile and is creating it
   id: string | null;
   name: string;
   email: string;
@@ -550,6 +556,14 @@ type OrganiserInput = {
 };
 
 type DiscountCode = DBDiscountCode & {};
+
+type DiscountCodeInput = {
+  code: string;
+  value: number;
+  fixed: boolean;
+  organizerId: string;
+  createdById: string;
+};
 
 type SibsWebHookSchema = {
   returnStatus: { statusMsg: string; statusCode: string };
@@ -580,6 +594,8 @@ type SibsStatusResponse = {
     statusCode: '000' | string
   }
 };
+
+type EventTeam = {} & DBEventTeam;
 
 export {
   NonNullProperties,
@@ -634,14 +650,16 @@ export {
   DBRawSearchResults,
   SearchResults,
   SearchEventsResults,
-  Organiser,
-  OrganiserInput,
+  Organizer,
+  OrganizerInput,
   EventStatus,
   BookingList,
   DBRawBookingList,
   DiscountCode,
+  DiscountCodeInput,
   SibsWebHookSchema,
-  SibsStatusResponse
+  SibsStatusResponse,
+  EventTeam
 };
 
 // https://www.i18next.com/overview/typescript#argument-of-type-defaulttfuncreturn-is-not-assignable-to-parameter-of-type-xyz

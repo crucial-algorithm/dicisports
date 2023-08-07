@@ -1,5 +1,5 @@
-import type { Prisma } from '@prisma/client';
-import { CheckoutStatus, PrismaClient } from '@prisma/client';
+import type { Prisma, CheckoutStatus } from '@prisma/client';
+import { PaymentStatus, PrismaClient } from '@prisma/client';
 
 import { db } from '~/server/db.server';
 
@@ -14,6 +14,7 @@ import type {
   DBRawUICartRow,
   UICartRow
 } from '~/types';
+import { bookingAmount } from '~/utils/misc';
 
 async function findBooking(
   userSessionId: string,
@@ -160,6 +161,44 @@ async function findConfirmedBookings(eventId: string): Promise<Booking[] | null>
   });
 }
 
+// discountInfo contains applied discount information - discount code|value|fixed
+async function applyDiscountCode(
+  id: string,
+  discountInfo: string,
+  cart: UICartRow[]
+) {
+  return await db.$transaction(async (tx) => {
+    const [, value, fixed] = discountInfo.split('|');
+    const amount = bookingAmount(cart, Number(value), JSON.parse(fixed));
+
+    await tx.payment.updateMany({
+      where: {
+        bookingId: id,
+        status: { not: { in: [PaymentStatus.paid, PaymentStatus.failed] } }
+      },
+      data: {
+        amount
+      }
+    });
+
+    await tx.booking.update({
+      where: { id },
+      data: {
+        appliedDiscount: discountInfo
+      }
+    });
+  });
+}
+
+async function removeBookingDiscount(id: string) {
+  return await db.booking.update({
+    where: { id },
+    data: {
+      appliedDiscount: null
+    }
+  });
+}
+
 export {
   updateBookingStatus,
   findBooking,
@@ -169,5 +208,7 @@ export {
   changeRegistrationToAuthUser,
   findUserBookingsList,
   findBookingById,
-  findConfirmedBookings
+  findConfirmedBookings,
+  applyDiscountCode,
+  removeBookingDiscount
 };

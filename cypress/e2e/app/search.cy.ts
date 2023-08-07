@@ -305,9 +305,9 @@ describe('Search', () => {
         .get('div[data-cy=distance]:nth(7)')
         .should('contain', '57 km')
         .get('div[data-cy=distance]:nth(8)')
-        .should('contain', '65 km')
+        .should('contain', '63 km')
         .get('div[data-cy=distance]:nth(9)')
-        .should('contain', '71 km');
+        .should('contain', '65 km');
     });
 
     context('Test all filters', () => {
@@ -336,7 +336,7 @@ describe('Search', () => {
           .should('include', 'g=hide')
 
           .get('[data-cy=event-entry]')
-          .should('have.length', 3);
+          .should('have.length', 4);
       });
 
       it('should return Morning groups', () => {

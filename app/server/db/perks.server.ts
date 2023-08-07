@@ -49,7 +49,8 @@ async function resetEventPerks(
 
 async function createDefaultPerks(
   eventId: string,
-  language: Language
+  language: Language,
+  tx?: Prisma.TransactionClient
 ): Promise<Perk | void> {
   const perks: CreatePerksInput[] = [];
 
@@ -67,7 +68,7 @@ async function createDefaultPerks(
     });
   }
 
-  await db.perk.createMany({
+  await (tx || db).perk.createMany({
     data: perks
   });
 }

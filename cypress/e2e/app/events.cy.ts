@@ -93,7 +93,7 @@ describe('Event', () => {
     });
 
     it('Should delete event', () => {
-      cy.loginOrganiser()
+      cy.loginOrganizer()
         .visitAndWaitForHydration('/o/event/bQmGXYkbhJetjk6mniMt')
 
         .intercept('POST', '/o/event/bQmGXYkbhJetjk6mniMt*')
@@ -140,7 +140,7 @@ describe('Event', () => {
 
   context('Maintenance', () => {
     beforeEach(() => {
-      cy.loginOrganiser();
+      cy.loginOrganizer();
       cy.task('db:reset');
       cy.task('clearDownloadFolder');
     });
@@ -500,11 +500,8 @@ describe('Event', () => {
             .get('[data-cy=name]')
             .contains('A new event')
 
-            // Check if it shows message when there is no races, documents, etc.
+            // Check if it shows message when there is no races
             .get('[data-cy=no-races]')
-            .should('exist')
-
-            .get('[data-cy=no-documents]')
             .should('exist');
         });
     });
@@ -550,7 +547,7 @@ describe('Event', () => {
     });
 
     it('should create race', () => {
-      cy.loginOrganiser()
+      cy.loginOrganizer()
         .visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d')
 
         .get('#create-race')
@@ -612,7 +609,7 @@ describe('Event', () => {
     });
 
     it('should update race', () => {
-      cy.loginOrganiser()
+      cy.loginOrganizer()
         .visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d')
 
         .get('[data-cy=race-xaXaCzs2t7D8DpRNnffM]')
@@ -652,7 +649,7 @@ describe('Event', () => {
     });
 
     it('should be able to upload a regulation pdf', () => {
-      cy.loginOrganiser()
+      cy.loginOrganizer()
 
         .intercept('GET', '/o/event/*?_data=routes*')
         .as('EventRequests')
@@ -682,7 +679,7 @@ describe('Event', () => {
     });
 
     it('should be able to upload a regulation inline', () => {
-      cy.loginOrganiser()
+      cy.loginOrganizer()
 
         .intercept('GET', '/o/event/*?_data=routes*')
         .as('EventRequests')
@@ -728,7 +725,7 @@ describe('Event', () => {
     });
 
     it('should be able to update inline regulation', () => {
-      cy.loginOrganiser()
+      cy.loginOrganizer()
         .visitAndWaitForHydration('/o/event/gLqrDfMx6qkTHn6hoZqA')
 
         .write(
@@ -751,7 +748,7 @@ describe('Event', () => {
     });
 
     it('should create race without price early bird', () => {
-      cy.loginOrganiser()
+      cy.loginOrganizer()
         .visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d')
 
         .get('#create-race')
@@ -907,6 +904,94 @@ describe('Event', () => {
 
         .get('input[name=event-name]')
         .should('have.value', 'Love Tiles Douro Granfondo 2023');
+    });
+
+    it('should display and update starting bib number', () => {
+      cy.visitAndWaitForHydration('/o/event/5n8epZbHczqAQtQaAh5R/dashboard')
+        .get('[data-cy="edit"]')
+        .click()
+
+        .location()
+        .should((loc) => {
+          expect(loc.pathname).to.contain('/o/event/5n8epZbHczqAQtQaAh5R');
+        })
+
+        .intercept('POST', '/o/event/5n8epZbHczqAQtQaAh5R*')
+        .as('UpdateEvent')
+
+        .get('input[name=bib-number]')
+        .should('have.value', '1')
+        .clear()
+        .type('200')
+
+        .get('button[name=update-event]')
+        .click()
+
+        .wait('@UpdateEvent')
+
+        .location()
+        .should((loc) => {
+          expect(loc.pathname).to.contain('/o/event/5n8epZbHczqAQtQaAh5R');
+        })
+
+        .reload()
+
+        .location()
+        .should((loc) => {
+          expect(loc.pathname).to.contain('/o/event/5n8epZbHczqAQtQaAh5R');
+        })
+
+        .get('input[name=bib-number]')
+        .should('have.value', '200');
+    });
+
+    it('should not update bib starting number when event has race participants', () => {
+      cy.visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d')
+        .get('input[name=bib-number]')
+        .should('have.value', '1')
+        .and('have.prop', 'disabled')
+
+        .get('button[name=update-event]')
+        .click()
+
+        .location()
+        .should((loc) => {
+          expect(loc.pathname).to.contain('/o/event/MY4bvgxDbMtGv8rbYe5d');
+        })
+
+        .reload()
+        .waitForHydration()
+
+        .location()
+        .should((loc) => {
+          expect(loc.pathname).to.contain('/o/event/MY4bvgxDbMtGv8rbYe5d');
+        })
+
+        .get('input[name=bib-number]')
+        .should('have.value', '1')
+        .and('have.prop', 'disabled');
+    });
+
+    it('should contain correct translations on first render', () => {
+      cy.intercept('GET', '/o/event/*?_data=routes*')
+        .as('EventRequests')
+        .visitAndWaitForHydration('/o')
+        .get('button[name=create-event]')
+        .click()
+
+        .wait('@EventRequests')
+
+        .get('div[data-cy=editor-event-description] > div > .p-editor-content > .ql-editor')
+        .invoke('attr', 'data-placeholder')
+        .then((value) => {
+          expect(value).to.eq('A edição deste ano será a melhor de sempre...');
+        })
+
+        .get('div[data-cy=editor-get-there] > div > .p-editor-content > .ql-editor')
+        .invoke('attr', 'data-placeholder')
+        .then((value) => {
+          expect(value).to.eq('Como chegar lá... Onde estacionar...');
+        });
     });
   });
 });

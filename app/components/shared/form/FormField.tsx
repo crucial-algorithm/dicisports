@@ -5,11 +5,11 @@ import Label from '~/components/shared/form/Label';
 import InputError from '~/components/shared/form/InputError';
 
 type Props = {
-  label: string
-  error?: string | null
-  description?: React.ReactNode
-  dataCy?: string
-} & React.ComponentProps<'div'>
+  label: string;
+  error?: string | null;
+  description?: React.ReactNode;
+  dataCy?: string;
+} & React.ComponentProps<'div'>;
 
 const FormField: React.FC<Props> = ({
   id,
@@ -27,16 +27,24 @@ const FormField: React.FC<Props> = ({
 
   return (
     <div className={clsx('mb-8', className)} data-cy={dataCy} onClick={onClick}>
-      <div className="flex gap-2 items-baseline justify-between mb-2">
+      <div
+        className={clsx('flex flex-col', {
+          'mb-2': !description
+        })}
+      >
         <Label htmlFor={inputId}>{label}</Label>
         {description && (
-          <div id={descriptionId} className="text-primary text-xs">
+          <div id={descriptionId} className="text-primary text-xs mb-4">
             {description}
           </div>
         )}
       </div>
       {children}
-      {error ? <InputError className="mt-2" id={errorId}>{error}</InputError> : null }
+      {error ? (
+        <InputError className="mt-2" id={errorId}>
+          {error}
+        </InputError>
+      ) : null}
     </div>
   );
 };

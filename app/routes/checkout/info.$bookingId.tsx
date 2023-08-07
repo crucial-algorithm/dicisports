@@ -36,19 +36,22 @@ import {
   updateBookingStatus
 } from '~/server/db/booking.server';
 import type { EventWithRacesDifficultiesAndDocuments } from '~/server/db/events.server';
-import { findEvent } from '~/server/db/events.server';
+import { findEventWithRacesAndDocuments } from '~/server/db/events.server';
 import {
+  findRaceParticipant,
   findUserBookingParticipants,
   findUserEventRaceParticipants,
   findUserParticipants,
   findUserSavedParticipants,
   updateParticipant,
+  updateRaceParticipantTeam,
   updateToSelectedParticipant
 } from '~/server/db/participant.server';
 import { findShirtSizes } from '~/server/db/reference.server';
 import i18n from '~/server/i18n.server';
 
 import type {
+  EventTeam,
   Participant,
   ParticipantInput,
   Race,
@@ -56,9 +59,12 @@ import type {
   ShirtSize,
   UICartRow
 } from '~/types';
-import { badRequest, displayTimeOfDay } from '~/utils/misc';
+import { badRequest, displayTimeOfDay, validateIdentityCard } from '~/utils/misc';
 import { Unauthorized } from '~/server/utils/misc';
 import InputError from '~/components/shared/form/InputError';
+import { findOrganizer } from '~/server/db/organizer.server';
+import { addEmailToMailingList } from '~/server/db/mailingList.server';
+import { findEventTeams } from '~/server/db/teams.server';
 
 type LoaderData = {
   event: EventWithRacesDifficultiesAndDocuments;
@@ -70,6 +76,13 @@ type LoaderData = {
   isAuth: boolean;
   isGuest: boolean;
   bookingId: string;
+  organizerName: string;
+  eventTeams: EventTeam[];
+};
+
+export const handle: { id: string; i18n: string[] } = {
+  id: 'participant-form',
+  i18n: ['checkout']
 };
 
 export const action: ActionFunction = async ({ request, params }) => {
@@ -85,6 +98,11 @@ export const action: ActionFunction = async ({ request, params }) => {
   }
 
   const eventId = booking.eventId;
+  const event = await findEventWithRacesAndDocuments(eventId);
+
+  if (!event) {
+    return redirect('/');
+  }
 
   // We check if user is authenticated -> authenticatedClient, if not, we use the client session -> anonymousClient
   const clientId =
@@ -108,6 +126,8 @@ export const action: ActionFunction = async ({ request, params }) => {
   const hash = form.get('hash') as string;
   const regulation: boolean = (form.get('regulation') as string) === 'on';
   const terms: boolean = (form.get('terms') as string) === 'on';
+  const enrollInMailingList: boolean = (form.get('add-to-mail-list') as string) === 'on';
+  const teamName = (form.get('creatable-team') as string) || null;
 
   try {
     const phoneNumber = form.get('phone-number') as string;
@@ -118,13 +138,15 @@ export const action: ActionFunction = async ({ request, params }) => {
       gender: form.get('gender') as string,
       birthdate: new Date(form.get('birthdate') as string),
       phoneNumber: parseInt(phoneNumber),
-      identityCard: form.get('identity-card') as string,
+      identityCard: (form.get('identity-card') as string) || '',
       federationNumber:
         parseInt(form.get('federation-number') as string) || null,
       shirtSize: parseInt(form.get('shirt') as string),
       nationality: parseInt(form.get('nationality') as string) || null,
       postalCode: form.get('postal-code') as string
     };
+
+    const isIdentityCardValid = validateIdentityCard(data.identityCard as string);
 
     const ParticipantSchema = z.object({
       firstName: z
@@ -155,7 +177,9 @@ export const action: ActionFunction = async ({ request, params }) => {
         ),
       identityCard: z
         .string({ required_error: t('Field Required') })
-        .length(8, { message: t('Invalid CC Length') }),
+        .refine((v) => v && isIdentityCardValid, {
+          message: t('Invalid CC')
+        }),
       federationNumber: z.number().nullable(),
       shirtSize: z.number({
         required_error: t('Field Required'),
@@ -199,7 +223,19 @@ export const action: ActionFunction = async ({ request, params }) => {
 
       data.id = selectedParticipantId;
       ParticipantSchema.parse(data);
-      await updateParticipant(data);
+
+      const raceParticipant = await findRaceParticipant(data.id, raceId);
+
+      if (!raceParticipant) {
+        return badRequest({
+          errors: {
+            selectedParticipant: t('Race Participant does not exist')
+          },
+          hash: parseInt(hash)
+        });
+      }
+
+      await updateRaceParticipantTeam(teamName, eventId, raceParticipant);
     }
 
     if (
@@ -208,13 +244,30 @@ export const action: ActionFunction = async ({ request, params }) => {
     ) {
       ParticipantSchema.parse(data);
       await updateParticipant(data);
+      const raceId = form.get('raceId') as string;
+
+      const raceParticipant = await findRaceParticipant(data.id, raceId);
+
+      if (!raceParticipant) {
+        return badRequest({
+          errors: {
+            selectedParticipant: t('Race Participant does not exist')
+          },
+          hash: parseInt(hash)
+        });
+      }
+
+      await updateRaceParticipantTeam(teamName, eventId, raceParticipant);
     }
 
     if (
       actionId === CheckoutInfoActions.checkout ||
       actionId === CheckoutInfoActions.updateAndCheckout
     ) {
-      TermsAndRegulationSchema.parse({ regulation, terms });
+      TermsAndRegulationSchema.parse({
+        regulation,
+        terms
+      });
       const raceParticipants = await findUserEventRaceParticipants(
         clientId,
         eventId
@@ -238,6 +291,14 @@ export const action: ActionFunction = async ({ request, params }) => {
           hash: parseInt(hash),
           missingParticipants: JSON.stringify(draftParticipants)
         });
+      }
+
+      if (enrollInMailingList && authenticatedClient) {
+        const organizer = await findOrganizer(event.createdById);
+
+        if (organizer) {
+          await addEmailToMailingList(authenticatedClient.email, organizer.id);
+        }
       }
 
       await updateBookingStatus(bookingId, CheckoutStatus.pending);
@@ -286,9 +347,14 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   }
 
   const eventId = booking.eventId;
+  const event = await findEventWithRacesAndDocuments(eventId);
 
-  const event = await findEvent(eventId);
+  if (!event) {
+    return redirect('/');
+  }
+
   const cart = await findBookingCart(isGuest ? booking.userId : clientId, eventId);
+  const organizer = await findOrganizer(event.createdById);
   const raceParticipants = await findUserBookingParticipants(bookingId);
 
   if (!raceParticipants || raceParticipants?.length === 0) {
@@ -297,9 +363,15 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 
   // cant use clientId when user is a guest - accesses this route with booking PIN
   // TODO: refactor these functions to use bookingId when we decide to have multiple bookings
-  const userParticipants = await findUserParticipants(isGuest ? booking.userId : clientId);
-  const savedParticipants = await findUserSavedParticipants(isGuest ? booking.userId : clientId);
+  const userParticipants = await findUserParticipants(
+    isGuest ? booking.userId : clientId
+  );
+  const savedParticipants = await findUserSavedParticipants(
+    isGuest ? booking.userId : clientId
+  );
   const shirtSizes = await findShirtSizes();
+
+  const eventTeams = await findEventTeams(eventId);
 
   return json({
     event,
@@ -311,7 +383,9 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     shirtSizes,
     isAuth: !!authenticatedClient,
     isGuest,
-    bookingId
+    bookingId,
+    organizerName: organizer?.name as string,
+    eventTeams
   });
 };
 
@@ -327,8 +401,13 @@ export default function CheckoutInfoRoute() {
     shirtSizes,
     isAuth,
     isGuest,
-    bookingId
+    bookingId,
+    organizerName,
+    eventTeams
   } = useLoaderData<LoaderData>() as LoaderData;
+  const [participantTeam, setParticipantTeam] = useState<string | null>(
+    raceParticipants[0].team?.name || null
+  );
   const [participant, setParticipant] = useState<Participant | null>(
     raceParticipants[0].participant
   );
@@ -350,6 +429,8 @@ export default function CheckoutInfoRoute() {
     terms: boolean;
     regulation: boolean;
   }>({ terms: false, regulation: false });
+  const [checkedAddToMailingList, setCheckedAddToMailingList] =
+    useState(false);
   const initialVisitedParticipants = raceParticipants
     .filter((p) => p.participant.status === 'saved')
     .map((p) => p.participant);
@@ -378,15 +459,18 @@ export default function CheckoutInfoRoute() {
   }, []);
 
   function handleSetParticipant(e: React.MouseEvent) {
-    const newParticipant = e.currentTarget.id.split('|')[0];
+    const [newParticipant, raceId, raceParticipantId] =
+      e.currentTarget.id.split('|');
     const index = userParticipants.findIndex(
       (a: Participant) => a.id === newParticipant
     );
     const participant = userParticipants[index];
     const isVisited = visitedParticipants.some((v) => v.id === participant.id);
 
+    handleSetParticipantTeam(raceParticipantId);
+
     setParticipant(participant);
-    setSelectedRace(e.currentTarget.id.split('|')[1]);
+    setSelectedRace(raceId);
     setErrors({});
     setHash(Date.now());
     setSelectedParticipant(null);
@@ -394,6 +478,17 @@ export default function CheckoutInfoRoute() {
     if (!isVisited) {
       setVisitedParticipants((p) => [...p, participant]);
     }
+  }
+
+  function handleSetParticipantTeam(raceParticipantId: string) {
+    const index = raceParticipants.findIndex(
+      (rp) => rp.id === raceParticipantId
+    );
+    const rParticipant = raceParticipants[index];
+
+    setParticipantTeam(
+      rParticipant.team ? (rParticipant.team.name as string) : null
+    );
   }
 
   function handlerSetShowNotificationFunction(callback: () => void) {
@@ -446,6 +541,10 @@ export default function CheckoutInfoRoute() {
       regulation: checkedTermsAndRegulation.regulation,
       terms: !checkedTermsAndRegulation.terms
     });
+  }
+
+  function handleCheckAddToMailingList() {
+    setCheckedAddToMailingList(!checkedAddToMailingList);
   }
 
   useEffect(() => {
@@ -545,7 +644,7 @@ export default function CheckoutInfoRoute() {
                       )
                     }
                   )}
-                  id={p.participantId + '|' + p.race.id}
+                  id={`${p.participantId}|${p.race.id}|${p.id}`}
                   onClick={handleSetParticipant}
                   data-cy={`participant-${index + 1}`}
                 >
@@ -622,6 +721,8 @@ export default function CheckoutInfoRoute() {
             resetForm={resetForm}
             isSingleParticipant={raceParticipants.length === 1}
             isReadOnly={isGuest}
+            eventTeams={eventTeams}
+            participantTeam={participantTeam}
           >
             {!isGuest && (
               <>
@@ -629,7 +730,7 @@ export default function CheckoutInfoRoute() {
                   <input
                     name="regulation"
                     type="checkbox"
-                    checked={checkedTermsAndRegulation.regulation}
+                    defaultChecked={checkedTermsAndRegulation.regulation}
                     onClick={handleCheckRegulation}
                     className="w-4 h-4 text-indigo-500 bg-gray-100 rounded border-gray-300 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600"
                     data-cy="regulation"
@@ -653,11 +754,16 @@ export default function CheckoutInfoRoute() {
                   </label>
                 </div>
 
-                <div className="flex items-center mb-8">
+                <div
+                  className={clsx('flex items-center', {
+                    'mb-2': isAuth,
+                    'mb-8': !isAuth
+                  })}
+                >
                   <input
                     name="terms"
                     type="checkbox"
-                    checked={checkedTermsAndRegulation.terms}
+                    defaultChecked={checkedTermsAndRegulation.terms}
                     onClick={handleCheckTerms}
                     className="w-4 h-4 text-indigo-500 bg-gray-100 rounded border-gray-300 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600"
                     data-cy="terms"
@@ -672,6 +778,25 @@ export default function CheckoutInfoRoute() {
                     </Link>
                   </label>
                 </div>
+
+                {isAuth && (
+                  <div className="flex items-center mb-8">
+                    <input
+                      name="add-to-mail-list"
+                      type="checkbox"
+                      defaultChecked={checkedAddToMailingList}
+                      onClick={handleCheckAddToMailingList}
+                      className="w-4 h-4 text-indigo-500 bg-gray-100 rounded border-gray-300 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600"
+                      data-cy="mail-list"
+                    />
+                    <label
+                      className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300"
+                      htmlFor="add-to-mail-list"
+                    >
+                      {t('Add to X Mailing List', { organizer: organizerName })}
+                    </label>
+                  </div>
+                )}
 
                 <InputError id="terms-error" className="mb-2">
                   {errors?.submit || errors?.terms || errors?.regulation}
@@ -703,6 +828,11 @@ export default function CheckoutInfoRoute() {
                     type="hidden"
                     name="terms"
                     value={checkedTermsAndRegulation.terms ? 'on' : 'off'}
+                  />
+                  <input
+                    type="hidden"
+                    name="add-to-mail-list"
+                    value={checkedAddToMailingList ? 'on' : 'off'}
                   />
                   <input type="hidden" name="hash" value={hash} />
                   <Button
