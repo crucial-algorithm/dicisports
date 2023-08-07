@@ -116,6 +116,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
       event,
       cart,
       submittedPayments,
+      appliedDiscount: booking.appliedDiscount,
       domainUrl: getDomainUrl(request)
     });
   }
@@ -196,10 +197,12 @@ export const action: ActionFunction = async ({ request, params }) => {
       if (!dbDiscountCode || dbDiscountCode.status !== DiscountCodeStatus.active) {
         return badRequest({ errors: { discountError: t('No Discount Code') } });
       }
+      const cart = await findBookingCart(clientId, eventId);
 
       await applyDiscountCode(
         booking.id,
-        `${dbDiscountCode.code}|${dbDiscountCode.value}|${dbDiscountCode.fixed}`
+        `${dbDiscountCode.code}|${dbDiscountCode.value}|${dbDiscountCode.fixed}`,
+        cart
       );
 
       return json({ ok: true });
@@ -361,14 +364,14 @@ export default function CheckoutPaymentRoute() {
             </>
           )}
         </div>
-        <div className="w-full md:w-[480px]">
+        <div className="w-full mt-4 md:mt-0 md:w-[480px]">
           <DisplayCart
             cart={cart}
             event={event}
             fetcher={displayCartFetcher}
             appliedDiscount={appliedDiscount}
             discountCodeError={errors.discountError}
-            showDiscountCodeInput={true}
+            showDiscountCodeInput={!isPaid && !(submittedPayments && submittedPayments.length > 0)}
           >
             {!isPaid && !(submittedPayments && submittedPayments.length > 0) && (
               <Button
