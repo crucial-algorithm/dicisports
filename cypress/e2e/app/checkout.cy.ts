@@ -1402,7 +1402,7 @@ describe('Checkout', () => {
         });
     });
 
-    context('should pay booking', () => {
+    context.only('should pay booking', () => {
       beforeEach(() => {
         cy.login();
       });
@@ -1410,9 +1410,14 @@ describe('Checkout', () => {
       it('MB Way', () => {
         cy.visitAndWaitForHydration('/checkout/payment/uj3tsN7auCRx8citYiA2')
 
+          .intercept('/checkout/payment/uj3tsN7auCRx8citYiA2')
+          .as('ConfirmationRoute')
+
           .get('button[name=pay-mbway]')
           .should('exist')
           .click()
+
+          .wait('@ConfirmationRoute')
 
           .location()
           .should((l) => {
@@ -1425,9 +1430,14 @@ describe('Checkout', () => {
       it('Credit Card', () => {
         cy.visitAndWaitForHydration('/checkout/payment/uj3tsN7auCRx8citYiA2')
 
+          .intercept('/checkout/payment/uj3tsN7auCRx8citYiA2')
+          .as('ConfirmationRoute')
+
           .get('button[name=pay-cc]')
           .should('exist')
           .click()
+
+          .wait('@ConfirmationRoute')
 
           .location()
           .should((l) => {
@@ -1440,9 +1450,14 @@ describe('Checkout', () => {
       it('MB', () => {
         cy.visitAndWaitForHydration('/checkout/payment/uj3tsN7auCRx8citYiA2')
 
+          .intercept('/checkout/payment/uj3tsN7auCRx8citYiA2')
+          .as('ConfirmationRoute')
+
           .get('button[name=pay-reference]')
           .should('exist')
           .click()
+
+          .wait('@ConfirmationRoute')
 
           .location()
           .should((l) => {

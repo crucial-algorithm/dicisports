@@ -84,3 +84,10 @@ Machine 178150df4202d8 restarted successfully!
 
 ### List env variables 
 fly ssh console -C "printenv" --app diciprd
+
+### Connect to staging/production DB
+
+```shell
+flyctl proxy <port> -a <app-name>
+```
+
