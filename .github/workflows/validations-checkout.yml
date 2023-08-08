@@ -1,7 +1,7 @@
 name: E2E tests - Checkout
 on: pull_request
 env:
-  HTTP_CATCHER_CUSTOM_ENDPOINTS: https://gist.githubusercontent.com/kimile/07ca90a7bed4c6a4ec2c904a8f655993/raw/a1b7b8969dd3f294a3529d666020b033b2267a24/gha-http-catcher-e2e.json
+  HTTP_CATCHER_CUSTOM_ENDPOINTS: https://gist.githubusercontent.com/lopesnuno/eea39e77c10e67924ce94edf624f03fa/raw/a3200465edf40b5d2203e00ac8f0b6d0d1020a5e/scratch.json
 
 jobs:
   e2e:
