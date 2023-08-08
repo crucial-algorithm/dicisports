@@ -26,5 +26,17 @@
     "updatedAt": null,
     "mbEntity": null,
     "mbReference": null
+  },
+  {
+    "id": "oJ4gQmsiQXkBcpBJmDEZ",
+    "method": "REFERENCE",
+    "status": "expired",
+    "amount": 10000,
+    "transactionId": "oJ4gQmsiQXkBcpBJmDEZ",
+    "notificationId": "9077ab06-586c-449e-ba8a-93ffac1c258e",
+    "expiresAt": "2022-12-31 23:00:00.000",
+    "bookingId": "uj3tsN7auCRx8citYiA2",
+    "mbEntity": "24000",
+    "mbReference": "883960846"
   }
 ]

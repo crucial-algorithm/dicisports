@@ -79,7 +79,7 @@ function getAuthHeaders() {
   };
 }
 
-export async function createPayamentTransaction(
+export async function createPaymentTransaction(
   booking: Booking,
   event: Event,
   cart: Array<UICartRow>

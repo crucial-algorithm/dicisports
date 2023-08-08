@@ -42,7 +42,7 @@ import type { KCDHandle, UICartRow } from '~/types';
 import { sendBookingConfirmationEmail } from '~/server/email.server';
 import { badRequest, bookingAmount, getDomainUrl } from '~/utils/misc';
 import i18n from '~/server/i18n.server';
-import { createPayamentTransaction } from '~/server/utils/payments';
+import { createPaymentTransaction } from '~/server/utils/payments';
 import { useTheme } from '~/utils/theme-provider';
 import { findDiscountCode } from '~/server/db/discounts.server';
 import { findOrganizer } from '~/server/db/organizer.server';
@@ -94,9 +94,9 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     return redirect(`/checkout/cart/${eventId}`);
   }
 
-  const hasASuccessfullPayment = await isBookingPaid(bookingId);
+  const hasASuccessfulPayment = await isBookingPaid(bookingId);
 
-  if (hasASuccessfullPayment) {
+  if (hasASuccessfulPayment) {
     // check if for some reason the booking status is inconsistent
     if (booking.status !== CheckoutStatus.confirmed) {
       await updateBookingStatus(bookingId, CheckoutStatus.confirmed);
@@ -121,7 +121,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   }
 
   const unsuccessfulPayments = await findUnsuccessfulPayments(bookingId);
-  const { gatewayResponse, ourTransactionId } = await createPayamentTransaction(
+  const { gatewayResponse, ourTransactionId } = await createPaymentTransaction(
     booking,
     event,
     cart
