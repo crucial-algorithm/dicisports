@@ -782,7 +782,7 @@ describe('Checkout', () => {
 
         .visitAndWaitForHydration('/checkout/payment/qR4nqWpTdQy8QZu29ANu')
 
-        .get('button[name=pay]')
+        .get('button[name=pay-reference]')
         .should('exist')
         .then((b) => {
           b.click();
