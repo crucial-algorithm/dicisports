@@ -145,5 +145,35 @@
     "nationality": 188,
     "postalCode": "4730-000",
     "status": "saved"
+  },
+  {
+    "id": "rwm48QZSwDDB5858XEac",
+    "userId": "xip7n8bdJkFyHxaCiEi6",
+    "firstName": "Lucia",
+    "lastName": "Rego",
+    "gender": "F",
+    "birthdate": "1978-09-24 00:00:00.000",
+    "phoneNumber": 960000000,
+    "identityCard": "00000000-0-ZZ4",
+    "federationNumber": null,
+    "shirtSize": 2,
+    "nationality": 188,
+    "postalCode": "4730-000",
+    "status": "saved"
+  },
+  {
+    "id": "qgXRCf9Wz6ozYxjDJWsJ",
+    "userId": "xip7n8bdJkFyHxaCiEi6",
+    "firstName": "António",
+    "lastName": "Silva",
+    "gender": "M",
+    "birthdate": "1999-11-10 00:00:00.000",
+    "phoneNumber": 910000000,
+    "identityCard": "00000000-0-ZZ4",
+    "federationNumber": null,
+    "shirtSize": 5,
+    "nationality": 4,
+    "postalCode": "1000-000",
+    "status": "saved"
   }
 ]

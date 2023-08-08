@@ -1150,6 +1150,10 @@ describe('Checkout', () => {
   });
 
   context('Payments Gateway', () => {
+    beforeEach(() => {
+      cy.task('db:reset');
+    });
+
     it('Should keep booking state if payment fails (MBWay Rejected)', () => {
       const secret = Cypress.env('SIBS_WEBHOOK_SECRET');
 
@@ -1256,7 +1260,7 @@ describe('Checkout', () => {
         });
     });
 
-    it('should update booking state of an expired payment if we get a success call', () => {
+    it('should update booking state of an failed payment if we get a success call', () => {
       const secret = Cypress.env('SIBS_WEBHOOK_SECRET');
 
       cy.wrap(null)
@@ -1270,7 +1274,7 @@ describe('Checkout', () => {
               },
               merchant: {
                 terminalId: 1000000,
-                transactionId: 'oJ4gQmsiQXkBcpBJmDEZ'
+                transactionId: '5h9g4ZFmcLhWJoZYt4oe'
               },
               paymentType: 'PURS',
               returnStatus: {
@@ -1279,7 +1283,7 @@ describe('Checkout', () => {
               },
               paymentMethod: 'REFERENCE',
               paymentStatus: 'Success',
-              transactionID: 'oJ4gQmsiQXkBcpBJmDEZ',
+              transactionID: '5h9g4ZFmcLhWJoZYt4oe',
               notificationID: '9077ab06-586c-449e-ba8a-93ffac1c258e'
             })
           )
@@ -1296,7 +1300,55 @@ describe('Checkout', () => {
           }).then(() => {
             cy.login()
               .visitAndWaitForHydration('/me')
-              .get('td[data-cy=status-uj3tsN7auCRx8citYiA2')
+              .get('td[data-cy=status-qR4nqWpTdQy8QZu29ANu]')
+              .contains('Confirmado');
+          });
+        });
+    });
+    
+    it('should update booking state of an failed expired if we get a success call', () => {
+      const secret = Cypress.env('SIBS_WEBHOOK_SECRET');
+
+      cy.wrap(null)
+        .then(() =>
+          encryptMessage(
+            secret,
+            JSON.stringify({
+              amount: {
+                value: 10,
+                currency: 'EUR'
+              },
+              merchant: {
+                terminalId: 1000000,
+                transactionId: 'stXph3iqss9ZJPn2Nrdh'
+              },
+              paymentType: 'PURS',
+              returnStatus: {
+                statusMsg: 'Success',
+                statusCode: '000'
+              },
+              paymentMethod: 'REFERENCE',
+              paymentStatus: 'Success',
+              transactionID: 'stXph3iqss9ZJPn2Nrdh',
+              notificationID: '9077ab06-586c-449e-ba8a-93ffac1c258e'
+            })
+          )
+        )
+        .then((payload) => {
+          cy.request({
+            url: '/wh/sibs/',
+            method: 'POST',
+            body: payload.message,
+            headers: {
+              'x-authentication-tag': payload.at,
+              'x-initialization-vector': payload.iv
+            }
+          }).then(() => {
+            cy.loginOrganizer()
+              .visitAndWaitForHydration(
+                '/o/event/nGhb8Lu8xdg3oJk4N4g6/dashboard'
+              )
+              .get('#participant-fayTnrqT4dRg5KAH7HXz')
               .contains('Confirmado');
           });
         });
@@ -1316,7 +1368,7 @@ describe('Checkout', () => {
               },
               merchant: {
                 terminalId: 1000000,
-                transactionId: 'oJ4gQmsiQXkBcpBJmDEZ'
+                transactionId: '9Lgx42DbNj5nYHcC6iEb'
               },
               paymentType: 'PURS',
               returnStatus: {
@@ -1327,7 +1379,7 @@ describe('Checkout', () => {
               },
               paymentMethod: 'CARD',
               paymentStatus: 'Declined',
-              transactionID: 'oJ4gQmsiQXkBcpBJmDEZ',
+              transactionID: '9Lgx42DbNj5nYHcC6iEb',
               notificationID: '9077ab06-586c-449e-ba8a-93ffac1c258e'
             })
           )
@@ -1342,9 +1394,9 @@ describe('Checkout', () => {
               'x-initialization-vector': payload.iv
             }
           }).then(() => {
-            cy.login()
-              .visitAndWaitForHydration('/me')
-              .get('td[data-cy=status-uj3tsN7auCRx8citYiA2')
+            cy.loginOrganizer()
+              .visitAndWaitForHydration('/o/event/5n8epZbHczqAQtQaAh5R/dashboard')
+              .get('#participant-TrqeXCggKuzB3T9Nr4C5')
               .contains('Pendente');
           });
         });
@@ -1352,7 +1404,6 @@ describe('Checkout', () => {
 
     context('should pay booking', () => {
       beforeEach(() => {
-        cy.task('db:reset');
         cy.login();
       });
 
@@ -1556,7 +1607,7 @@ function bookParticipant(eventId: string, raceId: string) {
           expect(l.pathname).to.eq(`/checkout/payment/${bookingId}`);
         })
 
-        .get('button[name=pay]')
+        .get('button[name=pay-reference]')
         .click();
     });
 }
