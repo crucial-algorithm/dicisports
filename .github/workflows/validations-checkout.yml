@@ -1,7 +1,5 @@
 name: E2E tests - Checkout
 on: pull_request
-env:
-  HTTP_CATCHER_CUSTOM_ENDPOINTS: https://gist.githubusercontent.com/lopesnuno/caa38eb10bf9773a3727ea9a88d74ba2/raw/6cbc5f13b975643862b1beeb7f2a627fe4733814/gha-http-catcher-e2e.json
 
 jobs:
   e2e:
@@ -37,7 +35,7 @@ jobs:
         run: |
           cd http-catcher
           npm ci
-          export ENDPOINTS=$(curl $HTTP_CATCHER_CUSTOM_ENDPOINTS | tr -d "\n\r");nohup node index.js &
+          export ENDPOINTS=$(cat ../ci/gha-http-catcher-e2e.json | tr -d "\n\r");nohup node index.js &
 
       - name: Test connection to http-catcher
         run: |
