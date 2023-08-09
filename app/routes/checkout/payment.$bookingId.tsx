@@ -59,6 +59,7 @@ type LoaderData = {
   CHECKOUT_FORM_SCRIPT: string;
   domainUrl: string;
   appliedDiscount?: string;
+  displayTransactionError: boolean;
 };
 
 export const loader: LoaderFunction = async ({ request, params }) => {
@@ -121,11 +122,21 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   }
 
   const unsuccessfulPayments = await findUnsuccessfulPayments(bookingId);
-  const { gatewayResponse, ourTransactionId } = await createPaymentTransaction(
+  const paymentTransaction = await createPaymentTransaction(
     booking,
     event,
     cart
   );
+
+  if (!paymentTransaction) {
+    return json({
+      event,
+      submittedPayments,
+      displayTransactionError: true
+    });
+  }
+
+  const { gatewayResponse, ourTransactionId } = paymentTransaction;
 
   return json({
     event,
@@ -136,7 +147,8 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     CHECKOUT_FORM_SCRIPT: Config().SIBS_CHECKOUT_FORM_SCRIPT,
     unsuccessfulPayments,
     domainUrl: getDomainUrl(request),
-    appliedDiscount: booking.appliedDiscount
+    appliedDiscount: booking.appliedDiscount,
+    displayTransactionError: false
   });
 };
 
@@ -308,7 +320,8 @@ export default function CheckoutPaymentRoute() {
     ourTransactionId,
     CHECKOUT_FORM_SCRIPT,
     domainUrl,
-    appliedDiscount
+    appliedDiscount,
+    displayTransactionError
   } = useLoaderData() as LoaderData;
   const { t } = useTranslation('checkout');
   const displayCartFetcher = useFetcher();
@@ -334,6 +347,31 @@ export default function CheckoutPaymentRoute() {
     }
   }, [displayCartFetcher]);
 
+  if (displayTransactionError) {
+    function onClick() {
+      window.location.reload();
+    }
+
+    return (
+      <Main>
+        <div className="flex flex-col justify-start space-y-1 mb-4">
+          <H2>
+            <b data-cy="name" className="break-words w-full">
+              {event.name}
+            </b>
+          </H2>
+          <H6>
+            <DisplayDate date={new Date(event.startAt as unknown as string)} />
+          </H6>
+        </div>
+        <H5 className="mb-2">{t('Transaction Error')}</H5>
+        <Button type="button" onClick={onClick}>
+          {t('Try Again')}
+        </Button>
+      </Main>
+    );
+  }
+  
   return (
     <Main>
       <div className="flex flex-col justify-start space-y-1">

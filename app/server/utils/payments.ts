@@ -83,7 +83,7 @@ export async function createPaymentTransaction(
   booking: Booking,
   event: Event,
   cart: Array<UICartRow>
-): Promise<{ gatewayResponse: TransactionResponse; ourTransactionId: string }> {
+): Promise<{ gatewayResponse: TransactionResponse; ourTransactionId: string } | null> {
   const {
     SIBS_URL_ENDPOINT: url,
     SIBS_TERMINAL_ID: terminalId,
@@ -97,9 +97,9 @@ export async function createPaymentTransaction(
       return bookingAmount(cart, Number(value), JSON.parse(fixed)) / 1000;
     }
 
-    return  bookingAmount(cart) / 1000;
+    return bookingAmount(cart) / 1000;
   }
-  
+
   const amount = handleAmount();
   const payment = await createPaymentRequest(booking.id, amount);
   const { initial, final } = paymentReferenceIntervals();
@@ -136,17 +136,32 @@ export async function createPaymentTransaction(
     }
   };
 
-  const r = await fetch(url, {
-    method: 'post',
-    body: JSON.stringify(body),
-    headers: getAuthHeaders()
-  });
-  const details = (await r.json()) as TransactionResponse;
+  try {
+    const r = await fetch(url, {
+      method: 'post',
+      body: JSON.stringify(body),
+      headers: getAuthHeaders()
+    });
+    const details = (await r.json()) as TransactionResponse;
 
-  await addGatewayDetailsToPayment(payment.id, details.transactionID, new Date(details.expiry));
-  return { gatewayResponse: details, ourTransactionId: payment.id };
+    await addGatewayDetailsToPayment(
+      payment.id,
+      details.transactionID,
+      new Date(details.expiry)
+    );
+
+    return { gatewayResponse: details, ourTransactionId: payment.id };
+  } catch (e) {
+    if (e instanceof SyntaxError) {
+      // Unexpected token < in JSON
+      console.log('There was a SyntaxError', e);
+    } else {
+      console.log('There was an error', e);
+    }
+
+    return null;
+  }
 }
-
 
 export async function getPaymentStatus(payment: Payment) {
   const { SIBS_CHECK_STATUS_ENDPOINT: url } = Config();
