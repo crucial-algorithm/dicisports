@@ -36,11 +36,10 @@ export const loader: LoaderFunction = async ({ request, params }) => {
       status.paymentReference?.expireDate
     );
   } else {
-    // we should add log to this... the reason for the failled attempt may be important for debug
+    // we should add log to this... the reason for the failed attempt may be important for debug
     console.error('Status was impossible to retrieve so payment details will be missing... may as well just fail attempt');
-    await updatePaymentStatus(paymentId, PaymentStatus.failed);
+    await updatePaymentStatus(paymentId, PaymentStatus.temp);
   }
 
   return redirect(`/checkout/payment/${payment.bookingId}`);
-
 };

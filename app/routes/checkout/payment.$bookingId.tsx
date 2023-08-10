@@ -7,7 +7,7 @@ import {
 } from '@prisma/client';
 import type { ActionFunction, LoaderFunction } from '@remix-run/node';
 import { json, redirect } from '@remix-run/node';
-import { useFetcher, useLoaderData } from '@remix-run/react';
+import { Form, useFetcher, useLoaderData } from '@remix-run/react';
 import * as React from 'react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -34,9 +34,10 @@ import {
 import { findEvent } from '~/server/db/events.server';
 import { findUserEventRaceParticipants } from '~/server/db/participant.server';
 import {
-  findSubmittedPayments,
+  findSubmittedPayments, findTempPayments,
   findUnsuccessfulPayments,
-  isBookingPaid
+  isBookingPaid,
+  resetPaymentStatus
 } from '~/server/db/payments.server';
 import type { KCDHandle, UICartRow } from '~/types';
 import { sendBookingConfirmationEmail } from '~/server/email.server';
@@ -46,6 +47,7 @@ import { createPaymentTransaction } from '~/server/utils/payments';
 import { useTheme } from '~/utils/theme-provider';
 import { findDiscountCode } from '~/server/db/discounts.server';
 import { findOrganizer } from '~/server/db/organizer.server';
+import ButtonGroup from '~/components/shared/ButtonGroup';
 
 type LoaderData = {
   event: Event;
@@ -97,6 +99,10 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 
   const hasASuccessfulPayment = await isBookingPaid(bookingId);
 
+  if (booking.status == CheckoutStatus.checkout) {
+    return redirect(`/checkout/info/${bookingId}`);
+  }
+
   if (hasASuccessfulPayment) {
     // check if for some reason the booking status is inconsistent
     if (booking.status !== CheckoutStatus.confirmed) {
@@ -104,10 +110,11 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     }
 
     return redirect(`/checkout/confirmation/${bookingId}`);
-  }
-
-  if (booking.status == CheckoutStatus.checkout) {
-    return redirect(`/checkout/info/${bookingId}`);
+  } else {
+    // check if for some reason the booking status is inconsistent
+    if (booking.status !== CheckoutStatus.pending) {
+      await updateBookingStatus(bookingId, CheckoutStatus.pending);
+    }
   }
 
   const submittedPayments = await findSubmittedPayments(bookingId);
@@ -135,6 +142,8 @@ export const loader: LoaderFunction = async ({ request, params }) => {
       displayTransactionError: true
     });
   }
+
+  const displaySibsGatewayError = (await findTempPayments(bookingId))?.length > 0;
 
   const { gatewayResponse, ourTransactionId } = paymentTransaction;
 
@@ -200,6 +209,14 @@ export const action: ActionFunction = async ({ request, params }) => {
     await updateBookingStatus(bookingId, CheckoutStatus.checkout);
 
     return redirect(`/checkout/info/${bookingId}`);
+  }
+
+  if (actionId === 'new-payment') {
+    const paymentId = form.get('paymentId') as string;
+
+    await resetPaymentStatus(paymentId);
+
+    return redirect(`/checkout/payment/${bookingId}`);
   }
 
   try {
@@ -330,6 +347,10 @@ export default function CheckoutPaymentRoute() {
     submittedPayments &&
     submittedPayments.filter((p) => (p.status = PaymentStatus.paid)).length ===
       0;
+  const sibsGatewayErrorPayment =
+    (unsuccessfulPayments &&
+      unsuccessfulPayments.filter((p) => p.status === PaymentStatus.temp)) ||
+    null;
 
   useEffect(() => {
     if (
@@ -371,7 +392,11 @@ export default function CheckoutPaymentRoute() {
       </Main>
     );
   }
-  
+
+  if (sibsGatewayErrorPayment && sibsGatewayErrorPayment.length > 0) {
+    return <DisplaySibsGatewayErrorOptions paymentId={sibsGatewayErrorPayment[0].id} />;
+  }
+
   return (
     <Main>
       <div className="flex flex-col justify-start space-y-1">
@@ -642,3 +667,32 @@ function formatMbReference(reference: string) {
 type FormErrors = {
   discountError?: string;
 };
+
+function DisplaySibsGatewayErrorOptions({ paymentId }: { paymentId: string }) {
+  const { t } = useTranslation('checkout');
+
+  function handleCheckPaymentStatus() {
+    window.location.reload();
+  }
+
+  return (
+    <Main>
+      <H5 className="mb-4">{t('Sibs Gateway Error')}</H5>
+      <Form method="post">
+        <input type="hidden" name="paymentId" value={paymentId} />
+        <ButtonGroup>
+          <Button type="submit" variant="danger" name="actionId" value="new-payment">
+            {t('New Payment')}
+          </Button>
+          <Button
+            type="button"
+            variant="primary"
+            onClick={handleCheckPaymentStatus}
+          >
+            {t('Check Payment Status')}
+          </Button>
+        </ButtonGroup>
+      </Form>
+    </Main>
+  );
+}

@@ -362,6 +362,8 @@ enum PaymentStatus {
   failed
   canceled
   expired
+  //TODO: change this status
+  temp
 }
 
 enum PaymentMethod {

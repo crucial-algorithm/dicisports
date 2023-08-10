@@ -28,6 +28,15 @@ async function findSubmittedPayments(bookingId: string) {
   });
 }
 
+async function findTempPayments(bookingId: string) {
+  return await db.payment.findMany({
+    where: {
+      bookingId,
+      status: PaymentStatus.temp
+    }
+  });
+}
+
 async function findUnsuccessfulPayments(bookingId: string) {
   return await db.payment.findMany({
     where: {
@@ -42,7 +51,8 @@ async function findUnsuccessfulPayments(bookingId: string) {
             in: [
               PaymentStatus.failed,
               PaymentStatus.canceled,
-              PaymentStatus.expired
+              PaymentStatus.expired,
+              PaymentStatus.temp
             ]
           }
         }
@@ -171,11 +181,14 @@ async function updatePaymentStatus(
   status: PaymentStatus,
   onlyFrom: PaymentStatus | null = null
 ) {
+  const payment = await findPayment(id);
+
   if (onlyFrom) {
     return await db.payment.updateMany({
       where: { id, status: onlyFrom },
       data: {
-        status
+        status:
+          payment?.status === PaymentStatus.paid ? PaymentStatus.paid : status
       }
     });
   }
@@ -183,7 +196,8 @@ async function updatePaymentStatus(
   return await db.payment.update({
     where: { id },
     data: {
-      status
+      status:
+        payment?.status === PaymentStatus.paid ? PaymentStatus.paid : status
     }
   });
 }
@@ -250,6 +264,15 @@ async function saveNotification(json: SibsWebHookSchema) {
   });
 }
 
+async function resetPaymentStatus(id: string) {
+  return await db.payment.update({
+    where: { id },
+    data: {
+      status: PaymentStatus.pending
+    }
+  });
+}
+
 export {
   findPayment,
   findPaymentByTransactionId,
@@ -263,5 +286,7 @@ export {
   saveNotification,
   updatePaymentStatus,
   addReferenciaMultibancoInfo,
-  addPaymentMethodDetails
+  addPaymentMethodDetails,
+  findTempPayments,
+  resetPaymentStatus
 };
