@@ -1154,7 +1154,7 @@ describe('Checkout', () => {
       cy.task('db:reset');
     });
 
-    it.only('Should keep booking state if payment fails (MBWay Rejected)', () => {
+    it('Should keep booking state if payment fails (MBWay Rejected)', () => {
       const secret = Cypress.env('SIBS_WEBHOOK_SECRET');
 
       cy.wrap(null)
@@ -1407,7 +1407,8 @@ describe('Checkout', () => {
       it('should show handled error when get-status fails 500', () => {
         cy.request({
           url: '/checkout/submitted/sGDw53Nv27kbi4SkY500',
-          method: 'GET'
+          method: 'GET',
+          failOnStatusCode: false
         }).then(() => {
           cy.login()
             .visitAndWaitForHydration('/checkout/payment/MNT9Keq82E3Tbag5tPjw')
