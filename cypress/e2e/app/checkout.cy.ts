@@ -1403,7 +1403,7 @@ describe('Checkout', () => {
         });
     });
 
-    context.only('failed get-status', () => {
+    context('failed get-status', () => {
       it('should show handled error when get-status fails 500', () => {
         cy.request({
           url: '/checkout/submitted/sGDw53Nv27kbi4SkY500',
