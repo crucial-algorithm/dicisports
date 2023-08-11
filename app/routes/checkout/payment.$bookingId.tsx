@@ -113,11 +113,6 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     return redirect(`/checkout/confirmation/${bookingId}`);
   }
 
-  // check if for some reason the booking status is inconsistent
-  if (booking.status !== CheckoutStatus.pending) {
-    await updateBookingStatus(bookingId, CheckoutStatus.pending);
-  }
-
   const submittedPayments = await findSubmittedPayments(bookingId);
 
   if (submittedPayments.length > 0) {
@@ -130,34 +125,35 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   }
 
   const unsuccessfulPayments = await findUnsuccessfulPayments(bookingId);
-  const paymentTransaction = await createPaymentTransaction(
-    booking,
-    event,
-    cart
-  );
 
-  if (!paymentTransaction) {
+  try {
+    const { gatewayResponse, ourTransactionId } = await createPaymentTransaction(
+        booking,
+        event,
+        cart
+    );
+
+    return json({
+      event,
+      cart,
+      formContext: gatewayResponse.formContext,
+      gatewayTransactionId: gatewayResponse.transactionID,
+      ourTransactionId,
+      CHECKOUT_FORM_SCRIPT: Config().SIBS_CHECKOUT_FORM_SCRIPT,
+      unsuccessfulPayments,
+      domainUrl: getDomainUrl(request),
+      appliedDiscount: booking.appliedDiscount,
+      displayTransactionError: false
+    });
+  } catch (e) {
+    console.log(e);
+
     return json({
       event,
       submittedPayments,
       displayTransactionError: true
     });
   }
-
-  const { gatewayResponse, ourTransactionId } = paymentTransaction;
-
-  return json({
-    event,
-    cart,
-    formContext: gatewayResponse.formContext,
-    gatewayTransactionId: gatewayResponse.transactionID,
-    ourTransactionId,
-    CHECKOUT_FORM_SCRIPT: Config().SIBS_CHECKOUT_FORM_SCRIPT,
-    unsuccessfulPayments,
-    domainUrl: getDomainUrl(request),
-    appliedDiscount: booking.appliedDiscount,
-    displayTransactionError: false
-  });
 };
 
 export const action: ActionFunction = async ({ request, params }) => {
@@ -346,9 +342,9 @@ export default function CheckoutPaymentRoute() {
     submittedPayments &&
     submittedPayments.filter((p) => (p.status = PaymentStatus.paid)).length ===
       0;
-  const sibsGatewayErrorPayment =
+  const sibsGatewayPaymentError =
     (unsuccessfulPayments &&
-      unsuccessfulPayments.filter((p) => p.status === PaymentStatus.noStatus)) ||
+      unsuccessfulPayments.filter((p) => p.status === PaymentStatus.sibsError)) ||
     null;
 
   useEffect(() => {
@@ -371,8 +367,13 @@ export default function CheckoutPaymentRoute() {
     return <DisplayTransactionError event={event} t={t} />;
   }
 
-  if (sibsGatewayErrorPayment && sibsGatewayErrorPayment.length > 0) {
-    return <DisplaySibsGatewayErrorOptions paymentId={sibsGatewayErrorPayment[0].id} t={t} />;
+  if (sibsGatewayPaymentError && sibsGatewayPaymentError.length > 0) {
+    return (
+      <DisplayGetPaymentStatusErrorOptions
+        paymentId={sibsGatewayPaymentError[0].id}
+        t={t}
+      />
+    );
   }
 
   return (
@@ -671,7 +672,7 @@ function DisplayTransactionError({ event, t }: { event: Event; t: TFunction }) {
   );
 }
 
-function DisplaySibsGatewayErrorOptions({
+function DisplayGetPaymentStatusErrorOptions({
   paymentId,
   t
 }: {

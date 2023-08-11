@@ -89,5 +89,8 @@ fly ssh console -C "printenv" --app diciprd
 
 ```shell
 flyctl proxy <port> -a <app-name>
+
+# Example
+flyctl proxy 5432 -a dicistg-bd
 ```
 

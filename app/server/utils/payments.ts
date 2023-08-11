@@ -83,7 +83,7 @@ export async function createPaymentTransaction(
   booking: Booking,
   event: Event,
   cart: Array<UICartRow>
-): Promise<{ gatewayResponse: TransactionResponse; ourTransactionId: string } | null> {
+): Promise<{ gatewayResponse: TransactionResponse; ourTransactionId: string }> {
   const {
     SIBS_URL_ENDPOINT: url,
     SIBS_TERMINAL_ID: terminalId,
@@ -136,58 +136,46 @@ export async function createPaymentTransaction(
     }
   };
 
-  try {
-    const r = await fetch(url, {
-      method: 'post',
-      body: JSON.stringify(body),
-      headers: getAuthHeaders()
-    });
-    const details = (await r.json()) as TransactionResponse;
+  const r = await fetch(url, {
+    method: 'post',
+    body: JSON.stringify(body),
+    headers: getAuthHeaders()
+  });
+  const details = (await r.json()) as TransactionResponse;
 
-    await addGatewayDetailsToPayment(
-      payment.id,
-      details.transactionID,
-      new Date(details.expiry)
-    );
+  await addGatewayDetailsToPayment(
+    payment.id,
+    details.transactionID,
+    new Date(details.expiry)
+  );
 
-    return { gatewayResponse: details, ourTransactionId: payment.id };
-  } catch (e) {
-    console.log(e);
-
-    return null;
-  }
+  return { gatewayResponse: details, ourTransactionId: payment.id };
 }
 
 export async function getPaymentStatus(payment: Payment) {
   const { SIBS_CHECK_STATUS_ENDPOINT: url } = Config();
 
-  try {
-    const r = await fetch(
-      url.replace('{{transactionID}}', String(payment.transactionId)),
-      {
-        method: 'get',
-        headers: getAuthHeaders()
-      }
-    );
-
-    if (!r.ok) {
-      console.error("[SIBS] Get payment status didn't go well", r);
-      return null;
+  const r = await fetch(
+    url.replace('{{transactionID}}', String(payment.transactionId)),
+    {
+      method: 'get',
+      headers: getAuthHeaders()
     }
+  );
 
-    const response = (await r.json()) as SibsStatusResponse;
-
-    if (response?.returnStatus?.statusCode === '000') {
-      console.log('[SIBS] Successuful get status', response);
-      return response;
-    } else {
-      console.error('[SIBS] Unsuccessuful get status', response);
-    }
-
-    return null;
-  } catch (e) {
-    console.log(e);
-
+  if (!r.ok) {
+    console.error('[SIBS] Get payment status didn\'t go well', r);
     return null;
   }
+
+  const response = (await r.json()) as SibsStatusResponse;
+
+  if (response?.returnStatus?.statusCode === '000') {
+    console.log('[SIBS] Successuful get status', response);
+    return response;
+  } else {
+    console.error('[SIBS] Unsuccessuful get status', response);
+  }
+
+  return null;
 }

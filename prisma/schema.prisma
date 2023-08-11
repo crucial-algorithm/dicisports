@@ -362,9 +362,9 @@ enum PaymentStatus {
   failed
   canceled
   expired
-  // This should represents case when get-status fails
+  // This should represent case when get-status fails
   // It will be used to display an handled error message
-  noStatus
+  sibsError
 }
 
 enum PaymentMethod {

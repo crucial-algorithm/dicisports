@@ -1403,7 +1403,7 @@ describe('Checkout', () => {
         });
     });
 
-    context('failed get-status', () => {
+    context('Test error handling to SIBS gateway get status calls', () => {
       it('should show handled error when get-status fails 500', () => {
         cy.request({
           url: '/checkout/submitted/sGDw53Nv27kbi4SkY500',
