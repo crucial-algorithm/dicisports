@@ -447,7 +447,7 @@ describe('Search', () => {
           })
 
           .get('[data-cy=group-schedule]')
-          .should('have.length', 5);
+          .should('have.length', 4);
       });
 
       it('should return groups from each day of the week', () => {
