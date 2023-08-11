@@ -65,6 +65,30 @@
   },
   {
     "method": "get",
+    "endpoint": "/sibs-status-mock/sGDw53Nv27kbi4SkY500",
+    "response": {
+      "type": "payment-status",
+      "status": 500
+    }
+  },
+  {
+    "method": "get",
+    "endpoint": "/sibs-status-mock/sGDw53Nv27kbi4SkY502",
+    "response": {
+      "type": "payment-status",
+      "status": 502
+    }
+  },
+  {
+    "method": "get",
+    "endpoint": "/sibs-status-mock/sGDw53Nv27kbi4SkY503",
+    "response": {
+      "type": "payment-status",
+      "status": 503
+    }
+  },
+  {
+    "method": "get",
     "endpoint": "/sibs-status-mock/{{transactionID}}",
     "response": {
       "type": "case",

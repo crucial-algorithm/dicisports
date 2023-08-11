@@ -99,5 +99,38 @@
     "displayOrder": 9,
     "status": "auto",
     "eventId": "nGhb8Lu8xdg3oJk4N4g6"
+  },
+  {
+    "id": "yqAa6haPTpXKBmMmGcy6",
+    "name": "Granfondo",
+    "distance": 127,
+    "startTime": 900,
+    "elevationGain": 2302,
+    "price": 40000,
+    "displayOrder": 6,
+    "status": "auto",
+    "eventId": "45ZqiyygebDrEnjcJK3e"
+  },
+  {
+    "id": "8qRYH6WZgSd7qNppx92j",
+    "name": "Minifondo",
+    "distance": 73,
+    "startTime": 900,
+    "elevationGain": 845,
+    "price": 40000,
+    "displayOrder": 8,
+    "status": "auto",
+    "eventId": "45ZqiyygebDrEnjcJK3e"
+  },
+  {
+    "id": "Q7SpSTn9oszeSPhG9CaQ",
+    "name": "Mediofondo",
+    "distance": 103,
+    "startTime": 900,
+    "elevationGain": 1758,
+    "price": 40000,
+    "displayOrder": 7,
+    "status": "auto",
+    "eventId": "45ZqiyygebDrEnjcJK3e"
   }
 ]

@@ -34,7 +34,7 @@ import {
 import { findEvent } from '~/server/db/events.server';
 import { findUserEventRaceParticipants } from '~/server/db/participant.server';
 import {
-  findSubmittedPayments, findTempPayments,
+  findSubmittedPayments,
   findUnsuccessfulPayments,
   isBookingPaid,
   resetPaymentStatus
@@ -142,8 +142,6 @@ export const loader: LoaderFunction = async ({ request, params }) => {
       displayTransactionError: true
     });
   }
-
-  const displaySibsGatewayError = (await findTempPayments(bookingId))?.length > 0;
 
   const { gatewayResponse, ourTransactionId } = paymentTransaction;
 
@@ -677,7 +675,7 @@ function DisplaySibsGatewayErrorOptions({ paymentId }: { paymentId: string }) {
 
   return (
     <Main>
-      <H5 className="mb-4">{t('Sibs Gateway Error')}</H5>
+      <H5 data-cy="gateway-error" className="mb-4">{t('Sibs Gateway Error')}</H5>
       <Form method="post">
         <input type="hidden" name="paymentId" value={paymentId} />
         <ButtonGroup>
@@ -685,6 +683,7 @@ function DisplaySibsGatewayErrorOptions({ paymentId }: { paymentId: string }) {
             {t('New Payment')}
           </Button>
           <Button
+            name="get-payment-status"
             type="button"
             variant="primary"
             onClick={handleCheckPaymentStatus}

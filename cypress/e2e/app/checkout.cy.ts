@@ -1402,6 +1402,218 @@ describe('Checkout', () => {
         });
     });
 
+    context.only('failed get-status', () => {
+      it('should show handled error when get-status fails 500', () => {
+        cy.request({
+          url: '/checkout/submitted/sGDw53Nv27kbi4SkY500',
+          method: 'GET'
+        }).then(() => {
+          cy.login()
+            .visitAndWaitForHydration('/checkout/payment/MNT9Keq82E3Tbag5tPjw')
+
+            .get('[data-cy=gateway-error]')
+            .should('exist')
+            .and('be.visible');
+        });
+      });
+
+      it('should show handled error when get-status fails 502', () => {
+        cy.request({
+          url: '/checkout/submitted/sGDw53Nv27kbi4SkY502',
+          method: 'GET'
+        }).then(() => {
+          cy.login()
+            .visitAndWaitForHydration('/checkout/payment/MNT9Keq82E3Tbag5tPjw')
+
+            .get('[data-cy=gateway-error]')
+            .should('exist')
+            .and('be.visible');
+        });
+      });
+
+      it('should show handled error when get-status fails 503', () => {
+        cy.request({
+          url: '/checkout/submitted/sGDw53Nv27kbi4SkY503',
+          method: 'GET'
+        }).then(() => {
+          cy.login()
+            .visitAndWaitForHydration('/checkout/payment/MNT9Keq82E3Tbag5tPjw')
+
+            .get('[data-cy=gateway-error]')
+            .should('exist')
+            .and('be.visible');
+        });
+      });
+
+      it('should pay booking after getting a success call', () => {
+        const secret = Cypress.env('SIBS_WEBHOOK_SECRET');
+
+        cy.request({
+          url: '/checkout/submitted/sGDw53Nv27kbi4SkY500',
+          method: 'GET'
+        }).then(() => {
+          cy.login()
+            .visitAndWaitForHydration('/checkout/payment/MNT9Keq82E3Tbag5tPjw')
+
+            .get('[data-cy=gateway-error]')
+            .should('exist')
+            .and('be.visible');
+        });
+
+        cy.wrap(null)
+          .then(() =>
+            encryptMessage(
+              secret,
+              JSON.stringify({
+                token: {
+                  value: '351#931111111',
+                  tokenType: 'MobilePhone'
+                },
+                amount: {
+                  value: 40,
+                  currency: 'EUR'
+                },
+                merchant: {
+                  terminalId: 1111111,
+                  merchantName: 'CRUCIAL ALGORITHM - UNIPESSOAL LDA',
+                  transactionId: 'sGDw53Nv27kbi4SkY500'
+                },
+                paymentType: 'PURS',
+                returnStatus: {
+                  statusMsg: 'Success',
+                  statusCode: '000'
+                },
+                paymentMethod: 'MBWAY',
+                paymentStatus: 'Success',
+                transactionID: 'sGDw53Nv27kbi4SkY500',
+                notificationID: '70293d16-c4ed-4da2-924a-f19c6c4e3f81',
+                transactionDateTime: new Date().toISOString()
+              })
+            )
+          )
+          .then((payload) => {
+            cy.request({
+              url: '/wh/sibs/',
+              method: 'POST',
+              body: payload.message,
+              headers: {
+                'x-authentication-tag': payload.at,
+                'x-initialization-vector': payload.iv
+              }
+            }).then(() => {
+              cy.get('button[name=get-payment-status]')
+                .should('exist')
+                .click()
+
+                .location()
+                .should((l) => {
+                  expect(l.pathname).to.eq(
+                    '/checkout/confirmation/MNT9Keq82E3Tbag5tPjw'
+                  );
+                });
+            });
+          });
+      });
+
+      it('should show sibs form after getting a fail call', () => {
+        const secret = Cypress.env('SIBS_WEBHOOK_SECRET');
+
+        cy.request({
+          url: '/checkout/submitted/sGDw53Nv27kbi4SkY500',
+          method: 'GET'
+        }).then(() => {
+          cy.login()
+            .visitAndWaitForHydration('/checkout/payment/MNT9Keq82E3Tbag5tPjw')
+
+            .get('[data-cy=gateway-error]')
+            .should('exist')
+            .and('be.visible');
+        });
+
+        cy.wrap(null)
+          .then(() =>
+            encryptMessage(
+              secret,
+              JSON.stringify({
+                token: {
+                  value: '351#931111111',
+                  tokenType: 'MobilePhone'
+                },
+                amount: {
+                  value: 1,
+                  currency: 'EUR'
+                },
+                merchant: {
+                  terminalId: 1111111,
+                  merchantName: 'CRUCIAL ALGORITHM - UNIPESSOAL LDA',
+                  transactionId: 'sGDw53Nv27kbi4SkY500'
+                },
+                paymentType: 'PURS',
+                returnStatus: {
+                  statusMsg: 'Declined',
+                  statusCode: '01.106.0001',
+                  statusDescription:
+                    'After the operation was successful, was refused by the cardholder.'
+                },
+                paymentMethod: 'MBWAY',
+                paymentStatus: 'Declined',
+                transactionID: 'sGDw53Nv27kbi4SkY500',
+                notificationID: 'd787b6bc-09c1-4e9c-a9ed-3353e51d7b81',
+                transactionDateTime: new Date().toISOString()
+              })
+            )
+          )
+          .then((payload) => {
+            cy.request({
+              url: '/wh/sibs/',
+              method: 'POST',
+              body: payload.message,
+              headers: {
+                'x-authentication-tag': payload.at,
+                'x-initialization-vector': payload.iv
+              }
+            }).then(() => {
+              cy.get('button[name=get-payment-status]')
+                .should('exist')
+                .click()
+
+                .location()
+                .should((l) => {
+                  expect(l.pathname).to.eq(
+                    '/checkout/payment/MNT9Keq82E3Tbag5tPjw'
+                  );
+                });
+            });
+          });
+      });
+
+      it('should start new payment process', () => {
+        cy.request({
+          url: '/checkout/submitted/sGDw53Nv27kbi4SkY500',
+          method: 'GET'
+        }).then(() => {
+          cy.login()
+              .visitAndWaitForHydration('/checkout/payment/MNT9Keq82E3Tbag5tPjw')
+
+              .get('[data-cy=gateway-error]')
+              .should('exist')
+              .and('be.visible')
+
+              .get('button[name=actionId]')
+              .should('exist')
+              .click()
+
+              .location()
+              .should((l) => {
+                expect(l.pathname).to.eq('/checkout/payment/MNT9Keq82E3Tbag5tPjw');
+              })
+
+              .get('button[name=pay-reference]')
+              .should('exist');
+        });
+      });
+    });
+
     context('should pay booking', () => {
       beforeEach(() => {
         cy.login();

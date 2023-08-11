@@ -28,15 +28,6 @@ async function findSubmittedPayments(bookingId: string) {
   });
 }
 
-async function findTempPayments(bookingId: string) {
-  return await db.payment.findMany({
-    where: {
-      bookingId,
-      status: PaymentStatus.temp
-    }
-  });
-}
-
 async function findUnsuccessfulPayments(bookingId: string) {
   return await db.payment.findMany({
     where: {
@@ -188,7 +179,7 @@ async function updatePaymentStatus(
       where: { id, status: onlyFrom },
       data: {
         status:
-          payment?.status === PaymentStatus.paid ? PaymentStatus.paid : status
+          status
       }
     });
   }
@@ -287,6 +278,5 @@ export {
   updatePaymentStatus,
   addReferenciaMultibancoInfo,
   addPaymentMethodDetails,
-  findTempPayments,
   resetPaymentStatus
 };
