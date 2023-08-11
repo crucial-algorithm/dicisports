@@ -114,5 +114,6 @@
   "New Payment": "Novo pagamento",
 
   "Transaction Error": "Ups... de momento não estamos a conseguir exibir o formulário de pagamento. Clica no botão para tentar novamente.",
+  "Ongoing Payment": "Ups.. de momento existe um pagamento a ser processado.",
   "Try Again": "Tentar Novamente"
 }

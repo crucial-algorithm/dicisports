@@ -12,6 +12,7 @@ import * as React from 'react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ZodError } from 'zod';
+import type { TFunction } from 'i18next';
 
 import Button from '~/components/shared/Button';
 import DisplayCart from '~/components/shared/DisplayCart';
@@ -97,11 +98,11 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     return redirect(`/checkout/cart/${eventId}`);
   }
 
-  const hasASuccessfulPayment = await isBookingPaid(bookingId);
-
   if (booking.status == CheckoutStatus.checkout) {
     return redirect(`/checkout/info/${bookingId}`);
   }
+
+  const hasASuccessfulPayment = await isBookingPaid(bookingId);
 
   if (hasASuccessfulPayment) {
     // check if for some reason the booking status is inconsistent
@@ -110,11 +111,11 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     }
 
     return redirect(`/checkout/confirmation/${bookingId}`);
-  } else {
-    // check if for some reason the booking status is inconsistent
-    if (booking.status !== CheckoutStatus.pending) {
-      await updateBookingStatus(bookingId, CheckoutStatus.pending);
-    }
+  }
+
+  // check if for some reason the booking status is inconsistent
+  if (booking.status !== CheckoutStatus.pending) {
+    await updateBookingStatus(bookingId, CheckoutStatus.pending);
   }
 
   const submittedPayments = await findSubmittedPayments(bookingId);
@@ -367,32 +368,11 @@ export default function CheckoutPaymentRoute() {
   }, [displayCartFetcher]);
 
   if (displayTransactionError) {
-    function onClick() {
-      window.location.reload();
-    }
-
-    return (
-      <Main>
-        <div className="flex flex-col justify-start space-y-1 mb-4">
-          <H2>
-            <b data-cy="name" className="break-words w-full">
-              {event.name}
-            </b>
-          </H2>
-          <H6>
-            <DisplayDate date={new Date(event.startAt as unknown as string)} />
-          </H6>
-        </div>
-        <H5 className="mb-2">{t('Transaction Error')}</H5>
-        <Button type="button" onClick={onClick}>
-          {t('Try Again')}
-        </Button>
-      </Main>
-    );
+    return <DisplayTransactionError event={event} t={t} />;
   }
 
   if (sibsGatewayErrorPayment && sibsGatewayErrorPayment.length > 0) {
-    return <DisplaySibsGatewayErrorOptions paymentId={sibsGatewayErrorPayment[0].id} />;
+    return <DisplaySibsGatewayErrorOptions paymentId={sibsGatewayErrorPayment[0].id} t={t} />;
   }
 
   return (
@@ -666,20 +646,56 @@ type FormErrors = {
   discountError?: string;
 };
 
-function DisplaySibsGatewayErrorOptions({ paymentId }: { paymentId: string }) {
-  const { t } = useTranslation('checkout');
+function DisplayTransactionError({ event, t }: { event: Event; t: TFunction }) {
+  function onClick() {
+    window.location.reload();
+  }
 
+  return (
+    <Main>
+      <div className="flex flex-col justify-start space-y-1 mb-4">
+        <H2>
+          <b data-cy="name" className="break-words w-full">
+            {event.name}
+          </b>
+        </H2>
+        <H6>
+          <DisplayDate date={new Date(event.startAt as unknown as string)} />
+        </H6>
+      </div>
+      <H5 className="mb-2">{t('Transaction Error')}</H5>
+      <Button type="button" onClick={onClick}>
+        {t('Try Again')}
+      </Button>
+    </Main>
+  );
+}
+
+function DisplaySibsGatewayErrorOptions({
+  paymentId,
+  t
+}: {
+  paymentId: string;
+  t: TFunction;
+}) {
   function handleCheckPaymentStatus() {
     window.location.reload();
   }
 
   return (
     <Main>
-      <H5 data-cy="gateway-error" className="mb-4">{t('Sibs Gateway Error')}</H5>
+      <H5 data-cy="gateway-error" className="mb-4">
+        {t('Sibs Gateway Error')}
+      </H5>
       <Form method="post">
         <input type="hidden" name="paymentId" value={paymentId} />
         <ButtonGroup>
-          <Button type="submit" variant="danger" name="actionId" value="new-payment">
+          <Button
+            type="submit"
+            variant="danger"
+            name="actionId"
+            value="new-payment"
+          >
             {t('New Payment')}
           </Button>
           <Button

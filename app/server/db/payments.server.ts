@@ -178,8 +178,7 @@ async function updatePaymentStatus(
     return await db.payment.updateMany({
       where: { id, status: onlyFrom },
       data: {
-        status:
-          status
+        status
       }
     });
   }

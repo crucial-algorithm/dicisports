@@ -152,12 +152,7 @@ export async function createPaymentTransaction(
 
     return { gatewayResponse: details, ourTransactionId: payment.id };
   } catch (e) {
-    if (e instanceof SyntaxError) {
-      // Unexpected token < in JSON
-      console.log('There was a SyntaxError', e);
-    } else {
-      console.log('There was an error', e);
-    }
+    console.log(e);
 
     return null;
   }
