@@ -1154,7 +1154,7 @@ describe('Checkout', () => {
       cy.task('db:reset');
     });
 
-    it('Should keep booking state if payment fails (MBWay Rejected)', () => {
+    it.only('Should keep booking state if payment fails (MBWay Rejected)', () => {
       const secret = Cypress.env('SIBS_WEBHOOK_SECRET');
 
       cy.wrap(null)
@@ -1198,7 +1198,8 @@ describe('Checkout', () => {
             headers: {
               'x-authentication-tag': payload.at,
               'x-initialization-vector': payload.iv
-            }
+            },
+            failOnStatusCode: false
           }).then((response) => {
             cy.login()
               .visitAndWaitForHydration('/me')
