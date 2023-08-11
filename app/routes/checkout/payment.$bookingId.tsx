@@ -347,7 +347,7 @@ export default function CheckoutPaymentRoute() {
       0;
   const sibsGatewayErrorPayment =
     (unsuccessfulPayments &&
-      unsuccessfulPayments.filter((p) => p.status === PaymentStatus.temp)) ||
+      unsuccessfulPayments.filter((p) => p.status === PaymentStatus.noStatus)) ||
     null;
 
   useEffect(() => {

@@ -38,7 +38,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   } else {
     // we should add log to this... the reason for the failed attempt may be important for debug
     console.error('Status was impossible to retrieve so payment details will be missing... may as well just fail attempt');
-    await updatePaymentStatus(paymentId, PaymentStatus.temp);
+    await updatePaymentStatus(paymentId, PaymentStatus.noStatus);
   }
 
   return redirect(`/checkout/payment/${payment.bookingId}`);

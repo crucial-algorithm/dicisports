@@ -362,8 +362,9 @@ enum PaymentStatus {
   failed
   canceled
   expired
-  //TODO: change this status
-  temp
+  // This should represents case when get-status fails
+  // It will be used to display an handled error message
+  noStatus
 }
 
 enum PaymentMethod {
