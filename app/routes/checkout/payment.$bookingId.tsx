@@ -194,6 +194,7 @@ export const action: ActionFunction = async ({ request, params }) => {
 
   const submittedPayments = await findSubmittedPayments(bookingId);
 
+  // This prevents malicious users from attempting to add more than those they are trying to pay for
   if (submittedPayments && submittedPayments.length > 0) {
     return badRequest({ error: t('Ongoing payment') });
   }
