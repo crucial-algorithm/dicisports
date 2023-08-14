@@ -7,16 +7,20 @@ describe('Dashboard', () => {
     it('should not be able to access dashboard: unauthenticated', () => {
       cy.visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d/dashboard')
 
-        .url()
-        .should('equal', Cypress.config().baseUrl + '/login');
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.eq('/login');
+        });
     });
 
     it('should not be able to access non-owned event dashboard: authenticated', () => {
       cy.login()
         .visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d/dashboard')
 
-        .url()
-        .should('equal', Cypress.config().baseUrl + '/');
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.eq('/');
+        });
     });
   });
 
