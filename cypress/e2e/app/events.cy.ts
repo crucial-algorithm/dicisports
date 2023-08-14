@@ -751,8 +751,13 @@ describe('Event', () => {
       cy.loginOrganizer()
         .visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d')
 
+        .intercept('POST', '/o/event/MY4bvgxDbMtGv8rbYe5d*')
+        .as('SaveEvent')
+
         .get('#create-race')
         .click()
+
+        .wait('@SaveEvent')
 
         .location()
         .should((l) => {

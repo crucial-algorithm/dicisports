@@ -92,7 +92,13 @@ async function findEventWithRacesAndDocuments(
         }
       },
       difficulty: true,
-      races: true
+      races: {
+        where: {
+          status: {
+            not: Status.deleted
+          }
+        }
+      }
     }
   });
 }

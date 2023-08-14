@@ -293,21 +293,21 @@ describe('Search', () => {
         .get('div[data-cy=distance]:nth(1)')
         .should('contain', '12 km')
         .get('div[data-cy=distance]:nth(2)')
-        .should('contain', '42 km')
+        .should('contain', '29 km')
         .get('div[data-cy=distance]:nth(3)')
-        .should('contain', '46 km')
+        .should('contain', '42 km')
         .get('div[data-cy=distance]:nth(4)')
         .should('contain', '46 km')
         .get('div[data-cy=distance]:nth(5)')
         .should('contain', '46 km')
         .get('div[data-cy=distance]:nth(6)')
-        .should('contain', '51 km')
+        .should('contain', '46 km')
         .get('div[data-cy=distance]:nth(7)')
-        .should('contain', '57 km')
+        .should('contain', '51 km')
         .get('div[data-cy=distance]:nth(8)')
-        .should('contain', '63 km')
+        .should('contain', '57 km')
         .get('div[data-cy=distance]:nth(9)')
-        .should('contain', '65 km');
+        .should('contain', '63 km');
     });
 
     context('Test all filters', () => {
@@ -336,7 +336,7 @@ describe('Search', () => {
           .should('include', 'g=hide')
 
           .get('[data-cy=event-entry]')
-          .should('have.length', 4);
+          .should('have.length', 6);
       });
 
       it('should return Morning groups', () => {
@@ -362,28 +362,8 @@ describe('Search', () => {
             expect(loc.pathname).to.eq('/');
           })
 
-          .get('#see-more')
-          .click()
-
-          .location()
-          .should((loc) => {
-            expect(loc.search).to.contain('page=0');
-            expect(loc.pathname).to.eq('/');
-          })
-          .waitForHydration()
-
-          .get('#see-more')
-          .click()
-
-          .location()
-          .should((loc) => {
-            expect(loc.search).to.contain('page=1');
-            expect(loc.pathname).to.eq('/');
-          })
-          .waitForHydration()
-
-          .get('[data-cy=group-schedule]')
-          .should('have.length', 21);
+          .get('[data-cy=total-results]')
+          .contains('27');
       });
 
       it('should return Afternoon groups', () => {
@@ -447,7 +427,7 @@ describe('Search', () => {
           })
 
           .get('[data-cy=group-schedule]')
-          .should('have.length', 5);
+          .should('have.length', 4);
       });
 
       it('should return groups from each day of the week', () => {

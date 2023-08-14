@@ -11,7 +11,7 @@ import type { SibsWebHookSchema } from '~/types';
 // 1.   requested:  We create the "blank" record with "requested" state before requesting
 //                  checkout to SIBS, which is the instruction that starts the payment process
 //                  (SIBS creates a transactionId against our payment id)
-// 2.    pendinng:  Once the previous call to SIBS is returned, we update the payment record with
+// 2.     pending:  Once the previous call to SIBS is returned, we update the payment record with
 //                  SIBS transactionID and change status to "pending"
 // 3.   submitted:  When user submits the payment form, SIBS redirects to an action provided by us
 //                  which will update the state to "submitted"
@@ -42,7 +42,8 @@ async function findUnsuccessfulPayments(bookingId: string) {
             in: [
               PaymentStatus.failed,
               PaymentStatus.canceled,
-              PaymentStatus.expired
+              PaymentStatus.expired,
+              PaymentStatus.fetchStatusFailed
             ]
           }
         }
@@ -171,6 +172,8 @@ async function updatePaymentStatus(
   status: PaymentStatus,
   onlyFrom: PaymentStatus | null = null
 ) {
+  const payment = await findPayment(id);
+
   if (onlyFrom) {
     return await db.payment.updateMany({
       where: { id, status: onlyFrom },
@@ -183,7 +186,8 @@ async function updatePaymentStatus(
   return await db.payment.update({
     where: { id },
     data: {
-      status
+      status:
+        payment?.status === PaymentStatus.paid ? PaymentStatus.paid : status
     }
   });
 }
@@ -250,6 +254,15 @@ async function saveNotification(json: SibsWebHookSchema) {
   });
 }
 
+async function resetPaymentStatus(id: string) {
+  return await db.payment.update({
+    where: { id },
+    data: {
+      status: PaymentStatus.pending
+    }
+  });
+}
+
 export {
   findPayment,
   findPaymentByTransactionId,
@@ -263,5 +276,6 @@ export {
   saveNotification,
   updatePaymentStatus,
   addReferenciaMultibancoInfo,
-  addPaymentMethodDetails
+  addPaymentMethodDetails,
+  resetPaymentStatus
 };

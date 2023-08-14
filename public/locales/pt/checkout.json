@@ -109,5 +109,12 @@
   "MBWay Instructions": "Segue as instruções no MBWay para completar o pagamento...",
   "Credit Card Instructions": "A processar o pagamento no teu cartão...",
 
-  "We Give Up On Past Payments": "As tentativa(s) anteriore(s) de pagamento falharam. Submete uma nova forma de pagamento."
+  "We Give Up On Past Payments": "As tentativa(s) anteriore(s) de pagamento falharam. Submete uma nova forma de pagamento.",
+  "Sibs Gateway Error": "Não estamos a conseguir verificar o estado do pagamento. Se já fizeste pagamento por MBWay ou Cartão de Crédito, o pagamento será processado entretanto. Caso contrário, podemos tentar novamente ou iniciar novo processo de pagamento",
+  "Check Payment Status": "Verificar estado do pagamento",
+  "New Payment": "Novo pagamento",
+
+  "Transaction Error": "Ups... de momento não estamos a conseguir exibir o formulário de pagamento. Clica no botão para tentar novamente.",
+  "Ongoing Payment": "Ups.. de momento existe um pagamento a ser processado.",
+  "Try Again": "Tentar Novamente"
 }

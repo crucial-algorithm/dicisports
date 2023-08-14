@@ -7,16 +7,20 @@ describe('Dashboard', () => {
     it('should not be able to access dashboard: unauthenticated', () => {
       cy.visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d/dashboard')
 
-        .url()
-        .should('equal', Cypress.config().baseUrl + '/login');
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.eq('/login');
+        });
     });
 
     it('should not be able to access non-owned event dashboard: authenticated', () => {
       cy.login()
         .visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d/dashboard')
 
-        .url()
-        .should('equal', Cypress.config().baseUrl + '/');
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.eq('/');
+        });
     });
   });
 
@@ -143,6 +147,13 @@ describe('Dashboard', () => {
         .get('#participant-L6TMRhStPAAF55Rc4Xts > td')
         .eq(1)
         .contains('Individual');
+    });
+
+    it('should not show stats for deleted races', () => {
+      cy.visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d/dashboard')
+
+        .get('[data-cy=race-x7GJFeCEQBWp2R7WJEmW]')
+        .should('not.exist');
     });
   });
 });

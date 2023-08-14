@@ -25,22 +25,25 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 
   await updatePaymentStatus(paymentId, PaymentStatus.submitted, PaymentStatus.pending);
 
-  const status = await getPaymentStatus(payment);
+  try {
+    const status = await getPaymentStatus(payment);
 
-  if (status) {
-    await addPaymentMethodDetails(
-      paymentId,
-      status.paymentMethod,
-      status.paymentReference?.entity,
-      status.paymentReference?.reference,
-      status.paymentReference?.expireDate
-    );
-  } else {
-    // we should add log to this... the reason for the failled attempt may be important for debug
-    console.error('Status was impossible to retrieve so payment details will be missing... may as well just fail attempt');
-    await updatePaymentStatus(paymentId, PaymentStatus.failed);
+    if (status) {
+      await addPaymentMethodDetails(
+        paymentId,
+        status.paymentMethod,
+        status.paymentReference?.entity,
+        status.paymentReference?.reference,
+        status.paymentReference?.expireDate
+      );
+    } else {
+      // we should add log to this... the reason for the failed attempt may be important for debug
+      console.error('Status was impossible to retrieve so payment details will be missing... may as well just fail attempt');
+      await updatePaymentStatus(paymentId, PaymentStatus.fetchStatusFailed);
+    }
+  } catch (e) {
+    console.log(e);
   }
 
   return redirect(`/checkout/payment/${payment.bookingId}`);
-
 };
