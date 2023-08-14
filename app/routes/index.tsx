@@ -533,7 +533,7 @@ export default function Index() {
               >
                 <AdjustmentsVerticalIcon className="h-6" />
               </Button>
-              <div className="flex mx-2 items-center dark:text-white text-blueGray-500 text-sm">
+              <div className="flex mx-2 items-center dark:text-white text-blueGray-500 text-sm" data-cy="total-results">
                 {data?.total
                   ? t('Number of Results Found', { total: data?.total })
                   : null}
