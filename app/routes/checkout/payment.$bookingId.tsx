@@ -342,10 +342,11 @@ export default function CheckoutPaymentRoute() {
     submittedPayments &&
     submittedPayments.filter((p) => (p.status = PaymentStatus.paid)).length ===
       0;
-  const sibsGatewayPaymentError =
-    (unsuccessfulPayments &&
-      unsuccessfulPayments.filter((p) => p.status === PaymentStatus.sibsError)) ||
-    null;
+  const sibsPaymentGatewayError =
+    unsuccessfulPayments &&
+    unsuccessfulPayments.filter(
+      (p) => p.status === PaymentStatus.fetchStatusFailed
+    );
 
   useEffect(() => {
     if (
@@ -367,10 +368,10 @@ export default function CheckoutPaymentRoute() {
     return <DisplayTransactionError event={event} t={t} />;
   }
 
-  if (sibsGatewayPaymentError && sibsGatewayPaymentError.length > 0) {
+  if (sibsPaymentGatewayError && sibsPaymentGatewayError.length > 0) {
     return (
       <DisplayGetPaymentStatusErrorOptions
-        paymentId={sibsGatewayPaymentError[0].id}
+        paymentId={sibsPaymentGatewayError[0].id}
         t={t}
       />
     );

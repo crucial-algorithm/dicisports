@@ -1,2 +1,2 @@
 -- AlterEnum
-ALTER TYPE "PaymentStatus" ADD VALUE 'sibsError';
+ALTER TYPE "PaymentStatus" ADD VALUE 'fetchStatusFailed';

@@ -364,7 +364,7 @@ enum PaymentStatus {
   expired
   // This should represent case when get-status fails
   // It will be used to display an handled error message
-  sibsError
+  fetchStatusFailed
 }
 
 enum PaymentMethod {

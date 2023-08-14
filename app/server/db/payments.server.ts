@@ -43,7 +43,7 @@ async function findUnsuccessfulPayments(bookingId: string) {
               PaymentStatus.failed,
               PaymentStatus.canceled,
               PaymentStatus.expired,
-              PaymentStatus.sibsError
+              PaymentStatus.fetchStatusFailed
             ]
           }
         }

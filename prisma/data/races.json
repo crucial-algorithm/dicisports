@@ -132,5 +132,16 @@
     "displayOrder": 7,
     "status": "auto",
     "eventId": "45ZqiyygebDrEnjcJK3e"
+  },
+  {
+    "id": "x7GJFeCEQBWp2R7WJEmW",
+    "name": "20 Km",
+    "distance": 20,
+    "startTime": 900,
+    "elevationGain": 3000,
+    "price": 10000,
+    "displayOrder": 9,
+    "status": "deleted",
+    "eventId": "MY4bvgxDbMtGv8rbYe5d"
   }
 ]

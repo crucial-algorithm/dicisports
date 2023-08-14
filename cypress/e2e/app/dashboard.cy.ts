@@ -144,5 +144,12 @@ describe('Dashboard', () => {
         .eq(1)
         .contains('Individual');
     });
+
+    it('should not show stats for deleted races', () => {
+      cy.visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d/dashboard')
+
+        .get('[data-cy=race-x7GJFeCEQBWp2R7WJEmW]')
+        .should('not.exist');
+    });
   });
 });
