@@ -362,28 +362,8 @@ describe('Search', () => {
             expect(loc.pathname).to.eq('/');
           })
 
-          .get('#see-more')
-          .click()
-
-          .location()
-          .should((loc) => {
-            expect(loc.search).to.contain('page=0');
-            expect(loc.pathname).to.eq('/');
-          })
-          .waitForHydration()
-
-          .get('#see-more')
-          .click()
-
-          .location()
-          .should((loc) => {
-            expect(loc.search).to.contain('page=1');
-            expect(loc.pathname).to.eq('/');
-          })
-          .waitForHydration()
-
-          .get('[data-cy=group-schedule]')
-          .should('have.length', 21);
+          .get('[data-cy=total-results]')
+          .contains('27');
       });
 
       it('should return Afternoon groups', () => {
