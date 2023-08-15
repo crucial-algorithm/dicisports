@@ -1,3 +1,5 @@
+import { OrganizerStatus } from '@prisma/client';
+
 import { db } from '~/server/db.server';
 import type { Organizer, OrganizerInput } from '~/types';
 import Id from '~/server/utils/Id.server';
@@ -55,4 +57,45 @@ async function updateOrganizer(
   });
 }
 
-export { createOrganizer, findOrganizer, updateOrganizer };
+async function findSubmittedOrganizers(): Promise<Organizer[]> {
+  return await db.organizer.findMany({
+    where: {
+      status: OrganizerStatus.PENDING
+    }
+  });
+}
+
+async function findOrganizerById(id: string): Promise<Organizer | null> {
+  return await db.organizer.findUnique({
+    where: { id }
+  });
+}
+
+async function approveOrganizer(id: string, commission: number) {
+  return db.organizer.update({
+    where: { id },
+    data: {
+      status: OrganizerStatus.APPROVED,
+      commission
+    }
+  });
+}
+
+async function rejectOrganizer(id: string) {
+  return db.organizer.update({
+    where: { id },
+    data: {
+      status: OrganizerStatus.REJECTED
+    }
+  });
+}
+
+export {
+  createOrganizer,
+  findOrganizer,
+  updateOrganizer,
+  findSubmittedOrganizers,
+  findOrganizerById,
+  approveOrganizer,
+  rejectOrganizer
+};

@@ -7,6 +7,7 @@ type UploadImageProps = {
   index: number
   label: string
   defaultValue?: string | undefined | null
+  disabled: boolean
 } & Omit<React.ComponentProps<'section'>, 'defaultValue' | 'onDrop'>
 
 // Hack from https://stackoverflow.com/questions/52078853/is-it-possible-to-update-filelist
@@ -24,7 +25,8 @@ export default function UploadImage({
   index,
   label,
   className,
-  defaultValue = null
+  defaultValue = null,
+  disabled = false
 }: UploadImageProps) {
   const [thumb, setThumb] = useState<string | null>(
     defaultValue
@@ -73,7 +75,7 @@ export default function UploadImage({
       )}
     >
       <div {...getRootProps({ className: 'h-80 w-full overflow-hidden' })}>
-        <input {...inputProps} name={inputFileName} ref={inputEl} />
+        <input {...inputProps} name={inputFileName} ref={inputEl} disabled={disabled} />
         {thumb ? (
           <img src={thumb} alt="" className="object-cover object-left-top" />
         ) : (
