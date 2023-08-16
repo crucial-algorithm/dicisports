@@ -7,11 +7,12 @@ import {
 } from '@prisma/client';
 import type { ActionFunction, LoaderFunction } from '@remix-run/node';
 import { json, redirect } from '@remix-run/node';
-import { useFetcher, useLoaderData } from '@remix-run/react';
+import { Form, useFetcher, useLoaderData } from '@remix-run/react';
 import * as React from 'react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ZodError } from 'zod';
+import type { TFunction } from 'i18next';
 
 import Button from '~/components/shared/Button';
 import DisplayCart from '~/components/shared/DisplayCart';
@@ -36,16 +37,18 @@ import { findUserEventRaceParticipants } from '~/server/db/participant.server';
 import {
   findSubmittedPayments,
   findUnsuccessfulPayments,
-  isBookingPaid
+  isBookingPaid,
+  resetPaymentStatus
 } from '~/server/db/payments.server';
 import type { KCDHandle, UICartRow } from '~/types';
 import { sendBookingConfirmationEmail } from '~/server/email.server';
 import { badRequest, bookingAmount, getDomainUrl } from '~/utils/misc';
 import i18n from '~/server/i18n.server';
-import { createPayamentTransaction } from '~/server/utils/payments';
+import { createPaymentTransaction } from '~/server/utils/payments';
 import { useTheme } from '~/utils/theme-provider';
 import { findDiscountCode } from '~/server/db/discounts.server';
 import { findOrganizer } from '~/server/db/organizer.server';
+import ButtonGroup from '~/components/shared/ButtonGroup';
 
 type LoaderData = {
   event: Event;
@@ -59,6 +62,7 @@ type LoaderData = {
   CHECKOUT_FORM_SCRIPT: string;
   domainUrl: string;
   appliedDiscount?: string;
+  displayTransactionError: boolean;
 };
 
 export const loader: LoaderFunction = async ({ request, params }) => {
@@ -94,19 +98,19 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     return redirect(`/checkout/cart/${eventId}`);
   }
 
-  const hasASuccessfullPayment = await isBookingPaid(bookingId);
+  if (booking.status == CheckoutStatus.checkout) {
+    return redirect(`/checkout/info/${bookingId}`);
+  }
 
-  if (hasASuccessfullPayment) {
+  const hasASuccessfulPayment = await isBookingPaid(bookingId);
+
+  if (hasASuccessfulPayment) {
     // check if for some reason the booking status is inconsistent
     if (booking.status !== CheckoutStatus.confirmed) {
       await updateBookingStatus(bookingId, CheckoutStatus.confirmed);
     }
 
     return redirect(`/checkout/confirmation/${bookingId}`);
-  }
-
-  if (booking.status == CheckoutStatus.checkout) {
-    return redirect(`/checkout/info/${bookingId}`);
   }
 
   const submittedPayments = await findSubmittedPayments(bookingId);
@@ -122,23 +126,35 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   }
 
   const unsuccessfulPayments = await findUnsuccessfulPayments(bookingId);
-  const { gatewayResponse, ourTransactionId } = await createPayamentTransaction(
-    booking,
-    event,
-    cart
-  );
 
-  return json({
-    event,
-    cart,
-    formContext: gatewayResponse.formContext,
-    gatewayTransactionId: gatewayResponse.transactionID,
-    ourTransactionId,
-    CHECKOUT_FORM_SCRIPT: Config().SIBS_CHECKOUT_FORM_SCRIPT,
-    unsuccessfulPayments,
-    domainUrl: getDomainUrl(request),
-    appliedDiscount: booking.appliedDiscount
-  });
+  try {
+    const { gatewayResponse, ourTransactionId } = await createPaymentTransaction(
+        booking,
+        event,
+        cart
+    );
+
+    return json({
+      event,
+      cart,
+      formContext: gatewayResponse.formContext,
+      gatewayTransactionId: gatewayResponse.transactionID,
+      ourTransactionId,
+      CHECKOUT_FORM_SCRIPT: Config().SIBS_CHECKOUT_FORM_SCRIPT,
+      unsuccessfulPayments,
+      domainUrl: getDomainUrl(request),
+      appliedDiscount: booking.appliedDiscount,
+      displayTransactionError: false
+    });
+  } catch (e) {
+    console.log(e);
+
+    return json({
+      event,
+      submittedPayments,
+      displayTransactionError: true
+    });
+  }
 };
 
 export const action: ActionFunction = async ({ request, params }) => {
@@ -177,12 +193,27 @@ export const action: ActionFunction = async ({ request, params }) => {
     return redirect('/');
   }
 
+  const submittedPayments = await findSubmittedPayments(bookingId);
+
+  // This prevents malicious users from attempting to add more than those they are trying to pay for
+  if (submittedPayments && submittedPayments.length > 0) {
+    return badRequest({ error: t('Ongoing payment') });
+  }
+
   const actionId = form.get('actionId');
 
   if (actionId === 'update-info') {
     await updateBookingStatus(bookingId, CheckoutStatus.checkout);
 
     return redirect(`/checkout/info/${bookingId}`);
+  }
+
+  if (actionId === 'new-payment') {
+    const paymentId = form.get('paymentId') as string;
+
+    await resetPaymentStatus(paymentId);
+
+    return redirect(`/checkout/payment/${bookingId}`);
   }
 
   try {
@@ -305,7 +336,8 @@ export default function CheckoutPaymentRoute() {
     ourTransactionId,
     CHECKOUT_FORM_SCRIPT,
     domainUrl,
-    appliedDiscount
+    appliedDiscount,
+    displayTransactionError
   } = useLoaderData() as LoaderData;
   const { t } = useTranslation('checkout');
   const displayCartFetcher = useFetcher();
@@ -314,6 +346,11 @@ export default function CheckoutPaymentRoute() {
     submittedPayments &&
     submittedPayments.filter((p) => (p.status = PaymentStatus.paid)).length ===
       0;
+  const sibsPaymentGatewayError =
+    unsuccessfulPayments &&
+    unsuccessfulPayments.filter(
+      (p) => p.status === PaymentStatus.fetchStatusFailed
+    );
 
   useEffect(() => {
     if (
@@ -330,6 +367,19 @@ export default function CheckoutPaymentRoute() {
       return setErrors({});
     }
   }, [displayCartFetcher]);
+
+  if (displayTransactionError) {
+    return <DisplayTransactionError event={event} t={t} />;
+  }
+
+  if (sibsPaymentGatewayError && sibsPaymentGatewayError.length > 0) {
+    return (
+      <DisplayGetPaymentStatusErrorOptions
+        paymentId={sibsPaymentGatewayError[0].id}
+        t={t}
+      />
+    );
+  }
 
   return (
     <Main>
@@ -375,6 +425,7 @@ export default function CheckoutPaymentRoute() {
           >
             {!isPaid && !(submittedPayments && submittedPayments.length > 0) && (
               <Button
+                id="update-info"
                 name="actionId"
                 className="mt-4 w-full"
                 type="submit"
@@ -600,3 +651,69 @@ function formatMbReference(reference: string) {
 type FormErrors = {
   discountError?: string;
 };
+
+function DisplayTransactionError({ event, t }: { event: Event; t: TFunction }) {
+  function onClick() {
+    window.location.reload();
+  }
+
+  return (
+    <Main>
+      <div className="flex flex-col justify-start space-y-1 mb-4">
+        <H2>
+          <b data-cy="name" className="break-words w-full">
+            {event.name}
+          </b>
+        </H2>
+        <H6>
+          <DisplayDate date={new Date(event.startAt as unknown as string)} />
+        </H6>
+      </div>
+      <H5 className="mb-2">{t('Transaction Error')}</H5>
+      <Button type="button" onClick={onClick}>
+        {t('Try Again')}
+      </Button>
+    </Main>
+  );
+}
+
+function DisplayGetPaymentStatusErrorOptions({
+  paymentId,
+  t
+}: {
+  paymentId: string;
+  t: TFunction;
+}) {
+  function handleCheckPaymentStatus() {
+    window.location.reload();
+  }
+
+  return (
+    <Main>
+      <H5 data-cy="gateway-error" className="mb-4">
+        {t('Sibs Gateway Error')}
+      </H5>
+      <Form method="post">
+        <input type="hidden" name="paymentId" value={paymentId} />
+        <ButtonGroup>
+          <Button
+            type="submit"
+            variant="danger"
+            name="actionId"
+            value="new-payment"
+          >
+            {t('New Payment')}
+          </Button>
+          <Button
+            name="get-payment-status"
+            type="button"
+            variant="primary"
+            onClick={handleCheckPaymentStatus}
+          >
+            {t('Check Payment Status')}
+          </Button>
+        </ButtonGroup>
+      </Form>
+    </Main>
+  );
+}

@@ -291,6 +291,7 @@ export default function DashboardRoute() {
       <div className="flex flex-col mt-2 scroll-mx-2 items-center gap-y-2 md:items-start md:flex-row md:flex-nowrap md:overflow-x-auto pb-10 hide-scrollbar">
         {racesRevenueAndRegistrations.map((r: RaceRevenueRegistrations) => (
           <DisplayRaceStats
+            id={r.id}
             name={r.name}
             registrations={r.registrations}
             revenue={r.revenue}
@@ -457,11 +458,13 @@ function TD({ value }: { value: string | null }) {
 }
 
 function DisplayRaceStats({
+  id,
   name,
   registrations,
   revenue,
   clicks
 }: {
+  id: string;
   name: string;
   registrations: number;
   revenue: number;
@@ -470,7 +473,7 @@ function DisplayRaceStats({
   const { t } = useTranslation('dashboard');
 
   return (
-    <div className="flex flex-col mr-4" data-cy="race">
+    <div className="flex flex-col mr-4" data-cy={`race-${id}`}>
       <div className="gap-y-2 text-center items-center border border-black dark:border-white rounded-2xl outline-offset-1 w-[280px] md:overflow-hidden">
         <div className="mt-4">
           <H4>{name}</H4>

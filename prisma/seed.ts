@@ -20,6 +20,7 @@ import organizerSeed from './data/organizers.json';
 import discountCodesSeed from './data/discountCodes.json';
 import eventTeamsSeed from './data/eventTeams.json';
 import latestBibNumberSeed from './data/latestBibNumber.json';
+import paymentsSeed from './data/payments.json';
 
 const db = new PrismaClient();
 const now = new Date();
@@ -33,6 +34,7 @@ async function persist(name: string, list: Array<any>, entity: any) {
     .catch((err) => {
       if (err.code === 'P2002') {
         console.log(`${name} already in db. skipping...`);
+        console.error(err);
         return;
       }
       console.error(`error seeding ${name}`, err);
@@ -59,6 +61,7 @@ async function seed() {
   await persist('perks', perks(), db.perk);
   await persist('sessions', sessions(), db.session);
   await persist('bookings', bookings(), db.booking);
+  await persist('payments', payments(), db.payment);
   await persist('participants', participants(), db.participant);
   await persist('event teams', eventTeams(), db.eventTeam);
   await persist('race participants', raceParticipants(), db.raceParticipant);
@@ -322,6 +325,17 @@ function latestBibNumber() {
   return latestBibNumberSeed.map((ed) => {
     return {
       ...ed,
+      createdAt: now,
+      updatedAt: now
+    };
+  });
+}
+
+function payments() {
+  return paymentsSeed.map((p) => {
+    return {
+      ...p,
+      expiresAt: new Date(now.getTime() + 3600000),
       createdAt: now,
       updatedAt: now
     };

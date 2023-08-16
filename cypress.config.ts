@@ -3,7 +3,18 @@ import { execSync } from 'child_process';
 import { defineConfig } from 'cypress';
 import { cypressBrowserPermissionsPlugin } from 'cypress-browser-permissions';
 
-const { CY_REQUEST_TIMEOUT, CY_RESPONSE_TIMEOUT, CY_DEFAULT_COMMAND_TIMEOUT } =
+import dotenv from 'dotenv';
+
+dotenv.config();
+
+const {
+  CY_BASE_URL,
+  MAILGUN_ENDPOINT,
+  CY_REQUEST_TIMEOUT,
+  CY_RESPONSE_TIMEOUT,
+  CY_DEFAULT_COMMAND_TIMEOUT,
+  SIBS_WEBHOOK_SECRET
+} =
   process.env;
 
 const requestTimeout = CY_REQUEST_TIMEOUT
@@ -15,6 +26,8 @@ const responseTimeout = CY_RESPONSE_TIMEOUT
 const defaultCommandTimeout = CY_DEFAULT_COMMAND_TIMEOUT
   ? Number(CY_DEFAULT_COMMAND_TIMEOUT)
   : undefined;
+const baseUrl = CY_BASE_URL ? CY_BASE_URL : 'http://localhost:3000';
+const HTTP_CATCHER = MAILGUN_ENDPOINT ? MAILGUN_ENDPOINT : 'http://localhost:3001/';
 
 export default defineConfig({
   viewportWidth: 375,
@@ -25,16 +38,19 @@ export default defineConfig({
   responseTimeout,
   defaultCommandTimeout,
   e2e: {
-    baseUrl: 'http://localhost:3000',
+    baseUrl,
     experimentalSessionAndOrigin: true,
     env: {
-      HTTP_CATCHER: 'http://localhost:3001/',
+      HTTP_CATCHER,
+      SIBS_WEBHOOK_SECRET,
       browserPermissions: {
         geolocation: 'allow'
       }
     },
     setupNodeEvents(on, config) {
+
       config = cypressBrowserPermissionsPlugin(on, config);
+
       // implement node event listeners here
       on('task', {
         'db:reset'() {

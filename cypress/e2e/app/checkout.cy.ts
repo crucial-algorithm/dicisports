@@ -776,26 +776,16 @@ describe('Checkout', () => {
         .should('exist');
     });
 
-    it.skip('should have correct bib numbers', () => {
+    it('should have correct bib numbers', () => {
       cy.intercept('GET', '/payment-status/*')
         .as('GetPaymentStatus')
 
         .visitAndWaitForHydration('/checkout/payment/qR4nqWpTdQy8QZu29ANu')
 
-        .get('button[name=pay]')
+        .get('button[name=pay-reference]')
         .should('exist')
-
-        .click()
-
-        .location()
-        .then((l) => {
-          if (l.pathname === '/checkout/payment/qR4nqWpTdQy8QZu29ANu') {
-            cy.get('.sibs > h5')
-              .should('exist')
-              .and('contain', 'Pagamento por Multibanco ou Homebanking')
-
-              .wait('@GetPaymentStatus');
-          }
+        .then((b) => {
+          b.click();
         })
 
         .waitForHydration()
@@ -989,27 +979,50 @@ describe('Checkout', () => {
 
     it('should show 0€ when applying 100% discount', () => {
       cy.intercept('POST', '/checkout/payment/qR4nqWpTdQy8QZu29ANu*')
-          .as('ApplyDiscount')
+        .as('ApplyDiscount')
 
-          .visitAndWaitForHydration('/checkout/payment/qR4nqWpTdQy8QZu29ANu')
+        .visitAndWaitForHydration('/checkout/payment/qR4nqWpTdQy8QZu29ANu')
 
-          .get('input[name=discount-code]')
-          .clear()
-          .type('GET-FIT-100%')
+        .get('input[name=discount-code]')
+        .clear()
+        .type('GET-FIT-100%')
 
-          .get('#apply-discount')
-          .click()
+        .get('#apply-discount')
+        .click()
 
-          .wait('@ApplyDiscount')
+        .wait('@ApplyDiscount')
 
-          .get('div[data-cy=discount-info]')
-          .should('exist')
+        .get('div[data-cy=discount-info]')
+        .should('exist')
 
-          .get('[data-cy=subtotal-price]')
-          .contains('45€')
+        .get('[data-cy=subtotal-price]')
+        .contains('45€')
 
-          .get('[data-cy=total-price]')
-          .contains('0€');
+        .get('[data-cy=total-price]')
+        .contains('0€');
+    });
+
+    it('should not be able to update booking when having an ongoing payment', () => {
+      const formData = new FormData();
+
+      formData.append('actionId', 'update-info');
+
+      cy.visitAndWaitForHydration('/checkout/payment/HJtAk2sSktodKez744mt')
+        .get('#update-info')
+        .should('not.exist')
+
+        // We should also test for users trying to make a POST request searching for exploits
+        .request({
+          url: '/checkout/payment/HJtAk2sSktodKez744mt',
+          method: 'POST',
+          body: formData,
+          // This prevents cypress from returning test as failed because of status 400
+          failOnStatusCode: false
+        })
+        .then((res) => {
+          // If he tries to do it while having an ongoing payment, we should return a bad request
+          expect(res.status).to.eq(400);
+        });
     });
   });
 
@@ -1095,7 +1108,9 @@ describe('Checkout', () => {
 
         .location()
         .should((l) => {
-          expect(l.pathname).to.eq('/checkout/confirmation/e8pHPLNjnNxKTzoGwtLh');
+          expect(l.pathname).to.eq(
+            '/checkout/confirmation/e8pHPLNjnNxKTzoGwtLh'
+          );
         });
     });
 
@@ -1128,6 +1143,540 @@ describe('Checkout', () => {
           .then((l) => {
             expect(l.redirects[0]).to.include(
               '/checkout/confirmation/e8pHPLNjnNxKTzoGwtLh'
+            );
+          });
+      });
+    });
+  });
+
+  context('Payments Gateway', () => {
+    beforeEach(() => {
+      cy.task('db:reset');
+    });
+
+    it('Should keep booking state if payment fails (MBWay Rejected)', () => {
+      const secret = Cypress.env('SIBS_WEBHOOK_SECRET');
+
+      cy.wrap(null)
+        .then(() =>
+          encryptMessage(
+            secret,
+            JSON.stringify({
+              token: {
+                value: '351#931111111',
+                tokenType: 'MobilePhone'
+              },
+              amount: {
+                value: 1,
+                currency: 'EUR'
+              },
+              merchant: {
+                terminalId: 1111111,
+                merchantName: 'CRUCIAL ALGORITHM - UNIPESSOAL LDA',
+                transactionId: 'n6TRk6zAzWDjc3pKoxvN'
+              },
+              paymentType: 'PURS',
+              returnStatus: {
+                statusMsg: 'Declined',
+                statusCode: '01.106.0001',
+                statusDescription:
+                  'After the operation was successful, was refused by the cardholder.'
+              },
+              paymentMethod: 'MBWAY',
+              paymentStatus: 'Declined',
+              transactionID: 'G8YzvKqT7xfXu37zdsDJ',
+              notificationID: 'd787b6bc-09c1-4e9c-a9ed-3353e51d7b81',
+              transactionDateTime: new Date().toISOString()
+            })
+          )
+        )
+        .then((payload) => {
+          cy.request({
+            url: '/wh/sibs',
+            method: 'POST',
+            body: payload.message,
+            headers: {
+              'x-authentication-tag': payload.at,
+              'x-initialization-vector': payload.iv
+            },
+            failOnStatusCode: false
+          }).then((response) => {
+            cy.login()
+              .visitAndWaitForHydration('/me')
+              .get('td[data-cy=status-HJtAk2sSktodKez744mt')
+              .contains('Pendente');
+          });
+        });
+    });
+
+    it('Should update booking state if payment succeeds (MBWAy Accepted)', () => {
+      const secret = Cypress.env('SIBS_WEBHOOK_SECRET');
+
+      cy.wrap(null)
+        .then(() =>
+          encryptMessage(
+            secret,
+            JSON.stringify({
+              token: {
+                value: '351#931111111',
+                tokenType: 'MobilePhone'
+              },
+              amount: {
+                value: 1,
+                currency: 'EUR'
+              },
+              merchant: {
+                terminalId: 1111111,
+                merchantName: 'CRUCIAL ALGORITHM - UNIPESSOAL LDA',
+                transactionId: 'n6TRk6zAzWDjc3pKoxvN'
+              },
+              paymentType: 'PURS',
+              returnStatus: {
+                statusMsg: 'Success',
+                statusCode: '000'
+              },
+              paymentMethod: 'MBWAY',
+              paymentStatus: 'Success',
+              transactionID: 'G8YzvKqT7xfXu37zdsDJ',
+              notificationID: '70293d16-c4ed-4da2-924a-f19c6c4e3f81',
+              transactionDateTime: new Date().toISOString()
+            })
+          )
+        )
+        .then((payload) => {
+          cy.request({
+            url: '/wh/sibs',
+            method: 'POST',
+            body: payload.message,
+            headers: {
+              'x-authentication-tag': payload.at,
+              'x-initialization-vector': payload.iv
+            }
+          }).then((response) => {
+            cy.login()
+              .visitAndWaitForHydration('/me')
+              .get('td[data-cy=status-HJtAk2sSktodKez744mt')
+              .contains('Confirmado');
+          });
+        });
+    });
+
+    it('should update booking state of an failed payment if we get a success call', () => {
+      const secret = Cypress.env('SIBS_WEBHOOK_SECRET');
+
+      cy.wrap(null)
+        .then(() =>
+          encryptMessage(
+            secret,
+            JSON.stringify({
+              amount: {
+                value: 10,
+                currency: 'EUR'
+              },
+              merchant: {
+                terminalId: 1000000,
+                transactionId: '5h9g4ZFmcLhWJoZYt4oe'
+              },
+              paymentType: 'PURS',
+              returnStatus: {
+                statusMsg: 'Success',
+                statusCode: '000'
+              },
+              paymentMethod: 'REFERENCE',
+              paymentStatus: 'Success',
+              transactionID: '5h9g4ZFmcLhWJoZYt4oe',
+              notificationID: '9077ab06-586c-449e-ba8a-93ffac1c258e'
+            })
+          )
+        )
+        .then((payload) => {
+          cy.request({
+            url: '/wh/sibs/',
+            method: 'POST',
+            body: payload.message,
+            headers: {
+              'x-authentication-tag': payload.at,
+              'x-initialization-vector': payload.iv
+            }
+          }).then(() => {
+            cy.login()
+              .visitAndWaitForHydration('/me')
+              .get('td[data-cy=status-qR4nqWpTdQy8QZu29ANu]')
+              .contains('Confirmado');
+          });
+        });
+    });
+    
+    it('should update booking state of an failed expired if we get a success call', () => {
+      const secret = Cypress.env('SIBS_WEBHOOK_SECRET');
+
+      cy.wrap(null)
+        .then(() =>
+          encryptMessage(
+            secret,
+            JSON.stringify({
+              amount: {
+                value: 10,
+                currency: 'EUR'
+              },
+              merchant: {
+                terminalId: 1000000,
+                transactionId: 'stXph3iqss9ZJPn2Nrdh'
+              },
+              paymentType: 'PURS',
+              returnStatus: {
+                statusMsg: 'Success',
+                statusCode: '000'
+              },
+              paymentMethod: 'REFERENCE',
+              paymentStatus: 'Success',
+              transactionID: 'stXph3iqss9ZJPn2Nrdh',
+              notificationID: '9077ab06-586c-449e-ba8a-93ffac1c258e'
+            })
+          )
+        )
+        .then((payload) => {
+          cy.request({
+            url: '/wh/sibs/',
+            method: 'POST',
+            body: payload.message,
+            headers: {
+              'x-authentication-tag': payload.at,
+              'x-initialization-vector': payload.iv
+            }
+          }).then(() => {
+            cy.loginOrganizer()
+              .visitAndWaitForHydration(
+                '/o/event/nGhb8Lu8xdg3oJk4N4g6/dashboard'
+              )
+              .get('#participant-fayTnrqT4dRg5KAH7HXz')
+              .contains('Confirmado');
+          });
+        });
+    });
+
+    it('should not update booking state if payment is rejected (CCard Rejected)', () => {
+      const secret = Cypress.env('SIBS_WEBHOOK_SECRET');
+
+      cy.wrap(null)
+        .then(() =>
+          encryptMessage(
+            secret,
+            JSON.stringify({
+              amount: {
+                value: 45,
+                currency: 'EUR'
+              },
+              merchant: {
+                terminalId: 1000000,
+                transactionId: '9Lgx42DbNj5nYHcC6iEb'
+              },
+              paymentType: 'PURS',
+              returnStatus: {
+                statusMsg: 'Declined',
+                statusCode: '01.106.0001',
+                statusDescription:
+                  'After the operation was successful, was refused by the cardholder.'
+              },
+              paymentMethod: 'CARD',
+              paymentStatus: 'Declined',
+              transactionID: '9Lgx42DbNj5nYHcC6iEb',
+              notificationID: '9077ab06-586c-449e-ba8a-93ffac1c258e'
+            })
+          )
+        )
+        .then((payload) => {
+          cy.request({
+            url: '/wh/sibs/',
+            method: 'POST',
+            body: payload.message,
+            headers: {
+              'x-authentication-tag': payload.at,
+              'x-initialization-vector': payload.iv
+            }
+          }).then(() => {
+            cy.loginOrganizer()
+              .visitAndWaitForHydration('/o/event/5n8epZbHczqAQtQaAh5R/dashboard')
+              .get('#participant-TrqeXCggKuzB3T9Nr4C5')
+              .contains('Pendente');
+          });
+        });
+    });
+
+    context('Test error handling to SIBS gateway get status calls', () => {
+      it('should show handled error when get-status fails 500', () => {
+        cy.request({
+          url: '/checkout/submitted/sGDw53Nv27kbi4SkY500',
+          method: 'GET',
+          failOnStatusCode: false
+        }).then(() => {
+          cy.login()
+            .visitAndWaitForHydration('/checkout/payment/MNT9Keq82E3Tbag5tPjw')
+
+            .get('[data-cy=gateway-error]')
+            .should('exist')
+            .and('be.visible');
+        });
+      });
+
+      it('should show handled error when get-status fails 502', () => {
+        cy.request({
+          url: '/checkout/submitted/sGDw53Nv27kbi4SkY502',
+          method: 'GET'
+        }).then(() => {
+          cy.login()
+            .visitAndWaitForHydration('/checkout/payment/MNT9Keq82E3Tbag5tPjw')
+
+            .get('[data-cy=gateway-error]')
+            .should('exist')
+            .and('be.visible');
+        });
+      });
+
+      it('should show handled error when get-status fails 503', () => {
+        cy.request({
+          url: '/checkout/submitted/sGDw53Nv27kbi4SkY503',
+          method: 'GET'
+        }).then(() => {
+          cy.login()
+            .visitAndWaitForHydration('/checkout/payment/MNT9Keq82E3Tbag5tPjw')
+
+            .get('[data-cy=gateway-error]')
+            .should('exist')
+            .and('be.visible');
+        });
+      });
+
+      it('should pay booking after getting a success call', () => {
+        const secret = Cypress.env('SIBS_WEBHOOK_SECRET');
+
+        cy.request({
+          url: '/checkout/submitted/sGDw53Nv27kbi4SkY500',
+          method: 'GET'
+        }).then(() => {
+          cy.login()
+            .visitAndWaitForHydration('/checkout/payment/MNT9Keq82E3Tbag5tPjw')
+
+            .get('[data-cy=gateway-error]')
+            .should('exist')
+            .and('be.visible');
+        });
+
+        cy.wrap(null)
+          .then(() =>
+            encryptMessage(
+              secret,
+              JSON.stringify({
+                token: {
+                  value: '351#931111111',
+                  tokenType: 'MobilePhone'
+                },
+                amount: {
+                  value: 40,
+                  currency: 'EUR'
+                },
+                merchant: {
+                  terminalId: 1111111,
+                  merchantName: 'CRUCIAL ALGORITHM - UNIPESSOAL LDA',
+                  transactionId: 'sGDw53Nv27kbi4SkY500'
+                },
+                paymentType: 'PURS',
+                returnStatus: {
+                  statusMsg: 'Success',
+                  statusCode: '000'
+                },
+                paymentMethod: 'MBWAY',
+                paymentStatus: 'Success',
+                transactionID: 'sGDw53Nv27kbi4SkY500',
+                notificationID: '70293d16-c4ed-4da2-924a-f19c6c4e3f81',
+                transactionDateTime: new Date().toISOString()
+              })
+            )
+          )
+          .then((payload) => {
+            cy.request({
+              url: '/wh/sibs/',
+              method: 'POST',
+              body: payload.message,
+              headers: {
+                'x-authentication-tag': payload.at,
+                'x-initialization-vector': payload.iv
+              }
+            }).then(() => {
+              cy.get('button[name=get-payment-status]')
+                .should('exist')
+                .click()
+
+                .location()
+                .should((l) => {
+                  expect(l.pathname).to.eq(
+                    '/checkout/confirmation/MNT9Keq82E3Tbag5tPjw'
+                  );
+                });
+            });
+          });
+      });
+
+      it('should show sibs form after getting a fail call', () => {
+        const secret = Cypress.env('SIBS_WEBHOOK_SECRET');
+
+        cy.request({
+          url: '/checkout/submitted/sGDw53Nv27kbi4SkY500',
+          method: 'GET'
+        }).then(() => {
+          cy.login()
+            .visitAndWaitForHydration('/checkout/payment/MNT9Keq82E3Tbag5tPjw')
+
+            .get('[data-cy=gateway-error]')
+            .should('exist')
+            .and('be.visible');
+        });
+
+        cy.wrap(null)
+          .then(() =>
+            encryptMessage(
+              secret,
+              JSON.stringify({
+                token: {
+                  value: '351#931111111',
+                  tokenType: 'MobilePhone'
+                },
+                amount: {
+                  value: 1,
+                  currency: 'EUR'
+                },
+                merchant: {
+                  terminalId: 1111111,
+                  merchantName: 'CRUCIAL ALGORITHM - UNIPESSOAL LDA',
+                  transactionId: 'sGDw53Nv27kbi4SkY500'
+                },
+                paymentType: 'PURS',
+                returnStatus: {
+                  statusMsg: 'Declined',
+                  statusCode: '01.106.0001',
+                  statusDescription:
+                    'After the operation was successful, was refused by the cardholder.'
+                },
+                paymentMethod: 'MBWAY',
+                paymentStatus: 'Declined',
+                transactionID: 'sGDw53Nv27kbi4SkY500',
+                notificationID: 'd787b6bc-09c1-4e9c-a9ed-3353e51d7b81',
+                transactionDateTime: new Date().toISOString()
+              })
+            )
+          )
+          .then((payload) => {
+            cy.request({
+              url: '/wh/sibs/',
+              method: 'POST',
+              body: payload.message,
+              headers: {
+                'x-authentication-tag': payload.at,
+                'x-initialization-vector': payload.iv
+              }
+            }).then(() => {
+              cy.get('button[name=get-payment-status]')
+                .should('exist')
+                .click()
+
+                .location()
+                .should((l) => {
+                  expect(l.pathname).to.eq(
+                    '/checkout/payment/MNT9Keq82E3Tbag5tPjw'
+                  );
+                });
+            });
+          });
+      });
+
+      it('should start new payment process', () => {
+        cy.request({
+          url: '/checkout/submitted/sGDw53Nv27kbi4SkY500',
+          method: 'GET'
+        }).then(() => {
+          cy.login()
+              .visitAndWaitForHydration('/checkout/payment/MNT9Keq82E3Tbag5tPjw')
+
+              .get('[data-cy=gateway-error]')
+              .should('exist')
+              .and('be.visible')
+
+              .get('button[name=actionId]')
+              .should('exist')
+              .click()
+
+              .location()
+              .should((l) => {
+                expect(l.pathname).to.eq('/checkout/payment/MNT9Keq82E3Tbag5tPjw');
+              })
+
+              .get('button[name=pay-reference]')
+              .should('exist');
+        });
+      });
+    });
+
+    context('should pay booking', () => {
+      beforeEach(() => {
+        cy.login();
+      });
+
+      it('MB Way', () => {
+        cy.visitAndWaitForHydration('/checkout/payment/uj3tsN7auCRx8citYiA2')
+
+          .intercept('/checkout/payment/uj3tsN7auCRx8citYiA2')
+          .as('ConfirmationRoute')
+
+          .get('button[name=pay-mbway]')
+          .should('exist')
+          .click()
+
+          .wait('@ConfirmationRoute')
+
+          .location()
+          .should((l) => {
+            expect(l.pathname).to.eq(
+              '/checkout/confirmation/uj3tsN7auCRx8citYiA2'
+            );
+          });
+      });
+
+      it('Credit Card', () => {
+        cy.visitAndWaitForHydration('/checkout/payment/uj3tsN7auCRx8citYiA2')
+
+          .intercept('/checkout/payment/uj3tsN7auCRx8citYiA2')
+          .as('ConfirmationRoute')
+
+          .get('button[name=pay-cc]')
+          .should('exist')
+          .click()
+
+          .wait('@ConfirmationRoute')
+
+          .location()
+          .should((l) => {
+            expect(l.pathname).to.eq(
+              '/checkout/confirmation/uj3tsN7auCRx8citYiA2'
+            );
+          });
+      });
+
+      it('MB', () => {
+        cy.visitAndWaitForHydration('/checkout/payment/uj3tsN7auCRx8citYiA2')
+
+          .intercept('/checkout/payment/uj3tsN7auCRx8citYiA2')
+          .as('ConfirmationRoute')
+
+          .get('button[name=pay-reference]')
+          .should('exist')
+          .click()
+
+          .wait('@ConfirmationRoute')
+
+          .location()
+          .should((l) => {
+            expect(l.pathname).to.eq(
+              '/checkout/confirmation/uj3tsN7auCRx8citYiA2'
             );
           });
       });
@@ -1287,7 +1836,62 @@ function bookParticipant(eventId: string, raceId: string) {
           expect(l.pathname).to.eq(`/checkout/payment/${bookingId}`);
         })
 
-        .get('button[name=pay]')
+        .get('button[name=pay-reference]')
         .click();
     });
+}
+
+async function encryptMessage(secret, value) {
+  const key = await window.crypto.subtle.importKey(
+    'raw',
+    base64ToArrayBuffer(secret),
+    'AES-GCM',
+    true,
+    ['encrypt', 'decrypt']
+  );
+
+  const encoded = new TextEncoder().encode(value);
+  // The iv must never be reused with a given key.
+  const iv = window.crypto.getRandomValues(new Uint8Array(6));
+  const additionalData = new TextEncoder().encode(String(Date.now()));
+  const ciphertext = await window.crypto.subtle.encrypt(
+    {
+      name: 'AES-GCM',
+      iv,
+      additionalData // believe this is not being used for anything, but...
+    },
+    key,
+    encoded
+  );
+
+  return {
+    at: arrayBufferToBase64(additionalData),
+    iv: arrayBufferToBase64(iv),
+    message: arrayBufferToBase64(
+      ciphertext.slice(0, ciphertext.byteLength - 16)
+    )
+  };
+}
+
+// https://stackoverflow.com/a/21797381/9014097
+function base64ToArrayBuffer(base64) {
+  const binary_string = window.atob(base64);
+  const len = binary_string.length;
+  const bytes = new Uint8Array(len);
+
+  for (let i = 0; i < len; i++) {
+    bytes[i] = binary_string.charCodeAt(i);
+  }
+  return bytes.buffer;
+}
+
+function arrayBufferToBase64(buffer) {
+  let binary = '';
+  const bytes = new Uint8Array(buffer);
+  const len = bytes.byteLength;
+
+  for (let i = 0; i < len; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return window.btoa(binary);
 }

@@ -23,7 +23,6 @@ import { useTranslation } from 'react-i18next';
 import DisplayDate from '~/components/shared/DIsplayDate';
 
 import ProfileFragment from '~/components/ProfileFragment';
-import { IsAdmin } from '~/components/shared/Roles';
 import SearchField from '~/components/shared/SearchField';
 import { useRootData } from '~/hooks';
 import {
@@ -275,19 +274,20 @@ export default function Me() {
 
   return (
     <Main>
-      <IsAdmin>
-        <H2 id="booking">{t('Your Bookings')}</H2>
-        <BookingsList
-          bookings={bookings}
-          t={t}
-          searchedName={searchedName}
-          pageNumber={pageNumber}
-          numberOfPages={numberOfPages}
-        />
+      {bookings && bookings.length > 0 && (
+        <>
+          <H2 id="booking">{t('Your Bookings')}</H2>
+          <BookingsList
+            bookings={bookings}
+            t={t}
+            searchedName={searchedName}
+            pageNumber={pageNumber}
+            numberOfPages={numberOfPages}
+          />
 
-        <Spacer size="xs" className="border-b mb-8" />
-      </IsAdmin>
-
+          <Spacer size="xs" className="border-b mb-8" />
+        </>
+      )}
       <div className="flex flex-row justify-between items-center">
         <H2>{t('Your Groups')}</H2>
         <ButtonLink to="/g/group/add" data-cy="create-group">{t('Create Group')}</ButtonLink>
@@ -735,9 +735,9 @@ function TH({ name }: { name: string }) {
   );
 }
 
-function TD({ value }: { value: string | null }) {
+function TD({ value, dataCy }: { value: string | null, dataCy?: string }) {
   return (
-    <td className="text-sm text-black dark:text-white font-light px-6 py-4 whitespace-nowrap">
+    <td className="text-sm text-black dark:text-white font-light px-6 py-4 whitespace-nowrap" data-cy={dataCy || '-'}>
       {value}
     </td>
   );
@@ -780,7 +780,7 @@ function BookingListEntry({
     >
       <TD value={`${booking.eventName}`} />
       <TD value={`${date} ${hour}`} />
-      <TD value={t(booking.status)} />
+      <TD value={t(booking.status)} dataCy={`status-${booking.id}`} />
       <TD value={`${booking.totalParticipants}`} />
     </tr>
   );
