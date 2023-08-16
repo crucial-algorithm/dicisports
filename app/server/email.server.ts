@@ -541,7 +541,7 @@ P.S. Recebeste este email porque o teu endereço de email foi usado para fazer l
   await sendEmail(message);
 }
 
-async function sendSubmitedOrganizerProfileConfirmation({
+async function sendSubmittedOrganizerProfileConfirmation({
   emailAddress,
   organizerName: organizer,
   domainUrl
@@ -611,6 +611,75 @@ P.S.  Se não solicitaste o email, ignora.
   await sendEmail(message);
 }
 
+async function sendApprovedOrganizerProfileEmail({
+  emailAddress,
+  organizerName: organizer,
+  domainUrl
+}: {
+  emailAddress: string;
+  organizerName: string;
+  domainUrl: string;
+}) {
+  const sender = '"DiciSports" <noreply@mail.dicisports.com>';
+  const { hostname } = new URL(domainUrl);
+
+  const text = `
+Olá, ${organizer},
+
+O seu perfil de Organizador no ${hostname} foi aprovado!
+  `.trim();
+
+  const html = `
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html charset=UTF-8" />
+    <style type="text/css">
+      @font-face {
+        font-family: 'Matter';
+        src: url('https://kcd-img.netlify.app/Matter-Medium.woff2') format('woff2'),
+          url('https://kcd-img.netlify.app/Matter-Medium.woff') format('woff');
+        font-weight: 500;
+        font-style: normal;
+        font-display: swap;
+      }
+
+      @font-face {
+        font-family: 'Matter';
+        src: url('https://kcd-img.netlify.app/Matter-Regular.woff2') format('woff2'),
+          url('https://kcd-img.netlify.app/Matter-Regular.woff') format('woff');
+        font-weight: normal;
+        font-style: normal;
+        font-display: swap;
+      }
+    </style>
+  </head>
+  <body style="font-family:Matter, sans-serif;">
+    <div style="margin: 0 auto; max-width: 450px;">
+
+      <h2 style="text-align: center">${`Olá, ${organizer}!`}</h2>
+      
+      <h3 style="text-align: center">
+          Olá, Bike Service! É com satisfação que lhe comunicamos que o seu perfil de Organizador foi aprovado no ${hostname}! Já pode aceder à nossa plataforma e começar a publicar os seus eventos. Estamos ansiosos para ver as suas atividades em destaque!
+      </h3>
+
+      <hr style="width: 20%; height: 0px; border: 1px solid lightgrey; margin-top: 2rem; margin-bottom: 2rem">
+    </div>
+  </body>
+</html>
+  `;
+
+  const message = {
+    from: sender,
+    to: emailAddress,
+    subject: 'Perfil de Organizador aprovado no dicisports.com ✨',
+    text,
+    html
+  };
+
+  await sendEmail(message);
+}
+
 export {
   sendEmail,
   sendMagicLinkEmail,
@@ -618,7 +687,8 @@ export {
   subscribeUser,
   sendRecoverPasswordEmail,
   sendBookingConfirmationEmail,
-  sendSubmitedOrganizerProfileConfirmation
+  sendSubmittedOrganizerProfileConfirmation,
+  sendApprovedOrganizerProfileEmail
 };
 
 /*

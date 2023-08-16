@@ -21,10 +21,11 @@ import Main from '~/components/shared/Main';
 import FormField from '~/components/shared/form/FormField';
 import TextField from '~/components/shared/form/TextField';
 
-import { badRequest } from '~/utils/misc';
+import { badRequest, getDomainUrl } from '~/utils/misc';
 import i18n from '~/server/i18n.server';
 import OrganizerForm from '~/components/shared/OrganizerForm';
 import Config from '~/server/config.server';
+import { sendApprovedOrganizerProfileEmail } from '~/server/email.server';
 
 type LoaderData = {
   organizer: Organizer;
@@ -67,6 +68,11 @@ export const action: ActionFunction = async ({ request, params }) => {
       Schema.parse({ commission });
 
       await approveOrganizer(id, commission);
+      await sendApprovedOrganizerProfileEmail({
+        emailAddress: organizer.email,
+        organizerName: organizer.name,
+        domainUrl: getDomainUrl(request)
+      });
     } else {
       await rejectOrganizer(id);
     }
@@ -131,7 +137,6 @@ export default function ReviewOrganizerRoute() {
           <TextField
             type="number"
             name="commission"
-            placeholder="20"
             defaultValue={defaultCommission}
           />
         </FormField>

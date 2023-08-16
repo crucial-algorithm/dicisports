@@ -28,7 +28,7 @@ import type { Organizer, OrganizerInput } from '~/types';
 import { H2, H4, Paragraph } from '~/components/shared/typography';
 import { uploadImageToCloudinary } from '~/server/storage/cloudinary.server';
 import Id from '~/server/utils/Id.server';
-import { sendSubmitedOrganizerProfileConfirmation } from '~/server/email.server';
+import { sendSubmittedOrganizerProfileConfirmation } from '~/server/email.server';
 import OrganizerForm from '~/components/shared/OrganizerForm';
 
 type ActionData = {
@@ -168,7 +168,7 @@ export const action: ActionFunction = async ({ request }) => {
 
       await createOrganizer(data);
 
-      await sendSubmitedOrganizerProfileConfirmation({
+      await sendSubmittedOrganizerProfileConfirmation({
         emailAddress: data.email,
         organizerName: data.email,
         domainUrl
