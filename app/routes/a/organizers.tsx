@@ -9,7 +9,7 @@ import { Column } from 'primereact/column';
 import { useTranslation } from 'react-i18next';
 
 import { requireAdminUser } from '~/server/auth/session.server';
-import { findSubmittedOrganizers } from '~/server/db/organizer.server';
+import { findPendingOrganizers } from '~/server/db/organizer.server';
 import type { Organizer } from '~/types';
 import Main from '~/components/shared/Main';
 import { H3 } from '~/components/shared/typography';
@@ -18,22 +18,26 @@ type LoaderData = {
   pendingOrganizers: Organizer[]
 }
 
+export const handle = {
+  i18n: ['admin']
+};
+
 export const loader: LoaderFunction = async({ request }) => {
   await requireAdminUser(request);
 
 
   return json({
-    pendingOrganizers:  await findSubmittedOrganizers()
+    pendingOrganizers:  await findPendingOrganizers()
   });
 };
 
 export default function AdminIndexRoute() {
   const { pendingOrganizers } = useLoaderData() as LoaderData;
-  const { t } = useTranslation('admin-route');
+  const { t } = useTranslation('admin');
   const navigate = useNavigate();
 
   function handleRowClick(e: DataTableRowClickEvent) {
-    navigate(`review/${e.data.id}`);
+    navigate(e.data.id);
   }
 
   return (
@@ -44,7 +48,7 @@ export default function AdminIndexRoute() {
         value={pendingOrganizers}
         paginator
         rows={20}
-        emptyMessage="No organizers to review atm!"
+        emptyMessage={t('No Pending Organizers')}
         onRowClick={handleRowClick}
       >
         <Column

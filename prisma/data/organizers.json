@@ -10,6 +10,21 @@
     "postalCode": "4755-059",
     "city": "Barcelos",
     "userId": "gZZCGTHBq9SxdpRFoP8b",
-    "status": "PENDING"
+    "status": "APPROVED",
+    "commission": 25
+  },
+  {
+    "id": "uyFgbFPB67YEnzZj82wA",
+    "name": "Bikeservice",
+    "description": "Tendo-se lançado em 2008 na organização de eventos, a Bikeservice é, atualmente, responsável pelas maiores e melhores provas de ciclismo para todos em Portugal, aquelas que atraem maior número de participantes, grandes estrelas nacionais e internacionais, do presente e do passado da modalidade, provas que têm na qualidade organizativa e na permanente busca da inovação marcas bem distintivas.",
+    "logo": "users/uyFgbFPB67YEnzZj82wA/vZFyrABbrvdPe23GGnos",
+    "email": "geral@bikeservice.pt",
+    "phoneNumber": null,
+    "address": "geral@bikeservice.pt",
+    "postalCode": "4490-641",
+    "city": "Póvoa de Varzim",
+    "userId": "ew8s5CBY9bhSXkQLwKZC",
+    "status": "PENDING",
+    "commission": null
   }
 ]

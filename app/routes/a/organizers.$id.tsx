@@ -15,7 +15,6 @@ import {
   rejectOrganizer
 } from '~/server/db/organizer.server';
 import type { Organizer } from '~/types';
-import UploadForm from '~/components/shared/form/UploadForm';
 import ButtonGroup from '~/components/shared/ButtonGroup';
 import Button, { ButtonLink } from '~/components/shared/Button';
 import Main from '~/components/shared/Main';
@@ -25,51 +24,54 @@ import TextField from '~/components/shared/form/TextField';
 import { badRequest } from '~/utils/misc';
 import i18n from '~/server/i18n.server';
 import OrganizerForm from '~/components/shared/OrganizerForm';
+import Config from '~/server/config.server';
 
 type LoaderData = {
   organizer: Organizer;
+  defaultCommission: number;
 };
 
 export const handle = {
-  i18n: ['organizer-form']
+  i18n: ['organizer-form', 'admin']
 };
 
 export const action: ActionFunction = async ({ request, params }) => {
   await requireAdminUser(request);
+  const t = await i18n.getFixedT(request, 'admin');
 
   const id = params.id as string;
 
   if (!id) {
-    return redirect('/a');
+    return redirect('/a/organizers');
   }
 
   const organizer = await findOrganizerById(id);
 
   if (!organizer || organizer.status !== OrganizerStatus.PENDING) {
-    return redirect('/a');
+    return redirect('/a/organizers');
   }
 
   const form = await request.formData();
   const approve = form.get('actionId') === 'approve';
-  const diciCommission = Number(form.get('dici-commission') as string);
+  const commission = Number(form.get('commission') as string);
 
   const Schema = z.object({
-    diciCommission: z
-      .number({ required_error: 'Required' })
-      .int({ message: 'Must be Int' })
-      .max(100, 'Max 100')
+    commission: z
+      .number({ required_error: t('Required') })
+      .nonnegative({ message: t('Between 0 And 100') })
+      .max(100, t('Between 0 And 100'))
   });
 
   try {
     if (approve) {
-      Schema.parse({ diciCommission });
+      Schema.parse({ commission });
 
-      await approveOrganizer(id, diciCommission);
+      await approveOrganizer(id, commission);
     } else {
       await rejectOrganizer(id);
     }
 
-    return redirect('/a');
+    return redirect('/a/organizers');
   } catch (e) {
     if (!(e instanceof ZodError)) {
       const tc = await i18n.getFixedT(request, 'common');
@@ -95,35 +97,43 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   const id = params.id as string;
 
   if (!id) {
-    return redirect('/a');
+    return redirect('/a/organizers');
   }
 
   const organizer = await findOrganizerById(id);
 
   if (!organizer || organizer.status !== OrganizerStatus.PENDING) {
-    return redirect('/a');
+    return redirect('/a/organizers');
   }
+  
+  const { DEFAULT_COMMISSION } = Config();
 
   return json({
-    organizer
+    organizer,
+    defaultCommission: DEFAULT_COMMISSION
   });
 };
 
 export default function ReviewOrganizerRoute() {
-  const { organizer } = useLoaderData() as LoaderData;
+  const { organizer, defaultCommission } = useLoaderData() as LoaderData;
   const actionData = useActionData();
-  const { t } = useTranslation('admin-route');
+  const { t } = useTranslation('admin');
 
   return (
     <Main>
       <OrganizerForm organizer={organizer} readOnly={true} />
       <Form method="post">
         <FormField
-          label={t('Dici Commission')}
-          error={actionData?.errors?.diciCommission}
+          label={t('Commission')}
+          error={actionData?.errors?.commission}
           className="w-44"
         >
-          <TextField type="number" name="dici-commission" placeholder="20"/>
+          <TextField
+            type="number"
+            name="commission"
+            placeholder="20"
+            defaultValue={defaultCommission}
+          />
         </FormField>
 
         <ButtonGroup>

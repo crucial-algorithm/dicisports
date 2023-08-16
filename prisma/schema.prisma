@@ -424,7 +424,7 @@ model Organizer {
   address           String
   postalCode        String              @map("postal_code")
   city              String
-  commission        Int?
+  commission        Float?
   userId            String              @map("user_id") @unique
   user              User                @relation(fields: [userId], references: [id])
   status            OrganizerStatus     @default(PENDING)

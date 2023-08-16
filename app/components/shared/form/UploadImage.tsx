@@ -7,7 +7,7 @@ type UploadImageProps = {
   index: number
   label: string
   defaultValue?: string | undefined | null
-  disabled: boolean
+  disabled?: boolean
 } & Omit<React.ComponentProps<'section'>, 'defaultValue' | 'onDrop'>
 
 // Hack from https://stackoverflow.com/questions/52078853/is-it-possible-to-update-filelist
