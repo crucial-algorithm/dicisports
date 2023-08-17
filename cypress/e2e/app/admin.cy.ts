@@ -1,19 +1,18 @@
 describe('Admin', () => {
   beforeEach(() => {
     cy.task('db:reset');
+    cy.loginAdmin();
   });
 
   context('Maintenance', () => {
     it('should display pending organizers', () => {
-      cy.loginAdmin()
-        .visitAndWaitForHydration('/a/organizers')
+      cy.visitAndWaitForHydration('/a/organizers')
         .get('tr')
         .should('have.length', 2);
     });
 
     it('should approve organizer', () => {
-      cy.loginAdmin()
-        .visitAndWaitForHydration('/a/organizers')
+      cy.visitAndWaitForHydration('/a/organizers')
         .get('tr')
         .should('have.length', 2)
         .eq(1)
@@ -49,8 +48,7 @@ describe('Admin', () => {
     });
 
     it('should reject organizer', () => {
-      cy.loginAdmin()
-        .visitAndWaitForHydration('/a/organizers')
+      cy.visitAndWaitForHydration('/a/organizers')
         .get('tr')
         .should('have.length', 2)
         .eq(1)
@@ -81,8 +79,7 @@ describe('Admin', () => {
     });
 
     it('should send confirmation email when organizer is approved', () => {
-      cy.loginAdmin()
-        .visitAndWaitForHydration('/a/organizers')
+      cy.visitAndWaitForHydration('/a/organizers')
         .get('tr')
         .should('have.length', 2)
         .eq(1)
