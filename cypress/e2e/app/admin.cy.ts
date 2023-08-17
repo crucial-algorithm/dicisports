@@ -1,18 +1,19 @@
 describe('Admin', () => {
   beforeEach(() => {
     cy.task('db:reset');
-    cy.loginAdmin();
   });
 
   context('Maintenance', () => {
     it('should display pending organizers', () => {
-      cy.visitAndWaitForHydration('/a/organizers')
+      cy.loginAdmin()
+        .visitAndWaitForHydration('/a/organizers')
         .get('tr')
         .should('have.length', 2);
     });
 
     it('should approve organizer', () => {
-      cy.visitAndWaitForHydration('/a/organizers')
+      cy.loginAdmin()
+        .visitAndWaitForHydration('/a/organizers')
         .get('tr')
         .should('have.length', 2)
         .eq(1)
@@ -48,7 +49,8 @@ describe('Admin', () => {
     });
 
     it('should reject organizer', () => {
-      cy.visitAndWaitForHydration('/a/organizers')
+      cy.loginAdmin()
+        .visitAndWaitForHydration('/a/organizers')
         .get('tr')
         .should('have.length', 2)
         .eq(1)
@@ -79,7 +81,8 @@ describe('Admin', () => {
     });
 
     it('should send confirmation email when organizer is approved', () => {
-      cy.visitAndWaitForHydration('/a/organizers')
+      cy.loginAdmin()
+        .visitAndWaitForHydration('/a/organizers')
         .get('tr')
         .should('have.length', 2)
         .eq(1)
@@ -116,7 +119,9 @@ describe('Admin', () => {
         .request({ method: 'GET', url: Cypress.env('HTTP_CATCHER') })
         .then(({ body }) => {
           expect(body.to).to.eq('geral@bikeservice.pt');
-          expect(body.subject).to.eq('Perfil de Organizador aprovado no dicisports.com ✨');
+          expect(body.subject).to.eq(
+            'Perfil de Organizador aprovado no dicisports.com ✨'
+          );
         });
     });
   });

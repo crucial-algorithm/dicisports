@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { OrganizerStatus } from '@prisma/client';
+import { OrganizerStatus, Role } from '@prisma/client';
 
 import type { ActionFunction, LoaderFunction } from '@remix-run/node';
 import { json } from '@remix-run/node';
@@ -8,7 +8,7 @@ import { redirect } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { z, ZodError } from 'zod';
 
-import { requireAdminUser } from '~/server/auth/session.server';
+import { getUser, requireAdminUser } from '~/server/auth/session.server';
 import {
   approveOrganizer,
   findOrganizerById,
@@ -98,9 +98,16 @@ export const action: ActionFunction = async ({ request, params }) => {
 };
 
 export const loader: LoaderFunction = async ({ request, params }) => {
-  await requireAdminUser(request);
-
+  const user = await getUser(request);
   const id = params.id as string;
+
+  if (!user) {
+    return redirect(`/login?a=review&o=${id}`);
+  }
+
+  if (user.role !== Role.ADMIN) {
+    return redirect('/');
+  }
 
   if (!id) {
     return redirect('/a/organizers');
