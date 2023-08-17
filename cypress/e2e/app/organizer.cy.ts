@@ -141,6 +141,8 @@ describe('Organizer', () => {
         .get('[data-cy=pending-validation]')
         .should('exist')
 
+        // Making two requests to clear out the last one on HTTP_CATCHER
+        .request({ method: 'GET', url: Cypress.env('HTTP_CATCHER') })
         .request({ method: 'GET', url: Cypress.env('HTTP_CATCHER') })
         .then(({ body }) => {
           expect(body.to).to.eq('info@montanhadosamigos.com');

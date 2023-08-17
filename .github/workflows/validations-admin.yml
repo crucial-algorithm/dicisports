@@ -1,4 +1,4 @@
-name: E2E tests - Events
+name: E2E tests - Admin
 on: pull_request
 
 jobs:

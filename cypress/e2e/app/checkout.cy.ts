@@ -782,13 +782,18 @@ describe('Checkout', () => {
 
         .visitAndWaitForHydration('/checkout/payment/qR4nqWpTdQy8QZu29ANu')
 
+        .intercept('GET', '/payment-status/*')
+        .as('GetPaymentStatus')
+
         .get('button[name=pay-reference]')
         .should('exist')
         .then((b) => {
           b.click();
         })
 
-        .waitForHydration()
+        // Redirect as a 2s delay, so we need to increase timeout value, since default value is 5000ms
+        .wait('@GetPaymentStatus', { timeout: 10000 })
+
         .location()
         .should((l) => {
           expect(l.pathname).to.eq(
@@ -1306,7 +1311,7 @@ describe('Checkout', () => {
           });
         });
     });
-    
+
     it('should update booking state of an failed expired if we get a success call', () => {
       const secret = Cypress.env('SIBS_WEBHOOK_SECRET');
 
