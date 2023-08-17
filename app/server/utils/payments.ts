@@ -79,7 +79,7 @@ function getAuthHeaders() {
   };
 }
 
-export async function createPayamentTransaction(
+export async function createPaymentTransaction(
   booking: Booking,
   event: Event,
   cart: Array<UICartRow>
@@ -97,9 +97,9 @@ export async function createPayamentTransaction(
       return bookingAmount(cart, Number(value), JSON.parse(fixed)) / 1000;
     }
 
-    return  bookingAmount(cart) / 1000;
+    return bookingAmount(cart) / 1000;
   }
-  
+
   const amount = handleAmount();
   const payment = await createPaymentRequest(booking.id, amount);
   const { initial, final } = paymentReferenceIntervals();
@@ -143,10 +143,14 @@ export async function createPayamentTransaction(
   });
   const details = (await r.json()) as TransactionResponse;
 
-  await addGatewayDetailsToPayment(payment.id, details.transactionID, new Date(details.expiry));
+  await addGatewayDetailsToPayment(
+    payment.id,
+    details.transactionID,
+    new Date(details.expiry)
+  );
+
   return { gatewayResponse: details, ourTransactionId: payment.id };
 }
-
 
 export async function getPaymentStatus(payment: Payment) {
   const { SIBS_CHECK_STATUS_ENDPOINT: url } = Config();

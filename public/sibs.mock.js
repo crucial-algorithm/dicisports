@@ -1,94 +1,149 @@
 function form() {
   const header = document.createElement('h4');
-  header.className = 'leading-tight text-xl mb-2 text-black dark:text-white'
+  header.className = 'leading-tight text-xl mb-2 text-black dark:text-white';
   header.innerHTML = 'Payment method development mock';
 
   const subHeader = document.createElement('h6');
-  subHeader.className = 'leading-tight text-l text-black dark:text-white'
+  subHeader.className = 'leading-tight text-l text-black dark:text-white';
   subHeader.innerHTML = 'Click to simulate payment';
 
   const ring = document.createElement('div');
-  ring.className = 'focus-ring absolute inset-0 rounded-full opacity-100 disabled:opacity-50 transform transition bg-inverse';
+  ring.className =
+    'focus-ring absolute inset-0 rounded-full opacity-100 disabled:opacity-50 transform transition bg-inverse';
 
-  const content = document.createElement('div');
-  content.className = 'relative flex items-center justify-center w-full h-full whitespace-nowrap text-inverse px-8 py-4 space-x-3';
-  content.innerHTML = 'Pay'
+  const referenceRing = document.createElement('div');
+  referenceRing.className =
+    'focus-ring absolute inset-0 rounded-full opacity-100 disabled:opacity-50 transform transition bg-inverse';
 
-  const button = document.createElement('button')
-  button.className = 'group relative inline-flex transition opacity-100 text-lg font-medium focus:outline-none disabled:opacity-50 mt-4 w-48';
-  button.type = 'submit';
-  button.name = 'pay';
+  const mbwayRing = document.createElement('div');
+  mbwayRing.className =
+    'focus-ring absolute inset-0 rounded-full opacity-100 disabled:opacity-50 transform transition bg-inverse';
 
-  button.appendChild(ring);
-  button.appendChild(content);
+  const referenceContent = document.createElement('div');
+  referenceContent.className =
+    'relative flex items-center justify-center w-full h-full whitespace-nowrap text-inverse px-8 py-4 space-x-3';
+  referenceContent.innerHTML = 'Multibanco';
 
+  const mbwayContent = document.createElement('div');
+  mbwayContent.className =
+    'relative flex items-center justify-center w-full h-full whitespace-nowrap text-inverse px-8 py-4 space-x-3';
+  mbwayContent.innerHTML = 'MB Way';
+
+  const ccContent = document.createElement('div');
+  ccContent.className =
+    'relative flex items-center justify-center w-full h-full whitespace-nowrap text-inverse px-8 py-4 space-x-3';
+  ccContent.innerHTML = 'Credit Card';
 
   const form = document.querySelector('form[spg-context]');
+  form.innerHTML = '';
   const context = JSON.parse(form.getAttribute('spg-context'));
-  const payload = {
-    returnStatus: { statusMsg: 'Success', statusCode: '000' },
-    paymentStatus: 'Success',
-    paymentMethod: 'REFERENCE',
-    transactionID: context.transactionId,
-    amount: { currency: 'EUR', value: 10 },
-    merchant: { terminalId: 1000000, transactionId: context.transactionId },
-    paymentType: 'PURS',
-    notificationID: UUIDGenerator()
+
+  const referenceButton = document.createElement('button');
+  referenceButton.className =
+    'group relative inline-flex transition opacity-100 text-lg font-medium focus:outline-none disabled:opacity-50 mt-4 mr-2 w-48';
+  referenceButton.type = 'button';
+  referenceButton.name = 'pay-reference';
+  referenceButton.onclick = async () => {
+    await generateFormContent('REFERENCE', 40);
+
+    form.action = 'http://127.0.0.1:3001/sibs-mock-form-submit';
+    form.submit();
   };
 
-  // for locl dev, we will use this secret which needs to be setup in .env file
-  const secret = 'O0Bur9uhZkS54NkwFhVyeutED6DhLbOQUBDt3i3W/C4=';
-  encryptMessage(
-    secret,
-    JSON.stringify(payload)
-  ).then(({iv, at, message}) => {
+  const mbwayButton = document.createElement('button');
+  mbwayButton.className =
+    'group relative inline-flex transition opacity-100 text-lg font-medium focus:outline-none disabled:opacity-50 mt-4 mr-2 w-48';
+  mbwayButton.type = 'button';
+  mbwayButton.name = 'pay-mbway';
+  mbwayButton.onclick = async () => {
+    await generateFormContent('MBWAY', 40);
 
-    // add hidden fields with values for to be used to call our webhook:
-    // - Header[X-Authentication-Tag]    = authTag hidden field (name=at)
-    // - Header[X-Initialization-Vector] = initializationVector hidden field (name=iv)
-    // - Response body                   = body hidden field (name=message)
-    //
-    // Look at the ENDPOINTS passed to our docker service http-catcher to see the settings that glue this thing together
+    form.action = 'http://127.0.0.1:3001/sibs-mock-form-submit';
+    form.submit();
+  };
 
-    const input = document.createElement('input');
-    input.type = 'hidden';
-    input.name = 'transactionId'
-    input.value = context.transactionId;
+  const ccButton = document.createElement('button');
+  ccButton.className =
+    'group relative inline-flex transition opacity-100 text-lg font-medium focus:outline-none disabled:opacity-50 mt-4 w-48';
+  ccButton.type = 'button';
+  ccButton.name = 'pay-cc';
+  ccButton.onclick = async () => {
+    await generateFormContent('CARD', 45);
 
-    const initializationVector = document.createElement('input');
-    initializationVector.type = 'hidden';
-    initializationVector.name = 'iv'
-    initializationVector.value = iv;
+    form.action = 'http://127.0.0.1:3001/sibs-mock-form-submit/cc';
+    form.submit();
+  };
 
-    const authTag = document.createElement('input');
-    authTag.type = 'hidden';
-    authTag.name = 'at'
-    authTag.value = at;
+  referenceButton.appendChild(referenceRing);
+  referenceButton.appendChild(referenceContent);
+  form.appendChild(referenceButton);
 
-    const body = document.createElement('input');
-    body.type = 'hidden';
-    body.name = 'message'
-    body.value = message;
+  mbwayButton.appendChild(mbwayRing);
+  mbwayButton.appendChild(mbwayContent);
+  form.appendChild(mbwayButton);
 
-    form.innerHTML = '';
-    form.method = 'post';
-    form.action = 'http://127.0.0.1:3001/sibs-mock-form-submit'
-    form.appendChild(header);
-    form.appendChild(subHeader);
-    form.appendChild(button);
-    form.appendChild(input);
+  ccButton.appendChild(ring);
+  ccButton.appendChild(ccContent);
+  form.appendChild(ccButton);
 
-    // fields for the side effect that will call our webhook
-    form.appendChild(initializationVector);
-    form.appendChild(authTag);
-    form.appendChild(body);
-  });
+  async function generateFormContent(method, amount) {
+    const payload = {
+      returnStatus: { statusMsg: 'Success', statusCode: '000' },
+      paymentStatus: 'Success',
+      paymentMethod: method,
+      transactionID: context.transactionId,
+      amount: { currency: 'EUR', value: amount },
+      merchant: { terminalId: 1000000, transactionId: context.transactionId },
+      paymentType: 'PURS',
+      notificationID: UUIDGenerator()
+    };
+    // for local dev, we will use this secret which needs to be setup in .env file
+    const secret = 'O0Bur9uhZkS54NkwFhVyeutED6DhLbOQUBDt3i3W/C4=';
+    await encryptMessage(secret, JSON.stringify(payload)).then(
+      ({ iv, at, message }) => {
+        // add hidden fields with values for to be used to call our webhook:
+        // - Header[X-Authentication-Tag]    = authTag hidden field (name=at)
+        // - Header[X-Initialization-Vector] = initializationVector hidden field (name=iv)
+        // - Response body                   = body hidden field (name=message)
+        //
+        // Look at the ENDPOINTS passed to our docker service http-catcher to see the settings that glue this thing together
 
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'transactionId';
+        input.value = context.transactionId;
 
+        const initializationVector = document.createElement('input');
+        initializationVector.type = 'hidden';
+        initializationVector.name = 'iv';
+        initializationVector.value = iv;
+
+        const authTag = document.createElement('input');
+        authTag.type = 'hidden';
+        authTag.name = 'at';
+        authTag.value = at;
+
+        const body = document.createElement('input');
+        body.type = 'hidden';
+        body.name = 'message';
+        body.value = message;
+
+        form.method = 'post';
+        //form.action = 'http://127.0.0.1:5001/sibs-mock-form-submit';
+        form.appendChild(header);
+        form.appendChild(subHeader);
+        form.appendChild(input);
+
+        // fields for the side effect that will call our webhook
+        form.appendChild(initializationVector);
+        form.appendChild(authTag);
+        form.appendChild(body);
+      }
+    );
+  }
 }
 
 async function encryptMessage(secret, value) {
-
   const key = await window.crypto.subtle.importKey(
     'raw',
     base64ToArrayBuffer(secret),
@@ -100,10 +155,12 @@ async function encryptMessage(secret, value) {
   let encoded = new TextEncoder().encode(value);
   // The iv must never be reused with a given key.
   const iv = window.crypto.getRandomValues(new Uint8Array(6));
-  const additionalData = new TextEncoder().encode(UUIDGenerator().split('-')[0]);
+  const additionalData = new TextEncoder().encode(
+    UUIDGenerator().split('-')[0]
+  );
   const ciphertext = await window.crypto.subtle.encrypt(
     {
-      name: "AES-GCM",
+      name: 'AES-GCM',
       iv,
       additionalData // believe this is not being used for anything, but...
     },
@@ -151,6 +208,3 @@ function UUIDGenerator() {
 }
 
 form();
-
-
-

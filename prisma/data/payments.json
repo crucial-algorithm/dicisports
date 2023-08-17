@@ -1,0 +1,102 @@
+[
+  {
+    "id": "n6TRk6zAzWDjc3pKoxvN",
+    "method": "MBWAY",
+    "status": "submitted",
+    "amount": 1000,
+    "transactionId": "G8YzvKqT7xfXu37zdsDJ",
+    "notificationId": null,
+    "expiresAt": null,
+    "bookingId": "HJtAk2sSktodKez744mt",
+    "createdAt": null,
+    "updatedAt": null,
+    "mbEntity": null,
+    "mbReference": null
+  },
+  {
+    "id": "5h9g4ZFmcLhWJoZYt4oe",
+    "method": "REFERENCE",
+    "status": "failed",
+    "amount": 45000,
+    "transactionId": "5h9g4ZFmcLhWJoZYt4oe",
+    "notificationId": null,
+    "expiresAt": null,
+    "bookingId": "qR4nqWpTdQy8QZu29ANu",
+    "createdAt": null,
+    "updatedAt": null,
+    "mbEntity": null,
+    "mbReference": null
+  },
+  {
+    "id": "oJ4gQmsiQXkBcpBJmDEZ",
+    "method": null,
+    "status": "pending",
+    "amount": 10000,
+    "transactionId": "oJ4gQmsiQXkBcpBJmDEZ",
+    "notificationId": null,
+    "expiresAt": null,
+    "bookingId": "uj3tsN7auCRx8citYiA2",
+    "mbEntity": null,
+    "mbReference": null
+  },
+  {
+    "id": "9Lgx42DbNj5nYHcC6iEb",
+    "method": null,
+    "status": "pending",
+    "amount": 45000,
+    "transactionId": "9Lgx42DbNj5nYHcC6iEb",
+    "notificationId": null,
+    "expiresAt": null,
+    "bookingId": "MpmnjPvEsea6z2kdbj8g",
+    "mbEntity": null,
+    "mbReference": null
+  },
+  {
+    "id": "stXph3iqss9ZJPn2Nrdh",
+    "method": "MBWAY",
+    "status": "paid",
+    "amount": 15000,
+    "transactionId": "stXph3iqss9ZJPn2Nrdh",
+    "notificationId": "b4cda2cf-6108-4231-93ef-abdbdb1433d1",
+    "expiresAt": "2023-07-31 23:00:00.000",
+    "bookingId": "fdMnBpyKRWnouPEaJkSR",
+    "mbEntity": null,
+    "mbReference": null
+  },
+  {
+    "id": "sGDw53Nv27kbi4SkY500",
+    "method": null,
+    "status": "pending",
+    "amount": 40000,
+    "transactionId": "sGDw53Nv27kbi4SkY500",
+    "notificationId": null,
+    "expiresAt": "2099-12-31 00:00:00.000",
+    "bookingId": "MNT9Keq82E3Tbag5tPjw",
+    "mbEntity": null,
+    "mbReference": null
+  },
+  {
+    "id": "sGDw53Nv27kbi4SkY502",
+    "method": null,
+    "status": "pending",
+    "amount": 40000,
+    "transactionId": "sGDw53Nv27kbi4SkY502",
+    "notificationId": null,
+    "expiresAt": "2099-12-31 00:00:00.000",
+    "bookingId": "MNT9Keq82E3Tbag5tPjw",
+    "mbEntity": null,
+    "mbReference": null
+  },
+  {
+    "id": "sGDw53Nv27kbi4SkY503",
+    "method": null,
+    "status": "pending",
+    "amount": 40000,
+    "transactionId": "sGDw53Nv27kbi4SkY503",
+    "notificationId": null,
+    "expiresAt": "2099-12-31 00:00:00.000",
+    "bookingId": "MNT9Keq82E3Tbag5tPjw",
+    "mbEntity": null,
+    "mbReference": null
+  }
+]

@@ -77,5 +77,71 @@
     "displayOrder": 7,
     "status": "auto",
     "eventId": "5n8epZbHczqAQtQaAh5R"
+  },
+  {
+    "id": "2Q8dMm4gz7b2GeuGRocj",
+    "name": "Caminhada",
+    "distance": 5,
+    "startTime": 1000,
+    "elevationGain": 0,
+    "price": 5000,
+    "displayOrder": 8,
+    "status": "auto",
+    "eventId": "nGhb8Lu8xdg3oJk4N4g6"
+  },
+  {
+    "id": "wDMrbG6adqoJK2R4xQWu",
+    "name": "Corrida",
+    "distance": 10,
+    "startTime": 1000,
+    "elevationGain": 0,
+    "price": 15000,
+    "displayOrder": 9,
+    "status": "auto",
+    "eventId": "nGhb8Lu8xdg3oJk4N4g6"
+  },
+  {
+    "id": "yqAa6haPTpXKBmMmGcy6",
+    "name": "Granfondo",
+    "distance": 127,
+    "startTime": 900,
+    "elevationGain": 2302,
+    "price": 40000,
+    "displayOrder": 6,
+    "status": "auto",
+    "eventId": "45ZqiyygebDrEnjcJK3e"
+  },
+  {
+    "id": "8qRYH6WZgSd7qNppx92j",
+    "name": "Minifondo",
+    "distance": 73,
+    "startTime": 900,
+    "elevationGain": 845,
+    "price": 40000,
+    "displayOrder": 8,
+    "status": "auto",
+    "eventId": "45ZqiyygebDrEnjcJK3e"
+  },
+  {
+    "id": "Q7SpSTn9oszeSPhG9CaQ",
+    "name": "Mediofondo",
+    "distance": 103,
+    "startTime": 900,
+    "elevationGain": 1758,
+    "price": 40000,
+    "displayOrder": 7,
+    "status": "auto",
+    "eventId": "45ZqiyygebDrEnjcJK3e"
+  },
+  {
+    "id": "x7GJFeCEQBWp2R7WJEmW",
+    "name": "20 Km",
+    "distance": 20,
+    "startTime": 900,
+    "elevationGain": 3000,
+    "price": 10000,
+    "displayOrder": 9,
+    "status": "deleted",
+    "eventId": "MY4bvgxDbMtGv8rbYe5d"
   }
 ]

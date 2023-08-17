@@ -9,7 +9,7 @@
     "phoneNumber": 917493827,
     "shirtSize": 1,
     "postalCode": "4730-000",
-    "identityCard": "000000000ZZ4",
+    "identityCard": "00000000-0-ZZ4",
     "status": "saved"
   },
   {
@@ -22,7 +22,7 @@
     "phoneNumber": 969283740,
     "shirtSize": 1,
     "postalCode": "4730-000",
-    "identityCard": "000000000ZZ4",
+    "identityCard": "00000000-0-ZZ4",
     "status": "saved"
   },
   {
@@ -61,7 +61,7 @@
     "phoneNumber": 939203458,
     "shirtSize": 1,
     "postalCode": "4730-000",
-    "identityCard": "000000000ZZ4",
+    "identityCard": "00000000-0-ZZ4",
     "status": "saved"
   },
   {
@@ -75,7 +75,7 @@
     "shirtSize": 5,
     "nationality": 188,
     "postalCode": "4730-454",
-    "identityCard": "00000003",
+    "identityCard": "00000000-0-ZZ4",
     "status": "saved"
   },
   {
@@ -88,7 +88,7 @@
     "phoneNumber": 918146512,
     "shirtSize": 1,
     "postalCode": "4730-000",
-    "identityCard": "000000000ZZ4",
+    "identityCard": "00000000-0-ZZ4",
     "status": "saved"
   },
   {
@@ -101,7 +101,7 @@
     "phoneNumber": 938146576,
     "shirtSize": 1,
     "postalCode": "4730-000",
-    "identityCard": "000000000ZZ4",
+    "identityCard": "00000000-0-ZZ4",
     "status": "saved"
   },
   {
@@ -112,10 +112,68 @@
     "gender": "M",
     "birthdate": "2003-07-17 00:00:00.000",
     "phoneNumber": 937774372,
-    "identityCard": "12345678",
+    "identityCard": "00000000-0-ZZ4",
     "shirtSize": 3,
     "nationality": 188,
     "postalCode": "4730-454",
+    "status": "saved"
+  },
+  {
+    "id": "6XYz4y8d7v32WorZuiav",
+    "userId": "nTQ8idPqTY8PmhzbsN4u",
+    "firstName": "Manuel",
+    "lastName": "Carvalho",
+    "gender": "M",
+    "birthdate": "1990-01-18 00:00:00.000",
+    "phoneNumber": 938146578,
+    "shirtSize": 1,
+    "postalCode": "4730-000",
+    "identityCard": "00000000-0-ZZ4",
+    "status": "saved"
+  },
+  {
+    "id": "dCieNujaqmmWwCjjjchi",
+    "userId": "xip7n8bdJkFyHxaCiEi6",
+    "firstName": "Alexandre",
+    "lastName": "Rego",
+    "gender": "M",
+    "birthdate": "2003-08-09 00:00:00.000",
+    "phoneNumber": 960000000,
+    "identityCard": "00000000-0-ZZ4",
+    "federationNumber": null,
+    "shirtSize": 5,
+    "nationality": 188,
+    "postalCode": "4730-000",
+    "status": "saved"
+  },
+  {
+    "id": "rwm48QZSwDDB5858XEac",
+    "userId": "xip7n8bdJkFyHxaCiEi6",
+    "firstName": "Lucia",
+    "lastName": "Rego",
+    "gender": "F",
+    "birthdate": "1978-09-24 00:00:00.000",
+    "phoneNumber": 960000000,
+    "identityCard": "00000000-0-ZZ4",
+    "federationNumber": null,
+    "shirtSize": 2,
+    "nationality": 188,
+    "postalCode": "4730-000",
+    "status": "saved"
+  },
+  {
+    "id": "qgXRCf9Wz6ozYxjDJWsJ",
+    "userId": "xip7n8bdJkFyHxaCiEi6",
+    "firstName": "António",
+    "lastName": "Silva",
+    "gender": "M",
+    "birthdate": "1999-11-10 00:00:00.000",
+    "phoneNumber": 910000000,
+    "identityCard": "00000000-0-ZZ4",
+    "federationNumber": null,
+    "shirtSize": 5,
+    "nationality": 4,
+    "postalCode": "1000-000",
     "status": "saved"
   }
 ]

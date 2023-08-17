@@ -362,6 +362,9 @@ enum PaymentStatus {
   failed
   canceled
   expired
+  // This should represent case when get-status fails
+  // It will be used to display an handled error message
+  fetchStatusFailed
 }
 
 enum PaymentMethod {
