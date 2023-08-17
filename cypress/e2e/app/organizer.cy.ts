@@ -313,6 +313,35 @@ describe('Organizer', () => {
         .should('have.length', 7)
         .contains('GET-5');
     });
+
+    it('should send email do organizer reviewers when there is a new submission', () => {
+      cy.login()
+        .visitAndWaitForHydration('/o/us')
+
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.eq('/o/us');
+        });
+
+      fillFormWithOrganizerTemplate();
+
+      cy.intercept('POST', '/o/us?*')
+        .as('SubmitProfile')
+
+        .get('button[name=save-profile]')
+        .click()
+
+        .wait('@SubmitProfile')
+
+        .get('[data-cy=pending-validation]')
+        .should('exist')
+
+        .request({ method: 'GET', url: Cypress.env('HTTP_CATCHER') })
+        .then(({ body }) => {
+          expect(body.to).to.eq('admin@gmail.com, admin1@gmail.com');
+          expect(body.subject).to.eq('Novo organizador para revisão');
+        });
+    });
   });
 
   context('Security', () => {

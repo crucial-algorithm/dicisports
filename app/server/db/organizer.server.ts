@@ -6,7 +6,7 @@ import Id from '~/server/utils/Id.server';
 
 async function createOrganizer(
   organizer: OrganizerInput
-): Promise<Organizer | void> {
+): Promise<Organizer> {
   const now = new Date();
 
   return db.organizer.create({

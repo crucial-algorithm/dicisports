@@ -28,8 +28,12 @@ import type { Organizer, OrganizerInput } from '~/types';
 import { H2, H4, Paragraph } from '~/components/shared/typography';
 import { uploadImageToCloudinary } from '~/server/storage/cloudinary.server';
 import Id from '~/server/utils/Id.server';
-import { sendSubmittedOrganizerProfileConfirmation } from '~/server/email.server';
+import {
+  sendSubmittedOrganizerProfileConfirmation,
+  sendSubmittedOrganizerProfileNotification
+} from '~/server/email.server';
 import OrganizerForm from '~/components/shared/OrganizerForm';
+import Config from '~/server/config.server';
 
 type ActionData = {
   errors?: {
@@ -171,6 +175,14 @@ export const action: ActionFunction = async ({ request }) => {
       await sendSubmittedOrganizerProfileConfirmation({
         emailAddress: data.email,
         organizerName: data.email,
+        domainUrl
+      });
+
+      const { ORGANIZER_REVIEWERS_EMAILS: organizerReviewersEmails } = Config();
+      
+      await sendSubmittedOrganizerProfileNotification({
+        emailAddress: organizerReviewersEmails,
+        organizerId,
         domainUrl
       });
     }

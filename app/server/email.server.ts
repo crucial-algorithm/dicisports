@@ -660,7 +660,7 @@ O seu perfil de Organizador no ${hostname} foi aprovado!
       <h2 style="text-align: center">${`Olá, ${organizer}!`}</h2>
       
       <h3 style="text-align: center">
-          Olá, Bike Service! É com satisfação que lhe comunicamos que o seu perfil de Organizador foi aprovado no ${hostname}! Já pode aceder à nossa plataforma e começar a publicar os seus eventos. Estamos ansiosos para ver as suas atividades em destaque!
+        É com satisfação que lhe comunicamos que o seu perfil de Organizador foi aprovado no ${hostname}! Já pode aceder à nossa plataforma e começar a publicar os seus eventos. Estamos ansiosos para ver as suas atividades em destaque!
       </h3>
 
       <hr style="width: 20%; height: 0px; border: 1px solid lightgrey; margin-top: 2rem; margin-bottom: 2rem">
@@ -680,6 +680,78 @@ O seu perfil de Organizador no ${hostname} foi aprovado!
   await sendEmail(message);
 }
 
+async function sendSubmittedOrganizerProfileNotification({
+  emailAddress,
+  organizerId,
+  domainUrl
+}: {
+  emailAddress: string;
+  organizerId: string;
+  domainUrl: string;
+}) {
+  const sender = '"DiciSports" <noreply@mail.dicisports.com>';
+
+  const text = `
+Olá,
+
+Tens um novo organizador para revisão!
+  `.trim();
+
+  const html = `
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html charset=UTF-8" />
+    <style type="text/css">
+      @font-face {
+        font-family: 'Matter';
+        src: url('https://kcd-img.netlify.app/Matter-Medium.woff2') format('woff2'),
+          url('https://kcd-img.netlify.app/Matter-Medium.woff') format('woff');
+        font-weight: 500;
+        font-style: normal;
+        font-display: swap;
+      }
+
+      @font-face {
+        font-family: 'Matter';
+        src: url('https://kcd-img.netlify.app/Matter-Regular.woff2') format('woff2'),
+          url('https://kcd-img.netlify.app/Matter-Regular.woff') format('woff');
+        font-weight: normal;
+        font-style: normal;
+        font-display: swap;
+      }
+    </style>
+  </head>
+  <body style="font-family:Matter, sans-serif;">
+    <div style="margin: 0 auto; max-width: 450px;">
+
+      <h2 style="text-align: center">Olá!</h2>
+      
+      <h3 style="text-align: center">
+        Tens um novo organizador para revisão! Acede ao painel de administrador para fazer a revisão ou clica no link.
+      </h3>
+      
+      <a href="${domainUrl}/a/organizers/${organizerId}" style="display: block; margin: 0 auto; width: 80%; padding: 1.5rem; background: #A6DEE4; border-radius: 7px; border-width: 0; font-size: 1.1rem; text-align: center; font-family: sans-serif; text-decoration: none; color: black">
+        Rever Organizador
+      </a>
+
+      <hr style="width: 20%; height: 0px; border: 1px solid lightgrey; margin-top: 2rem; margin-bottom: 2rem">
+    </div>
+  </body>
+</html>
+  `;
+
+  const message = {
+    from: sender,
+    to: emailAddress,
+    subject: 'Novo organizador para revisão',
+    text,
+    html
+  };
+
+  await sendEmail(message);
+}
+
 export {
   sendEmail,
   sendMagicLinkEmail,
@@ -688,7 +760,8 @@ export {
   sendRecoverPasswordEmail,
   sendBookingConfirmationEmail,
   sendSubmittedOrganizerProfileConfirmation,
-  sendApprovedOrganizerProfileEmail
+  sendApprovedOrganizerProfileEmail,
+  sendSubmittedOrganizerProfileNotification
 };
 
 /*

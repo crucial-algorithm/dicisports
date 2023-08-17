@@ -19,7 +19,7 @@ type LoaderData = {
 }
 
 export const handle = {
-  i18n: ['admin']
+  i18n: ['admin-organizers']
 };
 
 export const loader: LoaderFunction = async({ request }) => {
@@ -33,7 +33,7 @@ export const loader: LoaderFunction = async({ request }) => {
 
 export default function AdminIndexRoute() {
   const { pendingOrganizers } = useLoaderData() as LoaderData;
-  const { t } = useTranslation('admin');
+  const { t } = useTranslation('admin-organizers');
   const navigate = useNavigate();
 
   function handleRowClick(e: DataTableRowClickEvent) {

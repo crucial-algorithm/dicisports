@@ -30,6 +30,7 @@ export type ConfigServer = {
   SIBS_MULTIBANCO_EXPIRATION_DAYS: number;
   SIBS_CHECK_STATUS_ENDPOINT: string;
   DEFAULT_COMMISSION: number;
+  ORGANIZER_REVIEWERS_EMAILS: string;
 }
 
 let config: ConfigServer | null = null;
@@ -71,7 +72,8 @@ export default function Config(): ConfigServer {
     SIBS_MULTIBANCO_ENTITIY: extractVar('SIBS_MULTIBANCO_ENTITIY'),
     SIBS_MULTIBANCO_EXPIRATION_DAYS: Number(extractVar('SIBS_MULTIBANCO_EXPIRATION_DAYS')),
     SIBS_CHECK_STATUS_ENDPOINT: extractVar('SIBS_CHECK_STATUS_ENDPOINT'),
-    DEFAULT_COMMISSION: Number(extractVar('DEFAULT_COMMISSION'))
+    DEFAULT_COMMISSION: Number(extractVar('DEFAULT_COMMISSION')),
+    ORGANIZER_REVIEWERS_EMAILS: extractVar('ORGANIZER_REVIEWERS_EMAILS')
   };
 
   return config;

@@ -33,12 +33,12 @@ type LoaderData = {
 };
 
 export const handle = {
-  i18n: ['organizer-form', 'admin']
+  i18n: ['organizer-form', 'admin-organizers']
 };
 
 export const action: ActionFunction = async ({ request, params }) => {
   await requireAdminUser(request);
-  const t = await i18n.getFixedT(request, 'admin');
+  const t = await i18n.getFixedT(request, 'admin-organizers');
 
   const id = params.id as string;
 
@@ -123,7 +123,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 export default function ReviewOrganizerRoute() {
   const { organizer, defaultCommission } = useLoaderData() as LoaderData;
   const actionData = useActionData();
-  const { t } = useTranslation('admin');
+  const { t } = useTranslation('admin-organizers');
 
   return (
     <Main>
