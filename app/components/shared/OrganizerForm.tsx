@@ -97,14 +97,20 @@ export default function OrganizerForm({
             description={!readOnly && t('Organizer display field')}
           >
             <div className="mt-1 relative rounded-md shadow-sm">
-              <textarea
-                name="description"
-                className="input-text p-10"
-                placeholder={t('Profile Description')}
-                rows={5}
-                cols={50}
-                defaultValue={organizer?.description || ''}
-              />
+              {readOnly ? (
+                <div className="font-medium dark:text-white">
+                  {organizer?.description}
+                </div>
+              ) : (
+                <textarea
+                  name="description"
+                  className="input-text p-10"
+                  placeholder={t('Profile Description')}
+                  rows={5}
+                  cols={50}
+                  defaultValue={organizer?.description || ''}
+                />
+              )}
             </div>
           </FormField>
         </div>
