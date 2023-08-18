@@ -7,8 +7,8 @@ ALTER TABLE "organizers"
 
 -- Update all tables to avoid losing data in Staging - we haven't got any data in production for this yet
 UPDATE "organizers"
-SET "comission" = 0
-WHERE "comission" IS NULL;
+SET "commission" = 20
+WHERE "commission" IS NULL;
 
 -- Then set it back to NOT NULL
 ALTER TABLE "organizer"
