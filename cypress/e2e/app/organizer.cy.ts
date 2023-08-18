@@ -316,7 +316,7 @@ describe('Organizer', () => {
         .contains('GET-5');
     });
 
-    it('should send email do organizer reviewers when there is a new submission', () => {
+    it('should send email to organizer reviewers when there is a new submission', () => {
       cy.login()
         .visitAndWaitForHydration('/o/us')
 

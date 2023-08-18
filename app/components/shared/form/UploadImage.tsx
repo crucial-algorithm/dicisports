@@ -1,13 +1,14 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import clsx from 'clsx';
 import { buildImageUrl } from 'cloudinary-build-url';
+
+import { FormContext } from '~/components/shared/form/UploadForm';
 
 type UploadImageProps = {
   index: number
   label: string
   defaultValue?: string | undefined | null
-  disabled?: boolean
 } & Omit<React.ComponentProps<'section'>, 'defaultValue' | 'onDrop'>
 
 // Hack from https://stackoverflow.com/questions/52078853/is-it-possible-to-update-filelist
@@ -25,8 +26,7 @@ export default function UploadImage({
   index,
   label,
   className,
-  defaultValue = null,
-  disabled = false
+  defaultValue = null
 }: UploadImageProps) {
   const [thumb, setThumb] = useState<string | null>(
     defaultValue
@@ -63,6 +63,13 @@ export default function UploadImage({
   const inputFileName = `/file/image/${index}`;
   // @ts-ignore
   const inputEl = inputProps.ref;
+  const formProps = useContext(FormContext);
+
+  if (formProps.readOnly) {
+    return (
+      <img src={thumb as string} alt="" className="object-cover object-left-top" />
+    );
+  }
 
   return (
     <section
@@ -75,7 +82,7 @@ export default function UploadImage({
       )}
     >
       <div {...getRootProps({ className: 'h-80 w-full overflow-hidden' })}>
-        <input {...inputProps} name={inputFileName} ref={inputEl} disabled={disabled} />
+        <input {...inputProps} name={inputFileName} ref={inputEl} />
         {thumb ? (
           <img src={thumb} alt="" className="object-cover object-left-top" />
         ) : (

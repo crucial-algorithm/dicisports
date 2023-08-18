@@ -427,7 +427,7 @@ model Organizer {
   address           String
   postalCode        String              @map("postal_code")
   city              String
-  commission        Float?
+  commission        Float
   userId            String              @map("user_id") @unique
   user              User                @relation(fields: [userId], references: [id])
   status            OrganizerStatus     @default(PENDING)
@@ -449,7 +449,7 @@ model DiscountCode {
   id          String              @id
   code        String              @db.VarChar(20)
   value       Int
-  fixed       Boolean         
+  fixed       Boolean
   createdBy   User                @relation(fields: [createdById], references: [id])
   createdById String              @map("created_by") @db.VarChar(20)
   organizer   Organizer           @relation(fields: [organizerId], references: [id])
