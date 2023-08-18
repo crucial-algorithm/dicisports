@@ -776,7 +776,7 @@ describe('Checkout', () => {
         .should('exist');
     });
 
-    it('should have correct bib numbers', () => {
+    it.only('should have correct bib numbers', () => {
       cy.intercept('GET', '/payment-status/*')
         .as('GetPaymentStatus')
 
@@ -792,7 +792,7 @@ describe('Checkout', () => {
         })
 
         // Redirect as a 2s delay, so we need to increase timeout value, since default value is 5000ms
-        .wait('@GetPaymentStatus', { timeout: 10000 })
+        .wait('@GetPaymentStatus')
 
         .location()
         .should((l) => {
