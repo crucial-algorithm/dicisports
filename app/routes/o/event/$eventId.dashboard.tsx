@@ -1,5 +1,6 @@
 import type { LoaderFunction } from '@remix-run/node';
 import { json, redirect } from '@remix-run/node';
+import type { TFunction } from 'i18next';
 import * as React from 'react';
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -28,6 +29,7 @@ import { H2, H3, H4, H5, H6 } from '~/components/shared/typography';
 import DisplayDate from '~/components/shared/DIsplayDate';
 import I18nText from '~/components/I18nText';
 import Main from '~/components/shared/Main';
+import { findOrganizer } from '~/server/db/organizer.server';
 import type {
   KCDHandle,
   Race,
@@ -51,6 +53,7 @@ type LoaderData = {
   pageNumber: number;
   statsPerRace: Array<{ id: string; total: number }>;
   searchedName: string;
+  organizerCommission: number;
 };
 
 const actionsId = {
@@ -114,6 +117,8 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     searchedName?.length ? searchedName : null
   );
 
+  const organizer = await findOrganizer(event.createdById);
+
   return json({
     event,
     racesRevenueAndRegistrations,
@@ -121,7 +126,8 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     totalRaceParticipants: total,
     statsPerRace: await findRegistrationsAddedToCart(eventId),
     pageNumber: page,
-    searchedName: searchedName || ''
+    searchedName: searchedName || '',
+    organizerCommission: organizer?.commission as number
   });
 };
 
@@ -133,15 +139,17 @@ export default function DashboardRoute() {
     totalRaceParticipants,
     pageNumber,
     statsPerRace,
-    searchedName
+    searchedName,
+    organizerCommission
   } = useLoaderData<LoaderData>() as LoaderData;
   const { t } = useTranslation('dashboard');
   const searchForm = useRef<HTMLFormElement>(null);
   const [searchedParticipantName, setSearchedParticipantName] =
     useState<string>(searchedName);
-  const [lat, lng] = event?.location?.split(',') || [0, 0];
+
   let minPrice = 0;
-  let totalClicks = 0;
+  const totalClicks = statsPerRace.reduce((total, r) => total + r.total, 0);
+
   const numberOfPages = Math.ceil(totalRaceParticipants / 10);
   const main = window.document.querySelector('#organizer-main-container');
 
@@ -149,88 +157,14 @@ export default function DashboardRoute() {
     .sort((a: Race, b: Race) => a.price - b.price)
     .map((a: Race) => a.price);
 
-  statsPerRace.map((r) => (totalClicks += r.total));
   minPrice = sortedRaces[0];
 
   function handleSearchedName(value: string) {
     setSearchedParticipantName(value);
   }
 
-  function EventInformation() {
-    return (
-      <div className="flex flex-auto flex-col ml-4">
-        <div className="flex flex-row items-center mb-2">
-          <CalendarDaysIcon className="h-6 w-6 m-0 inline-block text-primary" />
-          <H6 data-cy="date" className="ml-4 md:ml-2">
-            <DisplayDate date={new Date(event?.startAt || 0)} />
-          </H6>
-        </div>
-        <div className="flex flex-row items-center mb-2">
-          <MapPinIcon className="h-6 w-6 m-0 inline-block text-primary" />
-          <a
-            href={`https://www.google.com/maps/search/?api=1&query=${lat}%2C${lng}`}
-            target="_blank"
-            rel="noreferrer"
-            data-cy="location-link"
-          >
-            <H6 className="ml-4 mr-2 md:ml-2" data-cy="location">
-              {event.location}
-            </H6>
-          </a>
-        </div>
-        <div className="flex flex-row items-center mb-2">
-          <ArrowTrendingUpIcon className="h-6 w-6 m-0 inline-block text-primary" />
-          <H6 data-cy="difficulty" className="ml-4 md:ml-2">
-            <I18nText text={event?.difficulty?.name as TranslationObject} />
-          </H6>
-        </div>
-        <div className="flex flex-col justify-start mt-16">
-          <H6 className="md:ml-2">{t('From')}</H6>
-          <H2 data-cy="price" className="text-sp-light-blue-900 w-full md:ml-2">
-            <b className="break-words">{`${
-              minPrice ? minPrice / 1000 : t('Undefined')
-            }€`}</b>
-          </H2>
-        </div>
-      </div>
-    );
-  }
-
-  function EventStats() {
-    let registrations = 0;
-    let revenue = 0;
-
-    racesRevenueAndRegistrations.map(
-      (r: RaceRevenueRegistrations) => (registrations += r.registrations)
-    );
-    racesRevenueAndRegistrations.map(
-      (r: RaceRevenueRegistrations) => (revenue += r.revenue)
-    );
-
-    return (
-      <div className="flex flex-col items-center text-center gap-y-2">
-        <div className="flex-col">
-          <H6>{t('Registrations')}</H6>
-          <H4>
-            <b>{registrations}</b>
-          </H4>
-        </div>
-
-        <div className="flex-col">
-          <H6>{t('Revenue')}</H6>
-          <H4>
-            <b>{revenue + '€'}</b>
-          </H4>
-        </div>
-
-        <div className="flex-col">
-          <H6>{t('Clicks')}</H6>
-          <H4>
-            <b>{totalClicks}</b>
-          </H4>
-        </div>
-      </div>
-    );
+  function handleRevenueWithComission(value: number) {
+    return value - value * organizerCommission / 100;
   }
 
   async function handleExportParticipants() {
@@ -282,8 +216,13 @@ export default function DashboardRoute() {
         </div>
 
         <div className="flex flex-row justify-between w-full">
-          <EventInformation />
-          <EventStats />
+          <EventInformation event={event} minPrice={minPrice} t={t} />
+          <EventStats
+            racesRevenueAndRegistrations={racesRevenueAndRegistrations}
+            totalClicks={totalClicks}
+            handleRevenueWithComission={handleRevenueWithComission}
+            t={t}
+          />
         </div>
       </div>
 
@@ -294,7 +233,7 @@ export default function DashboardRoute() {
             id={r.id}
             name={r.name}
             registrations={r.registrations}
-            revenue={r.revenue}
+            revenue={handleRevenueWithComission(r.revenue)}
             clicks={statsPerRace.find((cr) => cr.id === r.id)?.total || 0}
             key={r.id}
           />
@@ -480,16 +419,112 @@ function DisplayRaceStats({
         </div>
         <div className="mt-4">
           <H4>{t('Registrations')}</H4>
-          <H5 className="dark:text-blueGray-500">{`${registrations}`}</H5>
+          <H5 className="dark:text-blueGray-500">{registrations}</H5>
         </div>
         <div className="my-4">
           <H4>{t('Revenue')}</H4>
-          <H5 className="dark:text-blueGray-500">{revenue + '€'}</H5>
+          <H5 className="dark:text-blueGray-500">{revenue / 1000}€</H5>
         </div>
         <div className="my-4">
           <H4>{t('Added To Cart/ Clicks')}</H4>
           <H5 className="dark:text-blueGray-500">{clicks}</H5>
         </div>
+      </div>
+    </div>
+  );
+}
+
+function EventInformation({
+  event,
+  minPrice,
+  t
+}: {
+  event: EventWithRacesDifficultiesAndDocuments;
+  minPrice: number;
+  t: TFunction;
+}) {
+  const [lat, lng] = event?.location?.split(',') || [0, 0];
+
+  return (
+    <div className="flex flex-auto flex-col ml-4">
+      <div className="flex flex-row items-center mb-2">
+        <CalendarDaysIcon className="h-6 w-6 m-0 inline-block text-primary" />
+        <H6 data-cy="date" className="ml-4 md:ml-2">
+          <DisplayDate date={new Date(event?.startAt || 0)} />
+        </H6>
+      </div>
+      <div className="flex flex-row items-center mb-2">
+        <MapPinIcon className="h-6 w-6 m-0 inline-block text-primary" />
+        <a
+          href={`https://www.google.com/maps/search/?api=1&query=${lat}%2C${lng}`}
+          target="_blank"
+          rel="noreferrer"
+          data-cy="location-link"
+        >
+          <H6 className="ml-4 mr-2 md:ml-2" data-cy="location">
+            {event.location}
+          </H6>
+        </a>
+      </div>
+      <div className="flex flex-row items-center mb-2">
+        <ArrowTrendingUpIcon className="h-6 w-6 m-0 inline-block text-primary" />
+        <H6 data-cy="difficulty" className="ml-4 md:ml-2">
+          <I18nText text={event?.difficulty?.name as TranslationObject} />
+        </H6>
+      </div>
+      <div className="flex flex-col justify-start mt-16">
+        <H6 className="md:ml-2">{t('From')}</H6>
+        <H2 data-cy="price" className="text-sp-light-blue-900 w-full md:ml-2">
+          <b className="break-words">{`${
+            minPrice ? minPrice / 1000 : t('Undefined')
+          }`}€</b>
+        </H2>
+      </div>
+    </div>
+  );
+}
+
+function EventStats({
+  racesRevenueAndRegistrations,
+  totalClicks,
+  handleRevenueWithComission,
+  t
+}: {
+  racesRevenueAndRegistrations: RaceRevenueRegistrations[];
+  totalClicks: number;
+  handleRevenueWithComission: (v: number) => number;
+  t: TFunction;
+}) {
+  const registrations = racesRevenueAndRegistrations.reduce(
+    (total, r) => total + r.registrations,
+    0
+  );
+  const revenue = racesRevenueAndRegistrations.reduce(
+    (total, r) => total + r.revenue,
+    0
+  );
+
+  return (
+    <div className="flex flex-col items-center text-center gap-y-2">
+      <div className="flex-col">
+        <H6>{t('Registrations')}</H6>
+        <H4>
+          <b>{registrations}</b>
+        </H4>
+      </div>
+
+      <div className="flex-col">
+        <H6>{t('Revenue')}</H6>
+        <H4>
+          <b>{handleRevenueWithComission(revenue) / 1000}€</b>
+        </H4>
+      </div>
+
+      <div className="flex-col">
+        <H6>{t('Clicks')}</H6>
+        <H4>
+          <b>{totalClicks}</b>
+        </H4>
       </div>
     </div>
   );
