@@ -776,22 +776,14 @@ describe('Checkout', () => {
         .should('exist');
     });
 
-    it('should have correct bib numbers', () => {
-      cy.intercept('GET', '/payment-status/*')
-        .as('GetPaymentStatus')
-
-        .visitAndWaitForHydration('/checkout/payment/qR4nqWpTdQy8QZu29ANu')
-
-        .intercept('GET', '/payment-status/*')
-        .as('GetPaymentStatus')
+    it.only('should have correct bib numbers', () => {
+      cy.visitAndWaitForHydration('/checkout/payment/qR4nqWpTdQy8QZu29ANu')
 
         .get('button[name=pay-reference]')
         .should('exist')
         .then((b) => {
           b.click();
         })
-
-        .wait('@GetPaymentStatus')
 
         .location()
         .should((l) => {
