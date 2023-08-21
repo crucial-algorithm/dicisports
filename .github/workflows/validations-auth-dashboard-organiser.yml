@@ -94,6 +94,8 @@ jobs:
           SIBS_MULTIBANCO_EXPIRATION_DAYS: 3
           SIBS_CHECK_STATUS_ENDPOINT: http://localhost:3001/sibs-status-mock/{{transactionID}}
 
+          DEFAULT_COMMISSION: 25
+          ORGANIZER_REVIEWERS_EMAILS: "admin@gmail.com, admin1@gmail.com"
 
       - uses: actions/upload-artifact@v2
         if: failure()

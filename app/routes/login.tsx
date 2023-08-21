@@ -52,7 +52,8 @@ const actions = {
   joinWhatsAppGroup: 'ws',
   addToFavorites: 'favorite',
   checkout: 'checkout',
-  createEvent: 'create-event'
+  createEvent: 'create-event',
+  reviewOrganizer: 'review'
 };
 
 type QueryStringArgs = {
@@ -244,6 +245,12 @@ export const action: ActionFunction = async ({ request }) => {
 
     if (postLoginAction === actions.createEvent) {
       return redirect('/o/event/create', { headers });
+    }
+
+    if (postLoginAction === actions.reviewOrganizer && user.role === Role.ADMIN) {
+      const organizerId = searchParams.get('o') as string;
+
+      return redirect(`/a/organizers/${organizerId}`, { headers });
     }
 
     if (user.role === Role.ORGANIZER) {

@@ -141,6 +141,8 @@ describe('Organizer', () => {
         .get('[data-cy=pending-validation]')
         .should('exist')
 
+        // Making two requests to clear out the last one on HTTP_CATCHER
+        .request({ method: 'GET', url: Cypress.env('HTTP_CATCHER') })
         .request({ method: 'GET', url: Cypress.env('HTTP_CATCHER') })
         .then(({ body }) => {
           expect(body.to).to.eq('info@montanhadosamigos.com');
@@ -312,6 +314,35 @@ describe('Organizer', () => {
         .get('tr')
         .should('have.length', 7)
         .contains('GET-5');
+    });
+
+    it('should send email to organizer reviewers when there is a new submission', () => {
+      cy.login()
+        .visitAndWaitForHydration('/o/us')
+
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.eq('/o/us');
+        });
+
+      fillFormWithOrganizerTemplate();
+
+      cy.intercept('POST', '/o/us?*')
+        .as('SubmitProfile')
+
+        .get('button[name=save-profile]')
+        .click()
+
+        .wait('@SubmitProfile')
+
+        .get('[data-cy=pending-validation]')
+        .should('exist')
+
+        .request({ method: 'GET', url: Cypress.env('HTTP_CATCHER') })
+        .then(({ body }) => {
+          expect(body.to).to.eq('admin@gmail.com, admin1@gmail.com');
+          expect(body.subject).to.eq('Novo organizador para revisão');
+        });
     });
   });
 
