@@ -1,10 +1,10 @@
+import { OrganizerStatus, Role } from '@prisma/client';
+
 import { db } from '~/server/db.server';
 import type { Organizer, OrganizerInput } from '~/types';
 import Id from '~/server/utils/Id.server';
 
-async function createOrganizer(
-  organizer: OrganizerInput
-): Promise<Organizer | void> {
+async function createOrganizer(organizer: OrganizerInput): Promise<Organizer> {
   const now = new Date();
 
   return db.organizer.create({
@@ -55,4 +55,56 @@ async function updateOrganizer(
   });
 }
 
-export { createOrganizer, findOrganizer, updateOrganizer };
+async function findPendingOrganizers(): Promise<Organizer[]> {
+  return await db.organizer.findMany({
+    where: {
+      status: OrganizerStatus.PENDING
+    }
+  });
+}
+
+async function findOrganizerById(id: string): Promise<Organizer | null> {
+  return await db.organizer.findUnique({
+    where: { id }
+  });
+}
+
+async function approveOrganizer(id: string, commission: number) {
+  return await db.$transaction(async (tx) => {
+    const organizer = await tx.organizer.update({
+      where: { id },
+      data: {
+        status: OrganizerStatus.APPROVED,
+        commission
+      }
+    });
+
+    await tx.user.update({
+      where: {
+        id: organizer.userId
+      },
+      data: {
+        role: Role.ORGANIZER
+      }
+    });
+  });
+}
+
+async function rejectOrganizer(id: string) {
+  return await db.organizer.update({
+    where: { id },
+    data: {
+      status: OrganizerStatus.REJECTED
+    }
+  });
+}
+
+export {
+  createOrganizer,
+  findOrganizer,
+  updateOrganizer,
+  findPendingOrganizers,
+  findOrganizerById,
+  approveOrganizer,
+  rejectOrganizer
+};

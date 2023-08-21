@@ -1,0 +1,14 @@
+{
+  "Cancel": "Cancelar",
+  "Approve": "Aprovar",
+  "Reject": "Rejeitar",
+
+  "Required": "Campo obrigatório",
+  "Review Organizers": "Rever organizadores pendentes",
+  "No Pending Organizers": "Não existem submissões pendentes!",
+  "Between 0 And 100": "Introduz um número entre 0 e 100",
+
+  "Name": "Nome",
+  "Email": "Email",
+  "Commission": "Comissão"
+}
