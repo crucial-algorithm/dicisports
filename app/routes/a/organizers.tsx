@@ -45,8 +45,6 @@ export default function AdminIndexRoute() {
 
       <DataTable
         value={pendingOrganizers}
-        paginator
-        rows={20}
         emptyMessage={t('No Pending Organizers')}
         onRowClick={handleRowClick}
       >
