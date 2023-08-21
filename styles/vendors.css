@@ -36,3 +36,27 @@
     box-shadow: none;
     border: 0;
 }
+
+.p-datatable .p-datatable-tbody > tr > td {
+    @apply dark:bg-gray-700 dark:text-white dark:border-gray-500
+}
+
+.p-datatable .p-datatable-tbody > .p-row-odd > td {
+    @apply dark:bg-gray-800
+}
+
+.p-datatable-table > .p-datatable-thead > tr > th {
+    @apply dark:bg-gray-800 dark:text-gray-500 dark:border-gray-500
+}
+
+.p-paginator {
+    @apply dark:bg-gray-800 dark:text-white dark:border-gray-500
+}
+
+.p-paginator > button {
+    @apply dark:text-gray-500 dark:border-white
+}
+
+.p-paginator-icon, .p-paginator .p-paginator-pages .p-paginator-page.p-highlight {
+    @apply dark:text-white
+}

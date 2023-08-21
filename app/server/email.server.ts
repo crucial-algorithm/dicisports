@@ -364,7 +364,7 @@ async function sendBookingConfirmationEmail({
 
   let total = 0;
 
-  cart.map((c) => total += c.price);
+  cart.map((c) => (total += c.price));
   const text = `
 ${userName && `Olá ${userName},`}
 Segue a informação do teu booking no evento ${event.name}:
@@ -373,12 +373,16 @@ ID: ${booking.id}
 PIN: ${booking.pin}
 
 Inscrições:
-${cart.map(c => `
+${cart
+  .map(
+    (c) => `
   Nome: ${c.name}
   Quantidade: ${c.qty}
   Preço: ${c.price}€
   
-`).join('')}
+`
+  )
+  .join('')}
 
 Total: ${total}€
 
@@ -414,7 +418,11 @@ P.S. Recebeste este email porque o teu endereço de email foi usado para fazer l
   <body style='font-family:Matter, sans-serif;'>
     <div style='margin: 0 auto; max-width: 450px;'>
       <h2 style='text-align: center'>
-        ${userName && `Olá, ${userName}!`} Obrigado por escolheres a ${hostname} para te inscreveres no evento ${event.name}!
+        ${
+          userName && `Olá, ${userName}!`
+        } Obrigado por escolheres a ${hostname} para te inscreveres no evento ${
+    event.name
+  }!
       </h2>
       <h2 style='text-align: center'>
         Aqui tens a informação do teu booking:
@@ -456,7 +464,9 @@ P.S. Recebeste este email porque o teu endereço de email foi usado para fazer l
                       <td>
                         <table style="width:100%;border-spacing:0;border-collapse:collapse" id="races">
                           <tbody>
-                            ${cart.map((c) => `
+                            ${cart
+                              .map(
+                                (c) => `
                               <tr style="width: 100%; border-top: 1px solid rgb(229, 229, 229);">
                                 <td style="padding-top: 15px;">
                                   <table style="border-spacing: 0px; border-collapse: collapse;">
@@ -479,7 +489,9 @@ P.S. Recebeste este email porque o teu endereço de email foi usado para fazer l
                                   </table>
                                 </td>
                               </tr>
-                            `).join('')}
+                            `
+                              )
+                              .join('')}
                           </tbody>
                         </table>
                         <table style="width:100%;border-spacing:0;border-collapse:collapse;margin-top:15px;border-top-width:1px;border-top-color:#e5e5e5;border-top-style:solid">
@@ -516,7 +528,9 @@ P.S. Recebeste este email porque o teu endereço de email foi usado para fazer l
       <h3 style='text-align: center; margin-top: 2rem'>
         Clica no botão para acederes ao teu booking
       </h3>
-      <a href='${domainUrl}/checkout/info/${booking.id}?p=${booking.pin}' style='display: block; margin: 0 auto; width: 80%; padding: 1.5rem; background: #A6DEE4; border-radius: 7px; border-width: 0; font-size: 1.1rem; text-align: center; font-family: sans-serif; text-decoration: none; color: black'>
+      <a href='${domainUrl}/checkout/info/${booking.id}?p=${
+    booking.pin
+  }' style='display: block; margin: 0 auto; width: 80%; padding: 1.5rem; background: #A6DEE4; border-radius: 7px; border-width: 0; font-size: 1.1rem; text-align: center; font-family: sans-serif; text-decoration: none; color: black'>
       Aceder ao booking
       </a>
       <hr style='width: 20%; height: 0px; border: 1px solid lightgrey; margin-top: 2rem; margin-bottom: 2rem'>

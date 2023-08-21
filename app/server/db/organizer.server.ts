@@ -4,9 +4,7 @@ import { db } from '~/server/db.server';
 import type { Organizer, OrganizerInput } from '~/types';
 import Id from '~/server/utils/Id.server';
 
-async function createOrganizer(
-  organizer: OrganizerInput
-): Promise<Organizer> {
+async function createOrganizer(organizer: OrganizerInput): Promise<Organizer> {
   const now = new Date();
 
   return db.organizer.create({
@@ -77,7 +75,7 @@ async function approveOrganizer(id: string, commission: number) {
       where: { id },
       data: {
         status: OrganizerStatus.APPROVED,
-        commission
+        commission: commission * 1000
       }
     });
 

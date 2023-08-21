@@ -118,7 +118,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   if (!organizer || organizer.status !== OrganizerStatus.PENDING) {
     return redirect('/a/organizers');
   }
-  
+
   const { DEFAULT_COMMISSION } = Config();
 
   return json({

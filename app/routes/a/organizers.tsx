@@ -15,19 +15,18 @@ import Main from '~/components/shared/Main';
 import { H3 } from '~/components/shared/typography';
 
 type LoaderData = {
-  pendingOrganizers: Organizer[]
-}
+  pendingOrganizers: Organizer[];
+};
 
 export const handle = {
   i18n: ['admin-organizers']
 };
 
-export const loader: LoaderFunction = async({ request }) => {
+export const loader: LoaderFunction = async ({ request }) => {
   await requireAdminUser(request);
 
-
   return json({
-    pendingOrganizers:  await findPendingOrganizers()
+    pendingOrganizers: await findPendingOrganizers()
   });
 };
 
@@ -46,8 +45,6 @@ export default function AdminIndexRoute() {
 
       <DataTable
         value={pendingOrganizers}
-        paginator
-        rows={20}
         emptyMessage={t('No Pending Organizers')}
         onRowClick={handleRowClick}
       >

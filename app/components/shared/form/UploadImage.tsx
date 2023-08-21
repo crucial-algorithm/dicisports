@@ -67,7 +67,11 @@ export default function UploadImage({
 
   if (formProps.readOnly) {
     return (
-      <img src={thumb as string} alt="" className="object-cover object-left-top" />
+      <img
+        src={thumb as string}
+        alt=""
+        className="object-cover object-left-top"
+      />
     );
   }
 

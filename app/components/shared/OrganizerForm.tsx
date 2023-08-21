@@ -124,7 +124,6 @@ export default function OrganizerForm({
               index={0}
               label={t('Hint For Profile Picture')}
               defaultValue={organizer?.logo || ''}
-              disabled={readOnly}
             />
           </FormField>
         </div>

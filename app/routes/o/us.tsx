@@ -179,7 +179,7 @@ export const action: ActionFunction = async ({ request }) => {
       });
 
       const { ORGANIZER_REVIEWERS_EMAILS: organizerReviewersEmails } = Config();
-      
+
       await sendSubmittedOrganizerProfileNotification({
         emailAddress: organizerReviewersEmails,
         organizerId,

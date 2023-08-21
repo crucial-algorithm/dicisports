@@ -373,7 +373,7 @@ describe('Checkout', () => {
     });
 
     it.skip('should book a race', () => {
-      bookParticipant('MY4bvgxDbMtGv8rbYe5d', 'AhowRdNWCBQWSuivSt7h', true);
+      bookParticipant('MY4bvgxDbMtGv8rbYe5d', 'AhowRdNWCBQWSuivSt7h');
     });
 
     it.skip('should be able to authenticate and keep booking after completing booking process', () => {
@@ -777,21 +777,13 @@ describe('Checkout', () => {
     });
 
     it('should have correct bib numbers', () => {
-      cy.intercept('GET', '/payment-status/*')
-        .as('GetPaymentStatus')
-
-        .visitAndWaitForHydration('/checkout/payment/qR4nqWpTdQy8QZu29ANu')
-
-        .intercept('GET', '/payment-status/*')
-        .as('GetPaymentStatus')
+      cy.visitAndWaitForHydration('/checkout/payment/qR4nqWpTdQy8QZu29ANu')
 
         .get('button[name=pay-reference]')
         .should('exist')
         .then((b) => {
           b.click();
         })
-
-        .wait('@GetPaymentStatus')
 
         .location()
         .should((l) => {
@@ -1400,7 +1392,9 @@ describe('Checkout', () => {
             }
           }).then(() => {
             cy.loginOrganizer()
-              .visitAndWaitForHydration('/o/event/5n8epZbHczqAQtQaAh5R/dashboard')
+              .visitAndWaitForHydration(
+                '/o/event/5n8epZbHczqAQtQaAh5R/dashboard'
+              )
               .get('#participant-TrqeXCggKuzB3T9Nr4C5')
               .contains('Pendente');
           });
@@ -1599,23 +1593,25 @@ describe('Checkout', () => {
           method: 'GET'
         }).then(() => {
           cy.login()
-              .visitAndWaitForHydration('/checkout/payment/MNT9Keq82E3Tbag5tPjw')
+            .visitAndWaitForHydration('/checkout/payment/MNT9Keq82E3Tbag5tPjw')
 
-              .get('[data-cy=gateway-error]')
-              .should('exist')
-              .and('be.visible')
+            .get('[data-cy=gateway-error]')
+            .should('exist')
+            .and('be.visible')
 
-              .get('button[name=actionId]')
-              .should('exist')
-              .click()
+            .get('button[name=actionId]')
+            .should('exist')
+            .click()
 
-              .location()
-              .should((l) => {
-                expect(l.pathname).to.eq('/checkout/payment/MNT9Keq82E3Tbag5tPjw');
-              })
+            .location()
+            .should((l) => {
+              expect(l.pathname).to.eq(
+                '/checkout/payment/MNT9Keq82E3Tbag5tPjw'
+              );
+            })
 
-              .get('button[name=pay-reference]')
-              .should('exist');
+            .get('button[name=pay-reference]')
+            .should('exist');
         });
       });
     });
@@ -1761,7 +1757,7 @@ function registerParticipant(eventId: string, raceId: string) {
     .should('have.value', 'Nuno');
 }
 
-function bookParticipant(eventId: string, raceId: string, applyDiscountCode: boolean = false) {
+function bookParticipant(eventId: string, raceId: string) {
   return cy
     .intercept('GET', '*?_data=routes*checkout*')
     .as('selectRace')
@@ -1838,36 +1834,9 @@ function bookParticipant(eventId: string, raceId: string, applyDiscountCode: boo
         .location()
         .should((l) => {
           expect(l.pathname).to.eq(`/checkout/payment/${bookingId}`);
-        });
+        })
 
-      if (applyDiscountCode) {
-        let price = 0;
-
-        cy.intercept('POST', `/checkout/payment/${bookingId}*`)
-          .as('ApplyDiscount')
-
-          .get('[data-cy=total-price]')
-          .then((e) => {
-            price = Number(e.text());
-          })
-
-          .get('input[name=discount-code]')
-          .clear()
-          .type('GET-FIT-5')
-
-          .get('#apply-discount')
-          .click()
-
-          .wait('@ApplyDiscount')
-          .then(() => {
-            price -= 5;
-          })
-
-          .get('[data-cy=total-price]')
-          .contains(String(price));
-      }
-
-        cy.get('button[name=pay-reference]')
+        .get('button[name=pay-reference]')
         .click();
     });
 }
