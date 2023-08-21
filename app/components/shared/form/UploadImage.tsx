@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import clsx from 'clsx';
 import { buildImageUrl } from 'cloudinary-build-url';
+
+import { FormContext } from '~/components/shared/form/UploadForm';
 
 type UploadImageProps = {
   index: number
@@ -61,6 +63,17 @@ export default function UploadImage({
   const inputFileName = `/file/image/${index}`;
   // @ts-ignore
   const inputEl = inputProps.ref;
+  const formProps = useContext(FormContext);
+
+  if (formProps.readOnly) {
+    return (
+      <img
+        src={thumb as string}
+        alt=""
+        className="object-cover object-left-top"
+      />
+    );
+  }
 
   return (
     <section

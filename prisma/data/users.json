@@ -188,5 +188,15 @@
     "email": "azores@gmail.com",
     "name": "Azores",
     "role": "MEMBER"
+  },
+  {
+    "id": "ew8s5CBY9bhSXkQLwKZC",
+    "createdAt": "2023-08-16 11:48:08.729",
+    "updatedAt": "2023-08-16 11:48:08.729",
+    "email": "organizer1@gmail.com",
+    "name": "Bike Service",
+    "role": "MEMBER",
+    "password": "c0a33d70b6cc3223ae65eee41a31fb14c4fd5cd8b0eb38065593bf3120fa5208cd73443d9453585019745e33b856da1ec598b4726d238706a183849a02c1058d",
+    "salt": "3931c06f9a640a19102d3d35a4b7ef2f"
   }
 ]

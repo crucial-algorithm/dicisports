@@ -364,7 +364,7 @@ async function sendBookingConfirmationEmail({
 
   let total = 0;
 
-  cart.map((c) => total += c.price);
+  cart.map((c) => (total += c.price));
   const text = `
 ${userName && `Olá ${userName},`}
 Segue a informação do teu booking no evento ${event.name}:
@@ -373,12 +373,16 @@ ID: ${booking.id}
 PIN: ${booking.pin}
 
 Inscrições:
-${cart.map(c => `
+${cart
+  .map(
+    (c) => `
   Nome: ${c.name}
   Quantidade: ${c.qty}
   Preço: ${c.price}€
   
-`).join('')}
+`
+  )
+  .join('')}
 
 Total: ${total}€
 
@@ -414,7 +418,11 @@ P.S. Recebeste este email porque o teu endereço de email foi usado para fazer l
   <body style='font-family:Matter, sans-serif;'>
     <div style='margin: 0 auto; max-width: 450px;'>
       <h2 style='text-align: center'>
-        ${userName && `Olá, ${userName}!`} Obrigado por escolheres a ${hostname} para te inscreveres no evento ${event.name}!
+        ${
+          userName && `Olá, ${userName}!`
+        } Obrigado por escolheres a ${hostname} para te inscreveres no evento ${
+    event.name
+  }!
       </h2>
       <h2 style='text-align: center'>
         Aqui tens a informação do teu booking:
@@ -456,7 +464,9 @@ P.S. Recebeste este email porque o teu endereço de email foi usado para fazer l
                       <td>
                         <table style="width:100%;border-spacing:0;border-collapse:collapse" id="races">
                           <tbody>
-                            ${cart.map((c) => `
+                            ${cart
+                              .map(
+                                (c) => `
                               <tr style="width: 100%; border-top: 1px solid rgb(229, 229, 229);">
                                 <td style="padding-top: 15px;">
                                   <table style="border-spacing: 0px; border-collapse: collapse;">
@@ -479,7 +489,9 @@ P.S. Recebeste este email porque o teu endereço de email foi usado para fazer l
                                   </table>
                                 </td>
                               </tr>
-                            `).join('')}
+                            `
+                              )
+                              .join('')}
                           </tbody>
                         </table>
                         <table style="width:100%;border-spacing:0;border-collapse:collapse;margin-top:15px;border-top-width:1px;border-top-color:#e5e5e5;border-top-style:solid">
@@ -516,7 +528,9 @@ P.S. Recebeste este email porque o teu endereço de email foi usado para fazer l
       <h3 style='text-align: center; margin-top: 2rem'>
         Clica no botão para acederes ao teu booking
       </h3>
-      <a href='${domainUrl}/checkout/info/${booking.id}?p=${booking.pin}' style='display: block; margin: 0 auto; width: 80%; padding: 1.5rem; background: #A6DEE4; border-radius: 7px; border-width: 0; font-size: 1.1rem; text-align: center; font-family: sans-serif; text-decoration: none; color: black'>
+      <a href='${domainUrl}/checkout/info/${booking.id}?p=${
+    booking.pin
+  }' style='display: block; margin: 0 auto; width: 80%; padding: 1.5rem; background: #A6DEE4; border-radius: 7px; border-width: 0; font-size: 1.1rem; text-align: center; font-family: sans-serif; text-decoration: none; color: black'>
       Aceder ao booking
       </a>
       <hr style='width: 20%; height: 0px; border: 1px solid lightgrey; margin-top: 2rem; margin-bottom: 2rem'>
@@ -541,7 +555,7 @@ P.S. Recebeste este email porque o teu endereço de email foi usado para fazer l
   await sendEmail(message);
 }
 
-async function sendSubmitedOrganizerProfileConfirmation({
+async function sendSubmittedOrganizerProfileConfirmation({
   emailAddress,
   organizerName: organizer,
   domainUrl
@@ -611,6 +625,147 @@ P.S.  Se não solicitaste o email, ignora.
   await sendEmail(message);
 }
 
+async function sendApprovedOrganizerProfileEmail({
+  emailAddress,
+  organizerName: organizer,
+  domainUrl
+}: {
+  emailAddress: string;
+  organizerName: string;
+  domainUrl: string;
+}) {
+  const sender = '"DiciSports" <noreply@mail.dicisports.com>';
+  const { hostname } = new URL(domainUrl);
+
+  const text = `
+Olá, ${organizer},
+
+O seu perfil de Organizador no ${hostname} foi aprovado!
+  `.trim();
+
+  const html = `
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html charset=UTF-8" />
+    <style type="text/css">
+      @font-face {
+        font-family: 'Matter';
+        src: url('https://kcd-img.netlify.app/Matter-Medium.woff2') format('woff2'),
+          url('https://kcd-img.netlify.app/Matter-Medium.woff') format('woff');
+        font-weight: 500;
+        font-style: normal;
+        font-display: swap;
+      }
+
+      @font-face {
+        font-family: 'Matter';
+        src: url('https://kcd-img.netlify.app/Matter-Regular.woff2') format('woff2'),
+          url('https://kcd-img.netlify.app/Matter-Regular.woff') format('woff');
+        font-weight: normal;
+        font-style: normal;
+        font-display: swap;
+      }
+    </style>
+  </head>
+  <body style="font-family:Matter, sans-serif;">
+    <div style="margin: 0 auto; max-width: 450px;">
+
+      <h2 style="text-align: center">${`Olá, ${organizer}!`}</h2>
+      
+      <h3 style="text-align: center">
+        É com satisfação que lhe comunicamos que o seu perfil de Organizador foi aprovado no ${hostname}! Já pode aceder à nossa plataforma e começar a publicar os seus eventos. Estamos ansiosos para ver as suas atividades em destaque!
+      </h3>
+
+      <hr style="width: 20%; height: 0px; border: 1px solid lightgrey; margin-top: 2rem; margin-bottom: 2rem">
+    </div>
+  </body>
+</html>
+  `;
+
+  const message = {
+    from: sender,
+    to: emailAddress,
+    subject: 'Perfil de Organizador aprovado no dicisports.com ✨',
+    text,
+    html
+  };
+
+  await sendEmail(message);
+}
+
+async function sendSubmittedOrganizerProfileNotification({
+  emailAddress,
+  organizerId,
+  domainUrl
+}: {
+  emailAddress: string;
+  organizerId: string;
+  domainUrl: string;
+}) {
+  const sender = '"DiciSports" <noreply@mail.dicisports.com>';
+
+  const text = `
+Olá,
+
+Tens um novo organizador para revisão!
+  `.trim();
+
+  const html = `
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html charset=UTF-8" />
+    <style type="text/css">
+      @font-face {
+        font-family: 'Matter';
+        src: url('https://kcd-img.netlify.app/Matter-Medium.woff2') format('woff2'),
+          url('https://kcd-img.netlify.app/Matter-Medium.woff') format('woff');
+        font-weight: 500;
+        font-style: normal;
+        font-display: swap;
+      }
+
+      @font-face {
+        font-family: 'Matter';
+        src: url('https://kcd-img.netlify.app/Matter-Regular.woff2') format('woff2'),
+          url('https://kcd-img.netlify.app/Matter-Regular.woff') format('woff');
+        font-weight: normal;
+        font-style: normal;
+        font-display: swap;
+      }
+    </style>
+  </head>
+  <body style="font-family:Matter, sans-serif;">
+    <div style="margin: 0 auto; max-width: 450px;">
+
+      <h2 style="text-align: center">Olá!</h2>
+      
+      <h3 style="text-align: center">
+        Tens um novo organizador para revisão! Acede ao painel de administrador para fazer a revisão ou clica no link.
+      </h3>
+      
+      <a href="${domainUrl}/a/organizers/${organizerId}" style="display: block; margin: 0 auto; width: 80%; padding: 1.5rem; background: #A6DEE4; border-radius: 7px; border-width: 0; font-size: 1.1rem; text-align: center; font-family: sans-serif; text-decoration: none; color: black">
+        Rever Organizador
+      </a>
+
+      <hr style="width: 20%; height: 0px; border: 1px solid lightgrey; margin-top: 2rem; margin-bottom: 2rem">
+    </div>
+  </body>
+</html>
+  `;
+
+  const message = {
+    from: sender,
+    to: emailAddress,
+    subject: 'Novo organizador para revisão',
+    text,
+    html
+  };
+
+  await sendEmail(message);
+}
+
 export {
   sendEmail,
   sendMagicLinkEmail,
@@ -618,7 +773,9 @@ export {
   subscribeUser,
   sendRecoverPasswordEmail,
   sendBookingConfirmationEmail,
-  sendSubmitedOrganizerProfileConfirmation
+  sendSubmittedOrganizerProfileConfirmation,
+  sendApprovedOrganizerProfileEmail,
+  sendSubmittedOrganizerProfileNotification
 };
 
 /*

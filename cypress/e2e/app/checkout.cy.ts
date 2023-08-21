@@ -777,10 +777,7 @@ describe('Checkout', () => {
     });
 
     it('should have correct bib numbers', () => {
-      cy.intercept('GET', '/payment-status/*')
-        .as('GetPaymentStatus')
-
-        .visitAndWaitForHydration('/checkout/payment/qR4nqWpTdQy8QZu29ANu')
+      cy.visitAndWaitForHydration('/checkout/payment/qR4nqWpTdQy8QZu29ANu')
 
         .get('button[name=pay-reference]')
         .should('exist')
@@ -788,7 +785,6 @@ describe('Checkout', () => {
           b.click();
         })
 
-        .waitForHydration()
         .location()
         .should((l) => {
           expect(l.pathname).to.eq(
@@ -1306,7 +1302,7 @@ describe('Checkout', () => {
           });
         });
     });
-    
+
     it('should update booking state of an failed expired if we get a success call', () => {
       const secret = Cypress.env('SIBS_WEBHOOK_SECRET');
 
@@ -1396,7 +1392,9 @@ describe('Checkout', () => {
             }
           }).then(() => {
             cy.loginOrganizer()
-              .visitAndWaitForHydration('/o/event/5n8epZbHczqAQtQaAh5R/dashboard')
+              .visitAndWaitForHydration(
+                '/o/event/5n8epZbHczqAQtQaAh5R/dashboard'
+              )
               .get('#participant-TrqeXCggKuzB3T9Nr4C5')
               .contains('Pendente');
           });
@@ -1595,23 +1593,25 @@ describe('Checkout', () => {
           method: 'GET'
         }).then(() => {
           cy.login()
-              .visitAndWaitForHydration('/checkout/payment/MNT9Keq82E3Tbag5tPjw')
+            .visitAndWaitForHydration('/checkout/payment/MNT9Keq82E3Tbag5tPjw')
 
-              .get('[data-cy=gateway-error]')
-              .should('exist')
-              .and('be.visible')
+            .get('[data-cy=gateway-error]')
+            .should('exist')
+            .and('be.visible')
 
-              .get('button[name=actionId]')
-              .should('exist')
-              .click()
+            .get('button[name=actionId]')
+            .should('exist')
+            .click()
 
-              .location()
-              .should((l) => {
-                expect(l.pathname).to.eq('/checkout/payment/MNT9Keq82E3Tbag5tPjw');
-              })
+            .location()
+            .should((l) => {
+              expect(l.pathname).to.eq(
+                '/checkout/payment/MNT9Keq82E3Tbag5tPjw'
+              );
+            })
 
-              .get('button[name=pay-reference]')
-              .should('exist');
+            .get('button[name=pay-reference]')
+            .should('exist');
         });
       });
     });
