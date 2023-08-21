@@ -75,7 +75,7 @@ async function approveOrganizer(id: string, commission: number) {
       where: { id },
       data: {
         status: OrganizerStatus.APPROVED,
-        commission
+        commission: commission * 1000
       }
     });
 
