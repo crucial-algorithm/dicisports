@@ -5,6 +5,7 @@ import { db } from '~/server/db.server';
 
 import Id from '~/server/utils/Id.server';
 import type { SibsWebHookSchema } from '~/types';
+import { updateRaceParticipantsRacePrice } from '~/server/db/participant.server';
 
 
 // State Management: requested -> pending -> submitted -> paid | failed
@@ -71,13 +72,17 @@ async function findPaymentByTransactionId(id: string): Promise<Payment | null> {
  * @param amount
  */
 async function createPaymentRequest(bookingId: string, amount: number) {
-  return await db.payment.create({
-    data: {
-      id: Id(),
-      bookingId,
-      amount: amount * 1000,
-      status: PaymentStatus.requested
-    }
+  return await db.$transaction(async (tx) => {
+    await updateRaceParticipantsRacePrice(bookingId, tx);
+
+    return await tx.payment.create({
+      data: {
+        id: Id(),
+        bookingId,
+        amount: amount * 1000,
+        status: PaymentStatus.requested
+      }
+    });
   });
 }
 

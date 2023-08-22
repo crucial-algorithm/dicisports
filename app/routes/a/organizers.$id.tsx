@@ -59,6 +59,7 @@ export const action: ActionFunction = async ({ request, params }) => {
   const Schema = z.object({
     commission: z
       .number({ required_error: t('Required') })
+      .step(0.01, t('Only 2 decimal places'))
       .nonnegative({ message: t('Between 0 And 100') })
       .max(100, t('Between 0 And 100'))
   });
@@ -139,13 +140,15 @@ export default function ReviewOrganizerRoute() {
         <FormField
           label={t('Commission')}
           error={actionData?.errors?.commission}
-          className="w-44"
+          description={t('Only accept 2 decimal places')}
         >
-          <TextField
-            type="number"
-            name="commission"
-            defaultValue={defaultCommission}
-          />
+          <div className="w-44">
+            <TextField
+              type="number"
+              name="commission"
+              defaultValue={defaultCommission}
+            />
+          </div>
         </FormField>
 
         <ButtonGroup>

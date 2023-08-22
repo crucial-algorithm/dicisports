@@ -163,8 +163,10 @@ export default function DashboardRoute() {
     setSearchedParticipantName(value);
   }
 
-  function handleRevenueWithComission(value: number) {
-    return value - value * organizerCommission / 100;
+  function handleRevenueWithCommission(value: number) {
+    const commission = organizerCommission / (100 * 1000);
+
+    return value - value * commission;
   }
 
   async function handleExportParticipants() {
@@ -220,7 +222,7 @@ export default function DashboardRoute() {
           <EventStats
             racesRevenueAndRegistrations={racesRevenueAndRegistrations}
             totalClicks={totalClicks}
-            handleRevenueWithComission={handleRevenueWithComission}
+            handleRevenueWithCommission={handleRevenueWithCommission}
             t={t}
           />
         </div>
@@ -233,7 +235,7 @@ export default function DashboardRoute() {
             id={r.id}
             name={r.name}
             registrations={r.registrations}
-            revenue={handleRevenueWithComission(r.revenue)}
+            revenue={handleRevenueWithCommission(r.revenue)}
             clicks={statsPerRace.find((cr) => cr.id === r.id)?.total || 0}
             key={r.id}
           />
@@ -487,12 +489,12 @@ function EventInformation({
 function EventStats({
   racesRevenueAndRegistrations,
   totalClicks,
-  handleRevenueWithComission,
+  handleRevenueWithCommission,
   t
 }: {
   racesRevenueAndRegistrations: RaceRevenueRegistrations[];
   totalClicks: number;
-  handleRevenueWithComission: (v: number) => number;
+  handleRevenueWithCommission: (v: number) => number;
   t: TFunction;
 }) {
   const registrations = racesRevenueAndRegistrations.reduce(
@@ -516,7 +518,7 @@ function EventStats({
       <div className="flex-col">
         <H6>{t('Revenue')}</H6>
         <H4>
-          <b>{handleRevenueWithComission(revenue) / 1000}€</b>
+          <b>{handleRevenueWithCommission(revenue) / 1000}€</b>
         </H4>
       </div>
 
