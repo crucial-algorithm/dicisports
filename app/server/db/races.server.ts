@@ -131,34 +131,42 @@ async function deleteRace(id: string) {
   });
 }
 
+async function findEventRevenue(eventId: string): Promise<number> {
+  const results: { revenue: number }[] = await db.$queryRaw`
+    SELECT SUM(p.amount) as revenue
+    FROM events e
+           LEFT JOIN (SELECT event_id, p.amount
+                      FROM bookings b
+                             INNER JOIN public.payments p on b.id = p.booking_id
+                      WHERE b.status = 'confirmed'
+                        AND p.status = 'paid') as p ON e.id = p.event_id
+    WHERE event_id = ${eventId};
+  `;
+
+  return results[0].revenue ? Number(results[0].revenue) : 0;
+}
+
 async function findRevenueAndRegistrationsPerRace(
   eventId: string
 ): Promise<RaceRevenueRegistrations[]> {
-  const query = `
-    SELECT r.id,
-           r.name                 as name,
-           count(rp.id)           as registrations,
-           r.price * count(rp.id) as revenue
+  const results: Array<RaceRevenueRegistrations> = await db.$queryRaw`
+    SELECT r.id, r.name, count(rp) as registrations, SUM(rp.race_price) as revenue
     FROM races r
-           LEFT JOIN (SELECT rp.id, b.event_id, race_id
+           LEFT JOIN (SELECT race_id, race_price
                       FROM race_participants rp
-                             INNER JOIN bookings b on rp.booking_id = b.id
-                      WHERE b.status = '${CheckoutStatus.confirmed}') as rp on r.id = rp.race_id
-    WHERE r.event_id = '${eventId}'
+                             INNER JOIN public.bookings b ON rp.booking_id = b.id
+                      WHERE b.status = 'confirmed') as rp ON rp.race_id = r.id
+    WHERE event_id = ${eventId}
       AND status = 'auto'
     GROUP BY r.id;
   `;
-
-  const results: Array<RaceRevenueRegistrations> = await db.$queryRawUnsafe(
-    query
-  );
 
   return results.map(({ id, name, registrations, revenue }) => {
     return {
       id,
       name,
       registrations: Number(registrations),
-      revenue: Number(revenue)
+      revenue: revenue ? Number(revenue) : 0
     };
   });
 }
@@ -188,5 +196,6 @@ export {
   updateDisplayOrderDown,
   deleteRace,
   findRevenueAndRegistrationsPerRace,
-  findRegistrationsAddedToCart
+  findRegistrationsAddedToCart,
+  findEventRevenue
 };

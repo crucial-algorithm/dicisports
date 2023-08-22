@@ -29,7 +29,7 @@ async function findBookingCart(
   userId: string,
   eventId: string
 ): Promise<UICartRow[]> {
-  const query = `
+  const results: Array<DBRawUICartRow> = await db.$queryRaw`
     SELECT b.id,
            r.id               AS race_id,
            r.name,
@@ -43,12 +43,10 @@ async function findBookingCart(
     FROM bookings b
            INNER JOIN race_participants rp ON (b.id = rp.booking_id)
            INNER JOIN races r ON rp.race_id = r.id
-    WHERE b.user_id = '${userId}'
-      AND b.event_id = '${eventId}'
+    WHERE b.user_id = ${userId}
+      AND b.event_id = ${eventId}
     GROUP BY b.id, r.id, r.name, r.price, r.distance, r.start_time, r.display_order;
   `;
-
-  const results: Array<DBRawUICartRow> = await db.$queryRawUnsafe(query);
 
   return results.map(dbUICartToUICart);
 }

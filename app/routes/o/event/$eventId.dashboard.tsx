@@ -38,6 +38,7 @@ import type {
   UIRaceParticipant
 } from '~/types';
 import {
+  findEventRevenue,
   findRegistrationsAddedToCart,
   findRevenueAndRegistrationsPerRace
 } from '~/server/db/races.server';
@@ -47,6 +48,7 @@ import ScrollToTop from '~/components/ScrollToTop';
 
 type LoaderData = {
   event: EventWithRacesDifficultiesAndDocuments;
+  eventRevenue: number;
   racesRevenueAndRegistrations: RaceRevenueRegistrations[];
   raceParticipants: UIRaceParticipant[];
   totalRaceParticipants: number;
@@ -121,6 +123,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 
   return json({
     event,
+    eventRevenue: await findEventRevenue(eventId),
     racesRevenueAndRegistrations,
     raceParticipants: results,
     totalRaceParticipants: total,
@@ -134,6 +137,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 export default function DashboardRoute() {
   const {
     event,
+    eventRevenue,
     racesRevenueAndRegistrations,
     raceParticipants,
     totalRaceParticipants,
@@ -220,6 +224,7 @@ export default function DashboardRoute() {
         <div className="flex flex-row justify-between w-full">
           <EventInformation event={event} minPrice={minPrice} t={t} />
           <EventStats
+            eventRevenue={eventRevenue}
             racesRevenueAndRegistrations={racesRevenueAndRegistrations}
             totalClicks={totalClicks}
             handleRevenueWithCommission={handleRevenueWithCommission}
@@ -487,11 +492,13 @@ function EventInformation({
 }
 
 function EventStats({
+  eventRevenue,
   racesRevenueAndRegistrations,
   totalClicks,
   handleRevenueWithCommission,
   t
 }: {
+  eventRevenue: number;
   racesRevenueAndRegistrations: RaceRevenueRegistrations[];
   totalClicks: number;
   handleRevenueWithCommission: (v: number) => number;
@@ -499,10 +506,6 @@ function EventStats({
 }) {
   const registrations = racesRevenueAndRegistrations.reduce(
     (total, r) => total + r.registrations,
-    0
-  );
-  const revenue = racesRevenueAndRegistrations.reduce(
-    (total, r) => total + r.revenue,
     0
   );
 
@@ -518,7 +521,7 @@ function EventStats({
       <div className="flex-col">
         <H6>{t('Revenue')}</H6>
         <H4>
-          <b>{handleRevenueWithCommission(revenue) / 1000}€</b>
+          <b>{handleRevenueWithCommission(eventRevenue) / 1000}€</b>
         </H4>
       </div>
 
