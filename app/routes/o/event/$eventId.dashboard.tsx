@@ -38,10 +38,12 @@ import type {
   UIRaceParticipant
 } from '~/types';
 import {
-  findEventRevenue,
-  findRegistrationsAddedToCart,
-  findRevenueAndRegistrationsPerRace
+  findRegistrationsAddedToCart
 } from '~/server/db/races.server';
+import {
+  getOrganizerEventRevenue,
+  findRevenueAndRegistrationsPerRace
+} from '~/server/financials.server';
 import { findRaceParticipants } from '~/server/db/participant.server';
 import exportRaceParticipantsToExcel from '~/utils/ExportParticipants';
 import ScrollToTop from '~/components/ScrollToTop';
@@ -77,9 +79,15 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     : 0;
 
   const event = (await findEventWithRacesAndDocuments(eventId)) as EventWithRacesDifficultiesAndDocuments;
+  const organizer = await findOrganizer(event.createdById);
+
+  if (!organizer) {
+    return redirect('/');
+  }
 
   const racesRevenueAndRegistrations = await findRevenueAndRegistrationsPerRace(
-    eventId as string
+    eventId as string,
+    organizer.commission as number
   );
 
   if (!event) {
@@ -119,18 +127,15 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     searchedName?.length ? searchedName : null
   );
 
-  const organizer = await findOrganizer(event.createdById);
-
   return json({
     event,
-    eventRevenue: await findEventRevenue(eventId),
+    eventRevenue: await getOrganizerEventRevenue(eventId, organizer.commission as number),
     racesRevenueAndRegistrations,
     raceParticipants: results,
     totalRaceParticipants: total,
     statsPerRace: await findRegistrationsAddedToCart(eventId),
     pageNumber: page,
-    searchedName: searchedName || '',
-    organizerCommission: organizer?.commission as number
+    searchedName: searchedName || ''
   });
 };
 
@@ -143,8 +148,7 @@ export default function DashboardRoute() {
     totalRaceParticipants,
     pageNumber,
     statsPerRace,
-    searchedName,
-    organizerCommission
+    searchedName
   } = useLoaderData<LoaderData>() as LoaderData;
   const { t } = useTranslation('dashboard');
   const searchForm = useRef<HTMLFormElement>(null);
@@ -165,12 +169,6 @@ export default function DashboardRoute() {
 
   function handleSearchedName(value: string) {
     setSearchedParticipantName(value);
-  }
-
-  function handleRevenueWithCommission(value: number) {
-    const commission = organizerCommission / (100 * 1000);
-
-    return value - value * commission;
   }
 
   async function handleExportParticipants() {
@@ -227,7 +225,6 @@ export default function DashboardRoute() {
             eventRevenue={eventRevenue}
             racesRevenueAndRegistrations={racesRevenueAndRegistrations}
             totalClicks={totalClicks}
-            handleRevenueWithCommission={handleRevenueWithCommission}
             t={t}
           />
         </div>
@@ -240,7 +237,7 @@ export default function DashboardRoute() {
             id={r.id}
             name={r.name}
             registrations={r.registrations}
-            revenue={handleRevenueWithCommission(r.revenue)}
+            revenue={r.revenue}
             clicks={statsPerRace.find((cr) => cr.id === r.id)?.total || 0}
             key={r.id}
           />
@@ -495,13 +492,11 @@ function EventStats({
   eventRevenue,
   racesRevenueAndRegistrations,
   totalClicks,
-  handleRevenueWithCommission,
   t
 }: {
   eventRevenue: number;
   racesRevenueAndRegistrations: RaceRevenueRegistrations[];
   totalClicks: number;
-  handleRevenueWithCommission: (v: number) => number;
   t: TFunction;
 }) {
   const registrations = racesRevenueAndRegistrations.reduce(
@@ -521,7 +516,7 @@ function EventStats({
       <div className="flex-col">
         <H6>{t('Revenue')}</H6>
         <H4>
-          <b>{handleRevenueWithCommission(eventRevenue) / 1000}€</b>
+          <b>{eventRevenue}€</b>
         </H4>
       </div>
 

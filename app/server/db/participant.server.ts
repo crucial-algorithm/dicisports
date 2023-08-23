@@ -375,13 +375,13 @@ async function assignParticipantsBibNumber(
   });
 }
 
-async function updateRaceParticipantsRacePrice(
+async function updateRaceParticipantsPrice(
   bookingId: string,
   tx?: Prisma.TransactionClient
 ) {
   return await (tx || db).$queryRaw`
     UPDATE race_participants rp
-    SET race_price = CASE
+    SET price = CASE
                        WHEN r.price_early_bird IS NOT NULL AND r.valid_until > current_date THEN r.price_early_bird
                        ELSE r.price END FROM races r
     WHERE r.id = rp.race_id
@@ -406,5 +406,5 @@ export {
   findRaceParticipant,
   updateRaceParticipantTeam,
   assignParticipantsBibNumber,
-  updateRaceParticipantsRacePrice
+  updateRaceParticipantsPrice
 };

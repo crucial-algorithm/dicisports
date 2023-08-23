@@ -6,7 +6,7 @@
     "bookingId": "e8pHPLNjnNxKTzoGwtLh",
     "teamId": "AyQvyNAtc8YaPpNdByXf",
     "eventId": "MY4bvgxDbMtGv8rbYe5d",
-    "racePrice": 10000,
+    "price": 10000,
     "bibNumber": 1
   },
   {
@@ -16,7 +16,7 @@
     "bookingId": "e8pHPLNjnNxKTzoGwtLh",
     "teamId": "AyQvyNAtc8YaPpNdByXf",
     "eventId": "MY4bvgxDbMtGv8rbYe5d",
-    "racePrice": 10000,
+    "price": 10000,
     "bibNumber": 2
   },
   {
