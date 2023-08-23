@@ -516,7 +516,7 @@ function EventStats({
       <div className="flex-col">
         <H6>{t('Revenue')}</H6>
         <H4>
-          <b>{eventRevenue}€</b>
+          <b>{eventRevenue / 1000}€</b>
         </H4>
       </div>
 

@@ -2,10 +2,11 @@ import type { RaceRevenueRegistrations } from '~/types';
 
 import { db } from './db.server';
 
-// booking_amount -> total booking price including discounts
-// Revenue -> Dicisports total take: booking_amount * dici_commission * sibs_commission
-// Organizer Event Revenue -> Organizer total take for event: booking_amount * (1 - dici_commission)
-// Gross Merchandise Value(GMV) -> Organizer/platform total sales not including our commission and discounts: participants * race_price
+// booking_amount                 -> Total booking price including discounts
+
+// Revenue                        -> Dicisports total take: SUM(booking_amount * dici_commission * sibs_commission)
+// Organizer Event Revenue        -> Organizer total take for event: booking_amount * (1 - dici_commission)
+// Gross Merchandise Value(GMV)   -> Organizer/platform total sales not including our commission and discounts: participants * race_price
 
 function handleOrganizerEventRevenue(
   value: number,
@@ -33,7 +34,7 @@ async function getOrganizerEventRevenue(
   `;
 
   return results[0].revenue
-    ? handleOrganizerEventRevenue(Number(results[0].revenue), commission) / 1000
+    ? handleOrganizerEventRevenue(Number(results[0].revenue), commission)
     : 0;
 }
 
