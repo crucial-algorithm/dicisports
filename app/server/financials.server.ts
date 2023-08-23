@@ -2,8 +2,6 @@ import type { RaceRevenueRegistrations } from '~/types';
 
 import { db } from './db.server';
 
-// booking_amount                 -> Total booking price including discounts
-
 // Revenue                        -> Dicisports total take
 // Organizer Event Revenue        -> Organizer total take for event
 // Gross Merchandise Value(GMV)   -> Organizer/platform total sales not including our commission and discounts
