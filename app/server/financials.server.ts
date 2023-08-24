@@ -76,7 +76,7 @@ async function calculateRaceDiscount(eventId: string, nbrOfRaces: number) {
 
   const discount = (eventGMV - eventBookingsAmount) / nbrOfRaces;
 
-  return Number(discount.toFixed(2));
+  return Math.round(discount * 100) / 100;
 }
 
 async function calculateRaceNMV(
