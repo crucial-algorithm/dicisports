@@ -57,7 +57,6 @@ type LoaderData = {
   pageNumber: number;
   statsPerRace: Array<{ id: string; total: number }>;
   searchedName: string;
-  organizerCommission: number;
 };
 
 const actionsId = {
@@ -79,13 +78,6 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     : 0;
 
   const event = (await findEventWithRacesAndDocuments(eventId)) as EventWithRacesDifficultiesAndDocuments;
-  const organizer = await findOrganizer(event.createdById);
-
-  if (!organizer) {
-    return redirect('/');
-  }
-
-  const racesRevenueAndRegistrations = await calculateRaceNMV(eventId);
 
   if (!event) {
     return redirect('/');
@@ -94,6 +86,14 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   if (event.createdById !== user.id) {
     return redirect('/');
   }
+
+  const organizer = await findOrganizer(event.createdById);
+
+  if (!organizer) {
+    return redirect('/');
+  }
+
+  const racesRevenueAndRegistrations = await calculateRaceNMV(eventId);
 
   const searchedName = searchParams.get('searched-name');
 

@@ -70,7 +70,7 @@ async function calculateEventGMV(eventId: string) {
   return !raceParticipants._sum.price ? 0 : Number(raceParticipants._sum.price);
 }
 
-async function calculateRaceDiscount(eventId: string, nbrOfRaces: number) {
+async function calculateApproximateRaceDiscount(eventId: string, nbrOfRaces: number) {
   const eventGMV = await calculateEventGMV(eventId);
   const eventBookingsAmount = await calculateEventBookingsAmount(eventId);
 
@@ -98,7 +98,7 @@ async function calculateRaceNMV(
         GROUP BY r.id;
     `;
 
-  const raceDiscount = await calculateRaceDiscount(eventId, results.length);
+  const raceDiscount = await calculateApproximateRaceDiscount(eventId, results.length);
 
   return results.map(({ id, name, registrations, revenue }) => {
     return {
