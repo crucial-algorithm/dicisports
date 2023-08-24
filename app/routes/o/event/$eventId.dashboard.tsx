@@ -229,7 +229,7 @@ export default function DashboardRoute() {
 
       <H3>{t('Race Stats')}</H3>
       <div className="text-primary dark:text-blueGray-500 text-xs mb-4">
-        *{t('Race NVM Disclaimer')}
+        *{t('Race NMV Disclaimer')}
       </div>
       <div className="flex flex-col mt-2 scroll-mx-2 items-center gap-y-2 md:items-start md:flex-row md:flex-nowrap md:overflow-x-auto pb-10 hide-scrollbar">
         {racesRevenueAndRegistrations.map((r: RaceRevenueRegistrations) => (
@@ -521,7 +521,7 @@ function EventStats({
       </div>
 
       <div className="flex-col">
-        <H6>{t('Clicks')}</H6>
+        <H6>{t('Added To Cart/ Clicks')}</H6>
         <H4>
           <b>{totalClicks}</b>
         </H4>
