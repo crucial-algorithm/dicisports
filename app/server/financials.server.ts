@@ -118,7 +118,7 @@ async function findOrganizerCommission(eventId: string): Promise<number> {
   const commission = organizer?.commission;
 
   if (!commission) {
-    throw new Error('organizer has no commission...');
+    throw new Error(`organizer ${event?.createdById} has no commission...`);
   }
 
   return commission;

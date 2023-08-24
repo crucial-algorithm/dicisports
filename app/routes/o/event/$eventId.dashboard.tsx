@@ -228,6 +228,9 @@ export default function DashboardRoute() {
       </div>
 
       <H3>{t('Race Stats')}</H3>
+      <div className="text-primary dark:text-blueGray-500 text-xs mb-4">
+        *{t('Race NVM Disclaimer')}
+      </div>
       <div className="flex flex-col mt-2 scroll-mx-2 items-center gap-y-2 md:items-start md:flex-row md:flex-nowrap md:overflow-x-auto pb-10 hide-scrollbar">
         {racesRevenueAndRegistrations.map((r: RaceRevenueRegistrations) => (
           <DisplayRaceStats
@@ -423,7 +426,7 @@ function DisplayRaceStats({
           <H5 className="dark:text-blueGray-500">{registrations}</H5>
         </div>
         <div className="my-4">
-          <H4>{t('Revenue')}</H4>
+          <H4>{t('Revenue')}*</H4>
           <H5 className="dark:text-blueGray-500">{revenue / 1000}€</H5>
         </div>
         <div className="my-4">
