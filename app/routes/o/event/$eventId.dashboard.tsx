@@ -41,8 +41,8 @@ import {
   findRegistrationsAddedToCart
 } from '~/server/db/races.server';
 import {
-  getOrganizerEventRevenue,
-  findRevenueAndRegistrationsPerRace
+  calculateEventNMV,
+  calculateRaceNMV
 } from '~/server/financials.server';
 import { findRaceParticipants } from '~/server/db/participant.server';
 import exportRaceParticipantsToExcel from '~/utils/ExportParticipants';
@@ -85,10 +85,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     return redirect('/');
   }
 
-  const racesRevenueAndRegistrations = await findRevenueAndRegistrationsPerRace(
-    eventId as string,
-    organizer.commission as number
-  );
+  const racesRevenueAndRegistrations = await calculateRaceNMV(eventId);
 
   if (!event) {
     return redirect('/');
@@ -129,7 +126,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 
   return json({
     event,
-    eventRevenue: await getOrganizerEventRevenue(eventId, organizer.commission as number),
+    eventRevenue: await calculateEventNMV(eventId),
     racesRevenueAndRegistrations,
     raceParticipants: results,
     totalRaceParticipants: total,
