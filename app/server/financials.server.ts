@@ -48,7 +48,7 @@ async function calculateEventNMV(eventId: string): Promise<number> {
   return results[0].revenue ? Number(results[0].revenue) : 0;
 }
 
-async function calculateEventBookingAmounts(eventId: string) {
+async function calculateEventBookingsAmount(eventId: string) {
   const payments = await db.payment.aggregate({
     where: { booking: { status: CheckoutStatus.confirmed, eventId } },
     _sum: {
@@ -72,9 +72,9 @@ async function calculateEventGMV(eventId: string) {
 
 async function calculateRaceDiscount(eventId: string, nbrOfRaces: number) {
   const eventGMV = await calculateEventGMV(eventId);
-  const eventBookingAmounts = await calculateEventBookingAmounts(eventId);
+  const eventBookingsAmount = await calculateEventBookingsAmount(eventId);
 
-  const discount = (eventGMV - eventBookingAmounts) / nbrOfRaces;
+  const discount = (eventGMV - eventBookingsAmount) / nbrOfRaces;
 
   return Number(discount.toFixed(2));
 }
