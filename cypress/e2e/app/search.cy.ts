@@ -312,8 +312,7 @@ describe('Search', () => {
 
     context('Test all filters', () => {
       it('should hide groups', () => {
-        cy.loginAdmin() // <- Added to prepare merging events to prod (hidding this feature for now). If this is no longer the case, it can safely be removed to no login at all
-          .intercept('GET', '*g=hide*')
+        cy.intercept('GET', '*g=hide*')
           .as('applyFilters')
           .visitAndWaitForHydration(
             '/?index=&coords=&search=&page=0&sport=&dow=&value=&actionId=search'
