@@ -98,5 +98,17 @@
     "bookingId": "MNT9Keq82E3Tbag5tPjw",
     "mbEntity": null,
     "mbReference": null
+  },
+  {
+    "id": "wuBhLdD24u6d66v3ZR7d",
+    "method": "REFERENCE",
+    "status": "paid",
+    "amount": 20000,
+    "transactionId": "wuBhLdD24u6d66v3ZR7d",
+    "notificationId": "97c8667e-a725-4320-959e-5ab12513a65d",
+    "expiresAt": "2069-12-31 23:00:00.000",
+    "bookingId": "e8pHPLNjnNxKTzoGwtLh",
+    "mbEntity": "24000",
+    "mbReference": "883960846"
   }
 ]
