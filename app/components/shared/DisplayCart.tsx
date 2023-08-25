@@ -61,14 +61,14 @@ export default function DisplayCart({
           .map((ticket, index: number) => (
             <div
               className="flex flex-col mt-8 w-full"
-              key={ticket.id + ' - ' + index}
+              key={`${ticket.id}-${index}`}
             >
               <div className="flex flex-row items-center justify-between">
                 <H6>{ticket.name}</H6>
                 <H6>x{ticket.qty}</H6>
               </div>
               <div className="flex flex-row items-center justify-between">
-                <H6 className="dark:text-blueGray-500">
+                <H6 className="dark:text-blueGray-500" id={`${ticket.raceId}-price`}>
                   {ticket.price / 1000}€
                 </H6>
                 <H6 className="dark:text-blueGray-500">

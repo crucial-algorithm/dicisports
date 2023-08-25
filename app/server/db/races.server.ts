@@ -1,9 +1,8 @@
-import { CheckoutStatus, PrismaClient } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 
 import { db } from '~/server/db.server';
 import Id from '~/server/utils/Id.server';
 import type { CreateRaceInput, Race } from '~/types';
-import type { RaceRevenueRegistrations } from '~/types';
 
 const prisma = new PrismaClient();
 
@@ -131,38 +130,6 @@ async function deleteRace(id: string) {
   });
 }
 
-async function findRevenueAndRegistrationsPerRace(
-  eventId: string
-): Promise<RaceRevenueRegistrations[]> {
-  const query = `
-    SELECT r.id,
-           r.name                 as name,
-           count(rp.id)           as registrations,
-           r.price * count(rp.id) as revenue
-    FROM races r
-           LEFT JOIN (SELECT rp.id, b.event_id, race_id
-                      FROM race_participants rp
-                             INNER JOIN bookings b on rp.booking_id = b.id
-                      WHERE b.status = '${CheckoutStatus.confirmed}') as rp on r.id = rp.race_id
-    WHERE r.event_id = '${eventId}'
-      AND status = 'auto'
-    GROUP BY r.id;
-  `;
-
-  const results: Array<RaceRevenueRegistrations> = await db.$queryRawUnsafe(
-    query
-  );
-
-  return results.map(({ id, name, registrations, revenue }) => {
-    return {
-      id,
-      name,
-      registrations: Number(registrations),
-      revenue: Number(revenue)
-    };
-  });
-}
-
 async function findRegistrationsAddedToCart(
   eventId: string
 ): Promise<Array<{ id: string; total: number }>> {
@@ -187,6 +154,5 @@ export {
   updateDisplayOrderUp,
   updateDisplayOrderDown,
   deleteRace,
-  findRevenueAndRegistrationsPerRace,
   findRegistrationsAddedToCart
 };

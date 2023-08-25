@@ -433,6 +433,7 @@ type RaceParticipantInput = {
   participantId: string;
   raceId: string;
   bookingId: string;
+  eventId: string;
   createdAt: Date;
   updatedAt: Date;
 };
