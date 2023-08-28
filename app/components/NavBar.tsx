@@ -14,7 +14,7 @@ import { buildImageUrl } from 'cloudinary-build-url';
 import { useTranslation } from 'react-i18next';
 
 import { ButtonLink } from '~/components/shared/Button';
-import { IsAdmin, IsNotAnOrganizer } from '~/components/shared/Roles';
+import { IsNotAnOrganizer } from '~/components/shared/Roles';
 import type { Organizer, User } from '~/types';
 
 import { Theme, Themed, useTheme } from '~/utils/theme-provider';
@@ -418,17 +418,15 @@ function Navbar() {
 
         <div className="flex items-center justify-center">
           <ul className="hidden lg:flex">
-            <IsAdmin>
-              <IsNotAnOrganizer>
-                {location.pathname !== '/organizers-promo' && (
-                  <li className="px-5 py-2">
-                    <CTALandingPublishYourEvent
-                      cta={t('CTA Publish Your Event')}
-                    />
-                  </li>
-                )}
-              </IsNotAnOrganizer>
-            </IsAdmin>
+            <IsNotAnOrganizer>
+              {location.pathname !== '/organizers-promo' && (
+                <li className="px-5 py-2">
+                  <CTALandingPublishYourEvent
+                    cta={t('CTA Publish Your Event')}
+                  />
+                </li>
+              )}
+            </IsNotAnOrganizer>
           </ul>
           <div className="block lg:hidden">
             <MobileMenu />

@@ -1110,6 +1110,26 @@ describe('Checkout', () => {
         });
     });
 
+    it('should add price early bird to cart if it is still valid', () => {
+      cy.intercept('GET', '*?_data=routes*checkout*')
+        .as('selectRace')
+
+        .visitAndWaitForHydration('/event/love-tiles-douro-granfondo-2023')
+
+        .get('button[name=race-xaXaCzs2t7D8DpRNnffM]')
+        .click()
+
+        .wait('@selectRace')
+
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.include('/checkout/info/');
+        })
+
+        .get('#xaXaCzs2t7D8DpRNnffM-price')
+        .contains('15€');
+    });
+
     context('should not be able to update booking', () => {
       it('/info', () => {
         const formData = new FormData();

@@ -140,12 +140,15 @@ export default function ReviewOrganizerRoute() {
           label={t('Commission')}
           error={actionData?.errors?.commission}
           className="w-44"
+          description={t('Only accept 2 decimal places')}
         >
-          <TextField
-            type="number"
-            name="commission"
-            defaultValue={defaultCommission}
-          />
+          <div className="w-44">
+            <TextField
+              type="number"
+              name="commission"
+              defaultValue={defaultCommission}
+            />
+          </div>
         </FormField>
 
         <ButtonGroup>

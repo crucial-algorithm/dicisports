@@ -18,6 +18,8 @@ describe('Admin', () => {
         .eq(1)
         .click()
 
+        .waitForHydration()
+
         .location()
         .should((l) => {
           expect(l.pathname).to.eq('/a/organizers/uyFgbFPB67YEnzZj82wA');
