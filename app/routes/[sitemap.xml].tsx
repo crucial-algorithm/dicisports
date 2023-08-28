@@ -1,6 +1,6 @@
 import type { LoaderFunction } from '@remix-run/node';
 
-import type { Language, SitemapEntry } from '~/types';
+import type { SitemapEntry } from '~/types';
 import { getDomainUrl } from '~/utils/misc';
 import { findSports } from '~/server/db/reference.server';
 import { findGroups } from '~/server/db/groups.server';
