@@ -45,6 +45,14 @@ async function findEvents(): Promise<Array<Event>> {
   });
 }
 
+async function findPublishedEvents(): Promise<Event[]> {
+  return db.event.findMany({
+    where: {
+      status: Status.published
+    }
+  });
+}
+
 async function findUserEvents(userId: string): Promise<Array<Event>> {
   return db.event.findMany({
     where: {
@@ -378,5 +386,6 @@ export {
   getEventResultsByName,
   deleteEvent,
   updateEventRegulation,
-  findEventWithRacesAndDocuments
+  findEventWithRacesAndDocuments,
+  findPublishedEvents
 };

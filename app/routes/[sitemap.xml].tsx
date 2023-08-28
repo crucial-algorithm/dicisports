@@ -1,9 +1,10 @@
 import type { LoaderFunction } from '@remix-run/node';
 
-import type { SitemapEntry } from '~/types';
+import type { Language, SitemapEntry } from '~/types';
 import { getDomainUrl } from '~/utils/misc';
 import { findSports } from '~/server/db/reference.server';
 import { findGroups } from '~/server/db/groups.server';
+import { findPublishedEvents } from '~/server/db/events.server';
 
 // keeping it easy for now... statically define "site" routes
 const STATIC_ROUTES: SitemapEntry[] = [
@@ -18,6 +19,7 @@ export const loader: LoaderFunction = async ({ request }) => {
   const domainUrl = getDomainUrl(request).replace('www.', '');
   const sports = await findSports();
   const groups = await findGroups();
+  const events = await findPublishedEvents();
 
   const entries: SitemapEntry[] = [...STATIC_ROUTES];
 
@@ -39,6 +41,16 @@ export const loader: LoaderFunction = async ({ request }) => {
     });
   }
 
+  // TODO: add list of supported languages
+  for (const { slug, updatedAt } of events) {
+    entries.push({
+      priority: 1,
+      changefreq: 'weekly',
+      // Dicisports only supports portuguese for now
+      route: `/pt/event/${slug}`,
+      lastmod: updatedAt.toISOString()
+    });
+  }
 
   const sitemap = getSitemapXml(domainUrl, entries);
 
