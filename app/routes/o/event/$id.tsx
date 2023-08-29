@@ -406,6 +406,7 @@ export const action: ActionFunction = async ({ request, params }) => {
     if (!(e instanceof ZodError)) {
       const tc = await i18n.getFixedT(request, 'common');
 
+      console.error(e);
       return badRequest({
         errors: { submit: tc('500 error message') }
       });
