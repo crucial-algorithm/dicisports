@@ -74,6 +74,7 @@ import i18n from '~/server/i18n.server';
 
 import { uploadImageToCloudinary } from '~/server/storage/cloudinary.server';
 import {
+  InternalServerError,
   NotFound,
   parseLocation,
   processImgField,
@@ -406,9 +407,8 @@ export const action: ActionFunction = async ({ request, params }) => {
     if (!(e instanceof ZodError)) {
       const tc = await i18n.getFixedT(request, 'common');
 
-      return badRequest({
-        errors: { submit: tc('500 error message') }
-      });
+      console.error('Failed to save event: ', e);
+      return InternalServerError(tc('500 error message'));
     }
 
     const errors: { [key: string]: string | undefined } = {};

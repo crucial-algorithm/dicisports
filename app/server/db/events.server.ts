@@ -143,6 +143,7 @@ async function updateEvent(
   hasRegistrations: boolean = false
 ): Promise<void> {
   return await prisma.$transaction(async (prisma) => {
+    console.debug('updating event...');
     await prisma.event.update({
       where: { id: event.id },
       data: {
@@ -170,8 +171,14 @@ async function updateEvent(
         status: event.status
       }
     });
+    console.debug('event updated...');
+
     await resetEventPerks(event.id, perks, prisma);
+    console.debug('perks reset...');
+
     await enableEventPerks(perks, prisma);
+    console.debug('perks enabled...');
+
     await createPerks(
       newPerks
         .filter((name) => !!name)
@@ -186,11 +193,13 @@ async function updateEvent(
         }),
       prisma
     );
+    console.debug('perks created...');
 
     // Only update the latest bib number when there are no registrations
     if (!hasRegistrations) {
       await updateEventLatestBibNumber(event.id, event.bibStartingNumber - 1, prisma);
     }
+    console.debug('latest bib number updated...');
   });
 }
 
