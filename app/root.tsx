@@ -370,6 +370,10 @@ export function CatchBoundary() {
       subMessage = <p>{t('404 - Sub Message')}</p>;
       break;
 
+    case 500:
+      message = <p>{t('500 error message')}</p>;
+      break;
+
     default:
       throw new Error(caught.data || caught.statusText);
   }
