@@ -408,7 +408,7 @@ export const action: ActionFunction = async ({ request, params }) => {
       const tc = await i18n.getFixedT(request, 'common');
 
       console.error('Failed to save event: ', e);
-      throw InternalServerError(tc('500 error message'));
+      return InternalServerError(tc('500 error message'));
     }
 
     const errors: { [key: string]: string | undefined } = {};
