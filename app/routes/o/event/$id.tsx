@@ -694,7 +694,7 @@ export default function OrganizerEventRoute() {
     });
 
     main && main.scrollTo({ top: 0, behavior: 'smooth' });
-  }, [feedback, actionData]);
+  }, [feedback, actionData, t]);
 
   // Fix to event's missing translations 🤷‍♂️
   // Found it on this thread https://dev.to/adrai/how-to-internationalize-a-remix-application-2bep
@@ -1329,8 +1329,13 @@ function Location({
           <InputError className="flex flex-row gap-x-1 mt-4" id="error-message">
             <>
               {error}
-              <button type="button" onClick={handleShowMap} className="underline">
-                {t('Show on map')}
+              <button
+                name="open-map-on-error"
+                type="button"
+                onClick={handleShowMap}
+                className="underline"
+              >
+                {t('Pick Location On Map')}
               </button>
             </>
           </InputError>
