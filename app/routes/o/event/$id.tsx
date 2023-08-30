@@ -543,7 +543,11 @@ export default function OrganizerEventRoute() {
     setShowLocationPicker(true);
   }
 
-  function handleCloseMap(location: DiciLocation | null) {
+  function handleCloseMap() {
+    setShowLocationPicker(false);
+  }
+
+  function handleConfirmPickedLocation(location: DiciLocation | null) {
     setShowLocationPicker(false);
 
     if (locationRef?.current?.value.length > 0) {
@@ -1202,6 +1206,7 @@ export default function OrganizerEventRoute() {
         defaultValue={location}
         open={showLocationPicker}
         onClose={handleCloseMap}
+        onConfirm={handleConfirmPickedLocation}
       />
 
       <ConfirmationDialog
