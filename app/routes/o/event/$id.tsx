@@ -1311,7 +1311,7 @@ function Location({
           }
           input={locationRef}
         />
-        {location !== null && location.coords !== null && (
+        {location !== null && (
           <div className="ml-2 mt-2">
             <a
               href={`https://www.google.com/maps/search/?api=1&query=${
