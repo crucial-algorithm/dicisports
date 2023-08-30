@@ -225,7 +225,7 @@ export const loader: LoaderFunction = async ({ request }) => {
   return json({
     organizer,
     organizerTypes: organizerTypes.map((o) => {
-      return { id: o.id, name: o.name };
+      return {   id: o.id, name: o.name };
     })
   });
 };
