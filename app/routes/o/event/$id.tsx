@@ -298,12 +298,7 @@ export const action: ActionFunction = async ({ request, params }) => {
 
   const SaveEventSchema = z
     .object({
-      location: z
-        .string({
-          required_error: t('Field required'),
-          invalid_type_error: t('Field required')
-        })
-        .nullable()
+      location: z.string().nullable()
     })
     .refine(
       () =>
@@ -325,16 +320,10 @@ export const action: ActionFunction = async ({ request, params }) => {
         .nonnegative({ message: t('Nonexistent Sport') })
         .lte(7, { message: t('Nonexistent Sport') }),
       startAt: z.date().min(new Date(), { message: t('Future Date') }),
-      location: z
-        .string({
-          required_error: t('Field required'),
-          invalid_type_error: t('Field required')
-        })
-        // This shouldn't happen, but just in case it does, validation is improved
-        .refine(() => data.lng && data.lat, {
-          message: t('Where Is Location X', { location: data.location }),
-          path: ['coordinates']
-        }),
+      location: z.string({
+        required_error: t('Field required'),
+        invalid_type_error: t('Field required')
+      }),
       useExternalBooking: z.boolean({
         invalid_type_error: t('Invalid Type')
       }),
@@ -377,7 +366,11 @@ export const action: ActionFunction = async ({ request, params }) => {
         message: t('Add Regulation'),
         path: ['regulation']
       }
-    );
+    ) // This shouldn't happen, but just in case it does, validation is improved
+    .refine(() => data.lng && data.lat, {
+      message: t('Where Is Location X', { location: data.location }),
+      path: ['coordinates']
+    });
 
   let feedback: ResponseFeedback | undefined;
 
