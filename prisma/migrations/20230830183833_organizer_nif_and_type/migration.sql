@@ -33,3 +33,11 @@ ALTER TABLE organizers
     ALTER COLUMN nif SET NOT NULL,
     ALTER COLUMN type_id SET NOT NULL;
 
+-- Insert organizer types
+INSERT INTO "organizer_types" (id, name, created_at, updated_at)
+VALUES  (3, '{"pt": "Clube"}', current_date, current_date),
+        (5, '{"pt": "Município"}', current_date, current_date),
+        (1, '{"pt": "Empresa"}', current_date, current_date),
+        (2, '{"pt": "Associação"}', current_date, current_date),
+        (4, '{"pt": "Particular"}', current_date, current_date);
+
