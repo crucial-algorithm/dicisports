@@ -65,7 +65,6 @@ async function findOrganizerTypes(): Promise<Array<OrganizerType>> {
     }
   });
 
-  console.log('oranizer types --->', organizerTypes);
   return organizerTypes.map(dbOrganizerTypeToOrganizerType);
 }
 

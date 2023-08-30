@@ -44,7 +44,7 @@ describe('Organizer', () => {
 
         .get('p[role=alert]')
         .should('exist')
-        .and('have.length', 7);
+        .and('have.length', 8);
     });
 
     it('should show terms validation error', () => {
@@ -65,6 +65,9 @@ describe('Organizer', () => {
 
         .get('input[name=postal-code]')
         .type('4755-059')
+
+        .get('input[name=nif]')
+        .type('123456789')
 
         .get('input[name=city]')
         .type('Barcelos')
@@ -371,11 +374,16 @@ function fillFormWithOrganizerTemplate() {
     .get('input[name=postal-code]')
     .type('4755-059')
 
+    .get('input[name=nif]')
+    .type('123456789')
+
     .get('input[name=city]')
     .type('Barcelos')
 
     .get('textarea[name=description]')
     .type('Montanhas de Aventuras para Viver!')
+
+    .pickOptionFromSelect('type', 1)
 
     .get('input[name="/file/image/0"]')
     .selectFile('cypress/assets/logo-organizer.jpeg', { force: true })
