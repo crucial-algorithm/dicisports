@@ -7,7 +7,8 @@ import type {
   Sport as DBSport,
   Status,
   User as DBUser,
-  DiscountCode as DBDiscountCode
+  DiscountCode as DBDiscountCode,
+  OrganizerType as DBOrganizerType
 } from '@prisma/client';
 import { Role } from '@prisma/client';
 
@@ -24,7 +25,7 @@ import type {
   Group,
   GroupInput,
   GroupSpirit,
-  GroupType,
+  GroupType, OrganizerType,
   PartialCart,
   Participant,
   Perk,
@@ -342,6 +343,19 @@ function dbDiscountCodeToDiscountCode(discountCode: DBDiscountCode): DiscountCod
   return { id, code, value, fixed, createdById, organizerId, status, createdAt, updatedAt };
 }
 
+function dbOrganizerTypeToOrganizerType(
+  organizerType: DBOrganizerType
+): OrganizerType {
+  const { id, name, createdAt, updatedAt } = organizerType;
+
+  return {
+    id,
+    name: name as TranslationObject,
+    createdAt,
+    updatedAt
+  };
+}
+
 export {
   dbUserToUser,
   dbSportToSport,
@@ -359,5 +373,6 @@ export {
   dbParticipantToParticipant,
   dbRawSearchResultsToSearchResults,
   dbRawBookingListToBookingList,
-  dbDiscountCodeToDiscountCode
+  dbDiscountCodeToDiscountCode,
+  dbOrganizerTypeToOrganizerType
 };

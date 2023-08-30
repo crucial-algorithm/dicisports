@@ -433,8 +433,8 @@ model Organizer {
   userId            String              @map("user_id") @unique
   user              User                @relation(fields: [userId], references: [id])
   status            OrganizerStatus     @default(PENDING)
-  organizerTypeId   Int                 @map("organizer_type_id")
-  organizerType     OrganizerType       @relation(fields: [organizerTypeId], references: [id])
+  typeId            Int                 @map("type_id")
+  type              OrganizerType       @relation(fields: [typeId], references: [id])
   createdAt         DateTime            @default(now()) @map("created_at")
   updatedAt         DateTime            @updatedAt @map("updated_at")
   DiscountCode      DiscountCode[]
@@ -444,8 +444,10 @@ model Organizer {
 }
 
 model OrganizerType {
-    id              Int         @id @default(autoincrement())
+    id              Int                 @id @default(autoincrement())
     name            Json
+    createdAt       DateTime            @default(now()) @map("created_at")
+    updatedAt       DateTime            @updatedAt @map("updated_at")
     organizers      Organizer[]
 
     @@map("organizer_types")

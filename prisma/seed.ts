@@ -21,6 +21,7 @@ import discountCodesSeed from './data/discountCodes.json';
 import eventTeamsSeed from './data/eventTeams.json';
 import latestBibNumberSeed from './data/latestBibNumber.json';
 import paymentsSeed from './data/payments.json';
+import organizerTypesSeed from './data/organizerTypes.json';
 
 const db = new PrismaClient();
 const now = new Date();
@@ -52,6 +53,7 @@ async function seed() {
   await persist('shirt sizes', shirtSizes(), db.shirtSize);
 
   await persist('users', users(), db.user);
+  await persist('organizer types', organizerTypes(), db.organizerType);
   await persist('organizers', organizers(), db.organizer);
   await persist('groups', groups(), db.group);
   await persist('events', events(), db.event);
@@ -90,6 +92,7 @@ async function clear() {
   await db.discountCode.deleteMany();
   await db.mailingList.deleteMany();
   await db.organizer.deleteMany();
+  await db.organizerType.deleteMany();
   await db.user.deleteMany();
   await db.groupSpirit.deleteMany();
   await db.groupType.deleteMany();
@@ -336,6 +339,16 @@ function payments() {
     return {
       ...p,
       expiresAt: new Date(now.getTime() + 3600000),
+      createdAt: now,
+      updatedAt: now
+    };
+  });
+}
+
+function organizerTypes() {
+  return organizerTypesSeed.map((o) => {
+    return {
+      ...o,
       createdAt: now,
       updatedAt: now
     };

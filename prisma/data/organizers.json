@@ -12,7 +12,8 @@
     "userId": "gZZCGTHBq9SxdpRFoP8b",
     "status": "APPROVED",
     "commission": 25000,
-    "organizerTypeId": 1
+    "nif": 123456789,
+    "typeId": 2
   },
   {
     "id": "uyFgbFPB67YEnzZj82wA",
@@ -27,6 +28,7 @@
     "userId": "ew8s5CBY9bhSXkQLwKZC",
     "status": "PENDING",
     "commission": null,
-    "organizerTypeId": 1
+    "nif": 987654321,
+    "typeId": 1
   }
 ]
