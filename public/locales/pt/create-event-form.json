@@ -132,5 +132,9 @@
   "Confirm Unpublish Event": "Sim, ocultar",
   "Cancel Unpublish Event": "Não, manter o evento público",
   "Ignore": "Ignorar",
-  "Or": "Ou"
+  "Or": "Ou",
+
+  "Where Is Location X": "{{location}}, onde é \uD83E\uDD14?",
+  "Show on map": " Indique no mapa",
+  "Remaining Form Errors": "Existem erros no formulário por corrigir"
 }

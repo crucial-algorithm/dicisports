@@ -117,6 +117,7 @@ type ActionData = {
     races?: string;
     regulation?: string;
     bibStartingNumber?: string;
+    coordinates?: string;
   };
 };
 
@@ -295,6 +296,25 @@ export const action: ActionFunction = async ({ request, params }) => {
   const perks: string[] = form.getAll('perks') as string[];
   const newPerks: string[] = form.getAll('new-perk-input') as string[];
 
+  const SaveEventSchema = z
+    .object({
+      location: z
+        .string({
+          required_error: t('Field required'),
+          invalid_type_error: t('Field required')
+        })
+        .nullable()
+    })
+    .refine(
+      () =>
+        (data.location && data.lng && data.lat) ||
+        (!data.location && !data.lng && !data.lat),
+      {
+        message: t('Where Is Location X', { location: data.location }),
+        path: ['coordinates']
+      }
+    );
+
   const EventSchema = z
     .object({
       name: z
@@ -305,10 +325,16 @@ export const action: ActionFunction = async ({ request, params }) => {
         .nonnegative({ message: t('Nonexistent Sport') })
         .lte(7, { message: t('Nonexistent Sport') }),
       startAt: z.date().min(new Date(), { message: t('Future Date') }),
-      location: z.string({
-        required_error: t('Field required'),
-        invalid_type_error: t('Field required')
-      }),
+      location: z
+        .string({
+          required_error: t('Field required'),
+          invalid_type_error: t('Field required')
+        })
+        // This shouldn't happen, but just in case it does, validation is improved
+        .refine(() => data.lng && data.lat, {
+          message: t('Where Is Location X', { location: data.location }),
+          path: ['coordinates']
+        }),
       useExternalBooking: z.boolean({
         invalid_type_error: t('Invalid Type')
       }),
@@ -375,6 +401,8 @@ export const action: ActionFunction = async ({ request, params }) => {
 
     if (eventStatus === 'published') {
       EventSchema.parse({ ...data, races: races.map((r) => r.id) });
+    } else {
+      SaveEventSchema.parse({ location: data.location });
     }
 
     await updateEvent(data, perks, newPerks, hasRegistrations);
@@ -472,7 +500,8 @@ export default function OrganizerEventRoute() {
   const [perks, setPerks] = useState<Array<StrippedPerk>>(dbPerks);
   const [races, setRaces] = useState<Array<Race>>(dbRaces);
   const [location, setLocation] = useState<DiciLocation | null>(
-    event.location
+    // This prevents user being unable to open map when location is defined but lat and lng (for some reason) aren't
+    event.location && event.lat && event.lng
       ? {
           coords: `${event.lat}, ${event.lng}`,
           shortAddress: event.location
@@ -636,7 +665,21 @@ export default function OrganizerEventRoute() {
   useEffect(() => {
     const main = window.document.querySelector('#organizer-main-container');
 
-    if (!toast.current || !feedback) {
+    if (!toast.current) {
+      return;
+    }
+
+    if (actionData?.errors) {
+      toast.current.show({
+        severity: 'error',
+        detail: t('Remaining Form Errors'),
+        life: 3000
+      });
+
+      main && main.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    if (!feedback) {
       return;
     }
 
@@ -647,7 +690,7 @@ export default function OrganizerEventRoute() {
     });
 
     main && main.scrollTo({ top: 0, behavior: 'smooth' });
-  }, [feedback]);
+  }, [feedback, actionData]);
 
   // Fix to event's missing translations 🤷‍♂️
   // Found it on this thread https://dev.to/adrai/how-to-internationalize-a-remix-application-2bep
@@ -802,6 +845,7 @@ export default function OrganizerEventRoute() {
             hash={hash}
             location={location}
             locationRef={locationRef}
+            error={actionData?.errors?.coordinates}
           />
 
           <FormField
@@ -1214,7 +1258,8 @@ function Location({
   t,
   hash,
   location,
-  locationRef
+  locationRef,
+  error
 }: {
   actionData: ActionData;
   handleShowMap: () => void;
@@ -1222,6 +1267,7 @@ function Location({
   hash: number;
   location: DiciLocation | null;
   locationRef:  MutableRefObject<HTMLInputElement>;
+  error?: string;
 }) {
   const [firstRender, setFirstRender] = useState<boolean>(true);
 
@@ -1260,7 +1306,7 @@ function Location({
           }
           input={locationRef}
         />
-        {location !== null && (
+        {location !== null && location.coords !== null && (
           <div className="ml-2 mt-2">
             <a
               href={`https://www.google.com/maps/search/?api=1&query=${
@@ -1273,6 +1319,16 @@ function Location({
               {t('View in Map')}
             </a>
           </div>
+        )}
+        {error && (
+          <InputError className="flex flex-row gap-x-1 mt-4" id="error-message">
+            <>
+              {error}
+              <button type="button" onClick={handleShowMap} className="underline">
+                {t('Show on map')}
+              </button>
+            </>
+          </InputError>
         )}
 
         <input
