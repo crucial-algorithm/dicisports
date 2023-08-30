@@ -429,15 +429,26 @@ model Organizer {
   postalCode        String              @map("postal_code")
   city              String
   commission        Int?
+  nif               Int
   userId            String              @map("user_id") @unique
   user              User                @relation(fields: [userId], references: [id])
   status            OrganizerStatus     @default(PENDING)
+  organizerTypeId   Int                 @map("organizer_type_id")
+  organizerType     OrganizerType       @relation(fields: [organizerTypeId], references: [id])
   createdAt         DateTime            @default(now()) @map("created_at")
   updatedAt         DateTime            @updatedAt @map("updated_at")
   DiscountCode      DiscountCode[]
   MailingList       MailingList[]
 
   @@map("organizers")
+}
+
+model OrganizerType {
+    id              Int         @id @default(autoincrement())
+    name            Json
+    organizers      Organizer[]
+
+    @@map("organizer_types")
 }
 
 enum DiscountCodeStatus {

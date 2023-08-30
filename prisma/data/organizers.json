@@ -11,7 +11,8 @@
     "city": "Barcelos",
     "userId": "gZZCGTHBq9SxdpRFoP8b",
     "status": "APPROVED",
-    "commission": 25000
+    "commission": 25000,
+    "organizerTypeId": 1
   },
   {
     "id": "uyFgbFPB67YEnzZj82wA",
@@ -25,6 +26,7 @@
     "city": "Póvoa de Varzim",
     "userId": "ew8s5CBY9bhSXkQLwKZC",
     "status": "PENDING",
-    "commission": null
+    "commission": null,
+    "organizerTypeId": 1
   }
 ]
