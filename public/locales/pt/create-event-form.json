@@ -52,7 +52,7 @@
   "D- Placeholder": "728",
   "Price": "Preço (€)",
   "Price Placeholder": "30",
-  "Price Early Bird": "Preço promocional",
+  "Price Early Bird": "Preço Early Bird (€)",
   "Price Early Bird Placeholder": "22",
   "Race Description": "(Opcional)",
   "Start At": "Hora de partida",
@@ -132,5 +132,9 @@
   "Confirm Unpublish Event": "Sim, ocultar",
   "Cancel Unpublish Event": "Não, manter o evento público",
   "Ignore": "Ignorar",
-  "Or": "Ou"
+  "Or": "Ou",
+
+  "Where Is Location X": "{{location}}, onde é \uD83E\uDD14?",
+  "Pick Location On Map": " Indique no mapa",
+  "Remaining Form Errors": "Existem erros no formulário por corrigir"
 }

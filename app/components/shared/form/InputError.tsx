@@ -3,7 +3,7 @@ import clsx from 'clsx';
 
 type Props = {
   id: string
-  children?: string | null
+  children?: React.ReactNode | string | null
 } & React.ComponentProps<'div'>
 const InputError: React.FC<Props> = ({ id, className, children }) => {
   if (!children) {
