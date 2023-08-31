@@ -5,12 +5,10 @@
   - Added the required column `type_id` to the `organizers` table without a default value. This is not possible if the table is not empty.
 
 */
--- DropForeignKey
-ALTER TABLE "race_participants" DROP CONSTRAINT "race_participants_event_id_fkey";
 
 -- AlterTable
-ALTER TABLE "organizers" ADD COLUMN     "tax_number" INTEGER NOT NULL,
-ADD COLUMN     "type_id" INTEGER NOT NULL;
+ALTER TABLE "organizers" ADD COLUMN     "tax_number" INTEGER,
+ADD COLUMN     "type_id" INTEGER;
 
 -- CreateTable
 CREATE TABLE "organizer_types" (
@@ -21,9 +19,6 @@ CREATE TABLE "organizer_types" (
 
     CONSTRAINT "organizer_types_pkey" PRIMARY KEY ("id")
 );
-
--- AddForeignKey
-ALTER TABLE "race_participants" ADD CONSTRAINT "race_participants_event_id_fkey" FOREIGN KEY ("event_id") REFERENCES "events"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "organizers" ADD CONSTRAINT "organizers_type_id_fkey" FOREIGN KEY ("type_id") REFERENCES "organizer_types"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
