@@ -35,6 +35,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { z, ZodError } from 'zod';
+import { XMarkIcon } from '@heroicons/react/24/solid';
 
 import DocumentsList from '~/components/events/DocumentsList';
 
@@ -295,7 +296,7 @@ export const action: ActionFunction = async ({ request, params }) => {
   };
 
   const perks: string[] = form.getAll('perks') as string[];
-  const newPerks: string[] = form.getAll('new-perk-input') as string[];
+  const newPerks: string[] = form.getAll('new-perk') as string[];
 
   const SaveEventSchema = z
     .object({
@@ -470,7 +471,7 @@ function hackyEventRevival(event: EventWithRacesDifficultiesAndDocuments | null)
 }
 
 export default function OrganizerEventRoute() {
-  type StrippedPerk = Omit<Perk, 'id' | 'eventId' | 'isDefault'> & {
+  type StrippedPerk = Omit<Perk, 'id' | 'eventId'> & {
     id: string | null;
   };
   const { t, ready, i18n } = useTranslation('create-event-form');
@@ -510,7 +511,7 @@ export default function OrganizerEventRoute() {
   const [isPublish, setIsPublish] = useState<boolean>(false);
   const [isUnpublish, setIsUnpublish] = useState<boolean>(false);
 
-  const inputEl = useRef(null);
+  const inputEl = useRef<HTMLInputElement>(null);
   const deleteForm = useRef<HTMLFormElement>(null);
   const eventForm = useRef<HTMLFormElement>(null);
 
@@ -552,19 +553,21 @@ export default function OrganizerEventRoute() {
     setHash(Date.now());
   }
 
-  function handleOnCreatePerk(e: any) {
-    if (!e.target.value) {
-      return null;
+  function addPerk(name: string | undefined) {
+    if (!name) {
+      return;
     }
 
     const newPerks = [...perks];
     let max = newPerks[newPerks.length - 1].displayOrder;
+    const newDisplayOrder = ++max;
 
     newPerks.push({
-      id: null,
-      name: e?.target?.value,
+      id: `new-perk-${newDisplayOrder}`,
+      name,
+      isDefault: false,
       isEnabled: true,
-      displayOrder: ++max,
+      displayOrder: newDisplayOrder,
       createdAt: new Date()
     });
     setPerks(newPerks);
@@ -572,6 +575,35 @@ export default function OrganizerEventRoute() {
     if (inputEl.current) {
       (inputEl.current as HTMLInputElement).value = '';
     }
+  }
+
+  function handleDeletePerk(e: React.MouseEvent) {
+    const perkId = e.currentTarget.id;
+
+    if (!perkId) {
+      return;
+    }
+
+    const newPerks = perks.filter((p) => p.id !== perkId);
+
+    setPerks(newPerks);
+  }
+
+  function handleOnCreatePerk(e: React.FocusEvent<HTMLInputElement>) {
+    if (!e.target.value) {
+      return null;
+    }
+
+    addPerk(e?.target.value);
+  }
+
+  function handlerCancelEnter(e: React.KeyboardEvent) {
+    if (e.key !== 'Enter') {
+      return;
+    }
+
+    addPerk(inputEl.current?.value);
+    e.preventDefault();
   }
 
   function handleShowDeleteEventWarning() {
@@ -932,8 +964,8 @@ export default function OrganizerEventRoute() {
                       data-cy={`perk-${index}`}
                       type="checkbox"
                       id={p.id}
-                      name={p.id ? 'perks' : 'new-perk-input'}
-                      value={p.id ? p.id : p.name}
+                      name={p.isDefault ? 'perks' : 'new-perk'}
+                      value={p.isDefault ? p.id : p.name}
                       defaultChecked={p.isEnabled}
                       className="w-4 h-4 text-indigo-500 bg-gray-100 rounded border-gray-300 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600"
                     />
@@ -944,9 +976,18 @@ export default function OrganizerEventRoute() {
                     >
                       {p.name}
                     </label>
+                    {!p.isDefault && (
+                      <button
+                        id={p.id}
+                        type="button"
+                        onClick={handleDeletePerk}
+                        className="rounded-full h-4 w-4 ml-2 mb-1 bg-blueGray-300 dark:bg-blueGray-600 flex items-center justify-center"
+                      >
+                        <XMarkIcon className="h-3 w-3 inline-block text-blueGray-500 dark:text-blueGray-400" />
+                      </button>
+                    )}
                   </div>
                 ))}
-
               <div>
                 <input
                   ref={inputEl}
@@ -954,6 +995,7 @@ export default function OrganizerEventRoute() {
                   type="text"
                   placeholder={t('Type to create new')}
                   onBlur={handleOnCreatePerk}
+                  onKeyDown={handlerCancelEnter}
                   className="rounded-lg focus-ring text-sm w-60 md:text-sm bg-gray-100 text-black placeholder-gray-500 font-medium box-border dark:disabled:bg-gray-700 dark:text-white dark:bg-gray-800 disabled:text-gray-700 border-0 sm:col-span-4"
                 />
               </div>
@@ -973,7 +1015,7 @@ export default function OrganizerEventRoute() {
                 className="hidden lg:flex"
                 type="submit"
                 name="actionId"
-                value="add-new-race"
+                value={actionIds.addNewRace}
               >
                 {t('Create Distance')}
               </Button>
