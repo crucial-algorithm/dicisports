@@ -296,7 +296,7 @@ export const action: ActionFunction = async ({ request, params }) => {
   };
 
   const perks: string[] = form.getAll('perks') as string[];
-  const newPerks: string[] = form.getAll('new-perk-input') as string[];
+  const newPerks: string[] = form.getAll('new-perk') as string[];
 
   const SaveEventSchema = z
     .object({
@@ -964,7 +964,7 @@ export default function OrganizerEventRoute() {
                       data-cy={`perk-${index}`}
                       type="checkbox"
                       id={p.id}
-                      name={p.isDefault ? 'perks' : 'new-perk-input'}
+                      name={p.isDefault ? 'perks' : 'new-perk'}
                       value={p.isDefault ? p.id : p.name}
                       defaultChecked={p.isEnabled}
                       className="w-4 h-4 text-indigo-500 bg-gray-100 rounded border-gray-300 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600"
