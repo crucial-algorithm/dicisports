@@ -35,6 +35,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { z, ZodError } from 'zod';
+import { XMarkIcon } from '@heroicons/react/24/solid';
 
 import DocumentsList from '~/components/events/DocumentsList';
 
@@ -470,7 +471,7 @@ function hackyEventRevival(event: EventWithRacesDifficultiesAndDocuments | null)
 }
 
 export default function OrganizerEventRoute() {
-  type StrippedPerk = Omit<Perk, 'id' | 'eventId' | 'isDefault'> & {
+  type StrippedPerk = Omit<Perk, 'id' | 'eventId'> & {
     id: string | null;
   };
   const { t, ready, i18n } = useTranslation('create-event-form');
@@ -559,12 +560,14 @@ export default function OrganizerEventRoute() {
 
     const newPerks = [...perks];
     let max = newPerks[newPerks.length - 1].displayOrder;
+    const newDisplayOrder = ++max;
 
     newPerks.push({
-      id: null,
+      id: `new-perk-${newDisplayOrder}`,
       name,
+      isDefault: false,
       isEnabled: true,
-      displayOrder: ++max,
+      displayOrder: newDisplayOrder,
       createdAt: new Date()
     });
     setPerks(newPerks);
@@ -572,6 +575,13 @@ export default function OrganizerEventRoute() {
     if (inputEl.current) {
       (inputEl.current as HTMLInputElement).value = '';
     }
+  }
+
+  function handleDeletePerk(e: React.MouseEvent) {
+    const perkId = e.currentTarget.id as string;
+    const newPerks = perks.filter((p) => p.id !== perkId);
+
+    setPerks(newPerks);
   }
 
   function handleOnCreatePerk(e: React.FocusEvent<HTMLInputElement>) {
@@ -949,8 +959,8 @@ export default function OrganizerEventRoute() {
                       data-cy={`perk-${index}`}
                       type="checkbox"
                       id={p.id}
-                      name={p.id ? 'perks' : 'new-perk-input'}
-                      value={p.id ? p.id : p.name}
+                      name={p.isDefault ? 'perks' : 'new-perk-input'}
+                      value={p.isDefault ? p.id : p.name}
                       defaultChecked={p.isEnabled}
                       className="w-4 h-4 text-indigo-500 bg-gray-100 rounded border-gray-300 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600"
                     />
@@ -961,9 +971,18 @@ export default function OrganizerEventRoute() {
                     >
                       {p.name}
                     </label>
+                    {!p.isDefault && (
+                      <button
+                        id={p.id}
+                        type="button"
+                        onClick={handleDeletePerk}
+                        className="ml-2 dark:text-blueGray-500"
+                      >
+                        <XMarkIcon className="md:h-6 w-6 inline-block" />
+                      </button>
+                    )}
                   </div>
                 ))}
-
               <div>
                 <input
                   ref={inputEl}
