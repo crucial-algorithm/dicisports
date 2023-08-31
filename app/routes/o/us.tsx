@@ -24,7 +24,7 @@ import {
   findOrganizer,
   updateOrganizer
 } from '~/server/db/organizer.server';
-import type { Organizer, OrganizerInput } from '~/types';
+import type { Organizer, OrganizerInput, OrganizerType } from '~/types';
 import { H2, H4, Paragraph } from '~/components/shared/typography';
 import { uploadImageToCloudinary } from '~/server/storage/cloudinary.server';
 import Id from '~/server/utils/Id.server';
@@ -34,6 +34,7 @@ import {
 } from '~/server/email.server';
 import OrganizerForm from '~/components/shared/OrganizerForm';
 import Config from '~/server/config.server';
+import { findOrganizerTypes } from '~/server/db/reference.server';
 
 type ActionData = {
   errors?: {
@@ -51,6 +52,7 @@ type ActionData = {
 
 type LoaderData = {
   organizer: Organizer;
+  organizerTypes: OrganizerType[];
 };
 
 export const handle = {
@@ -108,8 +110,10 @@ export const action: ActionFunction = async ({ request }) => {
     logo: processImageField(logo, isUpdate, organizer),
     phoneNumber:
       (form.get('phone-number') as string).length > 0
-        ? parseInt(form.get('phone-number') as string)
+        ? Number(form.get('phone-number'))
         : null,
+    taxNumber: Number(form.get('tax-number')),
+    typeId: Number(form.get('type')),
     address: form.get('address') as string,
     postalCode: form.get('postal-code') as string,
     city: form.get('city') as string,
@@ -142,6 +146,13 @@ export const action: ActionFunction = async ({ request }) => {
         t('Invalid number')
       )
       .nullable(),
+    taxNumber: z
+      .number({ required_error: t('Field Required') })
+      .refine((val) => val.toString().length === 9, t('9 Digits')),
+    typeId: z
+      .number({ required_error: t('Field Required') })
+      .min(1, t('Invalid Organizer Type'))
+      .max(5, t('Invalid Organizer Type')),
     address: z
       .string({ required_error: t('Field Required') })
       .min(2, { message: t('Min 2 Chars') }),
@@ -209,15 +220,19 @@ export const action: ActionFunction = async ({ request }) => {
 export const loader: LoaderFunction = async ({ request }) => {
   const user = await requireUser(request);
   const organizer = await findOrganizer(user.id as string);
+  const organizerTypes = await findOrganizerTypes();
 
   return json({
-    organizer
+    organizer,
+    organizerTypes: organizerTypes.map((o) => {
+      return {   id: o.id, name: o.name };
+    })
   });
 };
 
 export default function UsRoute() {
   const { t } = useTranslation('organizer-form');
-  const { organizer } = useLoaderData<LoaderData>() as LoaderData;
+  const { organizer, organizerTypes } = useLoaderData<LoaderData>() as LoaderData;
   const actionData = useActionData<ActionData>() as ActionData;
 
   if (organizer && organizer.status === 'PENDING') {
@@ -238,7 +253,11 @@ export default function UsRoute() {
           </div>
         </div>
       </div>
-      <OrganizerForm organizer={organizer} errors={actionData?.errors} />
+      <OrganizerForm
+        organizer={organizer}
+        errors={actionData?.errors}
+        organizerTypes={organizerTypes}
+      />
     </Main>
   );
 }

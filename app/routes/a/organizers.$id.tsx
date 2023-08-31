@@ -14,7 +14,7 @@ import {
   findOrganizerById,
   rejectOrganizer
 } from '~/server/db/organizer.server';
-import type { Organizer } from '~/types';
+import type { Organizer, OrganizerType } from '~/types';
 import ButtonGroup from '~/components/shared/ButtonGroup';
 import Button, { ButtonLink } from '~/components/shared/Button';
 import Main from '~/components/shared/Main';
@@ -26,10 +26,12 @@ import i18n from '~/server/i18n.server';
 import OrganizerForm from '~/components/shared/OrganizerForm';
 import Config from '~/server/config.server';
 import { sendApprovedOrganizerProfileEmail } from '~/server/email.server';
+import { findOrganizerTypes } from '~/server/db/reference.server';
 
 type LoaderData = {
   organizer: Organizer;
   defaultCommission: number;
+  organizerTypes: OrganizerType[];
 };
 
 export const handle = {
@@ -120,21 +122,25 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   }
 
   const { DEFAULT_COMMISSION } = Config();
+  const organizerTypes = await findOrganizerTypes();
 
   return json({
     organizer,
-    defaultCommission: DEFAULT_COMMISSION
+    defaultCommission: DEFAULT_COMMISSION,
+    organizerTypes: organizerTypes.map((o) => {
+      return { id: o.id, name: o.name };
+    })
   });
 };
 
 export default function ReviewOrganizerRoute() {
-  const { organizer, defaultCommission } = useLoaderData() as LoaderData;
+  const { organizer, defaultCommission, organizerTypes } = useLoaderData() as LoaderData;
   const actionData = useActionData();
   const { t } = useTranslation('admin-organizers');
 
   return (
     <Main>
-      <OrganizerForm organizer={organizer} readOnly={true} />
+      <OrganizerForm organizer={organizer} readOnly={true} organizerTypes={organizerTypes} />
       <Form method="post">
         <FormField
           label={t('Commission')}
