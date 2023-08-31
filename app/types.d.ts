@@ -556,7 +556,7 @@ type OrganizerInput = {
   postalCode: string;
   city: string;
   description: string;
-  nif: number;
+  taxNumber: number;
   typeId: number;
   logo: string;
   userId: string;

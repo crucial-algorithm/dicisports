@@ -429,7 +429,7 @@ model Organizer {
   postalCode        String              @map("postal_code")
   city              String
   commission        Int?
-  nif               Int
+  taxNumber         Int                 @map("tax_number")
   userId            String              @map("user_id") @unique
   user              User                @relation(fields: [userId], references: [id])
   status            OrganizerStatus     @default(PENDING)
@@ -444,7 +444,7 @@ model Organizer {
 }
 
 model OrganizerType {
-    id              Int                 @id @default(autoincrement())
+    id              Int                 @id
     name            Json
     createdAt       DateTime            @default(now()) @map("created_at")
     updatedAt       DateTime            @updatedAt @map("updated_at")

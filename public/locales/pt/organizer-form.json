@@ -7,6 +7,7 @@
   "Phone Number": "Número de telemóvel",
   "Phone Number Placeholder": "(Opcional)",
   "Address": "Morada",
+  "Tax Number": "NIF",
   "Postal Code": "Código Postal",
   "City": "Cidade",
   "Hint For Profile Picture": "Selecione a sua foto de perfil",
@@ -21,7 +22,7 @@
   "Invalid number": "Número inválido",
   "Max 9 Number": "Apenas permitidos 9 dígitos",
   "Valid E-mail": "Insira um e-mail válido",
-  "Invalid Option": "Opção Inválida",
+  "Invalid Organizer Type": "Tipo de organizador não existe",
 
   "Organizer display field": "Este campo estará visível na página do evento",
   "Read and Accepted": "Eu li e aceito os",

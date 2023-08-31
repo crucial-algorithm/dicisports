@@ -66,7 +66,7 @@ describe('Organizer', () => {
         .get('input[name=postal-code]')
         .type('4755-059')
 
-        .get('input[name=nif]')
+        .get('input[name=tax-number]')
         .type('123456789')
 
         .get('input[name=city]')
@@ -374,7 +374,7 @@ function fillFormWithOrganizerTemplate() {
     .get('input[name=postal-code]')
     .type('4755-059')
 
-    .get('input[name=nif]')
+    .get('input[name=tax-number]')
     .type('123456789')
 
     .get('input[name=city]')

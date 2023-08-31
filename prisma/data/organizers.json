@@ -12,7 +12,7 @@
     "userId": "gZZCGTHBq9SxdpRFoP8b",
     "status": "APPROVED",
     "commission": 25000,
-    "nif": 123456789,
+    "taxNumber": 123456789,
     "typeId": 2
   },
   {
@@ -28,7 +28,7 @@
     "userId": "ew8s5CBY9bhSXkQLwKZC",
     "status": "PENDING",
     "commission": null,
-    "nif": 987654321,
+    "taxNumber": 987654321,
     "typeId": 1
   }
 ]

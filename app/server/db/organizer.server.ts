@@ -16,7 +16,7 @@ async function createOrganizer(organizer: OrganizerInput): Promise<Organizer> {
       address: organizer.address,
       postalCode: organizer.postalCode,
       city: organizer.city,
-      nif: organizer.nif,
+      taxNumber: organizer.taxNumber,
       typeId: organizer.typeId,
       description: organizer.description,
       logo: organizer.logo,

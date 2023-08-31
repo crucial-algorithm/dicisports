@@ -112,7 +112,7 @@ export const action: ActionFunction = async ({ request }) => {
       (form.get('phone-number') as string).length > 0
         ? Number(form.get('phone-number'))
         : null,
-    nif: Number(form.get('nif')),
+    taxNumber: Number(form.get('tax-number')),
     typeId: Number(form.get('type')),
     address: form.get('address') as string,
     postalCode: form.get('postal-code') as string,
@@ -146,13 +146,13 @@ export const action: ActionFunction = async ({ request }) => {
         t('Invalid number')
       )
       .nullable(),
-    nif: z
+    taxNumber: z
       .number({ required_error: t('Field Required') })
       .refine((val) => val.toString().length === 9, t('9 Digits')),
     typeId: z
       .number({ required_error: t('Field Required') })
-      .min(1, t('Invalid Option'))
-      .max(5, t('Invalid Option')),
+      .min(1, t('Invalid Organizer Type'))
+      .max(5, t('Invalid Organizer Type')),
     address: z
       .string({ required_error: t('Field Required') })
       .min(2, { message: t('Min 2 Chars') }),

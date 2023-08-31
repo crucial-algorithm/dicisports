@@ -23,7 +23,7 @@ type FormErrors = {
   description?: string;
   logo?: string;
   terms?: string;
-  nif?: string;
+  taxNumber?: string;
 };
 
 export default function OrganizerForm({
@@ -72,15 +72,15 @@ export default function OrganizerForm({
             </FormField>
 
             <FormField
-              data-cy="nif"
-              label={t('NIF')}
+              data-cy="tax-number"
+              label={t('Tax Number')}
               className="w-full md:w-1/2"
-              error={errors?.nif}
+              error={errors?.taxNumber}
             >
               <TextField
-                name="nif"
+                name="tax-number"
                 type="number"
-                defaultValue={organizer?.nif || ''}
+                defaultValue={organizer?.taxNumber || ''}
               />
             </FormField>
           </div>
