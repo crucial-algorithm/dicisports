@@ -1,9 +1,18 @@
 import { db } from '~/server/db.server';
-import type { Difficulty, GroupSpirit, GroupType, Sport, ShirtSize } from '~/types';
+import type {
+  Difficulty,
+  GroupSpirit,
+  GroupType,
+  Sport,
+  ShirtSize,
+  OrganizerType
+} from '~/types';
 import {
   dbDifficultyToDifficulty,
   dbGroupSpiritToGroupSpirit,
-  dbGroupTypeToGroupType, dbShirtSizeToShirtSize,
+  dbGroupTypeToGroupType,
+  dbOrganizerTypeToOrganizerType,
+  dbShirtSizeToShirtSize,
   dbSportToSport
 } from '~/server/db/codecs.server';
 
@@ -49,4 +58,21 @@ async function findShirtSizes(): Promise<Array<ShirtSize>> {
   return shirtSizes.map(dbShirtSizeToShirtSize);
 }
 
-export { findSports, findGroupsSpirit, findGroupTypes, findDifficulties, findShirtSizes };
+async function findOrganizerTypes(): Promise<Array<OrganizerType>> {
+  const organizerTypes = await db.organizerType.findMany({
+    orderBy: {
+      id: 'asc'
+    }
+  });
+
+  return organizerTypes.map(dbOrganizerTypeToOrganizerType);
+}
+
+export {
+  findSports,
+  findGroupsSpirit,
+  findGroupTypes,
+  findDifficulties,
+  findShirtSizes,
+  findOrganizerTypes
+};

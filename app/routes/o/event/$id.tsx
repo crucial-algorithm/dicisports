@@ -35,6 +35,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { z, ZodError } from 'zod';
+import { XMarkIcon } from '@heroicons/react/24/solid';
 
 import DocumentsList from '~/components/events/DocumentsList';
 
@@ -118,6 +119,7 @@ type ActionData = {
     races?: string;
     regulation?: string;
     bibStartingNumber?: string;
+    coordinates?: string;
   };
 };
 
@@ -294,7 +296,21 @@ export const action: ActionFunction = async ({ request, params }) => {
   };
 
   const perks: string[] = form.getAll('perks') as string[];
-  const newPerks: string[] = form.getAll('new-perk-input') as string[];
+  const newPerks: string[] = form.getAll('new-perk') as string[];
+
+  const SaveEventSchema = z
+    .object({
+      location: z.string().nullable()
+    })
+    .refine(
+      () =>
+        (data.location && data.lng && data.lat) ||
+        (!data.location && !data.lng && !data.lat),
+      {
+        message: t('Where Is Location X', { location: data.location }),
+        path: ['coordinates']
+      }
+    );
 
   const EventSchema = z
     .object({
@@ -352,7 +368,11 @@ export const action: ActionFunction = async ({ request, params }) => {
         message: t('Add Regulation'),
         path: ['regulation']
       }
-    );
+    ) // This shouldn't happen, but just in case it does, validation is improved
+    .refine(() => data.lng && data.lat, {
+      message: t('Where Is Location X', { location: data.location }),
+      path: ['coordinates']
+    });
 
   let feedback: ResponseFeedback | undefined;
 
@@ -376,6 +396,8 @@ export const action: ActionFunction = async ({ request, params }) => {
 
     if (eventStatus === 'published') {
       EventSchema.parse({ ...data, races: races.map((r) => r.id) });
+    } else {
+      SaveEventSchema.parse({ location: data.location });
     }
 
     await updateEvent(data, perks, newPerks, hasRegistrations);
@@ -449,7 +471,7 @@ function hackyEventRevival(event: EventWithRacesDifficultiesAndDocuments | null)
 }
 
 export default function OrganizerEventRoute() {
-  type StrippedPerk = Omit<Perk, 'id' | 'eventId' | 'isDefault'> & {
+  type StrippedPerk = Omit<Perk, 'id' | 'eventId'> & {
     id: string | null;
   };
   const { t, ready, i18n } = useTranslation('create-event-form');
@@ -472,7 +494,8 @@ export default function OrganizerEventRoute() {
   const [perks, setPerks] = useState<Array<StrippedPerk>>(dbPerks);
   const [races, setRaces] = useState<Array<Race>>(dbRaces);
   const [location, setLocation] = useState<DiciLocation | null>(
-    event.location
+    // This prevents user being unable to open map when location is defined but lat and lng (for some reason) aren't
+    event.location && event.lat && event.lng
       ? {
           coords: `${event.lat}, ${event.lng}`,
           shortAddress: event.location
@@ -488,7 +511,7 @@ export default function OrganizerEventRoute() {
   const [isPublish, setIsPublish] = useState<boolean>(false);
   const [isUnpublish, setIsUnpublish] = useState<boolean>(false);
 
-  const inputEl = useRef(null);
+  const inputEl = useRef<HTMLInputElement>(null);
   const deleteForm = useRef<HTMLFormElement>(null);
   const eventForm = useRef<HTMLFormElement>(null);
 
@@ -514,7 +537,11 @@ export default function OrganizerEventRoute() {
     setShowLocationPicker(true);
   }
 
-  function handleCloseMap(location: DiciLocation | null) {
+  function handleCloseMap() {
+    setShowLocationPicker(false);
+  }
+
+  function handleConfirmPickedLocation(location: DiciLocation | null) {
     setShowLocationPicker(false);
 
     if (locationRef?.current?.value.length > 0) {
@@ -526,19 +553,21 @@ export default function OrganizerEventRoute() {
     setHash(Date.now());
   }
 
-  function handleOnCreatePerk(e: any) {
-    if (!e.target.value) {
-      return null;
+  function addPerk(name: string | undefined) {
+    if (!name) {
+      return;
     }
 
     const newPerks = [...perks];
     let max = newPerks[newPerks.length - 1].displayOrder;
+    const newDisplayOrder = ++max;
 
     newPerks.push({
-      id: null,
-      name: e?.target?.value,
+      id: `new-perk-${newDisplayOrder}`,
+      name,
+      isDefault: false,
       isEnabled: true,
-      displayOrder: ++max,
+      displayOrder: newDisplayOrder,
       createdAt: new Date()
     });
     setPerks(newPerks);
@@ -546,6 +575,35 @@ export default function OrganizerEventRoute() {
     if (inputEl.current) {
       (inputEl.current as HTMLInputElement).value = '';
     }
+  }
+
+  function handleDeletePerk(e: React.MouseEvent) {
+    const perkId = e.currentTarget.id;
+
+    if (!perkId) {
+      return;
+    }
+
+    const newPerks = perks.filter((p) => p.id !== perkId);
+
+    setPerks(newPerks);
+  }
+
+  function handleOnCreatePerk(e: React.FocusEvent<HTMLInputElement>) {
+    if (!e.target.value) {
+      return null;
+    }
+
+    addPerk(e?.target.value);
+  }
+
+  function handlerCancelEnter(e: React.KeyboardEvent) {
+    if (e.key !== 'Enter') {
+      return;
+    }
+
+    addPerk(inputEl.current?.value);
+    e.preventDefault();
   }
 
   function handleShowDeleteEventWarning() {
@@ -636,7 +694,21 @@ export default function OrganizerEventRoute() {
   useEffect(() => {
     const main = window.document.querySelector('#organizer-main-container');
 
-    if (!toast.current || !feedback) {
+    if (!toast.current) {
+      return;
+    }
+
+    if (actionData?.errors) {
+      toast.current.show({
+        severity: 'error',
+        detail: t('Remaining Form Errors'),
+        life: 3000
+      });
+
+      main && main.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    if (!feedback) {
       return;
     }
 
@@ -647,7 +719,7 @@ export default function OrganizerEventRoute() {
     });
 
     main && main.scrollTo({ top: 0, behavior: 'smooth' });
-  }, [feedback]);
+  }, [feedback, actionData, t]);
 
   // Fix to event's missing translations 🤷‍♂️
   // Found it on this thread https://dev.to/adrai/how-to-internationalize-a-remix-application-2bep
@@ -802,6 +874,7 @@ export default function OrganizerEventRoute() {
             hash={hash}
             location={location}
             locationRef={locationRef}
+            error={actionData?.errors?.coordinates}
           />
 
           <FormField
@@ -891,8 +964,8 @@ export default function OrganizerEventRoute() {
                       data-cy={`perk-${index}`}
                       type="checkbox"
                       id={p.id}
-                      name={p.id ? 'perks' : 'new-perk-input'}
-                      value={p.id ? p.id : p.name}
+                      name={p.isDefault ? 'perks' : 'new-perk'}
+                      value={p.isDefault ? p.id : p.name}
                       defaultChecked={p.isEnabled}
                       className="w-4 h-4 text-indigo-500 bg-gray-100 rounded border-gray-300 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600"
                     />
@@ -903,9 +976,18 @@ export default function OrganizerEventRoute() {
                     >
                       {p.name}
                     </label>
+                    {!p.isDefault && (
+                      <button
+                        id={p.id}
+                        type="button"
+                        onClick={handleDeletePerk}
+                        className="rounded-full h-4 w-4 ml-2 mb-1 bg-blueGray-300 dark:bg-blueGray-600 flex items-center justify-center"
+                      >
+                        <XMarkIcon className="h-3 w-3 inline-block text-blueGray-500 dark:text-blueGray-400" />
+                      </button>
+                    )}
                   </div>
                 ))}
-
               <div>
                 <input
                   ref={inputEl}
@@ -913,6 +995,7 @@ export default function OrganizerEventRoute() {
                   type="text"
                   placeholder={t('Type to create new')}
                   onBlur={handleOnCreatePerk}
+                  onKeyDown={handlerCancelEnter}
                   className="rounded-lg focus-ring text-sm w-60 md:text-sm bg-gray-100 text-black placeholder-gray-500 font-medium box-border dark:disabled:bg-gray-700 dark:text-white dark:bg-gray-800 disabled:text-gray-700 border-0 sm:col-span-4"
                 />
               </div>
@@ -932,7 +1015,7 @@ export default function OrganizerEventRoute() {
                 className="hidden lg:flex"
                 type="submit"
                 name="actionId"
-                value="add-new-race"
+                value={actionIds.addNewRace}
               >
                 {t('Create Distance')}
               </Button>
@@ -1158,6 +1241,7 @@ export default function OrganizerEventRoute() {
         defaultValue={location}
         open={showLocationPicker}
         onClose={handleCloseMap}
+        onConfirm={handleConfirmPickedLocation}
       />
 
       <ConfirmationDialog
@@ -1214,7 +1298,8 @@ function Location({
   t,
   hash,
   location,
-  locationRef
+  locationRef,
+  error
 }: {
   actionData: ActionData;
   handleShowMap: () => void;
@@ -1222,6 +1307,7 @@ function Location({
   hash: number;
   location: DiciLocation | null;
   locationRef:  MutableRefObject<HTMLInputElement>;
+  error?: string;
 }) {
   const [firstRender, setFirstRender] = useState<boolean>(true);
 
@@ -1273,6 +1359,21 @@ function Location({
               {t('View in Map')}
             </a>
           </div>
+        )}
+        {error && (
+          <InputError className="flex flex-row gap-x-1 mt-4" id="error-message">
+            <>
+              {error}
+              <button
+                name="open-map-on-error"
+                type="button"
+                onClick={handleShowMap}
+                className="underline"
+              >
+                {t('Pick Location On Map')}
+              </button>
+            </>
+          </InputError>
         )}
 
         <input

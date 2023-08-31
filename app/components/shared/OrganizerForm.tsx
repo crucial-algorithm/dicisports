@@ -9,7 +9,9 @@ import UploadImage from '~/components/shared/form/UploadImage';
 import InputError from '~/components/shared/form/InputError';
 import ButtonGroup from '~/components/shared/ButtonGroup';
 import Button, { ButtonLink } from '~/components/shared/Button';
-import type { Organizer } from '~/types';
+import type { Organizer, OrganizerType } from '~/types';
+import type { Language } from '~/types';
+import ComboBox from '~/components/shared/form/ComboBox';
 
 type FormErrors = {
   name?: string;
@@ -21,18 +23,22 @@ type FormErrors = {
   description?: string;
   logo?: string;
   terms?: string;
+  taxNumber?: string;
 };
 
 export default function OrganizerForm({
   organizer,
+  organizerTypes,
   errors,
   readOnly = false
 }: {
   organizer: Organizer;
-  errors?: FormErrors;
+  organizerTypes: OrganizerType[];
   readOnly?: boolean;
+  errors?: FormErrors;
 }) {
-  const { t } = useTranslation('organizer-form');
+  const { t, i18n } = useTranslation('organizer-form');
+  const language = i18n.language as Language;
 
   return (
     <UploadForm method="post" readOnly={readOnly}>
@@ -51,14 +57,33 @@ export default function OrganizerForm({
             <TextField name="email" defaultValue={organizer?.email || ''} />
           </FormField>
 
-          <FormField label={t('Phone Number')} error={errors?.phoneNumber}>
-            <TextField
-              name="phone-number"
-              type="number"
-              placeholder={t('Phone Number Placeholder')}
-              defaultValue={organizer?.phoneNumber || ''}
-            />
-          </FormField>
+          <div className="flex flex-col lg:flex-row lg:gap-x-2">
+            <FormField
+              label={t('Phone Number')}
+              error={errors?.phoneNumber}
+              className="w-full md:w-1/2"
+            >
+              <TextField
+                name="phone-number"
+                type="number"
+                placeholder={t('Phone Number Placeholder')}
+                defaultValue={organizer?.phoneNumber || ''}
+              />
+            </FormField>
+
+            <FormField
+              data-cy="tax-number"
+              label={t('Tax Number')}
+              className="w-full md:w-1/2"
+              error={errors?.taxNumber}
+            >
+              <TextField
+                name="tax-number"
+                type="number"
+                defaultValue={organizer?.taxNumber || ''}
+              />
+            </FormField>
+          </div>
 
           <FormField
             data-cy="address"
@@ -112,6 +137,21 @@ export default function OrganizerForm({
                 />
               )}
             </div>
+          </FormField>
+          <FormField label={t('Organizer Type')}>
+            <ComboBox
+              name="type"
+              placeholder={t('Organizer Type Placeholder')}
+              options={organizerTypes.map((o) => {
+                return { value: o.id, label: o.name };
+              })}
+              lang={language}
+              defaultValue={
+                organizer && organizer.typeId
+                  ? organizer.typeId
+                  : 1
+              }
+            />
           </FormField>
         </div>
         <div className="col-span-3">
