@@ -510,7 +510,7 @@ export default function OrganizerEventRoute() {
   const [isPublish, setIsPublish] = useState<boolean>(false);
   const [isUnpublish, setIsUnpublish] = useState<boolean>(false);
 
-  const inputEl = useRef(null);
+  const inputEl = useRef<HTMLInputElement>(null);
   const deleteForm = useRef<HTMLFormElement>(null);
   const eventForm = useRef<HTMLFormElement>(null);
 
@@ -552,9 +552,9 @@ export default function OrganizerEventRoute() {
     setHash(Date.now());
   }
 
-  function handleOnCreatePerk(e: any) {
-    if (!e.target.value) {
-      return null;
+  function addPerk(name: string | undefined) {
+    if (!name) {
+      return;
     }
 
     const newPerks = [...perks];
@@ -562,7 +562,7 @@ export default function OrganizerEventRoute() {
 
     newPerks.push({
       id: null,
-      name: e?.target?.value,
+      name,
       isEnabled: true,
       displayOrder: ++max,
       createdAt: new Date()
@@ -572,6 +572,23 @@ export default function OrganizerEventRoute() {
     if (inputEl.current) {
       (inputEl.current as HTMLInputElement).value = '';
     }
+  }
+
+  function handleOnCreatePerk(e: React.FocusEvent<HTMLInputElement>) {
+    if (!e.target.value) {
+      return null;
+    }
+
+    addPerk(e?.target.value);
+  }
+
+  function handlerCancelEnter(e: React.KeyboardEvent) {
+    if (e.key !== 'Enter') {
+      return;
+    }
+
+    addPerk(inputEl.current?.value);
+    e.preventDefault();
   }
 
   function handleShowDeleteEventWarning() {
@@ -954,6 +971,7 @@ export default function OrganizerEventRoute() {
                   type="text"
                   placeholder={t('Type to create new')}
                   onBlur={handleOnCreatePerk}
+                  onKeyDown={handlerCancelEnter}
                   className="rounded-lg focus-ring text-sm w-60 md:text-sm bg-gray-100 text-black placeholder-gray-500 font-medium box-border dark:disabled:bg-gray-700 dark:text-white dark:bg-gray-800 disabled:text-gray-700 border-0 sm:col-span-4"
                 />
               </div>
@@ -973,7 +991,7 @@ export default function OrganizerEventRoute() {
                 className="hidden lg:flex"
                 type="submit"
                 name="actionId"
-                value="add-new-race"
+                value={actionIds.addNewRace}
               >
                 {t('Create Distance')}
               </Button>
