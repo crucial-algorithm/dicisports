@@ -578,7 +578,12 @@ export default function OrganizerEventRoute() {
   }
 
   function handleDeletePerk(e: React.MouseEvent) {
-    const perkId = e.currentTarget.id as string;
+    const perkId = e.currentTarget.id;
+
+    if (!perkId) {
+      return;
+    }
+
     const newPerks = perks.filter((p) => p.id !== perkId);
 
     setPerks(newPerks);
