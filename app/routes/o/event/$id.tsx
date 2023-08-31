@@ -981,9 +981,9 @@ export default function OrganizerEventRoute() {
                         id={p.id}
                         type="button"
                         onClick={handleDeletePerk}
-                        className="ml-2 dark:text-blueGray-500"
+                        className="flex ml-2 dark:text-blueGray-500"
                       >
-                        <XMarkIcon className="md:h-6 w-6 inline-block" />
+                        <XMarkIcon className="md:h-4 w-4 inline-block" />
                       </button>
                     )}
                   </div>
