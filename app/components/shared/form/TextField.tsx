@@ -27,7 +27,8 @@ const TextField: React.FC<Props> = ({
   type = 'text',
   input,
   autoComplete,
-  onClick
+  onClick,
+  step
 }) => {
   id = id || '';
   const formProps = useContext(FormContext);
@@ -50,6 +51,7 @@ const TextField: React.FC<Props> = ({
         readOnly={readOnly}
         disabled={disabled}
         input={input}
+        step={step}
         autoComplete={autoComplete}
         onClick={onClick}
       />

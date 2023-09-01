@@ -406,6 +406,7 @@ export default function RaceRoute() {
             name="price"
             type="number"
             className="w-44"
+            step=".01"
             placeholder={t('Price Placeholder')}
             defaultValue={race && race.price ? race.price / 1000 : undefined}
           />
@@ -423,6 +424,7 @@ export default function RaceRoute() {
               type="number"
               className="w-44"
               placeholder={t('Price Early Bird Placeholder')}
+              step=".01"
               defaultValue={
                 race && race.priceEarlyBird
                   ? race.priceEarlyBird / 1000
