@@ -338,15 +338,36 @@ export default function RaceRoute() {
         <input type="hidden" name="eventId" value={event.id} />
         <input type="hidden" name="raceId" value={race?.id} />
 
-        <FormField label={t('Race name')} error={actionData?.errors?.name}>
-          <TextField
-            id="name"
-            name="name"
-            placeholder={t('Race Name Placeholder')}
-            className="max-w-md"
-            defaultValue={race?.name}
-          />
-        </FormField>
+        <div className="flex justify-end">
+          <ButtonLink
+            to={`/o/event/${event.id}`}
+            className="flex md:hidden mb-2"
+            variant="secondary"
+          >
+            {t('Back Button')}
+          </ButtonLink>
+        </div>
+
+        <div className="flex flex-row justify-between items-center">
+          <FormField label={t('Race name')} error={actionData?.errors?.name}>
+            <TextField
+              id="name"
+              name="name"
+              placeholder={t('Race Name Placeholder')}
+              className="max-w-md"
+              defaultValue={race?.name}
+            />
+          </FormField>
+          <>
+            <ButtonLink
+              to={`/o/event/${event.id}`}
+              className="hidden md:flex"
+              variant="secondary"
+            >
+              {t('Back Button')}
+            </ButtonLink>
+          </>
+        </div>
 
         <FormField
           label={t('Distance')}

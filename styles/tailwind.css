@@ -31,7 +31,7 @@
     }
 
     .map .dialog-body {
-        @apply md:h-full md:min-h-[86%]
+        @apply md:h-full md:min-h-[76%]
     }
 
     .dialog-footer {
