@@ -113,6 +113,7 @@ export const action: ActionFunction = async ({ request }) => {
         ? Number(form.get('phone-number'))
         : null,
     taxNumber: Number(form.get('tax-number')),
+    contactName: form.get('contact-name') as string,
     typeId: Number(form.get('type')),
     address: form.get('address') as string,
     postalCode: form.get('postal-code') as string,
@@ -149,6 +150,9 @@ export const action: ActionFunction = async ({ request }) => {
     taxNumber: z
       .number({ required_error: t('Field Required') })
       .refine((val) => val.toString().length === 9, t('9 Digits')),
+    contactName: z
+        .string({ required_error: t('Field Required') })
+        .min(2, { message: t('Min 2 Chars') }),
     typeId: z
       .number({ required_error: t('Field Required') })
       .min(1, t('Invalid Organizer Type'))

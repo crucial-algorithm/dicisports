@@ -431,6 +431,7 @@ model Organizer {
   commission        Int?
   taxNumber         Int                 @map("tax_number")
   userId            String              @map("user_id") @unique
+  contactName       String              @map("contact_name")
   user              User                @relation(fields: [userId], references: [id])
   status            OrganizerStatus     @default(PENDING)
   typeId            Int                 @map("type_id")

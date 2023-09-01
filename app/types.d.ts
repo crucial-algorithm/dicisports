@@ -557,6 +557,7 @@ type OrganizerInput = {
   city: string;
   description: string;
   taxNumber: number;
+  contactName: string;
   typeId: number;
   logo: string;
   userId: string;

@@ -1,7 +1,8 @@
-import { ArrowDownTrayIcon, ChevronDownIcon, ChevronUpIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { ArrowDownIcon, ArrowUpIcon } from '@heroicons/react/20/solid';
+import { ArrowDownTrayIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { Link, useFetcher } from '@remix-run/react';
-import { useCallback, useState } from 'react';
 import * as React from 'react';
+import { useCallback, useState } from 'react';
 
 import DeleteDocumentDialog from '~/components/events/DeleteDocumentDialog';
 import type { Document } from '~/types';
@@ -17,14 +18,17 @@ export default function DocumentsList(props: {
     document?: Document;
   }>({ show: false });
 
-  const handleMoveUp = useCallback((e: React.MouseEvent) =>
-    fetcher.submit(
-      {},
-      {
-        method: 'post',
-        action: `/o/event/${eventId}/doc/${e.currentTarget.id}/move-up`
-      }
-    ), [eventId, fetcher]);
+  const handleMoveUp = useCallback(
+    (e: React.MouseEvent) =>
+      fetcher.submit(
+        {},
+        {
+          method: 'post',
+          action: `/o/event/${eventId}/doc/${e.currentTarget.id}/move-up`
+        }
+      ),
+    [eventId, fetcher]
+  );
 
   const handleMoveDown = useCallback(
     (e: React.MouseEvent) =>
@@ -38,22 +42,23 @@ export default function DocumentsList(props: {
     [eventId, fetcher]
   );
 
+  const handleOpenDeleteDocumentDialog = useCallback(
+    (e: React.MouseEvent) => {
+      const document = documents.find((d) => d.id === e.currentTarget.id);
 
-  const handleOpenDeleteDocumentDialog = useCallback((e: React.MouseEvent) => {
-    const document = documents.find((d) => d.id === e.currentTarget.id);
+      if (!document) {
+        return;
+      }
 
-    if (!document) {
-      return;
-    }
-
-    setShowDeleteDocumentDialog({ show: true, document });
-  }, [documents]);
+      setShowDeleteDocumentDialog({ show: true, document });
+    },
+    [documents]
+  );
 
   const handleCloseDeleteDocumentDialog = useCallback(
     () => setShowDeleteDocumentDialog({ show: false }),
     []
   );
-
 
   return (
     <>
@@ -74,7 +79,7 @@ export default function DocumentsList(props: {
                     className="w-[24px] h-[24px]"
                     name={`move-up-${d.id}`}
                   >
-                    <ChevronUpIcon className="md:h-6 w-6 m-0 inline-block" />
+                    <ArrowUpIcon className="md:h-6 w-6 m-0 inline-block" />
                   </button>
                 )}
                 {index === documents.length - 1 ? null : (
@@ -85,7 +90,7 @@ export default function DocumentsList(props: {
                     className="w-[24px] h-[24px]"
                     name={`move-down-${d.id}`}
                   >
-                    <ChevronDownIcon className="md:h-6 w-6 m-0 inline-block" />
+                    <ArrowDownIcon className="md:h-6 w-6 m-0 inline-block" />
                   </button>
                 )}
               </div>
