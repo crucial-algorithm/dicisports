@@ -20,6 +20,8 @@
         md:m-auto md:px-4
         md:rounded-lg md:border-2 md:border-black
         ;
+        /* hack: fix webkit displaying address bar on top of dialog action bar */
+        height: -webkit-fill-available;
     }
 
     .dialog-title {
