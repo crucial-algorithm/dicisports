@@ -94,3 +94,7 @@ flyctl proxy <port> -a <app-name>
 flyctl proxy 5432 -a dicistg-bd
 ```
 
+### Scaling Memory
+```shell
+fly scale memory 1024 -a diciprd
+```
