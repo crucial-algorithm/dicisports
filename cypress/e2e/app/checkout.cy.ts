@@ -779,7 +779,7 @@ describe('Checkout', () => {
     it('should have correct bib numbers', () => {
       cy.visitAndWaitForHydration('/checkout/payment/qR4nqWpTdQy8QZu29ANu')
 
-        .get('button[name=pay-reference]')
+        .get('button[name=pay-cc]')
         .should('exist')
         .then((b) => {
           b.click();
