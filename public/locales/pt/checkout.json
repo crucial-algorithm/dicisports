@@ -68,7 +68,7 @@
   "Select Participant": "Escolhe um participante existente",
   "Already Have An Account ?": "Já tens uma conta?",
   "Discount Code": "Código de desconto",
-  "Apply Discount": "Aplicar desconto",
+  "Apply Discount": "Aplicar",
   "Applied Discount": "Desconto aplicado",
 
   "Participant Not Filled": "Completa a informação em falta",
@@ -76,7 +76,7 @@
   "New Participant Last Name": "Participante",
   "Create: X": "Criar: {{value}}",
 
-  "Thanks For Buying": "Obrigado por te registares com a Dicisports. Por favor imprime esta página com os dados da confirmação, para o caso de quereres mudar algo.",
+  "Thanks For Buying": "Obrigado por te inscreveres com a Dicisports. Por favor imprime esta página com os dados da confirmação, para o caso de quereres mudar algo.",
   "Confirmation ID": "ID de confirmação",
   "PIN": "PIN",
   "Mail Confirmation Details": "Envia-me os detalhes da confirmação para o e-mail:",
