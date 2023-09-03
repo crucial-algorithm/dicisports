@@ -28,6 +28,8 @@ body {
     /* yellow in light mode is... hard */
     --color-team-yellow: #a08600;
     --color-yellow-500: #a08600;
+
+    --doc-height: 100%;
 }
 
 .light {
