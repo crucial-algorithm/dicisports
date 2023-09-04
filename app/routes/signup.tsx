@@ -73,7 +73,7 @@ export const action: ActionFunction = async ({ request }) => {
     .object({
       name: z
         .string()
-        .min(5, t('Name min length'))
+        .min(2, t('Name min length'))
         .max(60, t('Name max length')),
       email: z.string().email(t('Invalid Email')),
       confirmation: z.string().email(t('Invalid Email')),
