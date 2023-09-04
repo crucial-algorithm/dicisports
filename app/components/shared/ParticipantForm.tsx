@@ -58,7 +58,7 @@ export default function ParticipantForm({
 
   return (
     <FetcherForm
-      TheForm={fetcher.Form}
+      theForm={fetcher.Form}
       method="post"
       className={clsx('w-full', {
         'opacity-100': participant,
