@@ -28,6 +28,8 @@ body {
     /* yellow in light mode is... hard */
     --color-team-yellow: #a08600;
     --color-yellow-500: #a08600;
+
+    --doc-height: 100%;
 }
 
 .light {
@@ -295,6 +297,10 @@ table.privacy-policy td {
 }
 .dark .prose :where(strong):not(:where([class~="not-prose"] *)) {
     font-weight: 900;
+}
+
+.prose {
+    max-width: 100ch;
 }
 
 body[data-path=preview-event] #organizer-side-bar {

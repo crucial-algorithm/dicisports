@@ -419,8 +419,8 @@ function Footer() {
           <div className="border-t border-zinc-100 pb-16 pt-10 dark:border-zinc-700/40">
             <div className="relative px-2 md:px-4">
               <div className="mx-auto max-w-2xl md:max-w-5xl">
-                <div className="flex flex-col md:flex-row items-center justify-between gap-6 dark:text-cadet-blue-700 text-[10px] md:text-xs">
-                  <div className="flex gap-3 items-center md:gap-6">
+                <div className="flex md:flex-row items-center justify-between gap-6 dark:text-cadet-blue-700 text-xs">
+                  <div className="flex flex-col md:flex-row gap-6 items-start md:items-center">
                     <Link
                       to="/privacy"
                       className="dark:text-cadet-blue-700 dark:hover:text-cadet-blue-500"
@@ -440,7 +440,8 @@ function Footer() {
                       <img src={buildImageUrl('product/complaints-logo', {})} alt="" />
                     </a>
                   </div>
-                  <p>
+
+                  <p className="hidden md:block">
                     {t('Dicisports Watermark', { year })}
                   </p>
                 </div>
