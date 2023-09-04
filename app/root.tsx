@@ -263,7 +263,9 @@ function Html({ lang }: { lang: string }) {
   const [theme] = useTheme();
   const data = useLoaderData<RootLoaderData>() as RootLoaderData;
   const analyticsUrl = 'https://plausible.io/js/plausible.js';
-  const [, { pathname }] = useMatches();
+  const matches = useMatches();
+  const [, { pathname }] = matches;
+  const { handle } = matches.pop() || { handle: {} };
 
   // useChangeLanguage(lang);
   // script bellow setting window.ENV is not actually being used; Just keeping
@@ -298,7 +300,10 @@ function Html({ lang }: { lang: string }) {
         <Meta />
         <Links />
       </head>
-      <body className="dark:bg-gray-900 bg-white transition duration-500 w-full">
+      <body
+        className="dark:bg-gray-900 bg-white transition duration-500 w-full"
+        data-path={handle ? handle.id : ''}
+      >
         <PageLoadingMessage />
         <NotificationMessage queryStringKey="message" delay={0.3} />
         {pathname !== '/o' && <Navbar />}

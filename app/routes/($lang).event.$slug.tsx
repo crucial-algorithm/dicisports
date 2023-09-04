@@ -95,8 +95,7 @@ export async function loadDisplayEventData(
     isUserFavorite,
     races,
     perks: await findEventPerks(eventId),
-    organizer: organizer && organizer.status !== 'PENDING' ? organizer : null,
-    isPreview
+    organizer: organizer && organizer.status !== 'PENDING' ? organizer : null
   });
 }
 
@@ -119,7 +118,7 @@ export const loader: LoaderFunction = async ({ params, request }) => {
 
 export default function EventDisplayRoute() {
   const favorite = useFetcher();
-  const { event, isUserFavorite, races, perks, organizer, isPreview } = useLoaderData<LoaderData>();
+  const { event, isUserFavorite, races, perks, organizer } = useLoaderData<LoaderData>();
   const { t } = useTranslation('event');
 
   let minPrice = 0;
@@ -172,14 +171,6 @@ export default function EventDisplayRoute() {
       )}
 
       <Main>
-        {isPreview && (
-          <div className="flex items-center justify-between">
-            <H6>{t('You are in preview mode')}</H6>
-            <ButtonLink to={`/o/event/${event.id}`} variant="secondary">
-              {t('Back Button')}
-            </ButtonLink>
-          </div>
-        )}
         <PriceTag
           event={event}
           favorite={favorite}
