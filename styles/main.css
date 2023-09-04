@@ -302,3 +302,11 @@ table.privacy-policy td {
 .prose {
     max-width: 100ch;
 }
+
+body[data-path=preview-event] #organizer-side-bar {
+    display: none;
+}
+
+body[data-path=preview-event] #organizer-main-container {
+    padding: 0;
+}

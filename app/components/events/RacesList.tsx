@@ -1,16 +1,13 @@
 import * as React from 'react';
-import { ChevronDownIcon, ChevronUpIcon, TrashIcon } from '@heroicons/react/24/outline';
-import { Link, useFetcher } from '@remix-run/react';
 import { useState } from 'react';
-
+import { TrashIcon } from '@heroicons/react/24/outline';
+import { Link, useFetcher } from '@remix-run/react';
+import { ArrowDownIcon, ArrowUpIcon } from '@heroicons/react/20/solid';
 
 import DeleteRaceDialog from '~/components/events/DeleteRaceDialog';
 import type { Race } from '~/types';
 
-export default function RacesList(props: {
-  races: Race[];
-  eventId: string;
-}) {
+export default function RacesList(props: { races: Race[]; eventId: string }) {
   const { races, eventId } = props;
   const fetcher = useFetcher();
 
@@ -73,7 +70,7 @@ export default function RacesList(props: {
                     className="w-[24px] h-[24px]"
                     name={`move-up-${r.id}`}
                   >
-                    <ChevronUpIcon className="mh-6 w-6 m-0 inline-block" />
+                    <ArrowUpIcon className="mh-6 w-6 m-0 inline-block" />
                   </button>
                 )}
                 {index === races.length - 1 ? null : (
@@ -84,7 +81,7 @@ export default function RacesList(props: {
                     className="w-[24px] h-[24px]"
                     name={`move-down-${r.id}`}
                   >
-                    <ChevronDownIcon className="md:h-6 w-6 m-0 inline-block" />
+                    <ArrowDownIcon className="md:h-6 w-6 m-0 inline-block" />
                   </button>
                 )}
               </div>

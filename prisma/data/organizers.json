@@ -13,6 +13,7 @@
     "status": "APPROVED",
     "commission": 25000,
     "taxNumber": 123456789,
+    "contactName": "Elisabete Rocha",
     "typeId": 2
   },
   {
@@ -29,6 +30,7 @@
     "status": "PENDING",
     "commission": null,
     "taxNumber": 987654321,
+    "contactName": "Nuno Dias",
     "typeId": 1
   }
 ]

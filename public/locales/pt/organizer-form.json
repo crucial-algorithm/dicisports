@@ -12,6 +12,7 @@
   "City": "Cidade",
   "Hint For Profile Picture": "Selecione a sua foto de perfil",
   "Organizer Type": "Tipo de organizador",
+  "Contact Name": "Nome do contacto",
 
   "Pending Validation": "A sua conta ainda está a ser analisada. Aguarde o nosso contacto.",
   "Pending Validation Action": "Voltar à página inicial",
@@ -23,6 +24,8 @@
   "Max 9 Number": "Apenas permitidos 9 dígitos",
   "Valid E-mail": "Insira um e-mail válido",
   "Invalid Organizer Type": "Tipo de organizador não existe",
+  "Organizer Saved": "Organizador guardado",
+  "Organizer Created": "Organizador submetido",
 
   "Organizer display field": "Este campo estará visível na página do evento",
   "Read and Accepted": "Eu li e aceito os",

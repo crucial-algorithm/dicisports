@@ -459,7 +459,7 @@ describe('Event', () => {
     });
 
     it('should display event preview', () => {
-      cy.visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d')
+      cy.visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d/dashboard')
         .get('#preview-button')
         .should('exist')
         .then((link) => {

@@ -44,7 +44,7 @@ describe('Organizer', () => {
 
         .get('p[role=alert]')
         .should('exist')
-        .and('have.length', 8);
+        .and('have.length', 9);
     });
 
     it('should show terms validation error', () => {
@@ -52,31 +52,12 @@ describe('Organizer', () => {
         .visitAndWaitForHydration('/o/us')
 
         .intercept('POST', '/o/us?*')
-        .as('SubmitProfile')
+        .as('SubmitProfile');
 
-        .get('input[name=name]')
-        .type('Montanha dos Amigos')
+      fillFormWithOrganizerTemplate();
 
-        .get('input[name=email]')
-        .type('info@montanhadosamigos.com')
-
-        .get('input[name=address]')
-        .type('Rua Custódio José Gomes Vilas Boas, 57')
-
-        .get('input[name=postal-code]')
-        .type('4755-059')
-
-        .get('input[name=tax-number]')
-        .type('123456789')
-
-        .get('input[name=city]')
-        .type('Barcelos')
-
-        .get('textarea[name=description]')
-        .type('Montanhas de Aventuras para Viver!')
-
-        .get('input[name="/file/image/0"]')
-        .selectFile('cypress/assets/logo-organizer.jpeg', { force: true })
+      cy.get('input[name=terms]')
+        .click()
 
         .get('button[name=save-profile]')
         .click()
@@ -373,6 +354,9 @@ function fillFormWithOrganizerTemplate() {
 
     .get('input[name=postal-code]')
     .type('4755-059')
+
+    .get('input[name=contact-name]')
+    .type('Nuno Lopes')
 
     .get('input[name=tax-number]')
     .type('123456789')

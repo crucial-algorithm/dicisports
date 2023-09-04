@@ -1,4 +1,4 @@
-import type { LoaderFunction } from '@remix-run/node';
+import type { LoaderFunction, MetaFunction } from '@remix-run/node';
 import { json, redirect } from '@remix-run/node';
 import type { FetcherWithComponents } from '@remix-run/react';
 import { Form, Link, useFetcher, useLoaderData } from '@remix-run/react';
@@ -61,6 +61,14 @@ const actions = {
 export const handle: { id: string; i18n: string[] } = {
   id: 'event',
   i18n: ['event']
+};
+
+export const meta: MetaFunction = ({ data }) => {
+  const { event } = data;
+
+  return {
+    title: event ? event.name : 'DiciSports - This Is Sports'
+  };
 };
 
 export async function loadDisplayEventData(
@@ -133,12 +141,22 @@ export default function EventDisplayRoute() {
     );
   }
 
-  if (races) {
-    const sortedRaces = races
-      .sort((a: Race, b: Race) => a.price - b.price)
-      .map((a: Race) => a.price);
+  function determineRacePrice(r: Race): number {
+    if (
+      r.priceEarlyBird &&
+      r.validUntil &&
+      new Date(r.validUntil) > new Date()
+    ) {
+      return r.priceEarlyBird;
+    }
+    return r.price;
+  }
 
-    minPrice = sortedRaces[0];
+  if (races) {
+    const prices = races.map((r: Race) => determineRacePrice(r));
+
+    prices.sort((a: number, b: number) => a - b);
+    minPrice = prices[0];
   }
 
   return (
@@ -293,7 +311,7 @@ function DisplayRace({ race, index, eventId, areThereRacesInEarlyBird }: Display
       className={clsx(
         'flex flex-col gap-y-4 mb-4 mr-2 md:mr-4 text-center items-center border border-black dark:border-white rounded-2xl outline-offset-1 w-[340px] md:overflow-hidden',
         {
-          'relative min-h-[430px]': areThereRacesInEarlyBird
+          'relative min-h-[450px]': areThereRacesInEarlyBird
         }
       )}
       data-cy={`race-${index}`}
@@ -558,7 +576,7 @@ function PriceTag({
   return (
     <InView onChange={setVisiblePriceTag}>
       <div className="flex flex-col md:flex-row mt-4">
-        <div className="w-full md:w-144">
+        <div className="w-full md:w-[22rem]">
           {images.length > 1 ? (
             <Carousel statusFormatter={cleanStatus}>
               {images.map((image, idx) => (
