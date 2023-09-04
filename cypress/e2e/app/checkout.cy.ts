@@ -988,8 +988,12 @@ describe('Checkout', () => {
 
         .wait('@ApplyDiscount')
 
-        .get('div[data-cy=discount-info]')
-        .should('exist')
+        .waitForHydration()
+
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.eq('/checkout/confirmation/qR4nqWpTdQy8QZu29ANu');
+        })
 
         .get('[data-cy=subtotal-price]')
         .contains('45€')
