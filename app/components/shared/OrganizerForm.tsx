@@ -24,6 +24,7 @@ type FormErrors = {
   logo?: string;
   terms?: string;
   taxNumber?: string;
+  contactName?: string;
 };
 
 export default function OrganizerForm({
@@ -51,6 +52,20 @@ export default function OrganizerForm({
             description={!readOnly && t('Organizer display field')}
           >
             <TextField name="name" defaultValue={organizer?.name || ''} />
+          </FormField>
+
+          <FormField label={t('Organizer Type')}>
+            <ComboBox
+              name="type"
+              placeholder={t('Organizer Type Placeholder')}
+              options={organizerTypes.map((o) => {
+                return { value: o.id, label: o.name };
+              })}
+              lang={language}
+              defaultValue={
+                organizer && organizer.typeId ? organizer.typeId : 1
+              }
+            />
           </FormField>
 
           <FormField data-cy="email" label={t('E-mail')} error={errors?.email}>
@@ -84,6 +99,13 @@ export default function OrganizerForm({
               />
             </FormField>
           </div>
+
+          <FormField label={t('Contact Name')} error={errors?.contactName}>
+            <TextField
+              name="contact-name"
+              defaultValue={organizer?.contactName || ''}
+            />
+          </FormField>
 
           <FormField
             data-cy="address"
@@ -137,21 +159,6 @@ export default function OrganizerForm({
                 />
               )}
             </div>
-          </FormField>
-          <FormField label={t('Organizer Type')}>
-            <ComboBox
-              name="type"
-              placeholder={t('Organizer Type Placeholder')}
-              options={organizerTypes.map((o) => {
-                return { value: o.id, label: o.name };
-              })}
-              lang={language}
-              defaultValue={
-                organizer && organizer.typeId
-                  ? organizer.typeId
-                  : 1
-              }
-            />
           </FormField>
         </div>
         <div className="col-span-3">

@@ -58,7 +58,7 @@ export const action: ActionFunction = async ({ request }) => {
 
     return json({ ok: true, action: actionId });
   } catch (e) {
-    console.log(e);
+    console.error(e);
 
     return badRequest({ errors: e });
   }

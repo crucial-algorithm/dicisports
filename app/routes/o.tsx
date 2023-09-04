@@ -8,7 +8,7 @@ import {
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import type { LoaderFunction } from '@remix-run/node';
 import { json } from '@remix-run/node';
-import { Link, Outlet, useLocation } from '@remix-run/react';
+import { Link, Outlet, useLocation, useMatches } from '@remix-run/react';
 import { buildImageUrl } from 'cloudinary-build-url';
 import clsx from 'clsx';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
@@ -97,7 +97,7 @@ function OrganizerSideBar({ sideBarCollapsed, handleToggleMenu }: OrganizerSideB
 
   return (
     <>
-      <div
+      <div id="organizer-side-bar"
         className={clsx(
           'relative hidden h-screen duration-300 bg-gray-100 border-r border-gray-200 dark:border-gray-600 p-5 dark:bg-gray-800',
           {

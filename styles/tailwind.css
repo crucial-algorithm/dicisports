@@ -33,7 +33,7 @@
     }
 
     .map .dialog-body {
-        @apply md:h-full md:min-h-[86%]
+        @apply md:h-full md:min-h-[76%]
     }
 
     .dialog-footer {
@@ -99,6 +99,22 @@
         dark:text-white dark:bg-gray-800
         disabled:text-gray-400 dark:disabled:text-blueGray-500
         focus-ring;
+    }
+
+    .input-text::placeholder {
+        @apply dark:text-gray-300;
+    }
+
+    .input-text-slim {
+        @apply px-4 py-4 rounded-lg placeholder-gray-500 font-medium border-0
+        bg-gray-100 text-lg
+        dark:text-white dark:bg-gray-800
+        disabled:text-gray-400 dark:disabled:text-blueGray-500
+        focus-ring;
+    }
+
+    .input-text-slim::placeholder {
+        @apply dark:text-blueGray-500;
     }
 
     /*This is a class declared to override Prime React input mask styles*/

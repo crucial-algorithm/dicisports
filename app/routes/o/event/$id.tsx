@@ -93,17 +93,13 @@ import type {
   Language,
   Perk,
   Race,
+  ResponseFeedback,
   Sport,
   User
 } from '~/types';
 import { badRequest } from '~/utils/misc';
 import UploadFile from '~/components/UploadFile';
 import { findConfirmedBookings } from '~/server/db/booking.server';
-
-type ResponseFeedback = {
-  severity: 'error' | 'success' | 'info' | 'warn';
-  message: string;
-};
 
 type ActionData = {
   hash: number;
@@ -460,7 +456,9 @@ export const links: LinksFunction = () => {
   ];
 };
 
-function hackyEventRevival(event: EventWithRacesDifficultiesAndDocuments | null): void {
+function hackyEventRevival(
+  event: EventWithRacesDifficultiesAndDocuments | null
+): void {
   if (!event) {
     return;
   }
@@ -597,12 +595,21 @@ export default function OrganizerEventRoute() {
     addPerk(e?.target.value);
   }
 
-  function handlerCancelEnter(e: React.KeyboardEvent) {
+  function handlerAddPerkOnEnter(e: React.KeyboardEvent) {
     if (e.key !== 'Enter') {
       return;
     }
 
     addPerk(inputEl.current?.value);
+    e.preventDefault();
+  }
+
+  function handlerCancelEnter(e: React.KeyboardEvent) {
+    if (e.key !== 'Enter') {
+      return;
+    }
+
+    e.stopPropagation();
     e.preventDefault();
   }
 
@@ -759,26 +766,41 @@ export default function OrganizerEventRoute() {
             <input type="hidden" name="actionId" value={actionIds.unpublish} />
           )}
           <div className="mb-12 lg:mb-20">
-            <div className="flex flex-row items-start justify-between items-center">
-              <div>
-                <H2>{t('Create Event')}</H2>
-              </div>
-              {event.status !== Status.auto &&
-                (isPublished ? (
-                  <div className="flex flex-col justify-center md:flex-row">
+            <div
+              className={clsx('flex flex-row items-center md:gap-x-2', {
+                'justify-between': !isPublished,
+                'justify-end': isPublished
+              })}
+            >
+              {!isPublished && <H2>{t('Create Event')}</H2>}
+              <ButtonGroup>
+                {isPublished && (
+                  <ButtonLink
+                    id="back-button"
+                    variant="secondary"
+                    to={`/o/event/${event.id}/dashboard`}
+                  >
+                    {t('Back Button')}
+                  </ButtonLink>
+                )}
+                <Button
+                  type="submit"
+                  variant="secondary"
+                >
+                  {event.status === 'auto'
+                    ? t('Create Button')
+                    : t('Save Button')}
+                </Button>
+                {event.status !== Status.auto && !isPublished && (
+                  <>
                     <ButtonLink
                       id="preview-button"
-                      className="md:ml-4"
                       variant="secondary"
                       size="medium"
                       to={`/o/event/preview/${event.id}`}
-                      target="_blank"
                     >
                       {t('Preview Button')}
                     </ButtonLink>
-                  </div>
-                ) : (
-                  <div className="flex flex-col justify-center md:flex-row">
                     <Button
                       id="publish"
                       className="mb-4 md:mb-0"
@@ -789,450 +811,445 @@ export default function OrganizerEventRoute() {
                     >
                       {t('Publish Button')}
                     </Button>
-                    <ButtonLink
-                      id="preview-button"
-                      className="md:ml-4"
-                      variant="secondary"
-                      size="medium"
-                      to={`/o/event/preview/${event.id}`}
-                      target="_blank"
-                    >
-                      {t('Preview Button')}
-                    </ButtonLink>
-                  </div>
-                ))}
+                  </>
+                )}
+              </ButtonGroup>
             </div>
           </div>
-          <FormField
-            label={t('Name')}
-            id="event-name"
-            className="col-span-6 sm:col-span-4"
-            error={actionData?.errors?.name}
-          >
-            <TextField
-              name="event-name"
+          <div onKeyDown={handlerCancelEnter}>
+            <FormField
+              label={t('Name')}
               id="event-name"
-              placeholder={t('Event Name')}
-              defaultValue={event.name || ''}
-            />
-          </FormField>
-          <div className="flex flex-col flex-wrap md:flex-row">
-            <FormField
-              label={t('Sport')}
-              id="event-sport"
-              className="w-full md:basis-1/3 md:pr-4"
+              className="col-span-6 sm:col-span-4"
+              error={actionData?.errors?.name}
             >
-              <ComboBox
-                name="sport"
+              <TextField
+                name="event-name"
+                id="event-name"
+                placeholder={t('Event Name')}
+                defaultValue={event.name || ''}
+              />
+            </FormField>
+            <div className="flex flex-col flex-wrap md:flex-row">
+              <FormField
+                label={t('Sport')}
                 id="event-sport"
-                lang={language}
-                placeholder=""
-                defaultValue={event.sportId ? event.sportId : undefined}
-                options={sortedSports.map((s: Sport) => {
-                  return { value: s.id, label: s.name };
-                })}
-              />
-            </FormField>
+                className="w-full md:basis-1/3 md:pr-4"
+              >
+                <ComboBox
+                  name="sport"
+                  id="event-sport"
+                  lang={language}
+                  placeholder=""
+                  defaultValue={event.sportId ? event.sportId : undefined}
+                  options={sortedSports.map((s: Sport) => {
+                    return { value: s.id, label: s.name };
+                  })}
+                />
+              </FormField>
 
-            <FormField
-              label={t('Date')}
-              id="event-date"
-              className="w-full md:basis-1/3 md:pr-4"
-              error={actionData?.errors?.startAt}
-            >
-              <BasicDatePicker
-                name="event-date"
-                date={event?.startAt}
-                minDate={new Date()}
-              />
-            </FormField>
+              <FormField
+                label={t('Date')}
+                id="event-date"
+                className="w-full md:basis-1/3 md:pr-4"
+                error={actionData?.errors?.startAt}
+              >
+                <BasicDatePicker
+                  name="event-date"
+                  date={event?.startAt}
+                  minDate={new Date()}
+                />
+              </FormField>
 
-            <FormField
-              label={t('Difficulty')}
-              id="event-difficulty"
-              className="w-full md:basis-1/3"
-            >
-              <ComboBox
-                name="difficulty"
+              <FormField
+                label={t('Difficulty')}
                 id="event-difficulty"
-                lang={language}
-                placeholder=""
-                defaultValue={
-                  event.difficultyId ? event.difficultyId : undefined
-                }
-                options={difficulties
-                  .sort((a: Difficulty, b: Difficulty) => a.id - b.id)
-                  .map((d: Difficulty) => ({ value: d.id, label: d.name }))}
+                className="w-full md:basis-1/3"
+              >
+                <ComboBox
+                  name="difficulty"
+                  id="event-difficulty"
+                  lang={language}
+                  placeholder=""
+                  defaultValue={
+                    event.difficultyId ? event.difficultyId : undefined
+                  }
+                  options={difficulties
+                    .sort((a: Difficulty, b: Difficulty) => a.id - b.id)
+                    .map((d: Difficulty) => ({ value: d.id, label: d.name }))}
+                />
+              </FormField>
+            </div>
+
+            <Location
+              actionData={actionData}
+              handleShowMap={handleShowMap}
+              t={t}
+              hash={hash}
+              location={location}
+              locationRef={locationRef}
+              error={actionData?.errors?.coordinates}
+            />
+
+            <FormField
+              label={t('How Is Booking Going To Be Managed')}
+              error={actionData?.errors?.externalBookingUrl}
+            >
+              <PickBookingSystem
+                name="booking"
+                t={t}
+                useExternal={event?.useExternalBooking}
+                url={event?.externalBookingUrl}
               />
             </FormField>
-          </div>
 
-          <Location
-            actionData={actionData}
-            handleShowMap={handleShowMap}
-            t={t}
-            hash={hash}
-            location={location}
-            locationRef={locationRef}
-            error={actionData?.errors?.coordinates}
-          />
+            <FormField
+              label={t('Bib Starting Number')}
+              id="bib-number"
+              description={t('Bib Starting Number Description')}
+              error={actionData?.errors?.bibStartingNumber}
+            >
+              <TextField
+                name="bib-number"
+                type="number"
+                placeholder={t('Bib number placeholder')}
+                defaultValue={event.bibStartingNumber || 1}
+                className="w-full md:w-48"
+                disabled={isPublished && hasRegistrations}
+              />
+            </FormField>
 
-          <FormField
-            label={t('How Is Booking Going To Be Managed')}
-            error={actionData?.errors?.externalBookingUrl}
-          >
-            <PickBookingSystem
-              name="booking"
-              t={t}
-              useExternal={event?.useExternalBooking}
-              url={event?.externalBookingUrl}
-            />
-          </FormField>
-
-          <FormField
-            label={t('Bib Starting Number')}
-            id="bib-number"
-            description={t('Bib Starting Number Description')}
-            error={actionData?.errors?.bibStartingNumber}
-          >
-            <TextField
-              name="bib-number"
-              type="number"
-              placeholder={t('Bib number placeholder')}
-              defaultValue={event.bibStartingNumber || 1}
-              className="w-full md:w-48"
-              disabled={isPublished && hasRegistrations}
-            />
-          </FormField>
-
-          <FormField label={t('Event Photos')} id="event-photos">
-            <div className="w-full m-auto flex flex-col md:flex-row justify-begin gap-4 w-full md:grid-flow-col md:grid-rows-1 text-center">
-              <UploadImage
-                index={0}
-                label={t('Hint For Picture 1')}
-                defaultValue={event.image1}
-                className="md:w-1/3"
-              />
-              <UploadImage
-                index={1}
-                label={t('Hint For Picture 2')}
-                defaultValue={event.image2}
-                className="md:w-1/3"
-              />
-              <UploadImage
-                index={2}
-                label={t('Hint For Picture 3')}
-                defaultValue={event.image3}
-                className="md:w-1/3"
-              />
-              <UploadImage
-                index={3}
-                label={t('Hint For Picture 4')}
-                defaultValue={event.image4}
-                className="md:w-1/3"
-              />
-              <UploadImage
-                index={4}
-                label={t('Hint For Picture 5')}
-                defaultValue={event.image5}
-                className="md:w-1/3"
-              />
-            </div>
-          </FormField>
-
-          <FormField
-            label={t('Description')}
-            error={actionData?.errors?.description}
-          >
-            <div className="mt-1 relative rounded-md">
-              <TextArea
-                name="event-description"
-                className="input-text h-80"
-                placeholder={t('Event description')}
-                defaultValue={event.description}
-              />
-            </div>
-          </FormField>
-
-          <FormField label={t('Perks')} description={t('Perks Description')}>
-            <div className="grid grid-rows-8 md:grid-rows-6 md:grid-flow-col gap-y-4 md:gap-y-2 mb-2">
-              {perks
-                .sort((a, b) => a.displayOrder - b.displayOrder)
-                .map((p: any, index: number) => (
-                  <div key={p.id} className="flex items-center mb-1">
-                    <input
-                      data-cy={`perk-${index}`}
-                      type="checkbox"
-                      id={p.id}
-                      name={p.isDefault ? 'perks' : 'new-perk'}
-                      value={p.isDefault ? p.id : p.name}
-                      defaultChecked={p.isEnabled}
-                      className="w-4 h-4 text-indigo-500 bg-gray-100 rounded border-gray-300 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600"
-                    />
-                    <label
-                      htmlFor={p.id}
-                      className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300"
-                      data-cy={`perk-label-${index}`}
-                    >
-                      {p.name}
-                    </label>
-                    {!p.isDefault && (
-                      <button
-                        id={p.id}
-                        type="button"
-                        onClick={handleDeletePerk}
-                        className="rounded-full h-4 w-4 ml-2 mb-1 bg-blueGray-300 dark:bg-blueGray-600 flex items-center justify-center"
-                      >
-                        <XMarkIcon className="h-3 w-3 inline-block text-blueGray-500 dark:text-blueGray-400" />
-                      </button>
-                    )}
-                  </div>
-                ))}
-              <div>
-                <input
-                  ref={inputEl}
-                  name="new-perk-input"
-                  type="text"
-                  placeholder={t('Type to create new')}
-                  onBlur={handleOnCreatePerk}
-                  onKeyDown={handlerCancelEnter}
-                  className="rounded-lg focus-ring text-sm w-60 md:text-sm bg-gray-100 text-black placeholder-gray-500 font-medium box-border dark:disabled:bg-gray-700 dark:text-white dark:bg-gray-800 disabled:text-gray-700 border-0 sm:col-span-4"
+            <FormField label={t('Event Photos')} id="event-photos">
+              <div className="w-full m-auto flex flex-col md:flex-row justify-begin gap-4 w-full md:grid-flow-col md:grid-rows-1 text-center">
+                <UploadImage
+                  index={0}
+                  label={t('Hint For Picture 1')}
+                  defaultValue={event.image1}
+                  className="md:w-1/3"
+                />
+                <UploadImage
+                  index={1}
+                  label={t('Hint For Picture 2')}
+                  defaultValue={event.image2}
+                  className="md:w-1/3"
+                />
+                <UploadImage
+                  index={2}
+                  label={t('Hint For Picture 3')}
+                  defaultValue={event.image3}
+                  className="md:w-1/3"
+                />
+                <UploadImage
+                  index={3}
+                  label={t('Hint For Picture 4')}
+                  defaultValue={event.image4}
+                  className="md:w-1/3"
+                />
+                <UploadImage
+                  index={4}
+                  label={t('Hint For Picture 5')}
+                  defaultValue={event.image5}
+                  className="md:w-1/3"
                 />
               </div>
-            </div>
-          </FormField>
+            </FormField>
 
-          <div id="races" className="mb-12">
-            <Label
-              htmlFor="races"
-              className={clsx(
-                'mb-5 flex justify-between items-center flex-row'
-              )}
+            <FormField
+              label={t('Description')}
+              error={actionData?.errors?.description}
             >
-              {t('Distances')}
+              <div className="mt-1 relative rounded-md">
+                <TextArea
+                  name="event-description"
+                  className="input-text h-80"
+                  placeholder={t('Event description')}
+                  defaultValue={event.description}
+                />
+              </div>
+            </FormField>
 
-              <Button
-                className="hidden lg:flex"
-                type="submit"
-                name="actionId"
-                value={actionIds.addNewRace}
-              >
-                {t('Create Distance')}
-              </Button>
+            <FormField label={t('Perks')} description={t('Perks Description')}>
+              <div className="grid grid-rows-8 md:grid-rows-6 md:grid-flow-col gap-y-4 md:gap-y-2 mb-2">
+                {perks
+                  .sort((a, b) => a.displayOrder - b.displayOrder)
+                  .map((p: any, index: number) => (
+                    <div key={p.id} className="flex items-center mb-1">
+                      <input
+                        data-cy={`perk-${index}`}
+                        type="checkbox"
+                        id={p.id}
+                        name={p.isDefault ? 'perks' : 'new-perk'}
+                        value={p.isDefault ? p.id : p.name}
+                        defaultChecked={p.isEnabled}
+                        className="w-4 h-4 text-indigo-500 bg-gray-100 rounded border-gray-300 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600"
+                      />
+                      <label
+                        htmlFor={p.id}
+                        className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300"
+                        data-cy={`perk-label-${index}`}
+                      >
+                        {p.name}
+                      </label>
+                      {!p.isDefault && (
+                        <button
+                          id={p.id}
+                          type="button"
+                          onClick={handleDeletePerk}
+                          className="rounded-full h-4 w-4 ml-2 mb-1 bg-blueGray-300 dark:bg-blueGray-600 flex items-center justify-center"
+                        >
+                          <XMarkIcon className="h-3 w-3 inline-block text-blueGray-500 dark:text-blueGray-400" />
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                <div>
+                  <input
+                    ref={inputEl}
+                    name="new-perk-input"
+                    type="text"
+                    placeholder={t('Type to create new')}
+                    onBlur={handleOnCreatePerk}
+                    onKeyDown={handlerAddPerkOnEnter}
+                    className="rounded-lg focus-ring text-sm w-60 md:text-sm bg-gray-100 text-black placeholder-gray-500 font-medium box-border dark:disabled:bg-gray-700 dark:text-white dark:bg-gray-800 disabled:text-gray-700 border-0 sm:col-span-4"
+                  />
+                </div>
+              </div>
+            </FormField>
 
-              <Button
-                className="flex lg:hidden"
-                type="submit"
-                name="actionId"
-                value="add-new-race"
-                size="small"
-                id="create-race"
+            <div id="races" className="mb-12">
+              <Label
+                htmlFor="races"
+                className={clsx(
+                  'mb-5 flex justify-between items-center flex-row'
+                )}
               >
-                <PlusIcon className="md:h-6 w-6 m-0 inline-block" />
-              </Button>
-            </Label>
-            <div>
-              <RacesList races={races} eventId={event.id} />
+                {t('Distances')}
+
+                <Button
+                  className="hidden lg:flex"
+                  type="submit"
+                  name="actionId"
+                  value={actionIds.addNewRace}
+                >
+                  {t('Create Distance')}
+                </Button>
+
+                <Button
+                  className="flex lg:hidden"
+                  type="submit"
+                  name="actionId"
+                  value={actionIds.addNewRace}
+                  size="small"
+                  id="create-race"
+                >
+                  <PlusIcon className="md:h-6 w-6 m-0 inline-block" />
+                </Button>
+              </Label>
+              <div>
+                <RacesList races={races} eventId={event.id} />
+              </div>
+              <WhenListEmpty list={races}>
+                <H6 className="text-center p-12" variant="secondary" as="p">
+                  {t('No Races')}
+                </H6>
+              </WhenListEmpty>
+              {actionData?.errors?.races && (
+                <InputError className="mt-8" id="error-message">
+                  {actionData?.errors?.races}
+                </InputError>
+              )}
             </div>
-            <WhenListEmpty list={races}>
-              <H6 className="text-center p-12" variant="secondary" as="p">
-                {t('No Races')}
-              </H6>
-            </WhenListEmpty>
-            {actionData?.errors?.races && (
+
+            <FormField
+              label={t('Directions')}
+              error={actionData?.errors?.directions}
+            >
+              <div className="mt-2 relative rounded-md">
+                <TextArea
+                  name="get-there"
+                  className="input-text h-80"
+                  placeholder={t('How to get there')}
+                  defaultValue={event.directions}
+                />
+              </div>
+            </FormField>
+
+            <FormField label={t('Regulation')}>
+              <fieldset>
+                <div className="flex flex-wrap gap-3">
+                  <div className="flex items-center">
+                    <input
+                      id="regulation-option-text"
+                      name="regulation-option"
+                      type="radio"
+                      className="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300"
+                      defaultChecked={regulationOption === 'text'}
+                      onChange={handleRegulationOption}
+                      value="text"
+                    />
+                    <label
+                      htmlFor="regulation-option-text"
+                      className="ml-3 block text-sm font-medium text-gray-700"
+                    >
+                      {t('Write Regulation')}
+                    </label>
+                  </div>
+                  <div className="flex items-center">
+                    <input
+                      id="regulation-option-file"
+                      name="regulation-option"
+                      type="radio"
+                      className="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300"
+                      defaultChecked={regulationOption === 'file'}
+                      onChange={handleRegulationOption}
+                      value="file"
+                    />
+                    <label
+                      htmlFor="regulation-option-file"
+                      className="ml-3 block text-sm font-medium text-gray-700"
+                    >
+                      {t('Upload Regulation')}
+                    </label>
+                  </div>
+                </div>
+              </fieldset>
+            </FormField>
+
+            {regulationOption === 'text' && (
+              <TextArea
+                name="regulation"
+                className="input-text h-80 mb-8"
+                defaultValue={
+                  event.regulationContent ? event.regulationContent : ''
+                }
+              />
+            )}
+
+            {regulationOption === 'file' && (
+              <div className="h-80 mb-8">
+                <UploadFile
+                  name="file"
+                  mode="advanced"
+                  chooseLabel={t('Upload Regulation Button')}
+                  accept=".pdf"
+                  customUpload={true}
+                  uploadHandler={uploadHandler}
+                  emptyTemplate={
+                    <p className="m-0">{t('Regulation Dropzone')}</p>
+                  }
+                  contentClassName="p-4"
+                  className="w-full"
+                />
+
+                {event.regulationPath && fileName && (
+                  <Link
+                    to={`/event/${event.id}/regulation/view`}
+                    target="_blank"
+                    rel="noreferrer"
+                    data-cy="regulation"
+                  >
+                    {fileName}
+                  </Link>
+                )}
+              </div>
+            )}
+
+            {actionData?.errors?.regulation && (
               <InputError className="mt-8" id="error-message">
-                {actionData?.errors?.races}
+                {actionData?.errors?.regulation}
+              </InputError>
+            )}
+
+            <div id="documents" className="mb-12">
+              <Label
+                htmlFor="documents"
+                className={clsx(
+                  'mb-5 flex justify-between items-center flex-row'
+                )}
+              >
+                {t('Documents')}
+
+                <Button
+                  className="hidden lg:flex"
+                  type="submit"
+                  name="actionId"
+                  value="add-new-doc"
+                >
+                  {t('Upload Document')}
+                </Button>
+                <Button
+                  type="submit"
+                  name="actionId"
+                  value="add-new-doc"
+                  size="small"
+                  className="flex lg:hidden"
+                  id="create-document"
+                >
+                  <PlusIcon className="md:h-6 w-6 m-0 inline-block"></PlusIcon>
+                </Button>
+              </Label>
+              <div>
+                <DocumentsList documents={event.documents} eventId={event.id} />
+              </div>
+              <WhenListEmpty list={event.documents}>
+                <div className="text-center p-12">
+                  <H6 className="mb-2" as="p">
+                    {t('No Documents - CTA')}
+                  </H6>
+                  <H6 variant="secondary" as="p">
+                    {t('No Documents')}
+                  </H6>
+                </div>
+              </WhenListEmpty>
+            </div>
+
+            <ButtonGroup className="mt-8">
+              <ButtonLink type="button" variant="secondary" to="/o">
+                {t('Cancel')}
+              </ButtonLink>
+
+              <Button
+                type="submit"
+                variant="primary"
+                name={event.status === 'auto' ? 'create-event' : 'update-event'}
+              >
+                {event.status === 'auto'
+                  ? t('Create Button')
+                  : t('Save Button')}
+              </Button>
+            </ButtonGroup>
+            {event.status !== 'auto' && !hasRegistrations && (
+              <ButtonGroup className="mt-24 border-t border-gray-300 dark:border-gray-300 pt-6">
+                {event.status === 'published' && (
+                  <Button
+                    id="unpublish"
+                    className="mb-4 md:mb-0"
+                    type="button"
+                    size="medium"
+                    variant="danger"
+                    data-cy="unpublish"
+                    onClick={handleShowUnpublishEventDialog}
+                  >
+                    {t('Unpublish Button')}
+                  </Button>
+                )}
+
+                <Button
+                  name="delete-button"
+                  type="button"
+                  variant="danger"
+                  onClick={handleShowDeleteEventWarning}
+                >
+                  {t('Delete Event')}
+                </Button>
+              </ButtonGroup>
+            )}
+            {actionData?.errors?.submit && (
+              <InputError className="mt-8" id="500-error-message">
+                {actionData?.errors?.submit}
               </InputError>
             )}
           </div>
-
-          <FormField
-            label={t('Directions')}
-            error={actionData?.errors?.directions}
-          >
-            <div className="mt-2 relative rounded-md">
-              <TextArea
-                name="get-there"
-                className="input-text h-80"
-                placeholder={t('How to get there')}
-                defaultValue={event.directions}
-              />
-            </div>
-          </FormField>
-
-          <FormField label={t('Regulation')}>
-            <fieldset>
-              <div className="flex flex-wrap gap-3">
-                <div className="flex items-center">
-                  <input
-                    id="regulation-option-text"
-                    name="regulation-option"
-                    type="radio"
-                    className="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300"
-                    defaultChecked={regulationOption === 'text'}
-                    onChange={handleRegulationOption}
-                    value="text"
-                  />
-                  <label
-                    htmlFor="regulation-option-text"
-                    className="ml-3 block text-sm font-medium text-gray-700"
-                  >
-                    {t('Write Regulation')}
-                  </label>
-                </div>
-                <div className="flex items-center">
-                  <input
-                    id="regulation-option-file"
-                    name="regulation-option"
-                    type="radio"
-                    className="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300"
-                    defaultChecked={regulationOption === 'file'}
-                    onChange={handleRegulationOption}
-                    value="file"
-                  />
-                  <label
-                    htmlFor="regulation-option-file"
-                    className="ml-3 block text-sm font-medium text-gray-700"
-                  >
-                    {t('Upload Regulation')}
-                  </label>
-                </div>
-              </div>
-            </fieldset>
-          </FormField>
-
-          {regulationOption === 'text' && (
-            <TextArea
-              name="regulation"
-              className="input-text h-80 mb-8"
-              defaultValue={
-                event.regulationContent ? event.regulationContent : ''
-              }
-            />
-          )}
-
-          {regulationOption === 'file' && (
-            <div className="h-80 mb-8">
-              <UploadFile
-                name="file"
-                mode="advanced"
-                chooseLabel={t('Upload Regulation Button')}
-                accept=".pdf"
-                customUpload={true}
-                uploadHandler={uploadHandler}
-                emptyTemplate={
-                  <p className="m-0">{t('Regulation Dropzone')}</p>
-                }
-                contentClassName="p-4"
-                className="w-full"
-              />
-
-              {event.regulationPath && fileName && (
-                <Link
-                  to={`/event/${event.id}/regulation/view`}
-                  target="_blank"
-                  rel="noreferrer"
-                  data-cy="regulation"
-                >
-                  {fileName}
-                </Link>
-              )}
-            </div>
-          )}
-
-          {actionData?.errors?.regulation && (
-            <InputError className="mt-8" id="error-message">
-              {actionData?.errors?.regulation}
-            </InputError>
-          )}
-
-          <div id="documents" className="mb-12">
-            <Label
-              htmlFor="documents"
-              className={clsx(
-                'mb-5 flex justify-between items-center flex-row'
-              )}
-            >
-              {t('Documents')}
-
-              <Button
-                className="hidden lg:flex"
-                type="submit"
-                name="actionId"
-                value="add-new-doc"
-              >
-                {t('Upload Document')}
-              </Button>
-              <Button
-                type="submit"
-                name="actionId"
-                value="add-new-doc"
-                size="small"
-                className="flex lg:hidden"
-                id="create-document"
-              >
-                <PlusIcon className="md:h-6 w-6 m-0 inline-block"></PlusIcon>
-              </Button>
-            </Label>
-            <div>
-              <DocumentsList documents={event.documents} eventId={event.id} />
-            </div>
-            <WhenListEmpty list={event.documents}>
-              <div className="text-center p-12">
-                <H6 className="mb-2" as="p">
-                  {t('No Documents - CTA')}
-                </H6>
-                <H6 variant="secondary" as="p">
-                  {t('No Documents')}
-                </H6>
-              </div>
-            </WhenListEmpty>
-          </div>
-
-          <ButtonGroup className="mt-8">
-            <ButtonLink type="button" variant="secondary" to="/o">
-              {t('Cancel')}
-            </ButtonLink>
-
-            <Button
-              type="submit"
-              variant="primary"
-              name={event.status === 'auto' ? 'create-event' : 'update-event'}
-            >
-              {event.status === 'auto' ? t('Create Button') : t('Save Button')}
-            </Button>
-          </ButtonGroup>
-          {event.status !== 'auto' && !hasRegistrations && (
-            <ButtonGroup className="mt-24 border-t border-gray-300 dark:border-gray-300 pt-6">
-              {event.status === 'published' && (
-                <Button
-                  id="unpublish"
-                  className="mb-4 md:mb-0"
-                  type="button"
-                  size="medium"
-                  variant="danger"
-                  data-cy="unpublish"
-                  onClick={handleShowUnpublishEventDialog}
-                >
-                  {t('Unpublish Button')}
-                </Button>
-              )}
-
-              <Button
-                name="delete-button"
-                type="button"
-                variant="danger"
-                onClick={handleShowDeleteEventWarning}
-              >
-                {t('Delete Event')}
-              </Button>
-            </ButtonGroup>
-          )}
-          {actionData?.errors?.submit && (
-            <InputError className="mt-8" id="500-error-message">
-              {actionData?.errors?.submit}
-            </InputError>
-          )}
         </Form>
       </div>
 
@@ -1306,7 +1323,7 @@ function Location({
   t: TFunction;
   hash: number;
   location: DiciLocation | null;
-  locationRef:  MutableRefObject<HTMLInputElement>;
+  locationRef: MutableRefObject<HTMLInputElement>;
   error?: string;
 }) {
   const [firstRender, setFirstRender] = useState<boolean>(true);

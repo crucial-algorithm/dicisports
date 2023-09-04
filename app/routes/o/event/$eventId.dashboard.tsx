@@ -147,7 +147,7 @@ export default function DashboardRoute() {
     statsPerRace,
     searchedName
   } = useLoaderData<LoaderData>() as LoaderData;
-  const { t } = useTranslation('dashboard');
+  const { t, i18n } = useTranslation('dashboard');
   const searchForm = useRef<HTMLFormElement>(null);
   const [searchedParticipantName, setSearchedParticipantName] =
     useState<string>(searchedName);
@@ -190,14 +190,24 @@ export default function DashboardRoute() {
             {event.name}
           </b>
         </H2>
-        <ButtonLink
-          to={`/o/event/${event.id}`}
-          size="small"
-          className="w-28"
-          data-cy="edit"
-        >
-          {t('Edit')}
-        </ButtonLink>
+        <div>
+          <ButtonLink
+            id="preview-button"
+            variant="secondary"
+            size="small"
+            to={`/${i18n.language}/event/${event.slug}`}
+          >
+            {t('See Event')}
+          </ButtonLink>
+          <ButtonLink
+            to={`/o/event/${event.id}`}
+            size="small"
+            className="w-28 ml-4"
+            data-cy="edit"
+          >
+            {t('Edit')}
+          </ButtonLink>
+        </div>
       </div>
 
       <div className="flex flex-col gap-y-2 md:flex-row mt-4 mb-8">

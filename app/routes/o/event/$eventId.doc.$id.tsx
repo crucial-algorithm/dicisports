@@ -250,16 +250,36 @@ export default function EventDocumentRoute() {
   return (
     <Main>
       <UploadForm>
-        <div className="p-4" >
-          <FormField label={t('Name')} error={actionData?.errors?.label}>
-            <TextField
-              name="name"
-              placeholder={t('Document Name')}
-              defaultValue={document?.label ? document.label : ''}
-              className="max-w-md"
-              input={name}
-            />
-          </FormField>
+        <div className="p-4">
+          <div className="flex justify-end">
+            <ButtonLink
+              to={`/o/event/${event.id}`}
+              className="flex md:hidden mb-2"
+              variant="secondary"
+            >
+              {t('Back Button')}
+            </ButtonLink>
+          </div>
+          <div className="flex flex-row justify-between items-center">
+            <FormField label={t('Name')} error={actionData?.errors?.label}>
+              <TextField
+                name="name"
+                placeholder={t('Document Name')}
+                defaultValue={document?.label ? document.label : ''}
+                className="max-w-md"
+                input={name}
+              />
+            </FormField>
+            <>
+              <ButtonLink
+                to={`/o/event/${event.id}`}
+                className="hidden md:flex"
+                variant="secondary"
+              >
+                {t('Back Button')}
+              </ButtonLink>
+            </>
+          </div>
           {!document && (
             <FormField label={t('Document')} error={actionData?.errors?.path}>
               <section
@@ -301,10 +321,7 @@ export default function EventDocumentRoute() {
           >
             {t('Cancel')}
           </ButtonLink>
-          <Button
-            type="submit"
-            name="create-document-button"
-          >
+          <Button type="submit" name="create-document-button">
             {document?.id
               ? t('Update Document Button')
               : t('Upload Document Button')}

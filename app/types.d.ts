@@ -557,6 +557,7 @@ type OrganizerInput = {
   city: string;
   description: string;
   taxNumber: number;
+  contactName: string;
   typeId: number;
   logo: string;
   userId: string;
@@ -603,6 +604,11 @@ type SibsStatusResponse = {
 };
 
 type EventTeam = {} & DBEventTeam;
+
+type ResponseFeedback = {
+  severity: 'error' | 'success' | 'info' | 'warn';
+  message: string;
+};
 
 export {
   NonNullProperties,
@@ -667,7 +673,8 @@ export {
   SibsWebHookSchema,
   SibsStatusResponse,
   EventTeam,
-  OrganizerType
+  OrganizerType,
+  ResponseFeedback
 };
 
 // https://www.i18next.com/overview/typescript#argument-of-type-defaulttfuncreturn-is-not-assignable-to-parameter-of-type-xyz

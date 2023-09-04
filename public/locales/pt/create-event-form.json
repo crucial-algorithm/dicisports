@@ -78,6 +78,7 @@
   "Bib Starting Number": "Primeiro dorsal a atribuir",
   "Bib Starting Number Description": "Preencha com 10 se pretender deixar o 1 a 9 para convidados",
   "Bib number placeholder": "Ex: 100",
+  "Back Button": "Voltar",
 
   "Field required": "Campo obrigatório",
   "Must Be Number": "Insira um número positivo",
@@ -104,7 +105,7 @@
   "Insert Valid Price": "Insira um preço válido",
   "Insert Valid Date": "Insira uma data válida",
   "Cheaper Early Bird": "Insira um valor menor que o preço da distância",
-  "Add regulation": "Adicione o regulamento",
+  "Add Regulation": "Adicione o regulamento",
   "Write Regulation": "Escrever",
   "Upload Regulation Button": "Clique para escolher ficheiro",
   "Regulation Dropzone": "Ou arraste um ficheiro",

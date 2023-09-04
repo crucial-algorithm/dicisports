@@ -11,8 +11,6 @@ import DisplayDate from '~/components/shared/DIsplayDate';
 import InputError from '~/components/shared/form/InputError';
 import { bookingAmount } from '~/utils/misc';
 
-import TextField from './form/TextField';
-
 export default function DisplayCart({
   cart,
   event,
@@ -82,18 +80,20 @@ export default function DisplayCart({
           <>
             {!appliedDiscount ? (
               <>
-                <div className="flex flex-row mt-8 justify-between">
-                  <TextField
+                <div className="flex flex-row mt-8 justify-between gap-3">
+                  <input
+                    type="text"
                     name="discount-code"
                     placeholder={t('Discount Code')}
                     defaultValue={discountCode}
+                    className="input-text-slim w-full"
                   />
                   <button
                     id="apply-discount"
                     name="actionId"
                     value="apply-discount"
                     type="submit"
-                    className="dark:text-blueGray-500"
+                    className="dark:text-blueGray-500 bg-gray-100 dark:bg-gray-800 p-4 rounded-md font-medium"
                   >
                     {t('Apply Discount')}
                   </button>
