@@ -134,6 +134,37 @@ export const action: ActionFunction = async ({ request, params }) => {
   const teamName = (form.get('creatable-team') as string) || null;
 
   try {
+    if (actionId === 'apply-discount') {
+      const discountCode = form.get('discount-code') as string;
+      const organizer = await findOrganizer(event.createdById);
+      const dbDiscountCode = await findDiscountCode(
+          discountCode,
+          organizer?.id as string
+      );
+
+      if (
+          !dbDiscountCode ||
+          dbDiscountCode.status !== DiscountCodeStatus.active
+      ) {
+        return badRequest({ errors: { discountError: t('No Discount Code') } });
+      }
+      const cart = await findBookingCart(clientId, eventId);
+
+      await applyDiscountCode(
+          booking.id,
+          `${dbDiscountCode.code}|${dbDiscountCode.value}|${dbDiscountCode.fixed}`,
+          cart
+      );
+
+      return json({ ok: true });
+    }
+
+    if (actionId === 'remove-discount') {
+      await removeBookingDiscount(booking.id);
+
+      return json({ ok: true });
+    }
+
     const phoneNumber = form.get('phone-number') as string;
     const data: ParticipantInput = {
       id: form.get('participant-id') as string,
@@ -303,37 +334,6 @@ export const action: ActionFunction = async ({ request, params }) => {
       await updateBookingStatus(bookingId, CheckoutStatus.pending);
 
       return redirect(`/checkout/payment/${bookingId}`);
-    }
-
-    if (actionId === 'apply-discount') {
-      const discountCode = form.get('discount-code') as string;
-      const organizer = await findOrganizer(event.createdById);
-      const dbDiscountCode = await findDiscountCode(
-        discountCode,
-        organizer?.id as string
-      );
-
-      if (
-        !dbDiscountCode ||
-        dbDiscountCode.status !== DiscountCodeStatus.active
-      ) {
-        return badRequest({ errors: { discountError: t('No Discount Code') } });
-      }
-      const cart = await findBookingCart(clientId, eventId);
-
-      await applyDiscountCode(
-        booking.id,
-        `${dbDiscountCode.code}|${dbDiscountCode.value}|${dbDiscountCode.fixed}`,
-        cart
-      );
-
-      return json({ ok: true });
-    }
-
-    if (actionId === 'remove-discount') {
-      await removeBookingDiscount(booking.id);
-
-      return json({ ok: true });
     }
 
     return json({ ok: true, action: actionId });
