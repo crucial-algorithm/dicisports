@@ -24,6 +24,8 @@
   "Max 9 Number": "Apenas permitidos 9 dígitos",
   "Valid E-mail": "Insira um e-mail válido",
   "Invalid Organizer Type": "Tipo de organizador não existe",
+  "Organizer Saved": "Organizador guardado",
+  "Organizer Created": "Organizador submetido",
 
   "Organizer display field": "Este campo estará visível na página do evento",
   "Read and Accepted": "Eu li e aceito os",

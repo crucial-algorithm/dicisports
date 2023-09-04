@@ -67,7 +67,7 @@ export const meta: MetaFunction = ({ data }) => {
   const { event } = data;
 
   return {
-    title: event ? event.name : ''
+    title: event ? event.name : 'DiciSports - This Is Sports'
   };
 };
 
@@ -143,7 +143,7 @@ export default function EventDisplayRoute() {
     );
   }
 
-  function handleRacePrice(r: Race): number {
+  function determineRacePrice(r: Race): number {
     if (
       r.priceEarlyBird &&
       r.validUntil &&
@@ -155,7 +155,7 @@ export default function EventDisplayRoute() {
   }
 
   if (races) {
-    const prices = races.map((r: Race) => handleRacePrice(r));
+    const prices = races.map((r: Race) => determineRacePrice(r));
 
     prices.sort((a: number, b: number) => a - b);
     minPrice = prices[0];

@@ -93,17 +93,13 @@ import type {
   Language,
   Perk,
   Race,
+  ResponseFeedback,
   Sport,
   User
 } from '~/types';
 import { badRequest } from '~/utils/misc';
 import UploadFile from '~/components/UploadFile';
 import { findConfirmedBookings } from '~/server/db/booking.server';
-
-type ResponseFeedback = {
-  severity: 'error' | 'success' | 'info' | 'warn';
-  message: string;
-};
 
 type ActionData = {
   hash: number;

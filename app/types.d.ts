@@ -605,6 +605,11 @@ type SibsStatusResponse = {
 
 type EventTeam = {} & DBEventTeam;
 
+type ResponseFeedback = {
+  severity: 'error' | 'success' | 'info' | 'warn';
+  message: string;
+};
+
 export {
   NonNullProperties,
   MemberProfile,
@@ -668,7 +673,8 @@ export {
   SibsWebHookSchema,
   SibsStatusResponse,
   EventTeam,
-  OrganizerType
+  OrganizerType,
+  ResponseFeedback
 };
 
 // https://www.i18next.com/overview/typescript#argument-of-type-defaulttfuncreturn-is-not-assignable-to-parameter-of-type-xyz
