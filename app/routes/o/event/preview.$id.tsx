@@ -24,25 +24,25 @@ export const loader: LoaderFunction = async ({ params, request }) => {
 
   return loadDisplayEventData(
     user,
-    event?.createdById === user?.id ? event : null,
-    true
+    event?.createdById === user?.id ? event : null
   );
 };
 
 export default function EventPreviewRoute() {
-  const { event } =
-    useLoaderData<{ event: Event }>();
+  const { event } = useLoaderData<{ event: Event }>();
   const { t } = useTranslation('event');
 
   return (
     <>
       <div>
-        <header className="sticky top-0 z-10 bg-amber-300 dark:bg-amber-500 w-full h-20 flex items-center justify-between py-4 px-6">
+        {event && (
+          <header className="sticky top-0 z-10 bg-amber-300 dark:bg-amber-500 w-full h-20 flex items-center justify-between py-4 px-6">
             <H6>{t('You are in preview mode')}</H6>
             <ButtonLink to={`/o/event/${event.id}`} variant="secondary">
               {t('Edit')}
             </ButtonLink>
-        </header>
+          </header>
+        )}
         <EventDisplayRoute />
       </div>
     </>

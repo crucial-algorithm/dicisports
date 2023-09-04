@@ -73,8 +73,7 @@ export const meta: MetaFunction = ({ data }) => {
 
 export async function loadDisplayEventData(
   user: User | null,
-  event: Event | null,
-  isPreview: boolean = false
+  event: Event | null
 ) {
   let organizer: Organizer | null = null;
   let isUserFavorite = false;
