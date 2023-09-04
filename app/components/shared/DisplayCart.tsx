@@ -11,8 +11,6 @@ import DisplayDate from '~/components/shared/DIsplayDate';
 import InputError from '~/components/shared/form/InputError';
 import { bookingAmount } from '~/utils/misc';
 
-import TextField from './form/TextField';
-
 export default function DisplayCart({
   cart,
   event,
