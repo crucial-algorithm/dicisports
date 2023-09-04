@@ -213,7 +213,7 @@ export const action: ActionFunction = async ({ request, params }) => {
           raceId
         );
       } catch (e) {
-        console.log(e);
+        console.error(e);
 
         return badRequest({
           errors: { selectedParticipant: t('Existing Race Participant') },
@@ -238,10 +238,7 @@ export const action: ActionFunction = async ({ request, params }) => {
       await updateRaceParticipantTeam(teamName, eventId, raceParticipant);
     }
 
-    if (
-      actionId === CheckoutInfoActions.update ||
-      actionId === CheckoutInfoActions.updateAndCheckout
-    ) {
+    if (actionId === CheckoutInfoActions.update) {
       ParticipantSchema.parse(data);
       await updateParticipant(data);
       const raceId = form.get('raceId') as string;
@@ -260,14 +257,12 @@ export const action: ActionFunction = async ({ request, params }) => {
       await updateRaceParticipantTeam(teamName, eventId, raceParticipant);
     }
 
-    if (
-      actionId === CheckoutInfoActions.checkout ||
-      actionId === CheckoutInfoActions.updateAndCheckout
-    ) {
-      TermsAndRegulationSchema.parse({
-        regulation,
-        terms
-      });
+    const raceParticipants = await findUserBookingParticipants(bookingId);
+
+    // if user is booking for himself (aka, registering a single participant in a single race,
+    // try checkout automatically)
+    if (actionId === CheckoutInfoActions.checkout || raceParticipants?.length === 1) {
+      TermsAndRegulationSchema.parse({ regulation, terms });
       const raceParticipants = await findUserEventRaceParticipants(
         clientId,
         eventId
@@ -421,7 +416,7 @@ export default function CheckoutInfoRoute() {
   const [showAddRacesDialog, setShowAddRacesDialog] = useState<boolean>(false);
   const [isReset, setIsReset] = useState<boolean>(false);
   const [selectedParticipant, setSelectedParticipant] =
-    useState<Participant | null>(null);
+    useState<Participant | null>(savedParticipants?.length === 1 ? savedParticipants[0] : null);
   const [missingParticipants, setMissingParticipants] = useState<
     RaceParticipant[]
   >([]);
@@ -454,9 +449,10 @@ export default function CheckoutInfoRoute() {
 
   const reset = useCallback(() => {
     setErrors({});
-    setSelectedParticipant(null);
+    setSelectedParticipant(savedParticipants?.length === 1 ? savedParticipants[0] : null);
     setMissingParticipants([]);
-  }, []);
+    setHash(Date.now());
+  }, [savedParticipants]);
 
   function handleSetParticipant(e: React.MouseEvent) {
     const [newParticipant, raceId, raceParticipantId] =
@@ -697,7 +693,7 @@ export default function CheckoutInfoRoute() {
 
       {!isAuth && !isGuest && (
         <div className="flex flex-row items-center justify-end gap-x-2">
-          <H6>{t('Already Have An Account ?')}</H6>
+          <H6>{t('Already Have An Account?')}</H6>
           <a href={`/login?a=checkout&b=${bookingId}`} data-cy="authenticate">
             <H6 className="dark:text-blueGray-500 cursor-pointer">
               {t('Login')}
@@ -719,7 +715,7 @@ export default function CheckoutInfoRoute() {
             setSelectedParticipant={handleSetSelectedParticipant}
             shirtSizes={shirtSizes}
             resetForm={resetForm}
-            isSingleParticipant={raceParticipants.length === 1}
+            isUserBookingOnlyForHimself={raceParticipants.length === 1}
             isReadOnly={isGuest}
             eventTeams={eventTeams}
             participantTeam={participantTeam}
