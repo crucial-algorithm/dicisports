@@ -4,7 +4,7 @@ import {
   PlusIcon,
   XMarkIcon
 } from '@heroicons/react/24/outline';
-import { CheckoutStatus, ParticipantStatus } from '@prisma/client';
+import { CheckoutStatus, DiscountCodeStatus, ParticipantStatus } from '@prisma/client';
 import type { ActionFunction, LoaderFunction } from '@remix-run/node';
 import { json, redirect } from '@remix-run/node';
 
@@ -31,8 +31,10 @@ import { H2, H4, H5, H6 } from '~/components/shared/typography';
 import { getClientSession } from '~/server/auth/client.server';
 import { getUser } from '~/server/auth/session.server';
 import {
+  applyDiscountCode,
   findBookingById,
   findBookingCart,
+  removeBookingDiscount,
   updateBookingStatus
 } from '~/server/db/booking.server';
 import type { EventWithRacesDifficultiesAndDocuments } from '~/server/db/events.server';
@@ -65,6 +67,7 @@ import InputError from '~/components/shared/form/InputError';
 import { findOrganizer } from '~/server/db/organizer.server';
 import { addEmailToMailingList } from '~/server/db/mailingList.server';
 import { findEventTeams } from '~/server/db/teams.server';
+import { findDiscountCode } from '~/server/db/discounts.server';
 
 type LoaderData = {
   event: EventWithRacesDifficultiesAndDocuments;
@@ -78,6 +81,7 @@ type LoaderData = {
   bookingId: string;
   organizerName: string;
   eventTeams: EventTeam[];
+  appliedDiscount: string | null;
 };
 
 export const handle: { id: string; i18n: string[] } = {
@@ -306,6 +310,37 @@ export const action: ActionFunction = async ({ request, params }) => {
       return redirect(`/checkout/payment/${bookingId}`);
     }
 
+    if (actionId === 'apply-discount') {
+      const discountCode = form.get('discount-code') as string;
+      const organizer = await findOrganizer(event.createdById);
+      const dbDiscountCode = await findDiscountCode(
+        discountCode,
+        organizer?.id as string
+      );
+
+      if (
+        !dbDiscountCode ||
+        dbDiscountCode.status !== DiscountCodeStatus.active
+      ) {
+        return badRequest({ errors: { discountError: t('No Discount Code') } });
+      }
+      const cart = await findBookingCart(clientId, eventId);
+
+      await applyDiscountCode(
+        booking.id,
+        `${dbDiscountCode.code}|${dbDiscountCode.value}|${dbDiscountCode.fixed}`,
+        cart
+      );
+
+      return json({ ok: true });
+    }
+
+    if (actionId === 'remove-discount') {
+      await removeBookingDiscount(booking.id);
+
+      return json({ ok: true });
+    }
+
     return json({ ok: true, action: actionId });
   } catch (e) {
     if (!(e instanceof ZodError)) {
@@ -385,7 +420,8 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     isGuest,
     bookingId,
     organizerName: organizer?.name as string,
-    eventTeams
+    eventTeams,
+    appliedDiscount: booking.appliedDiscount
   });
 };
 
@@ -403,7 +439,8 @@ export default function CheckoutInfoRoute() {
     isGuest,
     bookingId,
     organizerName,
-    eventTeams
+    eventTeams,
+    appliedDiscount
   } = useLoaderData<LoaderData>() as LoaderData;
   const [participantTeam, setParticipantTeam] = useState<string | null>(
     raceParticipants[0].team?.name || null
@@ -815,6 +852,8 @@ export default function CheckoutInfoRoute() {
             error={errors.missingFilledParticipants}
             fetcher={fetcher}
             hash={hash}
+            showDiscountCodeInput={true}
+            appliedDiscount={appliedDiscount}
           >
             {!isGuest && (
               <>

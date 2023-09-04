@@ -102,6 +102,17 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     return redirect(`/checkout/info/${bookingId}`);
   }
 
+  if (booking.appliedDiscount) {
+    const [, value, fixed] = booking.appliedDiscount.split('|');
+    const amount = bookingAmount(cart, Number(value), JSON.parse(fixed));
+
+    if (amount === 0) {
+      await updateBookingStatus(bookingId, CheckoutStatus.confirmed);
+
+      return redirect(`/checkout/confirmation/${bookingId}`);
+    }
+  }
+
   const hasASuccessfulPayment = await isBookingPaid(bookingId);
 
   if (hasASuccessfulPayment) {
