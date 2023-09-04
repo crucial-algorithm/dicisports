@@ -67,7 +67,7 @@ export const meta: MetaFunction = ({ data }) => {
   const { event } = data;
 
   return {
-    title: event.name
+    title: event ? event.name : ''
   };
 };
 

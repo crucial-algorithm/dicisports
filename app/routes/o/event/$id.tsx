@@ -790,9 +790,6 @@ export default function OrganizerEventRoute() {
                 <Button
                   type="submit"
                   variant="secondary"
-                  name={
-                    event.status === 'auto' ? 'create-event' : 'update-event'
-                  }
                 >
                   {event.status === 'auto'
                     ? t('Create Button')
