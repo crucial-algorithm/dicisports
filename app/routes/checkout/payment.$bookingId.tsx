@@ -653,10 +653,7 @@ function DisplayMultibancoInfo({ entity, reference, amount }: MultibancoProps) {
 }
 
 function formatMbReference(reference: string) {
-  return Number(reference)
-    .toLocaleString()
-    .replace(/,/g, ' ')
-    .replace(/\./g, ' ');
+  return (reference.match(/.{1,3}/g) || []).join(' ');
 }
 
 type FormErrors = {
