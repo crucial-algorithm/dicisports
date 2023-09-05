@@ -376,7 +376,7 @@ describe('Checkout', () => {
       bookParticipant('MY4bvgxDbMtGv8rbYe5d', 'AhowRdNWCBQWSuivSt7h');
     });
 
-    it('should be able to authenticate and keep booking after completing booking process - login', () => {
+    it('should be able to login and keep booking after completing booking process', () => {
       bookParticipant('bQmGXYkbhJetjk6mniMt', 'Rd9SETi59X9ava6CPhkY')
         .get('[data-cy=authenticate-login]')
         .should('exist')
@@ -410,7 +410,7 @@ describe('Checkout', () => {
         });
     });
 
-    it.only('should be able to authenticate and keep booking after completing booking process - signup', () => {
+    it('should be able to signup and keep booking after completing booking process', () => {
       bookParticipant('bQmGXYkbhJetjk6mniMt', 'Rd9SETi59X9ava6CPhkY')
         .get('[data-cy=authenticate-signup]')
         .should('exist')

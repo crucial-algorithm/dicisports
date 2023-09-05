@@ -3,7 +3,7 @@ import { CheckoutStatus } from '@prisma/client';
 import type { ActionFunction, LoaderFunction } from '@remix-run/node';
 import { json, redirect } from '@remix-run/node';
 import {
-  Form, Link,
+  Form,
   useActionData,
   useFetcher,
   useLoaderData
@@ -12,9 +12,6 @@ import * as React from 'react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { z, ZodError } from 'zod';
-
-import clsx from 'clsx';
-import type { TFunction } from 'i18next';
 
 import Button from '~/components/shared/Button';
 import DisplayCart from '~/components/shared/DisplayCart';
@@ -39,6 +36,7 @@ import {
   addEmailToMailingList,
   findMailingListEnrolledEmail
 } from '~/server/db/mailingList.server';
+import LoginOrCreateAccountCTA from '~/components/DisplayLoginOrCreateAccountCTA';
 
 type LoaderData = {
   registration: Booking;
@@ -265,7 +263,9 @@ export default function CheckoutConfirmationRoute() {
                 bookingId={bookingId}
                 cta={t('Dont want to fill information?')}
                 className="mt-16"
-                subHeaderText={t('Login Or Create Account Subheader - confirmation')}
+                subHeaderText={t(
+                  'Login Or Create Account Subheader - confirmation'
+                )}
               />
               <Form method="post" className="flex flex-col items-start mt-12">
                 <FormField
@@ -327,46 +327,5 @@ export default function CheckoutConfirmationRoute() {
         </div>
       </div>
     </Main>
-  );
-}
-
-export function LoginOrCreateAccountCTA({
-  t,
-  bookingId,
-  cta,
-  className,
-  subHeaderText
-}: {
-  t: TFunction;
-  bookingId: string;
-  cta: string;
-  className?: string;
-  subHeaderText?: string;
-}) {
-  return (
-    <div className="mb-8">
-      <p
-        className={clsx(
-          'dark:text-white text-black text-lg font-medium',
-          className
-        )}
-      >
-        {cta} &nbsp;
-        <Link
-          to={`/login?a=checkout&b=${bookingId}`}
-          data-cy="authenticate-login"
-        >
-          {t('Login')}
-        </Link>
-        &nbsp; {t('Or')} &nbsp;
-        <Link
-          to={`/signup?a=checkout&b=${bookingId}`}
-          data-cy="authenticate-signup"
-        >
-          {t('Create account')}
-        </Link>
-      </p>
-      <H6 variant="secondary">{subHeaderText}</H6>
-    </div>
   );
 }

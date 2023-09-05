@@ -68,7 +68,7 @@ import { findOrganizer } from '~/server/db/organizer.server';
 import { addEmailToMailingList } from '~/server/db/mailingList.server';
 import { findEventTeams } from '~/server/db/teams.server';
 import { findDiscountCode } from '~/server/db/discounts.server';
-import { LoginOrCreateAccountCTA } from '~/routes/checkout/confirmation.$bookingId';
+import LoginOrCreateAccountCTA from '~/components/DisplayLoginOrCreateAccountCTA';
 
 type LoaderData = {
   event: EventWithRacesDifficultiesAndDocuments;
