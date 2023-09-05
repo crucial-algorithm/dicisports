@@ -376,9 +376,9 @@ describe('Checkout', () => {
       bookParticipant('MY4bvgxDbMtGv8rbYe5d', 'AhowRdNWCBQWSuivSt7h');
     });
 
-    it.skip('should be able to authenticate and keep booking after completing booking process', () => {
+    it('should be able to authenticate and keep booking after completing booking process - login', () => {
       bookParticipant('bQmGXYkbhJetjk6mniMt', 'Rd9SETi59X9ava6CPhkY')
-        .get('[data-cy=authenticate]')
+        .get('[data-cy=authenticate-login]')
         .should('exist')
         .click()
 
@@ -403,6 +403,46 @@ describe('Checkout', () => {
         .click()
 
         .wait('@login')
+
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.include('/checkout/confirmation/');
+        });
+    });
+
+    it.only('should be able to authenticate and keep booking after completing booking process - signup', () => {
+      bookParticipant('bQmGXYkbhJetjk6mniMt', 'Rd9SETi59X9ava6CPhkY')
+        .get('[data-cy=authenticate-signup]')
+        .should('exist')
+        .click()
+
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.eq('/signup');
+          expect(l.search).to.contain('a=checkout&b=');
+        })
+
+        .waitForHydration()
+
+        .get('input[name=signup-email]')
+        .type('a@gmail.com')
+
+        .get('input[name=confirmation]')
+        .type('a@gmail.com')
+
+        .get('input[name=name]')
+        .type('Projeto Pedal')
+
+        .get('input[name=password]')
+        .type('pp@password1')
+
+        .intercept('POST', '/signup*')
+        .as('signup')
+
+        .get('button[name=create]')
+        .click()
+
+        .wait('@signup')
 
         .location()
         .should((l) => {

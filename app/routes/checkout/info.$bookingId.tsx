@@ -68,6 +68,7 @@ import { findOrganizer } from '~/server/db/organizer.server';
 import { addEmailToMailingList } from '~/server/db/mailingList.server';
 import { findEventTeams } from '~/server/db/teams.server';
 import { findDiscountCode } from '~/server/db/discounts.server';
+import { LoginOrCreateAccountCTA } from '~/routes/checkout/confirmation.$bookingId';
 
 type LoaderData = {
   event: EventWithRacesDifficultiesAndDocuments;
@@ -729,12 +730,12 @@ export default function CheckoutInfoRoute() {
       )}
 
       {!isAuth && !isGuest && (
-        <div className="flex flex-row items-center gap-x-2 mb-4">
-          <H6>{t('Already Have An Account?')}</H6>
-          <a href={`/login?a=checkout&b=${bookingId}`} data-cy="authenticate">
-            {t('Login')}
-          </a>
-        </div>
+        <LoginOrCreateAccountCTA
+          t={t}
+          bookingId={bookingId}
+          cta={t('Already Have An Account?')}
+          subHeaderText={t('Login Or Create Account Subheader - info')}
+        />
       )}
 
       <div className="flex flex-col lg:flex-row">
