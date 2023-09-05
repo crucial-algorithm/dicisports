@@ -36,6 +36,7 @@ import {
   addEmailToMailingList,
   findMailingListEnrolledEmail
 } from '~/server/db/mailingList.server';
+import LoginOrCreateAccountCTA from '~/components/DisplayLoginOrCreateAccountCTA';
 
 type LoaderData = {
   registration: Booking;
@@ -239,17 +240,6 @@ export default function CheckoutConfirmationRoute() {
         <H6>{event.address}</H6>
       </div>
 
-      {!isAuth && (
-        <div className="flex flex-row items-center justify-end gap-x-2">
-          <H6>{t('Already Have An Account?')}</H6>
-          <a href={`/login?a=checkout&b=${bookingId}`} data-cy="authenticate">
-            <H6 className="dark:text-blueGray-500 cursor-pointer">
-              {t('Login')}
-            </H6>
-          </a>
-        </div>
-      )}
-
       <div className="flex flex-col md:flex-row">
         <div className="flex-col w-full md:w-[calc(100%-(480px))] md:pr-4">
           <H4 data-cy="confirmation-label">{t('Thanks For Buying')}</H4>
@@ -267,53 +257,64 @@ export default function CheckoutConfirmationRoute() {
           </div>
 
           {!isAuth && (
-            <Form method="post" className="flex flex-col items-start mt-16">
-              <FormField
-                label={t('Mail Confirmation Details')}
-                error={actionData?.errors?.email}
-              >
-                <TextField
-                  name="email"
-                  className="w-1/2 p-8 mb-2"
-                  placeholder={t('Email Address')}
-                />
-                <div className="flex items-center">
-                  <input
-                    name="add-to-mail-list"
-                    type="checkbox"
-                    checked={checkedAddToMailingList}
-                    onClick={handleCheckAddToMailingList}
-                    className="w-4 h-4 text-indigo-500 bg-gray-100 rounded border-gray-300 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600"
-                    data-cy="mail-list"
-                  />
-                  <label
-                    className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300"
-                    htmlFor="add-to-mail-list"
-                  >
-                    {t('Add to X Mailing List', { organizer: organizerName })}
-                  </label>
-                </div>
-              </FormField>
-              <Button name="send-confirmation" type="submit" className="mt-4">
-                {t('Send')}
-              </Button>
-              {actionData?.errors?.submit && (
-                <InputError className="mt-4" id="error-message">
-                  {actionData.errors.submit}
-                </InputError>
-              )}
-              {actionData?.successMessage && (
-                <p
-                  id="success-message"
-                  className="dark:text-blueGray-500 text-gray-500 text-lg mt-2"
+            <>
+              <LoginOrCreateAccountCTA
+                t={t}
+                bookingId={bookingId}
+                cta={t('Dont want to fill information?')}
+                className="mt-16"
+                subHeaderText={t(
+                  'Login Or Create Account Subheader - confirmation'
+                )}
+              />
+              <Form method="post" className="flex flex-col items-start mt-12">
+                <FormField
+                  label={t('Mail Confirmation Details')}
+                  error={actionData?.errors?.email}
                 >
-                  <span role="img" aria-label="sparkles">
-                    ✨
-                  </span>{' '}
-                  {actionData.successMessage}
-                </p>
-              )}
-            </Form>
+                  <TextField
+                    name="email"
+                    className="w-1/2 p-8 mb-2"
+                    placeholder={t('Email Address')}
+                  />
+                  <div className="flex items-center">
+                    <input
+                      name="add-to-mail-list"
+                      type="checkbox"
+                      checked={checkedAddToMailingList}
+                      onClick={handleCheckAddToMailingList}
+                      className="w-4 h-4 text-indigo-500 bg-gray-100 rounded border-gray-300 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600"
+                      data-cy="mail-list"
+                    />
+                    <label
+                      className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300"
+                      htmlFor="add-to-mail-list"
+                    >
+                      {t('Add to X Mailing List', { organizer: organizerName })}
+                    </label>
+                  </div>
+                </FormField>
+                <Button name="send-confirmation" type="submit" className="mt-4">
+                  {t('Send')}
+                </Button>
+                {actionData?.errors?.submit && (
+                  <InputError className="mt-4" id="error-message">
+                    {actionData.errors.submit}
+                  </InputError>
+                )}
+                {actionData?.successMessage && (
+                  <p
+                    id="success-message"
+                    className="dark:text-blueGray-500 text-gray-500 text-lg mt-2"
+                  >
+                    <span role="img" aria-label="sparkles">
+                      ✨
+                    </span>{' '}
+                    {actionData.successMessage}
+                  </p>
+                )}
+              </Form>
+            </>
           )}
         </div>
         <div className="w-full md:w-[480px] mt-4 md:mt-0">
