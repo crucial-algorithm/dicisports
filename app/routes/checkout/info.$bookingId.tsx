@@ -68,6 +68,7 @@ import { findOrganizer } from '~/server/db/organizer.server';
 import { addEmailToMailingList } from '~/server/db/mailingList.server';
 import { findEventTeams } from '~/server/db/teams.server';
 import { findDiscountCode } from '~/server/db/discounts.server';
+import LoginOrCreateAccountCTA from '~/components/DisplayLoginOrCreateAccountCTA';
 
 type LoaderData = {
   event: EventWithRacesDifficultiesAndDocuments;
@@ -729,14 +730,12 @@ export default function CheckoutInfoRoute() {
       )}
 
       {!isAuth && !isGuest && (
-        <div className="flex flex-row items-center justify-end gap-x-2">
-          <H6>{t('Already Have An Account?')}</H6>
-          <a href={`/login?a=checkout&b=${bookingId}`} data-cy="authenticate">
-            <H6 className="dark:text-blueGray-500 cursor-pointer">
-              {t('Login')}
-            </H6>
-          </a>
-        </div>
+        <LoginOrCreateAccountCTA
+          t={t}
+          bookingId={bookingId}
+          cta={t('Already Have An Account?')}
+          subHeaderText={t('Login Or Create Account Subheader - info')}
+        />
       )}
 
       <div className="flex flex-col lg:flex-row">
@@ -885,10 +884,9 @@ export default function CheckoutInfoRoute() {
                   <a
                     href={`/checkout/cart/${event.id}?a=update`}
                     data-cy="update-cart"
+                    className="text-lg font-medium"
                   >
-                    <H6 className="dark:text-blueGray-500 cursor-pointer">
-                      {t('Update Cart')}
-                    </H6>
+                    {t('Update Cart')}
                   </a>
                 </div>
               </>
