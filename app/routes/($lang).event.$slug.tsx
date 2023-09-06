@@ -121,6 +121,7 @@ export default function EventDisplayRoute() {
 
   let minPrice = 0;
   const [isEventHeaderVisible, setEventHeaderVisible] = useState<boolean>(true);
+  const [areRacesVisible, setAreRacesVisible] = useState<boolean>(false);
   const anyRaceInEarlyBird = races
     .map(
       (r: Race) =>
@@ -165,10 +166,11 @@ export default function EventDisplayRoute() {
         minPrice={minPrice}
         t={t}
         visible={!isEventHeaderVisible}
+        hidePrice={areRacesVisible}
       />
 
       <Main>
-        <InView as="div" onChange={setEventHeaderVisible}>
+        <InView as="div" onChange={setEventHeaderVisible} threshold={0.2}>
           <EventHeader
             event={event}
             favorite={favorite}
@@ -187,32 +189,34 @@ export default function EventDisplayRoute() {
         </div>
 
         <H3 id="races-list">{t('Races')}</H3>
-        <div
-          data-cy="races-list"
-          className="flex flex-col mt-2 scroll-mx-2 items-center md:items-start md:flex-row md:flex-nowrap md:overflow-x-auto pb-10 hide-scrollbar"
-        >
-          {races
-            .sort((a: Race, b: Race) => a.displayOrder - b.displayOrder)
-            .map((race: Race, index: number) => (
-              <DisplayRace
-                race={race}
-                key={race.id}
-                index={index}
-                eventId={event.id}
-                areThereRacesInEarlyBird={anyRaceInEarlyBird}
-              />
-            ))}
-          <WhenListEmpty list={races}>
-            <H6
-              className="text-center p-12"
-              variant="secondary"
-              as="p"
-              data-cy="no-races"
-            >
-              {t('No Races')}
-            </H6>
-          </WhenListEmpty>
-        </div>
+        <InView as="div" onChange={setAreRacesVisible} threshold={0.2}>
+          <div
+            data-cy="races-list"
+            className="flex flex-col mt-2 scroll-mx-2 items-center md:items-start md:flex-row md:flex-nowrap md:overflow-x-auto pb-10 hide-scrollbar"
+          >
+            {races
+              .sort((a: Race, b: Race) => a.displayOrder - b.displayOrder)
+              .map((race: Race, index: number) => (
+                <DisplayRace
+                  race={race}
+                  key={race.id}
+                  index={index}
+                  eventId={event.id}
+                  areThereRacesInEarlyBird={anyRaceInEarlyBird}
+                />
+              ))}
+            <WhenListEmpty list={races}>
+              <H6
+                className="text-center p-12"
+                variant="secondary"
+                as="p"
+                data-cy="no-races"
+              >
+                {t('No Races')}
+              </H6>
+            </WhenListEmpty>
+          </div>
+        </InView>
 
         <div className="my-8">
           <H3>{t('Perks')}</H3>
@@ -699,12 +703,14 @@ function StickyPriceTag({
   eventName,
   minPrice,
   t,
-  visible
+  visible,
+  hidePrice
 }: {
   eventName: string;
   minPrice: number;
   t: TFunction;
-  visible: boolean
+  visible: boolean;
+  hidePrice: boolean;
 }) {
   return (
     <div
@@ -714,26 +720,27 @@ function StickyPriceTag({
           'flex': visible,
           'hidden': !visible
         }
-
       )}
     >
       <H3 className="text-sp-light-blue-900 w-full md:ml-2">
         <b className="break-words">{eventName}</b>
       </H3>
-      <div className="flex flex-col md:flex-row items-center">
-        <div className="flex flex-col md:justify-start">
-          <H6 className="md:ml-2">{t('From')}</H6>
-          <H2
-            data-cy="sticky-price"
-            className="text-sp-light-blue-900 w-full md:ml-2"
-          >
-            <b className="break-words">{`${minPrice / 1000}€`}</b>
-          </H2>
+      {!hidePrice && (
+        <div className="flex flex-col md:flex-row items-center">
+          <div className="flex flex-col md:justify-start">
+            <H6 className="md:ml-2">{t('From')}</H6>
+            <H2
+              data-cy="sticky-price"
+              className="text-sp-light-blue-900 w-full md:ml-2"
+            >
+              <b className="break-words">{`${minPrice / 1000}€`}</b>
+            </H2>
+          </div>
+          <ButtonLink className="md:ml-16" to="#races-list">
+            {t('Races Anchor')}
+          </ButtonLink>
         </div>
-        <ButtonLink className="md:ml-16" to="#races-list">
-          {t('Races Anchor')}
-        </ButtonLink>
-      </div>
+      )}
     </div>
   );
 }
