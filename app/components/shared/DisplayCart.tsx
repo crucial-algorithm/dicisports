@@ -11,8 +11,6 @@ import DisplayDate from '~/components/shared/DIsplayDate';
 import InputError from '~/components/shared/form/InputError';
 import { bookingAmount } from '~/utils/misc';
 
-import TextField from './form/TextField';
-
 export default function DisplayCart({
   cart,
   event,
@@ -52,7 +50,7 @@ export default function DisplayCart({
         <H4>{t('Your Tickets')}</H4>
         <div className="mt-4 space-y-1">
           <H5>{event.name}</H5>
-          <H6 className="dark:text-blueGray-500">
+          <H6 variant="secondary">
             <DisplayDate date={new Date(event.startAt as Date)} />
           </H6>
         </div>
@@ -68,10 +66,10 @@ export default function DisplayCart({
                 <H6>x{ticket.qty}</H6>
               </div>
               <div className="flex flex-row items-center justify-between">
-                <H6 className="dark:text-blueGray-500" id={`${ticket.raceId}-price`}>
+                <H6 variant="secondary" id={`${ticket.raceId}-price`}>
                   {ticket.price / 1000}€
                 </H6>
-                <H6 className="dark:text-blueGray-500">
+                <H6 variant="secondary">
                   {(ticket.price * ticket.qty) / 1000}€
                 </H6>
               </div>
@@ -82,18 +80,20 @@ export default function DisplayCart({
           <>
             {!appliedDiscount ? (
               <>
-                <div className="flex flex-row mt-8 justify-between">
-                  <TextField
+                <div className="flex flex-row mt-8 justify-between gap-3">
+                  <input
+                    type="text"
                     name="discount-code"
                     placeholder={t('Discount Code')}
                     defaultValue={discountCode}
+                    className="input-text-slim w-full"
                   />
                   <button
                     id="apply-discount"
                     name="actionId"
                     value="apply-discount"
                     type="submit"
-                    className="dark:text-blueGray-500"
+                    className="dark:text-blueGray-500 bg-gray-100 dark:bg-gray-800 p-4 rounded-md font-medium"
                   >
                     {t('Apply Discount')}
                   </button>

@@ -551,7 +551,7 @@ export default function Index() {
 
         {showMoreResults && (
           <>
-            <div className="mb-8 flex align-middle justify-center absolute bottom-0 w-full">
+            <div className="inset-x-0 mb-8 flex align-middle justify-center absolute bottom-0 w-full">
               <Button
                 id="see-more"
                 name="actionId"

@@ -459,7 +459,7 @@ describe('Event', () => {
     });
 
     it('should display event preview', () => {
-      cy.visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d')
+      cy.visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d/dashboard')
         .get('#preview-button')
         .should('exist')
         .then((link) => {
@@ -997,6 +997,30 @@ describe('Event', () => {
         .then((value) => {
           expect(value).to.eq('Como chegar lá... Onde estacionar...');
         });
+    });
+
+    it('should show handled error when location is not picked on map', () => {
+      cy.intercept('GET', '/o/event/*?_data=routes*')
+        .as('EventRequests')
+        .visitAndWaitForHydration('/o')
+        .get('button[name=create-event]')
+        .click()
+
+        .wait('@EventRequests')
+
+        .get('input[name=short-address]')
+        .type('Fátima')
+
+        .intercept('POST', '/o/event/*_data=routes*')
+        .as('createEvent')
+
+        .get('button[name=create-event]')
+        .click()
+
+        .wait('@createEvent')
+
+        .get('button[name=open-map-on-error]')
+        .should('exist');
     });
   });
 });

@@ -101,3 +101,8 @@ fly logs -a <app-name>
 # Example
 fly logs -a dicistg 
 ```
+
+### Scaling Memory
+```shell
+fly scale memory 1024 -a diciprd
+```

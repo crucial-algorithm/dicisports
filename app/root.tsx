@@ -263,7 +263,9 @@ function Html({ lang }: { lang: string }) {
   const [theme] = useTheme();
   const data = useLoaderData<RootLoaderData>() as RootLoaderData;
   const analyticsUrl = 'https://plausible.io/js/plausible.js';
-  const [, { pathname }] = useMatches();
+  const matches = useMatches();
+  const [, { pathname }] = matches;
+  const { handle } = matches.pop() || { handle: {} };
 
   // useChangeLanguage(lang);
   // script bellow setting window.ENV is not actually being used; Just keeping
@@ -298,7 +300,10 @@ function Html({ lang }: { lang: string }) {
         <Meta />
         <Links />
       </head>
-      <body className="dark:bg-gray-900 bg-white transition duration-500 w-full">
+      <body
+        className="dark:bg-gray-900 bg-white transition duration-500 w-full"
+        data-path={handle ? handle.id : ''}
+      >
         <PageLoadingMessage />
         <NotificationMessage queryStringKey="message" delay={0.3} />
         {pathname !== '/o' && <Navbar />}
@@ -370,6 +375,10 @@ export function CatchBoundary() {
       subMessage = <p>{t('404 - Sub Message')}</p>;
       break;
 
+    case 500:
+      message = <p>{t('500 error message')}</p>;
+      break;
+
     default:
       throw new Error(caught.data || caught.statusText);
   }
@@ -410,8 +419,8 @@ function Footer() {
           <div className="border-t border-zinc-100 pb-16 pt-10 dark:border-zinc-700/40">
             <div className="relative px-2 md:px-4">
               <div className="mx-auto max-w-2xl md:max-w-5xl">
-                <div className="flex flex-col md:flex-row items-center justify-between gap-6 dark:text-cadet-blue-700 text-[10px] md:text-xs">
-                  <div className="flex gap-3 items-center md:gap-6">
+                <div className="flex md:flex-row items-center justify-between gap-6 dark:text-cadet-blue-700 text-xs">
+                  <div className="flex flex-col md:flex-row gap-6 items-start md:items-center">
                     <Link
                       to="/privacy"
                       className="dark:text-cadet-blue-700 dark:hover:text-cadet-blue-500"
@@ -431,7 +440,8 @@ function Footer() {
                       <img src={buildImageUrl('product/complaints-logo', {})} alt="" />
                     </a>
                   </div>
-                  <p>
+
+                  <p className="hidden md:block">
                     {t('Dicisports Watermark', { year })}
                   </p>
                 </div>

@@ -23,7 +23,7 @@ import { verifyEmailAddress } from '~/server/auth/verifier.server';
 import { addGroupToFavorites } from '~/server/db/groups.server';
 import InputError from '~/components/shared/form/InputError';
 import { CanonicalMeta } from '~/utils/seo';
-import { changeRegistrationToAuthUser, findBooking } from '~/server/db/booking.server';
+import { changeRegistrationToAuthUser, findBookingById } from '~/server/db/booking.server';
 import { getClientSession } from '~/server/auth/client.server';
 
 type ActionData = {
@@ -73,7 +73,7 @@ export const action: ActionFunction = async ({ request }) => {
     .object({
       name: z
         .string()
-        .min(5, t('Name min length'))
+        .min(2, t('Name min length'))
         .max(60, t('Name max length')),
       email: z.string().email(t('Invalid Email')),
       confirmation: z.string().email(t('Invalid Email')),
@@ -128,8 +128,8 @@ export const action: ActionFunction = async ({ request }) => {
     if (postSignUpAction === 'checkout') {
       try {
         const clientSession = await getClientSession(request);
-        const eventId = searchParams.get('e') as string;
-        const booking = await findBooking(clientSession.getClientId(), eventId);
+        const bookingId = searchParams.get('b') as string;
+        const booking = await findBookingById(bookingId);
 
         await changeRegistrationToAuthUser(
           user.id,
@@ -138,8 +138,8 @@ export const action: ActionFunction = async ({ request }) => {
 
         return redirect(
           booking?.status === 'confirmed'
-            ? `/checkout/confirmation/${eventId}`
-            : `/checkout/info/${eventId}`,
+            ? `/checkout/confirmation/${bookingId}`
+            : `/checkout/info/${bookingId}`,
           { headers }
         );
       } catch (e) {

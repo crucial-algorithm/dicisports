@@ -9,6 +9,7 @@ import type {
   GroupSpirit as DBGroupSpirit,
   GroupType as DBGroupType,
   Organizer as DBOrganizer,
+  OrganizerType as DBOrganizerType,
   Participant as DBParticipant,
   ParticipantStatus,
   Perk as DBPerk,
@@ -541,6 +542,9 @@ type SearchEventsResults = {
 };
 
 type Organizer = DBOrganizer & {};
+type OrganizerType = {
+  name: TranslationObject;
+} & DBOrganizerType;
 
 type OrganizerInput = {
   // id will be null if the user has no organizer profile and is creating it
@@ -552,6 +556,9 @@ type OrganizerInput = {
   postalCode: string;
   city: string;
   description: string;
+  taxNumber: number;
+  contactName: string;
+  typeId: number;
   logo: string;
   userId: string;
 };
@@ -597,6 +604,11 @@ type SibsStatusResponse = {
 };
 
 type EventTeam = {} & DBEventTeam;
+
+type ResponseFeedback = {
+  severity: 'error' | 'success' | 'info' | 'warn';
+  message: string;
+};
 
 export {
   NonNullProperties,
@@ -660,7 +672,9 @@ export {
   DiscountCodeInput,
   SibsWebHookSchema,
   SibsStatusResponse,
-  EventTeam
+  EventTeam,
+  OrganizerType,
+  ResponseFeedback
 };
 
 // https://www.i18next.com/overview/typescript#argument-of-type-defaulttfuncreturn-is-not-assignable-to-parameter-of-type-xyz

@@ -11,7 +11,10 @@
     "city": "Barcelos",
     "userId": "gZZCGTHBq9SxdpRFoP8b",
     "status": "APPROVED",
-    "commission": 25000
+    "commission": 25000,
+    "taxNumber": 123456789,
+    "contactName": "Elisabete Rocha",
+    "typeId": 2
   },
   {
     "id": "uyFgbFPB67YEnzZj82wA",
@@ -25,6 +28,9 @@
     "city": "Póvoa de Varzim",
     "userId": "ew8s5CBY9bhSXkQLwKZC",
     "status": "PENDING",
-    "commission": null
+    "commission": null,
+    "taxNumber": 987654321,
+    "contactName": "Nuno Dias",
+    "typeId": 1
   }
 ]

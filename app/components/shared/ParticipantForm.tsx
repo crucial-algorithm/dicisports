@@ -27,7 +27,7 @@ export default function ParticipantForm({
   setSelectedParticipant,
   shirtSizes,
   resetForm,
-  isSingleParticipant,
+  isUserBookingOnlyForHimself,
   isReadOnly,
   children,
   eventTeams,
@@ -43,7 +43,7 @@ export default function ParticipantForm({
   setSelectedParticipant: (v: string | number) => void;
   shirtSizes: ShirtSize[];
   resetForm: () => void;
-  isSingleParticipant: boolean;
+  isUserBookingOnlyForHimself: boolean;
   isReadOnly: boolean;
   eventTeams: EventTeam[];
   participantTeam: string | null;
@@ -58,7 +58,7 @@ export default function ParticipantForm({
 
   return (
     <FetcherForm
-      TheForm={fetcher.Form}
+      theForm={fetcher.Form}
       method="post"
       className={clsx('w-full', {
         'opacity-100': participant,
@@ -70,7 +70,8 @@ export default function ParticipantForm({
       {!isReadOnly &&
         participant &&
         userSavedParticipants &&
-        userSavedParticipants.length !== 0 && (
+        userSavedParticipants.length !== 0 &&
+        !isUserBookingOnlyForHimself && (
           <div className="mb-8">
             <FormField
               label={t('Select Participant')}
@@ -165,7 +166,7 @@ export default function ParticipantForm({
                 ? new Date(selectedParticipant.birthdate)
                 : participant?.birthdate
                 ? new Date(participant.birthdate)
-                : new Date(Date.now() - 20 * 3600 * 24 * 365 * 1000)
+                : new Date(Date.now() - 3600 * 24 * 365 * 20 * 1000)
             }
           />
         </FormField>
@@ -203,7 +204,11 @@ export default function ParticipantForm({
           <DiciInputMask
             mask="99999999-9-aa9"
             name="identity-card"
-            value={participant?.identityCard || undefined}
+            value={
+              participant?.identityCard ||
+              selectedParticipant?.identityCard ||
+              undefined
+            }
             placeholder={t('Required')}
           />
         </FormField>
@@ -314,25 +319,27 @@ export default function ParticipantForm({
 
       <input type="hidden" name="hash" value={hash} />
       <input type="hidden" name="raceId" value={raceId as string} />
+
       {!isReadOnly && (
         <ButtonGroup>
           <Button type="button" variant="secondary" onClick={resetForm}>
             {t('Reset')}
           </Button>
-          <Button
-            type="submit"
-            value={
-              isSingleParticipant
-                ? CheckoutInfoActions.updateAndCheckout
-                : CheckoutInfoActions.update
-            }
-            name="actionId"
-            disabled={!participant}
-            id="save-button"
-            variant={selectedParticipant ? 'secondary' : 'primary'}
-          >
-            {t('Save')}
-          </Button>
+
+          {(!isUserBookingOnlyForHimself ||
+            (isUserBookingOnlyForHimself && !selectedParticipant)) && (
+            <Button
+              type="submit"
+              value={CheckoutInfoActions.update}
+              name="actionId"
+              disabled={!participant}
+              id="save-button"
+              variant={selectedParticipant ? 'secondary' : 'primary'}
+            >
+              {t('Save')}
+            </Button>
+          )}
+
           {selectedParticipant && (
             <Button
               type="submit"
@@ -342,10 +349,12 @@ export default function ParticipantForm({
               id="save-update-button"
               variant="primary"
             >
-              {t('Save and Update', {
-                first: selectedParticipant.firstName,
-                last: selectedParticipant.lastName
-              })}
+              {isUserBookingOnlyForHimself
+                ? t('Save')
+                : t('Save and Update', {
+                    first: selectedParticipant.firstName,
+                    last: selectedParticipant.lastName
+                  })}
             </Button>
           )}
         </ButtonGroup>

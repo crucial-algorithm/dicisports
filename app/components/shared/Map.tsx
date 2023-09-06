@@ -223,6 +223,7 @@ function processMapBoxFeature(
 export type MapDialogProps = {
   token: string
   open: boolean
+  onConfirm: (location: DiciLocation | null) => void
   setClosed?: () => void
   onClose?: (location: DiciLocation | null) => void
   onPickedLocation?: (location: DiciLocation | null) => void
@@ -237,6 +238,7 @@ function MapDialog({
   onClose,
   onPickedLocation,
   defaultValue,
+  onConfirm,
   className
 }: MapDialogProps) {
   const { t } = useTranslation('common');
@@ -251,6 +253,10 @@ function MapDialog({
     if (onClose) {
       onClose(location);
     }
+  }
+
+  function handleConfirmPickedLocation() {
+    onConfirm(location);
   }
 
   const handleCallback = useCallback(
@@ -269,16 +275,16 @@ function MapDialog({
       isOpen={open}
       onClose={handleClose}
       aria-label={t('map')}
-      PrimaryAction={(
-        <Button name="pick-location" onClick={handleClose} disabled={!location}>
+      PrimaryAction={
+        <Button name="pick-location" onClick={handleConfirmPickedLocation} disabled={!location}>
           {t('Pick Location Button')}
         </Button>
-      )}
-      SecondaryAction={(
+      }
+      SecondaryAction={
         <Button variant="secondary" onClick={handleClose}>
           {t('Cancel')}
         </Button>
-      )}
+      }
     >
       <Map
         defaultValue={defaultValue}

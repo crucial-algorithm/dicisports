@@ -34,4 +34,8 @@ function NotFound(message: string) {
   return new Response(message, { status: 404 });
 }
 
-export { parseLocation, processImgField, Unauthorized, NotFound };
+function InternalServerError(message: string) {
+  return new Response(message, { status: 500 });
+}
+
+export { parseLocation, processImgField, Unauthorized, NotFound, InternalServerError };

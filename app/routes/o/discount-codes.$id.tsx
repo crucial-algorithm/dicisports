@@ -27,7 +27,7 @@ import {
 } from '~/server/db/discounts.server';
 import { findOrganizer } from '~/server/db/organizer.server';
 import i18n from '~/server/i18n.server';
-import type { DiscountCode } from '~/types';
+import type { DiscountCode, ResponseFeedback } from '~/types';
 import { badRequest } from '~/utils/misc';
 
 import { ConfirmationDialog } from '~/components/shared/Dialog';
@@ -51,11 +51,6 @@ const actionIds = {
   delete: 'delete-discount',
   disable: 'disable-discount',
   enable: 'enable-discount'
-};
-
-type ResponseFeedback = {
-  severity: 'error' | 'success' | 'info' | 'warn';
-  message: string;
 };
 
 export const action: ActionFunction = async ({ request, params }) => {

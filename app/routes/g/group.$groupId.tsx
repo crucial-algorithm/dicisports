@@ -374,7 +374,11 @@ export default function GroupRoute() {
     setShowLocationPicker(true);
   }
 
-  function handleCloseMap(location: DiciLocation | null) {
+  function handleCloseMap() {
+    setShowLocationPicker(false);
+  }
+
+  function handleConfirmPickedLocation(location: DiciLocation | null) {
     setShowLocationPicker(false);
     setLocation(location);
   }
@@ -646,6 +650,7 @@ export default function GroupRoute() {
         defaultValue={location}
         open={showLocationPicker}
         onClose={handleCloseMap}
+        onConfirm={handleConfirmPickedLocation}
       />
 
       <ConfirmationDialog

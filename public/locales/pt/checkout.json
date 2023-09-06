@@ -65,10 +65,10 @@
   "Participant Reset": "Participante redefinido",
   "Participant Removed": "Participante removido",
   "Add Race": "Adicionar inscrição",
-  "Select Participant": "Escolhe um participante existente",
-  "Already Have An Account ?": "Já tens uma conta?",
+  "Select Participant": "Utiliza dados gravados anteriormente",
+  "Already Have An Account?": "Já tens uma conta?",
   "Discount Code": "Código de desconto",
-  "Apply Discount": "Aplicar desconto",
+  "Apply Discount": "Aplicar",
   "Applied Discount": "Desconto aplicado",
 
   "Participant Not Filled": "Completa a informação em falta",
@@ -76,10 +76,10 @@
   "New Participant Last Name": "Participante",
   "Create: X": "Criar: {{value}}",
 
-  "Thanks For Buying": "Obrigado por te registares com a Dicisports. Por favor imprime esta página com os dados da confirmação, para o caso de quereres mudar algo.",
+  "Thanks For Buying": "Obrigado por te inscreveres com a Dicisports. Por favor imprime esta página com os dados da confirmação, para o caso de quereres mudar algo.",
   "Confirmation ID": "ID de confirmação",
   "PIN": "PIN",
-  "Mail Confirmation Details": "Envia-me os detalhes da confirmação para o e-mail:",
+  "Mail Confirmation Details": "Caso contrário, queres receber a confirmação da inscrição no email?",
   "Email Address": "E-mail",
   "Send": "Enviar",
   "Reset": "Limpar",
@@ -116,5 +116,12 @@
 
   "Transaction Error": "Ups... de momento não estamos a conseguir exibir o formulário de pagamento. Clica no botão para tentar novamente.",
   "Ongoing Payment": "Ups.. de momento existe um pagamento a ser processado.",
-  "Try Again": "Tentar Novamente"
+  "Try Again": "Tentar Novamente",
+  "Dont want to fill information?": "Não queres ter de voltar a preencher os teus dados?",
+  "Login Or Create Account Subheader - confirmation": "Terás acesso à confirmação da inscrição na tua área pessoal.",
+  "Login Or Create Account Subheader - info": "Assim guardamos os dados para futuras inscrições.",
+
+  "Login": "Faz login",
+  "Or": "ou",
+  "Create account": "cria uma conta"
 }

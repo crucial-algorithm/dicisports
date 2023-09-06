@@ -376,9 +376,9 @@ describe('Checkout', () => {
       bookParticipant('MY4bvgxDbMtGv8rbYe5d', 'AhowRdNWCBQWSuivSt7h');
     });
 
-    it('should be able to authenticate and keep booking after completing booking process', () => {
+    it('should be able to login and keep booking after completing booking process', () => {
       bookParticipant('bQmGXYkbhJetjk6mniMt', 'Rd9SETi59X9ava6CPhkY')
-        .get('[data-cy=authenticate]')
+        .get('[data-cy=authenticate-login]')
         .should('exist')
         .click()
 
@@ -403,6 +403,46 @@ describe('Checkout', () => {
         .click()
 
         .wait('@login')
+
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.include('/checkout/confirmation/');
+        });
+    });
+
+    it('should be able to signup and keep booking after completing booking process', () => {
+      bookParticipant('bQmGXYkbhJetjk6mniMt', 'Rd9SETi59X9ava6CPhkY')
+        .get('[data-cy=authenticate-signup]')
+        .should('exist')
+        .click()
+
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.eq('/signup');
+          expect(l.search).to.contain('a=checkout&b=');
+        })
+
+        .waitForHydration()
+
+        .get('input[name=signup-email]')
+        .type('a@gmail.com')
+
+        .get('input[name=confirmation]')
+        .type('a@gmail.com')
+
+        .get('input[name=name]')
+        .type('Projeto Pedal')
+
+        .get('input[name=password]')
+        .type('pp@password1')
+
+        .intercept('POST', '/signup*')
+        .as('signup')
+
+        .get('button[name=create]')
+        .click()
+
+        .wait('@signup')
 
         .location()
         .should((l) => {
@@ -783,7 +823,7 @@ describe('Checkout', () => {
     it('should have correct bib numbers', () => {
       cy.visitAndWaitForHydration('/checkout/payment/qR4nqWpTdQy8QZu29ANu')
 
-        .get('button[name=pay-reference]')
+        .get('button[name=pay-cc]')
         .should('exist')
         .then((b) => {
           b.click();
@@ -978,8 +1018,12 @@ describe('Checkout', () => {
 
         .wait('@ApplyDiscount')
 
-        .get('div[data-cy=discount-info]')
-        .should('exist')
+        .waitForHydration()
+
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.eq('/checkout/confirmation/qR4nqWpTdQy8QZu29ANu');
+        })
 
         .get('[data-cy=subtotal-price]')
         .contains('45€')
@@ -1009,6 +1053,83 @@ describe('Checkout', () => {
           // If he tries to do it while having an ongoing payment, we should return a bad request
           expect(res.status).to.eq(400);
         });
+    });
+
+    it('should skip payment step if booking is free - applied 100% discount', () => {
+      cy.visitAndWaitForHydration('/event/trail-do-zezere')
+
+          .get('button[name=race-Rd9SETi59X9ava6CPhkY]')
+          .click()
+
+          .location()
+          .should((l) => {
+            expect(l.pathname).to.include('/checkout/info');
+          })
+
+          .intercept('POST', '/checkout/info/*')
+          .as('ApplyDiscount')
+
+          .get('input[name=discount-code]')
+          .clear()
+          .type('GET-FIT-100%')
+
+          .get('#apply-discount')
+          .click()
+
+          .wait('@ApplyDiscount')
+
+          .get('input[name=first-name]')
+          .type('Nuno')
+
+          .get('input[name=last-name]')
+          .type('Lopes')
+
+          .pickOptionFromSelect('gender', 2)
+
+          .pickDate('birthdate', '2001-09-21')
+
+          .get('input[name=phone-number]')
+          .type('937654321')
+
+          .get('input[name=identity-card]')
+          .type('000000000zz4')
+          .should('have.value', '00000000-0-zz4')
+
+          .get('input[name=federation-number]')
+          .type('8165238')
+
+          .pickOptionFromSelect('shirt', 2)
+
+          .pickOptionFromSelect('nationality', 188)
+
+          .get('input[name=postal-code]')
+          .type('4730-454')
+
+          .get('[data-cy=total-price]')
+          .contains('0€')
+
+          .get('input[name=regulation]')
+          .first()
+          .check()
+
+          .get('input[name=terms]')
+          .first()
+          .check()
+
+          .intercept('POST', '*?_data=routes*checkout*')
+          .as('saveParticipant')
+
+          .get('#save-button')
+          .click()
+
+          .wait('@saveParticipant')
+
+          .waitForHydration()
+
+          .location()
+          .should((l) => {
+            expect(l.pathname).to.include('/checkout/confirmation/');
+          });
     });
   });
 
