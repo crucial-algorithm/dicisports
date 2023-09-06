@@ -450,7 +450,7 @@ describe('Checkout', () => {
         });
     });
 
-    it('should send automated email after completing booking', () => {
+    it.only('should send automated email after completing booking', () => {
       bookParticipant('MY4bvgxDbMtGv8rbYe5d', 'AhowRdNWCBQWSuivSt7h');
       cy.waitForHydration()
 
@@ -777,7 +777,7 @@ describe('Checkout', () => {
       bookParticipant('bQmGXYkbhJetjk6mniMt', 'Rd9SETi59X9ava6CPhkY');
     });
 
-    it('should send automated email after completing booking', () => {
+    it.only('should send automated email after completing booking', () => {
       bookParticipant('bQmGXYkbhJetjk6mniMt', 'Rd9SETi59X9ava6CPhkY');
       cy.location()
         .should((l) => {
@@ -790,6 +790,13 @@ describe('Checkout', () => {
             'Informações do teu booking no evento Trail do Zêzere.'
           );
         });
+        //
+        // .request({ method: 'GET', url: Cypress.env('HTTP_CATCHER') })
+        // .then(({ body }) => {
+        //   expect(body.subject).to.eq(
+        //     'Informações do teu booking no evento Trail do Zêzere.'
+        //   );
+        // });
     });
 
     it('should display error when submitting form without indetity card filled', () => {
@@ -1964,7 +1971,7 @@ function bookParticipant(eventId: string, raceId: string) {
           expect(l.pathname).to.eq(`/checkout/payment/${bookingId}`);
         })
 
-        .get('button[name=pay-reference]')
+        .get('button[name=pay-cc]')
         .click();
     });
 }

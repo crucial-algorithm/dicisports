@@ -362,9 +362,8 @@ async function sendBookingConfirmationEmail({
   const sender = '"DiciSports" <noreply@mail.dicisports.com>';
   const { hostname } = new URL(domainUrl);
 
-  let total = 0;
+  const total = cart.reduce((total, c) => total + c.price, 0);
 
-  cart.map((c) => (total += c.price));
   const text = `
 ${userName && `Olá ${userName},`}
 Segue a informação do teu booking no evento ${event.name}:
@@ -378,13 +377,13 @@ ${cart
     (c) => `
   Nome: ${c.name}
   Quantidade: ${c.qty}
-  Preço: ${c.price}€
+  Preço: ${c.price / 1000}€
   
 `
   )
   .join('')}
 
-Total: ${total}€
+Total: ${total / 1000}€
 
 Obrigado!
 
@@ -481,7 +480,7 @@ P.S. Recebeste este email porque o teu endereço de email foi usado para fazer l
                                         </td>
                                         <td style="white-space: nowrap;">
                                           <p align="right" style="color:#555;line-height:150%;font-size:16px;font-weight:600;margin:0 0 0 15px">
-                                            ${c.price}€ 
+                                            ${c.price / 1000}€ 
                                           </p>
                                         </td>
                                       </tr>
@@ -506,7 +505,7 @@ P.S. Recebeste este email porque o teu endereço de email foi usado para fazer l
                                         <p style="color:#777;line-height:1.2em;font-size:16px;margin:0"><span style="font-size:16px">Total</span>
                                         </p>
                                       </td>
-                                      <td align="right" style="padding:20px 0 0"><strong style="font-size:24px;color:#555">${total}€</strong>
+                                      <td align="right" style="padding:20px 0 0"><strong style="font-size:24px;color:#555">${total / 1000}€</strong>
                                       </td>
                                     </tr>
                                   </tbody>
