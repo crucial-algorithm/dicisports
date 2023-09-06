@@ -15,7 +15,6 @@ import {
 } from '@heroicons/react/24/outline';
 import { HeartIcon as Favorite } from '@heroicons/react/24/solid';
 import * as React from 'react';
-import type { Dispatch, SetStateAction } from 'react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Carousel } from 'react-responsive-carousel';
@@ -121,7 +120,8 @@ export default function EventDisplayRoute() {
   const { t } = useTranslation('event');
 
   let minPrice = 0;
-  const [visiblePriceTag, setVisiblePriceTag] = useState<boolean>(true);
+  const [isEventHeaderVisible, setEventHeaderVisible] = useState<boolean>(true);
+  const [areRacesVisible, setAreRacesVisible] = useState<boolean>(false);
   const anyRaceInEarlyBird = races
     .map(
       (r: Race) =>
@@ -161,23 +161,24 @@ export default function EventDisplayRoute() {
 
   return (
     <>
-      {!visiblePriceTag && (
-        <StickyPriceTag
-          eventName={event.name as string}
-          minPrice={minPrice}
-          t={t}
-        />
-      )}
+      <StickyPriceTag
+        eventName={event.name as string}
+        minPrice={minPrice}
+        t={t}
+        visible={!isEventHeaderVisible}
+        hidePrice={areRacesVisible}
+      />
 
       <Main>
-        <PriceTag
-          event={event}
-          favorite={favorite}
-          minPrice={minPrice}
-          setVisiblePriceTag={setVisiblePriceTag}
-          t={t}
-          isUserFavorite={isUserFavorite}
-        />
+        <InView as="div" onChange={setEventHeaderVisible} threshold={0.2}>
+          <EventHeader
+            event={event}
+            favorite={favorite}
+            minPrice={minPrice}
+            t={t}
+            isUserFavorite={isUserFavorite}
+          />
+        </InView>
         <div className="my-8">
           <H3>{t('About')}</H3>
           <div
@@ -188,32 +189,34 @@ export default function EventDisplayRoute() {
         </div>
 
         <H3 id="races-list">{t('Races')}</H3>
-        <div
-          data-cy="races-list"
-          className="flex flex-col mt-2 scroll-mx-2 items-center md:items-start md:flex-row md:flex-nowrap md:overflow-x-auto pb-10 hide-scrollbar"
-        >
-          {races
-            .sort((a: Race, b: Race) => a.displayOrder - b.displayOrder)
-            .map((race: Race, index: number) => (
-              <DisplayRace
-                race={race}
-                key={race.id}
-                index={index}
-                eventId={event.id}
-                areThereRacesInEarlyBird={anyRaceInEarlyBird}
-              />
-            ))}
-          <WhenListEmpty list={races}>
-            <H6
-              className="text-center p-12"
-              variant="secondary"
-              as="p"
-              data-cy="no-races"
-            >
-              {t('No Races')}
-            </H6>
-          </WhenListEmpty>
-        </div>
+        <InView as="div" onChange={setAreRacesVisible} threshold={0.2}>
+          <div
+            data-cy="races-list"
+            className="flex flex-col mt-2 scroll-mx-2 items-center md:items-start md:flex-row md:flex-nowrap md:overflow-x-auto pb-10 hide-scrollbar"
+          >
+            {races
+              .sort((a: Race, b: Race) => a.displayOrder - b.displayOrder)
+              .map((race: Race, index: number) => (
+                <DisplayRace
+                  race={race}
+                  key={race.id}
+                  index={index}
+                  eventId={event.id}
+                  areThereRacesInEarlyBird={anyRaceInEarlyBird}
+                />
+              ))}
+            <WhenListEmpty list={races}>
+              <H6
+                className="text-center p-12"
+                variant="secondary"
+                as="p"
+                data-cy="no-races"
+              >
+                {t('No Races')}
+              </H6>
+            </WhenListEmpty>
+          </div>
+        </InView>
 
         <div className="my-8">
           <H3>{t('Perks')}</H3>
@@ -503,18 +506,16 @@ function DisplayRegulation({ event }: { event: Event }) {
   );
 }
 
-function PriceTag({
+function EventHeader({
   event,
   favorite,
   minPrice,
-  setVisiblePriceTag,
   t,
   isUserFavorite
 }: {
   event: EventWithRacesDifficultiesAndDocuments;
   favorite: FetcherWithComponents<any>;
   minPrice: number;
-  setVisiblePriceTag: Dispatch<SetStateAction<boolean>>;
   t: TFunction;
   isUserFavorite: boolean;
 }) {
@@ -574,157 +575,172 @@ function PriceTag({
   ]);
 
   return (
-    <InView onChange={setVisiblePriceTag}>
-      <div className="flex flex-col md:flex-row mt-4">
-        <div className="w-full md:w-[22rem]">
-          {images.length > 1 ? (
-            <Carousel statusFormatter={cleanStatus}>
-              {images.map((image, idx) => (
-                <DisplayImg
-                  key={idx}
-                  dataCy={`image${idx}`}
-                  imageId={image}
-                  className="w-[500px]"
-                  transformations={{
-                    resize: {
-                      type: 'fill',
-                      width: 400,
-                      height: 400
-                    }
-                  }}
-                />
-              ))}
-            </Carousel>
-          ) : (
-            <DisplayImg
-              dataCy="image0"
-              imageId={images[0]}
-              className="w-[500px]"
-              transformations={{
-                resize: {
-                  type: 'fill',
-                  width: 400,
-                  height: 400
-                }
-              }}
-            />
-          )}
-        </div>
+    <div className="flex flex-col md:flex-row mt-4">
+      <div className="w-full md:w-[22rem]">
+        {images.length > 1 ? (
+          <Carousel statusFormatter={cleanStatus}>
+            {images.map((image, idx) => (
+              <DisplayImg
+                key={idx}
+                dataCy={`image${idx}`}
+                imageId={image}
+                className="w-[500px]"
+                transformations={{
+                  resize: {
+                    type: 'fill',
+                    width: 400,
+                    height: 400
+                  }
+                }}
+              />
+            ))}
+          </Carousel>
+        ) : (
+          <DisplayImg
+            dataCy="image0"
+            imageId={images[0]}
+            className="w-[500px]"
+            transformations={{
+              resize: {
+                type: 'fill',
+                width: 400,
+                height: 400
+              }
+            }}
+          />
+        )}
+      </div>
 
-        <div className="flex flex-auto flex-col mt-4 ml-4">
-          <div className="flex flex-row justify-end mb-2">
-            <H2 className="text-sp-light-blue-900 mb-8 w-[calc(100%-(40px+40px+8px))]">
-              <b data-cy="name" className="break-words w-full">
-                {event.name}
-              </b>
-            </H2>
-            <favorite.Form
-              method="post"
-              action={`/fav/${event.id}`}
-            >
-              {isFavorite ? (
-                <Button
-                  size="tiny"
-                  name="action"
-                  value={actions.remove}
-                  className="w-[40px] h-[40px]"
-                >
-                  <Favorite className="h-6 w-6 m-0 inline-block" />
-                </Button>
-              ) : (
-                <Button
-                  size="tiny"
-                  name="action"
-                  value={actions.add}
-                  className="w-[40px] h-[40px]"
-                >
-                  <HeartIcon className="h-6 w-6 m-0 inline-block" />
-                </Button>
-              )}
-            </favorite.Form>
-            <CopyToClipboard
-              text={`${address}/event/${event.slug}`}
-              id={event.id}
-              successMessage={handlerClickToCopy}
-              className="w-[40px] h-[40px] ml-2"
-            />
-            <Notification show={handlerSetShowNotificationFunction}>
-              {message}
-            </Notification>
-            <Notification show={handlerSetShowNotificationCopyToClipboard}>
-              {copiedToClipMessage}
-            </Notification>
-          </div>
-          <div className="flex flex-row items-center mb-2">
-            <CalendarDaysIcon className="h-6 w-6 m-0 inline-block text-primary" />
-            <H6 data-cy="date" className="ml-4 md:ml-2">
-              <DisplayDate date={new Date(event.startAt || 0)} />
-            </H6>
-          </div>
-          <div className="flex flex-row items-center mb-2">
-            <MapPinIcon className="h-6 w-6 m-0 inline-block text-primary" />
-            <a
-              href={`https://www.google.com/maps/search/?api=1&query=${event.lat}%2C${event.lng}`}
-              target="_blank"
-              rel="noreferrer"
-              data-cy="location-link"
-            >
-              <H6 className="ml-4 mr-2 md:ml-2" data-cy="location">
-                {event.location}
-              </H6>
-            </a>
-          </div>
-          <div className="flex flex-row items-center mb-2">
-            <ArrowTrendingUpIcon className="h-6 w-6 m-0 inline-block text-primary" />
-            <H6 data-cy="difficulty" className="ml-4 md:ml-2">
-              <I18nText text={event.difficulty?.name as TranslationObject} />
-            </H6>
-          </div>
-          <div className="flex flex-row justify-between items-center mt-16 dark:bg-gray-900 bg-white">
-            <div className="flex flex-col justify-start">
-              <H6 className="md:ml-2">{t('From')}</H6>
-              <H2
-                data-cy="price"
-                className="text-sp-light-blue-900 w-full md:ml-2"
+      <div className="flex flex-auto flex-col mt-4 ml-4">
+        <div className="flex flex-row justify-end mb-2">
+          <H2 className="text-sp-light-blue-900 mb-8 w-[calc(100%-(40px+40px+8px))]">
+            <b data-cy="name" className="break-words w-full">
+              {event.name}
+            </b>
+          </H2>
+          <favorite.Form
+            method="post"
+            action={`/fav/${event.id}`}
+          >
+            {isFavorite ? (
+              <Button
+                size="tiny"
+                name="action"
+                value={actions.remove}
+                className="w-[40px] h-[40px]"
               >
-                <b className="break-words">{`${
-                  minPrice ? minPrice / 1000 : t('Undefined')
-                }€`}</b>
-              </H2>
-            </div>
-            <ButtonLink to="#races-list">{t('Races Anchor')}</ButtonLink>
+                <Favorite className="h-6 w-6 m-0 inline-block" />
+              </Button>
+            ) : (
+              <Button
+                size="tiny"
+                name="action"
+                value={actions.add}
+                className="w-[40px] h-[40px]"
+              >
+                <HeartIcon className="h-6 w-6 m-0 inline-block" />
+              </Button>
+            )}
+          </favorite.Form>
+          <CopyToClipboard
+            text={`${address}/event/${event.slug}`}
+            id={event.id}
+            successMessage={handlerClickToCopy}
+            className="w-[40px] h-[40px] ml-2"
+          />
+          <Notification show={handlerSetShowNotificationFunction}>
+            {message}
+          </Notification>
+          <Notification show={handlerSetShowNotificationCopyToClipboard}>
+            {copiedToClipMessage}
+          </Notification>
+        </div>
+        <div className="flex flex-row items-center mb-2">
+          <CalendarDaysIcon className="h-6 w-6 m-0 inline-block text-primary" />
+          <H6 data-cy="date" className="ml-4 md:ml-2">
+            <DisplayDate date={new Date(event.startAt || 0)} />
+          </H6>
+        </div>
+        <div className="flex flex-row items-center mb-2">
+          <MapPinIcon className="h-6 w-6 m-0 inline-block text-primary" />
+          <a
+            href={`https://www.google.com/maps/search/?api=1&query=${event.lat}%2C${event.lng}`}
+            target="_blank"
+            rel="noreferrer"
+            data-cy="location-link"
+          >
+            <H6 className="ml-4 mr-2 md:ml-2" data-cy="location">
+              {event.location}
+            </H6>
+          </a>
+        </div>
+        <div className="flex flex-row items-center mb-2">
+          <ArrowTrendingUpIcon className="h-6 w-6 m-0 inline-block text-primary" />
+          <H6 data-cy="difficulty" className="ml-4 md:ml-2">
+            <I18nText text={event.difficulty?.name as TranslationObject} />
+          </H6>
+        </div>
+        <div className="flex flex-row justify-between items-center mt-16 dark:bg-gray-900 bg-white">
+          <div className="flex flex-col justify-start">
+            <H6 className="md:ml-2">{t('From')}</H6>
+            <H2
+              data-cy="price"
+              className="text-sp-light-blue-900 w-full md:ml-2"
+            >
+              <b className="break-words">{`${
+                minPrice ? minPrice / 1000 : t('Undefined')
+              }€`}</b>
+            </H2>
           </div>
+          <ButtonLink to="#races-list">{t('Races Anchor')}</ButtonLink>
         </div>
       </div>
-    </InView>
+    </div>
   );
 }
 
 function StickyPriceTag({
   eventName,
   minPrice,
-  t
+  t,
+  visible,
+  hidePrice
 }: {
   eventName: string;
   minPrice: number;
   t: TFunction;
+  visible: boolean;
+  hidePrice: boolean;
 }) {
   return (
-    <div className="flex flex-row justify-between items-center mt-16 top-0 p-4 sticky dark:bg-gray-900 bg-white dark:border-gray-500 drop-shadow-md z-10">
+    <div
+      className={clsx(
+        'flex flex-row justify-between items-center inset-x-0 top-0 p-4 fixed dark:bg-gray-900 bg-white dark:border-gray-500 drop-shadow-md z-10',
+        {
+          'flex': visible,
+          'hidden': !visible
+        }
+      )}
+    >
       <H3 className="text-sp-light-blue-900 w-full md:ml-2">
         <b className="break-words">{eventName}</b>
       </H3>
-      <div className="flex flex-col md:flex-row items-center">
-        <div className="flex flex-col md:justify-start">
-          <H6 className="md:ml-2">{t('From')}</H6>
-          <H2 data-cy="sticky-price" className="text-sp-light-blue-900 w-full md:ml-2">
-            <b className="break-words">{`${minPrice / 1000}€`}</b>
-          </H2>
+      {!hidePrice && (
+        <div className="flex flex-col md:flex-row items-center">
+          <div className="flex flex-col md:justify-start">
+            <H6 className="md:ml-2">{t('From')}</H6>
+            <H2
+              data-cy="sticky-price"
+              className="text-sp-light-blue-900 w-full md:ml-2"
+            >
+              <b className="break-words">{`${minPrice / 1000}€`}</b>
+            </H2>
+          </div>
+          <ButtonLink className="md:ml-16" to="#races-list">
+            {t('Races Anchor')}
+          </ButtonLink>
         </div>
-        <ButtonLink className="md:ml-16" to="#races-list">
-          {t('Races Anchor')}
-        </ButtonLink>
-      </div>
+      )}
     </div>
   );
 }
