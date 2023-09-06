@@ -121,6 +121,21 @@ export const loader: LoaderFunction = async ({ request, params }) => {
       await updateBookingStatus(bookingId, CheckoutStatus.confirmed);
     }
 
+    if (authenticatedClient !== null) {
+      const event = await findEvent(eventId);
+      const domainUrl = getDomainUrl(request);
+      const cart = await findBookingCart(clientId, eventId);
+
+      await sendBookingConfirmationEmail({
+        emailAddress: authenticatedClient.email,
+        event,
+        booking,
+        domainUrl,
+        cart,
+        userName: authenticatedClient.name
+      });
+    }
+
     return redirect(`/checkout/confirmation/${bookingId}`);
   }
 
@@ -256,24 +271,7 @@ export const action: ActionFunction = async ({ request, params }) => {
       return json({ ok: true });
     }
 
-    await updateBookingStatus(bookingId, CheckoutStatus.confirmed);
-
-    if (authenticatedClient !== null) {
-      const event = await findEvent(eventId);
-      const domainUrl = getDomainUrl(request);
-      const cart = await findBookingCart(clientId, eventId);
-
-      await sendBookingConfirmationEmail({
-        emailAddress: authenticatedClient.email,
-        event,
-        booking,
-        domainUrl,
-        cart,
-        userName: authenticatedClient.name
-      });
-    }
-
-    return redirect(`/checkout/confirmation/${bookingId}`);
+    return json({ ok: true });
   } catch (e) {
     if (!(e instanceof ZodError)) {
       const tc = await i18n.getFixedT(request, 'common');

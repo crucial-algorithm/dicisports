@@ -418,7 +418,7 @@ P.S. Recebeste este email porque o teu endereço de email foi usado para fazer l
     <div style='margin: 0 auto; max-width: 450px;'>
       <h2 style='text-align: center'>
         ${
-          userName && `Olá, ${userName}!`
+          userName ? `Olá, ${userName}!` : ''
         } Obrigado por escolheres a ${hostname} para te inscreveres no evento ${
     event.name
   }!
@@ -475,7 +475,9 @@ P.S. Recebeste este email porque o teu endereço de email foi usado para fazer l
                                           ${c.name}
                                           </span>
                                           <br>
-                                          <span style="font-size:14px;color:#999">Quantidade: ${c.qty} </span>
+                                          <span style="font-size:14px;color:#999">Quantidade: ${
+                                            c.qty
+                                          } </span>
                                           <br>
                                         </td>
                                         <td style="white-space: nowrap;">
@@ -505,7 +507,9 @@ P.S. Recebeste este email porque o teu endereço de email foi usado para fazer l
                                         <p style="color:#777;line-height:1.2em;font-size:16px;margin:0"><span style="font-size:16px">Total</span>
                                         </p>
                                       </td>
-                                      <td align="right" style="padding:20px 0 0"><strong style="font-size:24px;color:#555">${total / 1000}€</strong>
+                                      <td align="right" style="padding:20px 0 0"><strong style="font-size:24px;color:#555">${
+                                        total / 1000
+                                      }€</strong>
                                       </td>
                                     </tr>
                                   </tbody>
