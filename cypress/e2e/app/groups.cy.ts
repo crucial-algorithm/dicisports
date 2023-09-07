@@ -13,16 +13,6 @@ describe('Groups', () => {
         .and('have.length', 2);
     });
 
-    it.skip('should load groups in desktop', () => {
-      cy.viewport(1024, 768)
-        .login()
-        .visitAndWaitForHydration('/')
-        .get('[data-cy=groups]')
-        .click()
-        .get('button[name=create-group]')
-        .should('exist');
-    });
-
     it('should favorite group', () => {
       cy.intercept('GET', '/?actionId=search*')
         .as('search')

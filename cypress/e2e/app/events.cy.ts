@@ -145,25 +145,6 @@ describe('Event', () => {
       cy.task('clearDownloadFolder');
     });
 
-    it.skip('should load events in mobile', () => {
-      cy.visitAndWaitForHydration('/')
-        .get('[data-cy=mobile-menu]')
-        .click()
-        .get('[data-cy=m-events]')
-        .click()
-        .get('button[name=create-event]')
-        .should('exist');
-    });
-
-    it.skip('should load events in desktop', () => {
-      cy.viewport(1024, 768)
-        .visitAndWaitForHydration('/')
-        .get('[data-cy=events]')
-        .click()
-        .get('button[name=create-event]')
-        .should('exist');
-    });
-
     it('should create an event', () => {
       cy.intercept('GET', '/o/event/*?_data=routes*')
         .as('EventRequests')
