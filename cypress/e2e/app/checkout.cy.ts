@@ -493,8 +493,50 @@ describe('Checkout', () => {
         .and('contain', '20€');
     });
 
-    // TODO: finish test as soon as we re-instate booking payment flow e2e tests
-    it('should display checkbox for organizer campaign and corresponding validations', () => {});
+    it.only('should display checkbox for organizer campaign and corresponding validations', () => {
+      bookParticipant('MY4bvgxDbMtGv8rbYe5d', 'AhowRdNWCBQWSuivSt7h');
+
+      cy.location()
+        .should((l) => {
+          expect(l.pathname).to.include('/checkout/confirmation/');
+        })
+
+        .waitForHydration()
+
+        .get('[type="checkbox"]')
+        .check()
+
+        .get('input[name=add-to-mail-list]')
+        .should('be.checked')
+
+        .get('input[name=email]')
+        .should('exist')
+        .type('a@gmail.com')
+
+        .intercept('POST', '/checkout/confirmation/*')
+        .as('AddToMailList')
+
+        .get('button[name=send-confirmation]')
+        .should('exist')
+        .click()
+
+        .wait('@AddToMailList')
+
+        .get('#error-message')
+        .should('exist')
+        .and('contain', 'Esse email já está registado')
+
+        .get('input[name=add-to-mail-list]')
+        .type('b@gmail.com')
+
+        .get('button[name=send-confirmation]')
+        .click()
+
+        .wait('@AddToMailList')
+
+        .get('#success-message')
+        .should('exist');
+    });
 
     it('should display current booked teams', () => {
       cy.intercept('GET', '*?_data=routes*checkout*')
