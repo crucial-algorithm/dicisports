@@ -372,7 +372,7 @@ describe('Checkout', () => {
         .should('exist');
     });
 
-    it.skip('should book a race', () => {
+    it('should book a race', () => {
       bookParticipant('MY4bvgxDbMtGv8rbYe5d', 'AhowRdNWCBQWSuivSt7h');
     });
 
@@ -450,7 +450,7 @@ describe('Checkout', () => {
         });
     });
 
-    it.skip('should send automated email after completing booking', () => {
+    it('should send automated email after completing booking', () => {
       bookParticipant('MY4bvgxDbMtGv8rbYe5d', 'AhowRdNWCBQWSuivSt7h');
       cy.waitForHydration()
 
@@ -493,8 +493,50 @@ describe('Checkout', () => {
         .and('contain', '20€');
     });
 
-    // TODO: finish test as soon as we re-instate booking payment flow e2e tests
-    it.skip('should display checkbox for organizer campaign and corresponding validations', () => {});
+    it('should display checkbox for organizer campaign and corresponding validations', () => {
+      bookParticipant('MY4bvgxDbMtGv8rbYe5d', 'AhowRdNWCBQWSuivSt7h');
+
+      cy.location()
+        .should((l) => {
+          expect(l.pathname).to.include('/checkout/confirmation/');
+        })
+
+        .waitForHydration()
+
+        .get('[type="checkbox"]')
+        .check()
+
+        .get('input[name=add-to-mail-list]')
+        .should('be.checked')
+
+        .get('input[name=email]')
+        .should('exist')
+        .type('a@gmail.com')
+
+        .intercept('POST', '/checkout/confirmation/*')
+        .as('AddToMailList')
+
+        .get('button[name=send-confirmation]')
+        .should('exist')
+        .click()
+
+        .wait('@AddToMailList')
+
+        .get('#error-message')
+        .should('exist')
+        .and('contain', 'Esse email já está registado')
+
+        .get('input[name=add-to-mail-list]')
+        .type('b@gmail.com')
+
+        .get('button[name=send-confirmation]')
+        .click()
+
+        .wait('@AddToMailList')
+
+        .get('#success-message')
+        .should('exist');
+    });
 
     it('should display current booked teams', () => {
       cy.intercept('GET', '*?_data=routes*checkout*')
@@ -664,7 +706,7 @@ describe('Checkout', () => {
       cy.login();
     });
 
-    it.skip('Should add race to cart and redirect to form route from event page', () => {
+    it('Should add race to cart and redirect to form route from event page', () => {
       cy.intercept('GET', '*?_data=routes*checkout*')
         .as('selectRace')
 
@@ -681,7 +723,7 @@ describe('Checkout', () => {
         });
     });
 
-    it.skip('Should add/remove race', () => {
+    it('Should add/remove race', () => {
       cy.intercept('GET', '*?_data=routes*checkout*')
         .as('selectRace')
 
@@ -704,11 +746,11 @@ describe('Checkout', () => {
         .contains('0');
     });
 
-    it.skip('Should fill form and save participant', () => {
+    it('Should fill form and save participant', () => {
       registerParticipant('bQmGXYkbhJetjk6mniMt', 'Rd9SETi59X9ava6CPhkY');
     });
 
-    it.skip('should contain right amount of races', () => {
+    it('should contain right amount of races', () => {
       cy.visitAndWaitForHydration('/checkout/cart/bQmGXYkbhJetjk6mniMt')
 
         .get('#add-race-Rd9SETi59X9ava6CPhkY')
@@ -773,19 +815,23 @@ describe('Checkout', () => {
         .and('have.value', 'Rego');
     });
 
-    it.skip('should book a race', () => {
+    it('should book a race', () => {
       bookParticipant('bQmGXYkbhJetjk6mniMt', 'Rd9SETi59X9ava6CPhkY');
     });
 
-    it.skip('should send automated email after completing booking', () => {
+    it('should send automated email after completing booking', () => {
       bookParticipant('bQmGXYkbhJetjk6mniMt', 'Rd9SETi59X9ava6CPhkY');
-      cy.request({ method: 'GET', url: Cypress.env('HTTP_CATCHER') }).then(
-        ({ body }) => {
+      cy.location()
+        .should((l) => {
+          expect(l.pathname).to.include('/confirmation/');
+        })
+
+        .request({ method: 'GET', url: Cypress.env('HTTP_CATCHER') })
+        .then(({ body }) => {
           expect(body.subject).to.eq(
             'Informações do teu booking no evento Trail do Zêzere.'
           );
-        }
-      );
+        });
     });
 
     it('should display error when submitting form without indetity card filled', () => {
@@ -854,7 +900,7 @@ describe('Checkout', () => {
         .should('contain', '1');
     });
 
-    it.skip('should have correct bib numbers after updating initial bib number', () => {
+    it('should have correct bib numbers after updating initial bib number', () => {
       // Update initial bib number
       cy.loginOrganizer()
         .visitAndWaitForHydration('/o/event/5n8epZbHczqAQtQaAh5R')
@@ -887,26 +933,12 @@ describe('Checkout', () => {
           expect(loc.pathname).to.contain('/');
         })
 
-        .intercept('GET', '/payment-status/*')
-        .as('GetPaymentStatus')
-
         .visitAndWaitForHydration('/checkout/payment/qR4nqWpTdQy8QZu29ANu')
 
-        .get('button[name=pay]')
+        .get('button[name=pay-reference]')
         .should('exist')
 
         .click()
-
-        .location()
-        .then((l) => {
-          if (l.pathname === '/checkout/payment/qR4nqWpTdQy8QZu29ANu') {
-            cy.get('.sibs > h5')
-              .should('exist')
-              .and('contain', 'Pagamento por Multibanco ou Homebanking')
-
-              .wait('@GetPaymentStatus');
-          }
-        })
 
         .waitForHydration()
         .location()
@@ -1164,32 +1196,29 @@ describe('Checkout', () => {
         });
     });
 
-    it.skip('should not allow user to pay if he does not accept terms and conditions', () => {
-      cy.login()
+    it('should have link to Event regulation and Dici terms', () => {
+      cy.intercept('GET', '/checkout/cart/*?_data=routes*checkout*')
+        .as('selectRace')
 
-        .visitAndWaitForHydration('/checkout/payment/HJtAk2sSktodKez744mt')
+        .intercept('GET', '/checkout/info/*?_data=routes*checkout*')
+        .as('checkout')
 
-        .intercept('POST', '/checkout/payment/HJtAk2sSktodKez744mt*')
-        .as('pay')
+        .visitAndWaitForHydration('/checkout/cart/gLqrDfMx6qkTHn6hoZqA')
 
-        .get('button[name=pay]')
+        .get('#add-race-LoDjLz7dWQTWk6Th4dRC')
         .click()
 
-        .wait('@pay')
+        .wait('@selectRace')
+
+        .get('#checkout')
+        .click()
+
+        .wait('@checkout')
 
         .location()
         .should((l) => {
-          expect(l.pathname).to.eq('/checkout/payment/HJtAk2sSktodKez744mt');
+          expect(l.pathname).to.include('/checkout/info/');
         })
-
-        .get('#terms-error')
-        .should('exist');
-    });
-
-    it.skip('should have link to Event regulation and Dici terms', () => {
-      cy.login()
-
-        .visitAndWaitForHydration('/checkout/payment/HJtAk2sSktodKez744mt')
 
         .get('[data-cy=terms-link]')
         .should('exist')
@@ -1977,7 +2006,7 @@ function bookParticipant(eventId: string, raceId: string) {
           expect(l.pathname).to.eq(`/checkout/payment/${bookingId}`);
         })
 
-        .get('button[name=pay-reference]')
+        .get('button[name=pay-cc]')
         .click();
     });
 }
