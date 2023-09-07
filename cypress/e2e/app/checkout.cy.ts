@@ -493,7 +493,7 @@ describe('Checkout', () => {
         .and('contain', '20€');
     });
 
-    it.only('should display checkbox for organizer campaign and corresponding validations', () => {
+    it('should display checkbox for organizer campaign and corresponding validations', () => {
       bookParticipant('MY4bvgxDbMtGv8rbYe5d', 'AhowRdNWCBQWSuivSt7h');
 
       cy.location()
