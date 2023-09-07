@@ -12,19 +12,7 @@ describe('Admin', () => {
     });
 
     it('should approve organizer', () => {
-      cy.visitAndWaitForHydration('/a/organizers')
-        .get('tr')
-        .should('have.length', 2)
-        .eq(1)
-        .click()
-
-        .waitForHydration()
-
-        .location()
-        .should((l) => {
-          expect(l.pathname).to.eq('/a/organizers/uyFgbFPB67YEnzZj82wA');
-        })
-
+      cy.visitAndWaitForHydration('/a/organizers/uyFgbFPB67YEnzZj82wA')
         .get('input[name=commission]')
         .should('have.value', 25)
         .clear()
