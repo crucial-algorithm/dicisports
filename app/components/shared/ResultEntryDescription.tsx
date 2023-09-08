@@ -61,7 +61,10 @@ export default function ResultEntryDescription({
               }
             )}
           >
-            {text}
+            <div
+              data-cy="description"
+              dangerouslySetInnerHTML={{ __html: text }}
+            />
           </div>
         </div>
         {heightMetaData.isTextLonger && (

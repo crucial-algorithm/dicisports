@@ -22,6 +22,7 @@ import eventTeamsSeed from './data/eventTeams.json';
 import latestBibNumberSeed from './data/latestBibNumber.json';
 import paymentsSeed from './data/payments.json';
 import organizerTypesSeed from './data/organizerTypes.json';
+import mailingListSeed from './data/mailingList.json';
 
 const db = new PrismaClient();
 const now = new Date();
@@ -55,6 +56,7 @@ async function seed() {
   await persist('users', users(), db.user);
   await persist('organizer types', organizerTypes(), db.organizerType);
   await persist('organizers', organizers(), db.organizer);
+  await persist('mailing list', mailingList(), db.mailingList);
   await persist('groups', groups(), db.group);
   await persist('events', events(), db.event);
   await persist('latest bib number', latestBibNumber(), db.latestBibNumber);
@@ -351,6 +353,15 @@ function organizerTypes() {
       ...o,
       createdAt: now,
       updatedAt: now
+    };
+  });
+}
+
+function mailingList() {
+  return mailingListSeed.map((m) => {
+    return {
+      ...m,
+      createdAt: now
     };
   });
 }
