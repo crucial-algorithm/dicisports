@@ -43,56 +43,54 @@ function AdornmentButton({
   );
 }
 
-const Button: React.ForwardRefExoticComponent<Props> = React.forwardRef(
-  (
-    {
-      onClick,
-      children,
-      type = 'submit',
-      className,
-      disabled,
-      size = 'medium',
-      variant = 'primary',
-      name,
-      value,
-      id
-    },
-    ref
-  ) => {
-    if (variant === 'adornment') {
-      return (
-        <AdornmentButton
-          name={name}
-          className={className}
-          onClick={onClick}
-          type={type}
-        >
-          {children}
-        </AdornmentButton>
-      );
-    }
+const Button = React.forwardRef<HTMLButtonElement, Props>(function Button(
+  {
+    onClick,
+    children,
+    type = 'submit',
+    className,
+    disabled,
+    size = 'medium',
+    variant = 'primary',
+    name,
+    value,
+    id
+  },
+  ref
+) {
+  if (variant === 'adornment') {
     return (
-      <button
-        type={type}
-        className={classes({ className })}
-        style={{
-          transition:
-            'background-color .2s,color .2s,border-color .2s,box-shadow .2s'
-        }}
-        onClick={onClick}
-        ref={ref}
-        disabled={disabled}
+      <AdornmentButton
         name={name}
-        value={value}
-        id={id}
+        className={className}
+        onClick={onClick}
+        type={type}
       >
-        <ButtonInner variant={variant} size={size}>
-          {children}
-        </ButtonInner>
-      </button>
+        {children}
+      </AdornmentButton>
     );
   }
-);
+  return (
+    <button
+      type={type}
+      className={classes({ className })}
+      style={{
+        transition:
+          'background-color .2s,color .2s,border-color .2s,box-shadow .2s'
+      }}
+      onClick={onClick}
+      ref={ref}
+      disabled={disabled}
+      name={name}
+      value={value}
+      id={id}
+    >
+      <ButtonInner variant={variant} size={size}>
+        {children}
+      </ButtonInner>
+    </button>
+  );
+});
 
 interface ButtonProps {
   variant?: 'primary' | 'secondary' | 'danger' | 'link'

@@ -3,10 +3,6 @@ import clsx from 'clsx';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { CheckoutInfoActions } from '~/action.keys';
-
-import Button from '~/components/shared/Button';
-import ButtonGroup from '~/components/shared/ButtonGroup';
 import ComboBox, { Creatable } from '~/components/shared/form/ComboBox';
 import BasicDatePicker from '~/components/shared/form/DatePicker';
 import FormField from '~/components/shared/form/FormField';

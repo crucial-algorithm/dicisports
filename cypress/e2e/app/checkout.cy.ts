@@ -298,7 +298,7 @@ describe('Checkout', () => {
         });
     });
 
-    it('should show validation error if there are registrations with empty participant info - missing participants', () => {
+    it('should show validation error if there are registrations with empty participant info', () => {
       cy.intercept('GET', '/checkout/cart/*?_data=routes*checkout*')
         .as('selectRace')
 
@@ -306,6 +306,11 @@ describe('Checkout', () => {
         .as('checkout')
 
         .visitAndWaitForHydration('/checkout/cart/MY4bvgxDbMtGv8rbYe5d')
+
+        .get('#add-race-AhowRdNWCBQWSuivSt7h')
+        .click()
+
+        .wait('@selectRace')
 
         .get('#add-race-AhowRdNWCBQWSuivSt7h')
         .click()
@@ -321,6 +326,33 @@ describe('Checkout', () => {
         .should((l) => {
           expect(l.pathname).to.include('/checkout/info/');
         })
+
+        .get('input[name=first-name]')
+        .type('Nuno')
+
+        .get('input[name=last-name]')
+        .type('Lopes')
+
+        .pickOptionFromSelect('gender', 2)
+
+        .pickDate('birthdate', '2001-09-21')
+
+        .get('input[name=phone-number]')
+        .type('937654321')
+
+        .get('input[name=identity-card]')
+        .type('000000000zz4')
+        .should('have.value', '00000000-0-zz4')
+
+        .get('input[name=federation-number]')
+        .type('8165238')
+
+        .pickOptionFromSelect('shirt', 2)
+
+        .pickOptionFromSelect('nationality', 188)
+
+        .get('input[name=postal-code]')
+        .type('4730-454')
 
         .get('input[data-cy=regulation]')
         .click()
@@ -338,7 +370,7 @@ describe('Checkout', () => {
         .should('exist');
     });
 
-    it('should show validation error if there are registrations with empty participant info - terms and conditions', () => {
+    it('should show validation terms and conditions error', () => {
       cy.intercept('GET', '/checkout/cart/*?_data=routes*checkout*')
         .as('selectRace')
 
@@ -361,6 +393,33 @@ describe('Checkout', () => {
         .should((l) => {
           expect(l.pathname).to.include('/checkout/info/');
         })
+
+        .get('input[name=first-name]')
+        .type('Nuno')
+
+        .get('input[name=last-name]')
+        .type('Lopes')
+
+        .pickOptionFromSelect('gender', 2)
+
+        .pickDate('birthdate', '2001-09-21')
+
+        .get('input[name=phone-number]')
+        .type('937654321')
+
+        .get('input[name=identity-card]')
+        .type('000000000zz4')
+        .should('have.value', '00000000-0-zz4')
+
+        .get('input[name=federation-number]')
+        .type('8165238')
+
+        .pickOptionFromSelect('shirt', 2)
+
+        .pickOptionFromSelect('nationality', 188)
+
+        .get('input[name=postal-code]')
+        .type('4730-454')
 
         .get('#checkout')
         .click()
