@@ -11,7 +11,7 @@ import { json, redirect } from '@remix-run/node';
 import { Link, useFetcher, useLoaderData } from '@remix-run/react';
 import clsx from 'clsx';
 import * as React from 'react';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { z, ZodError } from 'zod';
 
@@ -471,6 +471,8 @@ export default function CheckoutInfoRoute() {
     (p) => p.id === raceParticipants[0].participantId
   );
   const isInlineRegulation = event.regulationContent && true;
+  const buttonRef = useRef<HTMLButtonElement | null>(null);
+  const isUserBookingOnlyForHimself = raceParticipants.length === 1; 
 
   if (!isFirstParticipantVisited) {
     initialVisitedParticipants.push(raceParticipants[0].participant);
@@ -579,6 +581,30 @@ export default function CheckoutInfoRoute() {
 
   function handleCheckAddToMailingList() {
     setCheckedAddToMailingList(!checkedAddToMailingList);
+  }
+
+  function handleOnCheckout() {
+    if (!buttonRef.current) {
+      return;
+    }
+
+    buttonRef.current?.click();
+
+    // If booking has more than 1 participant, we should submit cart form afterwards
+    if (!isUserBookingOnlyForHimself) {
+      fetcher.submit(
+        {
+          regulation: checkedTermsAndRegulation.regulation ? 'on' : 'off',
+          terms: checkedTermsAndRegulation.terms ? 'on' : 'off',
+          'add-to-mail-list': checkedAddToMailingList ? 'on' : 'off',
+          actionId: 'checkout',
+          hash: String(hash)
+        },
+        {
+          method: 'post'
+        }
+      );
+    }
   }
 
   useEffect(() => {
@@ -833,6 +859,45 @@ export default function CheckoutInfoRoute() {
                 <InputError id="terms-error" className="mb-2">
                   {errors?.submit || errors?.terms || errors?.regulation}
                 </InputError>
+
+                <ButtonGroup>
+                  <Button type="button" variant="secondary" onClick={resetForm}>
+                    {t('Reset')}
+                  </Button>
+
+                  {(!isUserBookingOnlyForHimself ||
+                    (isUserBookingOnlyForHimself && !selectedParticipant)) && (
+                    <Button
+                      type="submit"
+                      value={CheckoutInfoActions.update}
+                      name="actionId"
+                      disabled={!participant}
+                      id="save-button"
+                      variant={selectedParticipant ? 'secondary' : 'primary'}
+                      ref={buttonRef}
+                    >
+                      {t('Save')}
+                    </Button>
+                  )}
+
+                  {selectedParticipant && (
+                    <Button
+                      type="submit"
+                      value={CheckoutInfoActions.updateAndSave}
+                      name="actionId"
+                      disabled={!participant}
+                      id="save-update-button"
+                      variant="primary"
+                    >
+                      {isUserBookingOnlyForHimself
+                        ? t('Save')
+                        : t('Save and Update', {
+                            first: selectedParticipant.firstName,
+                            last: selectedParticipant.lastName
+                          })}
+                    </Button>
+                  )}
+                </ButtonGroup>
               </>
             )}
           </ParticipantForm>
@@ -853,26 +918,9 @@ export default function CheckoutInfoRoute() {
             {!isGuest && (
               <>
                 <div className="flex flex-col items-center w-full">
-                  <input
-                    type="hidden"
-                    name="regulation"
-                    value={checkedTermsAndRegulation.regulation ? 'on' : 'off'}
-                  />
-                  <input
-                    type="hidden"
-                    name="terms"
-                    value={checkedTermsAndRegulation.terms ? 'on' : 'off'}
-                  />
-                  <input
-                    type="hidden"
-                    name="add-to-mail-list"
-                    value={checkedAddToMailingList ? 'on' : 'off'}
-                  />
-                  <input type="hidden" name="hash" value={hash} />
                   <Button
-                    type="submit"
-                    name="actionId"
-                    value="checkout"
+                    type="button"
+                    onClick={handleOnCheckout}
                     disabled={cart.length === 0}
                     className="mt-4 w-full"
                     id="checkout"

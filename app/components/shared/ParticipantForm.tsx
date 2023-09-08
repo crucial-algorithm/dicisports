@@ -319,46 +319,6 @@ export default function ParticipantForm({
 
       <input type="hidden" name="hash" value={hash} />
       <input type="hidden" name="raceId" value={raceId as string} />
-
-      {!isReadOnly && (
-        <ButtonGroup>
-          <Button type="button" variant="secondary" onClick={resetForm}>
-            {t('Reset')}
-          </Button>
-
-          {(!isUserBookingOnlyForHimself ||
-            (isUserBookingOnlyForHimself && !selectedParticipant)) && (
-            <Button
-              type="submit"
-              value={CheckoutInfoActions.update}
-              name="actionId"
-              disabled={!participant}
-              id="save-button"
-              variant={selectedParticipant ? 'secondary' : 'primary'}
-            >
-              {t('Save')}
-            </Button>
-          )}
-
-          {selectedParticipant && (
-            <Button
-              type="submit"
-              value={CheckoutInfoActions.updateAndSave}
-              name="actionId"
-              disabled={!participant}
-              id="save-update-button"
-              variant="primary"
-            >
-              {isUserBookingOnlyForHimself
-                ? t('Save')
-                : t('Save and Update', {
-                    first: selectedParticipant.firstName,
-                    last: selectedParticipant.lastName
-                  })}
-            </Button>
-          )}
-        </ButtonGroup>
-      )}
     </FetcherForm>
   );
 }
