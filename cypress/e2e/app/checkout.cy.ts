@@ -752,7 +752,7 @@ describe('Checkout', () => {
     });
 
     it('Should add race to cart and redirect to form route from event page', () => {
-      cy.intercept('GET', '*/event/trail-do-zezere*')
+      cy.intercept('GET', '/checkout/create*')
         .as('selectRace')
 
         .visitAndWaitForHydration('/event/trail-do-zezere')
@@ -880,7 +880,7 @@ describe('Checkout', () => {
     });
 
     it('should display error when submitting form without indetity card filled', () => {
-      cy.intercept('GET', '*/event/trail-do-zezere*')
+      cy.intercept('GET', '/checkout/create*')
         .as('selectRace')
 
         .visitAndWaitForHydration('/event/trail-do-zezere')
@@ -1308,7 +1308,7 @@ describe('Checkout', () => {
     });
 
     it('should add price early bird to cart if it is still valid', () => {
-      cy.intercept('GET', '*/event/love-tiles-douro-granfondo-2023*')
+      cy.intercept('GET', '/checkout/create*')
         .as('selectRace')
 
         .visitAndWaitForHydration('/event/love-tiles-douro-granfondo-2023')
