@@ -10,7 +10,7 @@ describe('Checkout', () => {
     });
 
     it('Should add race to cart and redirect to form route from event page', () => {
-      cy.intercept('GET', '*?_data=routes*checkout*')
+      cy.intercept('GET', '/checkout/create*')
         .as('selectRace')
 
         .visitAndWaitForHydration('/event/love-tiles-douro-granfondo-2023')
@@ -27,7 +27,7 @@ describe('Checkout', () => {
     });
 
     it('Should remove race', () => {
-      cy.intercept('GET', '*?_data=routes*checkout*')
+      cy.intercept('GET', '/checkout/create*')
         .as('selectRace')
 
         .visitAndWaitForHydration('/event/love-tiles-douro-granfondo-2023')
@@ -57,7 +57,7 @@ describe('Checkout', () => {
 
         .intercept(
           'POST',
-          '/checkout/cart/MY4bvgxDbMtGv8rbYe5d?a=update*&_data=routes*checkout*'
+          '/checkout/cart/MY4bvgxDbMtGv8rbYe5d*'
         )
         .as('removeParticipant')
 
@@ -103,7 +103,7 @@ describe('Checkout', () => {
     });
 
     it('should not exist list of participants if there is only one', () => {
-      cy.intercept('GET', '*?_data=routes*checkout*')
+      cy.intercept('GET', '/checkout/cart/MY4bvgxDbMtGv8rbYe5d*')
         .as('selectRace')
 
         .visitAndWaitForHydration('/checkout/cart/MY4bvgxDbMtGv8rbYe5d')
@@ -126,13 +126,13 @@ describe('Checkout', () => {
     it('should be able to update cart', () => {
       cy.intercept(
         'GET',
-        '/checkout/cart/MY4bvgxDbMtGv8rbYe5d*?_data=routes*checkout*'
+        '/checkout/cart/MY4bvgxDbMtGv8rbYe5d*'
       )
         .as('selectRace')
 
         .intercept(
           'POST',
-          '/checkout/cart/MY4bvgxDbMtGv8rbYe5d*?_data=routes*checkout*'
+          '/checkout/cart/MY4bvgxDbMtGv8rbYe5d*'
         )
         .as('addRace')
 
@@ -156,7 +156,7 @@ describe('Checkout', () => {
 
         .intercept(
           'POST',
-          '/checkout/cart/MY4bvgxDbMtGv8rbYe5d?a=update*?_data=routes*'
+          '/checkout/cart/MY4bvgxDbMtGv8rbYe5d?a=update*'
         )
         .as('addParticipant')
 
@@ -189,7 +189,7 @@ describe('Checkout', () => {
     });
 
     it('should remove race participant', () => {
-      cy.intercept('GET', '*?_data=routes*checkout*')
+      cy.intercept('GET', '/checkout/cart/MY4bvgxDbMtGv8rbYe5d*')
         .as('selectRace')
 
         .visitAndWaitForHydration('/checkout/cart/MY4bvgxDbMtGv8rbYe5d')
@@ -212,20 +212,17 @@ describe('Checkout', () => {
           expect(l.pathname).to.eq('/checkout/cart/MY4bvgxDbMtGv8rbYe5d');
         })
 
-        .intercept('GET', '*?data=routes*info*')
-        .as('registrationsCheckout')
-
         .get('#checkout')
         .click()
 
-        .wait('@registrationsCheckout')
+        .wait('@selectRace')
 
         .location()
         .should((l) => {
           expect(l.pathname).to.include('/checkout/info/');
         })
 
-        .intercept('POST', '/checkout/manage*?_data=routes*')
+        .intercept('POST', '/checkout/manage*')
         .as('removeParticipant')
 
         .get('[data-cy=participant]')
@@ -242,7 +239,7 @@ describe('Checkout', () => {
     });
 
     it('should redirect to cart if last race participant is removed', () => {
-      cy.intercept('GET', '*?_data=routes*checkout*')
+      cy.intercept('GET', '/checkout/cart/MY4bvgxDbMtGv8rbYe5d*')
         .as('selectRace')
 
         .visitAndWaitForHydration('/checkout/cart/MY4bvgxDbMtGv8rbYe5d')
@@ -259,7 +256,7 @@ describe('Checkout', () => {
 
         .intercept(
           'POST',
-          '/checkout/cart/MY4bvgxDbMtGv8rbYe5d?a=update*?_data=routes*'
+          '/checkout/cart/MY4bvgxDbMtGv8rbYe5d?a=update*'
         )
         .as('removeParticipant')
 
@@ -299,10 +296,10 @@ describe('Checkout', () => {
     });
 
     it('should show validation error if there are registrations with empty participant info', () => {
-      cy.intercept('GET', '/checkout/cart/*?_data=routes*checkout*')
+      cy.intercept('GET', '/checkout/cart/*')
         .as('selectRace')
 
-        .intercept('GET', '/checkout/info/*?_data=routes*checkout*')
+        .intercept('GET', '/checkout/info/*')
         .as('checkout')
 
         .visitAndWaitForHydration('/checkout/cart/MY4bvgxDbMtGv8rbYe5d')
@@ -371,10 +368,10 @@ describe('Checkout', () => {
     });
 
     it('should show validation terms and conditions error', () => {
-      cy.intercept('GET', '/checkout/cart/*?_data=routes*checkout*')
+      cy.intercept('GET', '/checkout/cart/*')
         .as('selectRace')
 
-        .intercept('GET', '/checkout/info/*?_data=routes*checkout*')
+        .intercept('GET', '/checkout/info/*')
         .as('checkout')
 
         .visitAndWaitForHydration('/checkout/cart/MY4bvgxDbMtGv8rbYe5d')
@@ -587,7 +584,7 @@ describe('Checkout', () => {
     });
 
     it('should display current booked teams', () => {
-      cy.intercept('GET', '*?_data=routes*checkout*')
+      cy.intercept('GET', '/checkout/cart/MY4bvgxDbMtGv8rbYe5d*')
         .as('selectRace')
 
         .visitAndWaitForHydration('/checkout/cart/MY4bvgxDbMtGv8rbYe5d')
@@ -625,7 +622,7 @@ describe('Checkout', () => {
     });
 
     it('should display cta to add team if it does not exist', () => {
-      cy.intercept('GET', '*?_data=routes*checkout*')
+      cy.intercept('GET', '/checkout/cart/MY4bvgxDbMtGv8rbYe5d*')
         .as('selectRace')
 
         .visitAndWaitForHydration('/checkout/cart/MY4bvgxDbMtGv8rbYe5d')
@@ -659,7 +656,7 @@ describe('Checkout', () => {
     });
 
     it('should save team', () => {
-      cy.intercept('GET', '*?_data=routes*checkout*')
+      cy.intercept('GET', '/checkout/cart/MY4bvgxDbMtGv8rbYe5d*')
         .as('selectRace')
 
         .visitAndWaitForHydration('/checkout/cart/MY4bvgxDbMtGv8rbYe5d')
@@ -726,7 +723,7 @@ describe('Checkout', () => {
         .get('input[name=postal-code]')
         .type('4730-454')
 
-        .intercept('POST', '*?_data=routes*checkout*')
+        .intercept('POST', '/checkout/info/*')
         .as('saveParticipant')
 
         .get('#save-button')
@@ -755,7 +752,7 @@ describe('Checkout', () => {
     });
 
     it('Should add race to cart and redirect to form route from event page', () => {
-      cy.intercept('GET', '*?_data=routes*checkout*')
+      cy.intercept('GET', '*/event/trail-do-zezere*')
         .as('selectRace')
 
         .visitAndWaitForHydration('/event/trail-do-zezere')
@@ -772,7 +769,7 @@ describe('Checkout', () => {
     });
 
     it('Should add/remove race', () => {
-      cy.intercept('GET', '*?_data=routes*checkout*')
+      cy.intercept('GET', '/checkout/cart/bQmGXYkbhJetjk6mniMt*')
         .as('selectRace')
 
         .visitAndWaitForHydration('/checkout/cart/bQmGXYkbhJetjk6mniMt')
@@ -826,7 +823,7 @@ describe('Checkout', () => {
     it('should fill form with saved participant info', () => {
       cy.intercept(
         'POST',
-        '/checkout/cart/gLqrDfMx6qkTHn6hoZqA*?_data=routes*checkout*'
+        '/checkout/cart/gLqrDfMx6qkTHn6hoZqA*'
       )
         .as('addRace')
 
@@ -883,7 +880,7 @@ describe('Checkout', () => {
     });
 
     it('should display error when submitting form without indetity card filled', () => {
-      cy.intercept('GET', '*?_data=routes*checkout*')
+      cy.intercept('GET', '*/event/trail-do-zezere*')
         .as('selectRace')
 
         .visitAndWaitForHydration('/event/trail-do-zezere')
@@ -898,7 +895,7 @@ describe('Checkout', () => {
           expect(l.pathname).to.include('/checkout/info/');
         })
 
-        .intercept('POST', '*?_data=routes*checkout*')
+        .intercept('POST', '/checkout/info/*')
         .as('saveParticipant')
 
         .get('#save-button')
@@ -1019,10 +1016,10 @@ describe('Checkout', () => {
     });
 
     it('should display checkbox to enroll in organizer mailing list', () => {
-      cy.intercept('GET', '/checkout/cart/*?_data=routes*checkout*')
+      cy.intercept('GET', '/checkout/cart/*')
         .as('selectRace')
 
-        .intercept('GET', '/checkout/info/*?_data=routes*checkout*')
+        .intercept('GET', '/checkout/info/*')
         .as('checkout')
 
         .visitAndWaitForHydration('/checkout/cart/bQmGXYkbhJetjk6mniMt')
@@ -1052,7 +1049,7 @@ describe('Checkout', () => {
         .should('be.checked');
     });
 
-    it.only('should apply discount', () => {
+    it('should apply discount', () => {
       cy.intercept('POST', '/checkout/payment/qR4nqWpTdQy8QZu29ANu*')
         .as('ApplyDiscount')
 
@@ -1071,7 +1068,7 @@ describe('Checkout', () => {
         .contains('40€');
     });
 
-    it.only('should show applied discount information', () => {
+    it('should show applied discount information', () => {
       cy.intercept('POST', '/checkout/payment/qR4nqWpTdQy8QZu29ANu*')
         .as('ApplyDiscount')
 
@@ -1093,7 +1090,7 @@ describe('Checkout', () => {
         .contains('45€');
     });
 
-    it.only('should show 0€ when applying 100% discount', () => {
+    it('should show 0€ when applying 100% discount', () => {
       cy.intercept('POST', '/checkout/payment/qR4nqWpTdQy8QZu29ANu*')
         .as('ApplyDiscount')
 
@@ -1208,7 +1205,7 @@ describe('Checkout', () => {
         .first()
         .check()
 
-        .intercept('POST', '*?_data=routes*checkout*')
+        .intercept('POST', '/checkout/info/*')
         .as('saveParticipant')
 
         .get('#save-button')
@@ -1247,10 +1244,10 @@ describe('Checkout', () => {
     });
 
     it('should have link to Event regulation and Dici terms', () => {
-      cy.intercept('GET', '/checkout/cart/*?_data=routes*checkout*')
+      cy.intercept('GET', '/checkout/cart/*')
         .as('selectRace')
 
-        .intercept('GET', '/checkout/info/*?_data=routes*checkout*')
+        .intercept('GET', '/checkout/info/*')
         .as('checkout')
 
         .visitAndWaitForHydration('/checkout/cart/gLqrDfMx6qkTHn6hoZqA')
@@ -1311,7 +1308,7 @@ describe('Checkout', () => {
     });
 
     it('should add price early bird to cart if it is still valid', () => {
-      cy.intercept('GET', '*?_data=routes*checkout*')
+      cy.intercept('GET', '*/event/love-tiles-douro-granfondo-2023*')
         .as('selectRace')
 
         .visitAndWaitForHydration('/event/love-tiles-douro-granfondo-2023')
@@ -1905,7 +1902,7 @@ describe('Checkout', () => {
 });
 
 function registerParticipant(eventId: string, raceId: string) {
-  cy.intercept('GET', '*?_data=routes*checkout*')
+  cy.intercept('GET', `/checkout/cart/${eventId}*`)
     .as('selectRace')
 
     .visitAndWaitForHydration(`/checkout/cart/${eventId}`)
@@ -1961,7 +1958,7 @@ function registerParticipant(eventId: string, raceId: string) {
     .get('input[name=postal-code]')
     .type('4730-454')
 
-    .intercept('POST', '*?_data=routes*checkout*')
+    .intercept('POST', '/checkout/info/*')
     .as('saveParticipant')
 
     .get('#save-button')
@@ -1979,7 +1976,7 @@ function registerParticipant(eventId: string, raceId: string) {
 
 function bookParticipant(eventId: string, raceId: string) {
   return cy
-    .intercept('GET', '*?_data=routes*checkout*')
+    .intercept('GET', `/checkout/cart/${eventId}*`)
     .as('selectRace')
 
     .visitAndWaitForHydration(`/checkout/cart/${eventId}`)
@@ -2041,7 +2038,7 @@ function bookParticipant(eventId: string, raceId: string) {
         .first()
         .check()
 
-        .intercept('POST', '*?_data=routes*checkout*')
+        .intercept('POST', '/checkout/info/*')
         .as('saveParticipant')
 
         .get('#save-button')
