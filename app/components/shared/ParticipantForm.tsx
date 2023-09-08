@@ -1,4 +1,3 @@
-import type { FetcherWithComponents } from '@remix-run/react';
 import clsx from 'clsx';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
@@ -13,7 +12,6 @@ import FormField from '~/components/shared/form/FormField';
 import TextField from '~/components/shared/form/TextField';
 import countries from '~/server/db/countries.json';
 import type { EventTeam, Language, Participant, ShirtSize } from '~/types';
-import { FetcherForm } from '~/components/shared/form/UploadForm';
 import { DiciInputMask } from '~/components/shared/form/InputMask';
 
 export default function ParticipantForm({
@@ -22,7 +20,6 @@ export default function ParticipantForm({
   errors,
   userSavedParticipants,
   raceId,
-  fetcher,
   selectedParticipant,
   setSelectedParticipant,
   shirtSizes,
@@ -38,7 +35,6 @@ export default function ParticipantForm({
   errors?: FormErrors;
   userSavedParticipants: Participant[] | null;
   raceId: string | null;
-  fetcher: FetcherWithComponents<any>;
   selectedParticipant: Participant | null;
   setSelectedParticipant: (v: string | number) => void;
   shirtSizes: ShirtSize[];
@@ -57,16 +53,7 @@ export default function ParticipantForm({
   ];
 
   return (
-    <FetcherForm
-      theForm={fetcher.Form}
-      method="post"
-      className={clsx('w-full', {
-        'opacity-100': participant,
-        'opacity-50': !participant
-      })}
-      key={hash}
-      readOnly={isReadOnly}
-    >
+    <>
       {!isReadOnly &&
         participant &&
         userSavedParticipants &&
@@ -359,7 +346,7 @@ export default function ParticipantForm({
           )}
         </ButtonGroup>
       )}
-    </FetcherForm>
+    </>
   );
 }
 

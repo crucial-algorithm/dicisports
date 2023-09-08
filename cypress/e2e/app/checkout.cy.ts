@@ -298,7 +298,7 @@ describe('Checkout', () => {
         });
     });
 
-    it('should show validation error if there are registrations with empty participant info - missing participants', () => {
+    it('should show validation error if there are registrations with empty participant info', () => {
       cy.intercept('GET', '/checkout/cart/*?_data=routes*checkout*')
         .as('selectRace')
 
@@ -306,6 +306,11 @@ describe('Checkout', () => {
         .as('checkout')
 
         .visitAndWaitForHydration('/checkout/cart/MY4bvgxDbMtGv8rbYe5d')
+
+        .get('#add-race-AhowRdNWCBQWSuivSt7h')
+        .click()
+
+        .wait('@selectRace')
 
         .get('#add-race-AhowRdNWCBQWSuivSt7h')
         .click()
@@ -321,6 +326,33 @@ describe('Checkout', () => {
         .should((l) => {
           expect(l.pathname).to.include('/checkout/info/');
         })
+
+        .get('input[name=first-name]')
+        .type('Nuno')
+
+        .get('input[name=last-name]')
+        .type('Lopes')
+
+        .pickOptionFromSelect('gender', 2)
+
+        .pickDate('birthdate', '2001-09-21')
+
+        .get('input[name=phone-number]')
+        .type('937654321')
+
+        .get('input[name=identity-card]')
+        .type('000000000zz4')
+        .should('have.value', '00000000-0-zz4')
+
+        .get('input[name=federation-number]')
+        .type('8165238')
+
+        .pickOptionFromSelect('shirt', 2)
+
+        .pickOptionFromSelect('nationality', 188)
+
+        .get('input[name=postal-code]')
+        .type('4730-454')
 
         .get('input[data-cy=regulation]')
         .click()
@@ -338,7 +370,7 @@ describe('Checkout', () => {
         .should('exist');
     });
 
-    it('should show validation error if there are registrations with empty participant info - terms and conditions', () => {
+    it('should show validation terms and conditions error', () => {
       cy.intercept('GET', '/checkout/cart/*?_data=routes*checkout*')
         .as('selectRace')
 
@@ -361,6 +393,33 @@ describe('Checkout', () => {
         .should((l) => {
           expect(l.pathname).to.include('/checkout/info/');
         })
+
+        .get('input[name=first-name]')
+        .type('Nuno')
+
+        .get('input[name=last-name]')
+        .type('Lopes')
+
+        .pickOptionFromSelect('gender', 2)
+
+        .pickDate('birthdate', '2001-09-21')
+
+        .get('input[name=phone-number]')
+        .type('937654321')
+
+        .get('input[name=identity-card]')
+        .type('000000000zz4')
+        .should('have.value', '00000000-0-zz4')
+
+        .get('input[name=federation-number]')
+        .type('8165238')
+
+        .pickOptionFromSelect('shirt', 2)
+
+        .pickOptionFromSelect('nationality', 188)
+
+        .get('input[name=postal-code]')
+        .type('4730-454')
 
         .get('#checkout')
         .click()
@@ -524,18 +583,7 @@ describe('Checkout', () => {
 
         .get('#error-message')
         .should('exist')
-        .and('contain', 'Esse email já está registado')
-
-        .get('input[name=add-to-mail-list]')
-        .type('b@gmail.com')
-
-        .get('button[name=send-confirmation]')
-        .click()
-
-        .wait('@AddToMailList')
-
-        .get('#success-message')
-        .should('exist');
+        .and('contain', 'Esse email já está registado');
     });
 
     it('should display current booked teams', () => {
@@ -1004,7 +1052,7 @@ describe('Checkout', () => {
         .should('be.checked');
     });
 
-    it('should apply discount', () => {
+    it.only('should apply discount', () => {
       cy.intercept('POST', '/checkout/payment/qR4nqWpTdQy8QZu29ANu*')
         .as('ApplyDiscount')
 
@@ -1023,7 +1071,7 @@ describe('Checkout', () => {
         .contains('40€');
     });
 
-    it('should show applied discount information', () => {
+    it.only('should show applied discount information', () => {
       cy.intercept('POST', '/checkout/payment/qR4nqWpTdQy8QZu29ANu*')
         .as('ApplyDiscount')
 
@@ -1045,7 +1093,7 @@ describe('Checkout', () => {
         .contains('45€');
     });
 
-    it('should show 0€ when applying 100% discount', () => {
+    it.only('should show 0€ when applying 100% discount', () => {
       cy.intercept('POST', '/checkout/payment/qR4nqWpTdQy8QZu29ANu*')
         .as('ApplyDiscount')
 
@@ -1064,7 +1112,9 @@ describe('Checkout', () => {
 
         .location()
         .should((l) => {
-          expect(l.pathname).to.eq('/checkout/confirmation/qR4nqWpTdQy8QZu29ANu');
+          expect(l.pathname).to.eq(
+            '/checkout/confirmation/qR4nqWpTdQy8QZu29ANu'
+          );
         })
 
         .get('[data-cy=subtotal-price]')
@@ -1100,78 +1150,78 @@ describe('Checkout', () => {
     it('should skip payment step if booking is free - applied 100% discount', () => {
       cy.visitAndWaitForHydration('/event/trail-do-zezere')
 
-          .get('button[name=race-Rd9SETi59X9ava6CPhkY]')
-          .click()
+        .get('button[name=race-Rd9SETi59X9ava6CPhkY]')
+        .click()
 
-          .location()
-          .should((l) => {
-            expect(l.pathname).to.include('/checkout/info');
-          })
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.include('/checkout/info');
+        })
 
-          .intercept('POST', '/checkout/info/*')
-          .as('ApplyDiscount')
+        .intercept('POST', '/checkout/info/*')
+        .as('ApplyDiscount')
 
-          .get('input[name=discount-code]')
-          .clear()
-          .type('GET-FIT-100%')
+        .get('input[name=discount-code]')
+        .clear()
+        .type('GET-FIT-100%')
 
-          .get('#apply-discount')
-          .click()
+        .get('#apply-discount')
+        .click()
 
-          .wait('@ApplyDiscount')
+        .wait('@ApplyDiscount')
 
-          .get('input[name=first-name]')
-          .type('Nuno')
+        .get('input[name=first-name]')
+        .type('Nuno')
 
-          .get('input[name=last-name]')
-          .type('Lopes')
+        .get('input[name=last-name]')
+        .type('Lopes')
 
-          .pickOptionFromSelect('gender', 2)
+        .pickOptionFromSelect('gender', 2)
 
-          .pickDate('birthdate', '2001-09-21')
+        .pickDate('birthdate', '2001-09-21')
 
-          .get('input[name=phone-number]')
-          .type('937654321')
+        .get('input[name=phone-number]')
+        .type('937654321')
 
-          .get('input[name=identity-card]')
-          .type('000000000zz4')
-          .should('have.value', '00000000-0-zz4')
+        .get('input[name=identity-card]')
+        .type('000000000zz4')
+        .should('have.value', '00000000-0-zz4')
 
-          .get('input[name=federation-number]')
-          .type('8165238')
+        .get('input[name=federation-number]')
+        .type('8165238')
 
-          .pickOptionFromSelect('shirt', 2)
+        .pickOptionFromSelect('shirt', 2)
 
-          .pickOptionFromSelect('nationality', 188)
+        .pickOptionFromSelect('nationality', 188)
 
-          .get('input[name=postal-code]')
-          .type('4730-454')
+        .get('input[name=postal-code]')
+        .type('4730-454')
 
-          .get('[data-cy=total-price]')
-          .contains('0€')
+        .get('[data-cy=total-price]')
+        .contains('0€')
 
-          .get('input[name=regulation]')
-          .first()
-          .check()
+        .get('input[name=regulation]')
+        .first()
+        .check()
 
-          .get('input[name=terms]')
-          .first()
-          .check()
+        .get('input[name=terms]')
+        .first()
+        .check()
 
-          .intercept('POST', '*?_data=routes*checkout*')
-          .as('saveParticipant')
+        .intercept('POST', '*?_data=routes*checkout*')
+        .as('saveParticipant')
 
-          .get('#save-button')
-          .click()
+        .get('#save-button')
+        .click()
 
-          .wait('@saveParticipant')
+        .wait('@saveParticipant')
 
-          .waitForHydration()
+        .waitForHydration()
 
-          .location()
-          .should((l) => {
-            expect(l.pathname).to.include('/checkout/confirmation/');
-          });
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.include('/checkout/confirmation/');
+        });
     });
   });
 

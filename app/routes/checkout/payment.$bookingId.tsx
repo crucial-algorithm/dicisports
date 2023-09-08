@@ -424,26 +424,29 @@ export default function CheckoutPaymentRoute() {
           )}
         </div>
         <div className="w-full mt-4 md:mt-0 md:w-[480px]">
-          <DisplayCart
-            cart={cart}
-            event={event}
-            fetcher={displayCartFetcher}
-            appliedDiscount={appliedDiscount}
-            discountCodeError={errors.discountError}
-            showDiscountCodeInput={!isPaid && !(submittedPayments && submittedPayments.length > 0)}
-          >
-            {!isPaid && !(submittedPayments && submittedPayments.length > 0) && (
-              <Button
-                id="update-info"
-                name="actionId"
-                className="mt-4 w-full"
-                type="submit"
-                value="update-info"
-              >
-                {t('Edit info')}
-              </Button>
-            )}
-          </DisplayCart>
+          <displayCartFetcher.Form method="post">
+            <DisplayCart
+              cart={cart}
+              event={event}
+              appliedDiscount={appliedDiscount}
+              discountCodeError={errors.discountError}
+              showDiscountCodeInput={
+                !isPaid && !(submittedPayments && submittedPayments.length > 0)
+              }
+            >
+              {!isPaid && !(submittedPayments && submittedPayments.length > 0) && (
+                <Button
+                  id="update-info"
+                  name="actionId"
+                  className="mt-4 w-full"
+                  type="submit"
+                  value="update-info"
+                >
+                  {t('Edit info')}
+                </Button>
+              )}
+            </DisplayCart>
+          </displayCartFetcher.Form>
         </div>
       </div>
     </Main>
