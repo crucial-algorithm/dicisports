@@ -2,12 +2,7 @@ import type { Event } from '@prisma/client';
 import { CheckoutStatus } from '@prisma/client';
 import type { ActionFunction, LoaderFunction } from '@remix-run/node';
 import { json, redirect } from '@remix-run/node';
-import {
-  Form,
-  useActionData,
-  useFetcher,
-  useLoaderData
-} from '@remix-run/react';
+import { Form, useActionData, useLoaderData } from '@remix-run/react';
 import * as React from 'react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -220,7 +215,6 @@ export default function CheckoutConfirmationRoute() {
   const [checkedAddToMailingList, setCheckedAddToMailingList] =
     useState<boolean>(false);
   const { t } = useTranslation('checkout');
-  const fetcher = useFetcher();
 
   function handleCheckAddToMailingList() {
     setCheckedAddToMailingList(!checkedAddToMailingList);
@@ -321,7 +315,6 @@ export default function CheckoutConfirmationRoute() {
           <DisplayCart
             cart={cart}
             event={event}
-            fetcher={fetcher}
             appliedDiscount={appliedDiscount}
           />
         </div>
