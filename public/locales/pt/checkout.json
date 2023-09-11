@@ -119,9 +119,19 @@
   "Try Again": "Tentar Novamente",
   "Dont want to fill information?": "Não queres ter de voltar a preencher os teus dados?",
   "Login Or Create Account Subheader - confirmation": "Terás acesso à confirmação da inscrição na tua área pessoal.",
-  "Login Or Create Account Subheader - info": "Assim guardamos os dados para futuras inscrições.",
 
   "Login": "Faz login",
   "Or": "ou",
-  "Create account": "cria uma conta"
+  "Create account": "cria uma conta",
+
+  "Suggest Login Dialog - Title": "Faz login",
+  "Suggest Login Dialog - Why should you login": "Guarda os dados da inscrição para outras provas para que não os tenhas de introduzir novamente.",
+  "Suggest Login Dialog - Email Field": "Email",
+  "Suggest Login Dialog - Password Field": "Password",
+  "Suggest Login Dialog - Login Button": "Autenticar",
+  "Suggest Login Dialog - Skip Login Button": "Continuar sem login",
+  "Suggest Login Dialog - Don't have an account": "Ainda não tens conta?",
+  "Suggest Login Dialog - Don't have an account CTA": "Cria a tua conta aqui.",
+  "Suggest Login Dialog - Recover Password": "Não te lembras da tua password?",
+  "Suggest Login Dialog - Recover Password CTA": "Nós ajudamos."
 }

@@ -33,6 +33,8 @@ const TextField: React.FC<Props> = ({
   id = id || '';
   const formProps = useContext(FormContext);
 
+  defaultValue = defaultValue === null ? undefined : defaultValue;
+
   if (formProps.readOnly) {
     return (<div className="font-medium dark:text-white">{defaultValue}</div>);
   }
