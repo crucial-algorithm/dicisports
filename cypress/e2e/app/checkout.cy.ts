@@ -1,7 +1,7 @@
 describe('Checkout', () => {
   before(() => {
-    // cy.task('db:reset');
-    // cy.task('clearDownloadFolder');
+    cy.task('db:reset');
+    cy.task('clearDownloadFolder');
   });
 
   context('Maintenance: unauthenticated', () => {
@@ -1050,7 +1050,7 @@ describe('Checkout', () => {
 
         .visitAndWaitForHydration('/checkout/payment/qR4nqWpTdQy8QZu29ANu')
 
-        .get('button[name=pay-reference]')
+        .get('button[name=pay-cc]')
         .should('exist')
 
         .click()

@@ -18,22 +18,22 @@ export default function BookingLoginCTADialog({
   bookingId: string;
   t: TFunction
 }) {
-  const loginDialog = useRef<HTMLDialogElement>(null);
+  const dialog = useRef<HTMLDialogElement>(null);
 
   useEffect(() => {
     const raw = window.localStorage.getItem(bookingId);
 
     // @ts-ignore: in cypress, without closing it 1st, showModal will throw an error
-    loginDialog.current?.close();
+    dialog.current?.close();
 
     // @ts-ignore
-    (!raw || (raw && !JSON.parse(raw).loginCTASeen)) && loginDialog.current?.showModal();
+    (!raw || (raw && !JSON.parse(raw).loginCTASeen)) && dialog.current?.showModal();
 
-  }, [bookingId, loginDialog]);
+  }, [bookingId, dialog]);
 
   function handleCloseCTAToLoginDialog() {
     // @ts-ignore
-    loginDialog.current?.close();
+    dialog.current?.close();
 
     window.localStorage.setItem(
       bookingId,
@@ -43,7 +43,7 @@ export default function BookingLoginCTADialog({
 
   return (
     <dialog
-      ref={loginDialog}
+      ref={dialog}
       className="relative w-full h-screen md:w-144 md:h-fit md:h-fit rounded border-dashed shadow animate-fade-in"
     >
       <div className="flex flex-col h-full justify-between p-6">
