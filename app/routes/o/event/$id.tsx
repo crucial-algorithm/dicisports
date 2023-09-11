@@ -41,9 +41,8 @@ import type {
   DropdownChangeEvent,
   DropdownProps
 } from 'primereact/dropdown';
-import {
-  Dropdown
-} from 'primereact/dropdown';
+
+import DifficultiesDropdown from '~/components/DifficultiesDropdown';
 
 import DocumentsList from '~/components/events/DocumentsList';
 
@@ -787,8 +786,8 @@ export default function OrganizerEventRoute() {
     );
   }
 
-  function handleOnSelectDifficulty(e: DropdownChangeEvent) {
-    setSelectedDifficulty(e.value);
+  function handleOnSelectDifficulty(value: number) {
+    setSelectedDifficulty(value);
   }
 
   return (
@@ -905,22 +904,12 @@ export default function OrganizerEventRoute() {
                 id="event-difficulty"
                 className="w-full md:basis-1/3"
               >
-                <Dropdown
-                  id="event-difficulty"
+                <DifficultiesDropdown
                   name="difficulty"
-                  value={selectedDifficulty}
-                  optionLabel="name"
-                  options={difficulties.map((d) => {
-                    return {
-                      name: getI18nText(d.name, language),
-                      description: getI18nText(d.description, language),
-                      value: d.id
-                    };
-                  })}
-                  valueTemplate={selectedValueTemplate}
-                  itemTemplate={optionTemplate}
+                  defaultValue={selectedDifficulty}
+                  difficulties={difficulties}
+                  language={language}
                   onChange={handleOnSelectDifficulty}
-                  className="w-full md:w-14rem difficulty-dropdown"
                 />
               </FormField>
             </div>

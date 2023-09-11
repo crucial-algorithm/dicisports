@@ -67,7 +67,3 @@
     dark:text-white dark:bg-gray-800
     disabled:text-gray-400 dark:disabled:text-blueGray-500
 }
-
-.p-dropdown-item.p-highlight {
-    @apply backgroud-
-}
