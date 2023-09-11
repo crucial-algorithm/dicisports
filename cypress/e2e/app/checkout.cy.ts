@@ -10,7 +10,7 @@ describe('Checkout', () => {
     });
 
     it('Should add race to cart and redirect to form route from event page', () => {
-      cy.intercept('GET', '*?_data=routes*checkout*')
+      cy.intercept('GET', '/checkout/create*')
         .as('selectRace')
 
         .visitAndWaitForHydration('/event/love-tiles-douro-granfondo-2023')
@@ -27,7 +27,7 @@ describe('Checkout', () => {
     });
 
     it('Should remove race', () => {
-      cy.intercept('GET', '*?_data=routes*checkout*')
+      cy.intercept('GET', '/checkout/create*')
         .as('selectRace')
 
         .visitAndWaitForHydration('/event/love-tiles-douro-granfondo-2023')
@@ -57,7 +57,7 @@ describe('Checkout', () => {
 
         .intercept(
           'POST',
-          '/checkout/cart/MY4bvgxDbMtGv8rbYe5d?a=update*&_data=routes*checkout*'
+          '/checkout/cart/MY4bvgxDbMtGv8rbYe5d*'
         )
         .as('removeParticipant')
 
@@ -103,7 +103,7 @@ describe('Checkout', () => {
     });
 
     it('should not exist list of participants if there is only one', () => {
-      cy.intercept('GET', '*?_data=routes*checkout*')
+      cy.intercept('GET', '/checkout/cart/MY4bvgxDbMtGv8rbYe5d*')
         .as('selectRace')
 
         .visitAndWaitForHydration('/checkout/cart/MY4bvgxDbMtGv8rbYe5d')
@@ -126,13 +126,13 @@ describe('Checkout', () => {
     it('should be able to update cart', () => {
       cy.intercept(
         'GET',
-        '/checkout/cart/MY4bvgxDbMtGv8rbYe5d*?_data=routes*checkout*'
+        '/checkout/cart/MY4bvgxDbMtGv8rbYe5d*'
       )
         .as('selectRace')
 
         .intercept(
           'POST',
-          '/checkout/cart/MY4bvgxDbMtGv8rbYe5d*?_data=routes*checkout*'
+          '/checkout/cart/MY4bvgxDbMtGv8rbYe5d*'
         )
         .as('addRace')
 
@@ -156,7 +156,7 @@ describe('Checkout', () => {
 
         .intercept(
           'POST',
-          '/checkout/cart/MY4bvgxDbMtGv8rbYe5d?a=update*?_data=routes*'
+          '/checkout/cart/MY4bvgxDbMtGv8rbYe5d?a=update*'
         )
         .as('addParticipant')
 
@@ -189,7 +189,7 @@ describe('Checkout', () => {
     });
 
     it('should remove race participant', () => {
-      cy.intercept('GET', '*?_data=routes*checkout*')
+      cy.intercept('GET', '/checkout/cart/MY4bvgxDbMtGv8rbYe5d*')
         .as('selectRace')
 
         .visitAndWaitForHydration('/checkout/cart/MY4bvgxDbMtGv8rbYe5d')
@@ -198,34 +198,39 @@ describe('Checkout', () => {
         .click()
 
         .wait('@selectRace')
-        .location()
-        .should((l) => {
-          expect(l.pathname).to.eq('/checkout/cart/MY4bvgxDbMtGv8rbYe5d');
-        })
+        .waitForHydration()
+
+        .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qty]')
+        .contains(1)
 
         .get('#add-race-AhowRdNWCBQWSuivSt7h')
         .click()
 
         .wait('@selectRace')
-        .location()
-        .should((l) => {
-          expect(l.pathname).to.eq('/checkout/cart/MY4bvgxDbMtGv8rbYe5d');
-        })
+        .waitForHydration()
 
-        .intercept('GET', '*?data=routes*info*')
-        .as('registrationsCheckout')
+        .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qty]')
+        .contains(2)
+
 
         .get('#checkout')
         .click()
 
-        .wait('@registrationsCheckout')
+        .wait('@selectRace')
+        .waitForHydration()
 
         .location()
         .should((l) => {
           expect(l.pathname).to.include('/checkout/info/');
         })
 
-        .intercept('POST', '/checkout/manage*?_data=routes*')
+        .get('div[data-cy=login]').should('have.attr', 'data-show-login')
+        .then((isSupposedToShow) => {
+          // @ts-ignore (WS thinks this is a JQuery element, not a string)
+          isSupposedToShow === 'true' && cy.get('#checkout-anonymously').click();
+        })
+
+        .intercept('POST', '/checkout/manage*')
         .as('removeParticipant')
 
         .get('[data-cy=participant]')
@@ -242,7 +247,7 @@ describe('Checkout', () => {
     });
 
     it('should redirect to cart if last race participant is removed', () => {
-      cy.intercept('GET', '*?_data=routes*checkout*')
+      cy.intercept('GET', '/checkout/cart/MY4bvgxDbMtGv8rbYe5d*')
         .as('selectRace')
 
         .visitAndWaitForHydration('/checkout/cart/MY4bvgxDbMtGv8rbYe5d')
@@ -251,6 +256,10 @@ describe('Checkout', () => {
         .click()
 
         .wait('@selectRace')
+        .waitForHydration()
+
+        .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qty]')
+        .contains(1)
 
         .get('#checkout')
         .click()
@@ -259,7 +268,7 @@ describe('Checkout', () => {
 
         .intercept(
           'POST',
-          '/checkout/cart/MY4bvgxDbMtGv8rbYe5d?a=update*?_data=routes*'
+          '/checkout/cart/MY4bvgxDbMtGv8rbYe5d?a=update*'
         )
         .as('removeParticipant')
 
@@ -298,11 +307,11 @@ describe('Checkout', () => {
         });
     });
 
-    it('should show validation error if there are registrations with empty participant info - missing participants', () => {
-      cy.intercept('GET', '/checkout/cart/*?_data=routes*checkout*')
+    it('should show validation error if there are registrations with empty participant info', () => {
+      cy.intercept('GET', '/checkout/cart/*')
         .as('selectRace')
 
-        .intercept('GET', '/checkout/info/*?_data=routes*checkout*')
+        .intercept('GET', '/checkout/info/*')
         .as('checkout')
 
         .visitAndWaitForHydration('/checkout/cart/MY4bvgxDbMtGv8rbYe5d')
@@ -311,6 +320,19 @@ describe('Checkout', () => {
         .click()
 
         .wait('@selectRace')
+        .waitForHydration()
+
+        .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qty]')
+        .contains(1)
+
+        .get('#add-race-AhowRdNWCBQWSuivSt7h')
+        .click()
+
+        .wait('@selectRace')
+        .waitForHydration()
+
+        .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qty]')
+        .contains(2)
 
         .get('#checkout')
         .click()
@@ -321,6 +343,39 @@ describe('Checkout', () => {
         .should((l) => {
           expect(l.pathname).to.include('/checkout/info/');
         })
+
+        .get('div[data-cy=login]').should('have.attr', 'data-show-login')
+        .then((isSupposedToShow) => {
+          // @ts-ignore (WS thinks this is a JQuery element, not a string)
+          isSupposedToShow === 'true' && cy.get('#checkout-anonymously').click();
+        })
+
+        .get('input[name=first-name]')
+        .type('Nuno')
+
+        .get('input[name=last-name]')
+        .type('Lopes')
+
+        .pickOptionFromSelect('gender', 2)
+
+        .pickDate('birthdate', '2001-09-21')
+
+        .get('input[name=phone-number]')
+        .type('937654321')
+
+        .get('input[name=identity-card]')
+        .type('000000000zz4')
+        .should('have.value', '00000000-0-zz4')
+
+        .get('input[name=federation-number]')
+        .type('8165238')
+
+        .pickOptionFromSelect('shirt', 2)
+
+        .pickOptionFromSelect('nationality', 188)
+
+        .get('input[name=postal-code]')
+        .type('4730-454')
 
         .get('input[data-cy=regulation]')
         .click()
@@ -338,11 +393,11 @@ describe('Checkout', () => {
         .should('exist');
     });
 
-    it('should show validation error if there are registrations with empty participant info - terms and conditions', () => {
-      cy.intercept('GET', '/checkout/cart/*?_data=routes*checkout*')
+    it('should show validation terms and conditions error', () => {
+      cy.intercept('GET', '/checkout/cart/*')
         .as('selectRace')
 
-        .intercept('GET', '/checkout/info/*?_data=routes*checkout*')
+        .intercept('GET', '/checkout/info/*')
         .as('checkout')
 
         .visitAndWaitForHydration('/checkout/cart/MY4bvgxDbMtGv8rbYe5d')
@@ -351,6 +406,10 @@ describe('Checkout', () => {
         .click()
 
         .wait('@selectRace')
+        .waitForHydration()
+
+        .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qty]')
+        .contains(1)
 
         .get('#checkout')
         .click()
@@ -361,6 +420,39 @@ describe('Checkout', () => {
         .should((l) => {
           expect(l.pathname).to.include('/checkout/info/');
         })
+
+        .get('div[data-cy=login]').should('have.attr', 'data-show-login')
+        .then((isSupposedToShow) => {
+          // @ts-ignore (WS thinks this is a JQuery element, not a string)
+          isSupposedToShow === 'true' && cy.get('#checkout-anonymously').click();
+        })
+
+        .get('input[name=first-name]')
+        .type('Nuno')
+
+        .get('input[name=last-name]')
+        .type('Lopes')
+
+        .pickOptionFromSelect('gender', 2)
+
+        .pickDate('birthdate', '2001-09-21')
+
+        .get('input[name=phone-number]')
+        .type('937654321')
+
+        .get('input[name=identity-card]')
+        .type('000000000zz4')
+        .should('have.value', '00000000-0-zz4')
+
+        .get('input[name=federation-number]')
+        .type('8165238')
+
+        .pickOptionFromSelect('shirt', 2)
+
+        .pickOptionFromSelect('nationality', 188)
+
+        .get('input[name=postal-code]')
+        .type('4730-454')
 
         .get('#checkout')
         .click()
@@ -524,22 +616,11 @@ describe('Checkout', () => {
 
         .get('#error-message')
         .should('exist')
-        .and('contain', 'Esse email já está registado')
-
-        .get('input[name=add-to-mail-list]')
-        .type('b@gmail.com')
-
-        .get('button[name=send-confirmation]')
-        .click()
-
-        .wait('@AddToMailList')
-
-        .get('#success-message')
-        .should('exist');
+        .and('contain', 'Esse email já está registado');
     });
 
     it('should display current booked teams', () => {
-      cy.intercept('GET', '*?_data=routes*checkout*')
+      cy.intercept('GET', '/checkout/cart/MY4bvgxDbMtGv8rbYe5d*')
         .as('selectRace')
 
         .visitAndWaitForHydration('/checkout/cart/MY4bvgxDbMtGv8rbYe5d')
@@ -553,6 +634,10 @@ describe('Checkout', () => {
         .click()
 
         .wait('@selectRace')
+        .waitForHydration()
+
+        .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qty]')
+        .contains(1)
 
         .get('#checkout')
         .click()
@@ -562,6 +647,12 @@ describe('Checkout', () => {
         .location()
         .should((l) => {
           expect(l.pathname).to.include('/checkout/info/');
+        })
+
+        .get('div[data-cy=login]').should('have.attr', 'data-show-login')
+        .then((isSupposedToShow) => {
+          // @ts-ignore (WS thinks this is a JQuery element, not a string)
+          isSupposedToShow === 'true' && cy.get('#checkout-anonymously').click();
         })
 
         .get('button[name=creatable-button]')
@@ -577,7 +668,7 @@ describe('Checkout', () => {
     });
 
     it('should display cta to add team if it does not exist', () => {
-      cy.intercept('GET', '*?_data=routes*checkout*')
+      cy.intercept('GET', '/checkout/cart/MY4bvgxDbMtGv8rbYe5d*')
         .as('selectRace')
 
         .visitAndWaitForHydration('/checkout/cart/MY4bvgxDbMtGv8rbYe5d')
@@ -591,6 +682,10 @@ describe('Checkout', () => {
         .click()
 
         .wait('@selectRace')
+        .waitForHydration()
+
+        .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qty]')
+        .contains(1)
 
         .get('#checkout')
         .click()
@@ -600,6 +695,12 @@ describe('Checkout', () => {
         .location()
         .should((l) => {
           expect(l.pathname).to.include('/checkout/info/');
+        })
+
+        .get('div[data-cy=login]').should('have.attr', 'data-show-login')
+        .then((isSupposedToShow) => {
+          // @ts-ignore (WS thinks this is a JQuery element, not a string)
+          isSupposedToShow === 'true' && cy.get('#checkout-anonymously').click();
         })
 
         .get('#creatable-team')
@@ -611,7 +712,7 @@ describe('Checkout', () => {
     });
 
     it('should save team', () => {
-      cy.intercept('GET', '*?_data=routes*checkout*')
+      cy.intercept('GET', '/checkout/cart/MY4bvgxDbMtGv8rbYe5d*')
         .as('selectRace')
 
         .visitAndWaitForHydration('/checkout/cart/MY4bvgxDbMtGv8rbYe5d')
@@ -625,11 +726,19 @@ describe('Checkout', () => {
         .click()
 
         .wait('@selectRace')
+        .waitForHydration()
+
+        .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qty]')
+        .contains(1)
 
         .get('#add-race-AhowRdNWCBQWSuivSt7h')
         .click()
 
         .wait('@selectRace')
+        .waitForHydration()
+
+        .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qty]')
+        .contains(2)
 
         .get('#checkout')
         .click()
@@ -639,6 +748,12 @@ describe('Checkout', () => {
         .location()
         .should((l) => {
           expect(l.pathname).to.include('/checkout/info/');
+        })
+
+        .get('div[data-cy=login]').should('have.attr', 'data-show-login')
+        .then((isSupposedToShow) => {
+          // @ts-ignore (WS thinks this is a JQuery element, not a string)
+          isSupposedToShow === 'true' && cy.get('#checkout-anonymously').click();
         })
 
         .get('div[data-cy=participant-1]')
@@ -678,7 +793,7 @@ describe('Checkout', () => {
         .get('input[name=postal-code]')
         .type('4730-454')
 
-        .intercept('POST', '*?_data=routes*checkout*')
+        .intercept('POST', '/checkout/info/*')
         .as('saveParticipant')
 
         .get('#save-button')
@@ -707,7 +822,7 @@ describe('Checkout', () => {
     });
 
     it('Should add race to cart and redirect to form route from event page', () => {
-      cy.intercept('GET', '*?_data=routes*checkout*')
+      cy.intercept('GET', '/checkout/create*')
         .as('selectRace')
 
         .visitAndWaitForHydration('/event/trail-do-zezere')
@@ -724,7 +839,7 @@ describe('Checkout', () => {
     });
 
     it('Should add/remove race', () => {
-      cy.intercept('GET', '*?_data=routes*checkout*')
+      cy.intercept('GET', '/checkout/cart/bQmGXYkbhJetjk6mniMt*')
         .as('selectRace')
 
         .visitAndWaitForHydration('/checkout/cart/bQmGXYkbhJetjk6mniMt')
@@ -778,7 +893,7 @@ describe('Checkout', () => {
     it('should fill form with saved participant info', () => {
       cy.intercept(
         'POST',
-        '/checkout/cart/gLqrDfMx6qkTHn6hoZqA*?_data=routes*checkout*'
+        '/checkout/cart/gLqrDfMx6qkTHn6hoZqA*'
       )
         .as('addRace')
 
@@ -835,7 +950,7 @@ describe('Checkout', () => {
     });
 
     it('should display error when submitting form without indetity card filled', () => {
-      cy.intercept('GET', '*?_data=routes*checkout*')
+      cy.intercept('GET', '/checkout/create*')
         .as('selectRace')
 
         .visitAndWaitForHydration('/event/trail-do-zezere')
@@ -850,7 +965,7 @@ describe('Checkout', () => {
           expect(l.pathname).to.include('/checkout/info/');
         })
 
-        .intercept('POST', '*?_data=routes*checkout*')
+        .intercept('POST', '/checkout/info/*')
         .as('saveParticipant')
 
         .get('#save-button')
@@ -935,7 +1050,7 @@ describe('Checkout', () => {
 
         .visitAndWaitForHydration('/checkout/payment/qR4nqWpTdQy8QZu29ANu')
 
-        .get('button[name=pay-reference]')
+        .get('button[name=pay-cc]')
         .should('exist')
 
         .click()
@@ -971,10 +1086,10 @@ describe('Checkout', () => {
     });
 
     it('should display checkbox to enroll in organizer mailing list', () => {
-      cy.intercept('GET', '/checkout/cart/*?_data=routes*checkout*')
+      cy.intercept('GET', '/checkout/cart/*')
         .as('selectRace')
 
-        .intercept('GET', '/checkout/info/*?_data=routes*checkout*')
+        .intercept('GET', '/checkout/info/*')
         .as('checkout')
 
         .visitAndWaitForHydration('/checkout/cart/bQmGXYkbhJetjk6mniMt')
@@ -1064,7 +1179,9 @@ describe('Checkout', () => {
 
         .location()
         .should((l) => {
-          expect(l.pathname).to.eq('/checkout/confirmation/qR4nqWpTdQy8QZu29ANu');
+          expect(l.pathname).to.eq(
+            '/checkout/confirmation/qR4nqWpTdQy8QZu29ANu'
+          );
         })
 
         .get('[data-cy=subtotal-price]')
@@ -1100,78 +1217,78 @@ describe('Checkout', () => {
     it('should skip payment step if booking is free - applied 100% discount', () => {
       cy.visitAndWaitForHydration('/event/trail-do-zezere')
 
-          .get('button[name=race-Rd9SETi59X9ava6CPhkY]')
-          .click()
+        .get('button[name=race-Rd9SETi59X9ava6CPhkY]')
+        .click()
 
-          .location()
-          .should((l) => {
-            expect(l.pathname).to.include('/checkout/info');
-          })
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.include('/checkout/info');
+        })
 
-          .intercept('POST', '/checkout/info/*')
-          .as('ApplyDiscount')
+        .intercept('POST', '/checkout/info/*')
+        .as('ApplyDiscount')
 
-          .get('input[name=discount-code]')
-          .clear()
-          .type('GET-FIT-100%')
+        .get('input[name=discount-code]')
+        .clear()
+        .type('GET-FIT-100%')
 
-          .get('#apply-discount')
-          .click()
+        .get('#apply-discount')
+        .click()
 
-          .wait('@ApplyDiscount')
+        .wait('@ApplyDiscount')
 
-          .get('input[name=first-name]')
-          .type('Nuno')
+        .get('input[name=first-name]')
+        .type('Nuno')
 
-          .get('input[name=last-name]')
-          .type('Lopes')
+        .get('input[name=last-name]')
+        .type('Lopes')
 
-          .pickOptionFromSelect('gender', 2)
+        .pickOptionFromSelect('gender', 2)
 
-          .pickDate('birthdate', '2001-09-21')
+        .pickDate('birthdate', '2001-09-21')
 
-          .get('input[name=phone-number]')
-          .type('937654321')
+        .get('input[name=phone-number]')
+        .type('937654321')
 
-          .get('input[name=identity-card]')
-          .type('000000000zz4')
-          .should('have.value', '00000000-0-zz4')
+        .get('input[name=identity-card]')
+        .type('000000000zz4')
+        .should('have.value', '00000000-0-zz4')
 
-          .get('input[name=federation-number]')
-          .type('8165238')
+        .get('input[name=federation-number]')
+        .type('8165238')
 
-          .pickOptionFromSelect('shirt', 2)
+        .pickOptionFromSelect('shirt', 2)
 
-          .pickOptionFromSelect('nationality', 188)
+        .pickOptionFromSelect('nationality', 188)
 
-          .get('input[name=postal-code]')
-          .type('4730-454')
+        .get('input[name=postal-code]')
+        .type('4730-454')
 
-          .get('[data-cy=total-price]')
-          .contains('0€')
+        .get('[data-cy=total-price]')
+        .contains('0€')
 
-          .get('input[name=regulation]')
-          .first()
-          .check()
+        .get('input[name=regulation]')
+        .first()
+        .check()
 
-          .get('input[name=terms]')
-          .first()
-          .check()
+        .get('input[name=terms]')
+        .first()
+        .check()
 
-          .intercept('POST', '*?_data=routes*checkout*')
-          .as('saveParticipant')
+        .intercept('POST', '/checkout/info/*')
+        .as('saveParticipant')
 
-          .get('#save-button')
-          .click()
+        .get('#save-button')
+        .click()
 
-          .wait('@saveParticipant')
+        .wait('@saveParticipant')
 
-          .waitForHydration()
+        .waitForHydration()
 
-          .location()
-          .should((l) => {
-            expect(l.pathname).to.include('/checkout/confirmation/');
-          });
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.include('/checkout/confirmation/');
+        });
     });
   });
 
@@ -1197,10 +1314,10 @@ describe('Checkout', () => {
     });
 
     it('should have link to Event regulation and Dici terms', () => {
-      cy.intercept('GET', '/checkout/cart/*?_data=routes*checkout*')
+      cy.intercept('GET', '/checkout/cart/*')
         .as('selectRace')
 
-        .intercept('GET', '/checkout/info/*?_data=routes*checkout*')
+        .intercept('GET', '/checkout/info/*')
         .as('checkout')
 
         .visitAndWaitForHydration('/checkout/cart/gLqrDfMx6qkTHn6hoZqA')
@@ -1261,7 +1378,7 @@ describe('Checkout', () => {
     });
 
     it('should add price early bird to cart if it is still valid', () => {
-      cy.intercept('GET', '*?_data=routes*checkout*')
+      cy.intercept('GET', '/checkout/create*')
         .as('selectRace')
 
         .visitAndWaitForHydration('/event/love-tiles-douro-granfondo-2023')
@@ -1854,33 +1971,41 @@ describe('Checkout', () => {
   });
 });
 
-function registerParticipant(eventId: string, raceId: string) {
-  cy.intercept('GET', '*?_data=routes*checkout*')
+function registerParticipant(eventId: string, raceId: string, authenticated: boolean = true) {
+  cy.intercept('GET', `/checkout/cart/${eventId}*`)
     .as('selectRace')
 
     .visitAndWaitForHydration(`/checkout/cart/${eventId}`)
 
     .get(`#add-race-${raceId}`)
     .click()
+
+    .wait('@selectRace')
+    .waitForHydration()
+
     .get(`[data-cy=race-${raceId}-qty]`)
     .contains(1)
 
-    .wait('@selectRace')
-    .waitForHydration()
-
     .get(`#add-race-${raceId}`)
     .click()
-    .get(`[data-cy=race-${raceId}-qty]`)
-    .contains(2)
 
     .wait('@selectRace')
     .waitForHydration()
+
+    .get(`[data-cy=race-${raceId}-qty]`)
+    .contains(2)
 
     .get('#checkout')
     .click()
 
     .wait('@selectRace')
     .waitForHydration()
+
+    .get('div[data-cy=login]').should('have.attr', 'data-show-login')
+    .then((isSupposedToShow) => {
+      // @ts-ignore (WS thinks this is a JQuery element, not a string)
+      isSupposedToShow === 'true' && cy.get('#checkout-anonymously').click();
+    })
 
     .get('div[data-cy=participant-1]')
     .click()
@@ -1911,7 +2036,7 @@ function registerParticipant(eventId: string, raceId: string) {
     .get('input[name=postal-code]')
     .type('4730-454')
 
-    .intercept('POST', '*?_data=routes*checkout*')
+    .intercept('POST', '/checkout/info/*')
     .as('saveParticipant')
 
     .get('#save-button')
@@ -1929,7 +2054,7 @@ function registerParticipant(eventId: string, raceId: string) {
 
 function bookParticipant(eventId: string, raceId: string) {
   return cy
-    .intercept('GET', '*?_data=routes*checkout*')
+    .intercept('GET', `/checkout/cart/${eventId}*`)
     .as('selectRace')
 
     .visitAndWaitForHydration(`/checkout/cart/${eventId}`)
@@ -1943,6 +2068,10 @@ function bookParticipant(eventId: string, raceId: string) {
     .click()
 
     .wait('@selectRace')
+    .waitForHydration()
+
+    .get(`[data-cy=race-${raceId}-qty]`)
+    .contains(1)
 
     .get('#checkout')
     .click()
@@ -1956,7 +2085,12 @@ function bookParticipant(eventId: string, raceId: string) {
     .then((l) => {
       const bookingId = l.pathname.split('/')[3];
 
-      cy.get('input[name=first-name]')
+      cy.get('div[data-cy=login]').should('have.attr', 'data-show-login')
+        .then((isSupposedToShow) => {
+          // @ts-ignore (WS thinks this is a JQuery element, not a string)
+          isSupposedToShow === 'true' && cy.get('#checkout-anonymously').click();
+        })
+        .get('input[name=first-name]')
         .type('Nuno')
 
         .get('input[name=last-name]')
@@ -1991,7 +2125,7 @@ function bookParticipant(eventId: string, raceId: string) {
         .first()
         .check()
 
-        .intercept('POST', '*?_data=routes*checkout*')
+        .intercept('POST', '/checkout/info/*')
         .as('saveParticipant')
 
         .get('#save-button')

@@ -68,32 +68,6 @@ const links = (
   );
 };
 
-function NavLink({
-  to,
-  ...rest
-}: Omit<Parameters<typeof Link>['0'], 'to'> & { to: string }) {
-  const location = useLocation();
-  const isSelected =
-    to === location.pathname || location.pathname.startsWith(`${to}/`);
-
-  return (
-    <li className="px-5 py-2">
-      <Link
-        prefetch="intent"
-        className={clsx(
-          'underlined block hover:text-team-current focus:text-team-current whitespace-nowrap text-lg font-medium focus:outline-none',
-          {
-            'text-team-current active': isSelected,
-            'text-secondary': !isSelected
-          }
-        )}
-        to={to}
-        {...rest}
-      />
-    </li>
-  );
-}
-
 const iconTransformOrigin = { transformOrigin: '50% 100px' };
 
 function DarkModeToggle({

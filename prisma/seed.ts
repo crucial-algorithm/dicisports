@@ -27,22 +27,18 @@ import mailingListSeed from './data/mailingList.json';
 const db = new PrismaClient();
 const now = new Date();
 
-async function persist(name: string, list: Array<any>, entity: any) {
-  await Promise.all(
-    list.map((data) => {
-      return entity.create({ data });
+async function persist(name: string, data: Array<any>, entity: any) {
+  return entity
+    .createMany({
+      data
     })
-  )
-    .catch((err) => {
+    .catch((err: { code: string }) => {
       if (err.code === 'P2002') {
         console.log(`${name} already in db. skipping...`);
         console.error(err);
         return;
       }
       console.error(`error seeding ${name}`, err);
-    })
-    .then(() => {
-      console.log(`seeded ${name}`);
     });
 }
 
@@ -76,34 +72,36 @@ async function seed() {
 
 async function clear() {
   console.log('cleaning');
-  await db.document.deleteMany();
-  await db.raceParticipant.deleteMany();
-  await db.eventTeam.deleteMany();
-  await db.payment.deleteMany();
-  await db.paymentNotification.deleteMany();
-  await db.booking.deleteMany();
-  await db.participant.deleteMany();
-  await db.race.deleteMany();
-  await db.perk.deleteMany();
-  await db.favoriteEvent.deleteMany();
-  await db.latestBibNumber.deleteMany();
-  await db.event.deleteMany();
-  await db.groupSchedule.deleteMany();
-  await db.favoriteGroup.deleteMany();
-  await db.group.deleteMany();
-  await db.discountCode.deleteMany();
-  await db.mailingList.deleteMany();
-  await db.organizer.deleteMany();
-  await db.organizerType.deleteMany();
-  await db.user.deleteMany();
-  await db.groupSpirit.deleteMany();
-  await db.groupType.deleteMany();
-  await db.shirtSize.deleteMany();
-  await db.sport.deleteMany();
-  await db.difficulty.deleteMany();
+  await db.$queryRaw`TRUNCATE TABLE documents 
+    , race_participants
+    , event_teams
+    , payments
+    , payment_notifications
+    , bookings
+    , participants
+    , races
+    , perks
+    , favorite_events
+    , latest_bib_number
+    , events
+    , group_schedule
+    , favorite_groups
+    , groups
+    , discount_codes
+    , mailing_list
+    , organizers
+    , organizer_types
+    , sessions
+    , users
+    , groups_spirit
+    , groups_type
+    , shirt_size
+    , sports
+    , difficulties`;
+
 }
 
-clear().then(() => seed().then());
+clear().then(() => seed().then(disconnect).catch(disconnect));
 
 function sports() {
   return sportsSeed.map((s) => s);
@@ -364,4 +362,9 @@ function mailingList() {
       createdAt: now
     };
   });
+}
+
+
+async function disconnect() {
+  await db.$disconnect();
 }

@@ -16,6 +16,7 @@ import { useTranslation } from 'react-i18next';
 import { z, ZodError } from 'zod';
 
 import { CheckoutInfoActions } from '~/action.keys';
+import BookingLoginCTADialog from '~/components/BookingLoginCTADialog';
 
 import type { FormErrors } from '~/components/shared/ParticipantForm';
 import ParticipantForm from '~/components/shared/ParticipantForm';
@@ -68,7 +69,7 @@ import { findOrganizer } from '~/server/db/organizer.server';
 import { addEmailToMailingList } from '~/server/db/mailingList.server';
 import { findEventTeams } from '~/server/db/teams.server';
 import { findDiscountCode } from '~/server/db/discounts.server';
-import LoginOrCreateAccountCTA from '~/components/DisplayLoginOrCreateAccountCTA';
+import { FetcherForm } from '~/components/shared/form/UploadForm';
 
 type LoaderData = {
   event: EventWithRacesDifficultiesAndDocuments;
@@ -274,7 +275,9 @@ export const action: ActionFunction = async ({ request, params }) => {
       await updateRaceParticipantTeam(teamName, eventId, raceParticipant);
     }
 
-    if (actionId === CheckoutInfoActions.update) {
+    // Also save user on checkout, so that if user checks out before saving participant
+    // It won't return an error
+    if (actionId === CheckoutInfoActions.update || actionId === CheckoutInfoActions.checkout) {
       ParticipantSchema.parse(data);
       await updateParticipant(data);
       const raceId = form.get('raceId') as string;
@@ -635,8 +638,15 @@ export default function CheckoutInfoRoute() {
     }
   }, [reset, resetForm, fetcher, t, showNotification, hash, errors, setErrors]);
 
+  const showLoginDialog = !isAuth && !isGuest;
+
   return (
     <Main>
+      <div data-cy="login" data-show-login={showLoginDialog}>
+        {showLoginDialog && (
+          <BookingLoginCTADialog bookingId={bookingId} t={t} />
+        )}
+      </div>
       <div className="flex flex-col justify-start space-y-1 mb-8">
         <H2>
           <b data-cy="name" className="break-words w-full">
@@ -729,172 +739,173 @@ export default function CheckoutInfoRoute() {
         </div>
       )}
 
-      {!isAuth && !isGuest && (
-        <LoginOrCreateAccountCTA
-          t={t}
-          bookingId={bookingId}
-          cta={t('Already Have An Account?')}
-          subHeaderText={t('Login Or Create Account Subheader - info')}
-        />
-      )}
-
-      <div className="flex flex-col lg:flex-row">
-        <div className="flex-col w-full lg:pr-8 xl:w-[calc(100%-(480px))] xl:pr-48">
-          <ParticipantForm
-            participant={participant}
-            hash={hash}
-            errors={errors}
-            userSavedParticipants={savedParticipants}
-            raceId={selectedRace}
-            fetcher={fetcher}
-            selectedParticipant={selectedParticipant}
-            setSelectedParticipant={handleSetSelectedParticipant}
-            shirtSizes={shirtSizes}
-            resetForm={resetForm}
-            isUserBookingOnlyForHimself={raceParticipants.length === 1}
-            isReadOnly={isGuest}
-            eventTeams={eventTeams}
-            participantTeam={participantTeam}
-          >
-            {!isGuest && (
-              <>
-                <div className="flex items-center mb-2">
-                  <input
-                    name="regulation"
-                    type="checkbox"
-                    defaultChecked={checkedTermsAndRegulation.regulation}
-                    onClick={handleCheckRegulation}
-                    className="w-4 h-4 text-indigo-500 bg-gray-100 rounded border-gray-300 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600"
-                    data-cy="regulation"
-                  />
-                  <label
-                    className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300"
-                    htmlFor="regulation"
-                  >
-                    {t('Read and Accepted')}
-                    <Link
-                      target="_blank"
-                      to={
-                        isInlineRegulation
-                          ? `/${i18n.language}/event/${event.slug}/regulation`
-                          : `/${i18n.language}/event/${event.id}/regulation/view`
-                      }
-                      data-cy="regulation-link"
-                    >
-                      {t('Event Regulation')}
-                    </Link>
-                  </label>
-                </div>
-
-                <div
-                  className={clsx('flex items-center', {
-                    'mb-2': isAuth,
-                    'mb-8': !isAuth
-                  })}
-                >
-                  <input
-                    name="terms"
-                    type="checkbox"
-                    defaultChecked={checkedTermsAndRegulation.terms}
-                    onClick={handleCheckTerms}
-                    className="w-4 h-4 text-indigo-500 bg-gray-100 rounded border-gray-300 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600"
-                    data-cy="terms"
-                  />
-                  <label
-                    className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300"
-                    htmlFor="terms"
-                  >
-                    {t('Read and Accepted')}
-                    <Link target="_blank" to="/terms" data-cy="terms-link">
-                      {t('Terms and Conditions')}
-                    </Link>
-                  </label>
-                </div>
-
-                {isAuth && (
-                  <div className="flex items-center mb-8">
+      <FetcherForm
+        form={fetcher.Form}
+        method="post"
+        className={clsx('w-full', {
+          'opacity-100': participant,
+          'opacity-50': !participant
+        })}
+        key={hash}
+        readOnly={isGuest}
+      >
+        <div className="flex flex-col lg:flex-row">
+          <div className="flex-col w-full lg:pr-8 xl:w-[calc(100%-(480px))] xl:pr-48">
+            <ParticipantForm
+              participant={participant}
+              hash={hash}
+              errors={errors}
+              userSavedParticipants={savedParticipants}
+              raceId={selectedRace}
+              selectedParticipant={selectedParticipant}
+              setSelectedParticipant={handleSetSelectedParticipant}
+              shirtSizes={shirtSizes}
+              resetForm={resetForm}
+              isUserBookingOnlyForHimself={raceParticipants.length === 1}
+              isReadOnly={isGuest}
+              eventTeams={eventTeams}
+              participantTeam={participantTeam}
+            >
+              {!isGuest && (
+                <>
+                  <div className="flex items-center mb-2">
                     <input
-                      name="add-to-mail-list"
+                      name="regulation"
                       type="checkbox"
-                      defaultChecked={checkedAddToMailingList}
-                      onClick={handleCheckAddToMailingList}
+                      defaultChecked={checkedTermsAndRegulation.regulation}
+                      onClick={handleCheckRegulation}
                       className="w-4 h-4 text-indigo-500 bg-gray-100 rounded border-gray-300 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600"
-                      data-cy="mail-list"
+                      data-cy="regulation"
                     />
                     <label
                       className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300"
-                      htmlFor="add-to-mail-list"
+                      htmlFor="regulation"
                     >
-                      {t('Add to X Mailing List', { organizer: organizerName })}
+                      {t('Read and Accepted')}
+                      <Link
+                        target="_blank"
+                        to={
+                          isInlineRegulation
+                            ? `/${i18n.language}/event/${event.slug}/regulation`
+                            : `/${i18n.language}/event/${event.id}/regulation/view`
+                        }
+                        data-cy="regulation-link"
+                      >
+                        {t('Event Regulation')}
+                      </Link>
                     </label>
                   </div>
-                )}
 
-                <InputError id="terms-error" className="mb-2">
-                  {errors?.submit || errors?.terms || errors?.regulation}
-                </InputError>
-              </>
-            )}
-          </ParticipantForm>
-          <Notification show={handlerSetShowNotificationFunction}>
-            {message}
-          </Notification>
-        </div>
-        <div className="w-full mt-8 lg:w-[370px] xl:w-[480px] lg:mt-0">
-          <DisplayCart
-            cart={cart}
-            event={event}
-            error={errors.missingFilledParticipants}
-            fetcher={fetcher}
-            hash={hash}
-            showDiscountCodeInput={true}
-            appliedDiscount={appliedDiscount}
-          >
-            {!isGuest && (
-              <>
-                <div className="flex flex-col items-center w-full">
-                  <input
-                    type="hidden"
-                    name="regulation"
-                    value={checkedTermsAndRegulation.regulation ? 'on' : 'off'}
-                  />
-                  <input
-                    type="hidden"
-                    name="terms"
-                    value={checkedTermsAndRegulation.terms ? 'on' : 'off'}
-                  />
-                  <input
-                    type="hidden"
-                    name="add-to-mail-list"
-                    value={checkedAddToMailingList ? 'on' : 'off'}
-                  />
-                  <input type="hidden" name="hash" value={hash} />
-                  <Button
-                    type="submit"
-                    name="actionId"
-                    value="checkout"
-                    disabled={cart.length === 0}
-                    className="mt-4 w-full"
-                    id="checkout"
+                  <div
+                    className={clsx('flex items-center', {
+                      'mb-2': isAuth,
+                      'mb-8': !isAuth
+                    })}
                   >
-                    {t('Finish Registration')}
-                  </Button>
-                </div>
-                <div className="flex justify-end mt-4">
-                  <a
-                    href={`/checkout/cart/${event.id}?a=update`}
-                    data-cy="update-cart"
-                    className="text-lg font-medium"
-                  >
-                    {t('Update Cart')}
-                  </a>
-                </div>
-              </>
-            )}
-          </DisplayCart>
-        </div>
-      </div>
+                    <input
+                      name="terms"
+                      type="checkbox"
+                      defaultChecked={checkedTermsAndRegulation.terms}
+                      onClick={handleCheckTerms}
+                      className="w-4 h-4 text-indigo-500 bg-gray-100 rounded border-gray-300 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600"
+                      data-cy="terms"
+                    />
+                    <label
+                      className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300"
+                      htmlFor="terms"
+                    >
+                      {t('Read and Accepted')}
+                      <Link target="_blank" to="/terms" data-cy="terms-link">
+                        {t('Terms and Conditions')}
+                      </Link>
+                    </label>
+                  </div>
 
+                  {isAuth && (
+                    <div className="flex items-center mb-8">
+                      <input
+                        name="add-to-mail-list"
+                        type="checkbox"
+                        defaultChecked={checkedAddToMailingList}
+                        onClick={handleCheckAddToMailingList}
+                        className="w-4 h-4 text-indigo-500 bg-gray-100 rounded border-gray-300 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600"
+                        data-cy="mail-list"
+                      />
+                      <label
+                        className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300"
+                        htmlFor="add-to-mail-list"
+                      >
+                        {t('Add to X Mailing List', {
+                          organizer: organizerName
+                        })}
+                      </label>
+                    </div>
+                  )}
+
+                  <InputError id="terms-error" className="mb-2">
+                    {errors?.submit || errors?.terms || errors?.regulation}
+                  </InputError>
+                </>
+              )}
+            </ParticipantForm>
+            <Notification show={handlerSetShowNotificationFunction}>
+              {message}
+            </Notification>
+          </div>
+          <div className="w-full mt-8 lg:w-[370px] xl:w-[480px] lg:mt-0">
+            <DisplayCart
+              cart={cart}
+              event={event}
+              error={errors.missingFilledParticipants}
+              hash={hash}
+              showDiscountCodeInput={!isGuest}
+              appliedDiscount={appliedDiscount}
+            >
+              {!isGuest && (
+                <>
+                  <div className="flex flex-col items-center w-full">
+                    <Button
+                      type="submit"
+                      name="actionId"
+                      value="checkout"
+                      disabled={cart.length === 0}
+                      className="mt-4 w-full"
+                      id="checkout"
+                    >
+                      {t('Finish Registration')}
+                    </Button>
+                  </div>
+                  <div className="flex justify-end mt-4">
+                    <a
+                      href={`/checkout/cart/${event.id}?a=update`}
+                      data-cy="update-cart"
+                      className="text-lg font-medium"
+                    >
+                      {t('Update Cart')}
+                    </a>
+                  </div>
+                </>
+              )}
+            </DisplayCart>
+          </div>
+        </div>
+        <input
+          type="hidden"
+          name="regulation"
+          value={checkedTermsAndRegulation.regulation ? 'on' : 'off'}
+        />
+        <input
+          type="hidden"
+          name="terms"
+          value={checkedTermsAndRegulation.terms ? 'on' : 'off'}
+        />
+        <input
+          type="hidden"
+          name="add-to-mail-list"
+          value={checkedAddToMailingList ? 'on' : 'off'}
+        />
+        <input type="hidden" name="hash" value={hash} />
+      </FetcherForm>
       <AddRacesDialog
         isOpen={showAddRacesDialog}
         triggerModalClose={handleCloseAddRaces}
