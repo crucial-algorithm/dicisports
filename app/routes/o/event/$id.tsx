@@ -37,6 +37,14 @@ import { useTranslation } from 'react-i18next';
 import { z, ZodError } from 'zod';
 import { XMarkIcon } from '@heroicons/react/24/solid';
 
+import type {
+  DropdownChangeEvent,
+  DropdownProps
+} from 'primereact/dropdown';
+import {
+  Dropdown
+} from 'primereact/dropdown';
+
 import DocumentsList from '~/components/events/DocumentsList';
 
 import RacesList from '~/components/events/RacesList';
@@ -100,6 +108,8 @@ import type {
 import { badRequest } from '~/utils/misc';
 import UploadFile from '~/components/UploadFile';
 import { findConfirmedBookings } from '~/server/db/booking.server';
+
+import { getI18nText } from '~/components/I18nText';
 
 type ActionData = {
   hash: number;
@@ -508,7 +518,9 @@ export default function OrganizerEventRoute() {
     useState<boolean>(false);
   const [isPublish, setIsPublish] = useState<boolean>(false);
   const [isUnpublish, setIsUnpublish] = useState<boolean>(false);
-
+  const [selectedDifficulty, setSelectedDifficulty] = useState<number>(
+      event.difficultyId ? event?.difficultyId : 1
+  );
   const inputEl = useRef<HTMLInputElement>(null);
   const deleteForm = useRef<HTMLFormElement>(null);
   const eventForm = useRef<HTMLFormElement>(null);
@@ -749,6 +761,36 @@ export default function OrganizerEventRoute() {
     return 0;
   });
 
+  type OurDifficultyLevelOption = {
+    name: string;
+    description: string;
+    value: number;
+  };
+
+  function selectedValueTemplate(
+    option: OurDifficultyLevelOption,
+    props: DropdownProps
+  ) {
+    if (option) {
+      return <span>{option.name}</span>;
+    }
+
+    return <span>{props.placeholder}</span>;
+  }
+
+  function optionTemplate(option: OurDifficultyLevelOption) {
+    return (
+      <>
+        <div>{option.name}</div>
+        <div>{option.description}</div>
+      </>
+    );
+  }
+
+  function handleOnSelectDifficulty(e: DropdownChangeEvent) {
+    setSelectedDifficulty(e.value);
+  }
+
   return (
     <Main>
       <div className="mb-24">
@@ -863,21 +905,22 @@ export default function OrganizerEventRoute() {
                 id="event-difficulty"
                 className="w-full md:basis-1/3"
               >
-                <ComboBox
-                  name="difficulty"
+                <Dropdown
                   id="event-difficulty"
-                  lang={language}
-                  placeholder=""
-                  defaultValue={
-                    event.difficultyId ? event.difficultyId : undefined
-                  }
-                  options={difficulties
-                    .sort((a: Difficulty, b: Difficulty) => a.id - b.id)
-                    .map((d: Difficulty) => ({
-                      value: d.id,
-                      label: d.name,
-                      description: d.description
-                    }))}
+                  name="difficulty"
+                  value={selectedDifficulty}
+                  optionLabel="name"
+                  options={difficulties.map((d) => {
+                    return {
+                      name: getI18nText(d.name, language),
+                      description: getI18nText(d.description, language),
+                      value: d.id
+                    };
+                  })}
+                  valueTemplate={selectedValueTemplate}
+                  itemTemplate={optionTemplate}
+                  onChange={handleOnSelectDifficulty}
+                  className="w-full md:w-14rem difficulty-dropdown"
                 />
               </FormField>
             </div>

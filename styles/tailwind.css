@@ -122,4 +122,12 @@
     .dici-input-mask.p-inputtext.p-component {
         @apply input-text
     }
+
+    .difficulty-dropdown.p-dropdown {
+        border: 0;
+        box-shadow: none;
+        margin: 0;
+
+        @apply focus-ring
+    }
 }
