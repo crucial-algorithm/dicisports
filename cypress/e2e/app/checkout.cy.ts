@@ -1,7 +1,7 @@
 describe('Checkout', () => {
   before(() => {
-    cy.task('db:reset');
-    cy.task('clearDownloadFolder');
+    // cy.task('db:reset');
+    // cy.task('clearDownloadFolder');
   });
 
   context('Maintenance: unauthenticated', () => {
@@ -198,28 +198,36 @@ describe('Checkout', () => {
         .click()
 
         .wait('@selectRace')
-        .location()
-        .should((l) => {
-          expect(l.pathname).to.eq('/checkout/cart/MY4bvgxDbMtGv8rbYe5d');
-        })
+        .waitForHydration()
+
+        .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qty]')
+        .contains(1)
 
         .get('#add-race-AhowRdNWCBQWSuivSt7h')
         .click()
 
         .wait('@selectRace')
-        .location()
-        .should((l) => {
-          expect(l.pathname).to.eq('/checkout/cart/MY4bvgxDbMtGv8rbYe5d');
-        })
+        .waitForHydration()
+
+        .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qty]')
+        .contains(2)
+
 
         .get('#checkout')
         .click()
 
         .wait('@selectRace')
+        .waitForHydration()
 
         .location()
         .should((l) => {
           expect(l.pathname).to.include('/checkout/info/');
+        })
+
+        .get('div[data-cy=login]').should('have.attr', 'data-show-login')
+        .then((isSupposedToShow) => {
+          // @ts-ignore (WS thinks this is a JQuery element, not a string)
+          isSupposedToShow === 'true' && cy.get('#checkout-anonymously').click();
         })
 
         .intercept('POST', '/checkout/manage*')
@@ -248,6 +256,10 @@ describe('Checkout', () => {
         .click()
 
         .wait('@selectRace')
+        .waitForHydration()
+
+        .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qty]')
+        .contains(1)
 
         .get('#checkout')
         .click()
@@ -308,11 +320,19 @@ describe('Checkout', () => {
         .click()
 
         .wait('@selectRace')
+        .waitForHydration()
+
+        .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qty]')
+        .contains(1)
 
         .get('#add-race-AhowRdNWCBQWSuivSt7h')
         .click()
 
         .wait('@selectRace')
+        .waitForHydration()
+
+        .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qty]')
+        .contains(2)
 
         .get('#checkout')
         .click()
@@ -322,6 +342,12 @@ describe('Checkout', () => {
         .location()
         .should((l) => {
           expect(l.pathname).to.include('/checkout/info/');
+        })
+
+        .get('div[data-cy=login]').should('have.attr', 'data-show-login')
+        .then((isSupposedToShow) => {
+          // @ts-ignore (WS thinks this is a JQuery element, not a string)
+          isSupposedToShow === 'true' && cy.get('#checkout-anonymously').click();
         })
 
         .get('input[name=first-name]')
@@ -380,6 +406,10 @@ describe('Checkout', () => {
         .click()
 
         .wait('@selectRace')
+        .waitForHydration()
+
+        .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qty]')
+        .contains(1)
 
         .get('#checkout')
         .click()
@@ -389,6 +419,12 @@ describe('Checkout', () => {
         .location()
         .should((l) => {
           expect(l.pathname).to.include('/checkout/info/');
+        })
+
+        .get('div[data-cy=login]').should('have.attr', 'data-show-login')
+        .then((isSupposedToShow) => {
+          // @ts-ignore (WS thinks this is a JQuery element, not a string)
+          isSupposedToShow === 'true' && cy.get('#checkout-anonymously').click();
         })
 
         .get('input[name=first-name]')
@@ -598,6 +634,10 @@ describe('Checkout', () => {
         .click()
 
         .wait('@selectRace')
+        .waitForHydration()
+
+        .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qty]')
+        .contains(1)
 
         .get('#checkout')
         .click()
@@ -607,6 +647,12 @@ describe('Checkout', () => {
         .location()
         .should((l) => {
           expect(l.pathname).to.include('/checkout/info/');
+        })
+
+        .get('div[data-cy=login]').should('have.attr', 'data-show-login')
+        .then((isSupposedToShow) => {
+          // @ts-ignore (WS thinks this is a JQuery element, not a string)
+          isSupposedToShow === 'true' && cy.get('#checkout-anonymously').click();
         })
 
         .get('button[name=creatable-button]')
@@ -636,6 +682,10 @@ describe('Checkout', () => {
         .click()
 
         .wait('@selectRace')
+        .waitForHydration()
+
+        .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qty]')
+        .contains(1)
 
         .get('#checkout')
         .click()
@@ -645,6 +695,12 @@ describe('Checkout', () => {
         .location()
         .should((l) => {
           expect(l.pathname).to.include('/checkout/info/');
+        })
+
+        .get('div[data-cy=login]').should('have.attr', 'data-show-login')
+        .then((isSupposedToShow) => {
+          // @ts-ignore (WS thinks this is a JQuery element, not a string)
+          isSupposedToShow === 'true' && cy.get('#checkout-anonymously').click();
         })
 
         .get('#creatable-team')
@@ -670,11 +726,19 @@ describe('Checkout', () => {
         .click()
 
         .wait('@selectRace')
+        .waitForHydration()
+
+        .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qty]')
+        .contains(1)
 
         .get('#add-race-AhowRdNWCBQWSuivSt7h')
         .click()
 
         .wait('@selectRace')
+        .waitForHydration()
+
+        .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qty]')
+        .contains(2)
 
         .get('#checkout')
         .click()
@@ -684,6 +748,12 @@ describe('Checkout', () => {
         .location()
         .should((l) => {
           expect(l.pathname).to.include('/checkout/info/');
+        })
+
+        .get('div[data-cy=login]').should('have.attr', 'data-show-login')
+        .then((isSupposedToShow) => {
+          // @ts-ignore (WS thinks this is a JQuery element, not a string)
+          isSupposedToShow === 'true' && cy.get('#checkout-anonymously').click();
         })
 
         .get('div[data-cy=participant-1]')
@@ -1901,7 +1971,7 @@ describe('Checkout', () => {
   });
 });
 
-function registerParticipant(eventId: string, raceId: string) {
+function registerParticipant(eventId: string, raceId: string, authenticated: boolean = true) {
   cy.intercept('GET', `/checkout/cart/${eventId}*`)
     .as('selectRace')
 
@@ -1909,25 +1979,33 @@ function registerParticipant(eventId: string, raceId: string) {
 
     .get(`#add-race-${raceId}`)
     .click()
+
+    .wait('@selectRace')
+    .waitForHydration()
+
     .get(`[data-cy=race-${raceId}-qty]`)
     .contains(1)
 
-    .wait('@selectRace')
-    .waitForHydration()
-
     .get(`#add-race-${raceId}`)
     .click()
-    .get(`[data-cy=race-${raceId}-qty]`)
-    .contains(2)
 
     .wait('@selectRace')
     .waitForHydration()
+
+    .get(`[data-cy=race-${raceId}-qty]`)
+    .contains(2)
 
     .get('#checkout')
     .click()
 
     .wait('@selectRace')
     .waitForHydration()
+
+    .get('div[data-cy=login]').should('have.attr', 'data-show-login')
+    .then((isSupposedToShow) => {
+      // @ts-ignore (WS thinks this is a JQuery element, not a string)
+      isSupposedToShow === 'true' && cy.get('#checkout-anonymously').click();
+    })
 
     .get('div[data-cy=participant-1]')
     .click()
@@ -1990,6 +2068,10 @@ function bookParticipant(eventId: string, raceId: string) {
     .click()
 
     .wait('@selectRace')
+    .waitForHydration()
+
+    .get(`[data-cy=race-${raceId}-qty]`)
+    .contains(1)
 
     .get('#checkout')
     .click()
@@ -2003,7 +2085,12 @@ function bookParticipant(eventId: string, raceId: string) {
     .then((l) => {
       const bookingId = l.pathname.split('/')[3];
 
-      cy.get('input[name=first-name]')
+      cy.get('div[data-cy=login]').should('have.attr', 'data-show-login')
+        .then((isSupposedToShow) => {
+          // @ts-ignore (WS thinks this is a JQuery element, not a string)
+          isSupposedToShow === 'true' && cy.get('#checkout-anonymously').click();
+        })
+        .get('input[name=first-name]')
         .type('Nuno')
 
         .get('input[name=last-name]')

@@ -22,15 +22,15 @@ const UploadForm: React.FC<Props> = (props: Props) => {
 type FetcherFormProps = {
   readOnly?: boolean;
   method: string;
-  theForm: React.ForwardRefExoticComponent<
+  form: React.ForwardRefExoticComponent<
     FormProps & React.RefAttributes<HTMLFormElement>
   >;
 } & FormProps &
   React.RefAttributes<HTMLFormElement>;
 
 export function FetcherForm(props: FetcherFormProps) {
-  const { theForm } = props;
-  const TheForm = theForm;
+  const { form } = props;
+  const TheForm = form;
 
   return (
     <FormContext.Provider value={props}>

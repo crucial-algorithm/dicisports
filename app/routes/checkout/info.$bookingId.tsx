@@ -16,6 +16,7 @@ import { useTranslation } from 'react-i18next';
 import { z, ZodError } from 'zod';
 
 import { CheckoutInfoActions } from '~/action.keys';
+import BookingLoginCTADialog from '~/components/BookingLoginCTADialog';
 
 import type { FormErrors } from '~/components/shared/ParticipantForm';
 import ParticipantForm from '~/components/shared/ParticipantForm';
@@ -68,7 +69,6 @@ import { findOrganizer } from '~/server/db/organizer.server';
 import { addEmailToMailingList } from '~/server/db/mailingList.server';
 import { findEventTeams } from '~/server/db/teams.server';
 import { findDiscountCode } from '~/server/db/discounts.server';
-import LoginOrCreateAccountCTA from '~/components/DisplayLoginOrCreateAccountCTA';
 import { FetcherForm } from '~/components/shared/form/UploadForm';
 
 type LoaderData = {
@@ -638,8 +638,15 @@ export default function CheckoutInfoRoute() {
     }
   }, [reset, resetForm, fetcher, t, showNotification, hash, errors, setErrors]);
 
+  const showLoginDialog = !isAuth && !isGuest;
+
   return (
     <Main>
+      <div data-cy="login" data-show-login={showLoginDialog}>
+        {showLoginDialog && (
+          <BookingLoginCTADialog bookingId={bookingId} t={t} />
+        )}
+      </div>
       <div className="flex flex-col justify-start space-y-1 mb-8">
         <H2>
           <b data-cy="name" className="break-words w-full">
@@ -732,17 +739,8 @@ export default function CheckoutInfoRoute() {
         </div>
       )}
 
-      {!isAuth && !isGuest && (
-        <LoginOrCreateAccountCTA
-          t={t}
-          bookingId={bookingId}
-          cta={t('Already Have An Account?')}
-          subHeaderText={t('Login Or Create Account Subheader - info')}
-        />
-      )}
-
       <FetcherForm
-        theForm={fetcher.Form}
+        form={fetcher.Form}
         method="post"
         className={clsx('w-full', {
           'opacity-100': participant,

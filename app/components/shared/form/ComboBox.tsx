@@ -212,6 +212,8 @@ export default function ComboBox({
     };
   });
 
+  defaultValue = defaultValue === null ? undefined : defaultValue;
+
   const [selected, setSelected] = useState(defaultValue);
   const formProps = useContext(FormContext);
 
