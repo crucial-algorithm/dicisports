@@ -76,11 +76,12 @@ model Sport {
 }
 
 model Difficulty {
-  id        Int      @id @default(autoincrement())
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-  name      Json
-  events    Event[]
+  id            Int      @id @default(autoincrement())
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+  name          Json
+  description   Json
+  events        Event[]
 
   @@map("difficulties")
 }

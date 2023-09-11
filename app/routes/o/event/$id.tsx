@@ -173,7 +173,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     perks: await findEventPerks(eventId),
     races: await findEventRaces(eventId),
     difficulties: difficulties.map((d) => {
-      return { id: d.id, name: d.name };
+      return { id: d.id, name: d.name, description: d.description };
     }),
     hasRegistrations: confirmedBookings && confirmedBookings?.length > 0
   });
@@ -783,10 +783,7 @@ export default function OrganizerEventRoute() {
                     {t('Back Button')}
                   </ButtonLink>
                 )}
-                <Button
-                  type="submit"
-                  variant="secondary"
-                >
+                <Button type="submit" variant="secondary">
                   {event.status === 'auto'
                     ? t('Create Button')
                     : t('Save Button')}
@@ -876,7 +873,11 @@ export default function OrganizerEventRoute() {
                   }
                   options={difficulties
                     .sort((a: Difficulty, b: Difficulty) => a.id - b.id)
-                    .map((d: Difficulty) => ({ value: d.id, label: d.name }))}
+                    .map((d: Difficulty) => ({
+                      value: d.id,
+                      label: d.name,
+                      description: d.description
+                    }))}
                 />
               </FormField>
             </div>

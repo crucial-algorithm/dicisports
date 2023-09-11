@@ -5,13 +5,13 @@ import { Form, Link, useFetcher, useLoaderData } from '@remix-run/react';
 import type { TFunction } from 'i18next';
 
 import type { Event } from '@prisma/client';
-
 import { Status } from '@prisma/client';
 import {
   ArrowTrendingUpIcon,
   CalendarDaysIcon,
   HeartIcon,
-  MapPinIcon
+  MapPinIcon,
+  QuestionMarkCircleIcon
 } from '@heroicons/react/24/outline';
 import { HeartIcon as Favorite } from '@heroicons/react/24/solid';
 import * as React from 'react';
@@ -20,6 +20,7 @@ import { useTranslation } from 'react-i18next';
 import { Carousel } from 'react-responsive-carousel';
 import clsx from 'clsx';
 import { InView } from 'react-intersection-observer';
+import { Tooltip } from 'primereact/tooltip';
 
 import CopyToClipboard from '~/components/shared/CopyToClipboard';
 import useLang from '~/hooks/useLang';
@@ -36,13 +37,21 @@ import Button, { ButtonLink } from '~/components/shared/Button';
 import { getUser } from '~/server/auth/session.server';
 import { Notification } from '~/components/shared/NotificationMessage';
 import DisplayImg from '~/components/shared/DisplayImg';
-import type { Document, Organizer, Perk, Race, TranslationObject, User } from '~/types';
+import type {
+  Document,
+  Organizer,
+  Perk,
+  Race,
+  TranslationObject,
+  User
+} from '~/types';
+import type { Language } from '~/types';
 import { findEventRaces } from '~/server/db/races.server';
 import DisplayDate from '~/components/shared/DIsplayDate';
 import { displayTimeOfDay } from '~/utils/misc';
 import { findEventPerks } from '~/server/db/perks.server';
 import WhenListEmpty from '~/components/shared/Empty';
-import I18nText from '~/components/I18nText';
+import I18nText, { getI18nText } from '~/components/I18nText';
 import { findOrganizer } from '~/server/db/organizer.server';
 
 type LoaderData = {
@@ -117,7 +126,7 @@ export const loader: LoaderFunction = async ({ params, request }) => {
 export default function EventDisplayRoute() {
   const favorite = useFetcher();
   const { event, isUserFavorite, races, perks, organizer } = useLoaderData<LoaderData>();
-  const { t } = useTranslation('event');
+  const { i18n, t } = useTranslation('event');
 
   let minPrice = 0;
   const [isEventHeaderVisible, setEventHeaderVisible] = useState<boolean>(true);
@@ -177,6 +186,7 @@ export default function EventDisplayRoute() {
             minPrice={minPrice}
             t={t}
             isUserFavorite={isUserFavorite}
+            language={i18n.language}
           />
         </InView>
         <div className="my-8">
@@ -511,12 +521,14 @@ function EventHeader({
   favorite,
   minPrice,
   t,
+  language,
   isUserFavorite
 }: {
   event: EventWithRacesDifficultiesAndDocuments;
   favorite: FetcherWithComponents<any>;
   minPrice: number;
   t: TFunction;
+  language: string;
   isUserFavorite: boolean;
 }) {
   const favoriteAddedMessage = t('Favorite Added');
@@ -618,10 +630,7 @@ function EventHeader({
               {event.name}
             </b>
           </H2>
-          <favorite.Form
-            method="post"
-            action={`/fav/${event.id}`}
-          >
+          <favorite.Form method="post" action={`/fav/${event.id}`}>
             {isFavorite ? (
               <Button
                 size="tiny"
@@ -674,10 +683,20 @@ function EventHeader({
             </H6>
           </a>
         </div>
+        <Tooltip target=".difficulty-tooltip" />
         <div className="flex flex-row items-center mb-2">
           <ArrowTrendingUpIcon className="h-6 w-6 m-0 inline-block text-primary" />
-          <H6 data-cy="difficulty" className="ml-4 md:ml-2">
+          <H6
+            data-cy="difficulty"
+            className="flex flex-row items-center gap-x-2 ml-4 md:ml-2 difficulty-tooltip"
+            data-pr-tooltip={getI18nText(
+              event.difficulty?.description as TranslationObject,
+              language as Language
+            )}
+            data-pr-position="right"
+          >
             <I18nText text={event.difficulty?.name as TranslationObject} />
+            <QuestionMarkCircleIcon className="h-4 w-4 m-0 inline-block text-primary" />
           </H6>
         </div>
         <div className="flex flex-row justify-between items-center mt-16 dark:bg-gray-900 bg-white">
