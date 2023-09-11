@@ -44,7 +44,7 @@ export default function BookingLoginCTADialog({
   return (
     <dialog
       ref={dialog}
-      className="relative w-full h-screen md:w-144 md:h-fit md:h-fit rounded border-dashed shadow animate-fade-in"
+      className="relative w-full h-screen md:w-144 md:h-fit md:h-fit rounded border-dashed shadow animate-fade-in dark:bg-gray-800"
     >
       <div className="flex flex-col h-full justify-between p-6">
         <H2 className="mb-2 text-secondary">
@@ -58,8 +58,9 @@ export default function BookingLoginCTADialog({
             <TextField
               id="email"
               name="email"
-              className="w-full text-sm h-14 md:h-20"
+              className="w-full text-sm h-14 md:h-20 dark:bg-gray-700"
               autoComplete="off"
+              defaultValue=""
             />
           </FormField>
           <FormField
@@ -70,8 +71,9 @@ export default function BookingLoginCTADialog({
               id="password"
               type="password"
               name="password"
-              className="w-full text-sm h-14 md:text-2xl md:h-20"
+              className="w-full text-sm h-14 md:text-2xl md:h-20 dark:bg-gray-700"
               autoComplete="current-password"
+              defaultValue=""
             />
           </FormField>
           <ButtonGroup>
