@@ -1,18 +1,13 @@
 import clsx from 'clsx';
 import * as React from 'react';
-
-import type { DropdownChangeEvent, DropdownProps } from 'primereact/dropdown';
-
-
-import { Dropdown } from 'primereact/dropdown';
 import { useState } from 'react';
 
-import { H3, H5 } from '~/components/shared/typography';
+import type { DropdownChangeEvent, DropdownProps } from 'primereact/dropdown';
+import { Dropdown } from 'primereact/dropdown';
 
 import type { Difficulty, Language } from '~/types';
 
 import { getI18nText } from '~/components/I18nText';
-
 
 export default function DifficultiesDropdown({
   difficulties,
@@ -34,8 +29,12 @@ export default function DifficultiesDropdown({
   function optionTemplate(option: OurDifficultyLevelOption) {
     return (
       <>
-        <H3>{option.name}</H3>
-        <H5>{option.description}</H5>
+        <div className="dark:text-white text-black text-lg font-medium">
+          {option.name}
+        </div>
+        <div className="dark:text-blueGray-500 option-description">
+          {option.description}
+        </div>
       </>
     );
   }

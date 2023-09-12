@@ -760,32 +760,6 @@ export default function OrganizerEventRoute() {
     return 0;
   });
 
-  type OurDifficultyLevelOption = {
-    name: string;
-    description: string;
-    value: number;
-  };
-
-  function selectedValueTemplate(
-    option: OurDifficultyLevelOption,
-    props: DropdownProps
-  ) {
-    if (option) {
-      return <span>{option.name}</span>;
-    }
-
-    return <span>{props.placeholder}</span>;
-  }
-
-  function optionTemplate(option: OurDifficultyLevelOption) {
-    return (
-      <>
-        <div>{option.name}</div>
-        <div>{option.description}</div>
-      </>
-    );
-  }
-
   function handleOnSelectDifficulty(value: number) {
     setSelectedDifficulty(value);
   }

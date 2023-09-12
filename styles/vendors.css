@@ -61,9 +61,35 @@
     @apply dark:text-white
 }
 
+.p-dropdown.difficulty-dropdown {
+    @apply bg-gray-100 dark:text-white dark:bg-gray-800
+    disabled:text-gray-400 dark:disabled:text-blueGray-500
+}
+
 .difficulty-dropdown > .p-inputtext {
-    @apply w-full px-11 py-4 rounded-lg placeholder-gray-500 font-medium border-0
+    box-shadow: 0 0 #0000;
+
+    @apply w-full px-11 py-4 placeholder-gray-500 font-medium
     bg-gray-100 text-base md:text-lg
     dark:text-white dark:bg-gray-800
     disabled:text-gray-400 dark:disabled:text-blueGray-500
+}
+
+.p-dropdown-panel.p-component {
+    @apply dark:bg-gray-800
+}
+
+.p-dropdown-items {
+    @apply md:max-w-[480px]
+}
+
+.p-dropdown-item > .option-description {
+    white-space: normal;
+
+    @apply whitespace-normal
+}
+
+.p-dropdown-panel > .p-dropdown-items-wrapper > .p-dropdown-items > .p-dropdown-item.p-highlight,
+.p-dropdown-panel > .p-dropdown-items-wrapper > .p-dropdown-items > .p-dropdown-item:not(.p-highlight):not(.p-disabled):hover  {
+    @apply dark:bg-gray-700
 }
