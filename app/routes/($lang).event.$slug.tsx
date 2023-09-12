@@ -683,14 +683,6 @@ function EventHeader({
             </H6>
           </a>
         </div>
-        <Tooltip
-          target=".difficulty-tooltip"
-          className="hidden md:flex w-112"
-        />
-        <Tooltip
-          target=".difficulty-tooltip-bottom"
-          className="flex md:hidden w-96"
-        />
         <div className="flex flex-row items-center mb-2">
           <ArrowTrendingUpIcon className="h-6 w-6 m-0 inline-block text-primary" />
           <DisplayDifficulty
@@ -810,6 +802,11 @@ function DisplayDifficulty({
 }) {
   return (
     <>
+      <Tooltip target=".difficulty-tooltip" className="hidden md:flex w-112" />
+      <Tooltip
+        target=".difficulty-tooltip-bottom"
+        className="flex w-fit md:hidden mx-2"
+      />
       <H6
         data-cy="difficulty"
         className="hidden md:flex flex-row items-center gap-x-2 ml-4 md:ml-2 difficulty-tooltip"
