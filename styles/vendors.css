@@ -60,3 +60,33 @@
 .p-paginator-icon, .p-paginator .p-paginator-pages .p-paginator-page.p-highlight {
     @apply dark:text-white
 }
+
+/*There is a missing class here, that is in tailwind.css, inside @layer utils*/
+.p-dropdown {
+    @apply bg-gray-100 dark:text-white dark:bg-gray-800
+    disabled:text-gray-400 dark:disabled:text-blueGray-500
+}
+
+.p-dropdown > .p-inputtext {
+    @apply w-full px-11 py-4 placeholder-gray-500 font-medium
+    bg-gray-100 text-base md:text-lg
+    dark:text-white dark:bg-gray-800
+    disabled:text-gray-400 dark:disabled:text-blueGray-500
+}
+
+.p-dropdown-panel.p-component {
+    @apply dark:bg-gray-800
+}
+
+.p-dropdown-items {
+    @apply md:max-w-[480px]
+}
+
+.p-dropdown-item > .option-description {
+    @apply whitespace-normal
+}
+
+.p-dropdown-panel > .p-dropdown-items-wrapper > .p-dropdown-items > .p-dropdown-item.p-highlight,
+.p-dropdown-panel > .p-dropdown-items-wrapper > .p-dropdown-items > .p-dropdown-item:not(.p-highlight):not(.p-disabled):hover  {
+    @apply dark:bg-gray-700
+}

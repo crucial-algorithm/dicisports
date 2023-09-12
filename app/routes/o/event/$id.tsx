@@ -37,6 +37,8 @@ import { useTranslation } from 'react-i18next';
 import { z, ZodError } from 'zod';
 import { XMarkIcon } from '@heroicons/react/24/solid';
 
+import DifficultiesDropdown from '~/components/DifficultiesDropdown';
+
 import DocumentsList from '~/components/events/DocumentsList';
 
 import RacesList from '~/components/events/RacesList';
@@ -173,7 +175,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     perks: await findEventPerks(eventId),
     races: await findEventRaces(eventId),
     difficulties: difficulties.map((d) => {
-      return { id: d.id, name: d.name };
+      return { id: d.id, name: d.name, description: d.description };
     }),
     hasRegistrations: confirmedBookings && confirmedBookings?.length > 0
   });
@@ -508,7 +510,9 @@ export default function OrganizerEventRoute() {
     useState<boolean>(false);
   const [isPublish, setIsPublish] = useState<boolean>(false);
   const [isUnpublish, setIsUnpublish] = useState<boolean>(false);
-
+  const [selectedDifficulty, setSelectedDifficulty] = useState<number>(
+      event.difficultyId ? event?.difficultyId : 1
+  );
   const inputEl = useRef<HTMLInputElement>(null);
   const deleteForm = useRef<HTMLFormElement>(null);
   const eventForm = useRef<HTMLFormElement>(null);
@@ -749,6 +753,10 @@ export default function OrganizerEventRoute() {
     return 0;
   });
 
+  function handleOnSelectDifficulty(value: number) {
+    setSelectedDifficulty(value);
+  }
+
   return (
     <Main>
       <div className="mb-24">
@@ -783,10 +791,7 @@ export default function OrganizerEventRoute() {
                     {t('Back Button')}
                   </ButtonLink>
                 )}
-                <Button
-                  type="submit"
-                  variant="secondary"
-                >
+                <Button type="submit" variant="secondary">
                   {event.status === 'auto'
                     ? t('Create Button')
                     : t('Save Button')}
@@ -866,17 +871,12 @@ export default function OrganizerEventRoute() {
                 id="event-difficulty"
                 className="w-full md:basis-1/3"
               >
-                <ComboBox
+                <DifficultiesDropdown
                   name="difficulty"
-                  id="event-difficulty"
-                  lang={language}
-                  placeholder=""
-                  defaultValue={
-                    event.difficultyId ? event.difficultyId : undefined
-                  }
-                  options={difficulties
-                    .sort((a: Difficulty, b: Difficulty) => a.id - b.id)
-                    .map((d: Difficulty) => ({ value: d.id, label: d.name }))}
+                  defaultValue={selectedDifficulty}
+                  difficulties={difficulties}
+                  language={language}
+                  onChange={handleOnSelectDifficulty}
                 />
               </FormField>
             </div>

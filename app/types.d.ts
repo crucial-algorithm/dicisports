@@ -356,6 +356,7 @@ type FavoriteEvent = {
 
 type Difficulty = {
   name: TranslationObject;
+  description: TranslationObject;
 } & DBDifficulty;
 
 type Ticket = {

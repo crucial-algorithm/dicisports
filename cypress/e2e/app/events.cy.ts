@@ -30,7 +30,7 @@ describe('Event', () => {
         .and('include', locationLink)
 
         .get('[data-cy=difficulty]')
-        .contains('Difícil')
+        .contains('Especialista')
 
         .get('[data-cy=race]')
         .should('have.length', 3)
@@ -159,7 +159,12 @@ describe('Event', () => {
         .should('have.value', 'a new event')
 
         .pickOptionFromSelect('sport', 4)
-        .pickOptionFromSelect('difficulty', 1)
+
+        .get('.p-dropdown')
+        .click()
+        .then(() => {
+          cy.get('.p-dropdown-items > li').eq(2).click();
+        })
 
         .pickDate(
           'event-date',
