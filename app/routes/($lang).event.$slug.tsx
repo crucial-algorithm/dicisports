@@ -683,21 +683,26 @@ function EventHeader({
             </H6>
           </a>
         </div>
-        <Tooltip target=".difficulty-tooltip" />
+        <Tooltip
+          target=".difficulty-tooltip"
+          className="hidden md:flex w-112"
+        />
+        <Tooltip
+          target=".difficulty-tooltip-bottom"
+          className="flex md:hidden w-96"
+        />
         <div className="flex flex-row items-center mb-2">
           <ArrowTrendingUpIcon className="h-6 w-6 m-0 inline-block text-primary" />
-          <H6
-            data-cy="difficulty"
-            className="flex flex-row items-center gap-x-2 ml-4 md:ml-2 difficulty-tooltip"
-            data-pr-tooltip={getI18nText(
+          <DisplayDifficulty
+            name={getI18nText(
+              event.difficulty?.name as TranslationObject,
+              language as Language
+            )}
+            description={getI18nText(
               event.difficulty?.description as TranslationObject,
               language as Language
             )}
-            data-pr-position="right"
-          >
-            <I18nText text={event.difficulty?.name as TranslationObject} />
-            <QuestionMarkCircleIcon className="h-4 w-4 m-0 inline-block text-primary" />
-          </H6>
+          />
         </div>
         <div className="flex flex-row justify-between items-center mt-16 dark:bg-gray-900 bg-white">
           <div className="flex flex-col justify-start">
@@ -793,5 +798,37 @@ function OrganizerFooter({ organizer }: { organizer: Organizer }) {
         </div>
       </div>
     </footer>
+  );
+}
+
+function DisplayDifficulty({
+  name,
+  description
+}: {
+  name: string;
+  description: string;
+}) {
+  return (
+    <>
+      <H6
+        data-cy="difficulty"
+        className="hidden md:flex flex-row items-center gap-x-2 ml-4 md:ml-2 difficulty-tooltip"
+        data-pr-tooltip={description}
+        data-pr-position="right+5"
+      >
+        {name}
+        <QuestionMarkCircleIcon className="h-4 w-4 m-0 inline-block text-primary" />
+      </H6>
+
+      <H6
+        data-cy="difficulty"
+        className="flex md:hidden flex-row items-center gap-x-2 ml-4 md:ml-2 difficulty-tooltip-bottom"
+        data-pr-tooltip={description}
+        data-pr-position="bottom"
+      >
+        {name}
+        <QuestionMarkCircleIcon className="h-4 w-4 m-0 inline-block text-primary" />
+      </H6>
+    </>
   );
 }

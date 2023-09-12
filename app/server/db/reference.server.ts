@@ -43,7 +43,7 @@ async function findGroupTypes(): Promise<Array<GroupType>> {
 }
 
 async function findDifficulties(): Promise<Array<Difficulty>> {
-  const difficulties = await db.difficulty.findMany();
+  const difficulties = await db.difficulty.findMany({ orderBy: { id: 'asc' } });
 
   return difficulties.map(dbDifficultyToDifficulty);
 }
