@@ -61,14 +61,13 @@
     @apply dark:text-white
 }
 
-.p-dropdown.difficulty-dropdown {
+/*There is a missing class here, that is in tailwind.css, inside @layer utils*/
+.p-dropdown {
     @apply bg-gray-100 dark:text-white dark:bg-gray-800
     disabled:text-gray-400 dark:disabled:text-blueGray-500
 }
 
-.difficulty-dropdown > .p-inputtext {
-    box-shadow: 0 0 #0000;
-
+.p-dropdown > .p-inputtext {
     @apply w-full px-11 py-4 placeholder-gray-500 font-medium
     bg-gray-100 text-base md:text-lg
     dark:text-white dark:bg-gray-800
@@ -84,8 +83,6 @@
 }
 
 .p-dropdown-item > .option-description {
-    white-space: normal;
-
     @apply whitespace-normal
 }
 

@@ -59,7 +59,7 @@ export default function DifficultiesDropdown({
       valueTemplate={selectedValueTemplate}
       itemTemplate={optionTemplate}
       onChange={handleOnChange}
-      className={clsx('w-full md:w-14rem difficulty-dropdown', className)}
+      className={clsx('w-full md:w-14rem', className)}
     />
   );
 }

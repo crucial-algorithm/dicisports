@@ -731,8 +731,6 @@
 
 .p-dropdown {
   background: #f7f7f7;
-  border: 1px solid #d4d4d8;
-  transition: none;
   border-radius: 0.375rem;
 }
 .p-dropdown:not(.p-disabled):hover {
@@ -6130,7 +6128,7 @@
 }
 
 /* Customizations to the designer theme should be defined here */
-.p-inputtext, .p-togglebutton, .p-selectbutton, .p-inputgroup {
+.p-togglebutton, .p-selectbutton, .p-inputgroup {
   box-shadow: 0 0 rgba(0, 0, 0, 0), 0 0 rgba(0, 0, 0, 0), 0 1px 2px 0 rgba(0, 0, 0, 0.05);
 }
 

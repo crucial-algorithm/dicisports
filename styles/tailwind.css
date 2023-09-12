@@ -123,11 +123,8 @@
         @apply input-text
     }
 
-    .difficulty-dropdown.p-dropdown {
-        border: 0;
-        box-shadow: none;
-        margin: 0;
-
+    /*Since focus-ring is a custom class, we need to declare this one here - inside a @layer - in order to work/not throw an error*/
+    .p-dropdown.p-component {
         @apply focus-ring
     }
 }
