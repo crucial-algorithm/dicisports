@@ -37,11 +37,6 @@ import { useTranslation } from 'react-i18next';
 import { z, ZodError } from 'zod';
 import { XMarkIcon } from '@heroicons/react/24/solid';
 
-import type {
-  DropdownChangeEvent,
-  DropdownProps
-} from 'primereact/dropdown';
-
 import DifficultiesDropdown from '~/components/DifficultiesDropdown';
 
 import DocumentsList from '~/components/events/DocumentsList';
@@ -107,8 +102,6 @@ import type {
 import { badRequest } from '~/utils/misc';
 import UploadFile from '~/components/UploadFile';
 import { findConfirmedBookings } from '~/server/db/booking.server';
-
-import { getI18nText } from '~/components/I18nText';
 
 type ActionData = {
   hash: number;

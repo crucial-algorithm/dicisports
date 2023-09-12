@@ -801,15 +801,17 @@ function DisplayDifficulty({
   description: string;
 }) {
   return (
-    <>
-      <Tooltip target=".difficulty-tooltip" className="hidden md:flex w-112" />
+    <div className="w-full lg:w-min">
+      {/*Can't use breakpoints, so hiding/showing the correct one according to size */}
+      <Tooltip target=".difficulty-tooltip" className="hidden lg:flex w-112" />
       <Tooltip
         target=".difficulty-tooltip-bottom"
-        className="flex w-fit md:hidden mx-2"
+        className="flex lg:hidden mx-2"
       />
+      {/*Right tooltip*/}
       <H6
         data-cy="difficulty"
-        className="hidden md:flex flex-row items-center gap-x-2 ml-4 md:ml-2 difficulty-tooltip"
+        className="hidden lg:flex flex-row items-center gap-x-2 ml-4 lg:ml-2 difficulty-tooltip"
         data-pr-tooltip={description}
         data-pr-position="right+5"
       >
@@ -817,15 +819,16 @@ function DisplayDifficulty({
         <QuestionMarkCircleIcon className="h-4 w-4 m-0 inline-block text-primary" />
       </H6>
 
+      {/*Bottom tooltip*/}
       <H6
         data-cy="difficulty"
-        className="flex md:hidden flex-row items-center gap-x-2 ml-4 md:ml-2 difficulty-tooltip-bottom"
+        className="flex lg:hidden flex-row items-center gap-x-2 ml-4 lg:ml-2 difficulty-tooltip-bottom"
         data-pr-tooltip={description}
         data-pr-position="bottom"
       >
         {name}
         <QuestionMarkCircleIcon className="h-4 w-4 m-0 inline-block text-primary" />
       </H6>
-    </>
+    </div>
   );
 }
