@@ -159,6 +159,8 @@ export default function EventDisplayRoute() {
     minPrice = prices[0];
   }
 
+  const isBookingAvailable = new Date(event.startAt) > new Date();
+
   return (
     <>
       <StickyPriceTag
@@ -203,6 +205,7 @@ export default function EventDisplayRoute() {
                   index={index}
                   eventId={event.id}
                   areThereRacesInEarlyBird={anyRaceInEarlyBird}
+                  isBookingAvailable={isBookingAvailable}
                 />
               ))}
             <WhenListEmpty list={races}>
@@ -285,10 +288,11 @@ type DisplayRaceProps = {
   race: Race;
   index: number;
   eventId: string;
-  areThereRacesInEarlyBird: boolean
-}
+  areThereRacesInEarlyBird: boolean;
+  isBookingAvailable: boolean;
+};
 
-function DisplayRace({ race, index, eventId, areThereRacesInEarlyBird }: DisplayRaceProps) {
+function DisplayRace({ race, index, eventId, areThereRacesInEarlyBird, isBookingAvailable }: DisplayRaceProps) {
   const { t } = useTranslation('event');
   const raceTime = displayTimeOfDay(race.startTime);
   const [expanded, setExpanded] = useState<boolean>(false);
@@ -348,9 +352,10 @@ function DisplayRace({ race, index, eventId, areThereRacesInEarlyBird }: Display
                 className="dark:text-blueGray-500 line-through"
                 data-cy={`race-price-${race.id}`}
               >{`${race.price / 1000}€`}</H5>
-              <H3
-                data-cy={`race-price-${race.id}`}
-              > {`${(race.priceEarlyBird || 0) / 1000}€`}</H3>
+              <H3 data-cy={`race-price-${race.id}`}>
+                {' '}
+                {`${(race.priceEarlyBird || 0) / 1000}€`}
+              </H3>
             </div>
 
             <div className="border-b h-2 w-48 mb-2" />
@@ -375,10 +380,9 @@ function DisplayRace({ race, index, eventId, areThereRacesInEarlyBird }: Display
             </div>
           </>
         ) : (
-          <H3
-            className="items-center"
-            data-cy={`race-price-${race.id}`}
-          >{`${race.price / 1000}`}€</H3>
+          <H3 className="items-center" data-cy={`race-price-${race.id}`}>
+            {`${race.price / 1000}`}€
+          </H3>
         )}
       </div>
       {expanded && (
@@ -442,7 +446,9 @@ function DisplayRace({ race, index, eventId, areThereRacesInEarlyBird }: Display
         <Form method="get" action="/checkout/create" className="mt-2">
           <input type="hidden" value={race.id} name="raceId" />
           <input type="hidden" value={race.eventId} name="eventId" />
-          <Button name={`race-${race.id}`}>{t('Book')}</Button>
+          <Button disabled={!isBookingAvailable} name={`race-${race.id}`}>
+            {t('Book')}
+          </Button>
         </Form>
       </div>
     </div>
