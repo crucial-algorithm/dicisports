@@ -160,7 +160,7 @@ describe('Event', () => {
 
         .pickOptionFromSelect('sport', 4)
 
-        .get('.difficulty-dropdown')
+        .get('.p-dropdown')
         .click()
         .then(() => {
           cy.get('.p-dropdown-items > li').eq(2).click();

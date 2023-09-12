@@ -39,19 +39,19 @@ import { Notification } from '~/components/shared/NotificationMessage';
 import DisplayImg from '~/components/shared/DisplayImg';
 import type {
   Document,
+  Language,
   Organizer,
   Perk,
   Race,
   TranslationObject,
   User
 } from '~/types';
-import type { Language } from '~/types';
 import { findEventRaces } from '~/server/db/races.server';
 import DisplayDate from '~/components/shared/DIsplayDate';
 import { displayTimeOfDay } from '~/utils/misc';
 import { findEventPerks } from '~/server/db/perks.server';
 import WhenListEmpty from '~/components/shared/Empty';
-import I18nText, { getI18nText } from '~/components/I18nText';
+import { getI18nText } from '~/components/I18nText';
 import { findOrganizer } from '~/server/db/organizer.server';
 
 type LoaderData = {
