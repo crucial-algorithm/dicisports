@@ -881,7 +881,7 @@ export default function OrganizerEventRoute() {
                 <DifficultiesDropdown
                   name="difficulty"
                   defaultValue={selectedDifficulty}
-                  difficulties={difficulties}
+                  difficulties={difficulties.sort((a, b) => a.id - b.id)}
                   language={language}
                   onChange={handleOnSelectDifficulty}
                 />

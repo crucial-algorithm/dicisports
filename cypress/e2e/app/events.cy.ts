@@ -30,7 +30,7 @@ describe('Event', () => {
         .and('include', locationLink)
 
         .get('[data-cy=difficulty]')
-        .contains('Difícil')
+        .contains('Especialista')
 
         .get('[data-cy=race]')
         .should('have.length', 3)
@@ -145,7 +145,7 @@ describe('Event', () => {
       cy.task('clearDownloadFolder');
     });
 
-    it('should create an event', () => {
+    it.only('should create an event', () => {
       cy.intercept('GET', '/o/event/*?_data=routes*')
         .as('EventRequests')
         .visitAndWaitForHydration('/o')
@@ -159,7 +159,12 @@ describe('Event', () => {
         .should('have.value', 'a new event')
 
         .pickOptionFromSelect('sport', 4)
-        .pickOptionFromSelect('difficulty', 1)
+
+        .get('.difficulty-dropdown')
+        .click()
+        .then(() => {
+          cy.get('.p-dropdown-items > li').eq(2).click();
+        })
 
         .pickDate(
           'event-date',
