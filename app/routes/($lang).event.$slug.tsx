@@ -312,7 +312,6 @@ function DisplayRace({ race, index, eventId, areThereRacesInEarlyBird, isBooking
     expanded ? setExpanded(false) : setExpanded(true);
   }
 
-
   return (
     <div
       className={clsx(
@@ -393,9 +392,8 @@ function DisplayRace({ race, index, eventId, areThereRacesInEarlyBird, isBooking
               <div
                 className="dark:text-blueGray-500 text-base font-medium mr-2 mt-2 whitespace-pre-line px-4"
                 data-cy={`race-description-${race.id}`}
-              >
-                {race.raceDescription}
-              </div>
+                dangerouslySetInnerHTML={{ __html: race.raceDescription }}
+              />
             </div>
           )}
           <div>

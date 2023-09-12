@@ -28,10 +28,7 @@ export const loader: LoaderFunction = async ({ request }) => {
     return redirect('/');
   }
 
-  // This shouldn't happen, but if it does, validate that event bookings are available
-  const isBookingAvailable = new Date(event?.startAt) > new Date();
-
-  if (!isBookingAvailable) {
+  if (event.startAt && new Date(event?.startAt) > new Date()) {
     return redirect('/');
   }
 
