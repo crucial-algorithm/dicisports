@@ -28,7 +28,8 @@ export const loader: LoaderFunction = async ({ request }) => {
     return redirect('/');
   }
 
-  if (event.startAt && new Date(event?.startAt) > new Date()) {
+  // This shouldn't happen, but in case it does, check if event is outdated
+  if (event.startAt && new Date(event?.startAt) < new Date()) {
     return redirect('/');
   }
 
