@@ -1,6 +1,6 @@
 import { json } from '@remix-run/node';
 
-import type { UICartRow } from '~/types';
+import type { Booking, UICartRow } from '~/types';
 
 import type { Language, NonNullProperties, TranslationObject } from '~/types';
 
@@ -211,6 +211,16 @@ function validateIdentityCard(identityCard: string): boolean {
   return sum % 10 === 0;
 }
 
+function bookingRedirectRoute(booking: Booking): string {
+  const mapping: { [key: string]: string } = {
+    checkout: 'info',
+    pending: 'payment',
+    confirmed: 'confirmation'
+  };
+
+  return `/checkout/${mapping[booking.status]}/${booking.id}`;
+}
+
 export {
   getDomainUrl,
   getErrorMessage,
@@ -226,5 +236,6 @@ export {
   getLocalizedText,
   generateSlug,
   bookingAmount,
-  validateIdentityCard
+  validateIdentityCard,
+  bookingRedirectRoute
 };

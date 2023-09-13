@@ -22,7 +22,7 @@ import FormField from '~/components/shared/form/FormField';
 
 import { getLoginInfoSession } from '~/server/auth/login.server';
 import { getSession, getUser } from '~/server/auth/session.server';
-import { badRequest, getDomainUrl } from '~/utils/misc';
+import { badRequest, bookingRedirectRoute, getDomainUrl } from '~/utils/misc';
 
 import i18n from '~/server/i18n.server';
 import InputError from '~/components/shared/form/InputError';
@@ -38,6 +38,7 @@ import Main from '~/components/shared/Main';
 import { CanonicalMeta } from '~/utils/seo';
 import {
   changeRegistrationToAuthUser,
+  findBooking,
   findBookingById
 } from '~/server/db/booking.server';
 import { getClientSession } from '~/server/auth/client.server';
@@ -227,17 +228,23 @@ export const action: ActionFunction = async ({ request }) => {
         const bookingId = searchParams.get('b') as string;
         const booking = await findBookingById(bookingId);
 
+        // This shouldn't happen, but in case it does...
+        if (!booking) {
+          return redirect(`/?message=${t('No Booking Found')}`, { headers });
+        }
+
+        const authUserBooking = await findBooking(user.id, booking.eventId);
+
+        if (authUserBooking) {
+          return redirect(bookingRedirectRoute(authUserBooking), { headers });
+        }
+
         await changeRegistrationToAuthUser(
           user.id,
           clientSession.getClientId()
         );
 
-        return redirect(
-          booking?.status === 'confirmed'
-            ? `/checkout/confirmation/${bookingId}`
-            : `/checkout/info/${bookingId}`,
-          { headers }
-        );
+        return redirect(bookingRedirectRoute(booking), { headers });
       } catch (e) {
         console.error(e);
       }
