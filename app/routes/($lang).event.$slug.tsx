@@ -317,7 +317,7 @@ function DisplayRace({ race, index, eventId, areThereRacesInEarlyBird, isBooking
       className={clsx(
         'flex flex-col gap-y-4 justify-between mb-4 mr-2 md:mr-4 text-center items-center border border-black dark:border-white rounded-2xl outline-offset-1 w-[340px] md:overflow-hidden',
         {
-          // Only doing this starting from MD screen sizes, since in mobile race horizontally aligned
+          // Only doing this starting from MD screen sizes, since in mobile races are not horizontally aligned
           'md:min-h-[450px]': areThereRacesInEarlyBird && !isBookingClosed,
           'md:min-h-[460px]': areThereRacesInEarlyBird && isBookingClosed,
           'md:min-h-[410px]': !areThereRacesInEarlyBird
