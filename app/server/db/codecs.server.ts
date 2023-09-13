@@ -68,13 +68,14 @@ function dbSportToSport(sport: DBSport): Sport {
 }
 
 function dbDifficultyToDifficulty(difficulty: DBDifficulty): Difficulty {
-  const { id, name, createdAt, updatedAt } = difficulty;
+  const { id, name, description, createdAt, updatedAt } = difficulty;
 
   return {
     id,
     createdAt,
     updatedAt,
-    name: name as TranslationObject
+    name: name as TranslationObject,
+    description: description as TranslationObject
   };
 }
 

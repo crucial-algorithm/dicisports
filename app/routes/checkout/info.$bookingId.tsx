@@ -857,7 +857,6 @@ export default function CheckoutInfoRoute() {
               cart={cart}
               event={event}
               error={errors.missingFilledParticipants}
-              hash={hash}
               showDiscountCodeInput={!isGuest}
               appliedDiscount={appliedDiscount}
             >
