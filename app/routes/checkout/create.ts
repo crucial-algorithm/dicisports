@@ -10,6 +10,7 @@ import { badRequest } from '~/utils/misc';
 import { addParticipantsToRace } from '~/server/db/participant.server';
 import i18n from '~/server/i18n.server';
 import Id from '~/server/utils/Id.server';
+import { findEvent } from '~/server/db/events.server';
 
 export const loader: LoaderFunction = async ({ request }) => {
   const t = await i18n.getFixedT(request, 'checkout');
@@ -21,6 +22,16 @@ export const loader: LoaderFunction = async ({ request }) => {
     authClient !== null ? authClient.id : clientSession.getClientId();
   const raceId = searchParams.get('raceId') as string;
   const eventId = searchParams.get('eventId') as string;
+  const event = await findEvent(eventId);
+
+  if (!event) {
+    return redirect('/');
+  }
+
+  // This shouldn't happen, but in case it does, check if event is outdated
+  if (event.startAt && new Date(event?.startAt) < new Date()) {
+    return redirect('/');
+  }
 
   //TODO: delete this validation in order to create many bookings to the same event
   const booking = await findBooking(clientId, eventId);
