@@ -13,7 +13,7 @@ import {
   MapPinIcon,
   QuestionMarkCircleIcon
 } from '@heroicons/react/24/outline';
-import { HeartIcon as Favorite } from '@heroicons/react/24/solid';
+import { ChevronDownIcon, ChevronUpIcon, HeartIcon as Favorite } from '@heroicons/react/24/solid';
 import * as React from 'react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -446,18 +446,16 @@ function DisplayRace({ race, index, eventId, isBookingClosed, minHeight }: Displ
           </>
         )}
       </div>
-      <div className="dark:text-blueGray-500 text-sm font-medium mb-4">
-        <label
-          role="button"
+      <div className="mb-4">
+        <SeeLessOrMoreButton
           onClick={handleSeeMore}
-          data-cy={`see-more-${race.id}`}
-        >
-          {expanded ? t('See Less') : t('See More')}
-        </label>
+          expanded={expanded}
+          t={t}
+        />
         <Form
           method="get"
           action="/checkout/create"
-          className="flex flex-col gap-y-2 mt-2"
+          className="flex flex-col gap-y-1 mt-2"
         >
           <input type="hidden" value={race.id} name="raceId" />
           <input type="hidden" value={race.eventId} name="eventId" />
@@ -843,6 +841,44 @@ function DisplayDifficulty({
         {name}
         <QuestionMarkCircleIcon className="h-4 w-4 m-0 inline-block text-primary" />
       </H6>
+    </div>
+  );
+}
+
+function SeeLessOrMoreButton({
+  onClick,
+  expanded,
+  t,
+  className
+}: {
+  onClick: () => void;
+  expanded: boolean;
+  t: TFunction;
+  className?: string;
+}) {
+  const iconClassName =
+    'absolute inline-block h-4 w-4 m-0 text-white bg-black dark:bg-blueGray-500 rounded-full';
+
+  return (
+    <div className="flex flex-col items-center relative py-2">
+      <button
+        className={clsx(
+          'dark:text-white text-sm font-medium border-black dark:border-blueGray-500 py-1 px-2',
+          className,
+            {
+              'border-t-2': expanded,
+              'border-b-2': !expanded
+            }
+        )}
+        onClick={onClick}
+      >
+        {expanded ? t('See Less') : t('See More')}
+      </button>
+      {expanded ? (
+        <ChevronUpIcon className={clsx('top-0', iconClassName)} />
+      ) : (
+        <ChevronDownIcon className={clsx('bottom-0', iconClassName)} />
+      )}
     </div>
   );
 }
