@@ -1,5 +1,4 @@
 import { Link } from '@remix-run/react';
-import type { TFunction } from 'i18next';
 import * as React from 'react';
 
 import DisplayImg from '~/components/shared/DisplayImg';
@@ -8,12 +7,10 @@ import { getLocalizedText } from '~/utils/misc';
 
 export default function SportsGrid({
   sports,
-  lang,
-  t
+  lang
 }: {
   sports: Sport[];
   lang: Language;
-  t: TFunction;
 }) {
   if (!sports) {
     return null;
@@ -40,23 +37,6 @@ export default function SportsGrid({
             />
           </Link>
         ))}
-      {new Array(8 - sports.length).fill(null).map((a, i) => (
-        <a
-          href={`mailto:feedback@dicisports.com?subject=${t(
-            'Add Sport Mail Subject'
-          )}`}
-          key={i}
-        >
-          <DisplayImg
-            imageId={'product/sports/add-sport_xe6eok'}
-            key={i}
-            alt={t('Add Sport')}
-            className={width}
-            dontMessWithImgSize={true}
-            variant="Grid"
-          />
-        </a>
-      ))}
     </div>
   );
 }

@@ -33,5 +33,10 @@
     "id": 7,
     "name": { "pt": "Enduro" },
     "picture": "enduro_m3s1ti"
+  },
+  {
+    "id": 8,
+    "name": {"pt": "Triatlo"},
+    "picture": "triathlon"
   }
 ]
