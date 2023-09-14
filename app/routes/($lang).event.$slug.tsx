@@ -131,15 +131,21 @@ export default function EventDisplayRoute() {
   let minPrice = 0;
   const [isEventHeaderVisible, setEventHeaderVisible] = useState<boolean>(true);
   const [areRacesVisible, setAreRacesVisible] = useState<boolean>(false);
-  const anyRaceInEarlyBird = races
-    .map(
-      (r: Race) =>
-        r.priceEarlyBird &&
-        r.validUntil &&
-        new Date(r.validUntil).getTime() - Date.now() > 0
-    )
-    .filter(Boolean)
-    .length > 0;
+  const [minHeight, setMinHeight] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!races) {
+      return;
+    }
+
+    const raceHeights = races.map((r: Race) => {
+      return document.getElementById(`race-${r.id}`)?.clientHeight || 0;
+    });
+
+    if (!minHeight) {
+      setMinHeight(Math.max(...raceHeights));
+    }
+  }, [minHeight, races]);
 
   if (!event) {
     return (
@@ -214,8 +220,8 @@ export default function EventDisplayRoute() {
                   key={race.id}
                   index={index}
                   eventId={event.id}
-                  areThereRacesInEarlyBird={anyRaceInEarlyBird}
                   isBookingClosed={isBookingClosed}
+                  minHeight={minHeight}
                 />
               ))}
             <WhenListEmpty list={races}>
@@ -298,11 +304,11 @@ type DisplayRaceProps = {
   race: Race;
   index: number;
   eventId: string;
-  areThereRacesInEarlyBird: boolean;
   isBookingClosed: boolean;
+  minHeight: number | null;
 };
 
-function DisplayRace({ race, index, eventId, areThereRacesInEarlyBird, isBookingClosed }: DisplayRaceProps) {
+function DisplayRace({ race, index, eventId, isBookingClosed, minHeight }: DisplayRaceProps) {
   const { t } = useTranslation('event');
   const raceTime = displayTimeOfDay(race.startTime);
   const [expanded, setExpanded] = useState<boolean>(false);
@@ -324,16 +330,9 @@ function DisplayRace({ race, index, eventId, areThereRacesInEarlyBird, isBooking
 
   return (
     <div
-      className={clsx(
-        'flex flex-col gap-y-4 justify-between mb-4 mr-2 md:mr-4 text-center items-center border border-black dark:border-white rounded-2xl outline-offset-1 w-[340px] md:overflow-hidden',
-        {
-          // Only doing this starting from MD screen sizes, since in mobile races are not horizontally aligned
-          'md:min-h-[450px]': areThereRacesInEarlyBird && !isBookingClosed,
-          'md:min-h-[460px]': areThereRacesInEarlyBird && isBookingClosed,
-          'md:min-h-[410px]': !areThereRacesInEarlyBird
-        }
-      )}
+      className={`flex flex-col w-[340px] min-h-[${minHeight ? String(minHeight) : '410' }px] gap-y-4 justify-between mb-4 mr-2 md:mr-4 text-center items-center border border-black dark:border-white rounded-2xl outline-offset-1 md:overflow-hidden`}
       data-cy={`race-${index}`}
+      id={`race-${race.id}`}
     >
       <div className="flex flex-col gap-y-4">
         <div className="mt-4" data-cy="race">
@@ -465,7 +464,9 @@ function DisplayRace({ race, index, eventId, areThereRacesInEarlyBird, isBooking
           <Button disabled={isBookingClosed} name={`race-${race.id}`}>
             {t('Book')}
           </Button>
-          {isBookingClosed && <label data-cy="booking-closed">{t('Booking Closed')}</label>}
+          {isBookingClosed && (
+            <label data-cy="booking-closed">{t('Booking Closed')}</label>
+          )}
         </Form>
       </div>
     </div>
