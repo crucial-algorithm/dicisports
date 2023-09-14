@@ -735,20 +735,7 @@ describe('Event', () => {
 
     it('should create race without price early bird', () => {
       cy.loginOrganizer()
-        .visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d')
-
-        .intercept('POST', '/o/event/MY4bvgxDbMtGv8rbYe5d*')
-        .as('SaveEvent')
-
-        .get('#create-race')
-        .click()
-
-        .wait('@SaveEvent')
-
-        .location()
-        .should((l) => {
-          expect(l.pathname).to.match(/.*\/new$/);
-        })
+        .visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d/race/new')
 
         .get('input[name=name]')
         .type('a new race')

@@ -152,14 +152,18 @@ async function updateEvent(
 ): Promise<void> {
   return await prisma.$transaction(async (prisma) => {
     console.debug('updating event...');
+    const startAt = new Date(event.startAt);
+    // We are saving date at 00:00, so add another 12H to "handle" time zone
+    const eventAt = new Date(startAt.setHours(startAt.getHours() + 12));
+
     await prisma.event.update({
       where: { id: event.id },
       data: {
         name: event.name,
         sportId: event.sportId,
         difficultyId: event.difficultyId,
-        startAt: event.startAt,
-        endAt: event.startAt,
+        startAt: eventAt,
+        endAt: eventAt,
         lat: event.lat,
         lng: event.lng,
         location: event.location,

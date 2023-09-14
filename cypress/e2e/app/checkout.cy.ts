@@ -1430,6 +1430,16 @@ describe('Checkout', () => {
           });
       });
     });
+
+    it('should not be able to book a race if event is outdated', () => {
+      cy.visitAndWaitForHydration('/pt/event/monco-e-melgaco-granfondo-by-trek-2023')
+
+        .get('button[name=race-Q7SpSTn9oszeSPhG9CaQ]')
+        .should('be.disabled')
+
+        .get('[data-cy=booking-closed]')
+        .should('exist');
+    });
   });
 
   context('Payments Gateway', () => {
