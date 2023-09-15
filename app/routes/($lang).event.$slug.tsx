@@ -13,7 +13,13 @@ import {
   MapPinIcon,
   QuestionMarkCircleIcon
 } from '@heroicons/react/24/outline';
-import { ChevronDownIcon, ChevronUpIcon, HeartIcon as Favorite } from '@heroicons/react/24/solid';
+import {
+  CheckIcon,
+  ChevronDownIcon,
+  ChevronUpIcon,
+  HeartIcon as Favorite,
+  XMarkIcon
+} from '@heroicons/react/24/solid';
 import * as React from 'react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -243,25 +249,15 @@ export default function EventDisplayRoute() {
             {perks
               .sort((a: Perk, b: Perk) => a.displayOrder - b.displayOrder)
               .map((p: Perk, index: number) => (
-                <div
-                  key={p.id}
-                  className="flex items-center mb-1"
-                  data-cy="perk"
-                >
-                  <input
-                    disabled
-                    type="checkbox"
-                    defaultChecked={p.isEnabled}
-                    className="w-4 h-4 text-indigo-500 bg-gray-100 rounded border-gray-300 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600"
-                    name={`perk-checkbox-${p.id}`}
-                  />
-                  <label
-                    htmlFor={p.id}
-                    className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300"
+                <div key={p.id} className="flex items-center" data-cy="perk">
+                  {p.isEnabled && <CheckIcon className="w-5 h-5" data-cy={`perk-${p.id}-available`} /> }
+                  {!p.isEnabled && <XMarkIcon className="w-5 h-5" data-cy={`perk-${p.id}-unavailable`} /> }
+                  <p
+                    className="ml-1 text-sm font-medium text-gray-900 dark:text-gray-300"
                     data-cy={`perk-${index}`}
                   >
                     {p.name}
-                  </label>
+                  </p>
                 </div>
               ))}
           </div>

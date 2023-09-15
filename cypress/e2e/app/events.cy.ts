@@ -47,11 +47,14 @@ describe('Event', () => {
         .get('[data-cy=perk]')
         .should('have.length', 5)
 
-        .get('[name=perk-checkbox-ccc]')
-        .should('be.checked')
+        .get('[data-cy=perk-aaa-unavailable]')
+        .should('exist')
 
-        .get('[name=perk-checkbox-ddd]')
-        .should('be.checked')
+        .get('[data-cy=perk-ccc-available]')
+        .should('exist')
+
+        .get('[data-cy=perk-ddd-available]')
+        .should('exist')
 
         .get('[data-cy=directions]')
         .contains('Carro: Saida pela A3 direção a Braga')
