@@ -1016,7 +1016,7 @@ function verifyRace(
     .contains(name)
 
     .get(`[data-cy=race-distance-${raceId}]`)
-    .contains(`${distance} km`)
+    .contains(`${distance}km`)
 
     .get(`[data-cy=race-time-${raceId}]`)
     .contains(time)
@@ -1029,11 +1029,11 @@ function verifyRace(
     .click()
 
     .get(`div[data-cy=elevation-gain-${raceId}]`)
-    .contains(`${elevationGain} m`);
+    .contains(`${elevationGain}m`);
 
   if (elevationLoss) {
     cy.get(`div[data-cy=elevation-loss-${raceId}]`).contains(
-      `${elevationLoss} m`
+      `${elevationLoss}m`
     );
   }
 
