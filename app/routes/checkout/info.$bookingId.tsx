@@ -541,7 +541,7 @@ export default function CheckoutInfoRoute() {
       },
       {
         method: 'post',
-        action: '/checkout/manage'
+        action: `/checkout/manage/${bookingId}`
       }
     );
   }
@@ -910,6 +910,7 @@ export default function CheckoutInfoRoute() {
         triggerModalClose={handleCloseAddRaces}
         eventRaces={event.races}
         reset={isReset}
+        bookingId={bookingId}
       />
     </Main>
   );
@@ -919,11 +920,13 @@ function AddRacesDialog({
   isOpen,
   triggerModalClose,
   eventRaces,
+  bookingId,
   reset
 }: {
   isOpen: boolean;
   triggerModalClose: () => void;
   eventRaces: Race[];
+  bookingId: string,
   reset: boolean;
 }) {
   const fetcher = useFetcher();
@@ -960,7 +963,7 @@ function AddRacesDialog({
   });
 
   return (
-    <fetcher.Form method="post" action="/checkout/manage">
+    <fetcher.Form method="post" action={`/checkout/manage/${bookingId}`}>
       <div
         data-reach-dialog-overlay={true}
         className={clsx({
@@ -1049,13 +1052,13 @@ function DisplayRace({
     <div className="flex flex-col mt-8 w-full">
       <div className="flex flex-row items-center justify-between">
         <H4>{race.name}</H4>
-        <H5>{race.price + '€'}</H5>
+        <H5>{race.price / 1000}€</H5>
       </div>
       <div className="flex flex-row mt-2 justify-between items-center">
         <div className="flex flex-row">
           <div>
             <H6 className="dark:text-blueGray-500">{t('Distance')}</H6>
-            <H5>{race.distance + ' km'}</H5>
+            <H5>{race.distance}km</H5>
           </div>
 
           <div className="ml-8">

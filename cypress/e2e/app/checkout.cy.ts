@@ -230,7 +230,7 @@ describe('Checkout', () => {
           isSupposedToShow === 'true' && cy.get('#checkout-anonymously').click();
         })
 
-        .intercept('POST', '/checkout/manage*')
+        .intercept('POST', '/checkout/manage/*')
         .as('removeParticipant')
 
         .get('[data-cy=participant]')
