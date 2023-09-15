@@ -449,6 +449,7 @@ function DisplayRace({ race, index, eventId, isBookingClosed, minHeight }: Displ
       </div>
       <div className="mb-4">
         <SeeMoreOrLessButton
+          name={`see-more-${race.id}`}
           onClick={handleSeeMore}
           expanded={expanded}
           t={t}
@@ -849,11 +850,13 @@ function DisplayDifficulty({
 }
 
 function SeeMoreOrLessButton({
+  name,
   onClick,
   expanded,
   t,
   className
 }: {
+  name: string;
   onClick: () => void;
   expanded: boolean;
   t: TFunction;
@@ -865,6 +868,7 @@ function SeeMoreOrLessButton({
   return (
     <div className="flex flex-col items-center relative py-2">
       <button
+        name={name}
         className={clsx(
           'dark:text-white text-sm font-medium border-black dark:border-blueGray-500 py-1 px-2',
           className,
