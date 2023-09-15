@@ -13,7 +13,13 @@ import {
   MapPinIcon,
   QuestionMarkCircleIcon
 } from '@heroicons/react/24/outline';
-import { CheckIcon, HeartIcon as Favorite, XMarkIcon } from '@heroicons/react/24/solid';
+import {
+  CheckIcon,
+  ChevronDownIcon,
+  ChevronUpIcon,
+  HeartIcon as Favorite,
+  XMarkIcon
+} from '@heroicons/react/24/solid';
 import * as React from 'react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -131,15 +137,21 @@ export default function EventDisplayRoute() {
   let minPrice = 0;
   const [isEventHeaderVisible, setEventHeaderVisible] = useState<boolean>(true);
   const [areRacesVisible, setAreRacesVisible] = useState<boolean>(false);
-  const anyRaceInEarlyBird = races
-    .map(
-      (r: Race) =>
-        r.priceEarlyBird &&
-        r.validUntil &&
-        new Date(r.validUntil).getTime() - Date.now() > 0
-    )
-    .filter(Boolean)
-    .length > 0;
+  const [minHeight, setMinHeight] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!races) {
+      return;
+    }
+
+    const raceHeights = races.map((r: Race) => {
+      return document.getElementById(`race-${r.id}`)?.clientHeight || 0;
+    });
+
+    if (!minHeight) {
+      setMinHeight(Math.max(...raceHeights));
+    }
+  }, [minHeight, races]);
 
   if (!event) {
     return (
@@ -214,8 +226,8 @@ export default function EventDisplayRoute() {
                   key={race.id}
                   index={index}
                   eventId={event.id}
-                  areThereRacesInEarlyBird={anyRaceInEarlyBird}
                   isBookingClosed={isBookingClosed}
+                  minHeight={minHeight}
                 />
               ))}
             <WhenListEmpty list={races}>
@@ -238,8 +250,8 @@ export default function EventDisplayRoute() {
               .sort((a: Perk, b: Perk) => a.displayOrder - b.displayOrder)
               .map((p: Perk, index: number) => (
                 <div key={p.id} className="flex items-center" data-cy="perk">
-                  {p.isEnabled && <CheckIcon className="w-5 h-5" data-cy={`perk-${p.id}-available`} /> }
-                  {!p.isEnabled && <XMarkIcon className="w-5 h-5" data-cy={`perk-${p.id}-unavailable`} /> }
+                  {p.isEnabled && <CheckIcon className="w-5 h-5 dark:text-blueGray-500" data-cy={`perk-${p.id}-available`} /> }
+                  {!p.isEnabled && <XMarkIcon className="w-5 h-5 dark:text-blueGray-500" data-cy={`perk-${p.id}-unavailable`} /> }
                   <p
                     className="ml-1 text-sm font-medium text-gray-900 dark:text-gray-300"
                     data-cy={`perk-${index}`}
@@ -288,11 +300,11 @@ type DisplayRaceProps = {
   race: Race;
   index: number;
   eventId: string;
-  areThereRacesInEarlyBird: boolean;
   isBookingClosed: boolean;
+  minHeight: number | null;
 };
 
-function DisplayRace({ race, index, eventId, areThereRacesInEarlyBird, isBookingClosed }: DisplayRaceProps) {
+function DisplayRace({ race, index, eventId, isBookingClosed, minHeight }: DisplayRaceProps) {
   const { t } = useTranslation('event');
   const raceTime = displayTimeOfDay(race.startTime);
   const [expanded, setExpanded] = useState<boolean>(false);
@@ -314,16 +326,11 @@ function DisplayRace({ race, index, eventId, areThereRacesInEarlyBird, isBooking
 
   return (
     <div
-      className={clsx(
-        'flex flex-col gap-y-4 justify-between mb-4 mr-2 md:mr-4 text-center items-center border border-black dark:border-white rounded-2xl outline-offset-1 w-[340px] md:overflow-hidden',
-        {
-          // Only doing this starting from MD screen sizes, since in mobile races are not horizontally aligned
-          'md:min-h-[450px]': areThereRacesInEarlyBird && !isBookingClosed,
-          'md:min-h-[460px]': areThereRacesInEarlyBird && isBookingClosed,
-          'md:min-h-[410px]': !areThereRacesInEarlyBird
-        }
-      )}
+      className="flex flex-col w-[340px] gap-y-4 justify-between mb-4 mr-2 md:mr-4 text-center items-center border border-black dark:border-white rounded-2xl outline-offset-1 md:overflow-hidden"
       data-cy={`race-${index}`}
+      id={`race-${race.id}`}
+      // Using style, since 'min-h-[value]' was being purged 🤷
+      style={{ minHeight: minHeight ? minHeight : 410 }}
     >
       <div className="flex flex-col gap-y-4">
         <div className="mt-4" data-cy="race">
@@ -334,7 +341,9 @@ function DisplayRace({ race, index, eventId, areThereRacesInEarlyBird, isBooking
           <H5
             className="dark:text-blueGray-500"
             data-cy={`race-distance-${race.id}`}
-          >{`${race.distance} km`}</H5>
+          >
+            {race.distance}km
+          </H5>
         </div>
         <div>
           <H4>{t('Race Start Time')}</H4>
@@ -357,10 +366,11 @@ function DisplayRace({ race, index, eventId, areThereRacesInEarlyBird, isBooking
                 <H5
                   className="dark:text-blueGray-500 line-through"
                   data-cy={`race-price-${race.id}`}
-                >{`${race.price / 1000}€`}</H5>
+                >
+                  {race.price / 1000}€
+                </H5>
                 <H3 data-cy={`race-price-${race.id}`}>
-                  {' '}
-                  {`${(race.priceEarlyBird || 0) / 1000}€`}
+                  {(race.priceEarlyBird || 0) / 1000}€
                 </H3>
               </div>
 
@@ -376,9 +386,9 @@ function DisplayRace({ race, index, eventId, areThereRacesInEarlyBird, isBooking
                   data-cy={`race-valid-until-${race.id}`}
                 >
                   {validDuring < 30 ? (
-                    `${t(validDuring === 1 ? 'Valid Day' : 'Valid Days', {
+                    t(validDuring === 1 ? 'Valid Day' : 'Valid Days', {
                       total: validDuring
-                    })}`
+                    })
                   ) : (
                     <DisplayDate date={new Date(String(race.validUntil))} />
                   )}
@@ -387,7 +397,7 @@ function DisplayRace({ race, index, eventId, areThereRacesInEarlyBird, isBooking
             </>
           ) : (
             <H3 className="items-center" data-cy={`race-price-${race.id}`}>
-              {`${race.price / 1000}`}€
+              {race.price / 1000}€
             </H3>
           )}
         </div>
@@ -409,7 +419,7 @@ function DisplayRace({ race, index, eventId, areThereRacesInEarlyBird, isBooking
                 className="dark:text-blueGray-500 text-base font-medium mr-2 mt-2"
                 data-cy={`elevation-gain-${race.id}`}
               >
-                {`${race.elevationGain} m`}
+                {race.elevationGain}m
               </div>
             </div>
             {race.elevationLoss && (
@@ -419,7 +429,7 @@ function DisplayRace({ race, index, eventId, areThereRacesInEarlyBird, isBooking
                   className="dark:text-blueGray-500 text-base font-medium mr-2 mt-2"
                   data-cy={`elevation-loss-${race.id}`}
                 >
-                  {`${race.elevationLoss} m`}
+                  {race.elevationLoss}m
                 </div>
               </div>
             )}
@@ -437,25 +447,28 @@ function DisplayRace({ race, index, eventId, areThereRacesInEarlyBird, isBooking
           </>
         )}
       </div>
-      <div className="dark:text-blueGray-500 text-sm font-medium mb-4">
-        <label
-          role="button"
+      <div className="mb-4">
+        <SeeMoreOrLessButton
+          name={`see-more-${race.id}`}
           onClick={handleSeeMore}
-          data-cy={`see-more-${race.id}`}
-        >
-          {expanded ? t('See Less') : t('See More')}
-        </label>
+          expanded={expanded}
+          t={t}
+        />
         <Form
           method="get"
           action="/checkout/create"
-          className="flex flex-col gap-y-2 mt-2"
+          className="flex flex-col gap-y-1 mt-2"
         >
           <input type="hidden" value={race.id} name="raceId" />
           <input type="hidden" value={race.eventId} name="eventId" />
           <Button disabled={isBookingClosed} name={`race-${race.id}`}>
             {t('Book')}
           </Button>
-          {isBookingClosed && <label data-cy="booking-closed">{t('Booking Closed')}</label>}
+          {isBookingClosed && (
+            <label className="dark:text-blueGray-500" data-cy="booking-closed">
+              {t('Booking Closed')}
+            </label>
+          )}
         </Form>
       </div>
     </div>
@@ -832,6 +845,47 @@ function DisplayDifficulty({
         {name}
         <QuestionMarkCircleIcon className="h-4 w-4 m-0 inline-block text-primary" />
       </H6>
+    </div>
+  );
+}
+
+function SeeMoreOrLessButton({
+  name,
+  onClick,
+  expanded,
+  t,
+  className
+}: {
+  name: string;
+  onClick: () => void;
+  expanded: boolean;
+  t: TFunction;
+  className?: string;
+}) {
+  const iconClassName =
+    'absolute inline-block h-4 w-4 m-0 text-white bg-black dark:bg-blueGray-500 rounded-full';
+
+  return (
+    <div className="flex flex-col items-center relative py-2">
+      <button
+        name={name}
+        className={clsx(
+          'dark:text-white text-sm font-medium border-black dark:border-blueGray-500 py-1 px-2',
+          className,
+          {
+            'border-t-2': expanded,
+            'border-b-2': !expanded
+          }
+        )}
+        onClick={onClick}
+      >
+        {expanded ? t('See Less') : t('See More')}
+      </button>
+      {expanded ? (
+        <ChevronUpIcon className={clsx('top-0', iconClassName)} />
+      ) : (
+        <ChevronDownIcon className={clsx('bottom-0', iconClassName)} />
+      )}
     </div>
   );
 }
