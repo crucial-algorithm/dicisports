@@ -863,24 +863,23 @@ function SeeMoreOrLessButton({
   className?: string;
 }) {
   const iconClassName =
-    'absolute inline-block h-4 w-4 m-0 text-white bg-black dark:bg-blueGray-500 rounded-full';
+    'absolute inline-block h-4 w-4 m-0 text-white bg-black dark:bg-blueGray-500 rounded-full cursor-pointer';
 
   return (
-    <div className="flex flex-col items-center relative py-2">
-      <button
-        name={name}
+    <div className="flex flex-col items-center relative py-2" onClick={onClick}>
+      <label
+        data-cy={name}
         className={clsx(
-          'dark:text-white text-sm font-medium border-black dark:border-blueGray-500 py-1 px-2',
+          'dark:text-white text-sm font-medium border-black dark:border-blueGray-500 py-1 px-2 cursor-pointer',
           className,
           {
             'border-t-2': expanded,
             'border-b-2': !expanded
           }
         )}
-        onClick={onClick}
       >
         {expanded ? t('See Less') : t('See More')}
-      </button>
+      </label>
       {expanded ? (
         <ChevronUpIcon className={clsx('top-0', iconClassName)} />
       ) : (
