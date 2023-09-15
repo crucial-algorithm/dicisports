@@ -330,9 +330,11 @@ function DisplayRace({ race, index, eventId, isBookingClosed, minHeight }: Displ
 
   return (
     <div
-      className={`flex flex-col w-[340px] min-h-[${minHeight ? String(minHeight) : '410' }px] gap-y-4 justify-between mb-4 mr-2 md:mr-4 text-center items-center border border-black dark:border-white rounded-2xl outline-offset-1 md:overflow-hidden`}
+      className="flex flex-col w-[340px] gap-y-4 justify-between mb-4 mr-2 md:mr-4 text-center items-center border border-black dark:border-white rounded-2xl outline-offset-1 md:overflow-hidden"
       data-cy={`race-${index}`}
       id={`race-${race.id}`}
+      // Using style, since 'min-h-[value]' was being purged 🤷
+      style={{ minHeight: minHeight ? minHeight : 410 }}
     >
       <div className="flex flex-col gap-y-4">
         <div className="mt-4" data-cy="race">
@@ -343,7 +345,9 @@ function DisplayRace({ race, index, eventId, isBookingClosed, minHeight }: Displ
           <H5
             className="dark:text-blueGray-500"
             data-cy={`race-distance-${race.id}`}
-          >{`${race.distance} km`}</H5>
+          >
+            {race.distance}km
+          </H5>
         </div>
         <div>
           <H4>{t('Race Start Time')}</H4>
@@ -366,10 +370,11 @@ function DisplayRace({ race, index, eventId, isBookingClosed, minHeight }: Displ
                 <H5
                   className="dark:text-blueGray-500 line-through"
                   data-cy={`race-price-${race.id}`}
-                >{`${race.price / 1000}€`}</H5>
+                >
+                  {race.price / 1000}€
+                </H5>
                 <H3 data-cy={`race-price-${race.id}`}>
-                  {' '}
-                  {`${(race.priceEarlyBird || 0) / 1000}€`}
+                  {(race.priceEarlyBird || 0) / 1000}€
                 </H3>
               </div>
 
@@ -385,9 +390,9 @@ function DisplayRace({ race, index, eventId, isBookingClosed, minHeight }: Displ
                   data-cy={`race-valid-until-${race.id}`}
                 >
                   {validDuring < 30 ? (
-                    `${t(validDuring === 1 ? 'Valid Day' : 'Valid Days', {
+                    t(validDuring === 1 ? 'Valid Day' : 'Valid Days', {
                       total: validDuring
-                    })}`
+                    })
                   ) : (
                     <DisplayDate date={new Date(String(race.validUntil))} />
                   )}
@@ -396,7 +401,7 @@ function DisplayRace({ race, index, eventId, isBookingClosed, minHeight }: Displ
             </>
           ) : (
             <H3 className="items-center" data-cy={`race-price-${race.id}`}>
-              {`${race.price / 1000}`}€
+              {race.price / 1000}€
             </H3>
           )}
         </div>
@@ -418,7 +423,7 @@ function DisplayRace({ race, index, eventId, isBookingClosed, minHeight }: Displ
                 className="dark:text-blueGray-500 text-base font-medium mr-2 mt-2"
                 data-cy={`elevation-gain-${race.id}`}
               >
-                {`${race.elevationGain} m`}
+                {race.elevationGain}m
               </div>
             </div>
             {race.elevationLoss && (
@@ -428,7 +433,7 @@ function DisplayRace({ race, index, eventId, isBookingClosed, minHeight }: Displ
                   className="dark:text-blueGray-500 text-base font-medium mr-2 mt-2"
                   data-cy={`elevation-loss-${race.id}`}
                 >
-                  {`${race.elevationLoss} m`}
+                  {race.elevationLoss}m
                 </div>
               </div>
             )}
@@ -463,7 +468,9 @@ function DisplayRace({ race, index, eventId, isBookingClosed, minHeight }: Displ
             {t('Book')}
           </Button>
           {isBookingClosed && (
-            <label data-cy="booking-closed">{t('Booking Closed')}</label>
+            <label className="dark:text-blueGray-500" data-cy="booking-closed">
+              {t('Booking Closed')}
+            </label>
           )}
         </Form>
       </div>
