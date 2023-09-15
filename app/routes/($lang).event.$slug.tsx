@@ -448,7 +448,7 @@ function DisplayRace({ race, index, eventId, isBookingClosed, minHeight }: Displ
         )}
       </div>
       <div className="mb-4">
-        <SeeLessOrMoreButton
+        <SeeMoreOrLessButton
           onClick={handleSeeMore}
           expanded={expanded}
           t={t}
@@ -848,7 +848,7 @@ function DisplayDifficulty({
   );
 }
 
-function SeeLessOrMoreButton({
+function SeeMoreOrLessButton({
   onClick,
   expanded,
   t,
@@ -868,10 +868,10 @@ function SeeLessOrMoreButton({
         className={clsx(
           'dark:text-white text-sm font-medium border-black dark:border-blueGray-500 py-1 px-2',
           className,
-            {
-              'border-t-2': expanded,
-              'border-b-2': !expanded
-            }
+          {
+            'border-t-2': expanded,
+            'border-b-2': !expanded
+          }
         )}
         onClick={onClick}
       >
