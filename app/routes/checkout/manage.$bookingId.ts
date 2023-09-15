@@ -5,7 +5,6 @@ import { redirect } from 'react-router';
 
 import { getClientSession } from '~/server/auth/client.server';
 import { badRequest } from '~/utils/misc';
-import { findRace } from '~/server/db/races.server';
 import { getUser } from '~/server/auth/session.server';
 import {
   addRaceParticipants,
@@ -33,7 +32,7 @@ export const action: ActionFunction = async ({ request, params }) => {
   const clientSession = await getClientSession(request);
   const authClient = await getUser(request);
 
-  const clientId =
+  const userId =
     authClient !== null ? authClient.id : clientSession.getClientId();
   const actionId = form.get('actionId') as string;
   const bookingId = params.bookingId as string;
@@ -43,7 +42,7 @@ export const action: ActionFunction = async ({ request, params }) => {
     return redirect('/');
   }
 
-  if (booking.userId !== clientId) {
+  if (booking.userId !== userId) {
     throw Unauthorized(t('Not authorized'));
   }
 
@@ -55,33 +54,33 @@ export const action: ActionFunction = async ({ request, params }) => {
     );
   }
 
+  const eventId = booking.eventId;
+
   try {
     if (actionId === actions.removeParticipant) {
       const participantId = form.get('participantId') as string;
       const raceId = form.get('raceId') as string;
-      const eventId = await findRace(raceId).then((p) => p?.eventId);
 
       await removeRaceParticipant(participantId, raceId);
 
       const raceParticipants = await findUserEventRaceParticipants(
-        clientId,
+        userId,
         eventId as string
       );
 
       if (raceParticipants?.length === 0) {
-        await removeBooking(clientId, eventId as string);
+        await removeBooking(userId, eventId as string);
       }
     }
 
     if (actionId === actions.addParticipants) {
       const races = JSON.parse(form.get('races') as string);
-      const eventId = await findRace(races[0]).then((p) => p?.eventId);
       const registrationId = await findBooking(
-        clientId,
+        userId,
         eventId as string
       ).then((p) => p?.id);
 
-      await addRaceParticipants(races, clientId, registrationId as string, eventId as string);
+      await addRaceParticipants(races, userId, registrationId as string, eventId as string);
     }
 
     return json({ ok: true, action: actionId });

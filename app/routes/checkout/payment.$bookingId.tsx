@@ -72,7 +72,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   const booking = await findBookingById(bookingId);
 
   // We check if user is authenticated -> authenticatedClient, if not, we use the client session -> anonymousClient
-  const clientId =
+  const userId =
     authenticatedClient !== null
       ? authenticatedClient.id
       : anonymousClient.getClientId();
@@ -81,16 +81,16 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     return redirect('/');
   }
 
-  if (booking.userId !== clientId) {
+  if (booking.userId !== userId) {
     return redirect('/');
   }
 
   const eventId = booking.eventId;
 
   const event = (await findEvent(eventId)) as Event;
-  const cart = await findBookingCart(clientId, eventId);
+  const cart = await findBookingCart(userId, eventId);
   const raceParticipants = await findUserEventRaceParticipants(
-    clientId,
+    userId,
     eventId
   );
 
@@ -124,7 +124,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     if (authenticatedClient !== null) {
       const event = await findEvent(eventId);
       const domainUrl = getDomainUrl(request);
-      const cart = await findBookingCart(clientId, eventId);
+      const cart = await findBookingCart(userId, eventId);
 
       await sendBookingConfirmationEmail({
         emailAddress: authenticatedClient.email,
@@ -206,13 +206,13 @@ export const action: ActionFunction = async ({ request, params }) => {
   }
 
   // We check if user is authenticated -> authenticatedClient, if not, we use the client session -> anonymousClient
-  const clientId =
+  const userId =
     authenticatedClient !== null
       ? authenticatedClient.id
       : anonymousClient.getClientId();
 
   if (booking && booking.status === CheckoutStatus.confirmed) {
-    if (booking.userId === clientId) {
+    if (booking.userId === userId) {
       return redirect(`/checkout/confirmation/${booking.id}`);
     }
 
@@ -254,7 +254,7 @@ export const action: ActionFunction = async ({ request, params }) => {
       if (!dbDiscountCode || dbDiscountCode.status !== DiscountCodeStatus.active) {
         return badRequest({ errors: { discountError: t('No Discount Code') } });
       }
-      const cart = await findBookingCart(clientId, eventId);
+      const cart = await findBookingCart(userId, eventId);
 
       await applyDiscountCode(
         booking.id,

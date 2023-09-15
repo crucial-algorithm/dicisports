@@ -111,17 +111,17 @@ export const action: ActionFunction = async ({ request, params }) => {
   }
 
   // We check if user is authenticated -> authenticatedClient, if not, we use the client session -> anonymousClient
-  const clientId =
+  const userId =
     authenticatedClient !== null
       ? authenticatedClient.id
       : anonymousClient.getClientId();
 
-  if (booking.userId !== clientId) {
+  if (booking.userId !== userId) {
     throw Unauthorized(t('Not authorized'));
   }
 
   if (booking && booking.status === CheckoutStatus.confirmed) {
-    if (booking.userId === clientId) {
+    if (booking.userId === userId) {
       return redirect(`/checkout/confirmation/${booking.id}`);
     }
 
@@ -150,7 +150,7 @@ export const action: ActionFunction = async ({ request, params }) => {
       ) {
         return badRequest({ errors: { discountError: t('No Discount Code') } });
       }
-      const cart = await findBookingCart(clientId, eventId);
+      const cart = await findBookingCart(userId, eventId);
 
       await applyDiscountCode(
           booking.id,
@@ -303,7 +303,7 @@ export const action: ActionFunction = async ({ request, params }) => {
     if (actionId === CheckoutInfoActions.checkout || raceParticipants?.length === 1) {
       TermsAndRegulationSchema.parse({ regulation, terms });
       const raceParticipants = await findUserEventRaceParticipants(
-        clientId,
+        userId,
         eventId
       );
 
@@ -368,7 +368,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   const pin = searchParams.get('p');
 
   // We check if user is authenticated -> authenticatedClient, if not, we use the client session -> anonymousClient
-  const clientId =
+  const userId =
     authenticatedClient !== null
       ? authenticatedClient.id
       : anonymousClient.getClientId();
@@ -376,7 +376,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   const booking = await findBookingById(bookingId);
   const isGuest = pin && Number(pin) === booking?.pin;
 
-  if (!booking || (booking.userId !== clientId && !isGuest)) {
+  if (!booking || (booking.userId !== userId && !isGuest)) {
     return redirect('/');
   }
 
@@ -387,7 +387,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     return redirect('/');
   }
 
-  const cart = await findBookingCart(isGuest ? booking.userId : clientId, eventId);
+  const cart = await findBookingCart(isGuest ? booking.userId : userId, eventId);
   const organizer = await findOrganizer(event.createdById);
   const raceParticipants = await findUserBookingParticipants(bookingId);
 
@@ -395,13 +395,13 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     return redirect(`/checkout/cart/${eventId}`);
   }
 
-  // cant use clientId when user is a guest - accesses this route with booking PIN
+  // cant use userId when user is a guest - accesses this route with booking PIN
   // TODO: refactor these functions to use bookingId when we decide to have multiple bookings
   const userParticipants = await findUserParticipants(
-    isGuest ? booking.userId : clientId
+    isGuest ? booking.userId : userId
   );
   const savedParticipants = await findUserSavedParticipants(
-    isGuest ? booking.userId : clientId
+    isGuest ? booking.userId : userId
   );
   const shirtSizes = await findShirtSizes();
 
