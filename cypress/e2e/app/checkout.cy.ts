@@ -1440,6 +1440,42 @@ describe('Checkout', () => {
         .get('[data-cy=booking-closed]')
         .should('exist');
     });
+
+    context('add/remove race participants when', () => {
+      it('does not own booking', () => {
+        const formData = new FormData();
+
+        formData.append('actionId', 'removeParticipant');
+
+        cy.request({
+          url: '/checkout/manage/e8pHPLNjnNxKTzoGwtLh',
+          method: 'POST',
+          body: formData,
+          failOnStatusCode: false
+        }).then((res) => {
+          expect(res.status).to.eq(401);
+        });
+      });
+
+      it('booking is already payed', () => {
+        const formData = new FormData();
+
+        formData.append('actionId', 'removeParticipant');
+
+        cy.login()
+          .request({
+            url: '/checkout/manage/e8pHPLNjnNxKTzoGwtLh',
+            method: 'POST',
+            body: formData,
+            failOnStatusCode: false
+          })
+          .then((l) => {
+            expect(l.redirects[0]).to.include(
+              '/checkout/confirmation/e8pHPLNjnNxKTzoGwtLh'
+            );
+          });
+      });
+    });
   });
 
   context('Payments Gateway', () => {
