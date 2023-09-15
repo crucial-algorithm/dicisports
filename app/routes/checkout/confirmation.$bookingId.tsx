@@ -67,7 +67,7 @@ export const action: ActionFunction = async ({ request, params }) => {
   const authenticatedClient = await getUser(request);
   const bookingId = params.bookingId as string;
 
-  const userId =
+  const clientId =
     authenticatedClient !== null
       ? authenticatedClient.id
       : anonymousClient.getClientId();
@@ -88,7 +88,7 @@ export const action: ActionFunction = async ({ request, params }) => {
   }
 
   const domainUrl = getDomainUrl(request);
-  const cart = await findBookingCart(userId, eventId);
+  const cart = await findBookingCart(clientId, eventId);
   const email = form.get('email') as string;
   const enrollInMailingList: boolean =
     (form.get('add-to-mail-list') as string) === 'on';
@@ -159,20 +159,20 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   const bookingId = params.bookingId as string;
 
   // We check if user is authenticated -> authenticatedClient, if not, we use the client session -> anonymousClient
-  const userId =
+  const clientId =
     authenticatedClient !== null
       ? authenticatedClient.id
       : anonymousClient.getClientId();
 
   const booking = await findBookingById(bookingId);
 
-  if (!booking || booking.userId !== userId) {
+  if (!booking || booking.userId !== clientId) {
     return redirect('/');
   }
 
   const eventId = booking.eventId;
   const raceParticipants = await findUserEventRaceParticipants(
-    userId,
+    clientId,
     eventId
   );
 
@@ -194,7 +194,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     return redirect('/');
   }
 
-  const cart = await findBookingCart(userId, eventId);
+  const cart = await findBookingCart(clientId, eventId);
   const organizer = await findOrganizer(event.createdById);
 
   return json({

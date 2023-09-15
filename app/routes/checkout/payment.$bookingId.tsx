@@ -72,7 +72,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   const booking = await findBookingById(bookingId);
 
   // We check if user is authenticated -> authenticatedClient, if not, we use the client session -> anonymousClient
-  const userId =
+  const clientId =
     authenticatedClient !== null
       ? authenticatedClient.id
       : anonymousClient.getClientId();
@@ -81,16 +81,16 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     return redirect('/');
   }
 
-  if (booking.userId !== userId) {
+  if (booking.userId !== clientId) {
     return redirect('/');
   }
 
   const eventId = booking.eventId;
 
   const event = (await findEvent(eventId)) as Event;
-  const cart = await findBookingCart(userId, eventId);
+  const cart = await findBookingCart(clientId, eventId);
   const raceParticipants = await findUserEventRaceParticipants(
-    userId,
+    clientId,
     eventId
   );
 
@@ -124,7 +124,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     if (authenticatedClient !== null) {
       const event = await findEvent(eventId);
       const domainUrl = getDomainUrl(request);
-      const cart = await findBookingCart(userId, eventId);
+      const cart = await findBookingCart(clientId, eventId);
 
       await sendBookingConfirmationEmail({
         emailAddress: authenticatedClient.email,
@@ -154,11 +154,8 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   const unsuccessfulPayments = await findUnsuccessfulPayments(bookingId);
 
   try {
-    const { gatewayResponse, ourTransactionId } = await createPaymentTransaction(
-        booking,
-        event,
-        cart
-    );
+    const { gatewayResponse, ourTransactionId } =
+      await createPaymentTransaction(booking, event, cart);
 
     return json({
       event,
@@ -206,13 +203,13 @@ export const action: ActionFunction = async ({ request, params }) => {
   }
 
   // We check if user is authenticated -> authenticatedClient, if not, we use the client session -> anonymousClient
-  const userId =
+  const clientId =
     authenticatedClient !== null
       ? authenticatedClient.id
       : anonymousClient.getClientId();
 
   if (booking && booking.status === CheckoutStatus.confirmed) {
-    if (booking.userId === userId) {
+    if (booking.userId === clientId) {
       return redirect(`/checkout/confirmation/${booking.id}`);
     }
 
@@ -254,7 +251,7 @@ export const action: ActionFunction = async ({ request, params }) => {
       if (!dbDiscountCode || dbDiscountCode.status !== DiscountCodeStatus.active) {
         return badRequest({ errors: { discountError: t('No Discount Code') } });
       }
-      const cart = await findBookingCart(userId, eventId);
+      const cart = await findBookingCart(clientId, eventId);
 
       await applyDiscountCode(
         booking.id,

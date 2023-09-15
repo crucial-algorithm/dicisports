@@ -66,17 +66,17 @@ export const action: ActionFunction = async ({ request, params }) => {
   const eventId = params.eventId as string;
 
   // We check if user is authenticated -> authenticatedClient, if not, we use the client session -> anonymousClient
-  const userId =
+  const clientId =
     authenticatedClient !== null
       ? authenticatedClient.id
       : anonymousClient.getClientId();
   const actionId = form.get('actionId') as string;
   const raceId = form.get('raceId') as string;
 
-  const booking: Booking | null = await findBooking(userId, eventId);
+  const booking: Booking | null = await findBooking(clientId, eventId);
 
   if (booking && booking.status === CheckoutStatus.confirmed) {
-    if (booking.userId === userId) {
+    if (booking.userId === clientId) {
       return redirect(`/checkout/confirmation/${booking.id}`);
     }
 
@@ -87,12 +87,12 @@ export const action: ActionFunction = async ({ request, params }) => {
     // Triggered when user clicks continue in the cart screen
     if (actionId === actions.checkout) {
       const userEventRaceParticipants = await findUserEventRaceParticipants(
-        userId,
+        clientId,
         eventId
       );
 
       if (!userEventRaceParticipants?.length || !booking) {
-        await removeBooking(userId, eventId);
+        await removeBooking(clientId, eventId);
 
         return redirect(`/checkout/cart/${eventId}`);
       }
@@ -100,19 +100,19 @@ export const action: ActionFunction = async ({ request, params }) => {
       return redirect(`/checkout/info/${booking.id}`);
     }
     if (actionId === actions.add) {
-      const booking: Booking | null = await findBooking(userId, eventId);
+      const booking: Booking | null = await findBooking(clientId, eventId);
 
       if (!booking) {
         const bookingId = Id();
 
-        await createInitialBookingFlow(bookingId, userId, eventId, raceId, t);
+        await createInitialBookingFlow(bookingId, clientId, eventId, raceId, t);
       } else {
-        await addParticipantToRace(userId, raceId, booking.id, eventId);
+        await addParticipantToRace(clientId, raceId, booking.id, eventId);
       }
     }
 
     if (actionId === actions.remove) {
-      const raceParticipants = await findUserRaceParticipants(userId, raceId);
+      const raceParticipants = await findUserRaceParticipants(clientId, raceId);
 
       if (!raceParticipants?.length) {
         return badRequest({ error: t('No Race Participants') });
@@ -143,14 +143,14 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   const authenticatedClient = await getUser(request);
 
   // We check if user is authenticated -> authenticatedClient, if not, we use the client session -> anonymousClient
-  const userId =
+  const clientId =
     authenticatedClient !== null
       ? authenticatedClient.id
       : anonymousClient.getClientId();
 
   const eventId = params.eventId as string;
   const event = await findEvent(eventId);
-  const userCheckoutRaces = await findBookingCart(userId, eventId);
+  const userCheckoutRaces = await findBookingCart(clientId, eventId);
   const races = await findEventRaces(eventId);
 
   if (!event || event.status !== Status.published) {
@@ -254,7 +254,7 @@ function DisplayRace({
     <div className="flex flex-col mb-8 w-full">
       <div className="flex flex-row items-center justify-between">
         <H4>{race.name}</H4>
-        <H5>{race.price / 1000 }€</H5>
+        <H5>{race.price / 1000}€</H5>
       </div>
       <div className="flex flex-row mt-2 justify-between items-center">
         <div className="flex flex-row">

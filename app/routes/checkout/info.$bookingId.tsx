@@ -111,17 +111,17 @@ export const action: ActionFunction = async ({ request, params }) => {
   }
 
   // We check if user is authenticated -> authenticatedClient, if not, we use the client session -> anonymousClient
-  const userId =
+  const clientId =
     authenticatedClient !== null
       ? authenticatedClient.id
       : anonymousClient.getClientId();
 
-  if (booking.userId !== userId) {
+  if (booking.userId !== clientId) {
     throw Unauthorized(t('Not authorized'));
   }
 
   if (booking && booking.status === CheckoutStatus.confirmed) {
-    if (booking.userId === userId) {
+    if (booking.userId === clientId) {
       return redirect(`/checkout/confirmation/${booking.id}`);
     }
 
@@ -132,7 +132,8 @@ export const action: ActionFunction = async ({ request, params }) => {
   const hash = form.get('hash') as string;
   const regulation: boolean = (form.get('regulation') as string) === 'on';
   const terms: boolean = (form.get('terms') as string) === 'on';
-  const enrollInMailingList: boolean = (form.get('add-to-mail-list') as string) === 'on';
+  const enrollInMailingList: boolean =
+    (form.get('add-to-mail-list') as string) === 'on';
   const teamName = (form.get('creatable-team') as string) || null;
 
   try {
@@ -140,22 +141,22 @@ export const action: ActionFunction = async ({ request, params }) => {
       const discountCode = form.get('discount-code') as string;
       const organizer = await findOrganizer(event.createdById);
       const dbDiscountCode = await findDiscountCode(
-          discountCode,
-          organizer?.id as string
+        discountCode,
+        organizer?.id as string
       );
 
       if (
-          !dbDiscountCode ||
-          dbDiscountCode.status !== DiscountCodeStatus.active
+        !dbDiscountCode ||
+        dbDiscountCode.status !== DiscountCodeStatus.active
       ) {
         return badRequest({ errors: { discountError: t('No Discount Code') } });
       }
-      const cart = await findBookingCart(userId, eventId);
+      const cart = await findBookingCart(clientId, eventId);
 
       await applyDiscountCode(
-          booking.id,
-          `${dbDiscountCode.code}|${dbDiscountCode.value}|${dbDiscountCode.fixed}`,
-          cart
+        booking.id,
+        `${dbDiscountCode.code}|${dbDiscountCode.value}|${dbDiscountCode.fixed}`,
+        cart
       );
 
       return json({ ok: true });
@@ -183,7 +184,9 @@ export const action: ActionFunction = async ({ request, params }) => {
       postalCode: form.get('postal-code') as string
     };
 
-    const isIdentityCardValid = validateIdentityCard(data.identityCard as string);
+    const isIdentityCardValid = validateIdentityCard(
+      data.identityCard as string
+    );
 
     const ParticipantSchema = z.object({
       firstName: z
@@ -277,7 +280,10 @@ export const action: ActionFunction = async ({ request, params }) => {
 
     // Also save user on checkout, so that if user checks out before saving participant
     // It won't return an error
-    if (actionId === CheckoutInfoActions.update || actionId === CheckoutInfoActions.checkout) {
+    if (
+      actionId === CheckoutInfoActions.update ||
+      actionId === CheckoutInfoActions.checkout
+    ) {
       ParticipantSchema.parse(data);
       await updateParticipant(data);
       const raceId = form.get('raceId') as string;
@@ -300,10 +306,13 @@ export const action: ActionFunction = async ({ request, params }) => {
 
     // if user is booking for himself (aka, registering a single participant in a single race,
     // try checkout automatically)
-    if (actionId === CheckoutInfoActions.checkout || raceParticipants?.length === 1) {
+    if (
+      actionId === CheckoutInfoActions.checkout ||
+      raceParticipants?.length === 1
+    ) {
       TermsAndRegulationSchema.parse({ regulation, terms });
       const raceParticipants = await findUserEventRaceParticipants(
-        userId,
+        clientId,
         eventId
       );
 
@@ -368,7 +377,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   const pin = searchParams.get('p');
 
   // We check if user is authenticated -> authenticatedClient, if not, we use the client session -> anonymousClient
-  const userId =
+  const clientId =
     authenticatedClient !== null
       ? authenticatedClient.id
       : anonymousClient.getClientId();
@@ -376,7 +385,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   const booking = await findBookingById(bookingId);
   const isGuest = pin && Number(pin) === booking?.pin;
 
-  if (!booking || (booking.userId !== userId && !isGuest)) {
+  if (!booking || (booking.userId !== clientId && !isGuest)) {
     return redirect('/');
   }
 
@@ -387,7 +396,10 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     return redirect('/');
   }
 
-  const cart = await findBookingCart(isGuest ? booking.userId : userId, eventId);
+  const cart = await findBookingCart(
+    isGuest ? booking.userId : clientId,
+    eventId
+  );
   const organizer = await findOrganizer(event.createdById);
   const raceParticipants = await findUserBookingParticipants(bookingId);
 
@@ -395,13 +407,13 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     return redirect(`/checkout/cart/${eventId}`);
   }
 
-  // cant use userId when user is a guest - accesses this route with booking PIN
+  // cant use clientId when user is a guest - accesses this route with booking PIN
   // TODO: refactor these functions to use bookingId when we decide to have multiple bookings
   const userParticipants = await findUserParticipants(
-    isGuest ? booking.userId : userId
+    isGuest ? booking.userId : clientId
   );
   const savedParticipants = await findUserSavedParticipants(
-    isGuest ? booking.userId : userId
+    isGuest ? booking.userId : clientId
   );
   const shirtSizes = await findShirtSizes();
 
@@ -926,7 +938,7 @@ function AddRacesDialog({
   isOpen: boolean;
   triggerModalClose: () => void;
   eventRaces: Race[];
-  bookingId: string,
+  bookingId: string;
   reset: boolean;
 }) {
   const fetcher = useFetcher();
