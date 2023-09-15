@@ -866,7 +866,7 @@ function SeeMoreOrLessButton({
     'absolute inline-block h-4 w-4 m-0 text-white bg-black dark:bg-blueGray-500 rounded-full cursor-pointer';
 
   return (
-    <div className="flex flex-col items-center relative py-2" onClick={onClick}>
+    <div className="flex flex-col items-center relative py-2 mb-4" onClick={onClick}>
       <label
         data-cy={name}
         className={clsx(
