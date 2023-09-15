@@ -238,8 +238,8 @@ export default function EventDisplayRoute() {
               .sort((a: Perk, b: Perk) => a.displayOrder - b.displayOrder)
               .map((p: Perk, index: number) => (
                 <div key={p.id} className="flex items-center" data-cy="perk">
-                  {p.isEnabled && <CheckIcon className="w-5 h-5" /> }
-                  {!p.isEnabled && <XMarkIcon className="w-5 h-5" /> }
+                  {p.isEnabled && <CheckIcon className="w-5 h-5" data-cy={`perk-${p.id}-available`} /> }
+                  {!p.isEnabled && <XMarkIcon className="w-5 h-5" data-cy={`perk-${p.id}-unavailable`} /> }
                   <p
                     className="ml-1 text-sm font-medium text-gray-900 dark:text-gray-300"
                     data-cy={`perk-${index}`}
