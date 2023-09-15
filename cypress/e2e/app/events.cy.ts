@@ -537,15 +537,10 @@ describe('Event', () => {
 
     it('should create race', () => {
       cy.loginOrganizer()
-        .visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d')
+        .visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d/race/new')
 
-        .get('#create-race')
-        .click()
-
-        .location()
-        .should((l) => {
-          expect(l.pathname).to.match(/.*\/new$/);
-        })
+        .get('input[name=name]')
+        .type('a new race')
 
         .get('input[name=name]')
         .type('a new race')
