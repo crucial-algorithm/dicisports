@@ -39,12 +39,20 @@ export const action: ActionFunction = async ({ request, params }) => {
   const bookingId = params.bookingId as string;
   const booking = await findBookingById(bookingId);
 
-  if (!booking || booking?.status === CheckoutStatus.confirmed) {
+  if (!booking) {
     return redirect('/');
   }
 
   if (booking.userId !== clientId) {
     throw Unauthorized(t('Not authorized'));
+  }
+
+  if (booking.status !== CheckoutStatus.checkout) {
+    return redirect(
+      `/checkout/${
+        booking.status === CheckoutStatus.confirmed ? 'confirmation' : 'payment'
+      }/${bookingId}`
+    );
   }
 
   try {
