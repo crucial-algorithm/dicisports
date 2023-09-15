@@ -32,7 +32,7 @@ export const action: ActionFunction = async ({ request, params }) => {
   const clientSession = await getClientSession(request);
   const authClient = await getUser(request);
 
-  const userId =
+  const bookingOwnerId =
     authClient !== null ? authClient.id : clientSession.getClientId();
   const actionId = form.get('actionId') as string;
   const bookingId = params.bookingId as string;
@@ -42,7 +42,7 @@ export const action: ActionFunction = async ({ request, params }) => {
     return redirect('/');
   }
 
-  if (booking.userId !== userId) {
+  if (booking.userId !== bookingOwnerId) {
     throw Unauthorized(t('Not authorized'));
   }
 
@@ -64,23 +64,23 @@ export const action: ActionFunction = async ({ request, params }) => {
       await removeRaceParticipant(participantId, raceId);
 
       const raceParticipants = await findUserEventRaceParticipants(
-        userId,
+        bookingOwnerId,
         eventId as string
       );
 
       if (raceParticipants?.length === 0) {
-        await removeBooking(userId, eventId as string);
+        await removeBooking(bookingOwnerId, eventId as string);
       }
     }
 
     if (actionId === actions.addParticipants) {
       const races = JSON.parse(form.get('races') as string);
       const registrationId = await findBooking(
-        userId,
+        bookingOwnerId,
         eventId as string
       ).then((p) => p?.id);
 
-      await addRaceParticipants(races, userId, registrationId as string, eventId as string);
+      await addRaceParticipants(races, bookingOwnerId, registrationId as string, eventId as string);
     }
 
     return json({ ok: true, action: actionId });
