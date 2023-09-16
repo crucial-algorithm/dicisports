@@ -2,7 +2,7 @@
   "Name": "Nome",
   "Description": "Descrição",
   "Profile Description": "Insira uma descrição",
-  "Profile Photo": "Foto de perfil",
+  "Profile Photo": "Logótipo do organizador",
   "E-mail": "E-mail",
   "Phone Number": "Número de telemóvel",
   "Phone Number Placeholder": "(Opcional)",
@@ -10,7 +10,7 @@
   "Tax Number": "NIF",
   "Postal Code": "Código Postal",
   "City": "Cidade",
-  "Hint For Profile Picture": "Selecione a sua foto de perfil",
+  "Hint For Profile Picture": "Selecione o seu logótipo",
   "Organizer Type": "Tipo de organizador",
   "Contact Name": "Nome do contacto",
 
@@ -28,7 +28,7 @@
   "Organizer Created": "Organizador submetido",
   "Remaining Form Errors": "Existem erros no formulário por corrigir",
 
-  "Organizer display field": "Este campo estará visível na página do evento",
+  "Organizer display field": "Visível na página do evento",
   "Read and Accepted": "Eu li e aceito os",
   "Terms and Conditions": " Termos e Condições",
 
