@@ -10,6 +10,7 @@ import ButtonGroup from '~/components/shared/ButtonGroup';
 import FormField from '~/components/shared/form/FormField';
 import TextField from '~/components/shared/form/TextField';
 import { H2, H6 } from '~/components/shared/typography';
+import { maintainBookingLocalStorageMetadData } from '~/utils/misc';
 
 export default function BookingLoginCTADialog({
   bookingId,
@@ -19,26 +20,24 @@ export default function BookingLoginCTADialog({
   t: TFunction
 }) {
   const dialog = useRef<HTMLDialogElement>(null);
+  const { read, write } = maintainBookingLocalStorageMetadData(bookingId);
 
   useEffect(() => {
-    const raw = window.localStorage.getItem(bookingId);
+    const localMetaData = read();
 
     // @ts-ignore: in cypress, without closing it 1st, showModal will throw an error
     dialog.current?.close();
 
     // @ts-ignore
-    (!raw || (raw && !JSON.parse(raw).loginCTASeen)) && dialog.current?.showModal();
+    !localMetaData.loginCTASeen && dialog.current?.showModal();
 
-  }, [bookingId, dialog]);
+  }, [bookingId, dialog, read]);
 
   function handleCloseCTAToLoginDialog() {
     // @ts-ignore
     dialog.current?.close();
 
-    window.localStorage.setItem(
-      bookingId,
-      JSON.stringify({ loginCTASeen: true })
-    );
+    write('loginCTASeen', true);
   }
 
   return (

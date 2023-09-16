@@ -205,6 +205,7 @@ export const action: ActionFunction = async ({ request }) => {
       await sendSubmittedOrganizerProfileNotification({
         emailAddress: organizerReviewersEmails,
         organizerId,
+        name: data.name,
         domainUrl
       });
     }

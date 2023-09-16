@@ -1,6 +1,6 @@
 import { json } from '@remix-run/node';
 
-import type { UICartRow } from '~/types';
+import type { LocalStorageBookingMetaData, UICartRow } from '~/types';
 
 import type { Language, NonNullProperties, TranslationObject } from '~/types';
 
@@ -211,6 +211,42 @@ function validateIdentityCard(identityCard: string): boolean {
   return sum % 10 === 0;
 }
 
+function maintainBookingLocalStorageMetadData(bookingId: string): {
+  read: () => LocalStorageBookingMetaData;
+  write: (key: keyof LocalStorageBookingMetaData, value: boolean) => void;
+} {
+
+  const initialize = (): LocalStorageBookingMetaData => {
+    return { loginCTASeen: false, confirmationEmailSent: false };
+  };
+
+  return {
+    write: (key, value) => {
+      const raw = window.localStorage.getItem(bookingId);
+      let record = initialize();
+
+      if (raw) {
+        record = JSON.parse(raw);
+      }
+
+      record[key] = value;
+
+      window.localStorage.setItem(bookingId, JSON.stringify(record));
+    },
+
+    read: () => {
+      const raw = window.localStorage.getItem(bookingId);
+
+      if (!raw) {
+        return initialize();
+      }
+
+      return JSON.parse(raw);
+    }
+  };
+}
+
+
 export {
   getDomainUrl,
   getErrorMessage,
@@ -226,5 +262,6 @@ export {
   getLocalizedText,
   generateSlug,
   bookingAmount,
-  validateIdentityCard
+  validateIdentityCard,
+  maintainBookingLocalStorageMetadData
 };
