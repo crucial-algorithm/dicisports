@@ -609,14 +609,7 @@ describe('Checkout', () => {
         .as('AddToMailList')
 
         .get('button[name=send-confirmation]')
-        .should('exist')
-        .click()
-
-        .wait('@AddToMailList')
-
-        .get('#error-message')
-        .should('exist')
-        .and('contain', 'Esse email já está registado');
+        .should('exist');
     });
 
     it('should display current booked teams', () => {

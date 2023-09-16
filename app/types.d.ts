@@ -611,6 +611,12 @@ type ResponseFeedback = {
   message: string;
 };
 
+
+type LocalStorageBookingMetaData = {
+  loginCTASeen: boolean;
+  confirmationEmailSent: boolean;
+};
+
 export {
   NonNullProperties,
   MemberProfile,
@@ -675,7 +681,8 @@ export {
   SibsStatusResponse,
   EventTeam,
   OrganizerType,
-  ResponseFeedback
+  ResponseFeedback,
+  LocalStorageBookingMetaData
 };
 
 // https://www.i18next.com/overview/typescript#argument-of-type-defaulttfuncreturn-is-not-assignable-to-parameter-of-type-xyz
