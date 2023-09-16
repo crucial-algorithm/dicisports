@@ -67,7 +67,6 @@ export async function createInitialBookingFlow(
   raceId: string,
   t: TFunction
 ) {
-
   const pin = Math.floor(1000 + Math.random() * 9000);
   const booking = await createBooking(bookingId, pin, eventId, clientId);
 

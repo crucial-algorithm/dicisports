@@ -132,7 +132,8 @@ export const action: ActionFunction = async ({ request, params }) => {
   const hash = form.get('hash') as string;
   const regulation: boolean = (form.get('regulation') as string) === 'on';
   const terms: boolean = (form.get('terms') as string) === 'on';
-  const enrollInMailingList: boolean = (form.get('add-to-mail-list') as string) === 'on';
+  const enrollInMailingList: boolean =
+    (form.get('add-to-mail-list') as string) === 'on';
   const teamName = (form.get('creatable-team') as string) || null;
 
   try {
@@ -140,22 +141,22 @@ export const action: ActionFunction = async ({ request, params }) => {
       const discountCode = form.get('discount-code') as string;
       const organizer = await findOrganizer(event.createdById);
       const dbDiscountCode = await findDiscountCode(
-          discountCode,
-          organizer?.id as string
+        discountCode,
+        organizer?.id as string
       );
 
       if (
-          !dbDiscountCode ||
-          dbDiscountCode.status !== DiscountCodeStatus.active
+        !dbDiscountCode ||
+        dbDiscountCode.status !== DiscountCodeStatus.active
       ) {
         return badRequest({ errors: { discountError: t('No Discount Code') } });
       }
       const cart = await findBookingCart(clientId, eventId);
 
       await applyDiscountCode(
-          booking.id,
-          `${dbDiscountCode.code}|${dbDiscountCode.value}|${dbDiscountCode.fixed}`,
-          cart
+        booking.id,
+        `${dbDiscountCode.code}|${dbDiscountCode.value}|${dbDiscountCode.fixed}`,
+        cart
       );
 
       return json({ ok: true });
@@ -183,7 +184,9 @@ export const action: ActionFunction = async ({ request, params }) => {
       postalCode: form.get('postal-code') as string
     };
 
-    const isIdentityCardValid = validateIdentityCard(data.identityCard as string);
+    const isIdentityCardValid = validateIdentityCard(
+      data.identityCard as string
+    );
 
     const ParticipantSchema = z.object({
       firstName: z
@@ -277,7 +280,10 @@ export const action: ActionFunction = async ({ request, params }) => {
 
     // Also save user on checkout, so that if user checks out before saving participant
     // It won't return an error
-    if (actionId === CheckoutInfoActions.update || actionId === CheckoutInfoActions.checkout) {
+    if (
+      actionId === CheckoutInfoActions.update ||
+      actionId === CheckoutInfoActions.checkout
+    ) {
       ParticipantSchema.parse(data);
       await updateParticipant(data);
       const raceId = form.get('raceId') as string;
@@ -300,7 +306,10 @@ export const action: ActionFunction = async ({ request, params }) => {
 
     // if user is booking for himself (aka, registering a single participant in a single race,
     // try checkout automatically)
-    if (actionId === CheckoutInfoActions.checkout || raceParticipants?.length === 1) {
+    if (
+      actionId === CheckoutInfoActions.checkout ||
+      raceParticipants?.length === 1
+    ) {
       TermsAndRegulationSchema.parse({ regulation, terms });
       const raceParticipants = await findUserEventRaceParticipants(
         clientId,
@@ -387,7 +396,10 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     return redirect('/');
   }
 
-  const cart = await findBookingCart(isGuest ? booking.userId : clientId, eventId);
+  const cart = await findBookingCart(
+    isGuest ? booking.userId : clientId,
+    eventId
+  );
   const organizer = await findOrganizer(event.createdById);
   const raceParticipants = await findUserBookingParticipants(bookingId);
 
@@ -541,7 +553,7 @@ export default function CheckoutInfoRoute() {
       },
       {
         method: 'post',
-        action: '/checkout/manage'
+        action: `/checkout/manage/${bookingId}`
       }
     );
   }
@@ -910,6 +922,7 @@ export default function CheckoutInfoRoute() {
         triggerModalClose={handleCloseAddRaces}
         eventRaces={event.races}
         reset={isReset}
+        bookingId={bookingId}
       />
     </Main>
   );
@@ -919,11 +932,13 @@ function AddRacesDialog({
   isOpen,
   triggerModalClose,
   eventRaces,
+  bookingId,
   reset
 }: {
   isOpen: boolean;
   triggerModalClose: () => void;
   eventRaces: Race[];
+  bookingId: string;
   reset: boolean;
 }) {
   const fetcher = useFetcher();
@@ -960,7 +975,7 @@ function AddRacesDialog({
   });
 
   return (
-    <fetcher.Form method="post" action="/checkout/manage">
+    <fetcher.Form method="post" action={`/checkout/manage/${bookingId}`}>
       <div
         data-reach-dialog-overlay={true}
         className={clsx({
@@ -1049,13 +1064,13 @@ function DisplayRace({
     <div className="flex flex-col mt-8 w-full">
       <div className="flex flex-row items-center justify-between">
         <H4>{race.name}</H4>
-        <H5>{race.price + '€'}</H5>
+        <H5>{race.price / 1000}€</H5>
       </div>
       <div className="flex flex-row mt-2 justify-between items-center">
         <div className="flex flex-row">
           <div>
             <H6 className="dark:text-blueGray-500">{t('Distance')}</H6>
-            <H5>{race.distance + ' km'}</H5>
+            <H5>{race.distance}km</H5>
           </div>
 
           <div className="ml-8">

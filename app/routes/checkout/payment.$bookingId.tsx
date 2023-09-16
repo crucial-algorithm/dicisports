@@ -154,11 +154,8 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   const unsuccessfulPayments = await findUnsuccessfulPayments(bookingId);
 
   try {
-    const { gatewayResponse, ourTransactionId } = await createPaymentTransaction(
-        booking,
-        event,
-        cart
-    );
+    const { gatewayResponse, ourTransactionId } =
+      await createPaymentTransaction(booking, event, cart);
 
     return json({
       event,
