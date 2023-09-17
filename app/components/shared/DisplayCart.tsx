@@ -76,7 +76,7 @@ export default function DisplayCart({
                   name="discount-code"
                   placeholder={t('Discount Code')}
                   defaultValue={discountCode}
-                  className="input-text-slim w-full"
+                  className="input-text slim w-full"
                 />
                 <button
                   id="apply-discount"
