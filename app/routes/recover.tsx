@@ -86,12 +86,13 @@ export default function Recover() {
   };
 
   return (
-    <Main className="w-5/6 m-auto md:w-144">
+    <div className="w-5/6 m-auto md:w-144 max-w-8xl m-auto px-3">
       <Form method="post" autoComplete="off">
         <FormField label={t('Email')} error={errors.email}>
-          <TextField
+          <input
+            type="email"
             name="email"
-            className="w-full text-sm h-14 md:text-2xl md:h-20"
+            className="input-text slim w-full text-sm md:text-lg h-14 md:h-20"
             autoComplete="off"
             defaultValue={fields.email}
           />
@@ -119,6 +120,6 @@ export default function Recover() {
           </p>
         )}
       </Form>
-    </Main>
+    </div>
   );
 }
