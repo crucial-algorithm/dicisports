@@ -92,7 +92,7 @@ export default function Recover() {
           <input
             type="email"
             name="email"
-            className="input-text slim w-full text-sm md:text-lg h-14 md:h-20"
+            className="input-text px-4 lg:px-11 lg:text-lg w-full h-14 md:h-20"
             autoComplete="off"
             defaultValue={fields.email}
           />
