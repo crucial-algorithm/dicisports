@@ -87,7 +87,7 @@ export default function SearchLocations({
     if (option && option.extra) {
       onSelect(option.extra);
     }
-  }, [navigate, context?.results, onSelect]);
+  }, [navigate, context?.results, onSelect, i18n.language]);
 
   useEffect(() => {
     !search && setContext(null);
