@@ -46,6 +46,7 @@ const LINKS = [
 
 const MOBILE_LINKS = [
   { name: 'Home', to: '/', public: true, roles: [], id: 'home' },
+  { name: 'CTA Publish Your Event', to: '/organizers-promo', public: true, roles: [], id: 'org-promo' },
   ...LINKS
 ];
 
@@ -210,7 +211,7 @@ function MobileMenu() {
   const transition = shouldReduceMotion ? { duration: 0 } : {};
   const [opened, setOpened] = useState(false);
 
-  function handleTriggerMenu(e: unknown) {
+  function handleTriggerMenu() {
     setOpened(!opened);
   }
 
@@ -333,7 +334,7 @@ function ProfileButton({ user }: { user: User | null }) {
       to={to(user)}
       aria-label={user ? 'My Account' : 'Login'}
       className={clsx(
-        'inline-flex items-center justify-center ml-4 w-14 h-14 rounded-full focus:outline-none'
+        'inline-flex items-center justify-center w-14 h-14 rounded-full focus:outline-none'
       )}
       ref={ref}
     >
@@ -364,61 +365,105 @@ function ProfileButton({ user }: { user: User | null }) {
 function Navbar() {
   const { t } = useTranslation('common');
   const { user } = useRootData();
-  const [isRoot, setIsRoot] = useState<boolean>(true);
   const location = useLocation();
-
-  // hacky stuff: we don't want to show the logo for the home page, because we
-  // have the logo centered in the screen
-  useEffect(() => {
-    setIsRoot(location.pathname === '/');
-  }, [location]);
+  const isRoot = location.pathname === '/';
 
   return (
-    <div className="px-5vw py-9 lg:py-12">
-      <nav className="text-primary flex items-center justify-between mx-auto max-w-8xl">
-        <div>
-          {!isRoot ? (
-            <Link
-              prefetch="intent"
-              to="/"
-              className="text-primary underlined block whitespace-nowrap text-2xl font-medium focus:outline-none transition"
-            >
-              <Logo className="w-32 md:w-64" />
-            </Link>
-          ) : (
-            <>&nbsp;</>
-          )}
-        </div>
+    <>
+      <nav data-role="mobile"
+           className={clsx('flex lg:hidden px-5vw py-9 lg:py-12 mx-auto max-w-8xl text-primary',
+             {
+               'items-center justify-between': !isRoot,
+               'justify-end': isRoot
+             }
+           )}
+      >
+        {!isRoot && (
+          <Link
+            prefetch="intent"
+            to="/"
+            className="text-primary underlined block whitespace-nowrap text-2xl font-medium focus:outline-none transition"
+          >
+            <Logo className="w-32 md:w-64" />
+          </Link>
+        )}
 
-        <div className="flex items-center justify-center">
-          <ul className="hidden lg:flex">
-            <IsNotAnOrganizer>
-              {location.pathname !== '/organizers-promo' && (
-                <li className="px-5 py-2">
-                  <CTALandingPublishYourEvent
-                    cta={t('CTA Publish Your Event')}
-                  />
-                </li>
-              )}
-            </IsNotAnOrganizer>
-          </ul>
-          <div className="block lg:hidden">
-            <MobileMenu />
-          </div>
-          <div className="noscript-hidden hidden lg:block">
-            <DarkModeToggle />
-          </div>
-
+        <div className="flex items-center justify-center gap-2.5">
+          <IsNotAnOrganizer>
+            {isRoot && (
+              <CTALandingPublishYourEvent
+                cta={t('CTA Publish Your Event')}
+                className="py-2 h-10 mr-2"
+              />
+            )}
+          </IsNotAnOrganizer>
+          <MobileMenu />
           <ProfileButton user={user} />
         </div>
       </nav>
-    </div>
+
+      <nav
+        data-role="desktop"
+        className={clsx(
+          'hidden lg:flex',
+          'px-5vw py-9 lg:py-12 mx-auto max-w-8xl text-primary',
+          {
+            'items-center justify-between': !isRoot,
+            'justify-end': isRoot
+          }
+        )}
+      >
+        {!isRoot && (
+          <Link
+            prefetch="intent"
+            to="/"
+            className="text-primary underlined block whitespace-nowrap text-2xl font-medium focus:outline-none transition"
+          >
+            <Logo className="w-32 md:w-64" />
+          </Link>
+        )}
+
+        <div className="flex items-center justify-center gap-2.5">
+          <IsNotAnOrganizer>
+            {location.pathname !== '/organizers-promo' && (
+              <CTALandingPublishYourEvent
+                cta={t('CTA Publish Your Event')}
+                className="py-1"
+              />
+            )}
+          </IsNotAnOrganizer>
+
+          <DarkModeToggle />
+          <ProfileButton user={user} />
+        </div>
+      </nav>
+    </>
   );
 }
 
-function CTALandingPublishYourEvent({ cta }: { cta: string }) {
+function CTALandingPublishYourEventX({
+  cta,
+  className
+}: {
+  cta: string;
+  className?: string;
+}) {
   return (
-    <ButtonLink to="/organizers-promo" size="x-small" className="py-1">
+    <Link
+      to="/organizers-promo"
+      className={clsx(
+        'text-xs underline font-bold',
+        'text-gray-700 dark:text-blueGray-400',
+        className
+      )}
+    >
+      {cta}
+    </Link>
+  );
+}
+function CTALandingPublishYourEvent({ cta, className }: { cta: string, className?: string }) {
+  return (
+    <ButtonLink to="/organizers-promo" size="x-small" className={className}>
       {cta}
     </ButtonLink>
   );

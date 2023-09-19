@@ -327,7 +327,7 @@ export default function Login() {
             type="email"
             id="email"
             name="email"
-            className="input-text slim w-full text-sm h-14 md:h-20"
+            className="input-text px-4 lg:px-11 w-full text-sm lg:text-lg h-14 md:h-20"
             defaultValue={fields.email}
             autoComplete="off"
           />
@@ -338,7 +338,7 @@ export default function Login() {
               id="password"
               type="password"
               name="password"
-              className="input-text slim w-full text-sm h-14 md:text-2xl md:h-20"
+              className="input-text px-4 lg:px-11 w-full text-sm h-14 md:text-2xl md:h-20"
               autoComplete="current-password"
             />
           </FormField>

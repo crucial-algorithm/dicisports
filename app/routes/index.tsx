@@ -266,7 +266,7 @@ async function search(
   );
 
   return {
-    results: results.map((g, index) => {
+    results: results.map((g) => {
       return {
         ...g,
         distance: Math.floor(g.distance || 0) // save some bandwidth
@@ -368,7 +368,7 @@ export default function Index() {
     // reset is used to keep previous groups when "load more results" is used
     const list = reset ? [] : [...searchResults];
 
-    results.map((r, index) => list.push(r));
+    results.map((r) => list.push(r));
     setSearchResults(list);
     const url = new URL(window.location.href);
 
@@ -637,7 +637,7 @@ export default function Index() {
       {!searchPerformed && (
         <>
           <Spacer size="3xs" />
-          <SportsGrid sports={sports} lang={lang} t={t} />
+          <SportsGrid sports={sports} lang={lang} />
         </>
       )}
 

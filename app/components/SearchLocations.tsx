@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { AutoComplete } from '~/components/shared/form/ComboBox';
+import type { SearchResult } from '~/components/shared/form/ComboBox';
 import type { DiciLocation, SearchEventsResults } from '~/types';
 import MapUtils from '~/utils/MapUtils';
 
@@ -27,7 +28,7 @@ export default function SearchLocations({
   const keepTypingLabel = t('Keep Typing');
   const [context, setContext] = useState<{
     search: string;
-    results: { value: string; label: string; extra?: DiciLocation; image?: string }[];
+    results: Array<SearchResult>;
   } | null>(null);
   const [params] = useSearchParams();
   const search = params.get('search');
@@ -50,14 +51,15 @@ export default function SearchLocations({
     const res = await fetch(`/action/get-event-results?s=${search}`);
     const events = await res.json();
 
-    const mapped: { value: string; label: string; extra?: DiciLocation; image?: string }[] = [];
+    const mapped: Array<SearchResult> = [];
 
     if (events && events.length) {
       events.map((e: SearchEventsResults) =>
         mapped.push({
           value: e.slug,
           label: e.name,
-          image: e.image1 || e.image2 || e.image3 || e.image4 || e.image5 || ''
+          image: e.image1 || e.image2 || e.image3 || e.image4 || e.image5 || '',
+          type: 'Event'
         })
       );
     }
@@ -66,7 +68,8 @@ export default function SearchLocations({
       mapped.push({
         value: `${l.coords}|${l.address}`,
         label: l.address || `${l.coords}|${l.address}`,
-        extra: l
+        extra: l,
+        type: 'Location'
       })
     );
 
@@ -93,12 +96,13 @@ export default function SearchLocations({
   return (
     <AutoComplete
       id="search-box"
-      options={context?.results.map(({ label, value, image }) => ({ value, label, image }))}
+      options={context?.results}
       placeholder={search || placeholder || ''}
       completeMethod={handleOnComplete}
       onChange={handleOnChange}
       noOptionsMessage={NoOptionsMessage}
       className={className}
+      locationsGroupLabel={t('Locations Group In Search')}
     />
   );
 
