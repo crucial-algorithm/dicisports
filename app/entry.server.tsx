@@ -50,6 +50,12 @@ export default async function handleRequest(
   return new Promise((resolve, reject) => {
     let didError = false;
 
+    // This will allow cypress to run, still not the best solution
+    // Checked this match in here -> https://isbot.js.org/
+    const cypressMatch = 'headlesschrome/';
+
+    isbot.clear(cypressMatch);
+
     const { pipe, abort } = renderToPipeableStream(
       <IsBotProvider isBot={isbot(request.headers.get('User-Agent') ?? '')}>
         <I18nextProvider i18n={instance}>
