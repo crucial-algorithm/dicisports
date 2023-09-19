@@ -27,6 +27,8 @@ import { locale } from 'primereact/api';
 import primeIcons from 'primeicons/primeicons.css';
 import primeReactCoreCss from 'primereact/resources/primereact.min.css';
 
+import { useIsBot } from '~/utils/IsBotProvider';
+
 import type { KCDHandle, Sport, User } from '~/types';
 import type { Timings } from '~/server/metrics.server';
 import { getServerTimeHeader, time } from '~/server/metrics.server';
@@ -266,6 +268,7 @@ function Html({ lang }: { lang: string }) {
   const matches = useMatches();
   const [, { pathname }] = matches;
   const { handle } = matches.pop() || { handle: {} };
+  const isBot = useIsBot();
 
   // useChangeLanguage(lang);
   // script bellow setting window.ENV is not actually being used; Just keeping
@@ -315,7 +318,7 @@ function Html({ lang }: { lang: string }) {
             __html: `window.ENV = ${JSON.stringify(data.ENV)}`
           }}
         />
-        <Scripts />
+        {isBot ? null : <Scripts />}
         {process.env.NODE_ENV === 'development' && <LiveReload />}
       </body>
     </html>

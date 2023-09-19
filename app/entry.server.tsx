@@ -10,8 +10,10 @@ import { createInstance } from 'i18next';
 import { initReactI18next, I18nextProvider } from 'react-i18next';
 
 import Backend from 'i18next-fs-backend';
+import isbot from 'isbot';
 
 import i18n from '~/server/i18n.server';
+import { IsBotProvider } from '~/utils/IsBotProvider';
 
 const ABORT_DELAY = 5000;
 
@@ -49,9 +51,11 @@ export default async function handleRequest(
     let didError = false;
 
     const { pipe, abort } = renderToPipeableStream(
-      <I18nextProvider i18n={instance}>
-        <RemixServer context={remixContext} url={request.url} />
-      </I18nextProvider>,
+      <IsBotProvider isBot={isbot(request.headers.get('User-Agent') ?? '')}>
+        <I18nextProvider i18n={instance}>
+          <RemixServer context={remixContext} url={request.url} />
+        </I18nextProvider>
+      </IsBotProvider>,
       {
         onShellReady: () => {
           const body = new PassThrough();
