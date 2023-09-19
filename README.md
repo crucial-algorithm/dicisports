@@ -59,6 +59,10 @@ Also, to fly.io (adding multiple is the prefered option)
 ```shell
 flyctl secrets -a <dicistg|diciprd> set VAR_NAME_1=VALUE_1 VAR_NAME_2=VALUE_2
 ```
+Example:
+```shell
+flyctl secrets -a diciprd set ORGANIZER_REVIEWERS_EMAILS="xxx@dicisports.com,yyyy@dicisports.com"
+```
 
 ## Testing payments in staging relevant info
 **Credit card:** 4350 7900 4997 6222 | Val: 04/24 | CVV: 972

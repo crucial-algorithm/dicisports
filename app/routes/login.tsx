@@ -17,7 +17,6 @@ import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 
 import Button from '~/components/shared/Button';
-import TextField from '~/components/shared/form/TextField';
 import FormField from '~/components/shared/form/FormField';
 
 import { getLoginInfoSession } from '~/server/auth/login.server';
@@ -34,7 +33,6 @@ import { addGroupToFavorites, findGroup } from '~/server/db/groups.server';
 import type { LoginAction } from '~/types';
 
 import { loginUser } from '~/server/db/users.server';
-import Main from '~/components/shared/Main';
 import { CanonicalMeta } from '~/utils/seo';
 import {
   changeRegistrationToAuthUser,
