@@ -3,8 +3,8 @@ import * as React from 'react';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { AutoComplete } from '~/components/shared/form/ComboBox';
-import type { SearchResult } from '~/components/shared/form/ComboBox';
+import { SearchAutoComplete } from '~/components/SearchAutoComplete';
+import type { SearchResult } from '~/components/SearchAutoComplete';
 import type { DiciLocation, SearchEventsResults } from '~/types';
 import MapUtils from '~/utils/MapUtils';
 
@@ -94,7 +94,7 @@ export default function SearchLocations({
   }, [search]);
 
   return (
-    <AutoComplete
+    <SearchAutoComplete
       id="search-box"
       options={context?.results}
       placeholder={search || placeholder || ''}
