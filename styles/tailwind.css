@@ -13,14 +13,12 @@
         dark:bg-gray-900 dark:border-white dark:text-white
         z-20
 
-        w-screen h-screen px-8
+        w-screen ds-h-screen md:h-fit px-8
 
         md:top-[50%] md:left-[50%] md:-translate-x-1/2 md:-translate-y-1/2
         md:w-fit md:max-w-[90%] md:min-h-[200px] md:max-h-[90vh] md:h-fit
         md:m-auto md:px-4
-        md:rounded-lg md:border-2 md:border-black
-
-        ds-h-screen md:h-fit;
+        md:rounded-lg md:border-2 md:border-black;
     }
 
     .dialog-title {
