@@ -441,26 +441,6 @@ function Navbar() {
   );
 }
 
-function CTALandingPublishYourEventX({
-  cta,
-  className
-}: {
-  cta: string;
-  className?: string;
-}) {
-  return (
-    <Link
-      to="/organizers-promo"
-      className={clsx(
-        'text-xs underline font-bold',
-        'text-gray-700 dark:text-blueGray-400',
-        className
-      )}
-    >
-      {cta}
-    </Link>
-  );
-}
 function CTALandingPublishYourEvent({ cta, className }: { cta: string, className?: string }) {
   return (
     <ButtonLink to="/organizers-promo" size="x-small" className={className}>
