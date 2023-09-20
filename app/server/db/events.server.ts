@@ -53,6 +53,20 @@ async function findPublishedEvents(): Promise<Event[]> {
   });
 }
 
+/**
+ * Used to get the latest event for highlight in home page
+ */
+async function findLatestPublishedEvents(): Promise<Event[]> {
+  return db.event.findMany({
+    where: {
+      status: Status.published,
+      hideFromLatestEvents: false
+    },
+    orderBy: { createdAt: 'desc' },
+    take: 4
+  });
+}
+
 async function findUserEvents(userId: string): Promise<Array<Event>> {
   return db.event.findMany({
     where: {
@@ -400,5 +414,6 @@ export {
   deleteEvent,
   updateEventRegulation,
   findEventWithRacesAndDocuments,
-  findPublishedEvents
+  findPublishedEvents,
+  findLatestPublishedEvents
 };
