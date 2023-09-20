@@ -26,6 +26,7 @@ import EventResult from '~/components/SearchEventResult';
 import SportsGrid from '~/components/HomeSportsGrid';
 import GroupResult from '~/components/SearchGroupResult';
 import { FiltersDialog, DisplayFilters } from '~/components/SearchFilters';
+import DisplayImg from '~/components/shared/DisplayImg';
 
 import Main from '~/components/shared/Main';
 import { Spacer } from '~/components/shared/Spacer';
@@ -59,7 +60,10 @@ import { getLocationSession } from '~/routes/action/set-my-location';
 import { useUserLocation } from '~/utils/LocationProvider';
 import { CanonicalMeta } from '~/utils/seo';
 
-import { findUserFavoriteEvents } from '~/server/db/events.server';
+import {
+  findLatestPublishedEvents,
+  findUserFavoriteEvents
+} from '~/server/db/events.server';
 
 export type FilterParams = {
   actionId: keyof typeof actions | null;
@@ -82,6 +86,7 @@ type LoaderData = {
   favoriteEvents: Event[];
   mapToken: string;
   selectedDayParts: string[] | null;
+  latestEvents: Event[];
 };
 
 type ActionData = {
@@ -123,6 +128,7 @@ export const loader: LoaderFunction = async ({ request }) => {
   const user = await getUser(request);
   const favoriteGroups = user ? await findUserFavoriteGroups(user.id) : [];
   const favoriteEvents = user ? await findUserFavoriteEvents(user.id) : [];
+  let latestEvents: Event[] = [];
 
   let result: ActionData | null = null;
   const page = data.actionId === actions.search ? 0 : data.page || 0;
@@ -149,6 +155,8 @@ export const loader: LoaderFunction = async ({ request }) => {
       data.orderBy === SortMethod.proximity,
       data.groupsAction !== 'hide'
     );
+  } else {
+    latestEvents = await findLatestPublishedEvents();
   }
 
   const { MAPBOX_TOKEN } = Config();
@@ -160,7 +168,8 @@ export const loader: LoaderFunction = async ({ request }) => {
     favoriteEvents,
     searchResult: result,
     mapToken: MAPBOX_TOKEN,
-    selectedDayParts: data.dayParts
+    selectedDayParts: data.dayParts,
+    latestEvents
   });
 };
 
@@ -302,13 +311,18 @@ export default function Index() {
     favoriteGroups,
     favoriteEvents,
     mapToken,
-    selectedDayParts
+    selectedDayParts,
+    latestEvents
   } = useLoaderData<LoaderData>() as LoaderData;
   const [selection, setSelection] = useState<DiciLocation | undefined>();
   const data = searchResult;
-  const [searchResults, setSearchResults] = useState<Array<SearchResults>>(data?.results || []);
+  const [searchResults, setSearchResults] = useState<Array<SearchResults>>(
+    data?.results || []
+  );
   const [filtersModalOpen, setFiltersModalOpen] = useState<boolean>(false);
-  const [searchPerformed, setSearchPerformed] = useState<boolean>(searchResults.length > 0);
+  const [searchPerformed, setSearchPerformed] = useState<boolean>(
+    searchResults.length > 0
+  );
   const [address, setAddress] = useState<string>('');
   const location = useLocation();
   const filters = useQueryString();
@@ -533,7 +547,10 @@ export default function Index() {
               >
                 <AdjustmentsVerticalIcon className="h-6" />
               </Button>
-              <div className="flex mx-2 items-center dark:text-white text-blueGray-500 text-sm" data-cy="total-results">
+              <div
+                className="flex mx-2 items-center dark:text-white text-blueGray-500 text-sm"
+                data-cy="total-results"
+              >
                 {data?.total
                   ? t('Number of Results Found', { total: data?.total })
                   : null}
@@ -610,7 +627,9 @@ export default function Index() {
                 img={sports.find((s) => s.id === r.sportId)?.picture}
                 userLocation={userLocation}
                 showLocation={orderBy === SortMethod.proximity}
-                isUserFavorite={favoriteEvents.find((e) => e.id === r.id) !== undefined}
+                isUserFavorite={
+                  favoriteEvents.find((e) => e.id === r.id) !== undefined
+                }
               />
             ) : (
               <GroupResult
@@ -636,7 +655,15 @@ export default function Index() {
 
       {!searchPerformed && (
         <>
-          <Spacer size="3xs" />
+          {latestEvents.length > 0 && (
+            <>
+              <LatestEvents events={latestEvents} />
+              <div className="w-full md:max-w-5xl m-auto mb-4 mt-12 text-xl dark:text-white font-bold">
+                {t('Sports Grid Header')}
+              </div>
+            </>
+          )}
+          {latestEvents.length === 0 && <Spacer size="3xs" />}
           <SportsGrid sports={sports} lang={lang} />
         </>
       )}
@@ -660,6 +687,57 @@ export default function Index() {
         <Spacer size="2xs" />
       </Dialog>
     </Main>
+  );
+}
+
+function LatestEvents({
+  events
+}: {
+  events: Event[]
+}) {
+  const { t, i18n } = useTranslation('home');
+
+  return (
+    <>
+      <div className="w-full md:max-w-5xl m-auto mb-4 mt-12 text-xl dark:text-white font-bold capitalize">
+        {t('Latest Events')}
+      </div>
+      <div
+        className={`w-full mb-12 m-auto gap-2 md:max-w-5xl grid-cols-1 md:grid-cols-4
+        grid grid-flow-row md:grid-flow-col md:grid-rows-1`}
+      >
+        {events.map(
+          ({ id, image1, image2, image3, image4, image5, slug, name }) => (
+            <Link
+              key={id}
+              className="relative transition ease-in-out delay-150 hover:-translate-y-1 md:hover:scale-110 duration-300"
+              to={`/${i18n.language}/event/${slug}`}
+            >
+              <DisplayImg
+                className="w-full md:w-56 hover:resize"
+                dontMessWithImgSize={true}
+                imageId={image1 || image2 || image3 || image4 || image5 || ''}
+                alt={name || ''}
+                transformations={{
+                  resize: {
+                    type: 'fill',
+                    width: 400,
+                    height: 400
+                  }
+                }}
+              />
+              <span
+                className={`w-full md:w-56 absolute top-0 left-0 p-2 rounded-t-lg align-middle
+                text-ellipsis overflow-hidden truncate
+                bg-gray-800 bg-opacity-80 text-white text-bold text-blueGray-300`}
+              >
+                {name}
+              </span>
+            </Link>
+          )
+        )}
+      </div>
+    </>
   );
 }
 
