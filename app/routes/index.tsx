@@ -703,7 +703,7 @@ function LatestEvents({
         {t('Latest Events')}
       </div>
       <div
-        className={`w-full mb-12 m-auto gap-2 md:max-w-5xl grid-cols-4
+        className={`w-full mb-12 m-auto gap-2 md:max-w-5xl grid-cols-1 md:grid-cols-4
         grid grid-flow-row md:grid-flow-col md:grid-rows-1`}
       >
         {events.map(
