@@ -148,7 +148,7 @@ describe('Event', () => {
       cy.task('clearDownloadFolder');
     });
 
-    it.only('should create an event', () => {
+    it('should create an event', () => {
       cy.intercept('GET', '/o/event/*?_data=routes*')
         .as('EventRequests')
         .visitAndWaitForHydration('/o')
@@ -335,9 +335,7 @@ describe('Event', () => {
 
         .location()
         .should((loc) => {
-          expect(loc.pathname).to.contain(
-            '/o/event/MY4bvgxDbMtGv8rbYe5d'
-          );
+          expect(loc.pathname).to.contain('/o/event/MY4bvgxDbMtGv8rbYe5d');
         })
 
         .visitAndWaitForHydration('/event/love-tiles-douro-granfondo-2023')
@@ -957,13 +955,17 @@ describe('Event', () => {
 
         .wait('@EventRequests')
 
-        .get('div[data-cy=editor-event-description] > div > .p-editor-content > .ql-editor')
+        .get(
+          'div[data-cy=editor-event-description] > div > .p-editor-content > .ql-editor'
+        )
         .invoke('attr', 'data-placeholder')
         .then((value) => {
           expect(value).to.eq('A edição deste ano será a melhor de sempre...');
         })
 
-        .get('div[data-cy=editor-get-there] > div > .p-editor-content > .ql-editor')
+        .get(
+          'div[data-cy=editor-get-there] > div > .p-editor-content > .ql-editor'
+        )
         .invoke('attr', 'data-placeholder')
         .then((value) => {
           expect(value).to.eq('Como chegar lá... Onde estacionar...');
@@ -992,6 +994,60 @@ describe('Event', () => {
 
         .get('button[name=open-map-on-error]')
         .should('exist');
+    });
+
+    context('Confirmation Prompt', () => {
+      it('should show confirmation when trying to leave route with dirty form', () => {
+        cy.on('window:confirm', (text) => {
+          expect(text).to.eq(
+            'Existem alterações no formulário que ainda não foram aplicadas e irão ser perdidas. Quer continuar?'
+          );
+        });
+
+        cy.visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d')
+
+          .get('input[name=event-name]')
+          .clear()
+          .type('a')
+
+          .get('#back-button')
+          .click();
+      });
+
+      it('should not block redirect - confirm', () => {
+        cy.visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d')
+
+          .get('input[name=event-name]')
+          .clear()
+          .type('a')
+
+          .get('#back-button')
+          .click()
+
+          .location()
+          .should((l) => {
+            expect(l.pathname).to.eq('/o/event/MY4bvgxDbMtGv8rbYe5d/dashboard');
+          });
+      });
+
+      it('should block redirect - cancel', () => {
+        // Cypress confirms all "confirm" prompts, this will make sure it presses "cancel" instead of "confirm"
+        cy.on('window:confirm', () => false);
+
+        cy.visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d')
+
+          .get('input[name=event-name]')
+          .clear()
+          .type('a')
+
+          .get('#back-button')
+          .click()
+
+          .location()
+          .should((l) => {
+            expect(l.pathname).to.eq('/o/event/MY4bvgxDbMtGv8rbYe5d');
+          });
+      });
     });
   });
 });
