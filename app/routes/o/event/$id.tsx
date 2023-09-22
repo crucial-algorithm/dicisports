@@ -546,13 +546,16 @@ export default function OrganizerEventRoute() {
   }
 
   function handleConfirmPickedLocation(location: DiciLocation | null) {
-    setShowLocationPicker(false);
-
-    if (locationRef?.current?.value.length > 0) {
-      setLocation({ ...location, shortAddress: locationRef?.current?.value });
-    } else {
-      setLocation(location);
+    if (!location) {
+      return;
     }
+
+    if (locationRef?.current?.value && locationRef?.current?.value.length > 0) {
+      location.shortAddress = locationRef.current.value as string;
+    }
+
+    setShowLocationPicker(false);
+    setLocation(location);
 
     setHash(Date.now());
   }
