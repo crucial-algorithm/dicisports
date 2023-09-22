@@ -3,6 +3,7 @@ import { Role, Status } from '@prisma/client';
 import {
   Form,
   Link,
+  unstable_useBlocker,
   useActionData,
   useFetcher,
   useLoaderData
@@ -30,7 +31,7 @@ import mapBoxGlCss from 'mapbox-gl/dist/mapbox-gl.css';
 
 import type { ChangeEvent, MutableRefObject } from 'react';
 import * as React from 'react';
-import { useEffect, useRef, useState } from 'react';
+import { useContext, useEffect, useRef, useState } from 'react';
 
 import { useTranslation } from 'react-i18next';
 
@@ -74,6 +75,7 @@ import { findEventPerks } from '~/server/db/perks.server';
 import { findEventRaces } from '~/server/db/races.server';
 import { findDifficulties, findSports } from '~/server/db/reference.server';
 import i18n from '~/server/i18n.server';
+import UploadForm, { FormContext } from '~/components/shared/form/UploadForm';
 
 import { uploadImageToCloudinary } from '~/server/storage/cloudinary.server';
 import {
@@ -119,6 +121,7 @@ type ActionData = {
     bibStartingNumber?: string;
     coordinates?: string;
   };
+  ok?: boolean;
 };
 
 const actionIds = {
@@ -422,7 +425,7 @@ export const action: ActionFunction = async ({ request, params }) => {
       feedback = { severity: 'success', message: t('Event Unpublished') };
     }
 
-    return json({ feedback });
+    return json({ feedback, ok: true });
   } catch (e) {
     if (!(e instanceof ZodError)) {
       const tc = await i18n.getFixedT(request, 'common');
@@ -694,6 +697,29 @@ export default function OrganizerEventRoute() {
     setRegulationOption(e.target.value as 'text' | 'file');
   }
 
+  unstable_useBlocker((args) => {
+    const currentPath = args.currentLocation.pathname;
+    const nextPath = args.nextLocation.pathname;
+    const formData = eventForm?.current?.getAttribute('data');
+
+    if (!formData) {
+      return false;
+    }
+
+    const isDirty = (JSON.parse(formData))._isDirty;
+
+    // If nextPath equals the current one, it means that the user is saving/publishing/removing(...)
+    // So we return false to let the request run
+    if (!isDirty || currentPath === nextPath) {
+      return false;
+    }
+
+    const confirmation = window.confirm(t('Unsaved changes'));
+
+    // This will return false if user clicks "cancel"
+    return !confirmation;
+  });
+  
   useEffect(() => {
     if (fetcher?.data?.ok && fetcher?.type === 'actionReload') {
       fileUploadHandlerEvent?.options?.clear();
@@ -761,12 +787,7 @@ export default function OrganizerEventRoute() {
     <Main>
       <div className="mb-24">
         <Toast ref={toast} />
-        <Form
-          method="post"
-          className="w-full"
-          encType="multipart/form-data"
-          ref={eventForm}
-        >
+        <UploadForm method="post" className="w-full" ref={eventForm}>
           {isPublish && (
             <input type="hidden" name="actionId" value={actionIds.publish} />
           )}
@@ -1250,7 +1271,7 @@ export default function OrganizerEventRoute() {
               </InputError>
             )}
           </div>
-        </Form>
+        </UploadForm>
       </div>
 
       <MapDialog

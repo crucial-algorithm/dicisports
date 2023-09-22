@@ -36,7 +36,12 @@ const TextField: React.FC<Props> = ({
   defaultValue = defaultValue === null ? undefined : defaultValue;
 
   if (formProps.readOnly) {
-    return (<div className="font-medium dark:text-white">{defaultValue}</div>);
+    return <div className="font-medium dark:text-white">{defaultValue}</div>;
+  }
+
+  function handleOnChange(e: any) {
+    formProps.setDirty && formProps.setDirty();
+    onChange && onChange(e);
   }
 
   if (!adornment) {
@@ -46,7 +51,7 @@ const TextField: React.FC<Props> = ({
         id={id}
         defaultValue={defaultValue}
         placeholder={placeholder}
-        onChange={onChange}
+        onChange={handleOnChange}
         // @ts-ignore
         type={type}
         className={className}
@@ -61,27 +66,25 @@ const TextField: React.FC<Props> = ({
   }
 
   return (
-    <>
-      <div className="mt-1 relative rounded-md shadow-sm">
-        <InputBase
-          name={name}
-          id={id}
-          defaultValue={defaultValue}
-          placeholder={placeholder}
-          onChange={onChange}
-          type="text"
-          className={className}
-          readOnly={readOnly}
-          disabled={disabled}
-          input={input}
-          autoComplete={autoComplete}
-          onClick={onClick}
-        />
-        <div className="absolute inset-y-0 right-1 flex items-center">
-          {adornment}
-        </div>
+    <div className="mt-1 relative rounded-md shadow-sm">
+      <InputBase
+        name={name}
+        id={id}
+        defaultValue={defaultValue}
+        placeholder={placeholder}
+        onChange={onChange}
+        type="text"
+        className={className}
+        readOnly={readOnly}
+        disabled={disabled}
+        input={input}
+        autoComplete={autoComplete}
+        onClick={onClick}
+      />
+      <div className="absolute inset-y-0 right-1 flex items-center">
+        {adornment}
       </div>
-    </>
+    </div>
   );
 };
 

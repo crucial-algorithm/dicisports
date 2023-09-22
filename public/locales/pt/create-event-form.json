@@ -134,6 +134,7 @@
   "Cancel Unpublish Event": "Não, manter o evento público",
   "Ignore": "Ignorar",
   "Or": "Ou",
+  "Unsaved changes": "Existem alterações no formulário que ainda não foram aplicadas.",
 
   "Where Is Location X": "{{location}}, onde é \uD83E\uDD14?",
   "Pick Location On Map": " Indique no mapa",
