@@ -101,12 +101,14 @@ function pickLocationInMap(triggerOpenMapButtonName: string) {
 
     // search location
     .get('input.mapboxgl-ctrl-geocoder--input')
+    .focus()
     .type('Fátima, Santarém, Portugal')
-    .wait('@mapBoxSearchResult', { timeout: 60000 })
+    .wait('@mapBoxSearchResult')
 
     // get 1st suggestion - it looks like @mapBoxSearchResult might not be the right request to intercept
     .get('ul.suggestions > li > a')
     .first()
+    .focus()
     .click()
 
     .wait('@mapBoxFindAddressFromCoords', { timeout: 10000 })

@@ -25,10 +25,6 @@ const UploadForm: React.FC<Props> = forwardRef((props: Props, ref) => {
       const currentPath = args.currentLocation.pathname;
       const nextPath = args.nextLocation.pathname;
 
-      if (!isDirty) {
-        return false;
-      }
-
       // If nextPath equals the current one, it means that the user is saving/publishing/removing(...)
       // So we return false to let the request run
       if (!isDirty || currentPath === nextPath) {
