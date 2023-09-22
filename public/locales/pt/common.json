@@ -54,5 +54,7 @@
 
   "Privacy Policy": "Política de Privacidade",
   "Terms and Conditions": "Termos e condições",
-  "Dicisports Watermark": "© {{year}} Dicisports"
+  "Dicisports Watermark": "© {{year}} Dicisports",
+
+  "Default Dirty Alert Message": "Todas as alterações feitas serão perdidas. Quer continuar?"
 }

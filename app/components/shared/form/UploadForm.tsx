@@ -17,7 +17,7 @@ type UploadFormContextType = Props;
 export const FormContext = React.createContext<UploadFormContextType>({});
 
 const UploadForm: React.FC<Props> = forwardRef((props: Props, ref) => {
-  const { t } = useTranslation('upload-form');
+  const { t } = useTranslation('common');
   const [isDirty, setDirty] = useState(false);
 
   if (props.blockNavigationWhenDirty) {
