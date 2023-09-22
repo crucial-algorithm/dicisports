@@ -1000,7 +1000,7 @@ describe('Event', () => {
       it('should show confirmation when trying to leave route with dirty form', () => {
         cy.on('window:confirm', (text) => {
           expect(text).to.eq(
-            'Existem alterações no formulário que ainda não foram aplicadas e irão ser perdidas. Quer continuar?'
+            'Todas as alterações feitas serão perdidas. Quer continuar?'
           );
         });
 
