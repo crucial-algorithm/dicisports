@@ -3,6 +3,7 @@ import React, { useContext, useState } from 'react';
 import type { EditorTextChangeEvent } from 'primereact/editor';
 import { Editor } from 'primereact/editor';
 import { useTranslation } from 'react-i18next';
+
 import { FormContext } from '~/components/shared/form/UploadForm';
 
 type TextAreaProps = {

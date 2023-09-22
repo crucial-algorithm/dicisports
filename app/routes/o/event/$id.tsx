@@ -3,7 +3,6 @@ import { Role, Status } from '@prisma/client';
 import {
   Form,
   Link,
-  unstable_useBlocker,
   useActionData,
   useFetcher,
   useLoaderData
@@ -31,7 +30,7 @@ import mapBoxGlCss from 'mapbox-gl/dist/mapbox-gl.css';
 
 import type { ChangeEvent, MutableRefObject } from 'react';
 import * as React from 'react';
-import { useContext, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { useTranslation } from 'react-i18next';
 
@@ -75,7 +74,7 @@ import { findEventPerks } from '~/server/db/perks.server';
 import { findEventRaces } from '~/server/db/races.server';
 import { findDifficulties, findSports } from '~/server/db/reference.server';
 import i18n from '~/server/i18n.server';
-import UploadForm, { FormContext } from '~/components/shared/form/UploadForm';
+import UploadForm from '~/components/shared/form/UploadForm';
 
 import { uploadImageToCloudinary } from '~/server/storage/cloudinary.server';
 import {
