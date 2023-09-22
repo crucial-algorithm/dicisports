@@ -20,31 +20,31 @@ const UploadForm: React.FC<Props> = forwardRef((props: Props, ref) => {
   const { t } = useTranslation('upload-form');
   const [isDirty, setDirty] = useState(false);
 
-  unstable_useBlocker((args) => {
-    if (!props.blockNavigationWhenDirty) {
-      return false;
-    }
+  if (props.blockNavigationWhenDirty) {
+    unstable_useBlocker((args) => {
+      const currentPath = args.currentLocation.pathname;
+      const nextPath = args.nextLocation.pathname;
 
-    const currentPath = args.currentLocation.pathname;
-    const nextPath = args.nextLocation.pathname;
+      if (!isDirty) {
+        return false;
+      }
 
-    if (!isDirty) {
-      return false;
-    }
+      // If nextPath equals the current one, it means that the user is saving/publishing/removing(...)
+      // So we return false to let the request run
+      if (!isDirty || currentPath === nextPath) {
+        return false;
+      }
 
-    // If nextPath equals the current one, it means that the user is saving/publishing/removing(...)
-    // So we return false to let the request run
-    if (!isDirty || currentPath === nextPath) {
-      return false;
-    }
+      const confirmation = window.confirm(
+        props.alertMessage
+          ? props.alertMessage
+          : t('Default Dirty Alert Message')
+      );
 
-    const confirmation = window.confirm(
-      props.alertMessage ? props.alertMessage : t('Default Dirty Alert Message')
-    );
-
-    // This will return false if user clicks "cancel"
-    return !confirmation;
-  });
+      // This will return false if user clicks "cancel"
+      return !confirmation;
+    });
+  }
 
   return (
     <FormContext.Provider value={{ ...props, setDirty: () => setDirty(true) }}>
