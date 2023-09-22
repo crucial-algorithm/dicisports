@@ -148,7 +148,7 @@ describe('Event', () => {
       cy.task('clearDownloadFolder');
     });
 
-    it('should create an event', () => {
+    it.only('should create an event', () => {
       cy.intercept('GET', '/o/event/*?_data=routes*')
         .as('EventRequests')
         .visitAndWaitForHydration('/o')

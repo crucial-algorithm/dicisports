@@ -165,7 +165,6 @@ async function updateEvent(
   hasRegistrations: boolean = false
 ): Promise<void> {
   return await prisma.$transaction(async (prisma) => {
-    console.log('event info --->', event);
     console.debug('updating event...');
     const startAt = new Date(event.startAt);
     // We are saving date at 00:00, so add another 12H to "handle" time zone

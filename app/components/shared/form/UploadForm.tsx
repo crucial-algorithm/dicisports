@@ -55,6 +55,9 @@ const UploadForm: React.FC<Props> = forwardRef((props: Props, ref) => {
   );
 });
 
+// Fix lint error for forwardedRef displayName
+UploadForm.displayName = 'UploadForm';
+
 type FetcherFormProps = {
   readOnly?: boolean;
   method: string;
