@@ -696,29 +696,6 @@ export default function OrganizerEventRoute() {
   function handleRegulationOption(e: ChangeEvent<HTMLInputElement>) {
     setRegulationOption(e.target.value as 'text' | 'file');
   }
-
-  unstable_useBlocker((args) => {
-    const currentPath = args.currentLocation.pathname;
-    const nextPath = args.nextLocation.pathname;
-    const formData = eventForm?.current?.getAttribute('data');
-
-    if (!formData) {
-      return false;
-    }
-
-    const isDirty = (JSON.parse(formData))._isDirty;
-
-    // If nextPath equals the current one, it means that the user is saving/publishing/removing(...)
-    // So we return false to let the request run
-    if (!isDirty || currentPath === nextPath) {
-      return false;
-    }
-
-    const confirmation = window.confirm(t('Unsaved changes'));
-
-    // This will return false if user clicks "cancel"
-    return !confirmation;
-  });
   
   useEffect(() => {
     if (fetcher?.data?.ok && fetcher?.type === 'actionReload') {
@@ -787,7 +764,12 @@ export default function OrganizerEventRoute() {
     <Main>
       <div className="mb-24">
         <Toast ref={toast} />
-        <UploadForm method="post" className="w-full" ref={eventForm}>
+        <UploadForm
+          method="post"
+          className="w-full"
+          ref={eventForm}
+          blockNavigationWhenDirty={true}
+        >
           {isPublish && (
             <input type="hidden" name="actionId" value={actionIds.publish} />
           )}

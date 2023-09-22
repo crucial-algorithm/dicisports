@@ -1,8 +1,9 @@
 import clsx from 'clsx';
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import type { EditorTextChangeEvent } from 'primereact/editor';
 import { Editor } from 'primereact/editor';
 import { useTranslation } from 'react-i18next';
+import { FormContext } from '~/components/shared/form/UploadForm';
 
 type TextAreaProps = {
   defaultValue?: string | number | readonly string[] | undefined | null;
@@ -21,6 +22,7 @@ export default function TextArea({
 }: TextAreaProps) {
   const { t } = useTranslation('common');
   const [text, setText] = useState<string | undefined>(defaultValue ? String(defaultValue) : '');
+  const formProps = useContext(FormContext);
 
   function renderHeader() {
     return (
@@ -40,6 +42,7 @@ export default function TextArea({
   const header = renderHeader();
 
   function handleTextChange(e: EditorTextChangeEvent) {
+    formProps.setDirty && formProps.setDirty();
     setText(e.htmlValue || undefined);
   }
 
