@@ -39,7 +39,6 @@ export default defineConfig({
   defaultCommandTimeout,
   e2e: {
     baseUrl,
-    experimentalSessionAndOrigin: true,
     env: {
       HTTP_CATCHER,
       SIBS_WEBHOOK_SECRET,
@@ -60,22 +59,6 @@ export default defineConfig({
           execSync('rm -rf ./cypress/downloads/*');
           return null;
         }
-      });
-
-      // Found this fix here - https://github.com/cypress-io/cypress/issues/27804#issuecomment-1719882404
-      // TODO: Remove this after bumping cypress version
-      on('before:browser:launch', (browser, launchOptions) => {
-        if (browser.name === 'chrome' && browser.isHeadless) {
-          launchOptions.args = launchOptions.args.map((arg) => {
-            if (arg === '--headless') {
-              return '--headless=new';
-            }
-
-            return arg;
-          });
-        }
-
-        return launchOptions;
       });
     }
   }
