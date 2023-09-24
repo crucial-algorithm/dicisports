@@ -30,7 +30,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   //@ts-ignore
   return new Response(body, {
     headers: {
-      'content-disposition': `inline; filename="${t('Regulation')}.pdf"`
+      'content-disposition': `attachment; filename="${event.regulationFileName}"`
     }
   });
 };

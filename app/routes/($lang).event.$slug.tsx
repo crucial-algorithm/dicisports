@@ -526,7 +526,7 @@ function DisplayRegulation({ event }: { event: Event }) {
   const isInlineRegulation = !!event.regulationContent;
   const path = isInlineRegulation
     ? `/${lang}/event/${event.slug}/regulation`
-    : `/${lang}/event/${event.id}/doc/regulation/view`;
+    : `/${lang}/event/${event.id}/regulation/view`;
 
   return (
     <div className="flex items-center border border-black dark:border-white rounded-2xl h-16 p-4 mr-2 mb-2">
