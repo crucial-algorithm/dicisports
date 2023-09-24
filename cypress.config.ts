@@ -39,7 +39,6 @@ export default defineConfig({
   defaultCommandTimeout,
   e2e: {
     baseUrl,
-    experimentalSessionAndOrigin: true,
     env: {
       HTTP_CATCHER,
       SIBS_WEBHOOK_SECRET,
