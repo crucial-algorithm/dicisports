@@ -228,6 +228,7 @@ export default function EventDisplayRoute() {
                   eventId={event.id}
                   isBookingClosed={isBookingClosed}
                   minHeight={minHeight}
+                  externalBookingUrl={event.externalBookingUrl}
                 />
               ))}
             <WhenListEmpty list={races}>
@@ -302,9 +303,10 @@ type DisplayRaceProps = {
   eventId: string;
   isBookingClosed: boolean;
   minHeight: number | null;
+  externalBookingUrl?: string;
 };
 
-function DisplayRace({ race, index, eventId, isBookingClosed, minHeight }: DisplayRaceProps) {
+function DisplayRace({ race, index, eventId, isBookingClosed, minHeight, externalBookingUrl }: DisplayRaceProps) {
   const { t } = useTranslation('event');
   const raceTime = displayTimeOfDay(race.startTime);
   const [expanded, setExpanded] = useState<boolean>(false);
@@ -454,22 +456,31 @@ function DisplayRace({ race, index, eventId, isBookingClosed, minHeight }: Displ
           expanded={expanded}
           t={t}
         />
-        <Form
-          method="get"
-          action="/checkout/create"
-          className="flex flex-col gap-y-1 mt-2"
-        >
-          <input type="hidden" value={race.id} name="raceId" />
-          <input type="hidden" value={race.eventId} name="eventId" />
-          <Button disabled={isBookingClosed} name={`race-${race.id}`}>
+
+        {!externalBookingUrl && (
+          <Form
+            method="get"
+            action="/checkout/create"
+            className="flex flex-col gap-y-1 mt-2"
+          >
+            <input type="hidden" value={race.id} name="raceId" />
+            <input type="hidden" value={race.eventId} name="eventId" />
+            <Button disabled={isBookingClosed} name={`race-${race.id}`}>
+              {t('Book')}
+            </Button>
+            {isBookingClosed && (
+              <label className="dark:text-blueGray-500" data-cy="booking-closed">
+                {t('Booking Closed')}
+              </label>
+            )}
+          </Form>
+        )}
+
+        {externalBookingUrl && (
+          <ButtonLink to={externalBookingUrl}>
             {t('Book')}
-          </Button>
-          {isBookingClosed && (
-            <label className="dark:text-blueGray-500" data-cy="booking-closed">
-              {t('Booking Closed')}
-            </label>
-          )}
-        </Form>
+          </ButtonLink>
+        )}
       </div>
     </div>
   );
