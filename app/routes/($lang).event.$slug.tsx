@@ -493,26 +493,27 @@ function DisplayDocument(props: { document: Document; index: number }) {
   const fileExtension = path.split('.');
 
   return (
-    <div
-      className="flex items-center border border-black dark:border-white rounded-2xl h-16 p-4 mr-2 mb-2"
-      data-cy={`document-${index}`}
+    <Link
+      to={`/${lang}/event/${document.eventId}/doc/${document.id}/view`}
+      target="_blank"
+      rel="noreferrer"
+      className="text-black dark:text-white"
+      data-cy="document-label"
     >
       <div
-        className="dark:text-white font-medium border-2 border-secondary bg-primary rounded-full p-2 mr-2"
-        data-cy="document-extension"
+        className="flex items-center border border-black dark:border-white rounded-2xl h-16 p-4 mr-2 mb-2"
+        data-cy={`document-${index}`}
       >
-        {fileExtension[fileExtension.length - 1].toUpperCase()}
+        <div
+          className="dark:text-white font-medium border-2 border-secondary bg-primary rounded-full p-2 mr-2"
+          data-cy="document-extension"
+        >
+          {fileExtension[fileExtension.length - 1].toUpperCase()}
+        </div>
+          {document.label}
+
       </div>
-      <Link
-        to={`/${lang}/event/${document.eventId}/doc/${document.id}/view`}
-        target="_blank"
-        rel="noreferrer"
-        className="text-black dark:text-white"
-        data-cy="document-label"
-      >
-        {document.label}
-      </Link>
-    </div>
+    </Link>
   );
 }
 
@@ -529,17 +530,17 @@ function DisplayRegulation({ event }: { event: Event }) {
     : `/${lang}/event/${event.id}/regulation/view`;
 
   return (
-    <div className="flex items-center border border-black dark:border-white rounded-2xl h-16 p-4 mr-2 mb-2">
-      <Link
-        to={path}
-        target="_blank"
-        rel="noreferrer"
-        className="text-black dark:text-white"
-        data-cy="regulation"
-      >
-        {t('Regulation')}
-      </Link>
-    </div>
+    <Link
+      to={path}
+      target="_blank"
+      rel="noreferrer"
+      className="text-black dark:text-white"
+      data-cy="regulation"
+    >
+      <div className="flex items-center border border-black dark:border-white rounded-2xl h-16 p-4 mr-2 mb-2">
+          {t('Regulation')}
+      </div>
+    </Link>
   );
 }
 
