@@ -44,7 +44,6 @@ const UploadForm: React.FC<Props> = forwardRef((props: Props, ref) => {
   }
 
   // This will prevent user from leaving the page when closing the tab/browser or reloading page
-  // TODO: figure out how to change confirm prompt message
   useBeforeUnload((e) => {
     if (isDirty) {
       e.returnValue = '';
