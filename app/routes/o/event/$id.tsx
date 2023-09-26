@@ -424,7 +424,7 @@ export const action: ActionFunction = async ({ request, params }) => {
       feedback = { severity: 'success', message: t('Event Unpublished') };
     }
 
-    return json({ feedback, ok: true });
+    return json({ feedback, ok: true, hash: Date.now() });
   } catch (e) {
     if (!(e instanceof ZodError)) {
       const tc = await i18n.getFixedT(request, 'common');
@@ -735,6 +735,11 @@ export default function OrganizerEventRoute() {
     });
 
     main && main.scrollTo({ top: 0, behavior: 'smooth' });
+
+    if (actionData?.ok && actionData?.hash) {
+      window.localStorage.setItem('resetDirty', 'true');
+      setHash(actionData.hash);
+    }
   }, [feedback, actionData, t]);
 
   // Fix to event's missing translations 🤷‍♂️
@@ -771,6 +776,7 @@ export default function OrganizerEventRoute() {
           className="w-full"
           ref={eventForm}
           blockNavigationWhenDirty={true}
+          hash={hash}
         >
           {isPublish && (
             <input type="hidden" name="actionId" value={actionIds.publish} />

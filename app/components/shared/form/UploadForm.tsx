@@ -1,6 +1,6 @@
-import React, { forwardRef, useState } from 'react';
-import { Form, unstable_useBlocker } from '@remix-run/react';
+import React, { forwardRef, useEffect, useState } from 'react';
 import type { FormProps } from '@remix-run/react';
+import { Form, unstable_useBlocker, useBeforeUnload } from '@remix-run/react';
 import { useTranslation } from 'react-i18next';
 
 type Props = FormProps &
@@ -10,6 +10,7 @@ type Props = FormProps &
     setDirty?: () => void;
     blockNavigationWhenDirty?: boolean;
     alertMessage?: string;
+    hash?: number;
   };
 
 type UploadFormContextType = Props;
@@ -41,6 +42,26 @@ const UploadForm: React.FC<Props> = forwardRef((props: Props, ref) => {
       return !confirmation;
     });
   }
+
+  // This will prevent user from leaving the page when closing the tab/browser or reloading page
+  // TODO: figure out how to change confirm prompt message
+  useBeforeUnload((e) => {
+    if (isDirty) {
+      e.returnValue = '';
+    }
+  });
+
+  useEffect(() => {
+    // We are saving an item on local storage to reset dirty
+    // This will be re-triggered by the property hash being changed
+    const resetIsDirty = window.localStorage.getItem('resetDirty');
+
+    // Once we find the item, reset dirty to false and remove it from local storage
+    if (resetIsDirty) {
+      setDirty(false);
+      window.localStorage.removeItem('resetDirty');
+    }
+  }, [props.hash]);
 
   return (
     <FormContext.Provider value={{ ...props, setDirty: () => setDirty(true) }}>
