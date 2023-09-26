@@ -996,6 +996,27 @@ describe('Event', () => {
         .should('exist');
     });
 
+
+    it('should redirect to external booking', () => {
+      cy.visitAndWaitForHydration(
+        '/pt/event/monco-e-melgaco-granfondo-by-trek-2023'
+      )
+        .get('#book-race-yqAa6haPTpXKBmMmGcy6')
+        .should('have.prop', 'href')
+        .and((l) => {
+          expect(l).to.eq('https://registerandgo.net/?evento=971');
+        });
+    });
+
+    it('should download regulation', () => {
+      cy.visitAndWaitForHydration('/pt/event/love-tiles-douro-granfondo-2023')
+        .get('[data-cy=regulation]')
+        .should('exist')
+        .click()
+
+        .readFile('./cypress/downloads/regulamento_v2.0.pdf');
+    });
+
     context('Confirmation Prompt', () => {
       it('should show confirmation when trying to leave route with dirty form', () => {
         cy.on('window:confirm', (text) => {
