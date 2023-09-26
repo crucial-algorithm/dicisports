@@ -228,6 +228,7 @@ export default function EventDisplayRoute() {
                   eventId={event.id}
                   isBookingClosed={isBookingClosed}
                   minHeight={minHeight}
+                  externalBookingUrl={event.externalBookingUrl}
                 />
               ))}
             <WhenListEmpty list={races}>
@@ -302,9 +303,10 @@ type DisplayRaceProps = {
   eventId: string;
   isBookingClosed: boolean;
   minHeight: number | null;
+  externalBookingUrl?: string;
 };
 
-function DisplayRace({ race, index, eventId, isBookingClosed, minHeight }: DisplayRaceProps) {
+function DisplayRace({ race, index, eventId, isBookingClosed, minHeight, externalBookingUrl }: DisplayRaceProps) {
   const { t } = useTranslation('event');
   const raceTime = displayTimeOfDay(race.startTime);
   const [expanded, setExpanded] = useState<boolean>(false);
@@ -454,22 +456,31 @@ function DisplayRace({ race, index, eventId, isBookingClosed, minHeight }: Displ
           expanded={expanded}
           t={t}
         />
-        <Form
-          method="get"
-          action="/checkout/create"
-          className="flex flex-col gap-y-1 mt-2"
-        >
-          <input type="hidden" value={race.id} name="raceId" />
-          <input type="hidden" value={race.eventId} name="eventId" />
-          <Button disabled={isBookingClosed} name={`race-${race.id}`}>
+
+        {!externalBookingUrl && (
+          <Form
+            method="get"
+            action="/checkout/create"
+            className="flex flex-col gap-y-1 mt-2"
+          >
+            <input type="hidden" value={race.id} name="raceId" />
+            <input type="hidden" value={race.eventId} name="eventId" />
+            <Button disabled={isBookingClosed} name={`race-${race.id}`}>
+              {t('Book')}
+            </Button>
+            {isBookingClosed && (
+              <label className="dark:text-blueGray-500" data-cy="booking-closed">
+                {t('Booking Closed')}
+              </label>
+            )}
+          </Form>
+        )}
+
+        {externalBookingUrl && (
+          <ButtonLink to={externalBookingUrl}>
             {t('Book')}
-          </Button>
-          {isBookingClosed && (
-            <label className="dark:text-blueGray-500" data-cy="booking-closed">
-              {t('Booking Closed')}
-            </label>
-          )}
-        </Form>
+          </ButtonLink>
+        )}
       </div>
     </div>
   );
@@ -482,26 +493,27 @@ function DisplayDocument(props: { document: Document; index: number }) {
   const fileExtension = path.split('.');
 
   return (
-    <div
-      className="flex items-center border border-black dark:border-white rounded-2xl h-16 p-4 mr-2 mb-2"
-      data-cy={`document-${index}`}
+    <Link
+      to={`/${lang}/event/${document.eventId}/doc/${document.id}/view`}
+      target="_blank"
+      rel="noreferrer"
+      className="text-black dark:text-white"
+      data-cy="document-label"
     >
       <div
-        className="dark:text-white font-medium border-2 border-secondary bg-primary rounded-full p-2 mr-2"
-        data-cy="document-extension"
+        className="flex items-center border border-black dark:border-white rounded-2xl h-16 p-4 mr-2 mb-2"
+        data-cy={`document-${index}`}
       >
-        {fileExtension[fileExtension.length - 1].toUpperCase()}
+        <div
+          className="dark:text-white font-medium border-2 border-secondary bg-primary rounded-full p-2 mr-2"
+          data-cy="document-extension"
+        >
+          {fileExtension[fileExtension.length - 1].toUpperCase()}
+        </div>
+          {document.label}
+
       </div>
-      <Link
-        to={`/${lang}/event/${document.eventId}/doc/${document.id}/view`}
-        target="_blank"
-        rel="noreferrer"
-        className="text-black dark:text-white"
-        data-cy="document-label"
-      >
-        {document.label}
-      </Link>
-    </div>
+    </Link>
   );
 }
 
@@ -515,20 +527,20 @@ function DisplayRegulation({ event }: { event: Event }) {
   const isInlineRegulation = !!event.regulationContent;
   const path = isInlineRegulation
     ? `/${lang}/event/${event.slug}/regulation`
-    : `/${lang}/event/${event.id}/doc/regulation/view`;
+    : `/${lang}/event/${event.id}/regulation/view`;
 
   return (
-    <div className="flex items-center border border-black dark:border-white rounded-2xl h-16 p-4 mr-2 mb-2">
-      <Link
-        to={path}
-        target="_blank"
-        rel="noreferrer"
-        className="text-black dark:text-white"
-        data-cy="regulation"
-      >
-        {t('Regulation')}
-      </Link>
-    </div>
+    <Link
+      to={path}
+      target="_blank"
+      rel="noreferrer"
+      className="text-black dark:text-white"
+      data-cy="regulation"
+    >
+      <div className="flex items-center border border-black dark:border-white rounded-2xl h-16 p-4 mr-2 mb-2">
+          {t('Regulation')}
+      </div>
+    </Link>
   );
 }
 
