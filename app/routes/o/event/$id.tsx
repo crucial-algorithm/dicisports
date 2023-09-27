@@ -30,7 +30,7 @@ import mapBoxGlCss from 'mapbox-gl/dist/mapbox-gl.css';
 
 import type { ChangeEvent, MutableRefObject } from 'react';
 import * as React from 'react';
-import { useContext, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { useTranslation } from 'react-i18next';
 
@@ -74,7 +74,7 @@ import { findEventPerks } from '~/server/db/perks.server';
 import { findEventRaces } from '~/server/db/races.server';
 import { findDifficulties, findSports } from '~/server/db/reference.server';
 import i18n from '~/server/i18n.server';
-import UploadForm, { FormContext } from '~/components/shared/form/UploadForm';
+import UploadForm from '~/components/shared/form/UploadForm';
 
 import { uploadImageToCloudinary } from '~/server/storage/cloudinary.server';
 import {
@@ -699,6 +699,8 @@ export default function OrganizerEventRoute() {
     setRegulationOption(e.target.value as 'text' | 'file');
   }
 
+  let resetFormToNonDirty: () => void | null;
+
   useEffect(() => {
     if (fetcher?.data?.ok && fetcher?.type === 'actionReload') {
       fileUploadHandlerEvent?.options?.clear();
@@ -736,8 +738,8 @@ export default function OrganizerEventRoute() {
 
     main && main.scrollTo({ top: 0, behavior: 'smooth' });
 
-    if (actionData?.ok) {
-      setHash(Date.now());
+    if (actionData?.ok && resetFormToNonDirty) {
+      resetFormToNonDirty();
     }
   }, [feedback, actionData, t]);
 
@@ -766,6 +768,10 @@ export default function OrganizerEventRoute() {
     setSelectedDifficulty(value);
   }
 
+  function handleSetResetDirtyFormFunction(f: () => void) {
+    resetFormToNonDirty = f;
+  }
+
   return (
     <Main>
       <div className="mb-24">
@@ -775,7 +781,7 @@ export default function OrganizerEventRoute() {
           className="w-full"
           ref={eventForm}
           blockNavigationWhenDirty={true}
-          hash={hash}
+          reset={handleSetResetDirtyFormFunction}
         >
           {isPublish && (
             <input type="hidden" name="actionId" value={actionIds.publish} />
