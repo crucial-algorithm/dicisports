@@ -43,7 +43,7 @@ const UploadForm: React.FC<Props> = forwardRef((props: Props, ref) => {
 
   // This will prevent user from leaving the page when closing the tab/browser or reloading page
   useBeforeUnload((e) => {
-    if (isDirty) {
+    if (isDirty && props.blockNavigationWhenDirty) {
       e.preventDefault();
       e.returnValue = '';
     }
