@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import clsx from 'clsx';
 
+
 export default function ResultEntryDescription({
   text,
   label,
@@ -20,7 +21,8 @@ export default function ResultEntryDescription({
     computed: boolean;
   }>({ isTextLonger: true, computed: false });
 
-  function handleReadMore() {
+  function handleReadMore(e: React.MouseEvent) {
+    e.stopPropagation();
     expanded ? setExpanded(false) : setExpanded(true);
   }
 
