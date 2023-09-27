@@ -26,8 +26,7 @@ const UploadForm: React.FC<Props> = forwardRef((props: Props, ref) => {
       const currentPath = args.currentLocation.pathname;
       const nextPath = args.nextLocation.pathname;
 
-      // If nextPath equals the current one, it means that the user is saving/publishing/removing(...)
-      // So we return false to let the request run
+      // Don't block if posting to the same URL
       if (!isDirty || currentPath === nextPath) {
         return false;
       }
@@ -38,7 +37,6 @@ const UploadForm: React.FC<Props> = forwardRef((props: Props, ref) => {
           : t('Default Dirty Alert Message')
       );
 
-      // This will return false if user clicks "cancel"
       return !confirmation;
     });
   }
@@ -46,20 +44,13 @@ const UploadForm: React.FC<Props> = forwardRef((props: Props, ref) => {
   // This will prevent user from leaving the page when closing the tab/browser or reloading page
   useBeforeUnload((e) => {
     if (isDirty) {
+      e.preventDefault();
       e.returnValue = '';
     }
   });
 
   useEffect(() => {
-    // We are saving an item on local storage to reset dirty
-    // This will be re-triggered by the property hash being changed
-    const resetIsDirty = window.localStorage.getItem('resetDirty');
-
-    // Once we find the item, reset dirty to false and remove it from local storage
-    if (resetIsDirty) {
-      setDirty(false);
-      window.localStorage.removeItem('resetDirty');
-    }
+    setDirty(false);
   }, [props.hash]);
 
   return (
@@ -71,7 +62,7 @@ const UploadForm: React.FC<Props> = forwardRef((props: Props, ref) => {
   );
 });
 
-// Fix for lint for forwardedRef displayName warning
+// Fix lint forwardedRef displayName warning
 UploadForm.displayName = 'UploadForm';
 
 type FetcherFormProps = {

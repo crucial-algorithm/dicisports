@@ -30,7 +30,7 @@ import mapBoxGlCss from 'mapbox-gl/dist/mapbox-gl.css';
 
 import type { ChangeEvent, MutableRefObject } from 'react';
 import * as React from 'react';
-import { useEffect, useRef, useState } from 'react';
+import { useContext, useEffect, useRef, useState } from 'react';
 
 import { useTranslation } from 'react-i18next';
 
@@ -74,7 +74,7 @@ import { findEventPerks } from '~/server/db/perks.server';
 import { findEventRaces } from '~/server/db/races.server';
 import { findDifficulties, findSports } from '~/server/db/reference.server';
 import i18n from '~/server/i18n.server';
-import UploadForm from '~/components/shared/form/UploadForm';
+import UploadForm, { FormContext } from '~/components/shared/form/UploadForm';
 
 import { uploadImageToCloudinary } from '~/server/storage/cloudinary.server';
 import {
@@ -546,6 +546,8 @@ export default function OrganizerEventRoute() {
   }
 
   function handleConfirmPickedLocation(location: DiciLocation | null) {
+    setShowLocationPicker(false);
+
     if (!location) {
       return;
     }
@@ -554,9 +556,7 @@ export default function OrganizerEventRoute() {
       location.shortAddress = locationRef.current.value as string;
     }
 
-    setShowLocationPicker(false);
     setLocation(location);
-
     setHash(Date.now());
   }
 
@@ -698,7 +698,7 @@ export default function OrganizerEventRoute() {
   function handleRegulationOption(e: ChangeEvent<HTMLInputElement>) {
     setRegulationOption(e.target.value as 'text' | 'file');
   }
-  
+
   useEffect(() => {
     if (fetcher?.data?.ok && fetcher?.type === 'actionReload') {
       fileUploadHandlerEvent?.options?.clear();
@@ -737,8 +737,7 @@ export default function OrganizerEventRoute() {
     main && main.scrollTo({ top: 0, behavior: 'smooth' });
 
     if (actionData?.ok) {
-      window.localStorage.setItem('resetDirty', 'true');
-      setHash(actionData.hash);
+      setHash(Date.now());
     }
   }, [feedback, actionData, t]);
 
