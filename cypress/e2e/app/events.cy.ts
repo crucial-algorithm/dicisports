@@ -999,12 +999,12 @@ describe('Event', () => {
 
     it('should redirect to external booking', () => {
       cy.visitAndWaitForHydration(
-        '/pt/event/monco-e-melgaco-granfondo-by-trek-2023'
+        '/pt/event/corrida-spedro-one-place'
       )
-        .get('#book-race-yqAa6haPTpXKBmMmGcy6')
+        .get('#book-race-2Q8dMm4gz7b2GeuGRocj')
         .should('have.prop', 'href')
         .and((l) => {
-          expect(l).to.eq('https://registerandgo.net/?evento=971');
+          expect(l).to.eq('https://registerandgo.net/?evento=1019');
         });
     });
 

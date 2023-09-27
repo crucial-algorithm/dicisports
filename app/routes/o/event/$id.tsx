@@ -424,7 +424,7 @@ export const action: ActionFunction = async ({ request, params }) => {
       feedback = { severity: 'success', message: t('Event Unpublished') };
     }
 
-    return json({ feedback, ok: true, hash: Date.now() });
+    return json({ feedback, ok: true });
   } catch (e) {
     if (!(e instanceof ZodError)) {
       const tc = await i18n.getFixedT(request, 'common');
@@ -736,7 +736,7 @@ export default function OrganizerEventRoute() {
 
     main && main.scrollTo({ top: 0, behavior: 'smooth' });
 
-    if (actionData?.ok && actionData?.hash) {
+    if (actionData?.ok) {
       window.localStorage.setItem('resetDirty', 'true');
       setHash(actionData.hash);
     }
