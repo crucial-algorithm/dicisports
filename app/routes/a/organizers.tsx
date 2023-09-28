@@ -57,7 +57,7 @@ export default function AdminIndexRoute() {
         className={clsx('rounded-2xl text-white py-2 px-8 text-sm', {
           'bg-gray-600': status === OrganizerStatus.PENDING,
           'bg-emerald-600': status === OrganizerStatus.APPROVED,
-          'bg-red-600': status === OrganizerStatus.REJECTED
+          'bg-rose-600': status === OrganizerStatus.REJECTED
         })}
       >
         {organizerStatusLabel(status)}
