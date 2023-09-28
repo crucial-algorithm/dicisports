@@ -19,7 +19,7 @@ export const FormContext = React.createContext<UploadFormContextType>({});
 
 const UploadForm: React.FC<Props> = forwardRef((props: Props, ref) => {
   const { t } = useTranslation('common');
-  const { reset, alertMessage } = props;
+  const { reset, alertMessage, action } = props;
 
   const [dirty, setDirty] = useState(false);
 
@@ -31,7 +31,7 @@ const UploadForm: React.FC<Props> = forwardRef((props: Props, ref) => {
       const nextPath = args.nextLocation.pathname;
 
       // Don't block if posting to the same URL
-      if (!dirty || currentPath === nextPath) {
+      if (!dirty || nextPath === (action ? action : currentPath)) {
         return false;
       }
 
