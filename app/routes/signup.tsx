@@ -23,7 +23,7 @@ import { verifyEmailAddress } from '~/server/auth/verifier.server';
 import { addGroupToFavorites } from '~/server/db/groups.server';
 import InputError from '~/components/shared/form/InputError';
 import { CanonicalMeta } from '~/utils/seo';
-import { changeRegistrationToAuthUser, findBookingById } from '~/server/db/booking.server';
+import { changeRegistrationToAuthUser, findBooking } from '~/server/db/booking.server';
 import { getClientSession } from '~/server/auth/client.server';
 
 type ActionData = {
@@ -129,7 +129,7 @@ export const action: ActionFunction = async ({ request }) => {
       try {
         const clientSession = await getClientSession(request);
         const bookingId = searchParams.get('b') as string;
-        const booking = await findBookingById(bookingId);
+        const booking = await findBooking(bookingId);
 
         await changeRegistrationToAuthUser(
           user.id,

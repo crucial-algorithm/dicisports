@@ -1283,6 +1283,11 @@ describe('Checkout', () => {
           expect(l.pathname).to.include('/checkout/confirmation/');
         });
     });
+
+    it.only('should be able to book same race multiple times', () => {
+      bookParticipant('love-tiles-douro-granfondo-2023', 'xaXaCzs2t7D8DpRNnffM');
+      bookParticipant('love-tiles-douro-granfondo-2023', 'xaXaCzs2t7D8DpRNnffM');
+    });
   });
 
   context('Security', () => {
@@ -2091,28 +2096,19 @@ function registerParticipant(eventId: string, raceId: string, authenticated: boo
     .should('have.value', 'Nuno');
 }
 
-function bookParticipant(eventId: string, raceId: string) {
+function bookParticipant(slug: string, raceId: string) {
   return cy
-    .intercept('GET', `/checkout/cart/${eventId}*`)
+    .intercept('GET', '/checkout/create*')
     .as('selectRace')
 
-    .visitAndWaitForHydration(`/checkout/cart/${eventId}`)
+    .visitAndWaitForHydration(`/event/${slug}`)
 
     .location()
     .should((loc) => {
-      expect(loc.pathname).to.eq(`/checkout/cart/${eventId}`);
+      expect(loc.pathname).to.eq(`/event/${slug}`);
     })
 
-    .get(`#add-race-${raceId}`)
-    .click()
-
-    .wait('@selectRace')
-    .waitForHydration()
-
-    .get(`[data-cy=race-${raceId}-qty]`)
-    .contains(1)
-
-    .get('#checkout')
+    .get(`button[name=race-${raceId}]`)
     .click()
 
     .wait('@selectRace')

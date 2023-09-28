@@ -16,12 +16,9 @@ import type {
 } from '~/types';
 import { bookingAmount } from '~/utils/misc';
 
-async function findBooking(
-  userSessionId: string,
-  eventId: string
-): Promise<Booking | null> {
+async function findBooking(id: string): Promise<Booking | null> {
   return await db.booking.findUnique({
-    where: { eventId_userId: { eventId, userId: userSessionId } }
+    where: { id }
   });
 }
 
@@ -70,12 +67,11 @@ async function createBooking(
 }
 
 async function removeBooking(
-  userSessionId: string,
-  eventId: string,
+  bookingId: string,
   tx?: Prisma.TransactionClient
 ): Promise<void> {
   await (tx || db).booking.delete({
-    where: { eventId_userId: { eventId, userId: userSessionId } }
+    where: { id: bookingId }
   });
 }
 
@@ -148,12 +144,6 @@ async function updateBookingStatus(
   });
 }
 
-async function findBookingById(id: string): Promise<Booking | null> {
-  return await db.booking.findUnique({
-    where: { id }
-  });
-}
-
 async function findConfirmedBookings(
   eventId: string
 ): Promise<Booking[] | null> {
@@ -208,7 +198,6 @@ export {
   findBookingCart,
   changeRegistrationToAuthUser,
   findUserBookingsList,
-  findBookingById,
   findConfirmedBookings,
   applyDiscountCode,
   removeBookingDiscount

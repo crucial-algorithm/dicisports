@@ -27,7 +27,7 @@ import { getUser } from '~/server/auth/session.server';
 import Config from '~/server/config.server';
 import {
   applyDiscountCode,
-  findBookingById,
+  findBooking,
   findBookingCart,
   removeBookingDiscount,
   updateBookingStatus
@@ -69,7 +69,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   const anonymousClient = await getClientSession(request);
   const authenticatedClient = await getUser(request);
   const bookingId = params.bookingId as string;
-  const booking = await findBookingById(bookingId);
+  const booking = await findBooking(bookingId);
 
   // We check if user is authenticated -> authenticatedClient, if not, we use the client session -> anonymousClient
   const clientId =
@@ -89,10 +89,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 
   const event = (await findEvent(eventId)) as Event;
   const cart = await findBookingCart(clientId, eventId);
-  const raceParticipants = await findUserEventRaceParticipants(
-    clientId,
-    eventId
-  );
+  const raceParticipants = await findUserEventRaceParticipants(bookingId);
 
   if (!raceParticipants || raceParticipants?.length === 0) {
     return redirect(`/checkout/cart/${eventId}`);
@@ -187,7 +184,7 @@ export const action: ActionFunction = async ({ request, params }) => {
   const anonymousClient = await getClientSession(request);
   const authenticatedClient = await getUser(request);
   const bookingId = params.bookingId as string;
-  const booking = await findBookingById(bookingId);
+  const booking = await findBooking(bookingId);
 
   if (!booking) {
     return badRequest({

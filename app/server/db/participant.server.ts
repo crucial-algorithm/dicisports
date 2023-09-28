@@ -105,10 +105,9 @@ async function findUserParticipants(
 }
 
 async function findUserEventRaceParticipants(
-  userSessionId: string,
-  eventId: string
+  bookingId: string
 ): Promise<RaceParticipant[] | null> {
-  const booking = await findBooking(userSessionId, eventId);
+  const booking = await findBooking(bookingId);
 
   if (!booking) {
     return null;

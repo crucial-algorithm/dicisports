@@ -17,7 +17,7 @@ import { H2, H4, H6 } from '~/components/shared/typography';
 
 import { getClientSession } from '~/server/auth/client.server';
 import { getUser } from '~/server/auth/session.server';
-import { findBookingById, findBookingCart } from '~/server/db/booking.server';
+import { findBooking, findBookingCart } from '~/server/db/booking.server';
 import { findEvent } from '~/server/db/events.server';
 import { findUserEventRaceParticipants } from '~/server/db/participant.server';
 import type { Booking, KCDHandle, UICartRow } from '~/types';
@@ -72,7 +72,7 @@ export const action: ActionFunction = async ({ request, params }) => {
       ? authenticatedClient.id
       : anonymousClient.getClientId();
 
-  const booking = await findBookingById(bookingId);
+  const booking = await findBooking(bookingId);
 
   if (!booking) {
     return badRequest({
@@ -158,28 +158,25 @@ export const loader: LoaderFunction = async ({ request, params }) => {
       ? authenticatedClient.id
       : anonymousClient.getClientId();
 
-  const booking = await findBookingById(bookingId);
+  const booking = await findBooking(bookingId);
 
   if (!booking || booking.userId !== clientId) {
     return redirect('/');
   }
 
+  if (booking.status !== CheckoutStatus.confirmed) {
+    return redirect(
+        `/checkout/${
+            booking?.status === CheckoutStatus.pending ? 'payment' : 'cart'
+        }/${bookingId}`
+    );
+  }
+
   const eventId = booking.eventId;
-  const raceParticipants = await findUserEventRaceParticipants(
-    clientId,
-    eventId
-  );
+  const raceParticipants = await findUserEventRaceParticipants(bookingId);
 
   if (!raceParticipants || raceParticipants?.length === 0) {
     return redirect(`/checkout/cart/${eventId}`);
-  }
-
-  if (booking.status !== CheckoutStatus.confirmed) {
-    return redirect(
-      `/checkout/${
-        booking?.status === CheckoutStatus.pending ? 'payment' : 'cart'
-      }/${bookingId}`
-    );
   }
 
   const event = await findEvent(eventId);

@@ -33,22 +33,7 @@ export const loader: LoaderFunction = async ({ request }) => {
     return redirect('/');
   }
 
-  //TODO: delete this validation in order to create many bookings to the same event
-  const booking = await findBooking(clientId, eventId);
-
   try {
-    if (booking) {
-      return redirect(
-        `/checkout/${
-          booking.status === CheckoutStatus.checkout
-            ? 'info'
-            : booking.status === CheckoutStatus.pending
-            ? 'payment'
-            : 'confirmation'
-        }/${booking.id}`
-      );
-    }
-
     const bookingId = Id();
 
     await createInitialBookingFlow(bookingId, clientId, eventId, raceId, t);

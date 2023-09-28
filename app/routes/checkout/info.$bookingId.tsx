@@ -33,7 +33,7 @@ import { getClientSession } from '~/server/auth/client.server';
 import { getUser } from '~/server/auth/session.server';
 import {
   applyDiscountCode,
-  findBookingById,
+  findBooking,
   findBookingCart,
   removeBookingDiscount,
   updateBookingStatus
@@ -97,7 +97,7 @@ export const action: ActionFunction = async ({ request, params }) => {
   const anonymousClient = await getClientSession(request);
   const authenticatedClient = await getUser(request);
   const bookingId = params.bookingId as string;
-  const booking = await findBookingById(bookingId);
+  const booking = await findBooking(bookingId);
 
   if (!booking) {
     return redirect('/');
@@ -311,10 +311,7 @@ export const action: ActionFunction = async ({ request, params }) => {
       raceParticipants?.length === 1
     ) {
       TermsAndRegulationSchema.parse({ regulation, terms });
-      const raceParticipants = await findUserEventRaceParticipants(
-        clientId,
-        eventId
-      );
+      const raceParticipants = await findUserEventRaceParticipants(bookingId);
 
       if (!raceParticipants) {
         return badRequest({ error: t('No Race Participants') });
@@ -382,7 +379,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
       ? authenticatedClient.id
       : anonymousClient.getClientId();
 
-  const booking = await findBookingById(bookingId);
+  const booking = await findBooking(bookingId);
   const isGuest = pin && Number(pin) === booking?.pin;
 
   if (!booking || (booking.userId !== clientId && !isGuest)) {
