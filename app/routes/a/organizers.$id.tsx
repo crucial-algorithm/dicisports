@@ -52,7 +52,7 @@ export const action: ActionFunction = async ({ request, params }) => {
   const organizer = await findOrganizerById(id);
 
   const form = await request.formData();
-  const actionId = form.get('actionId');
+  const approve = form.get('actionId') === 'approve';
   const commission = Number(form.get('commission') as string);
 
   const Schema = z.object({
@@ -63,14 +63,14 @@ export const action: ActionFunction = async ({ request, params }) => {
   });
 
   try {
-    if (actionId === 'update') {
-      await updateOrganizerCommission(id, commission);
-
-      return redirect('/a/organizers');
-    }
-    
-    if (actionId === 'approve') {
+    if (approve) {
       Schema.parse({ commission });
+
+      if (organizer.status === OrganizerStatus.APPROVED) {
+        await updateOrganizerCommission(id, commission);
+
+        return redirect('/a/organizers');
+      }
 
       await approveOrganizer(id, commission);
       await sendApprovedOrganizerProfileEmail({
@@ -155,12 +155,7 @@ export default function ReviewOrganizerRoute() {
           <TextField
             type="number"
             name="commission"
-            defaultValue={
-              organizer.status === OrganizerStatus.APPROVED &&
-              organizer.commission
-                ? organizer.commission
-                : defaultCommission
-            }
+            defaultValue={organizer.commission || defaultCommission}
             className="w-full md:w-44"
           />
         </FormField>
@@ -169,7 +164,7 @@ export default function ReviewOrganizerRoute() {
           <ButtonLink type="button" variant="secondary" to="/a/organizers">
             {t('Cancel')}
           </ButtonLink>
-          {organizer.status === OrganizerStatus.PENDING && (
+          {organizer.status !== OrganizerStatus.REJECTED && (
             <Button
               variant="secondary"
               name="actionId"
@@ -182,11 +177,7 @@ export default function ReviewOrganizerRoute() {
           <Button
             name="actionId"
             type="submit"
-            value={
-              organizer.status === OrganizerStatus.APPROVED
-                ? 'update'
-                : 'approve'
-            }
+            value="approve"
           >
             {organizer.status === OrganizerStatus.APPROVED
               ? t('Update')
