@@ -61,18 +61,27 @@ async function updateOrganizer(
   });
 }
 
-async function findPendingOrganizers(): Promise<Organizer[]> {
+async function findOrganizers(): Promise<Organizer[]> {
   return await db.organizer.findMany({
-    where: {
-      status: OrganizerStatus.PENDING
+    orderBy: {
+      createdAt: 'desc'
     }
   });
 }
 
 async function findOrganizerById(id: string): Promise<Organizer | null> {
-  return await db.organizer.findUnique({
+  const organizer = await db.organizer.findUnique({
     where: { id }
   });
+
+  if (!organizer) {
+    return null;
+  }
+
+  return {
+    ...organizer,
+    commission: organizer.commission ? organizer.commission / 1000 : null
+  };
 }
 
 async function approveOrganizer(id: string, commission: number) {
@@ -105,12 +114,24 @@ async function rejectOrganizer(id: string) {
   });
 }
 
+async function updateOrganizerCommission(id: string, commission: number) {
+  return await db.organizer.update({
+    where: {
+      id
+    },
+    data: {
+      commission: commission * 1000
+    }
+  });
+}
+
 export {
   createOrganizer,
   findOrganizer,
   updateOrganizer,
-  findPendingOrganizers,
+  findOrganizers,
   findOrganizerById,
   approveOrganizer,
-  rejectOrganizer
+  rejectOrganizer,
+  updateOrganizerCommission
 };
