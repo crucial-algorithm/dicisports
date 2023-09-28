@@ -69,6 +69,7 @@ export default function ComboBox({
   }
 
   function onChangedInternal(value: string | number) {
+    formProps.setDirty && formProps.setDirty();
     setSelected(value);
     onChange && onChange(value);
   }
