@@ -51,9 +51,10 @@ export default function AdminIndexRoute() {
     return mapping[status];
   }
 
-  function cellState({ status }: Organizer) {
+  function cellState({ id, status }: Organizer) {
     return (
       <span
+        id={`status-${id}`}
         className={clsx('rounded-2xl text-white py-2 px-8 text-sm', {
           'bg-gray-600': status === OrganizerStatus.PENDING,
           'bg-emerald-600': status === OrganizerStatus.APPROVED,
