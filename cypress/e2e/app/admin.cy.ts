@@ -103,6 +103,7 @@ describe('Admin', () => {
         .as('UpdateCommission')
 
         .get('button[name=actionId]')
+        .eq(1)
         .click()
 
         .wait('@UpdateCommission')
