@@ -73,6 +73,7 @@ import { findEventPerks } from '~/server/db/perks.server';
 import { findEventRaces } from '~/server/db/races.server';
 import { findDifficulties, findSports } from '~/server/db/reference.server';
 import i18n from '~/server/i18n.server';
+import UploadForm from '~/components/shared/form/UploadForm';
 
 import { uploadImageToCloudinary } from '~/server/storage/cloudinary.server';
 import {
@@ -119,6 +120,7 @@ type ActionData = {
     coordinates?: string;
     placeName?: string;
   };
+  ok?: boolean;
 };
 
 const actionIds = {
@@ -424,7 +426,7 @@ export const action: ActionFunction = async ({ request, params }) => {
       feedback = { severity: 'success', message: t('Event Unpublished') };
     }
 
-    return json({ feedback });
+    return json({ feedback, ok: true });
   } catch (e) {
     if (!(e instanceof ZodError)) {
       const tc = await i18n.getFixedT(request, 'common');
@@ -664,6 +666,8 @@ export default function OrganizerEventRoute() {
     setRegulationOption(e.target.value as 'text' | 'file');
   }
 
+  let resetFormToNonDirty: () => void | null;
+
   useEffect(() => {
     if (fetcher?.data?.ok && fetcher?.type === 'actionReload') {
       fileUploadHandlerEvent?.options?.clear();
@@ -700,6 +704,10 @@ export default function OrganizerEventRoute() {
     });
 
     main && main.scrollTo({ top: 0, behavior: 'smooth' });
+
+    if (actionData?.ok && resetFormToNonDirty) {
+      resetFormToNonDirty();
+    }
   }, [feedback, actionData, t]);
 
   // Fix to event's missing translations 🤷‍♂️
@@ -727,15 +735,20 @@ export default function OrganizerEventRoute() {
     setSelectedDifficulty(value);
   }
 
+  function handleSetResetDirtyFormFunction(f: () => void) {
+    resetFormToNonDirty = f;
+  }
+
   return (
     <Main>
       <div className="mb-24">
         <Toast ref={toast} />
-        <Form
+        <UploadForm
           method="post"
           className="w-full"
-          encType="multipart/form-data"
           ref={eventForm}
+          blockNavigationWhenDirty={true}
+          reset={handleSetResetDirtyFormFunction}
         >
           {isPublish && (
             <input type="hidden" name="actionId" value={actionIds.publish} />
@@ -1218,7 +1231,7 @@ export default function OrganizerEventRoute() {
               </InputError>
             )}
           </div>
-        </Form>
+        </UploadForm>
       </div>
 
       <ConfirmationDialog

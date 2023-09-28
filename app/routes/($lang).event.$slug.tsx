@@ -477,7 +477,7 @@ function DisplayRace({ race, index, eventId, isBookingClosed, minHeight, externa
         )}
 
         {externalBookingUrl && (
-          <ButtonLink to={externalBookingUrl}>
+          <ButtonLink id={`book-race-${race.id}`} to={externalBookingUrl}>
             {t('Book')}
           </ButtonLink>
         )}

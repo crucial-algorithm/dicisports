@@ -103,9 +103,13 @@ function pickLocationInMap(triggerOpenMapButtonName: string) {
 
     // search location
     .get('input.mapboxgl-ctrl-geocoder--input')
+    .focus()
     .type('Fátima, Santarém, Portugal')
     .wait('@mapBoxSearchResult')
 
+    .get('input.mapboxgl-ctrl-geocoder--input')
+    .should('have.value', 'Fátima, Santarém, Portugal')
+    
     // get 1st suggestion - it looks like @mapBoxSearchResult might not be the right request to intercept
     .get('ul.suggestions > li > a')
     .first()
