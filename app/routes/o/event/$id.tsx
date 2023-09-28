@@ -20,7 +20,6 @@ import {
   unstable_createMemoryUploadHandler,
   unstable_parseMultipartFormData
 } from '@remix-run/node';
-import type { TFunction } from 'i18next';
 
 import clsx from 'clsx';
 import { Toast } from 'primereact/toast';
@@ -28,7 +27,7 @@ import type { FileUploadHandlerEvent } from 'primereact/fileupload';
 
 import mapBoxGlCss from 'mapbox-gl/dist/mapbox-gl.css';
 
-import type { ChangeEvent, MutableRefObject } from 'react';
+import type { ChangeEvent } from 'react';
 import * as React from 'react';
 import { useEffect, useRef, useState } from 'react';
 
@@ -53,11 +52,11 @@ import FormField from '~/components/shared/form/FormField';
 
 import InputError from '~/components/shared/form/InputError';
 import Label from '~/components/shared/form/Label';
+import LocationPicker from '~/components/shared/form/LocationPicker';
 import TextArea from '~/components/shared/form/TextArea';
 import TextField from '~/components/shared/form/TextField';
 import UploadImage from '~/components/shared/form/UploadImage';
 import Main from '~/components/shared/Main';
-import { MapDialog } from '~/components/shared/Map';
 import { H2, H6 } from '~/components/shared/typography';
 import { requireUser } from '~/server/auth/session.server';
 import Config from '~/server/config.server';
@@ -118,6 +117,7 @@ type ActionData = {
     regulation?: string;
     bibStartingNumber?: string;
     coordinates?: string;
+    placeName?: string;
   };
 };
 
@@ -272,7 +272,9 @@ export const action: ActionFunction = async ({ request, params }) => {
     startAt: new Date(date), //TODO: hour
     lat: location.lat,
     lng: location.lng,
-    location: (form.get('short-address') as string) || null,
+    // @ts-ignore TODO: find out the proper type declaration for json inputs in prisma
+    location: location.location,
+    placeName: (form.get('place4location') as string) || null,
     useExternalBooking: form.get('booking') === 'external',
     externalBookingUrl: (form.get('booking-url') as string) || null,
     description: (form.get('event-description') as string) || null,
@@ -298,7 +300,7 @@ export const action: ActionFunction = async ({ request, params }) => {
 
   const SaveEventSchema = z
     .object({
-      location: z.string().nullable()
+      placeName: z.string().nullable()
     })
     .refine(
       () =>
@@ -320,7 +322,7 @@ export const action: ActionFunction = async ({ request, params }) => {
         .nonnegative({ message: t('Nonexistent Sport') })
         .lte(7, { message: t('Nonexistent Sport') }),
       startAt: z.date().min(new Date(), { message: t('Future Date') }),
-      location: z.string({
+      placeName: z.string({
         required_error: t('Field required'),
         invalid_type_error: t('Field required')
       }),
@@ -368,7 +370,7 @@ export const action: ActionFunction = async ({ request, params }) => {
       }
     ) // This shouldn't happen, but just in case it does, validation is improved
     .refine(() => data.lng && data.lat, {
-      message: t('Where Is Location X', { location: data.location }),
+      message: t('Where Is Location X', { location: data.placeName }),
       path: ['coordinates']
     });
 
@@ -395,7 +397,7 @@ export const action: ActionFunction = async ({ request, params }) => {
     if (eventStatus === 'published') {
       EventSchema.parse({ ...data, races: races.map((r) => r.id) });
     } else {
-      SaveEventSchema.parse({ location: data.location });
+      SaveEventSchema.parse({ placeName: data.placeName });
     }
 
     await updateEvent(data, perks, newPerks, hasRegistrations);
@@ -486,22 +488,12 @@ export default function OrganizerEventRoute() {
     hasRegistrations
   } = useLoaderData<LoaderData>() as LoaderData;
   const actionData = useActionData<ActionData>() as ActionData;
-  const [showLocationPicker, setShowLocationPicker] = useState<boolean>(false);
   const toast = useRef<Toast>(null);
   const fetcher = useFetcher();
   const feedback = actionData?.feedback;
 
   const [perks, setPerks] = useState<Array<StrippedPerk>>(dbPerks);
   const [races, setRaces] = useState<Array<Race>>(dbRaces);
-  const [location, setLocation] = useState<DiciLocation | null>(
-    // This prevents user being unable to open map when location is defined but lat and lng (for some reason) aren't
-    event.location && event.lat && event.lng
-      ? {
-          coords: `${event.lat}, ${event.lng}`,
-          shortAddress: event.location
-        }
-      : null
-  );
   const [deleteEventModalOpen, setDeleteEventModalOpen] =
     useState<boolean>(false);
   const [publishEventModalOpen, setPublishEventModalOpen] =
@@ -517,14 +509,12 @@ export default function OrganizerEventRoute() {
   const deleteForm = useRef<HTMLFormElement>(null);
   const eventForm = useRef<HTMLFormElement>(null);
 
-  const locationRef = useRef<HTMLInputElement>(null);
   const isPublished = event.status === Status.published;
   const [regulationOption, setRegulationOption] = useState<'text' | 'file'>(
     event.regulationPath ? 'file' : 'text'
   );
   const [fileUploadHandlerEvent, setFileUploadHandlerEvent] =
     useState<FileUploadHandlerEvent | null>(null);
-  const [hash, setHash] = useState<number>(Date.now());
 
   let fileName: string | null = null;
 
@@ -534,26 +524,6 @@ export default function OrganizerEventRoute() {
 
   // Hack: while remix doesn't handle dates properly
   hackyEventRevival(event);
-
-  function handleShowMap() {
-    setShowLocationPicker(true);
-  }
-
-  function handleCloseMap() {
-    setShowLocationPicker(false);
-  }
-
-  function handleConfirmPickedLocation(location: DiciLocation | null) {
-    setShowLocationPicker(false);
-
-    if (locationRef?.current?.value.length > 0) {
-      setLocation({ ...location, shortAddress: locationRef?.current?.value });
-    } else {
-      setLocation(location);
-    }
-
-    setHash(Date.now());
-  }
 
   function addPerk(name: string | undefined) {
     if (!name) {
@@ -881,14 +851,12 @@ export default function OrganizerEventRoute() {
               </FormField>
             </div>
 
-            <Location
-              actionData={actionData}
-              handleShowMap={handleShowMap}
-              t={t}
-              hash={hash}
-              location={location}
-              locationRef={locationRef}
-              error={actionData?.errors?.coordinates}
+            <LocationPicker
+              token={mapToken}
+              name="location"
+              defaultValue={event?.location as DiciLocation}
+              defaultPlaceName={event?.placeName}
+              error={actionData?.errors?.coordinates || actionData?.errors?.placeName}
             />
 
             <FormField
@@ -1253,14 +1221,6 @@ export default function OrganizerEventRoute() {
         </Form>
       </div>
 
-      <MapDialog
-        token={mapToken}
-        defaultValue={location}
-        open={showLocationPicker}
-        onClose={handleCloseMap}
-        onConfirm={handleConfirmPickedLocation}
-      />
-
       <ConfirmationDialog
         isOpen={deleteEventModalOpen}
         title={t('Delete Event X', { name: event?.name })}
@@ -1306,99 +1266,5 @@ export default function OrganizerEventRoute() {
         <input type="hidden" name="actionId" value={actionIds.deleteEvent} />
       </Form>
     </Main>
-  );
-}
-
-function Location({
-  actionData,
-  handleShowMap,
-  t,
-  hash,
-  location,
-  locationRef,
-  error
-}: {
-  actionData: ActionData;
-  handleShowMap: () => void;
-  t: TFunction;
-  hash: number;
-  location: DiciLocation | null;
-  locationRef: MutableRefObject<HTMLInputElement>;
-  error?: string;
-}) {
-  const [firstRender, setFirstRender] = useState<boolean>(true);
-
-  useEffect(() => {
-    if (!firstRender) {
-      locationRef?.current?.select();
-    }
-
-    setFirstRender(false);
-    //@ts-ignore - Don't add firstRender
-  }, [hash]);
-
-  return (
-    <>
-      <FormField
-        label={t('Location')}
-        id="event-location"
-        className="w-full"
-        error={actionData?.errors?.location}
-      >
-        <TextField
-          key={hash}
-          name="short-address"
-          defaultValue={location?.shortAddress || ''}
-          placeholder={t('Location Placeholder')}
-          adornment={
-            <Button
-              name="open-map"
-              className="mr-2"
-              variant="adornment"
-              type="button"
-              onClick={handleShowMap}
-            >
-              {t('Show Map')}
-            </Button>
-          }
-          input={locationRef}
-        />
-        {location !== null && (
-          <div className="ml-2 mt-2">
-            <a
-              href={`https://www.google.com/maps/search/?api=1&query=${
-                location.coords.split(',')[0]
-              }%2C${location.coords.split(',')[1]}`}
-              target="_blank"
-              rel="noreferrer"
-              data-cy="location-link"
-            >
-              {t('View in Map')}
-            </a>
-          </div>
-        )}
-        {error && (
-          <InputError className="flex flex-row gap-x-1 mt-4" id="error-message">
-            <>
-              {error}
-              <button
-                name="open-map-on-error"
-                type="button"
-                onClick={handleShowMap}
-                className="underline"
-              >
-                {t('Pick Location On Map')}
-              </button>
-            </>
-          </InputError>
-        )}
-
-        <input
-          type="hidden"
-          name="location"
-          value={location ? `${location?.coords}` : undefined}
-        />
-      </FormField>
-    </>
   );
 }

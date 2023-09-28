@@ -1,5 +1,4 @@
 @import 'mapbox-gl/dist/mapbox-gl.css';
-@import '@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css';
 @import 'react-responsive-carousel/lib/styles/carousel.min.css';
 
 .date-picker > .p-inputtext.p-component {

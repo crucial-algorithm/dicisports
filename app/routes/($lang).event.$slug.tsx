@@ -707,7 +707,7 @@ function EventHeader({
             data-cy="location-link"
           >
             <H6 className="ml-4 mr-2 md:ml-2" data-cy="location">
-              {event.location}
+              {event.placeName}
             </H6>
           </a>
         </div>

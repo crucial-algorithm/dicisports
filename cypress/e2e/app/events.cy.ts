@@ -174,10 +174,7 @@ describe('Event', () => {
           new Date(Date.now() + 86400 * 1000).toISOString().split('T')[0]
         )
 
-        .pickLocationInMap('open-map')
-
-        .get('input[name=short-address]')
-        .type('Fátima')
+        .pickLocationInInlinedMap('location')
 
         .get('#booking-external')
         .check()

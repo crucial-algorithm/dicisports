@@ -16,6 +16,8 @@ declare global {
 
       pickLocationInMap(triggerOpenMapButtonName: string): Chainable<void>;
 
+      pickLocationInInlinedMap(triggerOpenMapButtonName: string): Chainable<void>;
+
       wasImageLoaded(selector: string): Chainable<void>;
 
       getRecoverPasswordUrl(): Chainable<string>;
@@ -114,6 +116,28 @@ function pickLocationInMap(triggerOpenMapButtonName: string) {
     .click({ force: true });
 }
 
+function pickLocationInInlinedMap(name: string) {
+  cy.intercept('GET', 'https://api.mapbox.com/geocoding/v5/mapbox.places/F*')
+    .as('mapBoxSearchResult')
+    .intercept(
+      'GET',
+      'https://api.mapbox.com/geocoding/v5/mapbox.places/-8.64*'
+    )
+    .as('mapBoxFindAddressFromCoords')
+
+    // open modal
+    .get(`div[data-location-picker=${name}] .mapboxgl-ctrl-geocoder--input`)
+    .type('Fátima, Santarém, Portugal')
+    .wait('@mapBoxSearchResult')
+
+    // get 1st suggestion - it looks like @mapBoxSearchResult might not be the right request to intercept
+    .get('ul.suggestions > li > a')
+    .first()
+    .click()
+
+    .wait('@mapBoxFindAddressFromCoords', { timeout: 10000 });
+}
+
 function wasImageLoaded(selector: string) {
   cy.get(selector)
     .should('be.visible')
@@ -174,6 +198,7 @@ Cypress.Commands.add('loginOrganizer', loginOrganizer);
 Cypress.Commands.add('pickOptionFromSelect', pickOptionFromSelect);
 Cypress.Commands.add('pickDate', pickDate);
 Cypress.Commands.add('pickLocationInMap', pickLocationInMap);
+Cypress.Commands.add('pickLocationInInlinedMap', pickLocationInInlinedMap);
 Cypress.Commands.add('wasImageLoaded', wasImageLoaded);
 Cypress.Commands.add('visitAndWaitForHydration', visitAndWaitForHydration);
 Cypress.Commands.add('waitForHydration', waitForHydration);
