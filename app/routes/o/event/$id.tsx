@@ -1265,7 +1265,7 @@ export default function OrganizerEventRoute() {
         secondaryLabel={t('Cancel Unpublish Event')}
         onDismiss={handleDiscardUnpublishEvent}
         onConfirm={handleUnpublishEvent}
-        className="cy-delete-dialog"
+        className="cy-unpublish-dialog"
       />
 
       <Form

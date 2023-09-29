@@ -297,7 +297,7 @@ describe('Event', () => {
         .get('#unpublish')
         .click()
 
-        .get('.cy-delete-dialog')
+        .get('.cy-unpublish-dialog')
         .should('exist')
 
         .get('button.cy-primary')
@@ -780,7 +780,7 @@ describe('Event', () => {
         .get('#unpublish')
         .click()
 
-        .get('.cy-publish-dialog')
+        .get('.cy-unpublish-dialog')
         .should('exist')
 
         .get('button.cy-primary')
@@ -795,7 +795,7 @@ describe('Event', () => {
         .get('#publish')
         .click()
 
-        .get('.cy-delete-dialog')
+        .get('.cy-publish-dialog')
         .should('exist')
 
         .get('button.cy-primary')
