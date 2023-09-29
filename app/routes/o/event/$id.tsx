@@ -1254,7 +1254,7 @@ export default function OrganizerEventRoute() {
         secondaryLabel={t('Cancel Publish Event')}
         onDismiss={handleDiscardPublishEvent}
         onConfirm={handlePublishEvent}
-        className="cy-delete-dialog"
+        className="cy-publish-dialog"
       />
 
       <ConfirmationDialog

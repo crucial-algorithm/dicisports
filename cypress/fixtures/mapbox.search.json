@@ -1,0 +1,66 @@
+{
+  "type": "FeatureCollection",
+  "query": [
+    "fáti"
+  ],
+  "features": [
+    {
+      "id": "place.10684602",
+      "type": "Feature",
+      "place_type": [
+        "place"
+      ],
+      "relevance": 1,
+      "properties": {
+        "mapbox_id": "dXJuOm1ieHBsYzpvd2k2",
+        "wikidata": "Q191133"
+      },
+      "text_pt-PT": "Fátima",
+      "language_pt-PT": "pt",
+      "place_name_pt-PT": "Fátima, Santarém, Portugal",
+      "text": "Fátima",
+      "language": "pt",
+      "place_name": "Fátima, Santarém, Portugal",
+      "bbox": [
+        -8.7022109,
+        39.5358192,
+        -8.587386,
+        39.6526037
+      ],
+      "center": [
+        -8.665803,
+        39.625501
+      ],
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -8.665803,
+          39.625501
+        ]
+      },
+      "context": [
+        {
+          "id": "region.33978",
+          "mapbox_id": "dXJuOm1ieHBsYzpoTG8",
+          "wikidata": "Q244510",
+          "short_code": "PT-14",
+          "text_pt-PT": "Santarém",
+          "language_pt-PT": "pt",
+          "text": "Santarém",
+          "language": "pt"
+        },
+        {
+          "id": "country.8890",
+          "mapbox_id": "dXJuOm1ieHBsYzpJcm8",
+          "wikidata": "Q45",
+          "short_code": "pt",
+          "text_pt-PT": "Portugal",
+          "language_pt-PT": "pt",
+          "text": "Portugal",
+          "language": "pt"
+        }
+      ]
+    }
+  ],
+  "attribution": "Stubbed Mapbox response"
+}

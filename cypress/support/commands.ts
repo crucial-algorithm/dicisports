@@ -109,7 +109,7 @@ function pickLocationInMap(triggerOpenMapButtonName: string) {
 
     .get('input.mapboxgl-ctrl-geocoder--input')
     .should('have.value', 'Fátima, Santarém, Portugal')
-    
+
     // get 1st suggestion - it looks like @mapBoxSearchResult might not be the right request to intercept
     .get('ul.suggestions > li > a')
     .first()
@@ -121,25 +121,28 @@ function pickLocationInMap(triggerOpenMapButtonName: string) {
 }
 
 function pickLocationInInlinedMap(name: string) {
-  cy.intercept('GET', 'https://api.mapbox.com/geocoding/v5/mapbox.places/F*')
-    .as('mapBoxSearchResult')
+  cy.intercept('**/geocoding//v5/mapbox.places/f*', {
+    fixture: 'mapbox.search.json'
+  })
+    .as('fetchSearchResults')
     .intercept(
-      'GET',
-      'https://api.mapbox.com/geocoding/v5/mapbox.places/-8.64*'
+      '**/geocoding/**/mapbox.places/-8.644798450000053,39.59423606030617.json*',
+      { fixture: 'mapbox.details.json' }
     )
-    .as('mapBoxFindAddressFromCoords')
+    .as('fetchAddressDetails')
+
+    .intercept('**/mapbox.mapbox-terrain*', { fixture: 'mapbox.vector.pbf' })
 
     // open modal
     .get(`div[data-location-picker=${name}] .mapboxgl-ctrl-geocoder--input`)
     .type('Fátima, Santarém, Portugal')
-    .wait('@mapBoxSearchResult')
 
-    // get 1st suggestion - it looks like @mapBoxSearchResult might not be the right request to intercept
+    // get 1st (and only) suggestion
     .get('ul.suggestions > li > a')
     .first()
     .click()
 
-    .wait('@mapBoxFindAddressFromCoords', { timeout: 10000 });
+    .wait('@fetchAddressDetails', { timeout: 10000 });
 }
 
 function wasImageLoaded(selector: string) {
