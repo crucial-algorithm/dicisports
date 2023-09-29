@@ -780,7 +780,7 @@ describe('Event', () => {
         .get('#unpublish')
         .click()
 
-        .get('.cy-delete-dialog')
+        .get('.cy-publish-dialog')
         .should('exist')
 
         .get('button.cy-primary')
