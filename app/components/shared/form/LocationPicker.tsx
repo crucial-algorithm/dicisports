@@ -152,11 +152,19 @@ export default function LocationPicker({
   }
 
   return (
-    <div className="flex gap-4 mb-8" ref={locationPickerWrapper} data-location-picker={name}>
+    <div
+      className="flex gap-4 mb-8"
+      ref={locationPickerWrapper}
+      data-location-picker={name}
+    >
       <div className="min-w-[50%]">
         <FormField label={t('Location')}>
           <div ref={searchInputWrapper} className="min-h-[60px] input-text">
-            <ProgressSpinner className="dc-map-loading" style={{ width: 20, height: 20 }} strokeWidth="8" />
+            <ProgressSpinner
+              className="dc-map-loading"
+              style={{ width: 20, height: 20 }}
+              strokeWidth="8"
+            />
           </div>
         </FormField>
 
@@ -168,29 +176,29 @@ export default function LocationPicker({
             placeholder={t('Location Name Placeholder')}
             ref={placeNameInput}
             onChange={handleOnLocationNameChange}
-            value={placeName || info.shortAddress}
+            value={placeName || info.shortAddress || ''}
           />
         </FormField>
       </div>
+
       <div
         className={clsx('relative left-0 w-112 h-112 rounded overflow-hidden')}
       >
         <Label
           label={
-            !defaultValue
-              ? t('Drag Map to Choose a Location Hint')
-              : info.shortAddress ||
-                defaultPlaceName ||
-                t('Drag Map to Choose a Location Hint')
+            info.shortAddress ||
+            defaultPlaceName ||
+            t('Drag Map to Choose a Location Hint')
           }
         />
         <Pin />
         <div ref={mapWrapper} className="h-full" />
       </div>
+
       <input
         type="hidden"
         name={name}
-        value={location ? JSON.stringify(location) : undefined}
+        value={location ? JSON.stringify(location) : ''}
       />
     </div>
   );
