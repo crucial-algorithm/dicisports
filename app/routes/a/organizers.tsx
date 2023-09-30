@@ -7,15 +7,17 @@ import type { DataTableRowClickEvent } from 'primereact/datatable';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { useTranslation } from 'react-i18next';
+import { OrganizerStatus } from '@prisma/client';
+import clsx from 'clsx';
 
 import { requireAdminUser } from '~/server/auth/session.server';
-import { findPendingOrganizers } from '~/server/db/organizer.server';
+import { findOrganizers } from '~/server/db/organizer.server';
 import type { Organizer } from '~/types';
 import Main from '~/components/shared/Main';
 import { H3 } from '~/components/shared/typography';
 
 type LoaderData = {
-  pendingOrganizers: Organizer[];
+  organizers: Organizer[];
 };
 
 export const handle = {
@@ -26,12 +28,12 @@ export const loader: LoaderFunction = async ({ request }) => {
   await requireAdminUser(request);
 
   return json({
-    pendingOrganizers: await findPendingOrganizers()
+    organizers: await findOrganizers()
   });
 };
 
 export default function AdminIndexRoute() {
-  const { pendingOrganizers } = useLoaderData() as LoaderData;
+  const { organizers } = useLoaderData() as LoaderData;
   const { t } = useTranslation('admin-organizers');
   const navigate = useNavigate();
 
@@ -39,13 +41,38 @@ export default function AdminIndexRoute() {
     navigate(e.data.id);
   }
 
+  function organizerStatusLabel(status: string) {
+    const mapping: { [key: string]: string } = {
+      APPROVED: t('Approved'),
+      PENDING: t('Pending'),
+      REJECTED: t('Rejected')
+    };
+
+    return mapping[status];
+  }
+
+  function cellState({ id, status }: Organizer) {
+    return (
+      <span
+        id={`status-${id}`}
+        className={clsx('rounded-2xl text-white py-2 px-8 text-sm', {
+          'bg-gray-600': status === OrganizerStatus.PENDING,
+          'bg-emerald-600': status === OrganizerStatus.APPROVED,
+          'bg-rose-600': status === OrganizerStatus.REJECTED
+        })}
+      >
+        {organizerStatusLabel(status)}
+      </span>
+    );
+  }
+
   return (
     <Main>
-      <H3 className="mb-4">{t('Review Organizers')}</H3>
+      <H3 className="mb-4">{t('Organizers')}</H3>
 
       <DataTable
-        value={pendingOrganizers}
-        emptyMessage={t('No Pending Organizers')}
+        value={organizers}
+        emptyMessage={t('No Organizers')}
         onRowClick={handleRowClick}
       >
         <Column
@@ -54,9 +81,20 @@ export default function AdminIndexRoute() {
           header={t('Name')}
         />
         <Column
+          field="contactName"
+          bodyClassName="cursor-pointer"
+          header={t('Contact Name')}
+        />
+        <Column
           field="email"
           bodyClassName="cursor-pointer"
           header={t('Email')}
+        />
+        <Column
+          field="status"
+          bodyClassName="cursor-pointer"
+          header={t('State')}
+          body={cellState}
         />
       </DataTable>
     </Main>

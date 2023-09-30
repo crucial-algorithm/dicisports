@@ -11,7 +11,8 @@ function DiciInputMask({
   placeholder,
   value,
   className,
-  mask
+  mask,
+  onChange
 }: InputMaskProps) {
   const formProps = useContext(FormContext);
 
@@ -21,6 +22,11 @@ function DiciInputMask({
     );
   }
 
+  function handleOnChange(e: any) {
+    formProps.setDirty && formProps.setDirty();
+    onChange && onChange(e);
+  }
+
   return (
     <InputMask
       name={name}
@@ -28,6 +34,7 @@ function DiciInputMask({
       value={value}
       className={clsx('dici-input-mask', className)}
       mask={mask}
+      onChange={handleOnChange}
     />
   );
 }

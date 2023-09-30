@@ -335,9 +335,7 @@ describe('Event', () => {
 
         .location()
         .should((loc) => {
-          expect(loc.pathname).to.contain(
-            '/o/event/MY4bvgxDbMtGv8rbYe5d'
-          );
+          expect(loc.pathname).to.contain('/o/event/MY4bvgxDbMtGv8rbYe5d');
         })
 
         .visitAndWaitForHydration('/event/love-tiles-douro-granfondo-2023')
@@ -957,13 +955,17 @@ describe('Event', () => {
 
         .wait('@EventRequests')
 
-        .get('div[data-cy=editor-event-description] > div > .p-editor-content > .ql-editor')
+        .get(
+          'div[data-cy=editor-event-description] > div > .p-editor-content > .ql-editor'
+        )
         .invoke('attr', 'data-placeholder')
         .then((value) => {
           expect(value).to.eq('A edição deste ano será a melhor de sempre...');
         })
 
-        .get('div[data-cy=editor-get-there] > div > .p-editor-content > .ql-editor')
+        .get(
+          'div[data-cy=editor-get-there] > div > .p-editor-content > .ql-editor'
+        )
         .invoke('attr', 'data-placeholder')
         .then((value) => {
           expect(value).to.eq('Como chegar lá... Onde estacionar...');
@@ -992,6 +994,81 @@ describe('Event', () => {
 
         .get('button[name=open-map-on-error]')
         .should('exist');
+    });
+
+
+    it('should redirect to external booking', () => {
+      cy.visitAndWaitForHydration(
+        '/pt/event/corrida-spedro-one-place'
+      )
+        .get('#book-race-2Q8dMm4gz7b2GeuGRocj')
+        .should('have.prop', 'href')
+        .and((l) => {
+          expect(l).to.eq('https://registerandgo.net/?evento=1019');
+        });
+    });
+
+    it('should download regulation', () => {
+      cy.visitAndWaitForHydration('/pt/event/love-tiles-douro-granfondo-2023')
+        .get('[data-cy=regulation]')
+        .should('exist')
+        .click()
+
+        .readFile('./cypress/downloads/regulamento_v2.0.pdf');
+    });
+
+    context('Confirmation Prompt', () => {
+      it('should show confirmation when trying to leave route with dirty form', () => {
+        cy.on('window:confirm', (text) => {
+          expect(text).to.eq(
+            'Todas as alterações feitas serão perdidas. Quer continuar?'
+          );
+        });
+
+        cy.visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d')
+
+          .get('input[name=event-name]')
+          .clear()
+          .type('a')
+
+          .get('#back-button')
+          .click();
+      });
+
+      it('should not block redirect - confirm', () => {
+        cy.visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d')
+
+          .get('input[name=event-name]')
+          .clear()
+          .type('a')
+
+          .get('#back-button')
+          .click()
+
+          .location()
+          .should((l) => {
+            expect(l.pathname).to.eq('/o/event/MY4bvgxDbMtGv8rbYe5d/dashboard');
+          });
+      });
+
+      it('should block redirect - cancel', () => {
+        // Cypress confirms all "confirm" prompts, this will make sure it presses "cancel" instead of "confirm"
+        cy.on('window:confirm', () => false);
+
+        cy.visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d')
+
+          .get('input[name=event-name]')
+          .clear()
+          .type('a')
+
+          .get('#back-button')
+          .click()
+
+          .location()
+          .should((l) => {
+            expect(l.pathname).to.eq('/o/event/MY4bvgxDbMtGv8rbYe5d');
+          });
+      });
     });
   });
 });

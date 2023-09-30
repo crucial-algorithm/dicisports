@@ -12,7 +12,8 @@ import { getUser, requireAdminUser } from '~/server/auth/session.server';
 import {
   approveOrganizer,
   findOrganizerById,
-  rejectOrganizer
+  rejectOrganizer,
+  updateOrganizerCommission
 } from '~/server/db/organizer.server';
 import type { Organizer, OrganizerType } from '~/types';
 import ButtonGroup from '~/components/shared/ButtonGroup';
@@ -50,10 +51,6 @@ export const action: ActionFunction = async ({ request, params }) => {
 
   const organizer = await findOrganizerById(id);
 
-  if (!organizer || organizer.status !== OrganizerStatus.PENDING) {
-    return redirect('/a/organizers');
-  }
-
   const form = await request.formData();
   const approve = form.get('actionId') === 'approve';
   const commission = Number(form.get('commission') as string);
@@ -68,6 +65,12 @@ export const action: ActionFunction = async ({ request, params }) => {
   try {
     if (approve) {
       Schema.parse({ commission });
+
+      if (organizer.status === OrganizerStatus.APPROVED) {
+        await updateOrganizerCommission(id, commission);
+
+        return redirect('/a/organizers');
+      }
 
       await approveOrganizer(id, commission);
       await sendApprovedOrganizerProfileEmail({
@@ -117,10 +120,6 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 
   const organizer = await findOrganizerById(id);
 
-  if (!organizer || organizer.status !== OrganizerStatus.PENDING) {
-    return redirect('/a/organizers');
-  }
-
   const { DEFAULT_COMMISSION } = Config();
   const organizerTypes = await findOrganizerTypes();
 
@@ -134,43 +133,55 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 };
 
 export default function ReviewOrganizerRoute() {
-  const { organizer, defaultCommission, organizerTypes } = useLoaderData() as LoaderData;
+  const { organizer, defaultCommission, organizerTypes } =
+    useLoaderData() as LoaderData;
   const actionData = useActionData();
   const { t } = useTranslation('admin-organizers');
 
   return (
     <Main>
-      <OrganizerForm organizer={organizer} readOnly={true} organizerTypes={organizerTypes} />
+      <OrganizerForm
+        organizer={organizer}
+        readOnly={true}
+        organizerTypes={organizerTypes}
+      />
       <Form method="post">
         <FormField
           label={t('Commission')}
           error={actionData?.errors?.commission}
-          className="w-44"
+          className="w-full"
           description={t('Only accept 2 decimal places')}
         >
-          <div className="w-44">
-            <TextField
-              type="number"
-              name="commission"
-              defaultValue={defaultCommission}
-            />
-          </div>
+          <TextField
+            type="number"
+            name="commission"
+            defaultValue={organizer.commission || defaultCommission}
+            className="w-full md:w-44"
+          />
         </FormField>
 
         <ButtonGroup>
-          <ButtonLink type="button" variant="secondary" to="/a">
+          <ButtonLink type="button" variant="secondary" to="/a/organizers">
             {t('Cancel')}
           </ButtonLink>
+          {organizer.status !== OrganizerStatus.REJECTED && (
+            <Button
+              variant="secondary"
+              name="actionId"
+              type="submit"
+              value="reject"
+            >
+              {t('Reject')}
+            </Button>
+          )}
           <Button
-            variant="secondary"
             name="actionId"
             type="submit"
-            value="reject"
+            value="approve"
           >
-            {t('Reject')}
-          </Button>
-          <Button name="actionId" type="submit" value="approve">
-            {t('Approve')}
+            {organizer.status === OrganizerStatus.APPROVED
+              ? t('Update')
+              : t('Approve')}
           </Button>
         </ButtonGroup>
       </Form>
