@@ -1,6 +1,5 @@
 import { MapPinIcon } from '@heroicons/react/24/solid';
 import MapboxGeocoder from '@mapbox/mapbox-gl-geocoder';
-import clsx from 'clsx';
 import mapboxgl from 'mapbox-gl';
 import { ProgressSpinner } from 'primereact/progressspinner';
 import type { ChangeEvent } from 'react';
@@ -16,6 +15,8 @@ type MapInfo = {
   lng: number;
   zoom: number;
   shortAddress?: string;
+  placeName?: string;
+  userInputedName?: string;
 };
 
 type MapBoxFeature = {
@@ -64,11 +65,10 @@ export default function LocationPicker({
   const [info, setInfo] = useState<MapInfo>({
     lat: coords[0],
     lng: coords[1],
-    zoom: 15
+    zoom: 15,
+    placeName: defaultPlaceName || '',
+    userInputedName: defaultPlaceName || ''
   });
-  const [placeName, setPlaceName] = useState<string | null | undefined>(
-    defaultPlaceName
-  );
   const searchInputWrapper = useRef<HTMLDivElement>(null);
   const placeNameInput = useRef<HTMLInputElement>(null);
   const mapWrapper = React.useRef<HTMLDivElement>(null);
@@ -114,11 +114,26 @@ export default function LocationPicker({
           return;
         }
 
+        // behaviour we want to have:
+        // 1. if the user inputed something, don't override it!
+        // 2. if the user cleaned the input himself, write the short address to the place name and...
+        // 3. if the user moves the map several times, without the user changing the value in the input, override
+        //    with the new short address until the user writes again to the input
+        const userInputedName =
+          (placeNameInput.current &&
+            placeNameInput.current.getAttribute('data-user-inputed-name')) ||
+          '';
+
         setInfo({
           lat: center.lat,
           lng: center.lng,
           zoom: map.getZoom(),
-          shortAddress: capitalize(lc.shortAddress)
+          shortAddress: capitalize(lc.shortAddress),
+          placeName:
+            userInputedName.length > 0
+              ? userInputedName
+              : capitalize(lc.shortAddress),
+          userInputedName
         });
 
         // set the value of the input placeholder to the new selected location
@@ -131,7 +146,8 @@ export default function LocationPicker({
     });
 
     map.on('load', () => {
-      locationPickerWrapper.current && locationPickerWrapper.current.classList.add('dc-map-loaded');
+      locationPickerWrapper.current &&
+        locationPickerWrapper.current.classList.add('dc-map-loaded');
 
       if (!searchInputWrapper.current) {
         return;
@@ -148,42 +164,30 @@ export default function LocationPicker({
   }, []);
 
   function handleOnLocationNameChange(e: ChangeEvent<HTMLInputElement>) {
-    setPlaceName(e.target.value);
+    setInfo({
+      ...info,
+      userInputedName: e.target.value,
+      placeName: e.target.value
+    });
   }
 
   return (
     <div
-      className="flex gap-4 mb-8"
+      className="grid grid-cols-1 lg:grid-cols-2 lg:grid-rows-4 gap-4 mb-8"
       ref={locationPickerWrapper}
       data-location-picker={name}
     >
-      <div className="min-w-[50%]">
-        <FormField label={t('Location')}>
-          <div ref={searchInputWrapper} className="min-h-[60px] input-text">
-            <ProgressSpinner
-              className="dc-map-loading"
-              style={{ width: 20, height: 20 }}
-              strokeWidth="8"
-            />
-          </div>
-        </FormField>
-
-        <FormField label={t('Location Name')} error={error}>
-          <input
-            type="text"
-            className="input-text"
-            name={`place4${name}`}
-            placeholder={t('Location Name Placeholder')}
-            ref={placeNameInput}
-            onChange={handleOnLocationNameChange}
-            value={placeName || info.shortAddress || ''}
+      <FormField label={t('Location')}>
+        <div ref={searchInputWrapper} className="min-h-[60px] input-text relative">
+          <ProgressSpinner
+            className="dc-map-loading"
+            style={{ width: 20, height: 20 }}
+            strokeWidth="8"
           />
-        </FormField>
-      </div>
+        </div>
+      </FormField>
 
-      <div
-        className={clsx('relative left-0 w-112 h-112 rounded overflow-hidden')}
-      >
+      <div className="relative left-0 md:w-112 h-112 rounded overflow-hidden md:row-span-4">
         <Label
           label={
             info.shortAddress ||
@@ -194,6 +198,19 @@ export default function LocationPicker({
         <Pin />
         <div ref={mapWrapper} className="h-full" />
       </div>
+
+      <FormField label={t('Location Name')} error={error}>
+        <input
+          type="text"
+          className="input-text"
+          name={`place4${name}`}
+          placeholder={t('Location Name Placeholder')}
+          ref={placeNameInput}
+          onChange={handleOnLocationNameChange}
+          data-user-inputed-name={info.userInputedName}
+          value={info.placeName || ''}
+        />
+      </FormField>
 
       <input
         type="hidden"

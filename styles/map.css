@@ -87,7 +87,18 @@
     display: flex;
 }
 
-.dc-map-loaded .dc-map-loading {
+.dc-map-loaded .dc-map-loading.p-progress-spinner {
     display: none;
+}
+
+.dc-map-loading {
+    z-index: 1;
+    top: 20px;
+    left: 18px;
+}
+
+.dc-map-loading.p-progress-spinner {
+    position: absolute;
+    display: block;
 }
 
