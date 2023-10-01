@@ -61,13 +61,16 @@ import { MapDialog } from '~/components/shared/Map';
 import { H2, H6 } from '~/components/shared/typography';
 import { requireUser } from '~/server/auth/session.server';
 import Config from '~/server/config.server';
-import type { EventWithRacesDifficultiesAndDocuments } from '~/server/db/events.server';
+import type {
+  EventWithRacesDifficultiesAndDocuments
+} from '~/server/db/events.server';
 import {
   deleteEvent,
   findEventWithRacesAndDocuments,
   publishEvent,
   unpublishEvent,
-  updateEvent
+  updateEvent,
+  findEventOrganizer
 } from '~/server/db/events.server';
 
 import { findEventPerks } from '~/server/db/perks.server';
@@ -161,7 +164,11 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 
   const { MAPBOX_TOKEN, CLOUDINARY_UPLOAD_PRESET } = Config();
 
-  if (!event || event.createdById !== user.id) {
+  if (!event) {
+    return redirect('/');
+  }
+
+  if (event.createdById !== user.id && user.role !== Role.ADMIN) {
     return redirect('/');
   }
 
@@ -216,7 +223,7 @@ export const action: ActionFunction = async ({ request, params }) => {
   if (!event) {
     throw NotFound(t('Event not found'));
   }
-  if (event.createdById !== user.id) {
+  if (event.createdById !== user.id && user.role !== Role.ADMIN) {
     throw Unauthorized(t('Not authorized'));
   }
 
@@ -406,8 +413,14 @@ export const action: ActionFunction = async ({ request, params }) => {
     if (actionId === actionIds.publish) {
       EventSchema.parse({ ...data, races: races.map((r) => r.id) });
 
-      if (user.role === Role.ORGANIZER) {
+      if (user.role === Role.ORGANIZER || user.role === Role.ADMIN) {
         await publishEvent(event.id as string, data.name);
+
+        if (user.role === Role.ADMIN) {
+          const org = await findEventOrganizer(event.id);
+
+          return redirect(org ? `/a/organizers/${org.id}` : '/a/organizers');
+        }
 
         return redirect(
             `/o/event/${event.id}/dashboard?message=${t('Event Published')}`

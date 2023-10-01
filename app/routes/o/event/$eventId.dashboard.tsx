@@ -1,3 +1,4 @@
+import { Role } from '@prisma/client';
 import type { LoaderFunction } from '@remix-run/node';
 import { json, redirect } from '@remix-run/node';
 import type { TFunction } from 'i18next';
@@ -83,7 +84,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     return redirect('/');
   }
 
-  if (event.createdById !== user.id) {
+  if (event.createdById !== user.id && user.role !== Role.ADMIN) {
     return redirect('/');
   }
 

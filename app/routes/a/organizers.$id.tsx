@@ -1,14 +1,23 @@
+import { Column } from 'primereact/column';
+import type { DataTableRowClickEvent } from 'primereact/datatable';
+import { DataTable } from 'primereact/datatable';
 import * as React from 'react';
-import { OrganizerStatus, Role } from '@prisma/client';
+import { OrganizerStatus, Role  } from '@prisma/client';
+import type { Event } from '@prisma/client';
 
 import type { ActionFunction, LoaderFunction } from '@remix-run/node';
 import { json } from '@remix-run/node';
-import { Form, useActionData, useLoaderData } from '@remix-run/react';
+import { Form, useActionData, useLoaderData, useNavigate } from '@remix-run/react';
 import { redirect } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { z, ZodError } from 'zod';
 
+import { dateFormatter } from '~/components/shared/DIsplayDate';
+
+import { H3 } from '~/components/shared/typography';
+
 import { getUser, requireAdminUser } from '~/server/auth/session.server';
+import { findOrganizerEvents } from '~/server/db/events.server';
 import {
   approveOrganizer,
   findOrganizerById,
@@ -31,6 +40,7 @@ import { findOrganizerTypes } from '~/server/db/reference.server';
 
 type LoaderData = {
   organizer: Organizer;
+  events: Array<Event>;
   defaultCommission: number;
   organizerTypes: OrganizerType[];
 };
@@ -50,6 +60,10 @@ export const action: ActionFunction = async ({ request, params }) => {
   }
 
   const organizer = await findOrganizerById(id);
+
+  if (!organizer) {
+    return redirect('/a/organizers');
+  }
 
   const form = await request.formData();
   const approve = form.get('actionId') === 'approve';
@@ -123,8 +137,11 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   const { DEFAULT_COMMISSION } = Config();
   const organizerTypes = await findOrganizerTypes();
 
+  const events = await findOrganizerEvents(id);
+
   return json({
     organizer,
+    events,
     defaultCommission: DEFAULT_COMMISSION,
     organizerTypes: organizerTypes.map((o) => {
       return { id: o.id, name: o.name };
@@ -133,10 +150,20 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 };
 
 export default function ReviewOrganizerRoute() {
-  const { organizer, defaultCommission, organizerTypes } =
+  const { organizer, defaultCommission, organizerTypes, events } =
     useLoaderData() as LoaderData;
   const actionData = useActionData();
   const { t } = useTranslation('admin-organizers');
+  const { t: tc } = useTranslation('common');
+  const navigate = useNavigate();
+
+  function handleRowClick(e: DataTableRowClickEvent) {
+    navigate(`/o/event/${e.data.id}`);
+  }
+
+  function startAt({ startAt }: Event) {
+    return dateFormatter(new Date(startAt || 0), tc);
+  }
 
   return (
     <Main>
@@ -185,6 +212,31 @@ export default function ReviewOrganizerRoute() {
           </Button>
         </ButtonGroup>
       </Form>
+
+      <H3 className="mt-8">{t('Events')}</H3>
+      <DataTable
+        value={events}
+        emptyMessage={t('No events')}
+        onRowClick={handleRowClick}
+      >
+        <Column
+          field="name"
+          bodyClassName="cursor-pointer"
+          header={t('Name')}
+        />
+        <Column
+          field="startAt"
+          bodyClassName="cursor-pointer"
+          header={t('Date')}
+          body={startAt}
+        />
+        <Column
+          field="status"
+          bodyClassName="cursor-pointer"
+          header={t('State')}
+        />
+      </DataTable>
+
     </Main>
   );
 }
