@@ -19,5 +19,9 @@
   "Pending": "Pendente",
   "Rejected": "Rejeitado",
   "State": "Estado",
-  "Update": "Atualizar"
+  "Update": "Atualizar",
+
+  "Events": "Eventos",
+  "No Events": "Nenhum evento encontrado...",
+  "Date": "Data"
 }
