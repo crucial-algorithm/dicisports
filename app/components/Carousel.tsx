@@ -5,14 +5,23 @@ import { Carousel as ResponsiveCarousel } from 'react-responsive-carousel';
 
 import DisplayImg from '~/components/shared/DisplayImg';
 
-type Props = { images: Array<string>; imagesClassName?: string } & React.ComponentProps<'div'>;
+type Props = {
+  images: Array<string>;
+  imagesClassName?: string;
+  onClick?: () => void;
+  onChange?: (position: number) => void;
+} & Omit<React.ComponentProps<'div'>, 'onClick' | 'onChange'>;
 
 function cleanStatus() {
   return '';
 }
 
-export default function Carousel({ images, imagesClassName }: Props) {
-
+export default function Carousel({
+  images,
+  imagesClassName,
+  onClick,
+  onChange
+}: Props) {
   function numberOfImagesIndicator(
     clickHandler: (
       e: React.MouseEvent<Element, MouseEvent> | React.KeyboardEvent
@@ -27,22 +36,27 @@ export default function Carousel({ images, imagesClassName }: Props) {
     );
   }
 
-  function preventNavigation(e: React.MouseEvent) {
+  function handleStopPropagation(e: React.MouseEvent) {
     // @ts-ignore
     const tag = e.target.tagName;
 
+    // don't do anything else other than swap between images if user clicks in
+    // one of the carousel buttons
     if (tag === 'BUTTON') {
-      e.stopPropagation();
+      return e.stopPropagation();
     }
+
+    onClick && onClick();
   }
 
   return (
-    <div onClick={preventNavigation}>
+    <div onClick={handleStopPropagation}>
       <ResponsiveCarousel
         statusFormatter={cleanStatus}
         showThumbs={false}
         showIndicators={true}
         renderIndicator={numberOfImagesIndicator}
+        onChange={onChange}
       >
         {images.map((image, idx) => (
           <DisplayImg
