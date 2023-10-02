@@ -724,9 +724,11 @@ function EventHeader({
             data-cy="location-link"
           >
             <H6 className="ml-4 mr-2 md:ml-2">
-              <span data-cy="location">{event.placeName}</span>,&nbsp;
-              {event.location?.place}&nbsp;
-              <span className="text-sm link">{t('Open map')}</span>
+              <span data-cy="location">{event.placeName}</span>
+              {event.location?.place && (
+                <>,&nbsp;{event.location?.place}</>
+              )}
+              <span className="text-sm link">&nbsp;{t('Open map')}</span>
             </H6>
           </a>
         </div>

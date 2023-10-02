@@ -1110,14 +1110,10 @@ export default function OrganizerEventRoute() {
               <div className="h-80 mb-8">
                 <UploadFile
                   name="file"
-                  mode="advanced"
-                  chooseLabel={t('Upload Regulation Button')}
+                  uploadButtonLabel={t('Upload Regulation Button')}
+                  emptyDropZoneLabel={t('Regulation Dropzone')}
                   accept=".pdf"
-                  customUpload={true}
                   uploadHandler={uploadHandler}
-                  emptyTemplate={
-                    <p className="m-0">{t('Regulation Dropzone')}</p>
-                  }
                   contentClassName="p-4"
                   className="w-full"
                 />

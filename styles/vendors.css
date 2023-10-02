@@ -110,3 +110,19 @@
     @apply w-fit p-4 right-0 rounded-full bg-blueGray-300/20 text-blueGray-400
     font-semibold;
 }
+
+.p-fileupload.p-fileupload-advanced.p-component .p-fileupload-buttonbar {
+    @apply dark:bg-gray-900 dark:border-gray-700;
+}
+
+.p-fileupload.p-fileupload-advanced.p-component .p-fileupload-content {
+    @apply dark:bg-gray-900 dark:border-gray-700 dark:text-slate-500;
+}
+
+.custom-file-upload.p-button.p-fileupload-choose.p-component {
+    @apply bg-white border-gray-500 dark:text-slate-500 dark:border-gray-700 dark:bg-gray-800;
+}
+
+.custom-file-upload.p-button.p-fileupload-choose.p-component:focus {
+    box-shadow: none;
+}
