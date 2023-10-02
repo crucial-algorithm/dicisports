@@ -723,8 +723,10 @@ function EventHeader({
             rel="noreferrer"
             data-cy="location-link"
           >
-            <H6 className="ml-4 mr-2 md:ml-2" data-cy="location">
-              {event.placeName}
+            <H6 className="ml-4 mr-2 md:ml-2">
+              <span data-cy="location">{event.placeName}</span>,&nbsp;
+              {event.location?.place}&nbsp;
+              <span className="text-sm link">{t('Open map')}</span>
             </H6>
           </a>
         </div>
