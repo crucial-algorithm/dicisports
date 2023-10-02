@@ -23,7 +23,6 @@ import {
 import * as React from 'react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Carousel } from 'react-responsive-carousel';
 import clsx from 'clsx';
 import { InView } from 'react-intersection-observer';
 import { Tooltip } from 'primereact/tooltip';
@@ -40,6 +39,7 @@ import {
 import Main from '~/components/shared/Main';
 import { H2, H3, H4, H5, H6, Paragraph } from '~/components/shared/typography';
 import Button, { ButtonLink } from '~/components/shared/Button';
+import Carousel from '~/components/Carousel';
 import { getUser } from '~/server/auth/session.server';
 import { Notification } from '~/components/shared/NotificationMessage';
 import DisplayImg from '~/components/shared/DisplayImg';
@@ -589,10 +589,6 @@ function EventHeader({
     showCopiedToClipboardNotification();
   }
 
-  function cleanStatus() {
-    return '';
-  }
-
   useEffect(() => {
     if (favorite.type === 'actionReload' && favorite.data.ok) {
       setMessage(
@@ -618,23 +614,7 @@ function EventHeader({
     <div className="flex flex-col md:flex-row mt-4">
       <div className="w-full md:w-[22rem]">
         {images.length > 1 ? (
-          <Carousel statusFormatter={cleanStatus}>
-            {images.map((image, idx) => (
-              <DisplayImg
-                key={idx}
-                dataCy={`image${idx}`}
-                imageId={image}
-                className="w-[500px]"
-                transformations={{
-                  resize: {
-                    type: 'fill',
-                    width: 400,
-                    height: 400
-                  }
-                }}
-              />
-            ))}
-          </Carousel>
+          <Carousel images={images} imagesClassName="w-[500px]" />
         ) : (
           <DisplayImg
             dataCy="image0"

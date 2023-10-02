@@ -5,13 +5,13 @@ import { Carousel as ResponsiveCarousel } from 'react-responsive-carousel';
 
 import DisplayImg from '~/components/shared/DisplayImg';
 
-type Props = { images: Array<string> } & React.ComponentProps<'div'>;
+type Props = { images: Array<string>; imagesClassName?: string } & React.ComponentProps<'div'>;
 
 function cleanStatus() {
   return '';
 }
 
-export default function Carousel({ images }: Props) {
+export default function Carousel({ images, imagesClassName }: Props) {
 
   function numberOfImagesIndicator(
     clickHandler: (
@@ -48,6 +48,7 @@ export default function Carousel({ images }: Props) {
           <DisplayImg
             key={idx}
             imageId={image}
+            className={imagesClassName}
             transformations={{
               resize: {
                 type: 'fill',
