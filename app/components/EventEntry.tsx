@@ -6,6 +6,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 
 import type { TranslationObject, User } from '~/types';
+import Carousel from '~/components/Carousel';
 import DisplayImg from '~/components/shared/DisplayImg';
 import DisplayDate from '~/components/shared/DIsplayDate';
 import I18nText from '~/components/I18nText';
@@ -54,11 +55,8 @@ export default function EventEntry({
 
   return (
     <div
-      className={clsx(
-        'relative flex mb-12 p-4 cursor-pointer',
-        'flex-col md:flex-row',
-        'border-b last:border-none border-gray-300 dark:border-gray-300'
-      )}
+      className={`relative flex mb-12 p-4 cursor-pointer flex-col md:flex-row
+        border-b last:border-none border-gray-300 dark:border-gray-300`}
       data-cy="event-entry"
       onClick={goToEventDetail}
     >
@@ -148,6 +146,8 @@ function EventImage({ event, img }: { event: DisplayEvent; img?: string }) {
           variant="List"
         />
       )}
+
+      {images.length > 1 && <Carousel images={images} />}
     </Wrapper>
   );
 }
