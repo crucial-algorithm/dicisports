@@ -24,7 +24,6 @@
     list-style: none;
     margin: 0;
     padding: 0;
-    position: absolute;
     width: 100%;
     top: 110%;
     top: calc(100% + 6px);
@@ -32,7 +31,7 @@
     overflow: hidden;
     font-size: 15px;
 
-    @apply shadow-md bg-white dark:bg-gray-800;
+    @apply shadow-md bg-white dark:bg-gray-800 relative mt-2 lg:absolute lg:mt-0;
 }
 
 .mapboxgl-ctrl-geocoder--suggestion, .mapbox-gl-geocoder--error.mapbox-gl-geocoder--no-results {
