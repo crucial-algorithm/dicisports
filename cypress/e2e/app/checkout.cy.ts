@@ -439,8 +439,7 @@ describe('Checkout', () => {
         .get('input[name=phone-number]')
         .type('937654321')
 
-        .get('input[name=identity-card]')
-        .type('000000000zz4')
+        .inputMaskWorkaround('input[name=identity-card]', '00000000-0-zz4')
         .should('have.value', '00000000-0-zz4')
 
         .get('input[name=federation-number]')
@@ -2060,8 +2059,7 @@ function registerParticipant(eventId: string, raceId: string, authenticated: boo
     .get('input[name=phone-number]')
     .type('937654321')
 
-    .get('input[name=identity-card]')
-    .type('000000000ZZ4')
+    .inputMaskWorkaround('input[name=identity-card]', '00000000-0-zz4')
 
     .get('input[name=federation-number]')
     .type('8165238')
