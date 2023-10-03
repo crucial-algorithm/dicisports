@@ -358,7 +358,7 @@ describe('Checkout', () => {
 
         .pickOptionFromSelect('gender', 2)
 
-        .pickDate('birthdate', '2001-10-21')
+        .pickDate('birthdate', '2003-10-21')
 
         .get('input[name=phone-number]')
         .type('937654321')
