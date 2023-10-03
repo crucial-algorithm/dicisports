@@ -652,7 +652,8 @@ function EventHeader({
         <DisplayImg
           dataCy="image0"
           imageId={images[0]}
-          className="w-[500px]"
+          dontMessWithImgSize={true}
+          className="w-[500px] object-cover object-center"
           transformations={{
             resize: {
               type: 'fill',
@@ -661,7 +662,7 @@ function EventHeader({
             }
           }}
         />
-        <div className="absolute rounded bottom-0 left-0 right-0 m-auto px-2 w-fit bg-gray-300/50 text-gray-700">
+        <div className="absolute rounded bottom-0 left-0 right-0 m-auto px-2 w-fit bg-gray-500/70 text-white">
           {t('Click for full size image')}
         </div>
       </div>
