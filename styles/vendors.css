@@ -107,7 +107,7 @@
 }
 
 .carousel .control-dots {
-    @apply w-fit p-4 right-0 rounded-full bg-blueGray-300/20 text-blueGray-400
+    @apply w-fit p-4 right-0 rounded-full bg-blueGray-300/70 text-blueGray-500
     font-semibold;
 }
 
