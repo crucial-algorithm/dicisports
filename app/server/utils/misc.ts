@@ -1,19 +1,32 @@
-function parseLocation(location: string) {
-  if (!location) {
-    return {
-      lat: null,
-      lng: null,
-      address: null
-    };
-  }
-  const [coords, address] = location.split('|');
-  const [lat, lng] = coords.split(',');
+import type { DiciLocation } from '~/types';
 
-  return {
-    lat: parseFloat(lat),
-    lng: parseFloat(lng),
-    address
+function parseLocation(locationValue: string): {
+  lat: number | null;
+  lng: number | null;
+  location: DiciLocation | null;
+} {
+
+  const emptyResult = {
+    lat: null,
+    lng: null,
+    location: null
   };
+
+  if (!locationValue) {
+    return emptyResult;
+  }
+
+  let location: DiciLocation | null;
+
+  try {
+    location = JSON.parse(locationValue) as DiciLocation;
+  } catch (e) {
+    return emptyResult;
+  }
+
+  const [lat, lng] = location.coords.split(',').map(Number);
+
+  return { lat, lng, location };
 }
 
 function processImgField(

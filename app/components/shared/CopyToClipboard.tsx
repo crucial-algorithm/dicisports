@@ -14,10 +14,9 @@ export default function CopyToClipboard({
   successMessage: () => void;
   className?: string;
 }) {
-  function handlerClickToCopy() {
-    navigator.clipboard.writeText(text).then(() => {
-      successMessage();
-    });
+  function handlerClickToCopy(e: React.MouseEvent) {
+    e.stopPropagation();
+    navigator.clipboard.writeText(text).then(successMessage);
   }
 
   return (

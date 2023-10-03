@@ -35,5 +35,8 @@
   "Valid During": "Desconto termina daqui a",
   "Valid Until": "Desconto válido até",
   "Valid Days": "{{total}} dias",
-  "Valid Day": "{{total}} dia"
+  "Valid Day": "{{total}} dia",
+
+  "Click for full size image": "(Clica para aumentar)",
+  "Open map": "(ver mapa)"
 }

@@ -1,0 +1,63 @@
+{
+  "type": "FeatureCollection",
+  "query": [
+    -8.644798450000053,
+    39.59423606030617
+  ],
+  "features": [
+    {
+      "id": "address.1915199276256422",
+      "type": "Feature",
+      "place_type": [
+        "address"
+      ],
+      "relevance": 1,
+      "properties": {
+        "accuracy": "rooftop",
+        "mapbox_id": "dXJuOm1ieGFkcjoxNmMwZTIzOC0zYmViLTRhYWEtYjI5Mi00MDNlZjBkZGVjNmE"
+      },
+      "text": "Estrada De Torres Novas",
+      "place_name": "Estrada De Torres Novas 449, 2495-303 Fátima, Santarém, Portugal",
+      "center": [
+        -8.6434463,
+        39.5969118
+      ],
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -8.6434463,
+          39.5969118
+        ]
+      },
+      "address": "449",
+      "context": [
+        {
+          "id": "postcode.165801658",
+          "mapbox_id": "dXJuOm1ieHBsYzpDZUh1dWc",
+          "text": "2495-303"
+        },
+        {
+          "id": "place.10684602",
+          "mapbox_id": "dXJuOm1ieHBsYzpvd2k2",
+          "wikidata": "Q191133",
+          "text": "Fátima"
+        },
+        {
+          "id": "region.33978",
+          "mapbox_id": "dXJuOm1ieHBsYzpoTG8",
+          "wikidata": "Q244510",
+          "short_code": "PT-14",
+          "text": "Santarém"
+        },
+        {
+          "id": "country.8890",
+          "mapbox_id": "dXJuOm1ieHBsYzpJcm8",
+          "wikidata": "Q45",
+          "short_code": "pt",
+          "text": "Portugal"
+        }
+      ]
+    }
+  ],
+  "attribution": "Stubbed Mapbox response"
+}

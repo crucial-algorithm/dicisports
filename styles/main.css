@@ -84,7 +84,7 @@ light-mode {
     }
 }
 
-a {
+a, .link {
     color: var(--color-team-current);
     font-weight: 600;
 }

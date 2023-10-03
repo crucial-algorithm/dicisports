@@ -1,10 +1,11 @@
-import clsx from 'clsx';
+import { useNavigate } from '@remix-run/react';
 import type { ReactNode } from 'react';
 import React from 'react';
-import { Carousel } from 'react-responsive-carousel';
+
 import { useTranslation } from 'react-i18next';
 
 import type { TranslationObject, User } from '~/types';
+import Carousel from '~/components/Carousel';
 import DisplayImg from '~/components/shared/DisplayImg';
 import DisplayDate from '~/components/shared/DIsplayDate';
 import I18nText from '~/components/I18nText';
@@ -45,17 +46,18 @@ export default function EventEntry({
   actions?: React.ReactNode;
 }) {
   const { t, i18n } = useTranslation('organizer');
+  const navigate = useNavigate();
+
+  function goToEventDetail(e: React.MouseEvent) {
+    navigate(`${i18n.language}/event/${event.slug}`);
+  }
 
   return (
     <div
-      className={clsx(
-        'relative flex mb-12',
-        'flex-col',
-        'md:flex-row',
-        'p-4',
-        'border-b last:border-none border-gray-300 dark:border-gray-300'
-      )}
+      className={`relative flex mb-12 p-4 cursor-pointer flex-col md:flex-row
+        border-b last:border-none border-gray-300 dark:border-gray-300`}
       data-cy="event-entry"
+      onClick={goToEventDetail}
     >
       <EventImage event={event} img={img} />
       <div className="w-full h-full p-2 lg:pl-6">
@@ -120,10 +122,6 @@ function EventImage({ event, img }: { event: DisplayEvent; img?: string }) {
     Boolean
   ) as string[];
 
-  function cleanStatus() {
-    return '';
-  }
-
   return (
     <Wrapper>
       {images.length === 1 && (
@@ -148,23 +146,7 @@ function EventImage({ event, img }: { event: DisplayEvent; img?: string }) {
         />
       )}
 
-      {images.length > 1 && (
-        <Carousel statusFormatter={cleanStatus}>
-          {images.map((image, idx) => (
-            <DisplayImg
-              key={idx}
-              imageId={image}
-              transformations={{
-                resize: {
-                  type: 'fill',
-                  width: 400,
-                  height: 400
-                }
-              }}
-            />
-          ))}
-        </Carousel>
-      )}
+      {images.length > 1 && <Carousel images={images} />}
     </Wrapper>
   );
 }

@@ -12,9 +12,13 @@ declare global {
 
       pickDate(name: string, date: string, outside?: string): Chainable<void>;
 
+      inputMaskWorkaround(selector: string, value: string): Chainable<void>;
+
       pickOptionFromSelect(name: string, position: number): Chainable<void>;
 
       pickLocationInMap(triggerOpenMapButtonName: string): Chainable<void>;
+
+      pickLocationInInlinedMap(triggerOpenMapButtonName: string): Chainable<void>;
 
       wasImageLoaded(selector: string): Chainable<void>;
 
@@ -85,6 +89,26 @@ function pickDate(name: string, date: string, outside = 'body') {
     .click(0, 0, { force: true }); // when within a dialog
 }
 
+
+function inputMaskWorkaround(selector: string, value: string) {
+  cy.get(selector).then(($input) => {
+    // get native DOM element
+    const input = $input.get(0);
+
+    // track last value since we need it for React16 track value
+    // @ts-ignore
+    const lastValue = input.value;
+
+    // @ts-ignore
+    input.value = value;
+
+    // dispatch change into React as well
+    // @ts-ignore
+    input._valueTracker.setValue(lastValue);
+    input.dispatchEvent(new Event('change', { bubbles: true }));
+  });
+}
+
 function pickLocationInMap(triggerOpenMapButtonName: string) {
   cy.intercept('GET', 'https://api.mapbox.com/geocoding/v5/mapbox.places/F*')
     .as('mapBoxSearchResult')
@@ -107,7 +131,7 @@ function pickLocationInMap(triggerOpenMapButtonName: string) {
 
     .get('input.mapboxgl-ctrl-geocoder--input')
     .should('have.value', 'Fátima, Santarém, Portugal')
-    
+
     // get 1st suggestion - it looks like @mapBoxSearchResult might not be the right request to intercept
     .get('ul.suggestions > li > a')
     .first()
@@ -116,6 +140,31 @@ function pickLocationInMap(triggerOpenMapButtonName: string) {
     .wait('@mapBoxFindAddressFromCoords', { timeout: 10000 })
     .get('button[name=pick-location]:enabled', { timeout: 10000 })
     .click({ force: true });
+}
+
+function pickLocationInInlinedMap(name: string) {
+  cy.intercept('**/geocoding//v5/mapbox.places/f*', {
+    fixture: 'mapbox.search.json'
+  })
+    .as('fetchSearchResults')
+    .intercept(
+      '**/geocoding/**/mapbox.places/-8.644798450000053,39.59423606030617.json*',
+      { fixture: 'mapbox.details.json' }
+    )
+    .as('fetchAddressDetails')
+
+    .intercept('**/mapbox.mapbox-terrain*', { fixture: 'mapbox.vector.pbf' })
+
+    // open modal
+    .get(`div[data-location-picker=${name}] .mapboxgl-ctrl-geocoder--input`)
+    .type('Fátima, Santarém, Portugal')
+
+    // get 1st (and only) suggestion
+    .get('ul.suggestions > li > a')
+    .first()
+    .click()
+
+    .wait('@fetchAddressDetails', { timeout: 10000 });
 }
 
 function wasImageLoaded(selector: string) {
@@ -177,7 +226,9 @@ Cypress.Commands.add('loginAdmin', loginAdmin);
 Cypress.Commands.add('loginOrganizer', loginOrganizer);
 Cypress.Commands.add('pickOptionFromSelect', pickOptionFromSelect);
 Cypress.Commands.add('pickDate', pickDate);
+Cypress.Commands.add('inputMaskWorkaround', inputMaskWorkaround);
 Cypress.Commands.add('pickLocationInMap', pickLocationInMap);
+Cypress.Commands.add('pickLocationInInlinedMap', pickLocationInInlinedMap);
 Cypress.Commands.add('wasImageLoaded', wasImageLoaded);
 Cypress.Commands.add('visitAndWaitForHydration', visitAndWaitForHydration);
 Cypress.Commands.add('waitForHydration', waitForHydration);
