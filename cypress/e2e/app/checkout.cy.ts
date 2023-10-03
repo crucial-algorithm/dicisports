@@ -358,13 +358,12 @@ describe('Checkout', () => {
 
         .pickOptionFromSelect('gender', 2)
 
-        .pickDate('birthdate', '2001-09-21')
+        .pickDate('birthdate', '2001-10-21')
 
         .get('input[name=phone-number]')
         .type('937654321')
 
-        .get('input[name=identity-card]')
-        .type('000000000zz4')
+        .inputMaskWorkaround('input[name=identity-card]', '00000000-0-zz4')
         .should('have.value', '00000000-0-zz4')
 
         .get('input[name=federation-number]')
@@ -435,7 +434,7 @@ describe('Checkout', () => {
 
         .pickOptionFromSelect('gender', 2)
 
-        .pickDate('birthdate', '2001-09-21')
+        .pickDate('birthdate', '2003-10-21')
 
         .get('input[name=phone-number]')
         .type('937654321')
@@ -760,7 +759,7 @@ describe('Checkout', () => {
 
         .pickOptionFromSelect('gender', 2)
 
-        .pickDate('birthdate', '2001-09-21')
+        .pickDate('birthdate', '2003-10-21')
 
         .get('input[name=phone-number]')
         .type('937654321')
@@ -1238,13 +1237,12 @@ describe('Checkout', () => {
 
         .pickOptionFromSelect('gender', 2)
 
-        .pickDate('birthdate', '2001-09-21')
+        .pickDate('birthdate', '2003-10-21')
 
         .get('input[name=phone-number]')
         .type('937654321')
 
-        .get('input[name=identity-card]')
-        .type('000000000zz4')
+        .inputMaskWorkaround('input[name=identity-card]', '00000000-0-zz4')
         .should('have.value', '00000000-0-zz4')
 
         .get('input[name=federation-number]')
@@ -2057,7 +2055,7 @@ function registerParticipant(eventId: string, raceId: string, authenticated: boo
 
     .pickOptionFromSelect('gender', 2)
 
-    .pickDate('birthdate', '2001-09-21')
+    .pickDate('birthdate', '2003-10-21')
 
     .get('input[name=phone-number]')
     .type('937654321')
@@ -2124,10 +2122,12 @@ function bookParticipant(eventId: string, raceId: string) {
     .then((l) => {
       const bookingId = l.pathname.split('/')[3];
 
-      cy.get('div[data-cy=login]').should('have.attr', 'data-show-login')
+      cy.get('div[data-cy=login]')
+        .should('have.attr', 'data-show-login')
         .then((isSupposedToShow) => {
           // @ts-ignore (WS thinks this is a JQuery element, not a string)
-          isSupposedToShow === 'true' && cy.get('#checkout-anonymously').click();
+          isSupposedToShow === 'true' &&
+            cy.get('#checkout-anonymously').click();
         })
         .get('input[name=first-name]')
         .type('Nuno')
@@ -2137,13 +2137,12 @@ function bookParticipant(eventId: string, raceId: string) {
 
         .pickOptionFromSelect('gender', 2)
 
-        .pickDate('birthdate', '2001-09-21')
+        .pickDate('birthdate', '2003-10-21')
 
         .get('input[name=phone-number]')
         .type('937654321')
 
-        .get('input[name=identity-card]')
-        .type('000000000zz4')
+        .inputMaskWorkaround('input[name=identity-card]', '00000000-0-zz4')
         .should('have.value', '00000000-0-zz4')
 
         .get('input[name=federation-number]')

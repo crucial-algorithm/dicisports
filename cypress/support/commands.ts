@@ -12,6 +12,8 @@ declare global {
 
       pickDate(name: string, date: string, outside?: string): Chainable<void>;
 
+      inputMaskWorkaround(selector: string, value: string): Chainable<void>;
+
       pickOptionFromSelect(name: string, position: number): Chainable<void>;
 
       pickLocationInMap(triggerOpenMapButtonName: string): Chainable<void>;
@@ -85,6 +87,26 @@ function pickDate(name: string, date: string, outside = 'body') {
 
     .get(outside)
     .click(0, 0, { force: true }); // when within a dialog
+}
+
+
+function inputMaskWorkaround(selector: string, value: string) {
+  cy.get(selector).then(($input) => {
+    // get native DOM element
+    const input = $input.get(0);
+
+    // track last value since we need it for React16 track value
+    // @ts-ignore
+    const lastValue = input.value;
+
+    // @ts-ignore
+    input.value = value;
+
+    // dispatch change into React as well
+    // @ts-ignore
+    input._valueTracker.setValue(lastValue);
+    input.dispatchEvent(new Event('change', { bubbles: true }));
+  });
 }
 
 function pickLocationInMap(triggerOpenMapButtonName: string) {
@@ -204,6 +226,7 @@ Cypress.Commands.add('loginAdmin', loginAdmin);
 Cypress.Commands.add('loginOrganizer', loginOrganizer);
 Cypress.Commands.add('pickOptionFromSelect', pickOptionFromSelect);
 Cypress.Commands.add('pickDate', pickDate);
+Cypress.Commands.add('inputMaskWorkaround', inputMaskWorkaround);
 Cypress.Commands.add('pickLocationInMap', pickLocationInMap);
 Cypress.Commands.add('pickLocationInInlinedMap', pickLocationInInlinedMap);
 Cypress.Commands.add('wasImageLoaded', wasImageLoaded);
