@@ -460,7 +460,7 @@ function EventInformation({
   minPrice: number;
   t: TFunction;
 }) {
-  const [lat, lng] = event?.location?.split(',') || [0, 0];
+  const [lat, lng] = [event?.lat || 0, event?.lng || 0];
 
   return (
     <div className="flex flex-auto flex-col ml-4">
@@ -479,7 +479,7 @@ function EventInformation({
           data-cy="location-link"
         >
           <H6 className="ml-4 mr-2 md:ml-2" data-cy="location">
-            {event.location}
+            {event.placeName}
           </H6>
         </a>
       </div>

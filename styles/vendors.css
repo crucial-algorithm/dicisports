@@ -1,5 +1,4 @@
 @import 'mapbox-gl/dist/mapbox-gl.css';
-@import '@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css';
 @import 'react-responsive-carousel/lib/styles/carousel.min.css';
 
 .date-picker > .p-inputtext.p-component {
@@ -89,4 +88,41 @@
 .p-dropdown-panel > .p-dropdown-items-wrapper > .p-dropdown-items > .p-dropdown-item.p-highlight,
 .p-dropdown-panel > .p-dropdown-items-wrapper > .p-dropdown-items > .p-dropdown-item:not(.p-highlight):not(.p-disabled):hover  {
     @apply dark:bg-gray-700
+}
+
+.carousel .control-next.control-arrow:before {
+    @apply border-solid border-l-0 md:border-l-[14px] border-blueGray-300;
+}
+
+.carousel .control-prev.control-arrow:before {
+    @apply border-solid border-r-0 md:border-r-[14px] border-blueGray-300;
+}
+
+.carousel.carousel-slider .control-arrow:hover {
+    @apply bg-transparent transition ease-in-out delay-150 md:hover:scale-110 duration-300 cursor-pointer;
+}
+
+.carousel .control-arrow:before, .carousel.carousel-slider .control-arrow:before {
+    @apply border-solid border-t-[14px] border-b-[14px] border-t-transparent border-b-transparent;
+}
+
+.carousel .control-dots {
+    @apply w-fit p-4 right-0 rounded-full bg-blueGray-300/20 text-blueGray-400
+    font-semibold;
+}
+
+.p-fileupload.p-fileupload-advanced.p-component .p-fileupload-buttonbar {
+    @apply dark:bg-gray-900 dark:border-gray-700;
+}
+
+.p-fileupload.p-fileupload-advanced.p-component .p-fileupload-content {
+    @apply dark:bg-gray-900 dark:border-gray-700 dark:text-slate-500;
+}
+
+.custom-file-upload.p-button.p-fileupload-choose.p-component {
+    @apply bg-white border-gray-500 dark:text-slate-500 dark:border-gray-700 dark:bg-gray-800;
+}
+
+.custom-file-upload.p-button.p-fileupload-choose.p-component:focus {
+    box-shadow: none;
 }

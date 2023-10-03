@@ -11,7 +11,7 @@ describe('Event', () => {
         'O Peso da Régua será ponto de partida e de reencontro, depois de serem atravessados os concelhos de Lamego, Armamar, ' +
         'Tabuaço, Penedono, Foz Coa e São João da Pesqueira.';
       const locationLink =
-        'https://www.google.com/maps/search/?api=1&query=41.7352772%2C-7.4712548';
+        'https://www.google.com/maps/search/?api=1&query=41.16121699250155%2C-7.788708435515758';
       const granfondo =
         'O Granfondo tem 154km de distância e irá testar as vossas capacidades. Estão prontos para o desafio ?';
 
@@ -36,7 +36,7 @@ describe('Event', () => {
         .should('have.length', 3)
 
         .get('[data-cy=location]')
-        .contains('Chaves')
+        .contains('Peso da Régua')
 
         .get('[data-cy=price]')
         .contains('10€')
@@ -174,10 +174,7 @@ describe('Event', () => {
           new Date(Date.now() + 86400 * 1000).toISOString().split('T')[0]
         )
 
-        .pickLocationInMap('open-map')
-
-        .get('input[name=short-address]')
-        .type('Fátima')
+        .pickLocationInInlinedMap('location')
 
         .get('#booking-external')
         .check()
@@ -273,7 +270,7 @@ describe('Event', () => {
         .get('#publish')
         .click()
 
-        .get('.cy-delete-dialog')
+        .get('.cy-publish-dialog')
         .should('exist')
 
         .get('button.cy-primary')
@@ -300,7 +297,7 @@ describe('Event', () => {
         .get('#unpublish')
         .click()
 
-        .get('.cy-delete-dialog')
+        .get('.cy-unpublish-dialog')
         .should('exist')
 
         .get('button.cy-primary')
@@ -783,7 +780,7 @@ describe('Event', () => {
         .get('#unpublish')
         .click()
 
-        .get('.cy-delete-dialog')
+        .get('.cy-unpublish-dialog')
         .should('exist')
 
         .get('button.cy-primary')
@@ -798,7 +795,7 @@ describe('Event', () => {
         .get('#publish')
         .click()
 
-        .get('.cy-delete-dialog')
+        .get('.cy-publish-dialog')
         .should('exist')
 
         .get('button.cy-primary')
@@ -973,27 +970,26 @@ describe('Event', () => {
     });
 
     it('should show handled error when location is not picked on map', () => {
-      cy.intercept('GET', '/o/event/*?_data=routes*')
-        .as('EventRequests')
-        .visitAndWaitForHydration('/o')
-        .get('button[name=create-event]')
+      cy.visitAndWaitForHydration('/o/event/cmWJ3DMDwzJRwMaTQv53')
+
+        .get('#publish')
         .click()
 
-        .wait('@EventRequests')
+        .get('.cy-publish-dialog')
+        .should('exist')
 
-        .get('input[name=short-address]')
-        .type('Fátima')
-
-        .intercept('POST', '/o/event/*_data=routes*')
-        .as('createEvent')
-
-        .get('button[name=create-event]')
+        .get('button.cy-primary')
+        .should('exist')
         .click()
 
-        .wait('@createEvent')
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.eq('/o/event/cmWJ3DMDwzJRwMaTQv53');
+        })
 
-        .get('button[name=open-map-on-error]')
-        .should('exist');
+        .get('p[role=alert]')
+        .should('exist')
+        .contains('Avenida Fernão De Magalhães, onde é? Defina no mapa.');
     });
 
 

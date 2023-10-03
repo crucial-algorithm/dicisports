@@ -107,7 +107,7 @@
   "Cheaper Early Bird": "Insira um valor menor que o preço da distância",
   "Add Regulation": "Adicione o regulamento",
   "Write Regulation": "Escrever",
-  "Upload Regulation Button": "Clique para escolher ficheiro",
+  "Upload Regulation Button": "Clique para procurar",
   "Regulation Dropzone": "Ou arraste um ficheiro",
   "View in Map": "(ver mapa)",
 
@@ -135,7 +135,7 @@
   "Ignore": "Ignorar",
   "Or": "Ou",
 
-  "Where Is Location X": "{{location}}, onde é \uD83E\uDD14?",
+  "Where Is Location X": "{{location}}, onde é? Defina no mapa.",
   "Pick Location On Map": " Indique no mapa",
   "Remaining Form Errors": "Existem erros no formulário por corrigir"
 }

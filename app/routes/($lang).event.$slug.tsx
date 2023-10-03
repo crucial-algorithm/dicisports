@@ -20,15 +20,16 @@ import {
   HeartIcon as Favorite,
   XMarkIcon
 } from '@heroicons/react/24/solid';
+
 import * as React from 'react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Carousel } from 'react-responsive-carousel';
 import clsx from 'clsx';
 import { InView } from 'react-intersection-observer';
 import { Tooltip } from 'primereact/tooltip';
 
 import CopyToClipboard from '~/components/shared/CopyToClipboard';
+
 import useLang from '~/hooks/useLang';
 
 import type { EventWithRacesDifficultiesAndDocuments } from '~/server/db/events.server';
@@ -40,6 +41,7 @@ import {
 import Main from '~/components/shared/Main';
 import { H2, H3, H4, H5, H6, Paragraph } from '~/components/shared/typography';
 import Button, { ButtonLink } from '~/components/shared/Button';
+import Carousel from '~/components/Carousel';
 import { getUser } from '~/server/auth/session.server';
 import { Notification } from '~/components/shared/NotificationMessage';
 import DisplayImg from '~/components/shared/DisplayImg';
@@ -59,6 +61,8 @@ import { findEventPerks } from '~/server/db/perks.server';
 import WhenListEmpty from '~/components/shared/Empty';
 import { getI18nText } from '~/components/I18nText';
 import { findOrganizer } from '~/server/db/organizer.server';
+
+import EventGalleria from '~/components/EventGalleria';
 
 type LoaderData = {
   event: EventWithRacesDifficultiesAndDocuments;
@@ -131,7 +135,8 @@ export const loader: LoaderFunction = async ({ params, request }) => {
 
 export default function EventDisplayRoute() {
   const favorite = useFetcher();
-  const { event, isUserFavorite, races, perks, organizer } = useLoaderData<LoaderData>();
+  const { event, isUserFavorite, races, perks, organizer } =
+    useLoaderData<LoaderData>();
   const { i18n, t } = useTranslation('event');
 
   let minPrice = 0;
@@ -251,8 +256,18 @@ export default function EventDisplayRoute() {
               .sort((a: Perk, b: Perk) => a.displayOrder - b.displayOrder)
               .map((p: Perk, index: number) => (
                 <div key={p.id} className="flex items-center" data-cy="perk">
-                  {p.isEnabled && <CheckIcon className="w-5 h-5 dark:text-blueGray-500" data-cy={`perk-${p.id}-available`} /> }
-                  {!p.isEnabled && <XMarkIcon className="w-5 h-5 dark:text-blueGray-500" data-cy={`perk-${p.id}-unavailable`} /> }
+                  {p.isEnabled && (
+                    <CheckIcon
+                      className="w-5 h-5 dark:text-blueGray-500"
+                      data-cy={`perk-${p.id}-available`}
+                    />
+                  )}
+                  {!p.isEnabled && (
+                    <XMarkIcon
+                      className="w-5 h-5 dark:text-blueGray-500"
+                      data-cy={`perk-${p.id}-unavailable`}
+                    />
+                  )}
                   <p
                     className="ml-1 text-sm font-medium text-gray-900 dark:text-gray-300"
                     data-cy={`perk-${index}`}
@@ -306,7 +321,14 @@ type DisplayRaceProps = {
   externalBookingUrl?: string;
 };
 
-function DisplayRace({ race, index, eventId, isBookingClosed, minHeight, externalBookingUrl }: DisplayRaceProps) {
+function DisplayRace({
+  race,
+  index,
+  eventId,
+  isBookingClosed,
+  minHeight,
+  externalBookingUrl
+}: DisplayRaceProps) {
   const { t } = useTranslation('event');
   const raceTime = displayTimeOfDay(race.startTime);
   const [expanded, setExpanded] = useState<boolean>(false);
@@ -315,7 +337,8 @@ function DisplayRace({ race, index, eventId, isBookingClosed, minHeight, externa
 
   if (race.priceEarlyBird && race.validUntil) {
     // calculate the difference in milliseconds (+ 1 day, given the user selects an end date that is part of range)
-    const diffInMs = new Date(race.validUntil).getTime() - Date.now() + 86400 * 1000;
+    const diffInMs =
+      new Date(race.validUntil).getTime() - Date.now() + 86400 * 1000;
 
     // convert the difference to days
     validDuring = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
@@ -469,7 +492,10 @@ function DisplayRace({ race, index, eventId, isBookingClosed, minHeight, externa
               {t('Book')}
             </Button>
             {isBookingClosed && (
-              <label className="dark:text-blueGray-500" data-cy="booking-closed">
+              <label
+                className="dark:text-blueGray-500"
+                data-cy="booking-closed"
+              >
                 {t('Booking Closed')}
               </label>
             )}
@@ -510,8 +536,7 @@ function DisplayDocument(props: { document: Document; index: number }) {
         >
           {fileExtension[fileExtension.length - 1].toUpperCase()}
         </div>
-          {document.label}
-
+        {document.label}
       </div>
     </Link>
   );
@@ -538,7 +563,7 @@ function DisplayRegulation({ event }: { event: Event }) {
       data-cy="regulation"
     >
       <div className="flex items-center border border-black dark:border-white rounded-2xl h-16 p-4 mr-2 mb-2">
-          {t('Regulation')}
+        {t('Regulation')}
       </div>
     </Link>
   );
@@ -566,6 +591,7 @@ function EventHeader({
   const [isFavorite, setIsFavorite] = useState<boolean>(isUserFavorite);
   const [message, setMessage] = useState<string>(favoriteAddedMessage);
   const [address, setAddress] = useState<string>('');
+  const galleria = useRef(null);
   let showFavoriteAddedNotification: any = null;
   let showCopiedToClipboardNotification: any = null;
 
@@ -589,10 +615,6 @@ function EventHeader({
     showCopiedToClipboardNotification();
   }
 
-  function cleanStatus() {
-    return '';
-  }
-
   useEffect(() => {
     if (favorite.type === 'actionReload' && favorite.data.ok) {
       setMessage(
@@ -614,42 +636,37 @@ function EventHeader({
     favoriteRemovedMessage
   ]);
 
+  function handleOpenGallery(e: React.MouseEvent) {
+    // @ts-ignore
+    galleria.current?.show();
+
+    e.stopPropagation();
+  }
+
   return (
     <div className="flex flex-col md:flex-row mt-4">
-      <div className="w-full md:w-[22rem]">
-        {images.length > 1 ? (
-          <Carousel statusFormatter={cleanStatus}>
-            {images.map((image, idx) => (
-              <DisplayImg
-                key={idx}
-                dataCy={`image${idx}`}
-                imageId={image}
-                className="w-[500px]"
-                transformations={{
-                  resize: {
-                    type: 'fill',
-                    width: 400,
-                    height: 400
-                  }
-                }}
-              />
-            ))}
-          </Carousel>
-        ) : (
-          <DisplayImg
-            dataCy="image0"
-            imageId={images[0]}
-            className="w-[500px]"
-            transformations={{
-              resize: {
-                type: 'fill',
-                width: 400,
-                height: 400
-              }
-            }}
-          />
-        )}
+      <div
+        className="relative w-full md:w-[22rem] cursor-pointer"
+        onClick={handleOpenGallery}
+      >
+        <DisplayImg
+          dataCy="image0"
+          imageId={images[0]}
+          className="w-[500px]"
+          transformations={{
+            resize: {
+              type: 'fill',
+              width: 400,
+              height: 400
+            }
+          }}
+        />
+        <div className="absolute rounded bottom-0 left-0 right-0 m-auto px-2 w-fit bg-gray-300/50 text-gray-700">
+          {t('Click for full size image')}
+        </div>
       </div>
+
+      <EventGalleria values={images} ref={galleria} />
 
       <div className="flex flex-auto flex-col mt-4 ml-4">
         <div className="flex flex-row justify-end mb-2">
@@ -706,8 +723,12 @@ function EventHeader({
             rel="noreferrer"
             data-cy="location-link"
           >
-            <H6 className="ml-4 mr-2 md:ml-2" data-cy="location">
-              {event.location}
+            <H6 className="ml-4 mr-2 md:ml-2">
+              <span data-cy="location">{event.placeName}</span>
+              {event.location?.place && (
+                <>,&nbsp;{event.location?.place}</>
+              )}
+              <span className="text-sm link">&nbsp;{t('Open map')}</span>
             </H6>
           </a>
         </div>
@@ -761,8 +782,8 @@ function StickyPriceTag({
       className={clsx(
         'flex flex-row justify-between items-center inset-x-0 top-0 p-4 fixed dark:bg-gray-900 bg-white dark:border-gray-500 drop-shadow-md z-10',
         {
-          'flex': visible,
-          'hidden': !visible
+          flex: visible,
+          hidden: !visible
         }
       )}
     >
@@ -878,7 +899,10 @@ function SeeMoreOrLessButton({
     'absolute inline-block h-4 w-4 m-0 text-white bg-black dark:bg-blueGray-500 rounded-full cursor-pointer';
 
   return (
-    <div className="flex flex-col items-center relative py-2 mb-4" onClick={onClick}>
+    <div
+      className="flex flex-col items-center relative py-2 mb-4"
+      onClick={onClick}
+    >
       <label
         data-cy={name}
         className={clsx(

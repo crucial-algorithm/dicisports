@@ -51,7 +51,7 @@ export default function DataTable({ data, t }: DataTableProps) {
                       {row.name}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {row.location}
+                      {row.placeName}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {row.startAt?.toUTCString()}

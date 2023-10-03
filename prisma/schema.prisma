@@ -106,7 +106,8 @@ model Event {
   endAt                 DateTime?   @map("end_at")
   lat                   Float?
   lng                   Float?
-  location              String?
+  location              Json?
+  placeName             String?     @map("place_name")
   useExternalBooking    Boolean     @default(false) @map("use_external_booking")
   externalBookingUrl    String?     @map("external_booking_url")
   description           String?

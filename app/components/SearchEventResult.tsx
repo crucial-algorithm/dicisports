@@ -71,6 +71,10 @@ export default function EventResult({
     favoriteRemovedMessage
   ]);
 
+  function stopPropagation(e: React.MouseEvent) {
+    e.stopPropagation();
+  }
+
   return (
     <>
       <EventEntry
@@ -93,21 +97,24 @@ export default function EventResult({
               id={event.id}
               successMessage={handlerClickToCopy}
             />
-            <favorite.Form
-              method="post"
-              action={`/fav/${event.id}`}
-            >
+            <favorite.Form method="post" action={`/fav/${event.id}`}>
               {isFavorite ? (
                 <Button
                   size="tiny"
                   name="action"
                   value="remove"
                   id="remove-favorite"
+                  onClick={stopPropagation}
                 >
                   <Favorite className="h-6 w-6 m-0 inline-block" />
                 </Button>
               ) : (
-                <Button size="tiny" name="action" value="add">
+                <Button
+                  size="tiny"
+                  name="action"
+                  value="add"
+                  onClick={stopPropagation}
+                >
                   <HeartIcon className="h-6 w-6 m-0 inline-block" />
                 </Button>
               )}
