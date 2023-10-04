@@ -74,12 +74,12 @@ export const action: ActionFunction = async ({ request, params }) => {
 
   const booking: Booking | null = await findBooking(bookingId);
 
-  if (!booking) {
-    return '/';
+  if (!booking || (booking && booking.userId !== clientId)) {
+    return redirect('/');
   }
 
-  if (booking.userId !== clientId) {
-    return redirect('/');
+  if (booking.status === CheckoutStatus.confirmed) {
+    return redirect(`/checkout/confirmation/${booking.id}`);
   }
 
   const eventId = booking.eventId;
@@ -87,10 +87,6 @@ export const action: ActionFunction = async ({ request, params }) => {
 
   if (!event) {
     return redirect('/');
-  }
-
-  if (booking.status === CheckoutStatus.confirmed) {
-    return redirect(`/checkout/confirmation/${booking.id}`);
   }
 
   try {
@@ -153,12 +149,12 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   const bookingId = params.bookingId as string;
   const booking = await findBooking(bookingId);
 
-  if (!booking) {
+  if (!booking || (booking && booking.userId !== clientId)) {
     return redirect('/');
   }
 
-  if (booking.userId !== clientId) {
-    return redirect('/');
+  if (booking.status === CheckoutStatus.confirmed) {
+    return redirect(`/checkout/confirmation/${booking.id}`);
   }
 
   const eventId = booking.eventId;
