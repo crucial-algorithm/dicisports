@@ -21,6 +21,7 @@ import type {
   User as DBUser,
   EventTeam as DBEventTeam
 } from '@prisma/client';
+import type { Prisma } from '@prisma/client';
 
 type NonNullProperties<Type> = {
   [Key in keyof Type]-?: Exclude<Type[Key], null | undefined>;
@@ -137,7 +138,8 @@ type CreateEventInput = {
   startAt: Date | string;
   lat: number | null;
   lng: number | null;
-  location: string | null;
+  location: Prisma.InputJsonValue | Prisma.NullableJsonNullValueInput;
+  placeName: string | null;
   useExternalBooking: boolean;
   externalBookingUrl?: string | null;
   description?: string | null;

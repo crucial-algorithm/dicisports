@@ -9,9 +9,8 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 
 type Props = {
-  customUpload: boolean;
-  mode: 'basic' | 'advanced' | undefined;
-  chooseLabel: string;
+  uploadButtonLabel: string;
+  emptyDropZoneLabel: string;
   uploadHandler?: (f: FileUploadHandlerEvent) => void;
   emptyTemplate?: ReactElement;
   contentClassName?: string;
@@ -24,16 +23,21 @@ export const handle = {
 
 export default function UploadFile({
   name,
-  mode,
-  chooseLabel,
+  uploadButtonLabel,
   accept,
-  customUpload,
   uploadHandler,
-  emptyTemplate,
+  emptyDropZoneLabel,
   contentClassName,
   className
 }: Props) {
   const { t } = useTranslation('create-event-form');
+
+  const chooseOptions = {
+    icon: 'w-0',
+    iconOnly: false,
+    label: uploadButtonLabel,
+    className: 'custom-file-upload'
+  };
 
   function itemTemplate(file: FileUploadProps, options: ItemTemplateOptions) {
     return (
@@ -52,16 +56,18 @@ export default function UploadFile({
     <FileUpload
       id="file"
       name={name}
-      mode={mode}
+      mode="advanced"
       accept={accept}
-      customUpload={customUpload}
+      customUpload={true}
       uploadHandler={uploadHandler}
-      emptyTemplate={emptyTemplate}
+      emptyTemplate={
+        <p className="m-0">{emptyDropZoneLabel}</p>
+      }
       contentClassName={contentClassName}
       className={className}
-      chooseLabel={chooseLabel}
       itemTemplate={itemTemplate}
       auto={true}
+      chooseOptions={chooseOptions}
     />
   );
 }

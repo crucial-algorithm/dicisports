@@ -1,11 +1,103 @@
-.mapboxgl-ctrl-geocoder--input {
-    padding-left: 40px;
-}
-
-.mapboxgl-ctrl-bottom-right {
-    bottom: 80px;
-}
-
 .mapboxgl-ctrl.mapboxgl-ctrl-attrib.mapboxgl-compact {
     display: none;
 }
+
+
+.mapboxgl-ctrl-geocoder--input {
+    @apply w-full px-11 py-4 rounded-lg placeholder-gray-500 dark:placeholder-blueGray-600 font-medium border-0
+    bg-gray-100 text-base md:text-lg
+    dark:text-white dark:bg-gray-800
+    disabled:text-gray-400 dark:disabled:text-blueGray-500;
+}
+
+.mapboxgl-ctrl-geocoder--input::placeholder {
+    @apply text-gray-500 dark:text-blueGray-500;
+}
+
+.mapboxgl-ctrl-geocoder--icon.mapboxgl-ctrl-geocoder--icon-search {
+    display: none;
+}
+
+.mapboxgl-ctrl-geocoder .suggestions {
+    border-radius: 4px;
+    left: 0;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    top: 110%;
+    top: calc(100% + 6px);
+    z-index: 10;
+    overflow: hidden;
+    font-size: 15px;
+
+    @apply shadow-md bg-white dark:bg-gray-800 relative mt-2 lg:absolute lg:mt-0;
+}
+
+.mapboxgl-ctrl-geocoder--suggestion, .mapbox-gl-geocoder--error.mapbox-gl-geocoder--no-results {
+    @apply text-gray-700 dark:text-white
+}
+
+.mapbox-gl-geocoder--error.mapbox-gl-geocoder--no-results {
+    @apply font-bold p-4;
+}
+
+.mapboxgl-ctrl-geocoder--suggestion-title, .mapboxgl-ctrl-geocoder--suggestion-address {
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.mapboxgl-ctrl-geocoder--suggestion-title {
+    font-weight: 700;
+}
+
+.mapboxgl-ctrl-geocoder .suggestions > .active > a, .mapboxgl-ctrl-geocoder .suggestions > li > a:hover {
+    text-decoration: none;
+    cursor: pointer;
+
+    @apply bg-gray-100 dark:bg-gray-700
+}
+
+.mapboxgl-ctrl-geocoder .suggestions > li > a {
+    cursor: default;
+    display: block;
+    padding: 6px 12px;
+}
+
+.mapboxgl-ctrl-geocoder .mapboxgl-ctrl-geocoder--pin-right > * {
+    z-index: 2;
+    position: absolute;
+    right: 8px;
+    top: 22px;
+    display: none;
+}
+
+.mapboxgl-ctrl-geocoder--icon.mapboxgl-ctrl-geocoder--icon-close {
+    @apply fill-gray-700 dark:fill-white
+}
+
+.mapboxgl-ctrl-geocoder--powered-by {
+    visibility: hidden;
+    font-size: 0;
+}
+
+.dc-map-loaded .dc-map-pin, .dc-map-loaded .dc-map-label {
+    display: flex;
+}
+
+.dc-map-loaded .dc-map-loading.p-progress-spinner {
+    display: none;
+}
+
+.dc-map-loading {
+    z-index: 1;
+    top: 20px;
+    left: 18px;
+}
+
+.dc-map-loading.p-progress-spinner {
+    position: absolute;
+    display: block;
+}
+

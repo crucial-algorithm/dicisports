@@ -76,6 +76,10 @@ export default function GroupResult({
     ? group.whatsapp || ''
     : `/login?a=ws&g=${group.id}&l=${location}`;
 
+  function stopPropagation(e: React.MouseEvent) {
+    e.stopPropagation();
+  }
+
   return (
     <>
       <GroupEntry
@@ -90,6 +94,7 @@ export default function GroupResult({
                 type="button"
                 to={whatsAppLink}
                 id={`whatsapp-${group.id}`}
+                onClick={stopPropagation}
               >
                 <WhatsApp className="h-6 w-6 m-0 inline-block fill-white dark:fill-black" />
               </ButtonLink>
@@ -111,6 +116,7 @@ export default function GroupResult({
                   name="action"
                   value="remove"
                   id="remove-favorite"
+                  onClick={stopPropagation}
                 >
                   <Favorite className="h-6 w-6 m-0 inline-block" />
                 </Button>
@@ -120,6 +126,7 @@ export default function GroupResult({
                   name="action"
                   value="add"
                   id={`add-favorite-${group.id}`}
+                  onClick={stopPropagation}
                 >
                   <HeartIcon className="h-6 w-6 m-0 inline-block" />
                 </Button>

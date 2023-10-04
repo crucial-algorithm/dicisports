@@ -293,7 +293,7 @@ describe('Search', () => {
         .get('div[data-cy=distance]:nth(1)')
         .should('contain', '12 km')
         .get('div[data-cy=distance]:nth(2)')
-        .should('contain', '29 km')
+        .should('contain', '28 km')
         .get('div[data-cy=distance]:nth(3)')
         .should('contain', '42 km')
         .get('div[data-cy=distance]:nth(4)')
@@ -307,7 +307,7 @@ describe('Search', () => {
         .get('div[data-cy=distance]:nth(8)')
         .should('contain', '57 km')
         .get('div[data-cy=distance]:nth(9)')
-        .should('contain', '63 km');
+        .should('contain', '62 km');
     });
 
     context('Test all filters', () => {

@@ -1,14 +1,12 @@
+import { useNavigate } from '@remix-run/react';
 import type { ReactNode } from 'react';
 import React from 'react';
 
 import { useTranslation } from 'react-i18next';
 
-import clsx from 'clsx';
-
-import { Carousel } from 'react-responsive-carousel';
-
 import type { Group, TranslationObject } from '~/types';
 import I18nText from '~/components/I18nText';
+import Carousel from '~/components/Carousel';
 import DisplayImg from '~/components/shared/DisplayImg';
 import { displayTimeOfDay } from '~/utils/misc';
 import ResultEntryDescription from '~/components/shared/ResultEntryDescription';
@@ -23,18 +21,19 @@ type Props = {
 export default function GroupEntry({ group, actions, footer, img }: Props) {
   const { t } = useTranslation('m-groups');
   const tc = useTranslation('common').t;
+  const navigate = useNavigate();
 
   function translateDay(day: number) {
     return tc(
-        [
-          'Monday',
-          'Tuesday',
-          'Wednesday',
-          'Thursday',
-          'Friday',
-          'Saturday',
-          'Sunday'
-        ][day]
+      [
+        'Monday',
+        'Tuesday',
+        'Wednesday',
+        'Thursday',
+        'Friday',
+        'Saturday',
+        'Sunday'
+      ][day]
     );
   }
 
@@ -46,28 +45,31 @@ export default function GroupEntry({ group, actions, footer, img }: Props) {
     )
     .join(' | ');
 
+  function goToGroupDetail() {
+    navigate(`/group/${group.slug}`);
+  }
+
   return (
     <div
-      className={clsx(
-        'relative flex mb-12',
-        'flex-col',
-        'md:flex-row',
-        'p-4',
-        'border-b last:border-none border-gray-300 dark:border-gray-300'
-      )}
+      className={`relative p-4 flex mb-12 flex-col md:flex-row cursor-pointer
+        border-b last:border-none border-gray-300 dark:border-gray-300`}
       data-cy="group-entry"
+      onClick={goToGroupDetail}
     >
       <GroupImage group={group} img={img} />
       <div className="w-full h-full p-2 lg:pl-6">
         <div className="flex flex-col">
           <a
             href={`/group/${group.slug}`}
-            className="text-lg font-extrabold dark:text-white cursor-default"
+            className="text-lg font-extrabold dark:text-white"
             data-cy="group-name"
           >
             {group.name}
           </a>
-          <span className="mb-4 dark:text-white font-bold capitalize" data-cy="group-schedule">
+          <span
+            className="mb-4 dark:text-white font-bold capitalize"
+            data-cy="group-schedule"
+          >
             {schedule}
           </span>
           <Feature
@@ -84,7 +86,10 @@ export default function GroupEntry({ group, actions, footer, img }: Props) {
               ({t('View in Map')})
             </a>
           </Feature>
-          <div className="flex justify-between align-middle" data-cy="group-spirit">
+          <div
+            className="flex justify-between align-middle"
+            data-cy="group-spirit"
+          >
             <Feature
               label={t('Purpose')}
               value={group.groupSpirit?.name || ''}
@@ -189,27 +194,9 @@ function GroupImage({ group, img }: { group: Group; img?: string }) {
     );
   }
 
-  function cleanStatus() {
-    return '';
-  }
-
   return (
     <Wrapper>
-      <Carousel statusFormatter={cleanStatus}>
-        {images.map((image, idx) => (
-          <DisplayImg
-            key={idx}
-            imageId={image}
-            transformations={{
-              resize: {
-                type: 'fill',
-                width: 400,
-                height: 400
-              }
-            }}
-          />
-        ))}
-      </Carousel>
+      <Carousel images={images} />
     </Wrapper>
   );
 }

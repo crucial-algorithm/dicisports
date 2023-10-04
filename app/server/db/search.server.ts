@@ -42,7 +42,7 @@ async function searchEventsAndGroups(
                      null                                                                  AS "group_spirit_id",
                      e.lat                                                                 AS "lat",
                      e.lng                                                                 AS "lng",
-                     e.location                                                            AS "location",
+                     e.place_name                                                          AS "location",
                      null                                                                  AS "near",
                      null                                                                  AS "whatsapp",
                      e.image1                                                              AS "image1",

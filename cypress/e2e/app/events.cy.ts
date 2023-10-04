@@ -11,7 +11,7 @@ describe('Event', () => {
         'O Peso da Régua será ponto de partida e de reencontro, depois de serem atravessados os concelhos de Lamego, Armamar, ' +
         'Tabuaço, Penedono, Foz Coa e São João da Pesqueira.';
       const locationLink =
-        'https://www.google.com/maps/search/?api=1&query=41.7352772%2C-7.4712548';
+        'https://www.google.com/maps/search/?api=1&query=41.16121699250155%2C-7.788708435515758';
       const granfondo =
         'O Granfondo tem 154km de distância e irá testar as vossas capacidades. Estão prontos para o desafio ?';
 
@@ -36,7 +36,7 @@ describe('Event', () => {
         .should('have.length', 3)
 
         .get('[data-cy=location]')
-        .contains('Chaves')
+        .contains('Peso da Régua')
 
         .get('[data-cy=price]')
         .contains('10€')
@@ -174,10 +174,7 @@ describe('Event', () => {
           new Date(Date.now() + 86400 * 1000).toISOString().split('T')[0]
         )
 
-        .pickLocationInMap('open-map')
-
-        .get('input[name=short-address]')
-        .type('Fátima')
+        .pickLocationInInlinedMap('location')
 
         .get('#booking-external')
         .check()
@@ -273,7 +270,7 @@ describe('Event', () => {
         .get('#publish')
         .click()
 
-        .get('.cy-delete-dialog')
+        .get('.cy-publish-dialog')
         .should('exist')
 
         .get('button.cy-primary')
@@ -300,7 +297,7 @@ describe('Event', () => {
         .get('#unpublish')
         .click()
 
-        .get('.cy-delete-dialog')
+        .get('.cy-unpublish-dialog')
         .should('exist')
 
         .get('button.cy-primary')
@@ -335,9 +332,7 @@ describe('Event', () => {
 
         .location()
         .should((loc) => {
-          expect(loc.pathname).to.contain(
-            '/o/event/MY4bvgxDbMtGv8rbYe5d'
-          );
+          expect(loc.pathname).to.contain('/o/event/MY4bvgxDbMtGv8rbYe5d');
         })
 
         .visitAndWaitForHydration('/event/love-tiles-douro-granfondo-2023')
@@ -785,7 +780,7 @@ describe('Event', () => {
         .get('#unpublish')
         .click()
 
-        .get('.cy-delete-dialog')
+        .get('.cy-unpublish-dialog')
         .should('exist')
 
         .get('button.cy-primary')
@@ -800,7 +795,7 @@ describe('Event', () => {
         .get('#publish')
         .click()
 
-        .get('.cy-delete-dialog')
+        .get('.cy-publish-dialog')
         .should('exist')
 
         .get('button.cy-primary')
@@ -957,13 +952,17 @@ describe('Event', () => {
 
         .wait('@EventRequests')
 
-        .get('div[data-cy=editor-event-description] > div > .p-editor-content > .ql-editor')
+        .get(
+          'div[data-cy=editor-event-description] > div > .p-editor-content > .ql-editor'
+        )
         .invoke('attr', 'data-placeholder')
         .then((value) => {
           expect(value).to.eq('A edição deste ano será a melhor de sempre...');
         })
 
-        .get('div[data-cy=editor-get-there] > div > .p-editor-content > .ql-editor')
+        .get(
+          'div[data-cy=editor-get-there] > div > .p-editor-content > .ql-editor'
+        )
         .invoke('attr', 'data-placeholder')
         .then((value) => {
           expect(value).to.eq('Como chegar lá... Onde estacionar...');
@@ -971,27 +970,101 @@ describe('Event', () => {
     });
 
     it('should show handled error when location is not picked on map', () => {
-      cy.intercept('GET', '/o/event/*?_data=routes*')
-        .as('EventRequests')
-        .visitAndWaitForHydration('/o')
-        .get('button[name=create-event]')
+      cy.visitAndWaitForHydration('/o/event/cmWJ3DMDwzJRwMaTQv53')
+
+        .get('#publish')
         .click()
 
-        .wait('@EventRequests')
+        .get('.cy-publish-dialog')
+        .should('exist')
 
-        .get('input[name=short-address]')
-        .type('Fátima')
-
-        .intercept('POST', '/o/event/*_data=routes*')
-        .as('createEvent')
-
-        .get('button[name=create-event]')
+        .get('button.cy-primary')
+        .should('exist')
         .click()
 
-        .wait('@createEvent')
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.eq('/o/event/cmWJ3DMDwzJRwMaTQv53');
+        })
 
-        .get('button[name=open-map-on-error]')
-        .should('exist');
+        .get('p[role=alert]')
+        .should('exist')
+        .contains('Avenida Fernão De Magalhães, onde é? Defina no mapa.');
+    });
+
+
+    it('should redirect to external booking', () => {
+      cy.visitAndWaitForHydration(
+        '/pt/event/corrida-spedro-one-place'
+      )
+        .get('#book-race-2Q8dMm4gz7b2GeuGRocj')
+        .should('have.prop', 'href')
+        .and((l) => {
+          expect(l).to.eq('https://registerandgo.net/?evento=1019');
+        });
+    });
+
+    it('should download regulation', () => {
+      cy.visitAndWaitForHydration('/pt/event/love-tiles-douro-granfondo-2023')
+        .get('[data-cy=regulation]')
+        .should('exist')
+        .click()
+
+        .readFile('./cypress/downloads/regulamento_v2.0.pdf');
+    });
+
+    context('Confirmation Prompt', () => {
+      it('should show confirmation when trying to leave route with dirty form', () => {
+        cy.on('window:confirm', (text) => {
+          expect(text).to.eq(
+            'Todas as alterações feitas serão perdidas. Quer continuar?'
+          );
+        });
+
+        cy.visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d')
+
+          .get('input[name=event-name]')
+          .clear()
+          .type('a')
+
+          .get('#back-button')
+          .click();
+      });
+
+      it('should not block redirect - confirm', () => {
+        cy.visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d')
+
+          .get('input[name=event-name]')
+          .clear()
+          .type('a')
+
+          .get('#back-button')
+          .click()
+
+          .location()
+          .should((l) => {
+            expect(l.pathname).to.eq('/o/event/MY4bvgxDbMtGv8rbYe5d/dashboard');
+          });
+      });
+
+      it('should block redirect - cancel', () => {
+        // Cypress confirms all "confirm" prompts, this will make sure it presses "cancel" instead of "confirm"
+        cy.on('window:confirm', () => false);
+
+        cy.visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d')
+
+          .get('input[name=event-name]')
+          .clear()
+          .type('a')
+
+          .get('#back-button')
+          .click()
+
+          .location()
+          .should((l) => {
+            expect(l.pathname).to.eq('/o/event/MY4bvgxDbMtGv8rbYe5d');
+          });
+      });
     });
   });
 });

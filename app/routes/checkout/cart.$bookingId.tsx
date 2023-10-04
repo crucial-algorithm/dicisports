@@ -204,7 +204,7 @@ export default function CheckoutRegistrationsRoute() {
         <H6>
           <DisplayDate date={new Date(event.startAt || 0)} />
         </H6>
-        <H6>{event.location}</H6>
+        <H6>{event.placeName}</H6>
       </div>
       <div className="flex flex-col md:flex-row mt-8">
         <div className="flex-col w-full md:w-[calc(100%-(480px))] md:pr-4">

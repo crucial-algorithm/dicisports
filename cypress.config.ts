@@ -47,7 +47,6 @@ export default defineConfig({
       }
     },
     setupNodeEvents(on, config) {
-
       config = cypressBrowserPermissionsPlugin(on, config);
 
       // implement node event listeners here
