@@ -70,6 +70,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   const authenticatedClient = await getUser(request);
   const bookingId = params.bookingId as string;
   const booking = await findBooking(bookingId);
+  const lng = await i18n.getLocale(request);
 
   // We check if user is authenticated -> authenticatedClient, if not, we use the client session -> anonymousClient
   const clientId =
@@ -88,11 +89,16 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   const eventId = booking.eventId;
 
   const event = (await findEvent(eventId)) as Event;
+
+  if (!event) {
+    return redirect('/');
+  }
+
   const cart = await findBookingCart(bookingId);
   const raceParticipants = await findUserEventRaceParticipants(bookingId);
 
   if (!raceParticipants || raceParticipants?.length === 0) {
-    return redirect(`/checkout/cart/${eventId}`);
+    return redirect(`/${lng}/event/${event.slug}`);
   }
 
   if (booking.status == CheckoutStatus.checkout) {

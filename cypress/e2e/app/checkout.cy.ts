@@ -619,35 +619,11 @@ describe('Checkout', () => {
     });
 
     it('should fill form with saved participant info', () => {
-      cy.intercept(
-        'POST',
-        '/checkout/cart/gLqrDfMx6qkTHn6hoZqA*'
-      )
-        .as('addRace')
+      addRaceToCart('trilho-dos-moinhos', 'LoDjLz7dWQTWk6Th4dRC', true);
 
-        .visitAndWaitForHydration('/checkout/cart/gLqrDfMx6qkTHn6hoZqA')
-
-        .login()
-
-        .get('#add-race-LoDjLz7dWQTWk6Th4dRC')
-        .click()
-
-        .wait('@addRace')
-
-        .get('#checkout')
-        .click()
-
-        .wait('@addRace')
-
-        .waitForHydration()
-
-        .location()
-        .should((l) => {
-          expect(l.pathname).to.include('/checkout/info/');
-        })
-
+      cy.waitForHydration()
         .get('button[name=select-userSavedParticipants]')
-        .should('exist')
+        .should('exist').and('be.visible')
         .pickOptionFromSelect('userSavedParticipants', 1)
 
         .get('input[name=first-name]')
@@ -1709,8 +1685,7 @@ describe('Checkout', () => {
 
 function registerParticipant(
   slug: string,
-  raceId: string,
-  authenticated: boolean = true
+  raceId: string
 ) {
   cy.visitAndWaitForHydration(`/pt/event/${slug}`)
 
