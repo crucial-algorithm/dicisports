@@ -51,13 +51,12 @@ describe('Checkout', () => {
 
         .location()
         .should((l) => {
-          expect(l.pathname).to.eq('/checkout/cart/MY4bvgxDbMtGv8rbYe5d');
-          expect(l.search).to.contain('a=update');
+          expect(l.pathname).to.include('/checkout/cart/');
         })
 
         .intercept(
           'POST',
-          '/checkout/cart/MY4bvgxDbMtGv8rbYe5d*'
+          '/checkout/cart/*'
         )
         .as('removeParticipant')
 
@@ -74,163 +73,63 @@ describe('Checkout', () => {
     });
 
     it('Should fill form and save participant', () => {
-      registerParticipant('MY4bvgxDbMtGv8rbYe5d', 'AhowRdNWCBQWSuivSt7h');
-    });
-
-    it('should contain right amount of races', () => {
-      cy.visitAndWaitForHydration('/checkout/cart/MY4bvgxDbMtGv8rbYe5d')
-
-        .get('#add-race-AhowRdNWCBQWSuivSt7h')
-        .click()
-        .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qty]')
-        .contains(1)
-
-        .get('#add-race-AhowRdNWCBQWSuivSt7h')
-        .click()
-        .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qty]')
-        .contains(2)
-
-        .get('#checkout')
-        .click()
-
-        .location()
-        .should((l) => {
-          expect(l.pathname).to.include('/checkout/info/');
-        })
-
-        .get('[data-cy=participant]')
-        .should('have.length', 2);
+      registerParticipant('love-tiles-douro-granfondo-2023', 'AhowRdNWCBQWSuivSt7h');
     });
 
     it('should not exist list of participants if there is only one', () => {
-      cy.intercept('GET', '/checkout/cart/MY4bvgxDbMtGv8rbYe5d*')
-        .as('selectRace')
+      addRaceToCart('love-tiles-douro-granfondo-2023', 'AhowRdNWCBQWSuivSt7h');
 
-        .visitAndWaitForHydration('/checkout/cart/MY4bvgxDbMtGv8rbYe5d')
-
-        .get('#add-race-AhowRdNWCBQWSuivSt7h')
-        .click()
-
-        .wait('@selectRace')
-
-        .get('#checkout')
-        .click()
-
-        .wait('@selectRace')
-        .waitForHydration()
-
-        .get('[data-cy=participant]')
-        .should('not.exist');
+      cy.get('[data-cy=participant]').should('not.exist');
     });
 
     it('should be able to update cart', () => {
-      cy.intercept(
-        'GET',
-        '/checkout/cart/MY4bvgxDbMtGv8rbYe5d*'
-      )
-        .as('selectRace')
+      addRaceToCart('love-tiles-douro-granfondo-2023', 'AhowRdNWCBQWSuivSt7h');
 
-        .intercept(
-          'POST',
-          '/checkout/cart/MY4bvgxDbMtGv8rbYe5d*'
-        )
-        .as('addRace')
+      cy.location().then((l) => {
+        const bookingId = l.pathname.split('/')[3];
 
-        .visitAndWaitForHydration('/checkout/cart/MY4bvgxDbMtGv8rbYe5d')
+        cy.intercept('POST', '/checkout/cart/*')
+          .as('addParticipant')
 
-        .get('#add-race-AhowRdNWCBQWSuivSt7h')
-        .click()
+          .get('[data-cy=update-cart]')
+          .should('exist')
 
-        .wait('@addRace')
-        .wait('@selectRace')
+          .click({ force: true })
 
-        .get('#checkout')
-        .click()
+          .location()
+          .should((l) => {
+            expect(l.pathname).to.eq(`/checkout/cart/${bookingId}`);
+          })
 
-        .wait('@addRace')
+          .get('#add-race-AhowRdNWCBQWSuivSt7h')
+          .click()
 
-        .waitForHydration()
+          .wait('@addParticipant')
 
-        .url()
-        .should('include', '/checkout/info/')
+          .get('#checkout')
+          .click()
 
-        .intercept(
-          'POST',
-          '/checkout/cart/MY4bvgxDbMtGv8rbYe5d?a=update*'
-        )
-        .as('addParticipant')
+          .wait('@addParticipant')
 
-        .get('[data-cy=update-cart]')
-        .should('exist')
+          .location()
+          .should((location) => {
+            expect(location.pathname).to.eq(l.pathname);
+          })
 
-        .click({ force: true })
-
-        .waitForHydration()
-
-        .location()
-        .should((l) => {
-          expect(l.pathname).to.eq('/checkout/cart/MY4bvgxDbMtGv8rbYe5d');
-          expect(l.search).to.contain('a=update');
-        })
-
-        .get('#add-race-AhowRdNWCBQWSuivSt7h')
-        .click()
-
-        .wait('@addParticipant')
-
-        .get('#checkout')
-        .click()
-
-        .waitForHydration()
-
-        .get('[data-cy=participant]')
-        .should('exist')
-        .and('have.length', 2);
+          .get('[data-cy=participant]')
+          .should('exist')
+          .and('have.length', 2);
+      });
     });
 
     it('should remove race participant', () => {
-      cy.intercept('GET', '/checkout/cart/MY4bvgxDbMtGv8rbYe5d*')
-        .as('selectRace')
+      addRaceToCart(
+        'love-tiles-douro-granfondo-2023',
+        'AhowRdNWCBQWSuivSt7h',
+        true
+      );
 
-        .visitAndWaitForHydration('/checkout/cart/MY4bvgxDbMtGv8rbYe5d')
-
-        .get('#add-race-AhowRdNWCBQWSuivSt7h')
-        .click()
-
-        .wait('@selectRace')
-        .waitForHydration()
-
-        .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qty]')
-        .contains(1)
-
-        .get('#add-race-AhowRdNWCBQWSuivSt7h')
-        .click()
-
-        .wait('@selectRace')
-        .waitForHydration()
-
-        .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qty]')
-        .contains(2)
-
-
-        .get('#checkout')
-        .click()
-
-        .wait('@selectRace')
-        .waitForHydration()
-
-        .location()
-        .should((l) => {
-          expect(l.pathname).to.include('/checkout/info/');
-        })
-
-        .get('div[data-cy=login]').should('have.attr', 'data-show-login')
-        .then((isSupposedToShow) => {
-          // @ts-ignore (WS thinks this is a JQuery element, not a string)
-          isSupposedToShow === 'true' && cy.get('#checkout-anonymously').click();
-        })
-
-        .intercept('POST', '/checkout/manage/*')
+      cy.intercept('POST', '/checkout/manage/*')
         .as('removeParticipant')
 
         .get('[data-cy=participant]')
@@ -246,33 +145,10 @@ describe('Checkout', () => {
         .should('not.exist');
     });
 
-    it('should redirect to cart if last race participant is removed', () => {
-      cy.intercept('GET', '/checkout/cart/MY4bvgxDbMtGv8rbYe5d*')
-        .as('selectRace')
+    it('should redirect to event if last race participant is removed', () => {
+      addRaceToCart('love-tiles-douro-granfondo-2023', 'AhowRdNWCBQWSuivSt7h');
 
-        .visitAndWaitForHydration('/checkout/cart/MY4bvgxDbMtGv8rbYe5d')
-
-        .get('#add-race-AhowRdNWCBQWSuivSt7h')
-        .click()
-
-        .wait('@selectRace')
-        .waitForHydration()
-
-        .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qty]')
-        .contains(1)
-
-        .get('#checkout')
-        .click()
-
-        .wait('@selectRace')
-
-        .intercept(
-          'POST',
-          '/checkout/cart/MY4bvgxDbMtGv8rbYe5d?a=update*'
-        )
-        .as('removeParticipant')
-
-        .location()
+      cy.location()
         .should((l) => {
           expect(l.pathname).to.include('/checkout/info/');
         })
@@ -286,9 +162,11 @@ describe('Checkout', () => {
 
             .location()
             .should((l) => {
-              expect(l.pathname).to.eq('/checkout/cart/MY4bvgxDbMtGv8rbYe5d');
-              expect(l.search).to.contain('a=update');
+              expect(l.pathname).to.eq(`/checkout/cart/${bookingId}`);
             })
+
+            .intercept('POST', `/checkout/cart/${bookingId}*`)
+            .as('removeParticipant')
 
             .get('#remove-race-AhowRdNWCBQWSuivSt7h')
             .click()
@@ -302,55 +180,22 @@ describe('Checkout', () => {
 
             .location()
             .should((l) => {
-              expect(l.pathname).to.eq('/checkout/cart/MY4bvgxDbMtGv8rbYe5d');
+              expect(l.pathname).to.include('/pt/event/');
             });
         });
     });
 
     it('should show validation error if there are registrations with empty participant info', () => {
-      cy.intercept('GET', '/checkout/cart/*')
-        .as('selectRace')
+      addRaceToCart(
+        'love-tiles-douro-granfondo-2023',
+        'AhowRdNWCBQWSuivSt7h',
+        true
+      );
 
-        .intercept('GET', '/checkout/info/*')
-        .as('checkout')
-
-        .visitAndWaitForHydration('/checkout/cart/MY4bvgxDbMtGv8rbYe5d')
-
-        .get('#add-race-AhowRdNWCBQWSuivSt7h')
-        .click()
-
-        .wait('@selectRace')
-        .waitForHydration()
-
-        .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qty]')
-        .contains(1)
-
-        .get('#add-race-AhowRdNWCBQWSuivSt7h')
-        .click()
-
-        .wait('@selectRace')
-        .waitForHydration()
-
-        .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qty]')
-        .contains(2)
-
-        .get('#checkout')
-        .click()
-
-        .wait('@checkout')
-
-        .location()
-        .should((l) => {
-          expect(l.pathname).to.include('/checkout/info/');
-        })
-
-        .get('div[data-cy=login]').should('have.attr', 'data-show-login')
-        .then((isSupposedToShow) => {
-          // @ts-ignore (WS thinks this is a JQuery element, not a string)
-          isSupposedToShow === 'true' && cy.get('#checkout-anonymously').click();
-        })
-
+      cy.waitForHydration()
         .get('input[name=first-name]')
+        .should('exist')
+        .and('be.visible')
         .type('Nuno')
 
         .get('input[name=last-name]')
@@ -383,6 +228,9 @@ describe('Checkout', () => {
         .get('input[data-cy=terms]')
         .click()
 
+        .intercept('POST', '/checkout/info/*')
+        .as('checkout')
+
         .get('#checkout')
         .click()
 
@@ -394,40 +242,9 @@ describe('Checkout', () => {
     });
 
     it('should show validation terms and conditions error', () => {
-      cy.intercept('GET', '/checkout/cart/*')
-        .as('selectRace')
+      addRaceToCart('love-tiles-douro-granfondo-2023', 'AhowRdNWCBQWSuivSt7h');
 
-        .intercept('GET', '/checkout/info/*')
-        .as('checkout')
-
-        .visitAndWaitForHydration('/checkout/cart/MY4bvgxDbMtGv8rbYe5d')
-
-        .get('#add-race-AhowRdNWCBQWSuivSt7h')
-        .click()
-
-        .wait('@selectRace')
-        .waitForHydration()
-
-        .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qty]')
-        .contains(1)
-
-        .get('#checkout')
-        .click()
-
-        .wait('@checkout')
-
-        .location()
-        .should((l) => {
-          expect(l.pathname).to.include('/checkout/info/');
-        })
-
-        .get('div[data-cy=login]').should('have.attr', 'data-show-login')
-        .then((isSupposedToShow) => {
-          // @ts-ignore (WS thinks this is a JQuery element, not a string)
-          isSupposedToShow === 'true' && cy.get('#checkout-anonymously').click();
-        })
-
-        .get('input[name=first-name]')
+      cy.get('input[name=first-name]')
         .type('Nuno')
 
         .get('input[name=last-name]')
@@ -454,6 +271,9 @@ describe('Checkout', () => {
         .get('input[name=postal-code]')
         .type('4730-454')
 
+        .intercept('POST', '/checkout/info/*')
+        .as('checkout')
+
         .get('#checkout')
         .click()
 
@@ -465,11 +285,11 @@ describe('Checkout', () => {
     });
 
     it('should book a race', () => {
-      bookParticipant('MY4bvgxDbMtGv8rbYe5d', 'AhowRdNWCBQWSuivSt7h');
+      bookParticipant('love-tiles-douro-granfondo-2023', 'AhowRdNWCBQWSuivSt7h');
     });
 
     it('should be able to login and keep booking after completing booking process', () => {
-      bookParticipant('bQmGXYkbhJetjk6mniMt', 'Rd9SETi59X9ava6CPhkY')
+      bookParticipant('trail-do-zezere', 'Rd9SETi59X9ava6CPhkY')
         .get('[data-cy=authenticate-login]')
         .should('exist')
         .click()
@@ -503,7 +323,7 @@ describe('Checkout', () => {
     });
 
     it('should be able to signup and keep booking after completing booking process', () => {
-      bookParticipant('bQmGXYkbhJetjk6mniMt', 'Rd9SETi59X9ava6CPhkY')
+      bookParticipant('trail-do-zezere', 'Rd9SETi59X9ava6CPhkY')
         .get('[data-cy=authenticate-signup]')
         .should('exist')
         .click()
@@ -543,7 +363,7 @@ describe('Checkout', () => {
     });
 
     it('should send automated email after completing booking', () => {
-      bookParticipant('MY4bvgxDbMtGv8rbYe5d', 'AhowRdNWCBQWSuivSt7h');
+      bookParticipant('love-tiles-douro-granfondo-2023', 'AhowRdNWCBQWSuivSt7h');
       cy.waitForHydration()
 
         .location()
@@ -586,7 +406,7 @@ describe('Checkout', () => {
     });
 
     it('should display checkbox for organizer campaign and corresponding validations', () => {
-      bookParticipant('MY4bvgxDbMtGv8rbYe5d', 'AhowRdNWCBQWSuivSt7h');
+      bookParticipant('love-tiles-douro-granfondo-2023', 'AhowRdNWCBQWSuivSt7h');
 
       cy.location()
         .should((l) => {
@@ -613,42 +433,9 @@ describe('Checkout', () => {
     });
 
     it('should display current booked teams', () => {
-      cy.intercept('GET', '/checkout/cart/MY4bvgxDbMtGv8rbYe5d*')
-        .as('selectRace')
+      addRaceToCart('love-tiles-douro-granfondo-2023', 'AhowRdNWCBQWSuivSt7h');
 
-        .visitAndWaitForHydration('/checkout/cart/MY4bvgxDbMtGv8rbYe5d')
-
-        .location()
-        .should((loc) => {
-          expect(loc.pathname).to.eq('/checkout/cart/MY4bvgxDbMtGv8rbYe5d');
-        })
-
-        .get('#add-race-AhowRdNWCBQWSuivSt7h')
-        .click()
-
-        .wait('@selectRace')
-        .waitForHydration()
-
-        .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qty]')
-        .contains(1)
-
-        .get('#checkout')
-        .click()
-
-        .wait('@selectRace')
-
-        .location()
-        .should((l) => {
-          expect(l.pathname).to.include('/checkout/info/');
-        })
-
-        .get('div[data-cy=login]').should('have.attr', 'data-show-login')
-        .then((isSupposedToShow) => {
-          // @ts-ignore (WS thinks this is a JQuery element, not a string)
-          isSupposedToShow === 'true' && cy.get('#checkout-anonymously').click();
-        })
-
-        .get('button[name=creatable-button]')
+      cy.get('button[name=creatable-button]')
         .should('exist')
         .click()
 
@@ -661,42 +448,9 @@ describe('Checkout', () => {
     });
 
     it('should display cta to add team if it does not exist', () => {
-      cy.intercept('GET', '/checkout/cart/MY4bvgxDbMtGv8rbYe5d*')
-        .as('selectRace')
+      addRaceToCart('love-tiles-douro-granfondo-2023', 'AhowRdNWCBQWSuivSt7h');
 
-        .visitAndWaitForHydration('/checkout/cart/MY4bvgxDbMtGv8rbYe5d')
-
-        .location()
-        .should((loc) => {
-          expect(loc.pathname).to.eq('/checkout/cart/MY4bvgxDbMtGv8rbYe5d');
-        })
-
-        .get('#add-race-AhowRdNWCBQWSuivSt7h')
-        .click()
-
-        .wait('@selectRace')
-        .waitForHydration()
-
-        .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qty]')
-        .contains(1)
-
-        .get('#checkout')
-        .click()
-
-        .wait('@selectRace')
-
-        .location()
-        .should((l) => {
-          expect(l.pathname).to.include('/checkout/info/');
-        })
-
-        .get('div[data-cy=login]').should('have.attr', 'data-show-login')
-        .then((isSupposedToShow) => {
-          // @ts-ignore (WS thinks this is a JQuery element, not a string)
-          isSupposedToShow === 'true' && cy.get('#checkout-anonymously').click();
-        })
-
-        .get('#creatable-team')
+      cy.get('#creatable-team')
         .clear()
         .type('Marretas')
 
@@ -705,51 +459,13 @@ describe('Checkout', () => {
     });
 
     it('should save team', () => {
-      cy.intercept('GET', '/checkout/cart/MY4bvgxDbMtGv8rbYe5d*')
-        .as('selectRace')
+      addRaceToCart(
+        'love-tiles-douro-granfondo-2023',
+        'AhowRdNWCBQWSuivSt7h',
+        true
+      );
 
-        .visitAndWaitForHydration('/checkout/cart/MY4bvgxDbMtGv8rbYe5d')
-
-        .location()
-        .should((loc) => {
-          expect(loc.pathname).to.eq('/checkout/cart/MY4bvgxDbMtGv8rbYe5d');
-        })
-
-        .get('#add-race-AhowRdNWCBQWSuivSt7h')
-        .click()
-
-        .wait('@selectRace')
-        .waitForHydration()
-
-        .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qty]')
-        .contains(1)
-
-        .get('#add-race-AhowRdNWCBQWSuivSt7h')
-        .click()
-
-        .wait('@selectRace')
-        .waitForHydration()
-
-        .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qty]')
-        .contains(2)
-
-        .get('#checkout')
-        .click()
-
-        .wait('@selectRace')
-
-        .location()
-        .should((l) => {
-          expect(l.pathname).to.include('/checkout/info/');
-        })
-
-        .get('div[data-cy=login]').should('have.attr', 'data-show-login')
-        .then((isSupposedToShow) => {
-          // @ts-ignore (WS thinks this is a JQuery element, not a string)
-          isSupposedToShow === 'true' && cy.get('#checkout-anonymously').click();
-        })
-
-        .get('div[data-cy=participant-1]')
+      cy.get('div[data-cy=participant-1]')
         .click()
 
         .get('input[name=first-name]')
@@ -832,55 +548,76 @@ describe('Checkout', () => {
     });
 
     it('Should add/remove race', () => {
-      cy.intercept('GET', '/checkout/cart/bQmGXYkbhJetjk6mniMt*')
-        .as('selectRace')
+      addRaceToCart('trail-do-zezere', 'Rd9SETi59X9ava6CPhkY');
 
-        .visitAndWaitForHydration('/checkout/cart/bQmGXYkbhJetjk6mniMt')
+      cy.location().then((l) => {
+        const bookingId = l.pathname.split('/')[3];
 
-        .get('#add-race-Rd9SETi59X9ava6CPhkY')
-        .click()
+        cy.intercept('POST', `/checkout/cart/${bookingId}*`)
+          .as('ManageRace')
 
-        .wait('@selectRace')
+          .visitAndWaitForHydration(`/checkout/cart/${bookingId}`)
 
-        .get('[data-cy=race-Rd9SETi59X9ava6CPhkY-qty]')
-        .contains('1')
+          .get('#add-race-Rd9SETi59X9ava6CPhkY')
+          .click()
 
-        .get('#remove-race-Rd9SETi59X9ava6CPhkY')
-        .click()
+          .wait('@ManageRace')
 
-        .wait('@selectRace')
+          .get('[data-cy=race-Rd9SETi59X9ava6CPhkY-qty]')
+          .contains('2')
 
-        .get('[data-cy=race-Rd9SETi59X9ava6CPhkY-qty]')
-        .contains('0');
+          .get('#remove-race-Rd9SETi59X9ava6CPhkY')
+          .click()
+
+          .wait('@ManageRace')
+
+          .get('[data-cy=race-Rd9SETi59X9ava6CPhkY-qty]')
+          .contains('1');
+      });
     });
 
     it('Should fill form and save participant', () => {
-      registerParticipant('bQmGXYkbhJetjk6mniMt', 'Rd9SETi59X9ava6CPhkY');
+      registerParticipant('trail-do-zezere', 'Rd9SETi59X9ava6CPhkY');
     });
 
     it('should contain right amount of races', () => {
-      cy.visitAndWaitForHydration('/checkout/cart/bQmGXYkbhJetjk6mniMt')
+      addRaceToCart('love-tiles-douro-granfondo-2023', 'AhowRdNWCBQWSuivSt7h');
 
-        .get('#add-race-Rd9SETi59X9ava6CPhkY')
-        .click()
-        .get('[data-cy=race-Rd9SETi59X9ava6CPhkY-qty]')
-        .contains(1)
+      cy.location().then((l) => {
+        const bookingId = l.pathname.split('/')[3];
 
-        .get('#add-race-Rd9SETi59X9ava6CPhkY')
-        .click()
-        .get('[data-cy=race-Rd9SETi59X9ava6CPhkY-qty]')
-        .contains(2)
+        cy.visitAndWaitForHydration(`/checkout/cart/${bookingId}`)
 
-        .get('#checkout')
-        .click()
+          .intercept('POST', `/checkout/cart/${bookingId}*`)
+          .as('ManageRace')
 
-        .location()
-        .should((l) => {
-          expect(l.pathname).to.include('/checkout/info/');
-        })
+          .get('#add-race-AhowRdNWCBQWSuivSt7h')
+          .click()
 
-        .get('[data-cy=participant]')
-        .should('have.length', 2);
+          .wait('@ManageRace')
+
+          .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qty]')
+          .contains(2)
+
+          .get('#add-race-AhowRdNWCBQWSuivSt7h')
+          .click()
+
+          .wait('@ManageRace')
+
+          .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qty]')
+          .contains(3)
+
+          .get('#checkout')
+          .click()
+
+          .location()
+          .should((l) => {
+            expect(l.pathname).to.include('/checkout/info/');
+          })
+
+          .get('[data-cy=participant]')
+          .should('have.length', 3);
+      });
     });
 
     it('should fill form with saved participant info', () => {
@@ -924,11 +661,11 @@ describe('Checkout', () => {
     });
 
     it('should book a race', () => {
-      bookParticipant('bQmGXYkbhJetjk6mniMt', 'Rd9SETi59X9ava6CPhkY');
+      bookParticipant('trail-do-zezere', 'Rd9SETi59X9ava6CPhkY');
     });
 
     it('should send automated email after completing booking', () => {
-      bookParticipant('bQmGXYkbhJetjk6mniMt', 'Rd9SETi59X9ava6CPhkY');
+      bookParticipant('trail-do-zezere', 'Rd9SETi59X9ava6CPhkY');
       cy.location()
         .should((l) => {
           expect(l.pathname).to.include('/confirmation/');
@@ -1079,30 +816,9 @@ describe('Checkout', () => {
     });
 
     it('should display checkbox to enroll in organizer mailing list', () => {
-      cy.intercept('GET', '/checkout/cart/*')
-        .as('selectRace')
+      registerParticipant('trail-do-zezere', 'Rd9SETi59X9ava6CPhkY');
 
-        .intercept('GET', '/checkout/info/*')
-        .as('checkout')
-
-        .visitAndWaitForHydration('/checkout/cart/bQmGXYkbhJetjk6mniMt')
-
-        .get('#add-race-Rd9SETi59X9ava6CPhkY')
-        .click()
-
-        .wait('@selectRace')
-
-        .get('#checkout')
-        .click()
-
-        .wait('@checkout')
-
-        .location()
-        .should((l) => {
-          expect(l.pathname).to.include('/checkout/info/');
-        })
-
-        .get('input[name=add-to-mail-list]')
+      cy.get('input[name=add-to-mail-list]')
         .first()
         .should('exist')
         .and('be.visible')
@@ -1284,7 +1000,7 @@ describe('Checkout', () => {
         });
     });
 
-    it.only('should be able to book same race multiple times', () => {
+    it('should be able to book same race multiple times', () => {
       bookParticipant('love-tiles-douro-granfondo-2023', 'xaXaCzs2t7D8DpRNnffM');
       bookParticipant('love-tiles-douro-granfondo-2023', 'xaXaCzs2t7D8DpRNnffM');
     });
@@ -1312,30 +1028,9 @@ describe('Checkout', () => {
     });
 
     it('should have link to Event regulation and Dici terms', () => {
-      cy.intercept('GET', '/checkout/cart/*')
-        .as('selectRace')
+      addRaceToCart('trilho-dos-moinhos', 'LoDjLz7dWQTWk6Th4dRC');
 
-        .intercept('GET', '/checkout/info/*')
-        .as('checkout')
-
-        .visitAndWaitForHydration('/checkout/cart/gLqrDfMx6qkTHn6hoZqA')
-
-        .get('#add-race-LoDjLz7dWQTWk6Th4dRC')
-        .click()
-
-        .wait('@selectRace')
-
-        .get('#checkout')
-        .click()
-
-        .wait('@checkout')
-
-        .location()
-        .should((l) => {
-          expect(l.pathname).to.include('/checkout/info/');
-        })
-
-        .get('[data-cy=terms-link]')
+      cy.get('[data-cy=terms-link]')
         .should('exist')
         .then((link) => {
           cy.request(link.prop('href'))
@@ -1362,7 +1057,7 @@ describe('Checkout', () => {
 
     it('should not add participant if booking is already confirmed', () => {
       cy.login()
-        .visitAndWaitForHydration('/checkout/cart/MY4bvgxDbMtGv8rbYe5d')
+        .visitAndWaitForHydration('/checkout/cart/e8pHPLNjnNxKTzoGwtLh')
 
         .get('#add-race-AhowRdNWCBQWSuivSt7s')
         .click()
@@ -2015,44 +1710,32 @@ describe('Checkout', () => {
   });
 });
 
-function registerParticipant(eventId: string, raceId: string, authenticated: boolean = true) {
-  cy.intercept('GET', `/checkout/cart/${eventId}*`)
-    .as('selectRace')
+function registerParticipant(
+  slug: string,
+  raceId: string,
+  authenticated: boolean = true
+) {
+  cy.visitAndWaitForHydration(`/pt/event/${slug}`)
 
-    .visitAndWaitForHydration(`/checkout/cart/${eventId}`)
+    .intercept('GET', '/checkout/create*')
+    .as('CreateBooking')
 
-    .get(`#add-race-${raceId}`)
+    .get(`button[name=race-${raceId}]`)
     .click()
 
-    .wait('@selectRace')
-    .waitForHydration()
+    .wait('@CreateBooking')
 
-    .get(`[data-cy=race-${raceId}-qty]`)
-    .contains(1)
+    .location()
+    .should((l) => {
+      expect(l.pathname).to.include('/checkout/info');
+    })
 
-    .get(`#add-race-${raceId}`)
-    .click()
-
-    .wait('@selectRace')
-    .waitForHydration()
-
-    .get(`[data-cy=race-${raceId}-qty]`)
-    .contains(2)
-
-    .get('#checkout')
-    .click()
-
-    .wait('@selectRace')
-    .waitForHydration()
-
-    .get('div[data-cy=login]').should('have.attr', 'data-show-login')
+    .get('div[data-cy=login]')
+    .should('have.attr', 'data-show-login')
     .then((isSupposedToShow) => {
       // @ts-ignore (WS thinks this is a JQuery element, not a string)
       isSupposedToShow === 'true' && cy.get('#checkout-anonymously').click();
     })
-
-    .get('div[data-cy=participant-1]')
-    .click()
 
     .get('input[name=first-name]')
     .type('Nuno')
@@ -2233,4 +1916,65 @@ function arrayBufferToBase64(buffer) {
     binary += String.fromCharCode(bytes[i]);
   }
   return window.btoa(binary);
+}
+
+function addRaceToCart(
+  slug: string,
+  race: string,
+  addMultipleRaces: boolean = false,
+  nbrOfRacesToAdd: number = 1
+) {
+  cy.visitAndWaitForHydration(`/pt/event/${slug}`)
+    .intercept('GET', '/checkout/create*')
+    .as('CreateBooking')
+
+    .get(`button[name=race-${race}]`)
+    .click()
+
+    .wait('@CreateBooking')
+
+    .location()
+    .should((l) => {
+      expect(l.pathname).to.include('/checkout/info/');
+    })
+
+    .get('div[data-cy=login]')
+    .should('have.attr', 'data-show-login')
+    .then((isSupposedToShow) => {
+      // @ts-ignore (WS thinks this is a JQuery element, not a string)
+      isSupposedToShow === 'true' && cy.get('#checkout-anonymously').click();
+    });
+
+  if (addMultipleRaces) {
+    cy.get('[data-cy=update-cart]')
+      .should('exist')
+
+      .click({ force: true })
+
+      .location()
+      .should((l) => {
+        expect(l.pathname).to.include('/checkout/cart/');
+      })
+
+      .intercept('POST', '/checkout/cart/*')
+      .as('addParticipant');
+
+    [...Array(nbrOfRacesToAdd)].forEach(() =>
+      cy
+        .get(`#add-race-${race}`)
+        .click()
+
+        .wait('@addParticipant')
+    );
+
+    cy.get('#checkout')
+      .click()
+
+      .wait('@addParticipant')
+
+      .location()
+      .should((l) => {
+        expect(l.pathname).to.include('/checkout/info/');
+      });
+  }
 }

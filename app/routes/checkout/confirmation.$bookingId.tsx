@@ -80,6 +80,10 @@ export const action: ActionFunction = async ({ request, params }) => {
     });
   }
 
+  if (booking.userId !== clientId) {
+    return redirect('/');
+  }
+
   const eventId = booking.eventId;
   const event = await findEvent(eventId);
 
@@ -88,7 +92,7 @@ export const action: ActionFunction = async ({ request, params }) => {
   }
 
   const domainUrl = getDomainUrl(request);
-  const cart = await findBookingCart(clientId, eventId);
+  const cart = await findBookingCart(bookingId);
   const email = form.get('email') as string;
   const enrollInMailingList: boolean =
     (form.get('add-to-mail-list') as string) === 'on';
@@ -185,7 +189,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     return redirect('/');
   }
 
-  const cart = await findBookingCart(clientId, eventId);
+  const cart = await findBookingCart(bookingId);
   const organizer = await findOrganizer(event.createdById);
 
   return json({

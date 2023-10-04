@@ -88,7 +88,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   const eventId = booking.eventId;
 
   const event = (await findEvent(eventId)) as Event;
-  const cart = await findBookingCart(clientId, eventId);
+  const cart = await findBookingCart(bookingId);
   const raceParticipants = await findUserEventRaceParticipants(bookingId);
 
   if (!raceParticipants || raceParticipants?.length === 0) {
@@ -121,7 +121,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     if (authenticatedClient !== null) {
       const event = await findEvent(eventId);
       const domainUrl = getDomainUrl(request);
-      const cart = await findBookingCart(clientId, eventId);
+      const cart = await findBookingCart(bookingId);
 
       await sendBookingConfirmationEmail({
         emailAddress: authenticatedClient.email,
@@ -248,7 +248,7 @@ export const action: ActionFunction = async ({ request, params }) => {
       if (!dbDiscountCode || dbDiscountCode.status !== DiscountCodeStatus.active) {
         return badRequest({ errors: { discountError: t('No Discount Code') } });
       }
-      const cart = await findBookingCart(clientId, eventId);
+      const cart = await findBookingCart(bookingId);
 
       await applyDiscountCode(
         booking.id,

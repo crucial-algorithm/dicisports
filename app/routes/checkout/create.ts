@@ -1,11 +1,10 @@
 import type { LoaderFunction } from '@remix-run/node';
 import { redirect } from '@remix-run/node';
-import { CheckoutStatus } from '@prisma/client';
 import type { TFunction } from 'i18next';
 
 import { getClientSession } from '~/server/auth/client.server';
 import { getUser } from '~/server/auth/session.server';
-import { createBooking, findBooking } from '~/server/db/booking.server';
+import { createBooking } from '~/server/db/booking.server';
 import { badRequest } from '~/utils/misc';
 import { addParticipantsToRace } from '~/server/db/participant.server';
 import i18n from '~/server/i18n.server';

@@ -1,4 +1,5 @@
 import { ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline';
+import type { Event } from '@prisma/client';
 import { CheckoutStatus, Status } from '@prisma/client';
 import type { ActionFunction, LoaderFunction } from '@remix-run/node';
 import { json, redirect } from '@remix-run/node';
@@ -11,14 +12,11 @@ import {
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import type { Event } from '@prisma/client';
-
 import DisplayCart from '~/components/shared/DisplayCart';
 import DisplayDate from '~/components/shared/DIsplayDate';
 
 import Main from '~/components/shared/Main';
 import { H2, H4, H5, H6 } from '~/components/shared/typography';
-import { createInitialBookingFlow } from '~/routes/checkout/create';
 import { getClientSession } from '~/server/auth/client.server';
 import { getUser } from '~/server/auth/session.server';
 import {
@@ -37,7 +35,6 @@ import { findEventRaces } from '~/server/db/races.server';
 import i18n from '~/server/i18n.server';
 import type { Booking, Race, RaceQty, UICartRow } from '~/types';
 import { badRequest, displayTimeOfDay } from '~/utils/misc';
-import Id from '~/server/utils/Id.server';
 import Button from '~/components/shared/Button';
 
 type LoaderData = {
@@ -45,6 +42,7 @@ type LoaderData = {
   races: Race[];
   userCheckoutRaces: UICartRow[];
   hasCheckout: boolean;
+  bookingId: string;
 };
 
 const actions = {
@@ -60,10 +58,11 @@ export const handle: { id: string; i18n: string[] } = {
 
 export const action: ActionFunction = async ({ request, params }) => {
   const t = await i18n.getFixedT(request, 'checkout');
+  const language = await i18n.getLocale(request);
   const form = await request.formData();
   const anonymousClient = await getClientSession(request);
   const authenticatedClient = await getUser(request);
-  const eventId = params.eventId as string;
+  const bookingId = params.bookingId as string;
 
   // We check if user is authenticated -> authenticatedClient, if not, we use the client session -> anonymousClient
   const clientId =
@@ -73,42 +72,45 @@ export const action: ActionFunction = async ({ request, params }) => {
   const actionId = form.get('actionId') as string;
   const raceId = form.get('raceId') as string;
 
-  const booking: Booking | null = await findBooking(clientId, eventId);
+  const booking: Booking | null = await findBooking(bookingId);
 
-  if (booking && booking.status === CheckoutStatus.confirmed) {
-    if (booking.userId === clientId) {
-      return redirect(`/checkout/confirmation/${booking.id}`);
-    }
+  if (!booking) {
+    return '/';
+  }
 
+  if (booking.userId !== clientId) {
     return redirect('/');
+  }
+
+  const eventId = booking.eventId;
+  const event = await findEvent(eventId);
+
+  if (!event) {
+    return redirect('/');
+  }
+
+  if (booking.status === CheckoutStatus.confirmed) {
+    return redirect(`/checkout/confirmation/${booking.id}`);
   }
 
   try {
     // Triggered when user clicks continue in the cart screen
     if (actionId === actions.checkout) {
       const userEventRaceParticipants = await findUserEventRaceParticipants(
-        clientId,
-        eventId
+        bookingId
       );
 
-      if (!userEventRaceParticipants?.length || !booking) {
-        await removeBooking(clientId, eventId);
+      if (!userEventRaceParticipants?.length) {
+        await removeBooking(bookingId);
 
-        return redirect(`/checkout/cart/${eventId}`);
+        return redirect(`/${language}/event/${booking.eventId}`);
       }
 
       return redirect(`/checkout/info/${booking.id}`);
     }
+
     if (actionId === actions.add) {
-      const booking: Booking | null = await findBooking(clientId, eventId);
-
-      if (!booking) {
-        const bookingId = Id();
-
-        await createInitialBookingFlow(bookingId, clientId, eventId, raceId, t);
-      } else {
-        await addParticipantToRace(clientId, raceId, booking.id, eventId);
-      }
+      await addParticipantToRace(clientId, raceId, booking.id, eventId);
     }
 
     if (actionId === actions.remove) {
@@ -148,9 +150,20 @@ export const loader: LoaderFunction = async ({ request, params }) => {
       ? authenticatedClient.id
       : anonymousClient.getClientId();
 
-  const eventId = params.eventId as string;
+  const bookingId = params.bookingId as string;
+  const booking = await findBooking(bookingId);
+
+  if (!booking) {
+    return redirect('/');
+  }
+
+  if (booking.userId !== clientId) {
+    return redirect('/');
+  }
+
+  const eventId = booking.eventId;
+  const userCheckoutRaces = await findBookingCart(bookingId);
   const event = await findEvent(eventId);
-  const userCheckoutRaces = await findBookingCart(clientId, eventId);
   const races = await findEventRaces(eventId);
 
   if (!event || event.status !== Status.published) {
@@ -160,13 +173,14 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   return json({
     event,
     races,
-    userCheckoutRaces
+    userCheckoutRaces,
+    bookingId
   });
 };
 
 export default function CheckoutRegistrationsRoute() {
   const { t } = useTranslation('checkout');
-  const { event, races, userCheckoutRaces } =
+  const { event, races, userCheckoutRaces, bookingId } =
     useLoaderData<LoaderData>() as LoaderData;
   const fetcher = useFetcher();
   const [searchParams] = useSearchParams();
@@ -199,7 +213,7 @@ export default function CheckoutRegistrationsRoute() {
             .map((r: RaceQty) => (
               <DisplayRace
                 race={r}
-                eventId={event.id}
+                bookingId={bookingId}
                 searchParams={searchParams}
                 key={r.id}
               />
@@ -208,14 +222,11 @@ export default function CheckoutRegistrationsRoute() {
         <div className="w-full md:w-[480px]">
           <fetcher.Form
             method="post"
-            action={`/checkout/cart/${event.id}${
+            action={`/checkout/cart/${bookingId}${
               searchParams.toString().length ? `?${searchParams}` : ''
             }`}
           >
-            <DisplayCart
-              cart={userCheckoutRaces}
-              event={event}
-            >
+            <DisplayCart cart={userCheckoutRaces} event={event}>
               <div className="flex flex-col items-center w-full">
                 <Button
                   type="submit"
@@ -240,11 +251,11 @@ export default function CheckoutRegistrationsRoute() {
 
 function DisplayRace({
   race,
-  eventId,
+  bookingId,
   searchParams
 }: {
   race: RaceQty;
-  eventId: string;
+  bookingId: string;
   searchParams: URLSearchParams;
 }) {
   const { t } = useTranslation('checkout');
@@ -271,7 +282,7 @@ function DisplayRace({
 
         <Form
           method="post"
-          action={`/checkout/cart/${eventId}${
+          action={`/checkout/cart/${bookingId}${
             searchParams.toString().length ? `?${searchParams}` : ''
           }`}
         >
