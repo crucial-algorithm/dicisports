@@ -1029,15 +1029,27 @@ describe('Checkout', () => {
     });
 
     it('should not add participant if booking is already confirmed', () => {
+      const formData = new FormData();
+
+      formData.append('actionId', 'add');
+
       cy.login()
         .visitAndWaitForHydration('/checkout/cart/e8pHPLNjnNxKTzoGwtLh')
-
-        .get('#add-race-AhowRdNWCBQWSuivSt7s')
-        .click()
 
         .location()
         .should((l) => {
           expect(l.pathname).to.eq(
+            '/checkout/confirmation/e8pHPLNjnNxKTzoGwtLh'
+          );
+        })
+
+        .request({
+          url: '/checkout/cart/e8pHPLNjnNxKTzoGwtLh',
+          method: 'POST',
+          body: formData
+        })
+        .then((l) => {
+          expect(l.redirects[0]).to.include(
             '/checkout/confirmation/e8pHPLNjnNxKTzoGwtLh'
           );
         });
