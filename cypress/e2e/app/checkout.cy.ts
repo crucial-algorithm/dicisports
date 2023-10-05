@@ -891,9 +891,28 @@ describe('Checkout', () => {
     });
 
     it('should have link to Event regulation and Dici terms', () => {
-      addRaceToCart('trilho-dos-moinhos', 'LoDjLz7dWQTWk6Th4dRC');
+      cy.visitAndWaitForHydration('/pt/event/trilho-dos-moinhos')
+        .intercept('GET', '/checkout/create*')
+        .as('CreateBooking')
 
-      cy.get('[data-cy=terms-link]')
+        .get('button[name=race-LoDjLz7dWQTWk6Th4dRC]')
+        .click()
+
+        .wait('@CreateBooking')
+
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.include('/checkout/info/');
+        })
+
+        .get('div[data-cy=login]')
+        .should('have.attr', 'data-show-login')
+        .then((isSupposedToShow) => {
+          // @ts-ignore (WS thinks this is a JQuery element, not a string)
+          isSupposedToShow === 'true' && cy.get('#checkout-anonymously').click();
+        })
+
+        .get('[data-cy=terms-link]')
         .should('exist')
         .then((link) => {
           cy.request(link.prop('href'))
@@ -1790,65 +1809,4 @@ function arrayBufferToBase64(buffer) {
     binary += String.fromCharCode(bytes[i]);
   }
   return window.btoa(binary);
-}
-
-function addRaceToCart(
-  slug: string,
-  race: string,
-  addMultipleRaces: boolean = false,
-  nbrOfRacesToAdd: number = 1
-) {
-  cy.visitAndWaitForHydration(`/pt/event/${slug}`)
-    .intercept('GET', '/checkout/create*')
-    .as('CreateBooking')
-
-    .get(`button[name=race-${race}]`)
-    .click()
-
-    .wait('@CreateBooking')
-
-    .location()
-    .should((l) => {
-      expect(l.pathname).to.include('/checkout/info/');
-    })
-
-    .get('div[data-cy=login]')
-    .should('have.attr', 'data-show-login')
-    .then((isSupposedToShow) => {
-      // @ts-ignore (WS thinks this is a JQuery element, not a string)
-      isSupposedToShow === 'true' && cy.get('#checkout-anonymously').click();
-    });
-
-  if (addMultipleRaces) {
-    cy.get('[data-cy=update-cart]')
-      .should('exist')
-
-      .click({ force: true })
-
-      .location()
-      .should((l) => {
-        expect(l.pathname).to.include('/checkout/cart/');
-      })
-
-      .intercept('POST', '/checkout/cart/*')
-      .as('addParticipant');
-
-    [...Array(nbrOfRacesToAdd)].forEach(() =>
-      cy
-        .get(`#add-race-${race}`)
-        .click()
-
-        .wait('@addParticipant')
-    );
-
-    cy.get('#checkout')
-      .click()
-
-      .wait('@addParticipant')
-
-      .location()
-      .should((l) => {
-        expect(l.pathname).to.include('/checkout/info/');
-      });
-  }
 }
