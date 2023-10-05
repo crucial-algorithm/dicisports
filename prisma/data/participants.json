@@ -175,5 +175,20 @@
     "nationality": 4,
     "postalCode": "1000-000",
     "status": "saved"
+  },
+  {
+    "id": "vAZN4vYPpgKP7hQ5Yar4",
+    "userId": "nTQ8idPqTY8PmhzbsN4u",
+    "status": "auto"
+  },
+  {
+    "id": "rfs2WxCg2KXza4PAr3bZ",
+    "userId": "nTQ8idPqTY8PmhzbsN4u",
+    "status": "auto"
+  },
+  {
+    "id": "NBawaRTQkWHPxaxYvcgj",
+    "userId": "nTQ8idPqTY8PmhzbsN4u",
+    "status": "auto"
   }
 ]

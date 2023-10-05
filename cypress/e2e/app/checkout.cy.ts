@@ -26,260 +26,8 @@ describe('Checkout', () => {
         });
     });
 
-    it('Should remove race', () => {
-      cy.intercept('GET', '/checkout/create*')
-        .as('selectRace')
-
-        .visitAndWaitForHydration('/event/love-tiles-douro-granfondo-2023')
-
-        .get('button[name=race-AhowRdNWCBQWSuivSt7h]')
-        .click()
-
-        .wait('@selectRace')
-
-        .location()
-        .should((l) => {
-          expect(l.pathname).to.include('/checkout/info/');
-        })
-
-        .get('[data-cy=update-cart]')
-        .should('exist')
-
-        .click({ force: true })
-
-        .waitForHydration()
-
-        .location()
-        .should((l) => {
-          expect(l.pathname).to.include('/checkout/cart/');
-        })
-
-        .intercept(
-          'POST',
-          '/checkout/cart/*'
-        )
-        .as('removeParticipant')
-
-        .get('#remove-race-AhowRdNWCBQWSuivSt7h')
-        .click()
-
-        .wait('@removeParticipant')
-
-        .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qty]')
-        .contains('0')
-
-        .get('#checkout')
-        .should('have.prop', 'disabled');
-    });
-
     it('Should fill form and save participant', () => {
       registerParticipant('love-tiles-douro-granfondo-2023', 'AhowRdNWCBQWSuivSt7h');
-    });
-
-    it('should not exist list of participants if there is only one', () => {
-      addRaceToCart('love-tiles-douro-granfondo-2023', 'AhowRdNWCBQWSuivSt7h');
-
-      cy.get('[data-cy=participant]').should('not.exist');
-    });
-
-    it('should be able to update cart', () => {
-      addRaceToCart('love-tiles-douro-granfondo-2023', 'AhowRdNWCBQWSuivSt7h');
-
-      cy.location().then((l) => {
-        const bookingId = l.pathname.split('/')[3];
-
-        cy.intercept('POST', '/checkout/cart/*')
-          .as('addParticipant')
-
-          .get('[data-cy=update-cart]')
-          .should('exist')
-
-          .click({ force: true })
-
-          .location()
-          .should((l) => {
-            expect(l.pathname).to.eq(`/checkout/cart/${bookingId}`);
-          })
-
-          .get('#add-race-AhowRdNWCBQWSuivSt7h')
-          .click()
-
-          .wait('@addParticipant')
-
-          .get('#checkout')
-          .click()
-
-          .wait('@addParticipant')
-
-          .location()
-          .should((location) => {
-            expect(location.pathname).to.eq(l.pathname);
-          })
-
-          .get('[data-cy=participant]')
-          .should('exist')
-          .and('have.length', 2);
-      });
-    });
-
-    it('should remove race participant', () => {
-      addRaceToCart(
-        'love-tiles-douro-granfondo-2023',
-        'AhowRdNWCBQWSuivSt7h',
-        true
-      );
-
-      cy.intercept('POST', '/checkout/manage/*')
-        .as('removeParticipant')
-
-        .get('[data-cy=participant]')
-        .first()
-        .click()
-
-        .get('button[name=remove]')
-        .click()
-
-        .wait('@removeParticipant')
-
-        .get('[data-cy=participant]')
-        .should('not.exist');
-    });
-
-    it('should redirect to event if last race participant is removed', () => {
-      addRaceToCart('love-tiles-douro-granfondo-2023', 'AhowRdNWCBQWSuivSt7h');
-
-      cy.location()
-        .should((l) => {
-          expect(l.pathname).to.include('/checkout/info/');
-        })
-        .then((l) => {
-          const bookingId = l.pathname.split('/')[3];
-
-          cy.get('[data-cy=update-cart]')
-            .click({ force: true })
-
-            .waitForHydration()
-
-            .location()
-            .should((l) => {
-              expect(l.pathname).to.eq(`/checkout/cart/${bookingId}`);
-            })
-
-            .intercept('POST', `/checkout/cart/${bookingId}*`)
-            .as('removeParticipant')
-
-            .get('#remove-race-AhowRdNWCBQWSuivSt7h')
-            .click()
-
-            .wait('@removeParticipant')
-
-            .get('#checkout')
-            .should('be.disabled')
-
-            .visitAndWaitForHydration(`/checkout/info/${bookingId}`)
-
-            .location()
-            .should((l) => {
-              expect(l.pathname).to.include('/pt/event/');
-            });
-        });
-    });
-
-    it('should show validation error if there are registrations with empty participant info', () => {
-      addRaceToCart(
-        'love-tiles-douro-granfondo-2023',
-        'AhowRdNWCBQWSuivSt7h',
-        true
-      );
-
-      cy.waitForHydration()
-        .get('input[name=first-name]')
-        .should('exist')
-        .and('be.visible')
-        .type('Nuno')
-
-        .get('input[name=last-name]')
-        .type('Lopes')
-
-        .pickOptionFromSelect('gender', 2)
-
-        .pickDate('birthdate', '2003-10-21')
-
-        .get('input[name=phone-number]')
-        .type('937654321')
-
-        .inputMaskWorkaround('input[name=identity-card]', '00000000-0-zz4')
-        .should('have.value', '00000000-0-zz4')
-
-        .get('input[name=federation-number]')
-        .type('8165238')
-
-        .pickOptionFromSelect('shirt', 2)
-
-        .pickOptionFromSelect('nationality', 188)
-
-        .get('input[name=postal-code]')
-        .type('4730-454')
-
-        .get('input[data-cy=regulation]')
-        .click()
-
-        .get('input[data-cy=terms]')
-        .click()
-
-        .intercept('POST', '/checkout/info/*')
-        .as('checkout')
-
-        .get('#checkout')
-        .click()
-
-        .wait('@checkout')
-        .waitForHydration()
-
-        .get('#checkout-error')
-        .should('exist');
-    });
-
-    it('should show validation terms and conditions error', () => {
-      addRaceToCart('love-tiles-douro-granfondo-2023', 'AhowRdNWCBQWSuivSt7h');
-
-      cy.get('input[name=first-name]')
-        .type('Nuno')
-
-        .get('input[name=last-name]')
-        .type('Lopes')
-
-        .pickOptionFromSelect('gender', 2)
-
-        .pickDate('birthdate', '2003-10-21')
-
-        .get('input[name=phone-number]')
-        .type('937654321')
-
-        .inputMaskWorkaround('input[name=identity-card]', '00000000-0-zz4')
-        .should('have.value', '00000000-0-zz4')
-
-        .get('input[name=federation-number]')
-        .type('8165238')
-
-        .pickOptionFromSelect('shirt', 2)
-
-        .pickOptionFromSelect('nationality', 188)
-
-        .get('input[name=postal-code]')
-        .type('4730-454')
-
-        .intercept('POST', '/checkout/info/*')
-        .as('checkout')
-
-        .get('#checkout')
-        .click()
-
-        .wait('@checkout')
-        .waitForHydration()
-
-        .get('#terms-error')
-        .should('exist');
     });
 
     it('should book a race', () => {
@@ -429,97 +177,6 @@ describe('Checkout', () => {
         .get('button[name=send-confirmation]')
         .should('exist');
     });
-
-    it('should display current booked teams', () => {
-      addRaceToCart('love-tiles-douro-granfondo-2023', 'AhowRdNWCBQWSuivSt7h');
-
-      cy.get('button[name=creatable-button]')
-        .should('exist')
-        .click()
-
-        .get('ul[data-headlessui-state="open"] li:first')
-        .contains('Individual')
-
-        .get('ul[data-headlessui-state="open"] li')
-        .eq(1)
-        .contains('Amigos do BTT de Barcelos');
-    });
-
-    it('should display cta to add team if it does not exist', () => {
-      addRaceToCart('love-tiles-douro-granfondo-2023', 'AhowRdNWCBQWSuivSt7h');
-
-      cy.get('#creatable-team')
-        .clear()
-        .type('Marretas')
-
-        .get('ul[data-headlessui-state="open"] li:first')
-        .contains('Criar: Marretas');
-    });
-
-    it('should save team', () => {
-      addRaceToCart(
-        'love-tiles-douro-granfondo-2023',
-        'AhowRdNWCBQWSuivSt7h',
-        true
-      );
-
-      cy.get('div[data-cy=participant-1]')
-        .click()
-
-        .get('input[name=first-name]')
-        .type('Nuno')
-
-        .get('input[name=last-name]')
-        .type('Lopes')
-
-        .pickOptionFromSelect('gender', 2)
-
-        .pickDate('birthdate', '2003-10-21')
-
-        .get('input[name=phone-number]')
-        .type('937654321')
-
-        .get('input[name=identity-card]')
-        .type('87654321')
-
-        .get('input[name=federation-number]')
-        .type('8165238')
-
-        .get('#creatable-team')
-        .clear()
-        .type('Marretas')
-
-        .get('ul[data-headlessui-state="open"] li:first')
-        .contains('Criar: Marretas')
-        .click()
-
-        .pickOptionFromSelect('shirt', 2)
-
-        .pickOptionFromSelect('nationality', 188)
-
-        .get('input[name=postal-code]')
-        .type('4730-454')
-
-        .intercept('POST', '/checkout/info/*')
-        .as('saveParticipant')
-
-        .get('#save-button')
-        .click()
-
-        .wait('@saveParticipant')
-        .reload()
-        .waitForHydration()
-
-        .get('div[data-cy=participant-2]')
-        .click()
-
-        .get('#creatable-team')
-        .clear()
-        .type('Marretas')
-
-        .get('ul[data-headlessui-state="open"] li:first')
-        .contains('Marretas');
-    });
   });
 
   context('Maintenance: authenticated', () => {
@@ -546,32 +203,26 @@ describe('Checkout', () => {
     });
 
     it('Should add/remove race', () => {
-      addRaceToCart('trail-do-zezere', 'Rd9SETi59X9ava6CPhkY');
+      cy.intercept('POST', '/checkout/cart/iZrqWniNHZba9n4WQTmb*')
+        .as('ManageRace')
 
-      cy.location().then((l) => {
-        const bookingId = l.pathname.split('/')[3];
+        .visitAndWaitForHydration('/checkout/cart/iZrqWniNHZba9n4WQTmb')
 
-        cy.intercept('POST', `/checkout/cart/${bookingId}*`)
-          .as('ManageRace')
+        .get('#add-race-AhowRdNWCBQWSuivSt7h')
+        .click()
 
-          .visitAndWaitForHydration(`/checkout/cart/${bookingId}`)
+        .wait('@ManageRace')
 
-          .get('#add-race-Rd9SETi59X9ava6CPhkY')
-          .click()
+        .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qty]')
+        .contains('2')
 
-          .wait('@ManageRace')
+        .get('#remove-race-AhowRdNWCBQWSuivSt7h')
+        .click()
 
-          .get('[data-cy=race-Rd9SETi59X9ava6CPhkY-qty]')
-          .contains('2')
+        .wait('@ManageRace')
 
-          .get('#remove-race-Rd9SETi59X9ava6CPhkY')
-          .click()
-
-          .wait('@ManageRace')
-
-          .get('[data-cy=race-Rd9SETi59X9ava6CPhkY-qty]')
-          .contains('1');
-      });
+        .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qty]')
+        .contains('1');
     });
 
     it('Should fill form and save participant', () => {
@@ -579,49 +230,41 @@ describe('Checkout', () => {
     });
 
     it('should contain right amount of races', () => {
-      addRaceToCart('love-tiles-douro-granfondo-2023', 'AhowRdNWCBQWSuivSt7h');
+      cy.visitAndWaitForHydration('/checkout/cart/iZrqWniNHZba9n4WQTmb')
 
-      cy.location().then((l) => {
-        const bookingId = l.pathname.split('/')[3];
+        .intercept('POST', '/checkout/cart/iZrqWniNHZba9n4WQTmb*')
+        .as('ManageRace')
 
-        cy.visitAndWaitForHydration(`/checkout/cart/${bookingId}`)
+        .get('#add-race-AhowRdNWCBQWSuivSt7h')
+        .click()
 
-          .intercept('POST', `/checkout/cart/${bookingId}*`)
-          .as('ManageRace')
+        .wait('@ManageRace')
 
-          .get('#add-race-AhowRdNWCBQWSuivSt7h')
-          .click()
+        .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qty]')
+        .contains(2)
 
-          .wait('@ManageRace')
+        .get('#add-race-AhowRdNWCBQWSuivSt7h')
+        .click()
 
-          .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qty]')
-          .contains(2)
+        .wait('@ManageRace')
 
-          .get('#add-race-AhowRdNWCBQWSuivSt7h')
-          .click()
+        .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qty]')
+        .contains(3)
 
-          .wait('@ManageRace')
+        .get('#checkout')
+        .click()
 
-          .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qty]')
-          .contains(3)
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.include('/checkout/info/');
+        })
 
-          .get('#checkout')
-          .click()
-
-          .location()
-          .should((l) => {
-            expect(l.pathname).to.include('/checkout/info/');
-          })
-
-          .get('[data-cy=participant]')
-          .should('have.length', 3);
-      });
+        .get('[data-cy=participant]')
+        .should('have.length', 3);
     });
 
     it('should fill form with saved participant info', () => {
-      addRaceToCart('trilho-dos-moinhos', 'LoDjLz7dWQTWk6Th4dRC', true);
-
-      cy.waitForHydration()
+      cy.visitAndWaitForHydration('/checkout/info/TYFurhEhNFSRZAj5DewZ')
         .get('button[name=select-userSavedParticipants]')
         .should('exist').and('be.visible')
         .pickOptionFromSelect('userSavedParticipants', 1)
@@ -639,35 +282,29 @@ describe('Checkout', () => {
     });
 
     it('should send automated email after completing booking', () => {
-      bookParticipant('trail-do-zezere', 'Rd9SETi59X9ava6CPhkY');
-      cy.location()
+      cy.visitAndWaitForHydration('/checkout/payment/qR4nqWpTdQy8QZu29ANu')
+
+        .get('button[name=pay-cc]')
+        .should('exist')
+        .then((b) => {
+          b.click();
+        })
+
+        .location()
         .should((l) => {
-          expect(l.pathname).to.include('/confirmation/');
+          expect(l.pathname).to.eq('/checkout/confirmation/qR4nqWpTdQy8QZu29ANu');
         })
 
         .request({ method: 'GET', url: Cypress.env('HTTP_CATCHER') })
         .then(({ body }) => {
           expect(body.subject).to.eq(
-            'Informações do teu booking no evento Trail do Zêzere.'
+            'Informações do teu booking no evento Viana Granfondo.'
           );
         });
     });
 
-    it('should display error when submitting form without indetity card filled', () => {
-      cy.intercept('GET', '/checkout/create*')
-        .as('selectRace')
-
-        .visitAndWaitForHydration('/event/trail-do-zezere')
-
-        .get('button[name=race-Rd9SETi59X9ava6CPhkY]')
-        .click()
-
-        .wait('@selectRace')
-
-        .location()
-        .should((l) => {
-          expect(l.pathname).to.include('/checkout/info/');
-        })
+    it('should display error when submitting form without identity card filled', () => {
+      cy.visitAndWaitForHydration('/checkout/info/iZrqWniNHZba9n4WQTmb')
 
         .intercept('POST', '/checkout/info/*')
         .as('saveParticipant')
@@ -790,9 +427,8 @@ describe('Checkout', () => {
     });
 
     it('should display checkbox to enroll in organizer mailing list', () => {
-      registerParticipant('trail-do-zezere', 'Rd9SETi59X9ava6CPhkY');
-
-      cy.get('input[name=add-to-mail-list]')
+      cy.visitAndWaitForHydration('/checkout/info/iZrqWniNHZba9n4WQTmb')
+        .get('input[name=add-to-mail-list]')
         .first()
         .should('exist')
         .and('be.visible')
@@ -898,15 +534,7 @@ describe('Checkout', () => {
     });
 
     it('should skip payment step if booking is free - applied 100% discount', () => {
-      cy.visitAndWaitForHydration('/event/trail-do-zezere')
-
-        .get('button[name=race-Rd9SETi59X9ava6CPhkY]')
-        .click()
-
-        .location()
-        .should((l) => {
-          expect(l.pathname).to.include('/checkout/info');
-        })
+      cy.visitAndWaitForHydration('/checkout/info/iZrqWniNHZba9n4WQTmb')
 
         .intercept('POST', '/checkout/info/*')
         .as('ApplyDiscount')
@@ -976,6 +604,268 @@ describe('Checkout', () => {
     it('should be able to book same race multiple times', () => {
       bookParticipant('love-tiles-douro-granfondo-2023', 'xaXaCzs2t7D8DpRNnffM');
       bookParticipant('love-tiles-douro-granfondo-2023', 'xaXaCzs2t7D8DpRNnffM');
+    });
+
+    it('Should remove race', () => {
+      cy.visitAndWaitForHydration('/checkout/cart/iZrqWniNHZba9n4WQTmb')
+
+        .intercept(
+          'POST',
+          '/checkout/cart/*'
+        )
+        .as('removeParticipant')
+
+        .get('#remove-race-AhowRdNWCBQWSuivSt7h')
+        .click()
+
+        .wait('@removeParticipant')
+
+        .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qty]')
+        .contains('0')
+
+        .get('#checkout')
+        .should('have.prop', 'disabled');
+    });
+
+    it('should not exist list of participants if there is only one', () => {
+      cy.visitAndWaitForHydration('/checkout/info/iZrqWniNHZba9n4WQTmb').get('[data-cy=participant]').should('not.exist');
+    });
+
+    it('should be able to update cart', () => {
+      cy.visitAndWaitForHydration('/checkout/cart/iZrqWniNHZba9n4WQTmb')
+
+        .intercept('POST', '/checkout/cart/iZrqWniNHZba9n4WQTmb*')
+        .as('addParticipant')
+
+        .get('#add-race-AhowRdNWCBQWSuivSt7h')
+        .click()
+
+        .wait('@addParticipant')
+
+        .get('#checkout')
+        .click()
+
+        .wait('@addParticipant')
+
+        .location()
+        .should((location) => {
+          expect(location.pathname).to.eq('/checkout/info/iZrqWniNHZba9n4WQTmb');
+        })
+
+        .get('[data-cy=participant]')
+        .should('exist')
+        .and('have.length', 2);
+    });
+
+    it('should remove race participant', () => {
+      cy.visitAndWaitForHydration('/checkout/info/TYFurhEhNFSRZAj5DewZ').intercept('POST', '/checkout/manage/*')
+        .as('removeParticipant')
+
+        .get('[data-cy=participant]')
+        .first()
+        .click()
+
+        .get('button[name=remove]')
+        .click()
+
+        .wait('@removeParticipant')
+
+        .get('[data-cy=participant]')
+        .should('not.exist');
+    });
+
+    it('should redirect to event if last race participant is removed', () => {
+      cy.visitAndWaitForHydration('/checkout/cart/iZrqWniNHZba9n4WQTmb')
+        .intercept('POST', '/checkout/cart/iZrqWniNHZba9n4WQTmb*')
+        .as('removeParticipant')
+
+        .get('#remove-race-AhowRdNWCBQWSuivSt7h')
+        .click()
+
+        .wait('@removeParticipant')
+
+        .get('#checkout')
+        .should('be.disabled')
+
+        .visitAndWaitForHydration('/checkout/info/iZrqWniNHZba9n4WQTmb')
+
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.include('/pt/event/love-tiles-douro-granfondo-2023');
+        });
+    });
+
+    it('should show validation error if there are registrations with empty participant info', () => {
+      cy.visitAndWaitForHydration('/checkout/info/TYFurhEhNFSRZAj5DewZ')
+
+        .get('input[name=first-name]')
+        .type('Nuno')
+
+        .get('input[name=last-name]')
+        .type('Lopes')
+
+        .pickOptionFromSelect('gender', 2)
+
+        .pickDate('birthdate', '2003-10-21')
+
+        .get('input[name=phone-number]')
+        .type('937654321')
+
+        .inputMaskWorkaround('input[name=identity-card]', '00000000-0-zz4')
+        .should('have.value', '00000000-0-zz4')
+
+        .get('input[name=federation-number]')
+        .type('8165238')
+
+        .pickOptionFromSelect('shirt', 2)
+
+        .pickOptionFromSelect('nationality', 188)
+
+        .get('input[name=postal-code]')
+        .type('4730-454')
+
+        .get('input[data-cy=regulation]')
+        .click()
+
+        .get('input[data-cy=terms]')
+        .click()
+
+        .intercept('POST', '/checkout/info/*')
+        .as('checkout')
+
+        .get('#checkout')
+        .click()
+
+        .wait('@checkout')
+        .waitForHydration()
+
+        .get('#checkout-error')
+        .should('exist');
+    });
+
+    it('should show validation terms and conditions error', () => {
+      cy.visitAndWaitForHydration('/checkout/info/iZrqWniNHZba9n4WQTmb')
+        .get('input[name=first-name]')
+        .type('Nuno')
+
+        .get('input[name=last-name]')
+        .type('Lopes')
+
+        .pickOptionFromSelect('gender', 2)
+
+        .pickDate('birthdate', '2003-10-21')
+
+        .get('input[name=phone-number]')
+        .type('937654321')
+
+        .inputMaskWorkaround('input[name=identity-card]', '00000000-0-zz4')
+        .should('have.value', '00000000-0-zz4')
+
+        .get('input[name=federation-number]')
+        .type('8165238')
+
+        .pickOptionFromSelect('shirt', 2)
+
+        .pickOptionFromSelect('nationality', 188)
+
+        .get('input[name=postal-code]')
+        .type('4730-454')
+
+        .intercept('POST', '/checkout/info/*')
+        .as('checkout')
+
+        .get('#checkout')
+        .click()
+
+        .wait('@checkout')
+        .waitForHydration()
+
+        .get('#terms-error')
+        .should('exist');
+    });
+
+    it('should display current booked teams', () => {
+      cy.visitAndWaitForHydration('/checkout/info/iZrqWniNHZba9n4WQTmb')
+        .get('button[name=creatable-button]')
+        .should('exist')
+        .click()
+
+        .get('ul[data-headlessui-state="open"] li:first')
+        .contains('Individual')
+
+        .get('ul[data-headlessui-state="open"] li')
+        .eq(1)
+        .contains('Amigos do BTT de Barcelos');
+    });
+
+    it('should display cta to add team if it does not exist', () => {
+      cy.visitAndWaitForHydration('/checkout/info/iZrqWniNHZba9n4WQTmb')
+        .get('#creatable-team')
+        .clear()
+        .type('Marretas')
+
+        .get('ul[data-headlessui-state="open"] li:first')
+        .contains('Criar: Marretas');
+    });
+
+    it('should save team', () => {
+      cy.visitAndWaitForHydration('/checkout/info/TYFurhEhNFSRZAj5DewZ')
+        .get('div[data-cy=participant-1]')
+        .click()
+
+        .get('input[name=first-name]')
+        .type('Nuno')
+
+        .get('input[name=last-name]')
+        .type('Lopes')
+
+        .pickOptionFromSelect('gender', 2)
+
+        .pickDate('birthdate', '2003-10-21')
+
+        .get('input[name=phone-number]')
+        .type('937654321')
+
+        .get('input[name=identity-card]')
+        .type('87654321')
+
+        .get('input[name=federation-number]')
+        .type('8165238')
+
+        .get('#creatable-team')
+        .clear()
+        .type('Marretas')
+
+        .get('ul[data-headlessui-state="open"] li:first')
+        .contains('Criar: Marretas')
+        .click()
+
+        .pickOptionFromSelect('shirt', 2)
+
+        .pickOptionFromSelect('nationality', 188)
+
+        .get('input[name=postal-code]')
+        .type('4730-454')
+
+        .intercept('POST', '/checkout/info/*')
+        .as('saveParticipant')
+
+        .get('#save-button')
+        .click()
+
+        .wait('@saveParticipant')
+        .reload()
+        .waitForHydration()
+
+        .get('div[data-cy=participant-2]')
+        .click()
+
+        .get('#creatable-team')
+        .clear()
+        .type('Marretas')
+
+        .get('ul[data-headlessui-state="open"] li:first')
+        .contains('Marretas');
     });
   });
 
