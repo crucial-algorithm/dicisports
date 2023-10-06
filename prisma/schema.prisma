@@ -354,7 +354,6 @@ model Booking {
   raceParticipant RaceParticipant[]
   payment         Payment[]
 
-  @@unique([eventId, userId])
   @@map("bookings")
 }
 

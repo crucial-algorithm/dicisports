@@ -26,448 +26,16 @@ describe('Checkout', () => {
         });
     });
 
-    it('Should remove race', () => {
-      cy.intercept('GET', '/checkout/create*')
-        .as('selectRace')
-
-        .visitAndWaitForHydration('/event/love-tiles-douro-granfondo-2023')
-
-        .get('button[name=race-AhowRdNWCBQWSuivSt7h]')
-        .click()
-
-        .wait('@selectRace')
-
-        .location()
-        .should((l) => {
-          expect(l.pathname).to.include('/checkout/info/');
-        })
-
-        .get('[data-cy=update-cart]')
-        .should('exist')
-
-        .click({ force: true })
-
-        .waitForHydration()
-
-        .location()
-        .should((l) => {
-          expect(l.pathname).to.eq('/checkout/cart/MY4bvgxDbMtGv8rbYe5d');
-          expect(l.search).to.contain('a=update');
-        })
-
-        .intercept(
-          'POST',
-          '/checkout/cart/MY4bvgxDbMtGv8rbYe5d*'
-        )
-        .as('removeParticipant')
-
-        .get('#remove-race-AhowRdNWCBQWSuivSt7h')
-        .click()
-
-        .wait('@removeParticipant')
-
-        .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qty]')
-        .contains('0')
-
-        .get('#checkout')
-        .should('have.prop', 'disabled');
-    });
-
     it('Should fill form and save participant', () => {
-      registerParticipant('MY4bvgxDbMtGv8rbYe5d', 'AhowRdNWCBQWSuivSt7h');
-    });
-
-    it('should contain right amount of races', () => {
-      cy.visitAndWaitForHydration('/checkout/cart/MY4bvgxDbMtGv8rbYe5d')
-
-        .get('#add-race-AhowRdNWCBQWSuivSt7h')
-        .click()
-        .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qty]')
-        .contains(1)
-
-        .get('#add-race-AhowRdNWCBQWSuivSt7h')
-        .click()
-        .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qty]')
-        .contains(2)
-
-        .get('#checkout')
-        .click()
-
-        .location()
-        .should((l) => {
-          expect(l.pathname).to.include('/checkout/info/');
-        })
-
-        .get('[data-cy=participant]')
-        .should('have.length', 2);
-    });
-
-    it('should not exist list of participants if there is only one', () => {
-      cy.intercept('GET', '/checkout/cart/MY4bvgxDbMtGv8rbYe5d*')
-        .as('selectRace')
-
-        .visitAndWaitForHydration('/checkout/cart/MY4bvgxDbMtGv8rbYe5d')
-
-        .get('#add-race-AhowRdNWCBQWSuivSt7h')
-        .click()
-
-        .wait('@selectRace')
-
-        .get('#checkout')
-        .click()
-
-        .wait('@selectRace')
-        .waitForHydration()
-
-        .get('[data-cy=participant]')
-        .should('not.exist');
-    });
-
-    it('should be able to update cart', () => {
-      cy.intercept(
-        'GET',
-        '/checkout/cart/MY4bvgxDbMtGv8rbYe5d*'
-      )
-        .as('selectRace')
-
-        .intercept(
-          'POST',
-          '/checkout/cart/MY4bvgxDbMtGv8rbYe5d*'
-        )
-        .as('addRace')
-
-        .visitAndWaitForHydration('/checkout/cart/MY4bvgxDbMtGv8rbYe5d')
-
-        .get('#add-race-AhowRdNWCBQWSuivSt7h')
-        .click()
-
-        .wait('@addRace')
-        .wait('@selectRace')
-
-        .get('#checkout')
-        .click()
-
-        .wait('@addRace')
-
-        .waitForHydration()
-
-        .url()
-        .should('include', '/checkout/info/')
-
-        .intercept(
-          'POST',
-          '/checkout/cart/MY4bvgxDbMtGv8rbYe5d?a=update*'
-        )
-        .as('addParticipant')
-
-        .get('[data-cy=update-cart]')
-        .should('exist')
-
-        .click({ force: true })
-
-        .waitForHydration()
-
-        .location()
-        .should((l) => {
-          expect(l.pathname).to.eq('/checkout/cart/MY4bvgxDbMtGv8rbYe5d');
-          expect(l.search).to.contain('a=update');
-        })
-
-        .get('#add-race-AhowRdNWCBQWSuivSt7h')
-        .click()
-
-        .wait('@addParticipant')
-
-        .get('#checkout')
-        .click()
-
-        .waitForHydration()
-
-        .get('[data-cy=participant]')
-        .should('exist')
-        .and('have.length', 2);
-    });
-
-    it('should remove race participant', () => {
-      cy.intercept('GET', '/checkout/cart/MY4bvgxDbMtGv8rbYe5d*')
-        .as('selectRace')
-
-        .visitAndWaitForHydration('/checkout/cart/MY4bvgxDbMtGv8rbYe5d')
-
-        .get('#add-race-AhowRdNWCBQWSuivSt7h')
-        .click()
-
-        .wait('@selectRace')
-        .waitForHydration()
-
-        .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qty]')
-        .contains(1)
-
-        .get('#add-race-AhowRdNWCBQWSuivSt7h')
-        .click()
-
-        .wait('@selectRace')
-        .waitForHydration()
-
-        .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qty]')
-        .contains(2)
-
-
-        .get('#checkout')
-        .click()
-
-        .wait('@selectRace')
-        .waitForHydration()
-
-        .location()
-        .should((l) => {
-          expect(l.pathname).to.include('/checkout/info/');
-        })
-
-        .get('div[data-cy=login]').should('have.attr', 'data-show-login')
-        .then((isSupposedToShow) => {
-          // @ts-ignore (WS thinks this is a JQuery element, not a string)
-          isSupposedToShow === 'true' && cy.get('#checkout-anonymously').click();
-        })
-
-        .intercept('POST', '/checkout/manage/*')
-        .as('removeParticipant')
-
-        .get('[data-cy=participant]')
-        .first()
-        .click()
-
-        .get('button[name=remove]')
-        .click()
-
-        .wait('@removeParticipant')
-
-        .get('[data-cy=participant]')
-        .should('not.exist');
-    });
-
-    it('should redirect to cart if last race participant is removed', () => {
-      cy.intercept('GET', '/checkout/cart/MY4bvgxDbMtGv8rbYe5d*')
-        .as('selectRace')
-
-        .visitAndWaitForHydration('/checkout/cart/MY4bvgxDbMtGv8rbYe5d')
-
-        .get('#add-race-AhowRdNWCBQWSuivSt7h')
-        .click()
-
-        .wait('@selectRace')
-        .waitForHydration()
-
-        .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qty]')
-        .contains(1)
-
-        .get('#checkout')
-        .click()
-
-        .wait('@selectRace')
-
-        .intercept(
-          'POST',
-          '/checkout/cart/MY4bvgxDbMtGv8rbYe5d?a=update*'
-        )
-        .as('removeParticipant')
-
-        .location()
-        .should((l) => {
-          expect(l.pathname).to.include('/checkout/info/');
-        })
-        .then((l) => {
-          const bookingId = l.pathname.split('/')[3];
-
-          cy.get('[data-cy=update-cart]')
-            .click({ force: true })
-
-            .waitForHydration()
-
-            .location()
-            .should((l) => {
-              expect(l.pathname).to.eq('/checkout/cart/MY4bvgxDbMtGv8rbYe5d');
-              expect(l.search).to.contain('a=update');
-            })
-
-            .get('#remove-race-AhowRdNWCBQWSuivSt7h')
-            .click()
-
-            .wait('@removeParticipant')
-
-            .get('#checkout')
-            .should('be.disabled')
-
-            .visitAndWaitForHydration(`/checkout/info/${bookingId}`)
-
-            .location()
-            .should((l) => {
-              expect(l.pathname).to.eq('/checkout/cart/MY4bvgxDbMtGv8rbYe5d');
-            });
-        });
-    });
-
-    it('should show validation error if there are registrations with empty participant info', () => {
-      cy.intercept('GET', '/checkout/cart/*')
-        .as('selectRace')
-
-        .intercept('GET', '/checkout/info/*')
-        .as('checkout')
-
-        .visitAndWaitForHydration('/checkout/cart/MY4bvgxDbMtGv8rbYe5d')
-
-        .get('#add-race-AhowRdNWCBQWSuivSt7h')
-        .click()
-
-        .wait('@selectRace')
-        .waitForHydration()
-
-        .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qty]')
-        .contains(1)
-
-        .get('#add-race-AhowRdNWCBQWSuivSt7h')
-        .click()
-
-        .wait('@selectRace')
-        .waitForHydration()
-
-        .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qty]')
-        .contains(2)
-
-        .get('#checkout')
-        .click()
-
-        .wait('@checkout')
-
-        .location()
-        .should((l) => {
-          expect(l.pathname).to.include('/checkout/info/');
-        })
-
-        .get('div[data-cy=login]').should('have.attr', 'data-show-login')
-        .then((isSupposedToShow) => {
-          // @ts-ignore (WS thinks this is a JQuery element, not a string)
-          isSupposedToShow === 'true' && cy.get('#checkout-anonymously').click();
-        })
-
-        .get('input[name=first-name]')
-        .type('Nuno')
-
-        .get('input[name=last-name]')
-        .type('Lopes')
-
-        .pickOptionFromSelect('gender', 2)
-
-        .pickDate('birthdate', '2003-10-21')
-
-        .get('input[name=phone-number]')
-        .type('937654321')
-
-        .inputMaskWorkaround('input[name=identity-card]', '00000000-0-zz4')
-        .should('have.value', '00000000-0-zz4')
-
-        .get('input[name=federation-number]')
-        .type('8165238')
-
-        .pickOptionFromSelect('shirt', 2)
-
-        .pickOptionFromSelect('nationality', 188)
-
-        .get('input[name=postal-code]')
-        .type('4730-454')
-
-        .get('input[data-cy=regulation]')
-        .click()
-
-        .get('input[data-cy=terms]')
-        .click()
-
-        .get('#checkout')
-        .click()
-
-        .wait('@checkout')
-        .waitForHydration()
-
-        .get('#checkout-error')
-        .should('exist');
-    });
-
-    it('should show validation terms and conditions error', () => {
-      cy.intercept('GET', '/checkout/cart/*')
-        .as('selectRace')
-
-        .intercept('GET', '/checkout/info/*')
-        .as('checkout')
-
-        .visitAndWaitForHydration('/checkout/cart/MY4bvgxDbMtGv8rbYe5d')
-
-        .get('#add-race-AhowRdNWCBQWSuivSt7h')
-        .click()
-
-        .wait('@selectRace')
-        .waitForHydration()
-
-        .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qty]')
-        .contains(1)
-
-        .get('#checkout')
-        .click()
-
-        .wait('@checkout')
-
-        .location()
-        .should((l) => {
-          expect(l.pathname).to.include('/checkout/info/');
-        })
-
-        .get('div[data-cy=login]').should('have.attr', 'data-show-login')
-        .then((isSupposedToShow) => {
-          // @ts-ignore (WS thinks this is a JQuery element, not a string)
-          isSupposedToShow === 'true' && cy.get('#checkout-anonymously').click();
-        })
-
-        .get('input[name=first-name]')
-        .type('Nuno')
-
-        .get('input[name=last-name]')
-        .type('Lopes')
-
-        .pickOptionFromSelect('gender', 2)
-
-        .pickDate('birthdate', '2003-10-21')
-
-        .get('input[name=phone-number]')
-        .type('937654321')
-
-        .inputMaskWorkaround('input[name=identity-card]', '00000000-0-zz4')
-        .should('have.value', '00000000-0-zz4')
-
-        .get('input[name=federation-number]')
-        .type('8165238')
-
-        .pickOptionFromSelect('shirt', 2)
-
-        .pickOptionFromSelect('nationality', 188)
-
-        .get('input[name=postal-code]')
-        .type('4730-454')
-
-        .get('#checkout')
-        .click()
-
-        .wait('@checkout')
-        .waitForHydration()
-
-        .get('#terms-error')
-        .should('exist');
+      registerParticipant('love-tiles-douro-granfondo-2023', 'AhowRdNWCBQWSuivSt7h');
     });
 
     it('should book a race', () => {
-      bookParticipant('MY4bvgxDbMtGv8rbYe5d', 'AhowRdNWCBQWSuivSt7h');
+      bookParticipant('love-tiles-douro-granfondo-2023', 'AhowRdNWCBQWSuivSt7h');
     });
 
     it('should be able to login and keep booking after completing booking process', () => {
-      bookParticipant('bQmGXYkbhJetjk6mniMt', 'Rd9SETi59X9ava6CPhkY')
+      bookParticipant('trail-do-zezere', 'Rd9SETi59X9ava6CPhkY')
         .get('[data-cy=authenticate-login]')
         .should('exist')
         .click()
@@ -501,7 +69,7 @@ describe('Checkout', () => {
     });
 
     it('should be able to signup and keep booking after completing booking process', () => {
-      bookParticipant('bQmGXYkbhJetjk6mniMt', 'Rd9SETi59X9ava6CPhkY')
+      bookParticipant('trail-do-zezere', 'Rd9SETi59X9ava6CPhkY')
         .get('[data-cy=authenticate-signup]')
         .should('exist')
         .click()
@@ -541,7 +109,7 @@ describe('Checkout', () => {
     });
 
     it('should send automated email after completing booking', () => {
-      bookParticipant('MY4bvgxDbMtGv8rbYe5d', 'AhowRdNWCBQWSuivSt7h');
+      bookParticipant('love-tiles-douro-granfondo-2023', 'AhowRdNWCBQWSuivSt7h');
       cy.waitForHydration()
 
         .location()
@@ -584,7 +152,7 @@ describe('Checkout', () => {
     });
 
     it('should display checkbox for organizer campaign and corresponding validations', () => {
-      bookParticipant('MY4bvgxDbMtGv8rbYe5d', 'AhowRdNWCBQWSuivSt7h');
+      bookParticipant('love-tiles-douro-granfondo-2023', 'AhowRdNWCBQWSuivSt7h');
 
       cy.location()
         .should((l) => {
@@ -608,201 +176,6 @@ describe('Checkout', () => {
 
         .get('button[name=send-confirmation]')
         .should('exist');
-    });
-
-    it('should display current booked teams', () => {
-      cy.intercept('GET', '/checkout/cart/MY4bvgxDbMtGv8rbYe5d*')
-        .as('selectRace')
-
-        .visitAndWaitForHydration('/checkout/cart/MY4bvgxDbMtGv8rbYe5d')
-
-        .location()
-        .should((loc) => {
-          expect(loc.pathname).to.eq('/checkout/cart/MY4bvgxDbMtGv8rbYe5d');
-        })
-
-        .get('#add-race-AhowRdNWCBQWSuivSt7h')
-        .click()
-
-        .wait('@selectRace')
-        .waitForHydration()
-
-        .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qty]')
-        .contains(1)
-
-        .get('#checkout')
-        .click()
-
-        .wait('@selectRace')
-
-        .location()
-        .should((l) => {
-          expect(l.pathname).to.include('/checkout/info/');
-        })
-
-        .get('div[data-cy=login]').should('have.attr', 'data-show-login')
-        .then((isSupposedToShow) => {
-          // @ts-ignore (WS thinks this is a JQuery element, not a string)
-          isSupposedToShow === 'true' && cy.get('#checkout-anonymously').click();
-        })
-
-        .get('button[name=creatable-button]')
-        .should('exist')
-        .click()
-
-        .get('ul[data-headlessui-state="open"] li:first')
-        .contains('Individual')
-
-        .get('ul[data-headlessui-state="open"] li')
-        .eq(1)
-        .contains('Amigos do BTT de Barcelos');
-    });
-
-    it('should display cta to add team if it does not exist', () => {
-      cy.intercept('GET', '/checkout/cart/MY4bvgxDbMtGv8rbYe5d*')
-        .as('selectRace')
-
-        .visitAndWaitForHydration('/checkout/cart/MY4bvgxDbMtGv8rbYe5d')
-
-        .location()
-        .should((loc) => {
-          expect(loc.pathname).to.eq('/checkout/cart/MY4bvgxDbMtGv8rbYe5d');
-        })
-
-        .get('#add-race-AhowRdNWCBQWSuivSt7h')
-        .click()
-
-        .wait('@selectRace')
-        .waitForHydration()
-
-        .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qty]')
-        .contains(1)
-
-        .get('#checkout')
-        .click()
-
-        .wait('@selectRace')
-
-        .location()
-        .should((l) => {
-          expect(l.pathname).to.include('/checkout/info/');
-        })
-
-        .get('div[data-cy=login]').should('have.attr', 'data-show-login')
-        .then((isSupposedToShow) => {
-          // @ts-ignore (WS thinks this is a JQuery element, not a string)
-          isSupposedToShow === 'true' && cy.get('#checkout-anonymously').click();
-        })
-
-        .get('#creatable-team')
-        .clear()
-        .type('Marretas')
-
-        .get('ul[data-headlessui-state="open"] li:first')
-        .contains('Criar: Marretas');
-    });
-
-    it('should save team', () => {
-      cy.intercept('GET', '/checkout/cart/MY4bvgxDbMtGv8rbYe5d*')
-        .as('selectRace')
-
-        .visitAndWaitForHydration('/checkout/cart/MY4bvgxDbMtGv8rbYe5d')
-
-        .location()
-        .should((loc) => {
-          expect(loc.pathname).to.eq('/checkout/cart/MY4bvgxDbMtGv8rbYe5d');
-        })
-
-        .get('#add-race-AhowRdNWCBQWSuivSt7h')
-        .click()
-
-        .wait('@selectRace')
-        .waitForHydration()
-
-        .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qty]')
-        .contains(1)
-
-        .get('#add-race-AhowRdNWCBQWSuivSt7h')
-        .click()
-
-        .wait('@selectRace')
-        .waitForHydration()
-
-        .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qty]')
-        .contains(2)
-
-        .get('#checkout')
-        .click()
-
-        .wait('@selectRace')
-
-        .location()
-        .should((l) => {
-          expect(l.pathname).to.include('/checkout/info/');
-        })
-
-        .get('div[data-cy=login]').should('have.attr', 'data-show-login')
-        .then((isSupposedToShow) => {
-          // @ts-ignore (WS thinks this is a JQuery element, not a string)
-          isSupposedToShow === 'true' && cy.get('#checkout-anonymously').click();
-        })
-
-        .get('div[data-cy=participant-1]')
-        .click()
-
-        .get('input[name=first-name]')
-        .type('Nuno')
-
-        .get('input[name=last-name]')
-        .type('Lopes')
-
-        .pickOptionFromSelect('gender', 2)
-
-        .pickDate('birthdate', '2003-10-21')
-
-        .get('input[name=phone-number]')
-        .type('937654321')
-
-        .get('input[name=identity-card]')
-        .type('87654321')
-
-        .get('input[name=federation-number]')
-        .type('8165238')
-
-        .get('#creatable-team')
-        .clear()
-        .type('Marretas')
-
-        .get('ul[data-headlessui-state="open"] li:first')
-        .contains('Criar: Marretas')
-        .click()
-
-        .pickOptionFromSelect('shirt', 2)
-
-        .pickOptionFromSelect('nationality', 188)
-
-        .get('input[name=postal-code]')
-        .type('4730-454')
-
-        .intercept('POST', '/checkout/info/*')
-        .as('saveParticipant')
-
-        .get('#save-button')
-        .click()
-
-        .wait('@saveParticipant')
-        .reload()
-        .waitForHydration()
-
-        .get('div[data-cy=participant-2]')
-        .click()
-
-        .get('#creatable-team')
-        .clear()
-        .type('Marretas')
-
-        .get('ul[data-headlessui-state="open"] li:first')
-        .contains('Marretas');
     });
   });
 
@@ -830,44 +203,53 @@ describe('Checkout', () => {
     });
 
     it('Should add/remove race', () => {
-      cy.intercept('GET', '/checkout/cart/bQmGXYkbhJetjk6mniMt*')
-        .as('selectRace')
+      cy.intercept('POST', '/checkout/cart/iZrqWniNHZba9n4WQTmb*')
+        .as('ManageRace')
 
-        .visitAndWaitForHydration('/checkout/cart/bQmGXYkbhJetjk6mniMt')
+        .visitAndWaitForHydration('/checkout/cart/iZrqWniNHZba9n4WQTmb')
 
-        .get('#add-race-Rd9SETi59X9ava6CPhkY')
+        .get('#add-race-AhowRdNWCBQWSuivSt7h')
         .click()
 
-        .wait('@selectRace')
+        .wait('@ManageRace')
 
-        .get('[data-cy=race-Rd9SETi59X9ava6CPhkY-qty]')
-        .contains('1')
+        .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qty]')
+        .contains('2')
 
-        .get('#remove-race-Rd9SETi59X9ava6CPhkY')
+        .get('#remove-race-AhowRdNWCBQWSuivSt7h')
         .click()
 
-        .wait('@selectRace')
+        .wait('@ManageRace')
 
-        .get('[data-cy=race-Rd9SETi59X9ava6CPhkY-qty]')
-        .contains('0');
+        .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qty]')
+        .contains('1');
     });
 
     it('Should fill form and save participant', () => {
-      registerParticipant('bQmGXYkbhJetjk6mniMt', 'Rd9SETi59X9ava6CPhkY');
+      registerParticipant('trail-do-zezere', 'Rd9SETi59X9ava6CPhkY');
     });
 
     it('should contain right amount of races', () => {
-      cy.visitAndWaitForHydration('/checkout/cart/bQmGXYkbhJetjk6mniMt')
+      cy.visitAndWaitForHydration('/checkout/cart/iZrqWniNHZba9n4WQTmb')
 
-        .get('#add-race-Rd9SETi59X9ava6CPhkY')
-        .click()
-        .get('[data-cy=race-Rd9SETi59X9ava6CPhkY-qty]')
-        .contains(1)
+        .intercept('POST', '/checkout/cart/iZrqWniNHZba9n4WQTmb*')
+        .as('ManageRace')
 
-        .get('#add-race-Rd9SETi59X9ava6CPhkY')
+        .get('#add-race-AhowRdNWCBQWSuivSt7h')
         .click()
-        .get('[data-cy=race-Rd9SETi59X9ava6CPhkY-qty]')
+
+        .wait('@ManageRace')
+
+        .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qty]')
         .contains(2)
+
+        .get('#add-race-AhowRdNWCBQWSuivSt7h')
+        .click()
+
+        .wait('@ManageRace')
+
+        .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qty]')
+        .contains(3)
 
         .get('#checkout')
         .click()
@@ -878,39 +260,13 @@ describe('Checkout', () => {
         })
 
         .get('[data-cy=participant]')
-        .should('have.length', 2);
+        .should('have.length', 3);
     });
 
     it('should fill form with saved participant info', () => {
-      cy.intercept(
-        'POST',
-        '/checkout/cart/gLqrDfMx6qkTHn6hoZqA*'
-      )
-        .as('addRace')
-
-        .visitAndWaitForHydration('/checkout/cart/gLqrDfMx6qkTHn6hoZqA')
-
-        .login()
-
-        .get('#add-race-LoDjLz7dWQTWk6Th4dRC')
-        .click()
-
-        .wait('@addRace')
-
-        .get('#checkout')
-        .click()
-
-        .wait('@addRace')
-
-        .waitForHydration()
-
-        .location()
-        .should((l) => {
-          expect(l.pathname).to.include('/checkout/info/');
-        })
-
+      cy.visitAndWaitForHydration('/checkout/info/TYFurhEhNFSRZAj5DewZ')
         .get('button[name=select-userSavedParticipants]')
-        .should('exist')
+        .should('exist').and('be.visible')
         .pickOptionFromSelect('userSavedParticipants', 1)
 
         .get('input[name=first-name]')
@@ -922,39 +278,33 @@ describe('Checkout', () => {
     });
 
     it('should book a race', () => {
-      bookParticipant('bQmGXYkbhJetjk6mniMt', 'Rd9SETi59X9ava6CPhkY');
+      bookParticipant('trail-do-zezere', 'Rd9SETi59X9ava6CPhkY');
     });
 
     it('should send automated email after completing booking', () => {
-      bookParticipant('bQmGXYkbhJetjk6mniMt', 'Rd9SETi59X9ava6CPhkY');
-      cy.location()
+      cy.visitAndWaitForHydration('/checkout/payment/qR4nqWpTdQy8QZu29ANu')
+
+        .get('button[name=pay-cc]')
+        .should('exist')
+        .then((b) => {
+          b.click();
+        })
+
+        .location()
         .should((l) => {
-          expect(l.pathname).to.include('/confirmation/');
+          expect(l.pathname).to.eq('/checkout/confirmation/qR4nqWpTdQy8QZu29ANu');
         })
 
         .request({ method: 'GET', url: Cypress.env('HTTP_CATCHER') })
         .then(({ body }) => {
           expect(body.subject).to.eq(
-            'Informações do teu booking no evento Trail do Zêzere.'
+            'Informações do teu booking no evento Viana Granfondo.'
           );
         });
     });
 
-    it('should display error when submitting form without indetity card filled', () => {
-      cy.intercept('GET', '/checkout/create*')
-        .as('selectRace')
-
-        .visitAndWaitForHydration('/event/trail-do-zezere')
-
-        .get('button[name=race-Rd9SETi59X9ava6CPhkY]')
-        .click()
-
-        .wait('@selectRace')
-
-        .location()
-        .should((l) => {
-          expect(l.pathname).to.include('/checkout/info/');
-        })
+    it('should display error when submitting form without identity card filled', () => {
+      cy.visitAndWaitForHydration('/checkout/info/iZrqWniNHZba9n4WQTmb')
 
         .intercept('POST', '/checkout/info/*')
         .as('saveParticipant')
@@ -1077,29 +427,7 @@ describe('Checkout', () => {
     });
 
     it('should display checkbox to enroll in organizer mailing list', () => {
-      cy.intercept('GET', '/checkout/cart/*')
-        .as('selectRace')
-
-        .intercept('GET', '/checkout/info/*')
-        .as('checkout')
-
-        .visitAndWaitForHydration('/checkout/cart/bQmGXYkbhJetjk6mniMt')
-
-        .get('#add-race-Rd9SETi59X9ava6CPhkY')
-        .click()
-
-        .wait('@selectRace')
-
-        .get('#checkout')
-        .click()
-
-        .wait('@checkout')
-
-        .location()
-        .should((l) => {
-          expect(l.pathname).to.include('/checkout/info/');
-        })
-
+      cy.visitAndWaitForHydration('/checkout/info/iZrqWniNHZba9n4WQTmb')
         .get('input[name=add-to-mail-list]')
         .first()
         .should('exist')
@@ -1206,15 +534,7 @@ describe('Checkout', () => {
     });
 
     it('should skip payment step if booking is free - applied 100% discount', () => {
-      cy.visitAndWaitForHydration('/event/trail-do-zezere')
-
-        .get('button[name=race-Rd9SETi59X9ava6CPhkY]')
-        .click()
-
-        .location()
-        .should((l) => {
-          expect(l.pathname).to.include('/checkout/info');
-        })
+      cy.visitAndWaitForHydration('/checkout/info/iZrqWniNHZba9n4WQTmb')
 
         .intercept('POST', '/checkout/info/*')
         .as('ApplyDiscount')
@@ -1280,6 +600,273 @@ describe('Checkout', () => {
           expect(l.pathname).to.include('/checkout/confirmation/');
         });
     });
+
+    it('should be able to book same race multiple times', () => {
+      bookParticipant('love-tiles-douro-granfondo-2023', 'xaXaCzs2t7D8DpRNnffM');
+      bookParticipant('love-tiles-douro-granfondo-2023', 'xaXaCzs2t7D8DpRNnffM');
+    });
+
+    it('Should remove race', () => {
+      cy.visitAndWaitForHydration('/checkout/cart/iZrqWniNHZba9n4WQTmb')
+
+        .intercept(
+          'POST',
+          '/checkout/cart/*'
+        )
+        .as('removeParticipant')
+
+        .get('#remove-race-AhowRdNWCBQWSuivSt7h')
+        .click()
+
+        .wait('@removeParticipant')
+
+        .get('[data-cy=race-AhowRdNWCBQWSuivSt7h-qty]')
+        .contains('0')
+
+        .get('#checkout')
+        .should('have.prop', 'disabled');
+    });
+
+    it('should not exist list of participants if there is only one', () => {
+      cy.visitAndWaitForHydration('/checkout/info/iZrqWniNHZba9n4WQTmb').get('[data-cy=participant]').should('not.exist');
+    });
+
+    it('should be able to update cart', () => {
+      cy.visitAndWaitForHydration('/checkout/cart/iZrqWniNHZba9n4WQTmb')
+
+        .intercept('POST', '/checkout/cart/iZrqWniNHZba9n4WQTmb*')
+        .as('addParticipant')
+
+        .get('#add-race-AhowRdNWCBQWSuivSt7h')
+        .click()
+
+        .wait('@addParticipant')
+
+        .get('#checkout')
+        .click()
+
+        .wait('@addParticipant')
+
+        .location()
+        .should((location) => {
+          expect(location.pathname).to.eq('/checkout/info/iZrqWniNHZba9n4WQTmb');
+        })
+
+        .get('[data-cy=participant]')
+        .should('exist')
+        .and('have.length', 2);
+    });
+
+    it('should remove race participant', () => {
+      cy.visitAndWaitForHydration('/checkout/info/TYFurhEhNFSRZAj5DewZ').intercept('POST', '/checkout/manage/*')
+        .as('removeParticipant')
+
+        .get('[data-cy=participant]')
+        .first()
+        .click()
+
+        .get('button[name=remove]')
+        .click()
+
+        .wait('@removeParticipant')
+
+        .get('[data-cy=participant]')
+        .should('not.exist');
+    });
+
+    it('should redirect to event if last race participant is removed', () => {
+      cy.visitAndWaitForHydration('/checkout/cart/iZrqWniNHZba9n4WQTmb')
+        .intercept('POST', '/checkout/cart/iZrqWniNHZba9n4WQTmb*')
+        .as('removeParticipant')
+
+        .get('#remove-race-AhowRdNWCBQWSuivSt7h')
+        .click()
+
+        .wait('@removeParticipant')
+
+        .get('#checkout')
+        .should('be.disabled')
+
+        .visitAndWaitForHydration('/checkout/info/iZrqWniNHZba9n4WQTmb')
+
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.include('/pt/event/love-tiles-douro-granfondo-2023');
+        });
+    });
+
+    it('should show validation error if there are registrations with empty participant info', () => {
+      cy.visitAndWaitForHydration('/checkout/info/TYFurhEhNFSRZAj5DewZ')
+
+        .get('input[name=first-name]')
+        .type('Nuno')
+
+        .get('input[name=last-name]')
+        .type('Lopes')
+
+        .pickOptionFromSelect('gender', 2)
+
+        .pickDate('birthdate', '2003-10-21')
+
+        .get('input[name=phone-number]')
+        .type('937654321')
+
+        .inputMaskWorkaround('input[name=identity-card]', '00000000-0-zz4')
+        .should('have.value', '00000000-0-zz4')
+
+        .get('input[name=federation-number]')
+        .type('8165238')
+
+        .pickOptionFromSelect('shirt', 2)
+
+        .pickOptionFromSelect('nationality', 188)
+
+        .get('input[name=postal-code]')
+        .type('4730-454')
+
+        .get('input[data-cy=regulation]')
+        .click()
+
+        .get('input[data-cy=terms]')
+        .click()
+
+        .intercept('POST', '/checkout/info/*')
+        .as('checkout')
+
+        .get('#checkout')
+        .click()
+
+        .wait('@checkout')
+        .waitForHydration()
+
+        .get('#checkout-error')
+        .should('exist');
+    });
+
+    it('should show validation terms and conditions error', () => {
+      cy.visitAndWaitForHydration('/checkout/info/iZrqWniNHZba9n4WQTmb')
+        .get('input[name=first-name]')
+        .type('Nuno')
+
+        .get('input[name=last-name]')
+        .type('Lopes')
+
+        .pickOptionFromSelect('gender', 2)
+
+        .pickDate('birthdate', '2003-10-21')
+
+        .get('input[name=phone-number]')
+        .type('937654321')
+
+        .inputMaskWorkaround('input[name=identity-card]', '00000000-0-zz4')
+        .should('have.value', '00000000-0-zz4')
+
+        .get('input[name=federation-number]')
+        .type('8165238')
+
+        .pickOptionFromSelect('shirt', 2)
+
+        .pickOptionFromSelect('nationality', 188)
+
+        .get('input[name=postal-code]')
+        .type('4730-454')
+
+        .intercept('POST', '/checkout/info/*')
+        .as('checkout')
+
+        .get('#checkout')
+        .click()
+
+        .wait('@checkout')
+        .waitForHydration()
+
+        .get('#terms-error')
+        .should('exist');
+    });
+
+    it('should display current booked teams', () => {
+      cy.visitAndWaitForHydration('/checkout/info/iZrqWniNHZba9n4WQTmb')
+        .get('button[name=creatable-button]')
+        .should('exist')
+        .click()
+
+        .get('ul[data-headlessui-state="open"] li:first')
+        .contains('Individual')
+
+        .get('ul[data-headlessui-state="open"] li')
+        .eq(1)
+        .contains('Amigos do BTT de Barcelos');
+    });
+
+    it('should display cta to add team if it does not exist', () => {
+      cy.visitAndWaitForHydration('/checkout/info/iZrqWniNHZba9n4WQTmb')
+        .get('#creatable-team')
+        .clear()
+        .type('Marretas')
+
+        .get('ul[data-headlessui-state="open"] li:first')
+        .contains('Criar: Marretas');
+    });
+
+    it('should save team', () => {
+      cy.visitAndWaitForHydration('/checkout/info/TYFurhEhNFSRZAj5DewZ')
+        .get('div[data-cy=participant-1]')
+        .click()
+
+        .get('input[name=first-name]')
+        .type('Nuno')
+
+        .get('input[name=last-name]')
+        .type('Lopes')
+
+        .pickOptionFromSelect('gender', 2)
+
+        .pickDate('birthdate', '2003-10-21')
+
+        .get('input[name=phone-number]')
+        .type('937654321')
+
+        .get('input[name=identity-card]')
+        .type('87654321')
+
+        .get('input[name=federation-number]')
+        .type('8165238')
+
+        .get('#creatable-team')
+        .clear()
+        .type('Marretas')
+
+        .get('ul[data-headlessui-state="open"] li:first')
+        .contains('Criar: Marretas')
+        .click()
+
+        .pickOptionFromSelect('shirt', 2)
+
+        .pickOptionFromSelect('nationality', 188)
+
+        .get('input[name=postal-code]')
+        .type('4730-454')
+
+        .intercept('POST', '/checkout/info/*')
+        .as('saveParticipant')
+
+        .get('#save-button')
+        .click()
+
+        .wait('@saveParticipant')
+        .reload()
+        .waitForHydration()
+
+        .get('div[data-cy=participant-2]')
+        .click()
+
+        .get('#creatable-team')
+        .clear()
+        .type('Marretas')
+
+        .get('ul[data-headlessui-state="open"] li:first')
+        .contains('Marretas');
+    });
   });
 
   context('Security', () => {
@@ -1304,27 +891,25 @@ describe('Checkout', () => {
     });
 
     it('should have link to Event regulation and Dici terms', () => {
-      cy.intercept('GET', '/checkout/cart/*')
-        .as('selectRace')
+      cy.visitAndWaitForHydration('/pt/event/trilho-dos-moinhos')
+        .intercept('GET', '/checkout/create*')
+        .as('CreateBooking')
 
-        .intercept('GET', '/checkout/info/*')
-        .as('checkout')
-
-        .visitAndWaitForHydration('/checkout/cart/gLqrDfMx6qkTHn6hoZqA')
-
-        .get('#add-race-LoDjLz7dWQTWk6Th4dRC')
+        .get('button[name=race-LoDjLz7dWQTWk6Th4dRC]')
         .click()
 
-        .wait('@selectRace')
-
-        .get('#checkout')
-        .click()
-
-        .wait('@checkout')
+        .wait('@CreateBooking')
 
         .location()
         .should((l) => {
           expect(l.pathname).to.include('/checkout/info/');
+        })
+
+        .get('div[data-cy=login]')
+        .should('have.attr', 'data-show-login')
+        .then((isSupposedToShow) => {
+          // @ts-ignore (WS thinks this is a JQuery element, not a string)
+          isSupposedToShow === 'true' && cy.get('#checkout-anonymously').click();
         })
 
         .get('[data-cy=terms-link]')
@@ -1353,15 +938,27 @@ describe('Checkout', () => {
     });
 
     it('should not add participant if booking is already confirmed', () => {
-      cy.login()
-        .visitAndWaitForHydration('/checkout/cart/MY4bvgxDbMtGv8rbYe5d')
+      const formData = new FormData();
 
-        .get('#add-race-AhowRdNWCBQWSuivSt7s')
-        .click()
+      formData.append('actionId', 'add');
+
+      cy.login()
+        .visitAndWaitForHydration('/checkout/cart/e8pHPLNjnNxKTzoGwtLh')
 
         .location()
         .should((l) => {
           expect(l.pathname).to.eq(
+            '/checkout/confirmation/e8pHPLNjnNxKTzoGwtLh'
+          );
+        })
+
+        .request({
+          url: '/checkout/cart/e8pHPLNjnNxKTzoGwtLh',
+          method: 'POST',
+          body: formData
+        })
+        .then((l) => {
+          expect(l.redirects[0]).to.include(
             '/checkout/confirmation/e8pHPLNjnNxKTzoGwtLh'
           );
         });
@@ -2007,44 +1604,31 @@ describe('Checkout', () => {
   });
 });
 
-function registerParticipant(eventId: string, raceId: string, authenticated: boolean = true) {
-  cy.intercept('GET', `/checkout/cart/${eventId}*`)
-    .as('selectRace')
+function registerParticipant(
+  slug: string,
+  raceId: string
+) {
+  cy.visitAndWaitForHydration(`/pt/event/${slug}`)
 
-    .visitAndWaitForHydration(`/checkout/cart/${eventId}`)
+    .intercept('GET', '/checkout/create*')
+    .as('CreateBooking')
 
-    .get(`#add-race-${raceId}`)
+    .get(`button[name=race-${raceId}]`)
     .click()
 
-    .wait('@selectRace')
-    .waitForHydration()
+    .wait('@CreateBooking')
 
-    .get(`[data-cy=race-${raceId}-qty]`)
-    .contains(1)
+    .location()
+    .should((l) => {
+      expect(l.pathname).to.include('/checkout/info');
+    })
 
-    .get(`#add-race-${raceId}`)
-    .click()
-
-    .wait('@selectRace')
-    .waitForHydration()
-
-    .get(`[data-cy=race-${raceId}-qty]`)
-    .contains(2)
-
-    .get('#checkout')
-    .click()
-
-    .wait('@selectRace')
-    .waitForHydration()
-
-    .get('div[data-cy=login]').should('have.attr', 'data-show-login')
+    .get('div[data-cy=login]')
+    .should('have.attr', 'data-show-login')
     .then((isSupposedToShow) => {
       // @ts-ignore (WS thinks this is a JQuery element, not a string)
       isSupposedToShow === 'true' && cy.get('#checkout-anonymously').click();
     })
-
-    .get('div[data-cy=participant-1]')
-    .click()
 
     .get('input[name=first-name]')
     .type('Nuno')
@@ -2087,28 +1671,19 @@ function registerParticipant(eventId: string, raceId: string, authenticated: boo
     .should('have.value', 'Nuno');
 }
 
-function bookParticipant(eventId: string, raceId: string) {
+function bookParticipant(slug: string, raceId: string) {
   return cy
-    .intercept('GET', `/checkout/cart/${eventId}*`)
+    .intercept('GET', '/checkout/create*')
     .as('selectRace')
 
-    .visitAndWaitForHydration(`/checkout/cart/${eventId}`)
+    .visitAndWaitForHydration(`/event/${slug}`)
 
     .location()
     .should((loc) => {
-      expect(loc.pathname).to.eq(`/checkout/cart/${eventId}`);
+      expect(loc.pathname).to.eq(`/event/${slug}`);
     })
 
-    .get(`#add-race-${raceId}`)
-    .click()
-
-    .wait('@selectRace')
-    .waitForHydration()
-
-    .get(`[data-cy=race-${raceId}-qty]`)
-    .contains(1)
-
-    .get('#checkout')
+    .get(`button[name=race-${raceId}]`)
     .click()
 
     .wait('@selectRace')

@@ -13,7 +13,6 @@ import {
 } from '~/server/db/participant.server';
 import {
   findBooking,
-  findBookingById,
   removeBooking
 } from '~/server/db/booking.server';
 import i18n from '~/server/i18n.server';
@@ -36,7 +35,7 @@ export const action: ActionFunction = async ({ request, params }) => {
     authClient !== null ? authClient.id : clientSession.getClientId();
   const actionId = form.get('actionId') as string;
   const bookingId = params.bookingId as string;
-  const booking = await findBookingById(bookingId);
+  const booking = await findBooking(bookingId);
 
   if (!booking) {
     return redirect('/');
@@ -63,22 +62,16 @@ export const action: ActionFunction = async ({ request, params }) => {
 
       await removeRaceParticipant(participantId, raceId);
 
-      const raceParticipants = await findUserEventRaceParticipants(
-        bookingOwnerId,
-        eventId as string
-      );
+      const raceParticipants = await findUserEventRaceParticipants(bookingId);
 
       if (raceParticipants?.length === 0) {
-        await removeBooking(bookingOwnerId, eventId as string);
+        await removeBooking(bookingId);
       }
     }
 
     if (actionId === actions.addParticipants) {
       const races = JSON.parse(form.get('races') as string);
-      const registrationId = await findBooking(
-        bookingOwnerId,
-        eventId as string
-      ).then((p) => p?.id);
+      const registrationId = await findBooking(bookingId).then((p) => p?.id);
 
       await addRaceParticipants(races, bookingOwnerId, registrationId as string, eventId as string);
     }

@@ -17,7 +17,7 @@ import { H2, H4, H6 } from '~/components/shared/typography';
 
 import { getClientSession } from '~/server/auth/client.server';
 import { getUser } from '~/server/auth/session.server';
-import { findBookingById, findBookingCart } from '~/server/db/booking.server';
+import { findBooking, findBookingCart } from '~/server/db/booking.server';
 import { findEvent } from '~/server/db/events.server';
 import { findUserEventRaceParticipants } from '~/server/db/participant.server';
 import type { Booking, KCDHandle, UICartRow } from '~/types';
@@ -72,12 +72,16 @@ export const action: ActionFunction = async ({ request, params }) => {
       ? authenticatedClient.id
       : anonymousClient.getClientId();
 
-  const booking = await findBookingById(bookingId);
+  const booking = await findBooking(bookingId);
 
   if (!booking) {
     return badRequest({
       error: t('No Booking')
     });
+  }
+
+  if (booking.userId !== clientId) {
+    return redirect('/');
   }
 
   const eventId = booking.eventId;
@@ -88,7 +92,7 @@ export const action: ActionFunction = async ({ request, params }) => {
   }
 
   const domainUrl = getDomainUrl(request);
-  const cart = await findBookingCart(clientId, eventId);
+  const cart = await findBookingCart(bookingId);
   const email = form.get('email') as string;
   const enrollInMailingList: boolean =
     (form.get('add-to-mail-list') as string) === 'on';
@@ -151,6 +155,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   const anonymousClient = await getClientSession(request);
   const authenticatedClient = await getUser(request);
   const bookingId = params.bookingId as string;
+  const lng = await i18n.getLocale(request);
 
   // We check if user is authenticated -> authenticatedClient, if not, we use the client session -> anonymousClient
   const clientId =
@@ -158,29 +163,21 @@ export const loader: LoaderFunction = async ({ request, params }) => {
       ? authenticatedClient.id
       : anonymousClient.getClientId();
 
-  const booking = await findBookingById(bookingId);
+  const booking = await findBooking(bookingId);
 
   if (!booking || booking.userId !== clientId) {
     return redirect('/');
   }
 
-  const eventId = booking.eventId;
-  const raceParticipants = await findUserEventRaceParticipants(
-    clientId,
-    eventId
-  );
-
-  if (!raceParticipants || raceParticipants?.length === 0) {
-    return redirect(`/checkout/cart/${eventId}`);
-  }
-
   if (booking.status !== CheckoutStatus.confirmed) {
     return redirect(
-      `/checkout/${
-        booking?.status === CheckoutStatus.pending ? 'payment' : 'cart'
-      }/${bookingId}`
+        `/checkout/${
+            booking?.status === CheckoutStatus.pending ? 'payment' : 'cart'
+        }/${bookingId}`
     );
   }
+
+  const eventId = booking.eventId;
 
   const event = await findEvent(eventId);
 
@@ -188,7 +185,13 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     return redirect('/');
   }
 
-  const cart = await findBookingCart(clientId, eventId);
+  const raceParticipants = await findUserEventRaceParticipants(bookingId);
+
+  if (!raceParticipants || raceParticipants?.length === 0) {
+    return redirect(`/${lng}/event/${event.slug}`);
+  }
+
+  const cart = await findBookingCart(bookingId);
   const organizer = await findOrganizer(event.createdById);
 
   return json({

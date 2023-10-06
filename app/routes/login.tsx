@@ -35,8 +35,7 @@ import type { LoginAction } from '~/types';
 import { loginUser } from '~/server/db/users.server';
 import { CanonicalMeta } from '~/utils/seo';
 import {
-  changeRegistrationToAuthUser,
-  findBookingById
+  changeRegistrationToAuthUser, findBooking
 } from '~/server/db/booking.server';
 import { getClientSession } from '~/server/auth/client.server';
 
@@ -223,7 +222,7 @@ export const action: ActionFunction = async ({ request }) => {
       try {
         const clientSession = await getClientSession(request);
         const bookingId = searchParams.get('b') as string;
-        const booking = await findBookingById(bookingId);
+        const booking = await findBooking(bookingId);
 
         await changeRegistrationToAuthUser(
           user.id,
