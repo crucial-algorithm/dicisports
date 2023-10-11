@@ -117,9 +117,12 @@ export const action: ActionFunction = async ({ request, params }) => {
       }
 
       const file = await fileTypeFromUploadHandlerData(data);
-      const isValidType = file && (file.type === 'pdf' || file.type === 'gpx');
 
-      if (!file || !isValidType) {
+      if (!file) {
+        return undefined;
+      }
+
+      if (!(file.type === 'pdf' || file.type === 'gpx')) {
         return 'invalid-type';
       }
 

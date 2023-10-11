@@ -1067,7 +1067,7 @@ describe('Event', () => {
       });
     });
 
-    it('should not allow to upload files without extension', () => {
+    it('should allow to upload files without extension - documents', () => {
       cy.visitAndWaitForHydration('/o/event/bQmGXYkbhJetjk6mniMt/doc/new')
         .get('input[name=name]')
         .type('No Extension')
@@ -1088,11 +1088,44 @@ describe('Event', () => {
 
         .location()
         .should((l) => {
-          expect(l.pathname).to.eq('/o/event/bQmGXYkbhJetjk6mniMt/doc/new');
+          expect(l.pathname).to.eq('/o/event/bQmGXYkbhJetjk6mniMt');
         })
 
-        .get('#ff-Documento-error')
-        .should('exist');
+        .visitAndWaitForHydration('/pt/event/trail-do-zezere')
+
+        .get('[data-cy=document-label]')
+        .eq(1)
+        .then((link) => {
+          cy.request(link.prop('href')).its('status').should('eq', 200);
+        });
+    });
+
+    it('should allow to upload files without extension - regulation', () => {
+      cy.visitAndWaitForHydration('/o/event/bQmGXYkbhJetjk6mniMt')
+        .get('#regulation-option-file')
+        .click()
+
+        .intercept('POST', '/o/event/bQmGXYkbhJetjk6mniMt/regulation/upload*')
+        .as('UploadRegulation')
+
+        .get('#file .p-button > input')
+        .selectFile('cypress/assets/no_extension_pdf', {
+          action: 'drag-drop',
+          force: true
+        })
+
+        .wait('@UploadRegulation')
+
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.eq('/o/event/bQmGXYkbhJetjk6mniMt');
+        })
+
+        .get('[data-cy=regulation]')
+        .contains('no_extension_pdf')
+        .then((link) => {
+          cy.request(link.prop('href')).its('status').should('eq', 200);
+        });
     });
   });
 });

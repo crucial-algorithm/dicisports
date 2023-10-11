@@ -1,5 +1,4 @@
 import { fromBuffer } from 'file-type';
-import type core from 'file-type/core';
 
 import { json } from '@remix-run/node';
 
@@ -249,7 +248,7 @@ function maintainBookingLocalStorageMetadData(bookingId: string): {
 
 async function fileTypeFromUploadHandlerData(
   data: AsyncIterable<Uint8Array>
-): { type: core.FileTypeResult, buffer: Buffer } | null {
+): Promise<{ type: string, buffer: Buffer } | null> {
   const chunks = [];
 
   for await (const chunk of data) {
