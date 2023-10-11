@@ -1,4 +1,3 @@
-import * as path from 'path';
 import { Readable } from 'stream';
 
 import type { ActionFunction, UploadHandler } from '@remix-run/node';
@@ -13,7 +12,7 @@ import { z, ZodError } from 'zod';
 
 import { requireUser } from '~/server/auth/session.server';
 import i18n from '~/server/i18n.server';
-import { badRequest, fileExtensionFromMimeType } from '~/utils/misc';
+import { badRequest, fileTypeFromUploadHandlerData } from '~/utils/misc';
 import { uploadToS3 } from '~/server/utils/s3';
 import { findEvent, updateEventRegulation } from '~/server/db/events.server';
 import { NotFound, Unauthorized } from '~/server/utils/misc';
@@ -50,17 +49,19 @@ export const action: ActionFunction = async ({ request, params }) => {
         return undefined;
       }
 
-      const fileType = fileExtensionFromMimeType(contentType);
 
-      if (!fileType) {
-        return undefined;
+      const fileType = await fileTypeFromUploadHandlerData(data);
+      const isValidType = fileType && fileType === 'pdf';
+
+      if (!isValidType) {
+        return 'invalid-type';
       }
 
       const prefix = `events/${event.createdAt.getFullYear()}${String(event.createdAt.getMonth() + 1).padStart(2, '0')}/${eventId}`;
       const key = await uploadToS3(
         Readable.from(data),
         prefix,
-        'regulation' + fileType
+        `regulation.${fileType}`
       );
 
       return `${key}|${filename}`;
@@ -72,11 +73,14 @@ export const action: ActionFunction = async ({ request, params }) => {
   const form = await unstable_parseMultipartFormData(request, uploadHandler);
 
   const file = (form.get('file') as string) || null;
+  const isFileTypeValid = file && file !== 'invalid-type';
   let filePath: File | string | null = null;
   let fileName: string | null = null;
 
   if (file && file?.length) {
-    [filePath, fileName] = file.split('|');
+    if (file !== 'invalid-type') {
+      [filePath, fileName] = file.split('|');
+    }
   }
 
   const regulationData: {
@@ -98,7 +102,7 @@ export const action: ActionFunction = async ({ request, params }) => {
         return regulationData.regulationPath !== undefined;
       },
       {
-        message: t('Select a document')
+        message: t(isFileTypeValid ? 'Select a document' : 'File Type Not Valid')
       }
     )
   });

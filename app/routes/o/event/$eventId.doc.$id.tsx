@@ -7,11 +7,7 @@ import { useActionData, useLoaderData } from '@remix-run/react';
 
 import clsx from 'clsx';
 
-import type {
-  ActionFunction,
-  LoaderFunction,
-  UploadHandler
-} from '@remix-run/node';
+import type { ActionFunction, LoaderFunction, UploadHandler } from '@remix-run/node';
 import {
   json,
   redirect,
@@ -36,14 +32,10 @@ import UploadForm from '~/components/shared/form/UploadForm';
 import Main from '~/components/shared/Main';
 
 import { requireUser } from '~/server/auth/session.server';
-import {
-  createDocument,
-  findDocument,
-  updateDocument
-} from '~/server/documents.server';
+import { createDocument, findDocument, updateDocument } from '~/server/documents.server';
 import i18n from '~/server/i18n.server';
 import type { CreateDocumentInput, Document } from '~/types';
-import { badRequest, fileExtensionFromMimeType } from '~/utils/misc';
+import { badRequest, fileTypeFromUploadHandlerData } from '~/utils/misc';
 import { uploadToS3 } from '~/server/utils/s3';
 import Id from '~/server/utils/Id.server';
 import { findEvent } from '~/server/db/events.server';
@@ -124,10 +116,11 @@ export const action: ActionFunction = async ({ request, params }) => {
         return undefined;
       }
 
-      const fileType = fileExtensionFromMimeType(contentType);
+      const fileType = await fileTypeFromUploadHandlerData(data);
+      const isValidType = fileType && (fileType === 'pdf' || fileType === 'gpx');
 
-      if (!fileType) {
-        return undefined;
+      if (!isValidType) {
+        return 'invalid-type';
       }
 
       const prefix = `events/${event.createdAt.getFullYear()}${String(event.createdAt.getMonth() + 1).padStart(2, '0')}/${eventId}`;
@@ -151,12 +144,15 @@ export const action: ActionFunction = async ({ request, params }) => {
     form.get('file') === 'undefined' || form.get('file') === null
       ? undefined
       : form.get('file') as string;
+  const isFileTypeValid = file && file !== 'invalid-type';
   let filePath: File | string | null = null;
   let fileName: string = '';
   let fileType: string = '';
 
   if (file && file?.length) {
-    [filePath, fileName, fileType] = file.split('|');
+    if (file !== 'invalid-type') {
+      [filePath, fileName, fileType] = file.split('|');
+    }
   }
 
   const isInsert = !documentId;
@@ -173,7 +169,7 @@ export const action: ActionFunction = async ({ request, params }) => {
   const DocumentSchema = z.object({
     label: z.string().min(5, { message: t('Min 5 chars') }),
     path: z
-      .string({ invalid_type_error: t('Select a document') })
+      .string({ invalid_type_error: t(isFileTypeValid ? 'Select a document' : 'Invalid File Type') })
       .refine(
         () => {
           if (!isInsert) {
@@ -183,7 +179,7 @@ export const action: ActionFunction = async ({ request, params }) => {
           return documentData.path !== undefined;
         },
         {
-          message: t('Select a document')
+          message: t(isFileTypeValid ? 'Select a document' : 'Invalid File Type')
         }
       )
   });
@@ -237,7 +233,6 @@ export default function EventDocumentRoute() {
 
   const { getRootProps, getInputProps } = useDropzone({
     multiple: false,
-    accept: '.pdf, .gpx',
     onDrop: (accepted) => {
       if (accepted.length === 0) {
         return;
@@ -291,7 +286,7 @@ export default function EventDocumentRoute() {
             </>
           </div>
           {!document && (
-            <FormField label={t('Document')} error={actionData?.errors?.path}>
+            <FormField label={t('Document')} error={actionData?.errors?.path} description={t('Only PDF and GPX')}>
               <section
                 className={clsx(
                   'h-40 bg-gray-100 text-black placeholder-gray-500 text-lg font-medium',
