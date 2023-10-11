@@ -1067,7 +1067,7 @@ describe('Event', () => {
       });
     });
 
-    it.only('should not allow to upload files without extension', () => {
+    it('should not allow to upload files without extension', () => {
       cy.visitAndWaitForHydration('/o/event/bQmGXYkbhJetjk6mniMt/doc/new')
         .get('input[name=name]')
         .type('No Extension')
