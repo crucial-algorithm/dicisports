@@ -116,21 +116,21 @@ export const action: ActionFunction = async ({ request, params }) => {
         return undefined;
       }
 
-      const fileType = await fileTypeFromUploadHandlerData(data);
-      const isValidType = fileType && (fileType === 'pdf' || fileType === 'gpx');
+      const file = await fileTypeFromUploadHandlerData(data);
+      const isValidType = file && (file.type === 'pdf' || file.type === 'gpx');
 
-      if (!isValidType) {
+      if (!file || !isValidType) {
         return 'invalid-type';
       }
 
       const prefix = `events/${event.createdAt.getFullYear()}${String(event.createdAt.getMonth() + 1).padStart(2, '0')}/${eventId}`;
       const key = await uploadToS3(
-        Readable.from(data),
+        Readable.from(file.buffer),
         prefix,
-        `${Id()}.${fileType}`
+        `${Id()}.${file.type}`
       );
 
-      return `${key}|${filename}|${fileType}`;
+      return `${key}|${filename}|${file.type}`;
     },
     // fallback to memory for everything else
     unstable_createMemoryUploadHandler()

@@ -1,4 +1,5 @@
 import { fromBuffer } from 'file-type';
+import type core from 'file-type/core';
 
 import { json } from '@remix-run/node';
 
@@ -246,7 +247,9 @@ function maintainBookingLocalStorageMetadData(bookingId: string): {
   };
 }
 
-async function fileTypeFromUploadHandlerData(data: AsyncIterable<Uint8Array>) {
+async function fileTypeFromUploadHandlerData(
+  data: AsyncIterable<Uint8Array>
+): { type: core.FileTypeResult, buffer: Buffer } | null {
   const chunks = [];
 
   for await (const chunk of data) {
@@ -257,7 +260,7 @@ async function fileTypeFromUploadHandlerData(data: AsyncIterable<Uint8Array>) {
   const buffer = Buffer.concat(chunks);
   const fileType = await fromBuffer(buffer);
 
-  return fileType ? fileType.ext : undefined;
+  return fileType ? { type: fileType.ext, buffer } : null;
 }
 
 export {

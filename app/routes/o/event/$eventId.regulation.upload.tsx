@@ -49,9 +49,8 @@ export const action: ActionFunction = async ({ request, params }) => {
         return undefined;
       }
 
-
-      const fileType = await fileTypeFromUploadHandlerData(data);
-      const isValidType = fileType && fileType === 'pdf';
+      const file = await fileTypeFromUploadHandlerData(data);
+      const isValidType = file && file.type === 'pdf';
 
       if (!isValidType) {
         return 'invalid-type';
@@ -59,9 +58,9 @@ export const action: ActionFunction = async ({ request, params }) => {
 
       const prefix = `events/${event.createdAt.getFullYear()}${String(event.createdAt.getMonth() + 1).padStart(2, '0')}/${eventId}`;
       const key = await uploadToS3(
-        Readable.from(data),
+        Readable.from(file.buffer),
         prefix,
-        `regulation.${fileType}`
+        `regulation.${file.type}`
       );
 
       return `${key}|${filename}`;
