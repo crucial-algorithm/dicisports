@@ -115,6 +115,8 @@ type CreateDocumentInput = {
   label: string;
   path?: string | null;
   eventId: string;
+  fileName: string;
+  type: string;
 };
 
 type GroupType = {

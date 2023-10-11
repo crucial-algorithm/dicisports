@@ -515,8 +515,6 @@ function DisplayRace({
 function DisplayDocument(props: { document: Document; index: number }) {
   const lang = useLang();
   const { document, index } = props;
-  const path = document.path as string;
-  const fileExtension = path.split('.');
 
   return (
     <Link
@@ -534,7 +532,7 @@ function DisplayDocument(props: { document: Document; index: number }) {
           className="dark:text-white font-medium border-2 border-secondary bg-primary rounded-full p-2 mr-2"
           data-cy="document-extension"
         >
-          {fileExtension[fileExtension.length - 1].toUpperCase()}
+          {document.type.toUpperCase()}
         </div>
         {document.label}
       </div>

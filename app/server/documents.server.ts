@@ -30,19 +30,19 @@ async function createDocument(
       id: documentId,
       label: document.label,
       path: document.path,
+      fileName: document.fileName,
       createdAt: documentAt,
       updatedAt: documentAt,
-      eventId: document.eventId
+      eventId: document.eventId,
+      type: document.type
     }
   });
 }
 
 async function updateDocument(document: CreateDocumentInput): Promise<void> {
-  const updatedAt = new Date();
-
   await db.document.update({
     where: { id: document.id },
-    data: { label: document.label, updatedAt }
+    data: { label: document.label }
   });
 }
 

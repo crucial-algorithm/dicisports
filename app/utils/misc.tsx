@@ -246,6 +246,15 @@ function maintainBookingLocalStorageMetadData(bookingId: string): {
   };
 }
 
+function fileExtensionFromMimeType(mime: string) {
+  const mapping: { [key: string]: string } = {
+    'application/pdf': 'pdf',
+    'application/gpx+xml': 'gpx',
+    'text/plain': 'txt'
+  };
+
+  return mapping[mime];
+}
 
 export {
   getDomainUrl,
@@ -263,5 +272,6 @@ export {
   generateSlug,
   bookingAmount,
   validateIdentityCard,
-  maintainBookingLocalStorageMetadData
+  maintainBookingLocalStorageMetadData,
+  fileExtensionFromMimeType
 };

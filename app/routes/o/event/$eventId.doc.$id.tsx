@@ -43,7 +43,7 @@ import {
 } from '~/server/documents.server';
 import i18n from '~/server/i18n.server';
 import type { CreateDocumentInput, Document } from '~/types';
-import { badRequest } from '~/utils/misc';
+import { badRequest, fileExtensionFromMimeType } from '~/utils/misc';
 import { uploadToS3 } from '~/server/utils/s3';
 import Id from '~/server/utils/Id.server';
 import { findEvent } from '~/server/db/events.server';
@@ -100,12 +100,22 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 
 export const action: ActionFunction = async ({ request, params }) => {
   const user = await requireUser(request);
-
   const t = await i18n.getFixedT(request, RESOURCES_NS);
+
+  const eventId = params.eventId as string;
+  const event = await findEvent(eventId);
+
+  if (!event) {
+    throw NotFound(t('Event not found'));
+  }
+
+  if (event.createdById !== user.id) {
+    throw Unauthorized(t('Not authorized'));
+  }
 
   const uploadHandler: UploadHandler = unstable_composeUploadHandlers(
     // our custom upload handler
-    async ({ name, data, filename }) => {
+    async ({ name, data, filename, contentType }) => {
       if (name !== 'file') {
         return undefined;
       }
@@ -114,15 +124,20 @@ export const action: ActionFunction = async ({ request, params }) => {
         return undefined;
       }
 
-      const eventId = params.eventId as string;
-      const path = require('path');
-      const fileExtension = path.parse(filename as string).ext;
+      const fileType = fileExtensionFromMimeType(contentType);
 
-      return await uploadToS3(
+      if (!fileType) {
+        return undefined;
+      }
+
+      const prefix = `events/${event.createdAt.getFullYear()}${String(event.createdAt.getMonth() + 1).padStart(2, '0')}/${eventId}`;
+      const key = await uploadToS3(
         Readable.from(data),
-        eventId,
-        Id() + fileExtension
+        prefix,
+        `${Id()}.${fileType}`
       );
+
+      return `${key}|${filename}|${fileType}`;
     },
     // fallback to memory for everything else
     unstable_createMemoryUploadHandler()
@@ -131,16 +146,17 @@ export const action: ActionFunction = async ({ request, params }) => {
   const form = await unstable_parseMultipartFormData(request, uploadHandler);
 
   const name = form.get('name') as string;
-  const eventId = params.eventId as string;
-  let documentId = params.id || null;
+  const documentId = params.id === 'new' ? null : params.id;
   const file =
     form.get('file') === 'undefined' || form.get('file') === null
       ? undefined
-      : form.get('file');
-  const event = await findEvent(eventId);
+      : form.get('file') as string;
+  let filePath: File | string | null = null;
+  let fileName: string = '';
+  let fileType: string = '';
 
-  if(documentId === 'new') {
-    documentId = null;
+  if (file && file?.length) {
+    [filePath, fileName, fileType] = file.split('|');
   }
 
   const isInsert = !documentId;
@@ -148,22 +164,16 @@ export const action: ActionFunction = async ({ request, params }) => {
     id: isInsert ? Id() : documentId as string,
     label: name,
     // @ts-ignore
-    path: file,
+    path: filePath,
+    fileName,
+    type: fileType,
     eventId
   };
-
-  if (!event) {
-    throw NotFound(t('Event not found'));
-  }
-  if (event.createdById !== user.id) {
-    throw Unauthorized(t('Not authorized'));
-  }
 
   const DocumentSchema = z.object({
     label: z.string().min(5, { message: t('Min 5 chars') }),
     path: z
-      .string()
-      .optional()
+      .string({ invalid_type_error: t('Select a document') })
       .refine(
         () => {
           if (!isInsert) {
@@ -308,6 +318,7 @@ export default function EventDocumentRoute() {
               className={clsx(
                 'text-md font-extrabold dark:text-white my-4 ml-4'
               )}
+              data-cy="uploaded-document"
             >
               {uploadedDocument}
             </div>

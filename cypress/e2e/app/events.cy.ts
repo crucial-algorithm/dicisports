@@ -1066,6 +1066,34 @@ describe('Event', () => {
           });
       });
     });
+
+    it.only('should not allow to upload files without extension', () => {
+      cy.visitAndWaitForHydration('/o/event/bQmGXYkbhJetjk6mniMt/doc/new')
+        .get('input[name=name]')
+        .type('No Extension')
+
+        .get('input[name="file"]')
+        .selectFile('cypress/assets/no_extension_pdf', { force: true })
+
+        .get('div[data-cy=uploaded-document]')
+        .should('not.exist')
+
+        .intercept('POST', '/o/event/bQmGXYkbhJetjk6mniMt/doc/new*')
+        .as('UploadDocument')
+
+        .get('button[name=create-document-button]')
+        .click()
+
+        .wait('@UploadDocument')
+
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.eq('/o/event/bQmGXYkbhJetjk6mniMt/doc/new');
+        })
+
+        .get('#ff-Documento-error')
+        .should('exist');
+    });
   });
 });
 
