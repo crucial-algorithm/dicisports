@@ -229,12 +229,6 @@ export const action: ActionFunction = async ({ request }) => {
           return redirect(`/?message=${t('No Booking Found')}`, { headers });
         }
 
-        const authUserBooking = await findBooking(user.id, booking.eventId);
-
-        if (authUserBooking) {
-          return redirect(bookingRedirectRoute(authUserBooking), { headers });
-        }
-
         await changeRegistrationToAuthUser(
           user.id,
           clientSession.getClientId()

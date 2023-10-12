@@ -76,7 +76,7 @@ export default function BookingLoginCTADialog({
             />
           </FormField>
           <ButtonGroup>
-            <Button type="submit">
+            <Button type="submit" name="login">
               {t('Suggest Login Dialog - Login Button')}
             </Button>
             <Button

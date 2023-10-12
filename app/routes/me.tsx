@@ -778,7 +778,7 @@ function BookingListEntry({
       data-cy="participant-row"
       onClick={handleRedirectToBooking}
     >
-      <TD value={`${booking.eventName}`} />
+      <TD value={`${booking.eventName}`} dataCy={`event-${(booking.eventName).replace(/\s+/g, '-').toLowerCase()}`} />
       <TD value={`${date} ${hour}`} />
       <TD value={t(booking.status)} dataCy={`status-${booking.id}`} />
       <TD value={`${booking.totalParticipants}`} />

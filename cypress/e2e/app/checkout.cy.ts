@@ -1028,6 +1028,49 @@ describe('Checkout', () => {
         .should('exist');
     });
 
+    it('should be able to keep multiple bookings', () => {
+      cy.visitAndWaitForHydration('/pt/event/love-tiles-douro-granfondo-2023')
+
+        .intercept('GET', '/checkout/create*')
+        .as('selectRace')
+
+        .get('button[name=race-AhowRdNWCBQWSuivSt7h]')
+        .click()
+
+        .wait('@selectRace')
+
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.include('/checkout/info/');
+        })
+
+        .get('div[data-cy=login]')
+        .should('have.attr', 'data-show-login')
+
+        .get('input[name=email]')
+        .type('regular@gmail.com')
+
+        .get('input[name=password]')
+        .type('Password1')
+
+        .intercept('POST', '/login*')
+        .as('Login')
+
+        .get('button[name=login]')
+        .click()
+
+        .wait('@Login')
+
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.include('/checkout/info/');
+        })
+
+        .visitAndWaitForHydration('/me')
+        .get('[data-cy=event-love-tiles-douro-granfondo-2023]')
+        .should('have.length', 4);
+    });
+
     context('add/remove race participants when', () => {
       it('does not own booking', () => {
         const formData = new FormData();
