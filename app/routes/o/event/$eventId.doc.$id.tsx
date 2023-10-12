@@ -149,8 +149,8 @@ export const action: ActionFunction = async ({ request, params }) => {
       : form.get('file') as string;
   const isFileTypeValid = file && file !== 'invalid-type';
   let filePath: File | string | null = null;
-  let fileName: string = '';
-  let fileType: string = '';
+  let fileName: string | null = null;
+  let fileType: string | null = null;
 
   if (file && file.length) {
     if (file !== 'invalid-type') {
