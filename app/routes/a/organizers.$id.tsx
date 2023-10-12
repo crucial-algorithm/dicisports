@@ -1,18 +1,28 @@
+import { Column } from 'primereact/column';
+import type { DataTableRowClickEvent } from 'primereact/datatable';
+import { DataTable } from 'primereact/datatable';
 import * as React from 'react';
-import { OrganizerStatus, Role } from '@prisma/client';
+import { OrganizerStatus, Role  } from '@prisma/client';
+import type { Event } from '@prisma/client';
 
 import type { ActionFunction, LoaderFunction } from '@remix-run/node';
 import { json } from '@remix-run/node';
-import { Form, useActionData, useLoaderData } from '@remix-run/react';
+import { Form, useActionData, useLoaderData, useNavigate } from '@remix-run/react';
 import { redirect } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { z, ZodError } from 'zod';
 
+import { dateFormatter } from '~/components/shared/DIsplayDate';
+
+import { H3 } from '~/components/shared/typography';
+
 import { getUser, requireAdminUser } from '~/server/auth/session.server';
+import { findOrganizerEvents } from '~/server/db/events.server';
 import {
   approveOrganizer,
   findOrganizerById,
-  rejectOrganizer
+  rejectOrganizer,
+  updateOrganizerCommission
 } from '~/server/db/organizer.server';
 import type { Organizer, OrganizerType } from '~/types';
 import ButtonGroup from '~/components/shared/ButtonGroup';
@@ -30,6 +40,7 @@ import { findOrganizerTypes } from '~/server/db/reference.server';
 
 type LoaderData = {
   organizer: Organizer;
+  events: Array<Event>;
   defaultCommission: number;
   organizerTypes: OrganizerType[];
 };
@@ -50,7 +61,7 @@ export const action: ActionFunction = async ({ request, params }) => {
 
   const organizer = await findOrganizerById(id);
 
-  if (!organizer || organizer.status !== OrganizerStatus.PENDING) {
+  if (!organizer) {
     return redirect('/a/organizers');
   }
 
@@ -68,6 +79,12 @@ export const action: ActionFunction = async ({ request, params }) => {
   try {
     if (approve) {
       Schema.parse({ commission });
+
+      if (organizer.status === OrganizerStatus.APPROVED) {
+        await updateOrganizerCommission(id, commission);
+
+        return redirect('/a/organizers');
+      }
 
       await approveOrganizer(id, commission);
       await sendApprovedOrganizerProfileEmail({
@@ -117,15 +134,14 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 
   const organizer = await findOrganizerById(id);
 
-  if (!organizer || organizer.status !== OrganizerStatus.PENDING) {
-    return redirect('/a/organizers');
-  }
-
   const { DEFAULT_COMMISSION } = Config();
   const organizerTypes = await findOrganizerTypes();
 
+  const events = await findOrganizerEvents(id);
+
   return json({
     organizer,
+    events,
     defaultCommission: DEFAULT_COMMISSION,
     organizerTypes: organizerTypes.map((o) => {
       return { id: o.id, name: o.name };
@@ -134,46 +150,93 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 };
 
 export default function ReviewOrganizerRoute() {
-  const { organizer, defaultCommission, organizerTypes } = useLoaderData() as LoaderData;
+  const { organizer, defaultCommission, organizerTypes, events } =
+    useLoaderData() as LoaderData;
   const actionData = useActionData();
   const { t } = useTranslation('admin-organizers');
+  const { t: tc } = useTranslation('common');
+  const navigate = useNavigate();
+
+  function handleRowClick(e: DataTableRowClickEvent) {
+    navigate(`/o/event/${e.data.id}`);
+  }
+
+  function startAt({ startAt }: Event) {
+    return dateFormatter(new Date(startAt || 0), tc);
+  }
 
   return (
     <Main>
-      <OrganizerForm organizer={organizer} readOnly={true} organizerTypes={organizerTypes} />
+      <OrganizerForm
+        organizer={organizer}
+        readOnly={true}
+        organizerTypes={organizerTypes}
+      />
       <Form method="post">
         <FormField
           label={t('Commission')}
           error={actionData?.errors?.commission}
-          className="w-44"
+          className="w-full"
           description={t('Only accept 2 decimal places')}
         >
-          <div className="w-44">
-            <TextField
-              type="number"
-              name="commission"
-              defaultValue={defaultCommission}
-            />
-          </div>
+          <TextField
+            type="number"
+            name="commission"
+            defaultValue={organizer.commission || defaultCommission}
+            className="w-full md:w-44"
+          />
         </FormField>
 
         <ButtonGroup>
-          <ButtonLink type="button" variant="secondary" to="/a">
+          <ButtonLink type="button" variant="secondary" to="/a/organizers">
             {t('Cancel')}
           </ButtonLink>
+          {organizer.status !== OrganizerStatus.REJECTED && (
+            <Button
+              variant="secondary"
+              name="actionId"
+              type="submit"
+              value="reject"
+            >
+              {t('Reject')}
+            </Button>
+          )}
           <Button
-            variant="secondary"
             name="actionId"
             type="submit"
-            value="reject"
+            value="approve"
           >
-            {t('Reject')}
-          </Button>
-          <Button name="actionId" type="submit" value="approve">
-            {t('Approve')}
+            {organizer.status === OrganizerStatus.APPROVED
+              ? t('Update')
+              : t('Approve')}
           </Button>
         </ButtonGroup>
       </Form>
+
+      <H3 className="mt-8">{t('Events')}</H3>
+      <DataTable
+        value={events}
+        emptyMessage={t('No events')}
+        onRowClick={handleRowClick}
+      >
+        <Column
+          field="name"
+          bodyClassName="cursor-pointer"
+          header={t('Name')}
+        />
+        <Column
+          field="startAt"
+          bodyClassName="cursor-pointer"
+          header={t('Date')}
+          body={startAt}
+        />
+        <Column
+          field="status"
+          bodyClassName="cursor-pointer"
+          header={t('State')}
+        />
+      </DataTable>
+
     </Main>
   );
 }

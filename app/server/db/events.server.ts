@@ -7,6 +7,7 @@ import type {
   CreateEventInput,
   FavoriteEvent,
   Language,
+  Organizer,
   SearchEventsResults
 } from '~/types';
 import {
@@ -45,11 +46,60 @@ async function findEvents(): Promise<Array<Event>> {
   });
 }
 
+async function findOrganizerEvents(organizerId: string): Promise<Array<Event>> {
+
+  const o = await db.organizer.findUnique({ where: { id: organizerId } });
+
+  if (!o) {
+    return [];
+  }
+
+  return db.event.findMany({
+    where: {
+      status: { notIn: [Status.auto, Status.deleted] },
+      createdById: o.userId
+    },
+    orderBy: [{ updatedAt: 'desc' }, { name: 'asc' }]
+  });
+}
+
+async function findEventOrganizer(eventId: string): Promise<Organizer | null> {
+  const event = await db.event.findUnique({ where: { id: eventId } });
+
+  if (!event) {
+    return null;
+  }
+
+  const user = await db.user.findUnique({ where: { id: event.createdById } });
+
+  if (!user) {
+    return null;
+  }
+
+  return db.organizer.findUnique({ where: { userId: user.id } });
+}
+
+
 async function findPublishedEvents(): Promise<Event[]> {
   return db.event.findMany({
     where: {
       status: Status.published
     }
+  });
+}
+
+/**
+ * Used to get the latest event for highlight in home page
+ */
+async function findLatestPublishedEvents(): Promise<Event[]> {
+  return db.event.findMany({
+    where: {
+      status: Status.published,
+      hideFromLatestEvents: false,
+      endAt: { gte: new Date(Date.now()) }
+    },
+    orderBy: { createdAt: 'desc' },
+    take: 4
   });
 }
 
@@ -130,7 +180,7 @@ async function createDraftEvent(
         endAt: null,
         lat: null,
         lng: null,
-        location: null,
+        location: Prisma.DbNull,
         useExternalBooking: false,
         externalBookingUrl: null,
         createdById,
@@ -166,7 +216,8 @@ async function updateEvent(
         endAt: eventAt,
         lat: event.lat,
         lng: event.lng,
-        location: event.location,
+        location: event.location ? event.location : Prisma.DbNull,
+        placeName: event.placeName,
         useExternalBooking: event.useExternalBooking,
         externalBookingUrl: event.externalBookingUrl,
         image1: event.image1,
@@ -385,6 +436,8 @@ export type {
 
 export {
   findEvents,
+  findOrganizerEvents,
+  findEventOrganizer,
   findUserEvents,
   findEvent,
   createDraftEvent,
@@ -400,5 +453,6 @@ export {
   deleteEvent,
   updateEventRegulation,
   findEventWithRacesAndDocuments,
-  findPublishedEvents
+  findPublishedEvents,
+  findLatestPublishedEvents
 };

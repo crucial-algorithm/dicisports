@@ -37,6 +37,7 @@ export default function BasicDatePicker({
   }
 
   function handleOnChange(event: CalendarChangeEvent) {
+    formProps.setDirty && formProps.setDirty();
     setValue(event.value as Date);
   }
 

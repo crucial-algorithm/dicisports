@@ -13,15 +13,12 @@
         dark:bg-gray-900 dark:border-white dark:text-white
         z-20
 
-        w-screen h-screen px-8
+        w-screen ds-h-screen md:h-fit px-8
 
         md:top-[50%] md:left-[50%] md:-translate-x-1/2 md:-translate-y-1/2
         md:w-fit md:max-w-[90%] md:min-h-[200px] md:max-h-[90vh] md:h-fit
         md:m-auto md:px-4
         md:rounded-lg md:border-2 md:border-black;
-
-        /* hack: fix webkit displaying address bar on top of dialog action bar */
-        height: var(--doc-height);
     }
 
     .dialog-title {
@@ -45,6 +42,29 @@
 
     .search-filters .dialog-footer {
         @apply bottom-16 right-8;
+    }
+
+    .ds-h-screen {
+        /* hack: fix webkit displaying address bar on top of dialog action bar */
+        height: var(--doc-height);
+    }
+}
+
+@layer base {
+    .input-text {
+        @apply w-full px-11 py-4 rounded-lg placeholder-gray-500 dark:text-blueGray-600 font-medium border-0
+        bg-gray-100 text-base md:text-lg
+        dark:text-white dark:bg-gray-800
+        disabled:text-gray-400 dark:disabled:text-blueGray-500
+        focus-ring;
+    }
+
+    .input-text::placeholder {
+        @apply dark:text-blueGray-600;
+    }
+
+    .input-text.slim {
+        @apply px-4
     }
 }
 
@@ -91,30 +111,6 @@
 
     .text-inverse {
         @apply dark:text-black text-white;
-    }
-
-    .input-text {
-        @apply w-full px-11 py-4 rounded-lg placeholder-gray-500 font-medium border-0
-        bg-gray-100 text-base md:text-lg
-        dark:text-white dark:bg-gray-800
-        disabled:text-gray-400 dark:disabled:text-blueGray-500
-        focus-ring;
-    }
-
-    .input-text::placeholder {
-        @apply dark:text-gray-300;
-    }
-
-    .input-text-slim {
-        @apply px-4 py-4 rounded-lg placeholder-gray-500 font-medium border-0
-        bg-gray-100 text-lg
-        dark:text-white dark:bg-gray-800
-        disabled:text-gray-400 dark:disabled:text-blueGray-500
-        focus-ring;
-    }
-
-    .input-text-slim::placeholder {
-        @apply dark:text-blueGray-500;
     }
 
     /*This is a class declared to override Prime React input mask styles*/

@@ -1,8 +1,13 @@
 import { json } from '@remix-run/node';
 
-import type { Booking, UICartRow } from '~/types';
-
-import type { Language, NonNullProperties, TranslationObject } from '~/types';
+import type {
+  Booking,
+  Language,
+  LocalStorageBookingMetaData,
+  NonNullProperties,
+  TranslationObject,
+  UICartRow
+} from '~/types';
 
 function getDomainUrl(request: Request) {
   const host =
@@ -221,6 +226,42 @@ function bookingRedirectRoute(booking: Booking): string {
   return `/checkout/${mapping[booking.status]}/${booking.id}`;
 }
 
+function maintainBookingLocalStorageMetadData(bookingId: string): {
+  read: () => LocalStorageBookingMetaData;
+  write: (key: keyof LocalStorageBookingMetaData, value: boolean) => void;
+} {
+
+  const initialize = (): LocalStorageBookingMetaData => {
+    return { loginCTASeen: false, confirmationEmailSent: false };
+  };
+
+  return {
+    write: (key, value) => {
+      const raw = window.localStorage.getItem(bookingId);
+      let record = initialize();
+
+      if (raw) {
+        record = JSON.parse(raw);
+      }
+
+      record[key] = value;
+
+      window.localStorage.setItem(bookingId, JSON.stringify(record));
+    },
+
+    read: () => {
+      const raw = window.localStorage.getItem(bookingId);
+
+      if (!raw) {
+        return initialize();
+      }
+
+      return JSON.parse(raw);
+    }
+  };
+}
+
+
 export {
   getDomainUrl,
   getErrorMessage,
@@ -237,5 +278,6 @@ export {
   generateSlug,
   bookingAmount,
   validateIdentityCard,
-  bookingRedirectRoute
+  bookingRedirectRoute,
+  maintainBookingLocalStorageMetadData
 };

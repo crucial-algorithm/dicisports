@@ -1,11 +1,10 @@
 import type { LoaderFunction } from '@remix-run/node';
 import { redirect } from '@remix-run/node';
-import { CheckoutStatus } from '@prisma/client';
 import type { TFunction } from 'i18next';
 
 import { getClientSession } from '~/server/auth/client.server';
 import { getUser } from '~/server/auth/session.server';
-import { createBooking, findBooking } from '~/server/db/booking.server';
+import { createBooking } from '~/server/db/booking.server';
 import { badRequest } from '~/utils/misc';
 import { addParticipantsToRace } from '~/server/db/participant.server';
 import i18n from '~/server/i18n.server';
@@ -33,22 +32,7 @@ export const loader: LoaderFunction = async ({ request }) => {
     return redirect('/');
   }
 
-  //TODO: delete this validation in order to create many bookings to the same event
-  const booking = await findBooking(clientId, eventId);
-
   try {
-    if (booking) {
-      return redirect(
-        `/checkout/${
-          booking.status === CheckoutStatus.checkout
-            ? 'info'
-            : booking.status === CheckoutStatus.pending
-            ? 'payment'
-            : 'confirmation'
-        }/${booking.id}`
-      );
-    }
-
     const bookingId = Id();
 
     await createInitialBookingFlow(bookingId, clientId, eventId, raceId, t);
@@ -67,7 +51,6 @@ export async function createInitialBookingFlow(
   raceId: string,
   t: TFunction
 ) {
-
   const pin = Math.floor(1000 + Math.random() * 9000);
   const booking = await createBooking(bookingId, pin, eventId, clientId);
 

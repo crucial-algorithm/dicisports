@@ -13,16 +13,23 @@ import {
   MapPinIcon,
   QuestionMarkCircleIcon
 } from '@heroicons/react/24/outline';
-import { HeartIcon as Favorite } from '@heroicons/react/24/solid';
+import {
+  CheckIcon,
+  ChevronDownIcon,
+  ChevronUpIcon,
+  HeartIcon as Favorite,
+  XMarkIcon
+} from '@heroicons/react/24/solid';
+
 import * as React from 'react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Carousel } from 'react-responsive-carousel';
 import clsx from 'clsx';
 import { InView } from 'react-intersection-observer';
 import { Tooltip } from 'primereact/tooltip';
 
 import CopyToClipboard from '~/components/shared/CopyToClipboard';
+
 import useLang from '~/hooks/useLang';
 
 import type { EventWithRacesDifficultiesAndDocuments } from '~/server/db/events.server';
@@ -34,6 +41,7 @@ import {
 import Main from '~/components/shared/Main';
 import { H2, H3, H4, H5, H6, Paragraph } from '~/components/shared/typography';
 import Button, { ButtonLink } from '~/components/shared/Button';
+import Carousel from '~/components/Carousel';
 import { getUser } from '~/server/auth/session.server';
 import { Notification } from '~/components/shared/NotificationMessage';
 import DisplayImg from '~/components/shared/DisplayImg';
@@ -53,6 +61,8 @@ import { findEventPerks } from '~/server/db/perks.server';
 import WhenListEmpty from '~/components/shared/Empty';
 import { getI18nText } from '~/components/I18nText';
 import { findOrganizer } from '~/server/db/organizer.server';
+
+import EventGalleria from '~/components/EventGalleria';
 
 type LoaderData = {
   event: EventWithRacesDifficultiesAndDocuments;
@@ -125,21 +135,28 @@ export const loader: LoaderFunction = async ({ params, request }) => {
 
 export default function EventDisplayRoute() {
   const favorite = useFetcher();
-  const { event, isUserFavorite, races, perks, organizer } = useLoaderData<LoaderData>();
+  const { event, isUserFavorite, races, perks, organizer } =
+    useLoaderData<LoaderData>();
   const { i18n, t } = useTranslation('event');
 
   let minPrice = 0;
   const [isEventHeaderVisible, setEventHeaderVisible] = useState<boolean>(true);
   const [areRacesVisible, setAreRacesVisible] = useState<boolean>(false);
-  const anyRaceInEarlyBird = races
-    .map(
-      (r: Race) =>
-        r.priceEarlyBird &&
-        r.validUntil &&
-        new Date(r.validUntil).getTime() - Date.now() > 0
-    )
-    .filter(Boolean)
-    .length > 0;
+  const [minHeight, setMinHeight] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!races) {
+      return;
+    }
+
+    const raceHeights = races.map((r: Race) => {
+      return document.getElementById(`race-${r.id}`)?.clientHeight || 0;
+    });
+
+    if (!minHeight) {
+      setMinHeight(Math.max(...raceHeights));
+    }
+  }, [minHeight, races]);
 
   if (!event) {
     return (
@@ -214,8 +231,9 @@ export default function EventDisplayRoute() {
                   key={race.id}
                   index={index}
                   eventId={event.id}
-                  areThereRacesInEarlyBird={anyRaceInEarlyBird}
                   isBookingClosed={isBookingClosed}
+                  minHeight={minHeight}
+                  externalBookingUrl={event.externalBookingUrl}
                 />
               ))}
             <WhenListEmpty list={races}>
@@ -237,25 +255,25 @@ export default function EventDisplayRoute() {
             {perks
               .sort((a: Perk, b: Perk) => a.displayOrder - b.displayOrder)
               .map((p: Perk, index: number) => (
-                <div
-                  key={p.id}
-                  className="flex items-center mb-1"
-                  data-cy="perk"
-                >
-                  <input
-                    disabled
-                    type="checkbox"
-                    defaultChecked={p.isEnabled}
-                    className="w-4 h-4 text-indigo-500 bg-gray-100 rounded border-gray-300 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600"
-                    name={`perk-checkbox-${p.id}`}
-                  />
-                  <label
-                    htmlFor={p.id}
-                    className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300"
+                <div key={p.id} className="flex items-center" data-cy="perk">
+                  {p.isEnabled && (
+                    <CheckIcon
+                      className="w-5 h-5 dark:text-blueGray-500"
+                      data-cy={`perk-${p.id}-available`}
+                    />
+                  )}
+                  {!p.isEnabled && (
+                    <XMarkIcon
+                      className="w-5 h-5 dark:text-blueGray-500"
+                      data-cy={`perk-${p.id}-unavailable`}
+                    />
+                  )}
+                  <p
+                    className="ml-1 text-sm font-medium text-gray-900 dark:text-gray-300"
                     data-cy={`perk-${index}`}
                   >
                     {p.name}
-                  </label>
+                  </p>
                 </div>
               ))}
           </div>
@@ -298,11 +316,19 @@ type DisplayRaceProps = {
   race: Race;
   index: number;
   eventId: string;
-  areThereRacesInEarlyBird: boolean;
   isBookingClosed: boolean;
+  minHeight: number | null;
+  externalBookingUrl?: string;
 };
 
-function DisplayRace({ race, index, eventId, areThereRacesInEarlyBird, isBookingClosed }: DisplayRaceProps) {
+function DisplayRace({
+  race,
+  index,
+  eventId,
+  isBookingClosed,
+  minHeight,
+  externalBookingUrl
+}: DisplayRaceProps) {
   const { t } = useTranslation('event');
   const raceTime = displayTimeOfDay(race.startTime);
   const [expanded, setExpanded] = useState<boolean>(false);
@@ -311,7 +337,8 @@ function DisplayRace({ race, index, eventId, areThereRacesInEarlyBird, isBooking
 
   if (race.priceEarlyBird && race.validUntil) {
     // calculate the difference in milliseconds (+ 1 day, given the user selects an end date that is part of range)
-    const diffInMs = new Date(race.validUntil).getTime() - Date.now() + 86400 * 1000;
+    const diffInMs =
+      new Date(race.validUntil).getTime() - Date.now() + 86400 * 1000;
 
     // convert the difference to days
     validDuring = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
@@ -324,16 +351,11 @@ function DisplayRace({ race, index, eventId, areThereRacesInEarlyBird, isBooking
 
   return (
     <div
-      className={clsx(
-        'flex flex-col gap-y-4 justify-between mb-4 mr-2 md:mr-4 text-center items-center border border-black dark:border-white rounded-2xl outline-offset-1 w-[340px] md:overflow-hidden',
-        {
-          // Only doing this starting from MD screen sizes, since in mobile races are not horizontally aligned
-          'md:min-h-[450px]': areThereRacesInEarlyBird && !isBookingClosed,
-          'md:min-h-[460px]': areThereRacesInEarlyBird && isBookingClosed,
-          'md:min-h-[410px]': !areThereRacesInEarlyBird
-        }
-      )}
+      className="flex flex-col w-[340px] gap-y-4 justify-between mb-4 mr-2 md:mr-4 text-center items-center border border-black dark:border-white rounded-2xl outline-offset-1 md:overflow-hidden"
       data-cy={`race-${index}`}
+      id={`race-${race.id}`}
+      // Using style, since 'min-h-[value]' was being purged 🤷
+      style={{ minHeight: minHeight ? minHeight : 410 }}
     >
       <div className="flex flex-col gap-y-4">
         <div className="mt-4" data-cy="race">
@@ -344,7 +366,9 @@ function DisplayRace({ race, index, eventId, areThereRacesInEarlyBird, isBooking
           <H5
             className="dark:text-blueGray-500"
             data-cy={`race-distance-${race.id}`}
-          >{`${race.distance} km`}</H5>
+          >
+            {race.distance}km
+          </H5>
         </div>
         <div>
           <H4>{t('Race Start Time')}</H4>
@@ -367,10 +391,11 @@ function DisplayRace({ race, index, eventId, areThereRacesInEarlyBird, isBooking
                 <H5
                   className="dark:text-blueGray-500 line-through"
                   data-cy={`race-price-${race.id}`}
-                >{`${race.price / 1000}€`}</H5>
+                >
+                  {race.price / 1000}€
+                </H5>
                 <H3 data-cy={`race-price-${race.id}`}>
-                  {' '}
-                  {`${(race.priceEarlyBird || 0) / 1000}€`}
+                  {(race.priceEarlyBird || 0) / 1000}€
                 </H3>
               </div>
 
@@ -386,9 +411,9 @@ function DisplayRace({ race, index, eventId, areThereRacesInEarlyBird, isBooking
                   data-cy={`race-valid-until-${race.id}`}
                 >
                   {validDuring < 30 ? (
-                    `${t(validDuring === 1 ? 'Valid Day' : 'Valid Days', {
+                    t(validDuring === 1 ? 'Valid Day' : 'Valid Days', {
                       total: validDuring
-                    })}`
+                    })
                   ) : (
                     <DisplayDate date={new Date(String(race.validUntil))} />
                   )}
@@ -397,7 +422,7 @@ function DisplayRace({ race, index, eventId, areThereRacesInEarlyBird, isBooking
             </>
           ) : (
             <H3 className="items-center" data-cy={`race-price-${race.id}`}>
-              {`${race.price / 1000}`}€
+              {race.price / 1000}€
             </H3>
           )}
         </div>
@@ -419,7 +444,7 @@ function DisplayRace({ race, index, eventId, areThereRacesInEarlyBird, isBooking
                 className="dark:text-blueGray-500 text-base font-medium mr-2 mt-2"
                 data-cy={`elevation-gain-${race.id}`}
               >
-                {`${race.elevationGain} m`}
+                {race.elevationGain}m
               </div>
             </div>
             {race.elevationLoss && (
@@ -429,7 +454,7 @@ function DisplayRace({ race, index, eventId, areThereRacesInEarlyBird, isBooking
                   className="dark:text-blueGray-500 text-base font-medium mr-2 mt-2"
                   data-cy={`elevation-loss-${race.id}`}
                 >
-                  {`${race.elevationLoss} m`}
+                  {race.elevationLoss}m
                 </div>
               </div>
             )}
@@ -447,26 +472,41 @@ function DisplayRace({ race, index, eventId, areThereRacesInEarlyBird, isBooking
           </>
         )}
       </div>
-      <div className="dark:text-blueGray-500 text-sm font-medium mb-4">
-        <label
-          role="button"
+      <div className="mb-4">
+        <SeeMoreOrLessButton
+          name={`see-more-${race.id}`}
           onClick={handleSeeMore}
-          data-cy={`see-more-${race.id}`}
-        >
-          {expanded ? t('See Less') : t('See More')}
-        </label>
-        <Form
-          method="get"
-          action="/checkout/create"
-          className="flex flex-col gap-y-2 mt-2"
-        >
-          <input type="hidden" value={race.id} name="raceId" />
-          <input type="hidden" value={race.eventId} name="eventId" />
-          <Button disabled={isBookingClosed} name={`race-${race.id}`}>
+          expanded={expanded}
+          t={t}
+        />
+
+        {!externalBookingUrl && (
+          <Form
+            method="get"
+            action="/checkout/create"
+            className="flex flex-col gap-y-1 mt-2"
+          >
+            <input type="hidden" value={race.id} name="raceId" />
+            <input type="hidden" value={race.eventId} name="eventId" />
+            <Button disabled={isBookingClosed} name={`race-${race.id}`}>
+              {t('Book')}
+            </Button>
+            {isBookingClosed && (
+              <label
+                className="dark:text-blueGray-500"
+                data-cy="booking-closed"
+              >
+                {t('Booking Closed')}
+              </label>
+            )}
+          </Form>
+        )}
+
+        {externalBookingUrl && (
+          <ButtonLink id={`book-race-${race.id}`} to={externalBookingUrl}>
             {t('Book')}
-          </Button>
-          {isBookingClosed && <label data-cy="booking-closed">{t('Booking Closed')}</label>}
-        </Form>
+          </ButtonLink>
+        )}
       </div>
     </div>
   );
@@ -479,26 +519,26 @@ function DisplayDocument(props: { document: Document; index: number }) {
   const fileExtension = path.split('.');
 
   return (
-    <div
-      className="flex items-center border border-black dark:border-white rounded-2xl h-16 p-4 mr-2 mb-2"
-      data-cy={`document-${index}`}
+    <Link
+      to={`/${lang}/event/${document.eventId}/doc/${document.id}/view`}
+      target="_blank"
+      rel="noreferrer"
+      className="text-black dark:text-white"
+      data-cy="document-label"
     >
       <div
-        className="dark:text-white font-medium border-2 border-secondary bg-primary rounded-full p-2 mr-2"
-        data-cy="document-extension"
+        className="flex items-center border border-black dark:border-white rounded-2xl h-16 p-4 mr-2 mb-2"
+        data-cy={`document-${index}`}
       >
-        {fileExtension[fileExtension.length - 1].toUpperCase()}
-      </div>
-      <Link
-        to={`/${lang}/event/${document.eventId}/doc/${document.id}/view`}
-        target="_blank"
-        rel="noreferrer"
-        className="text-black dark:text-white"
-        data-cy="document-label"
-      >
+        <div
+          className="dark:text-white font-medium border-2 border-secondary bg-primary rounded-full p-2 mr-2"
+          data-cy="document-extension"
+        >
+          {fileExtension[fileExtension.length - 1].toUpperCase()}
+        </div>
         {document.label}
-      </Link>
-    </div>
+      </div>
+    </Link>
   );
 }
 
@@ -512,20 +552,20 @@ function DisplayRegulation({ event }: { event: Event }) {
   const isInlineRegulation = !!event.regulationContent;
   const path = isInlineRegulation
     ? `/${lang}/event/${event.slug}/regulation`
-    : `/${lang}/event/${event.id}/doc/regulation/view`;
+    : `/${lang}/event/${event.id}/regulation/view`;
 
   return (
-    <div className="flex items-center border border-black dark:border-white rounded-2xl h-16 p-4 mr-2 mb-2">
-      <Link
-        to={path}
-        target="_blank"
-        rel="noreferrer"
-        className="text-black dark:text-white"
-        data-cy="regulation"
-      >
+    <Link
+      to={path}
+      target="_blank"
+      rel="noreferrer"
+      className="text-black dark:text-white"
+      data-cy="regulation"
+    >
+      <div className="flex items-center border border-black dark:border-white rounded-2xl h-16 p-4 mr-2 mb-2">
         {t('Regulation')}
-      </Link>
-    </div>
+      </div>
+    </Link>
   );
 }
 
@@ -551,6 +591,7 @@ function EventHeader({
   const [isFavorite, setIsFavorite] = useState<boolean>(isUserFavorite);
   const [message, setMessage] = useState<string>(favoriteAddedMessage);
   const [address, setAddress] = useState<string>('');
+  const galleria = useRef(null);
   let showFavoriteAddedNotification: any = null;
   let showCopiedToClipboardNotification: any = null;
 
@@ -574,10 +615,6 @@ function EventHeader({
     showCopiedToClipboardNotification();
   }
 
-  function cleanStatus() {
-    return '';
-  }
-
   useEffect(() => {
     if (favorite.type === 'actionReload' && favorite.data.ok) {
       setMessage(
@@ -599,42 +636,38 @@ function EventHeader({
     favoriteRemovedMessage
   ]);
 
+  function handleOpenGallery(e: React.MouseEvent) {
+    // @ts-ignore
+    galleria.current?.show();
+
+    e.stopPropagation();
+  }
+
   return (
     <div className="flex flex-col md:flex-row mt-4">
-      <div className="w-full md:w-[22rem]">
-        {images.length > 1 ? (
-          <Carousel statusFormatter={cleanStatus}>
-            {images.map((image, idx) => (
-              <DisplayImg
-                key={idx}
-                dataCy={`image${idx}`}
-                imageId={image}
-                className="w-[500px]"
-                transformations={{
-                  resize: {
-                    type: 'fill',
-                    width: 400,
-                    height: 400
-                  }
-                }}
-              />
-            ))}
-          </Carousel>
-        ) : (
-          <DisplayImg
-            dataCy="image0"
-            imageId={images[0]}
-            className="w-[500px]"
-            transformations={{
-              resize: {
-                type: 'fill',
-                width: 400,
-                height: 400
-              }
-            }}
-          />
-        )}
+      <div
+        className="relative w-full md:w-[22rem] cursor-pointer"
+        onClick={handleOpenGallery}
+      >
+        <DisplayImg
+          dataCy="image0"
+          imageId={images[0]}
+          dontMessWithImgSize={true}
+          className="w-[500px] object-cover object-center"
+          transformations={{
+            resize: {
+              type: 'fill',
+              width: 400,
+              height: 400
+            }
+          }}
+        />
+        <div className="absolute rounded bottom-0 left-0 right-0 m-auto px-2 w-fit bg-gray-500/70 text-white">
+          {t('Click for full size image')}
+        </div>
       </div>
+
+      <EventGalleria values={images} ref={galleria} />
 
       <div className="flex flex-auto flex-col mt-4 ml-4">
         <div className="flex flex-row justify-end mb-2">
@@ -691,8 +724,12 @@ function EventHeader({
             rel="noreferrer"
             data-cy="location-link"
           >
-            <H6 className="ml-4 mr-2 md:ml-2" data-cy="location">
-              {event.location}
+            <H6 className="ml-4 mr-2 md:ml-2">
+              <span data-cy="location">{event.placeName}</span>
+              {event.location?.place && (
+                <>,&nbsp;{event.location?.place}</>
+              )}
+              <span className="text-sm link">&nbsp;{t('Open map')}</span>
             </H6>
           </a>
         </div>
@@ -746,8 +783,8 @@ function StickyPriceTag({
       className={clsx(
         'flex flex-row justify-between items-center inset-x-0 top-0 p-4 fixed dark:bg-gray-900 bg-white dark:border-gray-500 drop-shadow-md z-10',
         {
-          'flex': visible,
-          'hidden': !visible
+          flex: visible,
+          hidden: !visible
         }
       )}
     >
@@ -842,6 +879,49 @@ function DisplayDifficulty({
         {name}
         <QuestionMarkCircleIcon className="h-4 w-4 m-0 inline-block text-primary" />
       </H6>
+    </div>
+  );
+}
+
+function SeeMoreOrLessButton({
+  name,
+  onClick,
+  expanded,
+  t,
+  className
+}: {
+  name: string;
+  onClick: () => void;
+  expanded: boolean;
+  t: TFunction;
+  className?: string;
+}) {
+  const iconClassName =
+    'absolute inline-block h-4 w-4 m-0 text-white bg-black dark:bg-blueGray-500 rounded-full cursor-pointer';
+
+  return (
+    <div
+      className="flex flex-col items-center relative py-2 mb-4"
+      onClick={onClick}
+    >
+      <label
+        data-cy={name}
+        className={clsx(
+          'dark:text-white text-sm font-medium border-black dark:border-blueGray-500 py-1 px-2 cursor-pointer',
+          className,
+          {
+            'border-t-2': expanded,
+            'border-b-2': !expanded
+          }
+        )}
+      >
+        {expanded ? t('See Less') : t('See More')}
+      </label>
+      {expanded ? (
+        <ChevronUpIcon className={clsx('top-0', iconClassName)} />
+      ) : (
+        <ChevronDownIcon className={clsx('bottom-0', iconClassName)} />
+      )}
     </div>
   );
 }

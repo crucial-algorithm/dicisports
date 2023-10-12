@@ -6,9 +6,7 @@ import { json, redirect } from '@remix-run/node';
 
 import { z } from 'zod';
 
-import Main from '~/components/shared/Main';
 import FormField from '~/components/shared/form/FormField';
-import TextField from '~/components/shared/form/TextField';
 import InputError from '~/components/shared/form/InputError';
 import Button, { ButtonLink } from '~/components/shared/Button';
 import ButtonGroup from '~/components/shared/ButtonGroup';
@@ -86,12 +84,13 @@ export default function Recover() {
   };
 
   return (
-    <Main className="w-5/6 m-auto md:w-144">
+    <div className="w-5/6 m-auto md:w-144 max-w-8xl m-auto px-3">
       <Form method="post" autoComplete="off">
         <FormField label={t('Email')} error={errors.email}>
-          <TextField
+          <input
+            type="email"
             name="email"
-            className="w-full text-sm h-14 md:text-2xl md:h-20"
+            className="input-text px-4 lg:px-11 lg:text-lg w-full h-14 md:h-20"
             autoComplete="off"
             defaultValue={fields.email}
           />
@@ -119,6 +118,6 @@ export default function Recover() {
           </p>
         )}
       </Form>
-    </Main>
+    </div>
   );
 }

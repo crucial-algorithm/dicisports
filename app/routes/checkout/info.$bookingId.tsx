@@ -33,8 +33,9 @@ import { getClientSession } from '~/server/auth/client.server';
 import { getUser } from '~/server/auth/session.server';
 import {
   applyDiscountCode,
-  findBookingById,
+  findBooking,
   findBookingCart,
+  removeBooking,
   removeBookingDiscount,
   updateBookingStatus
 } from '~/server/db/booking.server';
@@ -97,7 +98,7 @@ export const action: ActionFunction = async ({ request, params }) => {
   const anonymousClient = await getClientSession(request);
   const authenticatedClient = await getUser(request);
   const bookingId = params.bookingId as string;
-  const booking = await findBookingById(bookingId);
+  const booking = await findBooking(bookingId);
 
   if (!booking) {
     return redirect('/');
@@ -132,7 +133,8 @@ export const action: ActionFunction = async ({ request, params }) => {
   const hash = form.get('hash') as string;
   const regulation: boolean = (form.get('regulation') as string) === 'on';
   const terms: boolean = (form.get('terms') as string) === 'on';
-  const enrollInMailingList: boolean = (form.get('add-to-mail-list') as string) === 'on';
+  const enrollInMailingList: boolean =
+    (form.get('add-to-mail-list') as string) === 'on';
   const teamName = (form.get('creatable-team') as string) || null;
 
   try {
@@ -140,22 +142,22 @@ export const action: ActionFunction = async ({ request, params }) => {
       const discountCode = form.get('discount-code') as string;
       const organizer = await findOrganizer(event.createdById);
       const dbDiscountCode = await findDiscountCode(
-          discountCode,
-          organizer?.id as string
+        discountCode,
+        organizer?.id as string
       );
 
       if (
-          !dbDiscountCode ||
-          dbDiscountCode.status !== DiscountCodeStatus.active
+        !dbDiscountCode ||
+        dbDiscountCode.status !== DiscountCodeStatus.active
       ) {
         return badRequest({ errors: { discountError: t('No Discount Code') } });
       }
-      const cart = await findBookingCart(clientId, eventId);
+      const cart = await findBookingCart(bookingId);
 
       await applyDiscountCode(
-          booking.id,
-          `${dbDiscountCode.code}|${dbDiscountCode.value}|${dbDiscountCode.fixed}`,
-          cart
+        booking.id,
+        `${dbDiscountCode.code}|${dbDiscountCode.value}|${dbDiscountCode.fixed}`,
+        cart
       );
 
       return json({ ok: true });
@@ -183,7 +185,9 @@ export const action: ActionFunction = async ({ request, params }) => {
       postalCode: form.get('postal-code') as string
     };
 
-    const isIdentityCardValid = validateIdentityCard(data.identityCard as string);
+    const isIdentityCardValid = validateIdentityCard(
+      data.identityCard as string
+    );
 
     const ParticipantSchema = z.object({
       firstName: z
@@ -277,7 +281,10 @@ export const action: ActionFunction = async ({ request, params }) => {
 
     // Also save user on checkout, so that if user checks out before saving participant
     // It won't return an error
-    if (actionId === CheckoutInfoActions.update || actionId === CheckoutInfoActions.checkout) {
+    if (
+      actionId === CheckoutInfoActions.update ||
+      actionId === CheckoutInfoActions.checkout
+    ) {
       ParticipantSchema.parse(data);
       await updateParticipant(data);
       const raceId = form.get('raceId') as string;
@@ -300,12 +307,12 @@ export const action: ActionFunction = async ({ request, params }) => {
 
     // if user is booking for himself (aka, registering a single participant in a single race,
     // try checkout automatically)
-    if (actionId === CheckoutInfoActions.checkout || raceParticipants?.length === 1) {
+    if (
+      actionId === CheckoutInfoActions.checkout ||
+      raceParticipants?.length === 1
+    ) {
       TermsAndRegulationSchema.parse({ regulation, terms });
-      const raceParticipants = await findUserEventRaceParticipants(
-        clientId,
-        eventId
-      );
+      const raceParticipants = await findUserEventRaceParticipants(bookingId);
 
       if (!raceParticipants) {
         return badRequest({ error: t('No Race Participants') });
@@ -363,6 +370,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   const anonymousClient = await getClientSession(request);
   const authenticatedClient = await getUser(request);
   const bookingId = params.bookingId as string;
+  const lng = await i18n.getLocale(request);
   const { searchParams } = new URL(request.url);
 
   const pin = searchParams.get('p');
@@ -373,7 +381,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
       ? authenticatedClient.id
       : anonymousClient.getClientId();
 
-  const booking = await findBookingById(bookingId);
+  const booking = await findBooking(bookingId);
   const isGuest = pin && Number(pin) === booking?.pin;
 
   if (!booking || (booking.userId !== clientId && !isGuest)) {
@@ -387,12 +395,15 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     return redirect('/');
   }
 
-  const cart = await findBookingCart(isGuest ? booking.userId : clientId, eventId);
+  const cart = await findBookingCart(bookingId);
   const organizer = await findOrganizer(event.createdById);
   const raceParticipants = await findUserBookingParticipants(bookingId);
 
   if (!raceParticipants || raceParticipants?.length === 0) {
-    return redirect(`/checkout/cart/${eventId}`);
+    // If, for some reason, there are no race participants, we shouldn't keep this booking
+    await removeBooking(bookingId);
+
+    return redirect(`/${lng}/event/${event.slug}`);
   }
 
   // cant use clientId when user is a guest - accesses this route with booking PIN
@@ -541,7 +552,7 @@ export default function CheckoutInfoRoute() {
       },
       {
         method: 'post',
-        action: '/checkout/manage'
+        action: `/checkout/manage/${bookingId}`
       }
     );
   }
@@ -656,7 +667,7 @@ export default function CheckoutInfoRoute() {
         <H6>
           <DisplayDate date={new Date(event.startAt || 0)} />
         </H6>
-        <H6>{event.location}</H6>
+        <H6>{event.placeName}</H6>
       </div>
 
       {raceParticipants.length > 1 && (
@@ -876,7 +887,7 @@ export default function CheckoutInfoRoute() {
                   </div>
                   <div className="flex justify-end mt-4">
                     <a
-                      href={`/checkout/cart/${event.id}?a=update`}
+                      href={`/checkout/cart/${bookingId}`}
                       data-cy="update-cart"
                       className="text-lg font-medium"
                     >
@@ -910,6 +921,7 @@ export default function CheckoutInfoRoute() {
         triggerModalClose={handleCloseAddRaces}
         eventRaces={event.races}
         reset={isReset}
+        bookingId={bookingId}
       />
     </Main>
   );
@@ -919,11 +931,13 @@ function AddRacesDialog({
   isOpen,
   triggerModalClose,
   eventRaces,
+  bookingId,
   reset
 }: {
   isOpen: boolean;
   triggerModalClose: () => void;
   eventRaces: Race[];
+  bookingId: string;
   reset: boolean;
 }) {
   const fetcher = useFetcher();
@@ -960,7 +974,7 @@ function AddRacesDialog({
   });
 
   return (
-    <fetcher.Form method="post" action="/checkout/manage">
+    <fetcher.Form method="post" action={`/checkout/manage/${bookingId}`}>
       <div
         data-reach-dialog-overlay={true}
         className={clsx({
@@ -1049,13 +1063,13 @@ function DisplayRace({
     <div className="flex flex-col mt-8 w-full">
       <div className="flex flex-row items-center justify-between">
         <H4>{race.name}</H4>
-        <H5>{race.price + '€'}</H5>
+        <H5>{race.price / 1000}€</H5>
       </div>
       <div className="flex flex-row mt-2 justify-between items-center">
         <div className="flex flex-row">
           <div>
             <H6 className="dark:text-blueGray-500">{t('Distance')}</H6>
-            <H5>{race.distance + ' km'}</H5>
+            <H5>{race.distance}km</H5>
           </div>
 
           <div className="ml-8">

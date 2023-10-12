@@ -325,7 +325,7 @@ describe('Organizer', () => {
         .request({ method: 'GET', url: Cypress.env('HTTP_CATCHER') })
         .then(({ body }) => {
           expect(body.to).to.eq('admin@gmail.com, admin1@gmail.com');
-          expect(body.subject).to.eq('Novo organizador para revisão');
+          expect(body.subject).to.eq('Organizador Montanha dos Amigos à espera de revisão');
         });
     });
   });

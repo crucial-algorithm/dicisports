@@ -37,8 +37,13 @@
   "map": "Mapa",
   "Cancel": "Cancelar",
   "Pick Location In Map Title": "Selecione a localização no mapa",
-  "Drag Map to Choose a Location Hint": "Arraste o mapa até à localização pretendida",
+  "Drag Map to Choose a Location Hint": "Arraste até ao local",
   "Pick Location Button": "Escolher local",
+
+  "Location": "Local de partida",
+  "Location Placeholder": "Morada...",
+  "Location Name": "Referência do local de partida",
+  "Location Name Placeholder": "Ex.: Casa do povo",
 
   "No results found": "Nenhum resultado encontrado!",
 
@@ -46,7 +51,7 @@
   "404 - Sub Message": "A página que está à procura não existe",
   "Return home": "Voltar à página inicial",
 
-  "CTA Publish Your Event": "Divulga a tua prova na DiciSports",
+  "CTA Publish Your Event": "Para organizadores",
 
   "Heading": "Título",
   "Subheading": "Subtítulo",
@@ -54,5 +59,7 @@
 
   "Privacy Policy": "Política de Privacidade",
   "Terms and Conditions": "Termos e condições",
-  "Dicisports Watermark": "© {{year}} Dicisports"
+  "Dicisports Watermark": "© {{year}} Dicisports",
+
+  "Default Dirty Alert Message": "Todas as alterações feitas serão perdidas. Quer continuar?"
 }

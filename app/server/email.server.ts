@@ -310,7 +310,7 @@ P.S.  Se não solicitaste o email, ignora sem clickar no link (não incorres em 
 
       <h2 style="text-align: center">${`Olá ${user.name}!`}</h2>
       
-      <h3 style="text-align: center">Clica no botão para fazer recuperar a tua password do ${hostname}</h3>
+      <h3 style="text-align: center">Clica no botão para recuperar a tua password do ${hostname}</h3>
 
       <a href="${magicLink}" style="display: block; margin: 0 auto; width: 80%; padding: 1.5rem; background: #A6DEE4; border-radius: 7px; border-width: 0; font-size: 1.1rem; text-align: center; font-family: sans-serif; text-decoration: none; color: black">
         Recuperar password
@@ -336,7 +336,7 @@ P.S.  Se não solicitaste o email, ignora sem clickar no link (não incorres em 
   const message = {
     from: sender,
     to: emailAddress,
-    subject: 'Link de autenticação para o dicisports.com  ✨',
+    subject: 'Recuperação da password do dicisports.com  ✨',
     text,
     html
   };
@@ -700,18 +700,20 @@ O seu perfil de Organizador no ${hostname} foi aprovado!
 async function sendSubmittedOrganizerProfileNotification({
   emailAddress,
   organizerId,
-  domainUrl
+  domainUrl,
+  name
 }: {
   emailAddress: string;
   organizerId: string;
   domainUrl: string;
+  name: string;
 }) {
   const sender = '"DiciSports" <noreply@mail.dicisports.com>';
 
   const text = `
 Olá,
 
-Tens um novo organizador para revisão!
+"${name}" aguarda a nossa revisão!
   `.trim();
 
   const html = `
@@ -741,13 +743,7 @@ Tens um novo organizador para revisão!
   </head>
   <body style="font-family:Matter, sans-serif;">
     <div style="margin: 0 auto; max-width: 450px;">
-
-      <h2 style="text-align: center">Olá!</h2>
-      
-      <h3 style="text-align: center">
-        Tens um novo organizador para revisão! Acede ao painel de administrador para fazer a revisão ou clica no link.
-      </h3>
-      
+  
       <a href="${domainUrl}/a/organizers/${organizerId}" style="display: block; margin: 0 auto; width: 80%; padding: 1.5rem; background: #A6DEE4; border-radius: 7px; border-width: 0; font-size: 1.1rem; text-align: center; font-family: sans-serif; text-decoration: none; color: black">
         Rever Organizador
       </a>
@@ -761,7 +757,7 @@ Tens um novo organizador para revisão!
   const message = {
     from: sender,
     to: emailAddress,
-    subject: 'Novo organizador para revisão',
+    subject: `Organizador ${name} à espera de revisão`,
     text,
     html
   };

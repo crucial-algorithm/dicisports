@@ -39,7 +39,6 @@ export default defineConfig({
   defaultCommandTimeout,
   e2e: {
     baseUrl,
-    experimentalSessionAndOrigin: true,
     env: {
       HTTP_CATCHER,
       SIBS_WEBHOOK_SECRET,
@@ -48,7 +47,6 @@ export default defineConfig({
       }
     },
     setupNodeEvents(on, config) {
-
       config = cypressBrowserPermissionsPlugin(on, config);
 
       // implement node event listeners here

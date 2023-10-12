@@ -4,7 +4,7 @@ import type { ActionFunction, LoaderFunction } from '@remix-run/node';
 import { json, redirect } from '@remix-run/node';
 import { Form, useActionData, useLoaderData } from '@remix-run/react';
 import * as React from 'react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { z, ZodError } from 'zod';
 
@@ -17,11 +17,11 @@ import { H2, H4, H6 } from '~/components/shared/typography';
 
 import { getClientSession } from '~/server/auth/client.server';
 import { getUser } from '~/server/auth/session.server';
-import { findBookingById, findBookingCart } from '~/server/db/booking.server';
+import { findBooking, findBookingCart } from '~/server/db/booking.server';
 import { findEvent } from '~/server/db/events.server';
 import { findUserEventRaceParticipants } from '~/server/db/participant.server';
 import type { Booking, KCDHandle, UICartRow } from '~/types';
-import { badRequest, getDomainUrl } from '~/utils/misc';
+import { badRequest, getDomainUrl, maintainBookingLocalStorageMetadData } from '~/utils/misc';
 import { sendBookingConfirmationEmail } from '~/server/email.server';
 import i18n from '~/server/i18n.server';
 import InputError from '~/components/shared/form/InputError';
@@ -72,12 +72,16 @@ export const action: ActionFunction = async ({ request, params }) => {
       ? authenticatedClient.id
       : anonymousClient.getClientId();
 
-  const booking = await findBookingById(bookingId);
+  const booking = await findBooking(bookingId);
 
   if (!booking) {
     return badRequest({
       error: t('No Booking')
     });
+  }
+
+  if (booking.userId !== clientId) {
+    return redirect('/');
   }
 
   const eventId = booking.eventId;
@@ -88,7 +92,7 @@ export const action: ActionFunction = async ({ request, params }) => {
   }
 
   const domainUrl = getDomainUrl(request);
-  const cart = await findBookingCart(clientId, eventId);
+  const cart = await findBookingCart(bookingId);
   const email = form.get('email') as string;
   const enrollInMailingList: boolean =
     (form.get('add-to-mail-list') as string) === 'on';
@@ -109,13 +113,7 @@ export const action: ActionFunction = async ({ request, params }) => {
         organizer?.id as string
       ));
 
-      if (isEmailInUse) {
-        return badRequest({
-          errors: { submit: t('Email in use') }
-        });
-      }
-
-      if (organizer) {
+      if (!isEmailInUse && organizer) {
         await addEmailToMailingList(email, organizer.id);
       }
     }
@@ -157,6 +155,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   const anonymousClient = await getClientSession(request);
   const authenticatedClient = await getUser(request);
   const bookingId = params.bookingId as string;
+  const lng = await i18n.getLocale(request);
 
   // We check if user is authenticated -> authenticatedClient, if not, we use the client session -> anonymousClient
   const clientId =
@@ -164,29 +163,21 @@ export const loader: LoaderFunction = async ({ request, params }) => {
       ? authenticatedClient.id
       : anonymousClient.getClientId();
 
-  const booking = await findBookingById(bookingId);
+  const booking = await findBooking(bookingId);
 
   if (!booking || booking.userId !== clientId) {
     return redirect('/');
   }
 
-  const eventId = booking.eventId;
-  const raceParticipants = await findUserEventRaceParticipants(
-    clientId,
-    eventId
-  );
-
-  if (!raceParticipants || raceParticipants?.length === 0) {
-    return redirect(`/checkout/cart/${eventId}`);
-  }
-
   if (booking.status !== CheckoutStatus.confirmed) {
     return redirect(
-      `/checkout/${
-        booking?.status === CheckoutStatus.pending ? 'payment' : 'cart'
-      }/${bookingId}`
+        `/checkout/${
+            booking?.status === CheckoutStatus.pending ? 'payment' : 'cart'
+        }/${bookingId}`
     );
   }
+
+  const eventId = booking.eventId;
 
   const event = await findEvent(eventId);
 
@@ -194,7 +185,13 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     return redirect('/');
   }
 
-  const cart = await findBookingCart(clientId, eventId);
+  const raceParticipants = await findUserEventRaceParticipants(bookingId);
+
+  if (!raceParticipants || raceParticipants?.length === 0) {
+    return redirect(`/${lng}/event/${event.slug}`);
+  }
+
+  const cart = await findBookingCart(bookingId);
   const organizer = await findOrganizer(event.createdById);
 
   return json({
@@ -215,10 +212,41 @@ export default function CheckoutConfirmationRoute() {
   const [checkedAddToMailingList, setCheckedAddToMailingList] =
     useState<boolean>(false);
   const { t } = useTranslation('checkout');
+  const [
+    isSendConfirmationEmailDisabled,
+    setIsSendConfirmationEmailDisabled
+  ] = useState(true);
+  const [
+    hideConfirmationEmailForm,
+    setHideConfirmationEmailForm
+  ] = useState(true);
 
   function handleCheckAddToMailingList() {
     setCheckedAddToMailingList(!checkedAddToMailingList);
   }
+
+  useEffect(() => {
+    const { read, write } =
+      maintainBookingLocalStorageMetadData(bookingId);
+
+    // When we re-load the page, after having already sent an e-mail, don't even show the form:
+    // check that local storage has already been set to true, but we haven't submitted the form in this page load
+    setHideConfirmationEmailForm(
+      read().confirmationEmailSent && !actionData?.successMessage
+    );
+
+    // Disable form inputs - this will only take effect if the form is visible, which means that it's after form
+    // submission and before the user reloads the page
+    setIsSendConfirmationEmailDisabled(
+      read().confirmationEmailSent || Boolean(actionData?.successMessage)
+    );
+
+    if (actionData?.successMessage) {
+      write('confirmationEmailSent', true);
+    }
+
+
+  }, [actionData, bookingId, setIsSendConfirmationEmailDisabled]);
 
   return (
     <Main>
@@ -261,53 +289,58 @@ export default function CheckoutConfirmationRoute() {
                   'Login Or Create Account Subheader - confirmation'
                 )}
               />
-              <Form method="post" className="flex flex-col items-start mt-12">
-                <FormField
-                  label={t('Mail Confirmation Details')}
-                  error={actionData?.errors?.email}
-                >
-                  <TextField
-                    name="email"
-                    className="w-1/2 p-8 mb-2"
-                    placeholder={t('Email Address')}
-                  />
-                  <div className="flex items-center">
-                    <input
-                      name="add-to-mail-list"
-                      type="checkbox"
-                      checked={checkedAddToMailingList}
-                      onClick={handleCheckAddToMailingList}
-                      className="w-4 h-4 text-indigo-500 bg-gray-100 rounded border-gray-300 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600"
-                      data-cy="mail-list"
-                    />
-                    <label
-                      className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300"
-                      htmlFor="add-to-mail-list"
-                    >
-                      {t('Add to X Mailing List', { organizer: organizerName })}
-                    </label>
-                  </div>
-                </FormField>
-                <Button name="send-confirmation" type="submit" className="mt-4">
-                  {t('Send')}
-                </Button>
-                {actionData?.errors?.submit && (
-                  <InputError className="mt-4" id="error-message">
-                    {actionData.errors.submit}
-                  </InputError>
-                )}
-                {actionData?.successMessage && (
-                  <p
-                    id="success-message"
-                    className="dark:text-blueGray-500 text-gray-500 text-lg mt-2"
+              {!hideConfirmationEmailForm && (
+                <Form method="post" className="flex flex-col items-start mt-12">
+                  <FormField
+                    label={t('Mail Confirmation Details')}
+                    error={actionData?.errors?.email}
                   >
-                    <span role="img" aria-label="sparkles">
-                      ✨
-                    </span>{' '}
-                    {actionData.successMessage}
-                  </p>
-                )}
-              </Form>
+                    <TextField
+                      name="email"
+                      className="w-1/2 p-8 mb-2"
+                      placeholder={t('Email Address')}
+                      disabled={isSendConfirmationEmailDisabled}
+                      defaultValue={actionData?.fields?.email || ''}
+                    />
+                    <div className="flex items-center">
+                      <input
+                        name="add-to-mail-list"
+                        type="checkbox"
+                        defaultChecked={checkedAddToMailingList}
+                        onClick={handleCheckAddToMailingList}
+                        className="w-4 h-4 text-indigo-500 bg-gray-100 rounded border-gray-300 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600"
+                        data-cy="mail-list"
+                        disabled={isSendConfirmationEmailDisabled}
+                      />
+                      <label
+                        className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300"
+                        htmlFor="add-to-mail-list"
+                      >
+                        {t('Add to X Mailing List', { organizer: organizerName })}
+                      </label>
+                    </div>
+                  </FormField>
+                  <Button name="send-confirmation" type="submit" disabled={isSendConfirmationEmailDisabled}>
+                    {t('Send')}
+                  </Button>
+                  {actionData?.errors?.submit && (
+                    <InputError className="mt-4" id="error-message">
+                      {actionData.errors.submit}
+                    </InputError>
+                  )}
+                  {actionData?.successMessage && (
+                    <p
+                      id="success-message"
+                      className="dark:text-blueGray-500 text-gray-500 text-lg mt-2"
+                    >
+                      <span role="img" aria-label="sparkles">
+                        ✨
+                      </span>{' '}
+                      {actionData.successMessage}
+                    </p>
+                  )}
+                </Form>
+              )}
             </>
           )}
         </div>

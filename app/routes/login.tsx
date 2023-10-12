@@ -17,7 +17,6 @@ import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 
 import Button from '~/components/shared/Button';
-import TextField from '~/components/shared/form/TextField';
 import FormField from '~/components/shared/form/FormField';
 
 import { getLoginInfoSession } from '~/server/auth/login.server';
@@ -34,12 +33,9 @@ import { addGroupToFavorites, findGroup } from '~/server/db/groups.server';
 import type { LoginAction } from '~/types';
 
 import { loginUser } from '~/server/db/users.server';
-import Main from '~/components/shared/Main';
 import { CanonicalMeta } from '~/utils/seo';
 import {
-  changeRegistrationToAuthUser,
-  findBooking,
-  findBookingById
+  changeRegistrationToAuthUser, findBooking
 } from '~/server/db/booking.server';
 import { getClientSession } from '~/server/auth/client.server';
 
@@ -226,7 +222,7 @@ export const action: ActionFunction = async ({ request }) => {
       try {
         const clientSession = await getClientSession(request);
         const bookingId = searchParams.get('b') as string;
-        const booking = await findBookingById(bookingId);
+        const booking = await findBooking(bookingId);
 
         // This shouldn't happen, but in case it does...
         if (!booking) {
@@ -309,7 +305,7 @@ export default function Login() {
   }
 
   return (
-    <Main className="w-5/6 m-auto md:w-144">
+    <div className="w-5/6 m-auto md:w-144 max-w-8xl m-auto px-3">
       {action === 'ws' ? (
         <WhatsAppHeader t={t} />
       ) : action === 'favorite' ? (
@@ -330,21 +326,22 @@ export default function Login() {
         <input type="hidden" value={group || ''} name="group" />
         <input type="hidden" value={redirectTo || ''} name="location" />
         <FormField label={t('Email')} error={errors.email} id="email">
-          <TextField
+          <input
+            type="email"
             id="email"
             name="email"
-            className="w-full text-sm h-14 md:h-20"
+            className="input-text px-4 lg:px-11 w-full lg:text-lg h-14 md:h-20"
             defaultValue={fields.email}
             autoComplete="off"
           />
         </FormField>
         {action !== actions.joinWhatsAppGroup && (
           <FormField label={t('Password')} error={errors.password} id="password">
-            <TextField
+            <input
               id="password"
               type="password"
               name="password"
-              className="w-full text-sm h-14 md:text-2xl md:h-20"
+              className="input-text px-4 lg:px-11 w-full h-14 md:text-2xl md:h-20"
               autoComplete="current-password"
             />
           </FormField>
@@ -372,7 +369,7 @@ export default function Login() {
           />
         </>
       )}
-    </Main>
+    </div>
   );
 }
 
