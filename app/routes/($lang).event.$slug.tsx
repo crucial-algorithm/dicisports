@@ -532,7 +532,7 @@ function DisplayDocument(props: { document: Document; index: number }) {
           className="dark:text-white font-medium border-2 border-secondary bg-primary rounded-full p-2 mr-2"
           data-cy="document-extension"
         >
-          {document.type.toUpperCase()}
+          {document.type?.toUpperCase()}
         </div>
         {document.label}
       </div>

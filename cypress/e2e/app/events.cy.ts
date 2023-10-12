@@ -1093,6 +1093,10 @@ describe('Event', () => {
 
         .visitAndWaitForHydration('/pt/event/trail-do-zezere')
 
+        .get('div[data-cy=document-extension]')
+        .eq(1)
+        .contains('PDF')
+
         .get('[data-cy=document-label]')
         .eq(1)
         .then((link) => {
