@@ -79,7 +79,7 @@ export const action: ActionFunction = async ({ request, params }) => {
   let filePath: File | string | null = null;
   let fileName: string | null = null;
 
-  if (file && file?.length) {
+  if (file && file.length) {
     if (file !== 'invalid-type') {
       [filePath, fileName] = file.split('|');
     }
