@@ -1028,7 +1028,7 @@ describe('Checkout', () => {
         .should('exist');
     });
 
-    it('should be able to keep multiple bookings', () => {
+    it('should be able to keep multiple bookings of same event', () => {
       cy.visitAndWaitForHydration('/pt/event/love-tiles-douro-granfondo-2023')
 
         .intercept('GET', '/checkout/create*')
