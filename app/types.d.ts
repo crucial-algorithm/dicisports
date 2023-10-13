@@ -110,14 +110,6 @@ type Sport = {
   name: TranslationObject;
 } & DBSport;
 type Document = {} & DBDocument;
-type CreateDocumentInput = {
-  id: string;
-  label: string;
-  path?: string | null;
-  eventId: string;
-  fileName: string;
-  type: string;
-};
 
 type GroupType = {
   name: TranslationObject;
@@ -649,7 +641,6 @@ export {
   CreateEventInput,
   CreatePerksInput,
   CreateRaceInput,
-  CreateDocumentInput,
   DBRawGroup,
   LoginAction,
   FavoriteEvent,

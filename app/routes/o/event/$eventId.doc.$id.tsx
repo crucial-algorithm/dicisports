@@ -21,7 +21,7 @@ import { useTranslation } from 'react-i18next';
 
 import { z, ZodError } from 'zod';
 
-import type { Event } from '@prisma/client';
+import type { Event, Prisma } from '@prisma/client';
 
 import Button, { ButtonLink } from '~/components/shared/Button';
 import ButtonGroup from '~/components/shared/ButtonGroup';
@@ -34,7 +34,7 @@ import Main from '~/components/shared/Main';
 import { requireUser } from '~/server/auth/session.server';
 import { createDocument, findDocument, updateDocument } from '~/server/documents.server';
 import i18n from '~/server/i18n.server';
-import type { CreateDocumentInput, Document } from '~/types';
+import type { Document } from '~/types';
 import { badRequest, fileTypeFromUploadHandlerData } from '~/utils/misc';
 import { uploadToS3 } from '~/server/utils/s3';
 import Id from '~/server/utils/Id.server';
@@ -56,6 +56,8 @@ type FormErrors = {
   label?: string;
   path?: string;
 };
+
+const INVALID_FILE_TYPE = '__invalid_type__';
 
 export const loader: LoaderFunction = async ({ request, params }) => {
   const user = await requireUser(request);
@@ -123,7 +125,7 @@ export const action: ActionFunction = async ({ request, params }) => {
       }
 
       if (!(file.type === 'pdf' || file.type === 'gpx')) {
-        return 'invalid-type';
+        return INVALID_FILE_TYPE;
       }
 
       const prefix = `events/${event.createdAt.getFullYear()}${String(event.createdAt.getMonth() + 1).padStart(2, '0')}/${eventId}`;
@@ -147,26 +149,22 @@ export const action: ActionFunction = async ({ request, params }) => {
     form.get('file') === 'undefined' || form.get('file') === null
       ? undefined
       : form.get('file') as string;
-  const isFileTypeValid = file && file !== 'invalid-type';
-  let filePath: File | string | null = null;
-  let fileName: string | null = null;
-  let fileType: string | null = null;
-
-  if (file && file.length) {
-    if (file !== 'invalid-type') {
-      [filePath, fileName, fileType] = file.split('|');
-    }
-  }
+  const isFileTypeValid = file && file !== INVALID_FILE_TYPE;
+  const [filePath, fileName, fileType] =
+    isFileTypeValid ? file.split('|'): [null, null, null];
 
   const isInsert = !documentId;
-  const documentData: CreateDocumentInput = {
-    id: isInsert ? Id() : documentId as string,
+  const documentData: Prisma.DocumentCreateInput = {
+    id: documentId || Id(),
     label: name,
-    // @ts-ignore
     path: filePath,
     fileName,
     type: fileType,
-    eventId
+    event: {
+      connect: {
+        id: event.id
+      }
+    }
   };
 
   const DocumentSchema = z.object({
@@ -174,7 +172,7 @@ export const action: ActionFunction = async ({ request, params }) => {
     path: z
       .string({ invalid_type_error: t(isFileTypeValid ? 'Select a document' : 'Invalid File Type') })
       .refine(
-        () => {
+        (d) => {
           if (!isInsert) {
             return true;
           }
@@ -193,7 +191,7 @@ export const action: ActionFunction = async ({ request, params }) => {
     DocumentSchema.parse(documentData);
     isInsert
       ? await createDocument(documentData)
-      : await updateDocument(documentData);
+      : await updateDocument(documentId, name);
 
     return redirect(`/o/event/${event.id}#documents`);
   } catch (e) {
