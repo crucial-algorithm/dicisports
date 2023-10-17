@@ -192,8 +192,16 @@ export const action: ActionFunction = async ({ request, params }) => {
       .string()
       .min(1, { message: t(isFileTypeValid ? 'Select a document' : 'Invalid File Type') }),
     type: z
-      .string()
-      .min(1, { message: t(isFileTypeValid ? 'Select a document' : 'Invalid File Type') })
+      .string({ invalid_type_error: t(isFileTypeValid ? 'Select a document' : 'Invalid File Type') })
+      .refine((d) => {
+        if (!isInsert) {
+          return true;
+        }
+
+        return !d ? false : d === 'pdf' || d === 'gpx';
+      }, {
+        message: t(isFileTypeValid ? 'Select a document' : 'Invalid File Type')
+      })
   });
 
   try {
