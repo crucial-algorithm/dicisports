@@ -41,7 +41,6 @@ import {
 import Main from '~/components/shared/Main';
 import { H2, H3, H4, H5, H6, Paragraph } from '~/components/shared/typography';
 import Button, { ButtonLink } from '~/components/shared/Button';
-import Carousel from '~/components/Carousel';
 import { getUser } from '~/server/auth/session.server';
 import { Notification } from '~/components/shared/NotificationMessage';
 import DisplayImg from '~/components/shared/DisplayImg';
@@ -515,8 +514,6 @@ function DisplayRace({
 function DisplayDocument(props: { document: Document; index: number }) {
   const lang = useLang();
   const { document, index } = props;
-  const path = document.path as string;
-  const fileExtension = path.split('.');
 
   return (
     <Link
@@ -534,7 +531,7 @@ function DisplayDocument(props: { document: Document; index: number }) {
           className="dark:text-white font-medium border-2 border-secondary bg-primary rounded-full p-2 mr-2"
           data-cy="document-extension"
         >
-          {fileExtension[fileExtension.length - 1].toUpperCase()}
+          {document.type?.toUpperCase()}
         </div>
         {document.label}
       </div>

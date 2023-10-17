@@ -1,4 +1,3 @@
-import * as path from 'path';
 import { Readable } from 'stream';
 
 import type { ActionFunction, UploadHandler } from '@remix-run/node';
@@ -13,7 +12,7 @@ import { z, ZodError } from 'zod';
 
 import { requireUser } from '~/server/auth/session.server';
 import i18n from '~/server/i18n.server';
-import { badRequest } from '~/utils/misc';
+import { badRequest, fileTypeFromUploadHandlerData } from '~/utils/misc';
 import { uploadToS3 } from '~/server/utils/s3';
 import { findEvent, updateEventRegulation } from '~/server/db/events.server';
 import { NotFound, Unauthorized } from '~/server/utils/misc';
@@ -26,12 +25,22 @@ const RESOURCES_NS = 'create-event-form';
 
 export const action: ActionFunction = async ({ request, params }) => {
   const user = await requireUser(request);
-
   const t = await i18n.getFixedT(request, RESOURCES_NS);
+
+  const eventId = params.eventId as string;
+  const event = await findEvent(eventId);
+
+  if (!event) {
+    throw NotFound(t('Event not found'));
+  }
+
+  if (event.createdById !== user.id) {
+    throw Unauthorized(t('Not authorized'));
+  }
 
   const uploadHandler: UploadHandler = unstable_composeUploadHandlers(
     // our custom upload handler
-    async ({ name, data, filename }) => {
+    async ({ name, data, filename, contentType }) => {
       if (name !== 'file') {
         return undefined;
       }
@@ -40,19 +49,21 @@ export const action: ActionFunction = async ({ request, params }) => {
         return undefined;
       }
 
-      const eventId = params.eventId as string;
-      const event = await findEvent(eventId);
+      const file = await fileTypeFromUploadHandlerData(data);
 
-      if (!event) {
-        return ''; // should never happen
+      if (!file) {
+        return undefined;
       }
 
-      const fileExtension = path.parse(filename as string).ext;
+      if (file.type !== 'pdf') {
+        return 'invalid-type';
+      }
+
       const prefix = `events/${event.createdAt.getFullYear()}${String(event.createdAt.getMonth() + 1).padStart(2, '0')}/${eventId}`;
       const key = await uploadToS3(
-        Readable.from(data),
+        Readable.from(file.buffer),
         prefix,
-        'regulation' + fileExtension
+        `regulation.${file.type}`
       );
 
       return `${key}|${filename}`;
@@ -63,16 +74,16 @@ export const action: ActionFunction = async ({ request, params }) => {
 
   const form = await unstable_parseMultipartFormData(request, uploadHandler);
 
-  const eventId = params.eventId as string;
   const file = (form.get('file') as string) || null;
+  const isFileTypeValid = file && file !== 'invalid-type';
   let filePath: File | string | null = null;
   let fileName: string | null = null;
 
-  if (file && file?.length) {
-    [filePath, fileName] = file.split('|');
+  if (file && file.length) {
+    if (file !== 'invalid-type') {
+      [filePath, fileName] = file.split('|');
+    }
   }
-
-  const event = await findEvent(eventId);
 
   const regulationData: {
     eventId: string;
@@ -86,13 +97,6 @@ export const action: ActionFunction = async ({ request, params }) => {
     regulationContent: null
   };
 
-  if (!event) {
-    throw NotFound(t('Event not found'));
-  }
-  if (event.createdById !== user.id) {
-    throw Unauthorized(t('Not authorized'));
-  }
-
   // @ts-ignore
   const RegulationSchema = z.object({
     regulationPath: z.string().refine(
@@ -100,7 +104,7 @@ export const action: ActionFunction = async ({ request, params }) => {
         return regulationData.regulationPath !== undefined;
       },
       {
-        message: t('Select a document')
+        message: t(isFileTypeValid ? 'Select a document' : 'File Type Not Valid')
       }
     )
   });

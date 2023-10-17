@@ -1066,6 +1066,71 @@ describe('Event', () => {
           });
       });
     });
+
+    it('should allow to upload files without extension - documents', () => {
+      cy.visitAndWaitForHydration('/o/event/bQmGXYkbhJetjk6mniMt/doc/new')
+        .get('input[name=name]')
+        .type('No Extension')
+
+        .get('input[name="file"]')
+        .selectFile('cypress/assets/no_extension_pdf', { force: true })
+
+        .get('div[data-cy=uploaded-document]')
+        .should('not.exist')
+
+        .intercept('POST', '/o/event/bQmGXYkbhJetjk6mniMt/doc/new*')
+        .as('UploadDocument')
+
+        .get('button[name=create-document-button]')
+        .click()
+
+        .wait('@UploadDocument')
+
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.eq('/o/event/bQmGXYkbhJetjk6mniMt');
+        })
+
+        .visitAndWaitForHydration('/pt/event/trail-do-zezere')
+
+        .get('div[data-cy=document-extension]')
+        .eq(1)
+        .contains('PDF')
+
+        .get('[data-cy=document-label]')
+        .eq(1)
+        .then((link) => {
+          cy.request(link.prop('href')).its('status').should('eq', 200);
+        });
+    });
+
+    it('should allow to upload files without extension - regulation', () => {
+      cy.visitAndWaitForHydration('/o/event/bQmGXYkbhJetjk6mniMt')
+        .get('#regulation-option-file')
+        .click()
+
+        .intercept('POST', '/o/event/bQmGXYkbhJetjk6mniMt/regulation/upload*')
+        .as('UploadRegulation')
+
+        .get('#file .p-button > input')
+        .selectFile('cypress/assets/no_extension_pdf', {
+          action: 'drag-drop',
+          force: true
+        })
+
+        .wait('@UploadRegulation')
+
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.eq('/o/event/bQmGXYkbhJetjk6mniMt');
+        })
+
+        .get('[data-cy=regulation]')
+        .contains('no_extension_pdf')
+        .then((link) => {
+          cy.request(link.prop('href')).its('status').should('eq', 200);
+        });
+    });
   });
 });
 

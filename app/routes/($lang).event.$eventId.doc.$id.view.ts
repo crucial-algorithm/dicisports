@@ -37,7 +37,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   //@ts-ignore
   return new Response(body, {
     headers: {
-      'content-disposition': `inline; filename="${document.label}.gpx"`
+      'content-disposition': `inline; filename="${document.label}.${document.type}"`
     }
   });
 };

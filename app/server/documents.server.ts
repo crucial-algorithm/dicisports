@@ -1,8 +1,8 @@
 import { PrismaClient } from '@prisma/client';
+import type { Prisma } from '@prisma/client';
 
 import { db } from '~/server/db.server';
-import type { CreateDocumentInput, Document } from '~/types';
-import Id from '~/server/utils/Id.server';
+import type { Document } from '~/types';
 
 const prisma = new PrismaClient();
 
@@ -20,29 +20,18 @@ async function findDocuments(eventId: string): Promise<Document[] | void> {
 }
 
 async function createDocument(
-  document: CreateDocumentInput
+  data: Prisma.DocumentCreateInput
 ): Promise<Document | void> {
-  const documentId = Id();
-  const documentAt = new Date();
 
   await db.document.create({
-    data: {
-      id: documentId,
-      label: document.label,
-      path: document.path,
-      createdAt: documentAt,
-      updatedAt: documentAt,
-      eventId: document.eventId
-    }
+    data
   });
 }
 
-async function updateDocument(document: CreateDocumentInput): Promise<void> {
-  const updatedAt = new Date();
-
+async function updateDocument(id: string, label: string): Promise<void> {
   await db.document.update({
-    where: { id: document.id },
-    data: { label: document.label, updatedAt }
+    where: { id },
+    data: { label }
   });
 }
 
