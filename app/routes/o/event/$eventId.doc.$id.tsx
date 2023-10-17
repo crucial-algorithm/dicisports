@@ -145,10 +145,15 @@ export const action: ActionFunction = async ({ request, params }) => {
 
   const name = form.get('name') as string;
   const documentId = params.id === 'new' ? null : params.id;
-  const file =
-    form.get('file') === 'undefined' || form.get('file') === null
-      ? undefined
-      : form.get('file') as string;
+
+  let file = form.get('file');
+
+  // Upload handler either returns a string when file is uploaded or has invalid type
+  // Or returns a File object with undefined name, meaning user didn't upload a file
+  if (typeof file !== 'string') {
+    file = undefined;
+  }
+
   const isFileTypeValid = file && file !== INVALID_FILE_TYPE;
   const [filePath, fileName, fileType] =
     isFileTypeValid ? file.split('|'): [null, null, null];
@@ -177,12 +182,18 @@ export const action: ActionFunction = async ({ request, params }) => {
             return true;
           }
 
-          return documentData.path !== undefined;
+          return d !== null;
         },
         {
           message: t(isFileTypeValid ? 'Select a document' : 'Invalid File Type')
         }
-      )
+      ),
+    fileName: z
+      .string()
+      .min(1, { message: t(isFileTypeValid ? 'Select a document' : 'Invalid File Type') }),
+    type: z
+      .string()
+      .min(1, { message: t(isFileTypeValid ? 'Select a document' : 'Invalid File Type') })
   });
 
   try {
@@ -270,7 +281,6 @@ export default function EventDocumentRoute() {
             <FormField label={t('Name')} error={actionData?.errors?.label}>
               <TextField
                 name="name"
-                placeholder={t('Document Name')}
                 defaultValue={document?.label ? document.label : ''}
                 className="max-w-md"
                 input={name}
