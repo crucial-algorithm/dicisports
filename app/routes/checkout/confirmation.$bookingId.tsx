@@ -21,7 +21,7 @@ import { findBooking, findBookingCart } from '~/server/db/booking.server';
 import { findEvent } from '~/server/db/events.server';
 import { findUserEventRaceParticipants } from '~/server/db/participant.server';
 import type { Booking, KCDHandle, UICartRow } from '~/types';
-import { badRequest, getDomainUrl, maintainBookingLocalStorageMetadData } from '~/utils/misc';
+import { badRequest, getDomainUrl, maintainBookingLocalStorageMetaData } from '~/utils/misc';
 import { sendBookingConfirmationEmail } from '~/server/email.server';
 import i18n from '~/server/i18n.server';
 import InputError from '~/components/shared/form/InputError';
@@ -227,7 +227,7 @@ export default function CheckoutConfirmationRoute() {
 
   useEffect(() => {
     const { read, write } =
-      maintainBookingLocalStorageMetadData(bookingId);
+      maintainBookingLocalStorageMetaData(bookingId);
 
     // When we re-load the page, after having already sent an e-mail, don't even show the form:
     // check that local storage has already been set to true, but we haven't submitted the form in this page load

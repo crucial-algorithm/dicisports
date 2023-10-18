@@ -137,5 +137,8 @@
 
   "Where Is Location X": "{{location}}, onde é? Defina no mapa.",
   "Pick Location On Map": " Indique no mapa",
-  "Remaining Form Errors": "Existem erros no formulário por corrigir"
+  "Remaining Form Errors": "Existem erros no formulário por corrigir",
+  "Only PDF and GPX": "Só são permitidos ficheiros PDF ou GPX",
+  "Only PDF": "Só são permitidos ficheiros PDF",
+  "Invalid File Type": "Tipo de ficheiro inválido"
 }
