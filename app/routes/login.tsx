@@ -37,7 +37,7 @@ import { CanonicalMeta } from '~/utils/seo';
 import {
   changeRegistrationToAuthUser,
   findBooking,
-  findUserOngoingEventBookings
+  findUserOngoingBookingsByEvent
 } from '~/server/db/booking.server';
 import { getClientSession } from '~/server/auth/client.server';
 
@@ -231,11 +231,10 @@ export const action: ActionFunction = async ({ request }) => {
           return redirect(`/?message=${t('No Booking Found')}`, { headers });
         }
 
-        const userOngoingEventBookings = await findUserOngoingEventBookings(
+        const userOngoingEventBookings = await findUserOngoingBookingsByEvent(
           user.id,
           booking.eventId
         );
-
         const existingBooking = filterExistingBooking(userOngoingEventBookings);
 
         await changeRegistrationToAuthUser(

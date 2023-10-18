@@ -186,7 +186,7 @@ async function removeBookingDiscount(id: string) {
   });
 }
 
-async function findUserOngoingEventBookings(userId: string, eventId: string): Promise<Booking[]> {
+async function findUserOngoingBookingsByEvent(userId: string, eventId: string): Promise<Booking[]> {
   return await db.booking.findMany({
     where: { userId, eventId, status: { not: CheckoutStatus.CONFIRMED } }
   });
@@ -203,5 +203,5 @@ export {
   findConfirmedBookings,
   applyDiscountCode,
   removeBookingDiscount,
-  findUserOngoingEventBookings
+  findUserOngoingBookingsByEvent
 };
