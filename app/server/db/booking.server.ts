@@ -186,9 +186,12 @@ async function removeBookingDiscount(id: string) {
   });
 }
 
-async function findUserOngoingBookingsByEvent(userId: string, eventId: string): Promise<Booking[]> {
+async function findUserOngoingBookingsByEvent(
+  userId: string,
+  eventId: string
+): Promise<Booking[]> {
   return await db.booking.findMany({
-    where: { userId, eventId, status: { not: CheckoutStatus.CONFIRMED } }
+    where: { userId, eventId, status: { not: CheckoutStatus.confirmed } }
   });
 }
 

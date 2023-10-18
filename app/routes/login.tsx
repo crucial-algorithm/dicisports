@@ -1,4 +1,4 @@
-import { Role } from '@prisma/client';
+import { CheckoutStatus, Role } from '@prisma/client';
 import { Form, Link, useActionData, useSearchParams } from '@remix-run/react';
 
 import { z, ZodError } from 'zod';
@@ -450,12 +450,12 @@ function filterExistingBooking(bookings: Booking[]): Booking | null {
   }
 
   // Check if there is any booking with an ongoing/pending payment
-  const pendingBookings = bookings.filter((b) => b.status === 'pending');
+  const pendingBookings = bookings.filter((b) => b.status === CheckoutStatus.pending);
 
   if (pendingBookings && pendingBookings.length > 0) {
     return pendingBookings[0];
   }
 
   // If there is no pending bookings, filter ongoing ones and return the first one
-  return bookings.filter((b) => b.status === 'checkout')[0];
+  return bookings.filter((b) => b.status === CheckoutStatus.checkout)[0];
 }
