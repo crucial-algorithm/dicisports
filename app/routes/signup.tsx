@@ -25,6 +25,7 @@ import InputError from '~/components/shared/form/InputError';
 import { CanonicalMeta } from '~/utils/seo';
 import { changeRegistrationToAuthUser, findBooking } from '~/server/db/booking.server';
 import { getClientSession } from '~/server/auth/client.server';
+import { bookingRedirectRoute } from '~/utils/misc';
 
 type ActionData = {
   fields: {
@@ -131,17 +132,17 @@ export const action: ActionFunction = async ({ request }) => {
         const bookingId = searchParams.get('b') as string;
         const booking = await findBooking(bookingId);
 
+        // This shouldn't happen, but in case it does...
+        if (!booking) {
+          return redirect(`/?message=${t('No Booking Found')}`, { headers });
+        }
+
         await changeRegistrationToAuthUser(
           user.id,
           clientSession.getClientId()
         );
 
-        return redirect(
-          booking?.status === 'confirmed'
-            ? `/checkout/confirmation/${bookingId}`
-            : `/checkout/info/${bookingId}`,
-          { headers }
-        );
+        return redirect(bookingRedirectRoute(booking), { headers });
       } catch (e) {
         console.error(e);
       }

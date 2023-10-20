@@ -10,7 +10,7 @@ import ButtonGroup from '~/components/shared/ButtonGroup';
 import FormField from '~/components/shared/form/FormField';
 import TextField from '~/components/shared/form/TextField';
 import { H2, H6 } from '~/components/shared/typography';
-import { maintainBookingLocalStorageMetadData } from '~/utils/misc';
+import { maintainBookingLocalStorageMetaData } from '~/utils/misc';
 
 export default function BookingLoginCTADialog({
   bookingId,
@@ -20,7 +20,7 @@ export default function BookingLoginCTADialog({
   t: TFunction
 }) {
   const dialog = useRef<HTMLDialogElement>(null);
-  const { read, write } = maintainBookingLocalStorageMetadData(bookingId);
+  const { read, write } = maintainBookingLocalStorageMetaData(bookingId);
 
   useEffect(() => {
     const localMetaData = read();
@@ -76,7 +76,7 @@ export default function BookingLoginCTADialog({
             />
           </FormField>
           <ButtonGroup>
-            <Button type="submit">
+            <Button type="submit" name="login">
               {t('Suggest Login Dialog - Login Button')}
             </Button>
             <Button

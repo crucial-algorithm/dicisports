@@ -34,80 +34,6 @@ describe('Checkout', () => {
       bookParticipant('love-tiles-douro-granfondo-2023', 'AhowRdNWCBQWSuivSt7h');
     });
 
-    it('should be able to login and keep booking after completing booking process', () => {
-      bookParticipant('trail-do-zezere', 'Rd9SETi59X9ava6CPhkY')
-        .get('[data-cy=authenticate-login]')
-        .should('exist')
-        .click()
-
-        .location()
-        .should((l) => {
-          expect(l.pathname).to.eq('/login');
-          expect(l.search).to.contain('a=checkout&b=');
-        })
-
-        .get('body[data-cy=ready]')
-
-        .get('[name=email]')
-        .type('regular@gmail.com', { delay: 10 })
-
-        .get('[name=password]')
-        .type('Password1', { delay: 10 })
-
-        .intercept('POST', '/login?*')
-        .as('login')
-
-        .get('button[name=login]')
-        .click()
-
-        .wait('@login')
-
-        .location()
-        .should((l) => {
-          expect(l.pathname).to.include('/checkout/confirmation/');
-        });
-    });
-
-    it('should be able to signup and keep booking after completing booking process', () => {
-      bookParticipant('trail-do-zezere', 'Rd9SETi59X9ava6CPhkY')
-        .get('[data-cy=authenticate-signup]')
-        .should('exist')
-        .click()
-
-        .location()
-        .should((l) => {
-          expect(l.pathname).to.eq('/signup');
-          expect(l.search).to.contain('a=checkout&b=');
-        })
-
-        .waitForHydration()
-
-        .get('input[name=signup-email]')
-        .type('a@gmail.com')
-
-        .get('input[name=confirmation]')
-        .type('a@gmail.com')
-
-        .get('input[name=name]')
-        .type('Projeto Pedal')
-
-        .get('input[name=password]')
-        .type('pp@password1')
-
-        .intercept('POST', '/signup*')
-        .as('signup')
-
-        .get('button[name=create]')
-        .click()
-
-        .wait('@signup')
-
-        .location()
-        .should((l) => {
-          expect(l.pathname).to.include('/checkout/confirmation/');
-        });
-    });
-
     it('should send automated email after completing booking', () => {
       bookParticipant('love-tiles-douro-granfondo-2023', 'AhowRdNWCBQWSuivSt7h');
       cy.waitForHydration()
@@ -176,6 +102,200 @@ describe('Checkout', () => {
 
         .get('button[name=send-confirmation]')
         .should('exist');
+    });
+
+    context('authenticate and keep booking', () => {
+      it('should redirect to existing booking payment route if there is an ongoing payment', () => {
+        cy.visitAndWaitForHydration('/pt/event/viana-granfondo')
+
+          .intercept('GET', '/checkout/create*')
+          .as('CreateBooking')
+
+          .get('button[name=race-WRT9GHQKTEgHXfbWk32i]')
+          .click()
+
+          .wait('@CreateBooking')
+
+          .location()
+          .should((l) => {
+            expect(l.pathname).to.include('/checkout/info/');
+          })
+
+          .get('input[name=email]')
+          .should('exist')
+          .type('regular@gmail.com')
+
+          .get('input[name=password]')
+          .type('Password1')
+
+          .intercept('POST', '/login*')
+          .as('Login')
+
+          .get('button[name=login]')
+          .click()
+
+          .wait('@Login')
+
+          .location()
+          .should((l) => {
+            expect(l.pathname).to.eq('/checkout/payment/qR4nqWpTdQy8QZu29ANu');
+          });
+      });
+
+      it('should keep booking if there are no pending payment or ongoing bookings', () => {
+        cy.visitAndWaitForHydration('/pt/event/trail-do-zezere')
+
+          .intercept('GET', '/checkout/create*')
+          .as('CreateBooking')
+
+          .get('button[name=race-Rd9SETi59X9ava6CPhkY]')
+          .click()
+
+          .wait('@CreateBooking')
+
+          .location()
+          .should((l) => {
+            expect(l.pathname).to.include('/checkout/info');
+          })
+          .then((l) => {
+            const bookingId = l.pathname.split('/').pop();
+
+            cy.get('input[name=email]')
+              .should('exist')
+              .type('regular@gmail.com')
+
+              .get('input[name=password]')
+              .type('Password1')
+
+              .intercept('POST', '/login*')
+              .as('Login')
+
+              .get('button[name=login]')
+              .click()
+
+              .wait('@Login')
+
+              .location()
+              .should((l) => {
+                expect(l.pathname).to.eq(`/checkout/info/${bookingId}`);
+              })
+
+              .visitAndWaitForHydration('/me')
+              .get('[data-cy=event-trail-do-zezere]')
+              .should('have.length', 1);
+          });
+      });
+
+      it('should redirect to existing booking info route if there is an ongoing booking', () => {
+        cy.visitAndWaitForHydration('/event/love-tiles-douro-granfondo-2023')
+
+          .intercept('GET', '/checkout/create*')
+          .as('CreateBooking')
+
+          .get('button[name=race-AhowRdNWCBQWSuivSt7h]')
+          .click()
+
+          .wait('@CreateBooking')
+
+          .location()
+          .should((l) => {
+            expect(l.pathname).to.include('/checkout/info/');
+          })
+
+          .get('input[name=email]')
+          .should('exist')
+          .type('regular@gmail.com')
+
+          .get('input[name=password]')
+          .type('Password1')
+
+          .intercept('POST', '/login*')
+          .as('Login')
+
+          .get('button[name=login]')
+          .click()
+
+          .wait('@Login')
+
+          .location()
+          .should((l) => {
+            expect(l.pathname).to.eq('/checkout/info/iZrqWniNHZba9n4WQTmb');
+          });
+      });
+
+      it('should be able to login and keep booking after completing booking process', () => {
+        bookParticipant('trail-do-zezere', 'Rd9SETi59X9ava6CPhkY')
+          .get('[data-cy=authenticate-login]')
+          .should('exist')
+          .click()
+
+          .location()
+          .should((l) => {
+            expect(l.pathname).to.eq('/login');
+            expect(l.search).to.contain('a=checkout&b=');
+          })
+
+          .get('body[data-cy=ready]')
+
+          .get('[name=email]')
+          .type('regular@gmail.com', { delay: 10 })
+
+          .get('[name=password]')
+          .type('Password1', { delay: 10 })
+
+          .intercept('POST', '/login?*')
+          .as('login')
+
+          .get('button[name=login]')
+          .click()
+
+          .wait('@login')
+
+          .location()
+          .should((l) => {
+            expect(l.pathname).to.include('/checkout/confirmation/');
+          });
+      });
+
+      it('should be able to signup and keep booking after completing booking process', () => {
+        bookParticipant('trail-do-zezere', 'Rd9SETi59X9ava6CPhkY')
+          .get('[data-cy=authenticate-signup]')
+          .should('exist')
+          .click()
+
+          .location()
+          .should((l) => {
+            expect(l.pathname).to.eq('/signup');
+            expect(l.search).to.contain('a=checkout&b=');
+          })
+
+          .waitForHydration()
+
+          .get('input[name=signup-email]')
+          .type('a@gmail.com')
+
+          .get('input[name=confirmation]')
+          .type('a@gmail.com')
+
+          .get('input[name=name]')
+          .type('Projeto Pedal')
+
+          .get('input[name=password]')
+          .type('pp@password1')
+
+          .intercept('POST', '/signup*')
+          .as('signup')
+
+          .get('button[name=create]')
+          .click()
+
+          .wait('@signup')
+
+          .location()
+          .should((l) => {
+            expect(l.pathname).to.include('/checkout/confirmation/');
+          });
+      });
     });
   });
 
@@ -1026,6 +1146,49 @@ describe('Checkout', () => {
 
         .get('[data-cy=booking-closed]')
         .should('exist');
+    });
+
+    it('should be able to keep multiple bookings of same event', () => {
+      cy.visitAndWaitForHydration('/pt/event/love-tiles-douro-granfondo-2023')
+
+        .intercept('GET', '/checkout/create*')
+        .as('selectRace')
+
+        .get('button[name=race-AhowRdNWCBQWSuivSt7h]')
+        .click()
+
+        .wait('@selectRace')
+
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.include('/checkout/info/');
+        })
+
+        .get('div[data-cy=login]')
+        .should('have.attr', 'data-show-login')
+
+        .get('input[name=email]')
+        .type('regular@gmail.com')
+
+        .get('input[name=password]')
+        .type('Password1')
+
+        .intercept('POST', '/login*')
+        .as('Login')
+
+        .get('button[name=login]')
+        .click()
+
+        .wait('@Login')
+
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.include('/checkout/info/');
+        })
+
+        .visitAndWaitForHydration('/me')
+        .get('[data-cy=event-love-tiles-douro-granfondo-2023]')
+        .should('have.length', 4);
     });
 
     context('add/remove race participants when', () => {
