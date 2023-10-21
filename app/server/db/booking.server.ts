@@ -1,5 +1,5 @@
-import type { Prisma, CheckoutStatus } from '@prisma/client';
-import { PaymentStatus, PrismaClient } from '@prisma/client';
+import type { Prisma } from '@prisma/client';
+import { PaymentStatus, PrismaClient, CheckoutStatus } from '@prisma/client';
 
 import { db } from '~/server/db.server';
 
@@ -16,37 +16,30 @@ import type {
 } from '~/types';
 import { bookingAmount } from '~/utils/misc';
 
-async function findBooking(
-  userSessionId: string,
-  eventId: string
-): Promise<Booking | null> {
+async function findBooking(id: string): Promise<Booking | null> {
   return await db.booking.findUnique({
-    where: { eventId_userId: { eventId, userId: userSessionId } }
+    where: { id }
   });
 }
 
-async function findBookingCart(
-  userId: string,
-  eventId: string
-): Promise<UICartRow[]> {
+async function findBookingCart(bookingId: string): Promise<UICartRow[]> {
   const results: Array<DBRawUICartRow> = await db.$queryRaw`
-        SELECT b.id,
-               r.id                 AS race_id,
-               r.name,
-               CASE
-                   WHEN r.price_early_bird IS NOT NULL AND r.valid_until > current_date THEN r.price_early_bird
-                   ELSE r.price END as price,
-               r.distance,
-               r.start_time,
-               r.display_order,
-               count(1)             AS qty
-        FROM bookings b
-                 INNER JOIN race_participants rp ON (b.id = rp.booking_id)
-                 INNER JOIN races r ON rp.race_id = r.id
-        WHERE b.user_id = ${userId}
-          AND b.event_id = ${eventId}
-        GROUP BY b.id, r.id, r.name, r.price, r.distance, r.start_time, r.display_order;
-    `;
+    SELECT b.id,
+           r.id               AS race_id,
+           r.name,
+           CASE
+             WHEN r.price_early_bird IS NOT NULL AND r.valid_until > current_date THEN r.price_early_bird
+             ELSE r.price END as price,
+           r.distance,
+           r.start_time,
+           r.display_order,
+           count(1)           AS qty
+    FROM bookings b
+           INNER JOIN race_participants rp ON (b.id = rp.booking_id)
+           INNER JOIN races r ON rp.race_id = r.id
+    WHERE b.id = ${bookingId}
+    GROUP BY b.id, r.id, r.name, r.price, r.distance, r.start_time, r.display_order;
+  `;
 
   return results.map(dbUICartToUICart);
 }
@@ -70,12 +63,11 @@ async function createBooking(
 }
 
 async function removeBooking(
-  userSessionId: string,
-  eventId: string,
+  bookingId: string,
   tx?: Prisma.TransactionClient
 ): Promise<void> {
   await (tx || db).booking.delete({
-    where: { eventId_userId: { eventId, userId: userSessionId } }
+    where: { id: bookingId }
   });
 }
 
@@ -148,12 +140,6 @@ async function updateBookingStatus(
   });
 }
 
-async function findBookingById(id: string): Promise<Booking | null> {
-  return await db.booking.findUnique({
-    where: { id }
-  });
-}
-
 async function findConfirmedBookings(
   eventId: string
 ): Promise<Booking[] | null> {
@@ -200,6 +186,15 @@ async function removeBookingDiscount(id: string) {
   });
 }
 
+async function findUserOngoingBookingsByEvent(
+  userId: string,
+  eventId: string
+): Promise<Booking[]> {
+  return await db.booking.findMany({
+    where: { userId, eventId, status: { not: CheckoutStatus.confirmed } }
+  });
+}
+
 export {
   updateBookingStatus,
   findBooking,
@@ -208,8 +203,8 @@ export {
   findBookingCart,
   changeRegistrationToAuthUser,
   findUserBookingsList,
-  findBookingById,
   findConfirmedBookings,
   applyDiscountCode,
-  removeBookingDiscount
+  removeBookingDiscount,
+  findUserOngoingBookingsByEvent
 };

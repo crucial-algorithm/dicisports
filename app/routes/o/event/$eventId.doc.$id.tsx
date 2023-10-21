@@ -7,11 +7,7 @@ import { useActionData, useLoaderData } from '@remix-run/react';
 
 import clsx from 'clsx';
 
-import type {
-  ActionFunction,
-  LoaderFunction,
-  UploadHandler
-} from '@remix-run/node';
+import type { ActionFunction, LoaderFunction, UploadHandler } from '@remix-run/node';
 import {
   json,
   redirect,
@@ -25,7 +21,7 @@ import { useTranslation } from 'react-i18next';
 
 import { z, ZodError } from 'zod';
 
-import type { Event } from '@prisma/client';
+import type { Event, Prisma } from '@prisma/client';
 
 import Button, { ButtonLink } from '~/components/shared/Button';
 import ButtonGroup from '~/components/shared/ButtonGroup';
@@ -36,14 +32,10 @@ import UploadForm from '~/components/shared/form/UploadForm';
 import Main from '~/components/shared/Main';
 
 import { requireUser } from '~/server/auth/session.server';
-import {
-  createDocument,
-  findDocument,
-  updateDocument
-} from '~/server/documents.server';
+import { createDocument, findDocument, updateDocument } from '~/server/documents.server';
 import i18n from '~/server/i18n.server';
-import type { CreateDocumentInput, Document } from '~/types';
-import { badRequest } from '~/utils/misc';
+import type { Document } from '~/types';
+import { badRequest, fileTypeFromUploadHandlerData } from '~/utils/misc';
 import { uploadToS3 } from '~/server/utils/s3';
 import Id from '~/server/utils/Id.server';
 import { findEvent } from '~/server/db/events.server';
@@ -64,6 +56,8 @@ type FormErrors = {
   label?: string;
   path?: string;
 };
+
+const INVALID_FILE_TYPE = '__invalid_type__';
 
 export const loader: LoaderFunction = async ({ request, params }) => {
   const user = await requireUser(request);
@@ -100,12 +94,22 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 
 export const action: ActionFunction = async ({ request, params }) => {
   const user = await requireUser(request);
-
   const t = await i18n.getFixedT(request, RESOURCES_NS);
+
+  const eventId = params.eventId as string;
+  const event = await findEvent(eventId);
+
+  if (!event) {
+    throw NotFound(t('Event not found'));
+  }
+
+  if (event.createdById !== user.id) {
+    throw Unauthorized(t('Not authorized'));
+  }
 
   const uploadHandler: UploadHandler = unstable_composeUploadHandlers(
     // our custom upload handler
-    async ({ name, data, filename }) => {
+    async ({ name, data, filename, contentType }) => {
       if (name !== 'file') {
         return undefined;
       }
@@ -114,15 +118,24 @@ export const action: ActionFunction = async ({ request, params }) => {
         return undefined;
       }
 
-      const eventId = params.eventId as string;
-      const path = require('path');
-      const fileExtension = path.parse(filename as string).ext;
+      const file = await fileTypeFromUploadHandlerData(data);
 
-      return await uploadToS3(
-        Readable.from(data),
-        eventId,
-        Id() + fileExtension
+      if (!file) {
+        return undefined;
+      }
+
+      if (!(file.type === 'pdf' || file.type === 'gpx')) {
+        return INVALID_FILE_TYPE;
+      }
+
+      const prefix = `events/${event.createdAt.getFullYear()}${String(event.createdAt.getMonth() + 1).padStart(2, '0')}/${eventId}`;
+      const key = await uploadToS3(
+        Readable.from(file.buffer),
+        prefix,
+        `${Id()}.${file.type}`
       );
+
+      return `${key}|${filename}|${file.type}`;
     },
     // fallback to memory for everything else
     unstable_createMemoryUploadHandler()
@@ -131,51 +144,64 @@ export const action: ActionFunction = async ({ request, params }) => {
   const form = await unstable_parseMultipartFormData(request, uploadHandler);
 
   const name = form.get('name') as string;
-  const eventId = params.eventId as string;
-  let documentId = params.id || null;
-  const file =
-    form.get('file') === 'undefined' || form.get('file') === null
-      ? undefined
-      : form.get('file');
-  const event = await findEvent(eventId);
+  const documentId = params.id === 'new' ? null : params.id;
 
-  if(documentId === 'new') {
-    documentId = null;
+  let file = form.get('file');
+
+  // Upload handler either returns a string when file is uploaded or has invalid type
+  // Or returns a File object with undefined name, meaning user didn't upload a file
+  if (typeof file !== 'string') {
+    file = undefined;
   }
+
+  const isFileTypeValid = file && file !== INVALID_FILE_TYPE;
+  const [filePath, fileName, fileType] =
+    isFileTypeValid ? file.split('|'): [null, null, null];
 
   const isInsert = !documentId;
-  const documentData: CreateDocumentInput = {
-    id: isInsert ? Id() : documentId as string,
+  const documentData: Prisma.DocumentCreateInput = {
+    id: documentId || Id(),
     label: name,
-    // @ts-ignore
-    path: file,
-    eventId
+    path: filePath,
+    fileName,
+    type: fileType,
+    event: {
+      connect: {
+        id: event.id
+      }
+    }
   };
-
-  if (!event) {
-    throw NotFound(t('Event not found'));
-  }
-  if (event.createdById !== user.id) {
-    throw Unauthorized(t('Not authorized'));
-  }
 
   const DocumentSchema = z.object({
     label: z.string().min(5, { message: t('Min 5 chars') }),
     path: z
-      .string()
-      .optional()
+      .string({ invalid_type_error: t(isFileTypeValid ? 'Select a document' : 'Invalid File Type') })
       .refine(
-        () => {
+        (d) => {
           if (!isInsert) {
             return true;
           }
 
-          return documentData.path !== undefined;
+          return d !== null;
         },
         {
-          message: t('Select a document')
+          message: t(isFileTypeValid ? 'Select a document' : 'Invalid File Type')
         }
-      )
+      ),
+    fileName: z
+      .string()
+      .min(1, { message: t(isFileTypeValid ? 'Select a document' : 'Invalid File Type') }),
+    type: z
+      .string({ invalid_type_error: t(isFileTypeValid ? 'Select a document' : 'Invalid File Type') })
+      .refine((d) => {
+        if (!isInsert) {
+          return true;
+        }
+
+        return !d ? false : d === 'pdf' || d === 'gpx';
+      }, {
+        message: t(isFileTypeValid ? 'Select a document' : 'Invalid File Type')
+      })
   });
 
   try {
@@ -184,7 +210,7 @@ export const action: ActionFunction = async ({ request, params }) => {
     DocumentSchema.parse(documentData);
     isInsert
       ? await createDocument(documentData)
-      : await updateDocument(documentData);
+      : await updateDocument(documentId, name);
 
     return redirect(`/o/event/${event.id}#documents`);
   } catch (e) {
@@ -227,7 +253,6 @@ export default function EventDocumentRoute() {
 
   const { getRootProps, getInputProps } = useDropzone({
     multiple: false,
-    accept: '.pdf, .gpx',
     onDrop: (accepted) => {
       if (accepted.length === 0) {
         return;
@@ -264,7 +289,6 @@ export default function EventDocumentRoute() {
             <FormField label={t('Name')} error={actionData?.errors?.label}>
               <TextField
                 name="name"
-                placeholder={t('Document Name')}
                 defaultValue={document?.label ? document.label : ''}
                 className="max-w-md"
                 input={name}
@@ -281,7 +305,7 @@ export default function EventDocumentRoute() {
             </>
           </div>
           {!document && (
-            <FormField label={t('Document')} error={actionData?.errors?.path}>
+            <FormField label={t('Document')} error={actionData?.errors?.path} description={t('Only PDF and GPX')}>
               <section
                 className={clsx(
                   'h-40 bg-gray-100 text-black placeholder-gray-500 text-lg font-medium',
@@ -308,6 +332,7 @@ export default function EventDocumentRoute() {
               className={clsx(
                 'text-md font-extrabold dark:text-white my-4 ml-4'
               )}
+              data-cy="uploaded-document"
             >
               {uploadedDocument}
             </div>

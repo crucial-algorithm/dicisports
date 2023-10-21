@@ -530,7 +530,7 @@ export default function OrganizerEventRoute() {
   );
   const [fileUploadHandlerEvent, setFileUploadHandlerEvent] =
     useState<FileUploadHandlerEvent | null>(null);
-
+  const [regulationError, setRegulationError] = useState<string | null>(null);
   let fileName: string | null = null;
 
   if (event.regulationPath && event.regulationFileName) {
@@ -684,10 +684,16 @@ export default function OrganizerEventRoute() {
   useEffect(() => {
     if (fetcher?.data?.ok && fetcher?.type === 'actionReload') {
       fileUploadHandlerEvent?.options?.clear();
+      setRegulationError(null);
+    }
+
+    if (fetcher?.data?.errors && fetcher?.type === 'actionReload') {
+      fileUploadHandlerEvent?.options?.clear();
+      setRegulationError(t('Invalid File Type'));
     }
 
     setRaces(dbRaces);
-  }, [fileUploadHandlerEvent, fetcher, dbRaces, toast, event]);
+  }, [fileUploadHandlerEvent, fetcher, dbRaces, toast, event, t]);
 
   useEffect(() => {
     const main = window.document.querySelector('#organizer-main-container');
@@ -1068,7 +1074,7 @@ export default function OrganizerEventRoute() {
               </div>
             </FormField>
 
-            <FormField label={t('Regulation')}>
+            <FormField label={t('Regulation')} error={regulationError}>
               <fieldset>
                 <div className="flex flex-wrap gap-3">
                   <div className="flex items-center">
@@ -1145,7 +1151,7 @@ export default function OrganizerEventRoute() {
             )}
 
             {actionData?.errors?.regulation && (
-              <InputError className="mt-8" id="error-message">
+              <InputError id="error-message">
                 {actionData?.errors?.regulation}
               </InputError>
             )}

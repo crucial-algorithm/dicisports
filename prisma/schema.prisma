@@ -143,6 +143,8 @@ model Event {
 model Document {
   id        String   @id @default(uuid())
   path      String?
+  fileName  String?  @map("file_name")
+  type      String?
   position  Int      @default(autoincrement())
   label     String?
   event     Event    @relation(fields: [eventId], references: [id])
@@ -354,7 +356,6 @@ model Booking {
   raceParticipant RaceParticipant[]
   payment         Payment[]
 
-  @@unique([eventId, userId])
   @@map("bookings")
 }
 

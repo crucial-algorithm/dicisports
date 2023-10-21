@@ -33,8 +33,9 @@ import { getClientSession } from '~/server/auth/client.server';
 import { getUser } from '~/server/auth/session.server';
 import {
   applyDiscountCode,
-  findBookingById,
+  findBooking,
   findBookingCart,
+  removeBooking,
   removeBookingDiscount,
   updateBookingStatus
 } from '~/server/db/booking.server';
@@ -97,7 +98,7 @@ export const action: ActionFunction = async ({ request, params }) => {
   const anonymousClient = await getClientSession(request);
   const authenticatedClient = await getUser(request);
   const bookingId = params.bookingId as string;
-  const booking = await findBookingById(bookingId);
+  const booking = await findBooking(bookingId);
 
   if (!booking) {
     return redirect('/');
@@ -151,7 +152,7 @@ export const action: ActionFunction = async ({ request, params }) => {
       ) {
         return badRequest({ errors: { discountError: t('No Discount Code') } });
       }
-      const cart = await findBookingCart(clientId, eventId);
+      const cart = await findBookingCart(bookingId);
 
       await applyDiscountCode(
         booking.id,
@@ -311,10 +312,7 @@ export const action: ActionFunction = async ({ request, params }) => {
       raceParticipants?.length === 1
     ) {
       TermsAndRegulationSchema.parse({ regulation, terms });
-      const raceParticipants = await findUserEventRaceParticipants(
-        clientId,
-        eventId
-      );
+      const raceParticipants = await findUserEventRaceParticipants(bookingId);
 
       if (!raceParticipants) {
         return badRequest({ error: t('No Race Participants') });
@@ -372,6 +370,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   const anonymousClient = await getClientSession(request);
   const authenticatedClient = await getUser(request);
   const bookingId = params.bookingId as string;
+  const lng = await i18n.getLocale(request);
   const { searchParams } = new URL(request.url);
 
   const pin = searchParams.get('p');
@@ -382,7 +381,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
       ? authenticatedClient.id
       : anonymousClient.getClientId();
 
-  const booking = await findBookingById(bookingId);
+  const booking = await findBooking(bookingId);
   const isGuest = pin && Number(pin) === booking?.pin;
 
   if (!booking || (booking.userId !== clientId && !isGuest)) {
@@ -396,15 +395,15 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     return redirect('/');
   }
 
-  const cart = await findBookingCart(
-    isGuest ? booking.userId : clientId,
-    eventId
-  );
+  const cart = await findBookingCart(bookingId);
   const organizer = await findOrganizer(event.createdById);
   const raceParticipants = await findUserBookingParticipants(bookingId);
 
   if (!raceParticipants || raceParticipants?.length === 0) {
-    return redirect(`/checkout/cart/${eventId}`);
+    // If, for some reason, there are no race participants, we shouldn't keep this booking
+    await removeBooking(bookingId);
+
+    return redirect(`/${lng}/event/${event.slug}`);
   }
 
   // cant use clientId when user is a guest - accesses this route with booking PIN
@@ -888,7 +887,7 @@ export default function CheckoutInfoRoute() {
                   </div>
                   <div className="flex justify-end mt-4">
                     <a
-                      href={`/checkout/cart/${event.id}?a=update`}
+                      href={`/checkout/cart/${bookingId}`}
                       data-cy="update-cart"
                       className="text-lg font-medium"
                     >

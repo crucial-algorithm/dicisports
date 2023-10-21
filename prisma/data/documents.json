@@ -2,6 +2,8 @@
   {
     "id": "MY4bvgxDbMtGv8rbYe5d",
     "path": "MY4bvgxDbMtGv8rbYe5d/9Xjz6PY2n5rPCq5DWKPJ.pdf",
+    "fileName": "event_info.pdf",
+    "type": "pdf",
     "position": 1,
     "label": "Informação do Evento",
     "eventId": "MY4bvgxDbMtGv8rbYe5d",
@@ -10,6 +12,8 @@
   {
     "id": "fFSRHEHwpR8vGngkED3T",
     "path": "MY4bvgxDbMtGv8rbYe5d/nXGWh6PrptLSSLpA5p4s.pdf",
+    "fileName": "circuit.pdf",
+    "type": "pdf",
     "position": 2,
     "label": "Circuito",
     "eventId": "MY4bvgxDbMtGv8rbYe5d",
@@ -18,6 +22,8 @@
   {
     "id": "Pr7q6CCrK9XdTT6rT7ED",
     "path": "bQmGXYkbhJetjk6mniMt/j3r7C9DvS65xiEe5dpq6.pdf",
+    "fileName": "circuit.pdf",
+    "type": "pdf",
     "position": 3,
     "label": "Circuito",
     "eventId": "bQmGXYkbhJetjk6mniMt",

@@ -1,8 +1,15 @@
+import { fromBuffer } from 'file-type';
+
 import { json } from '@remix-run/node';
 
-import type { LocalStorageBookingMetaData, UICartRow } from '~/types';
-
-import type { Language, NonNullProperties, TranslationObject } from '~/types';
+import type {
+  Booking,
+  Language,
+  LocalStorageBookingMetaData,
+  NonNullProperties,
+  TranslationObject,
+  UICartRow
+} from '~/types';
 
 function getDomainUrl(request: Request) {
   const host =
@@ -211,7 +218,17 @@ function validateIdentityCard(identityCard: string): boolean {
   return sum % 10 === 0;
 }
 
-function maintainBookingLocalStorageMetadData(bookingId: string): {
+function bookingRedirectRoute(booking: Booking): string {
+  const mapping: { [key: string]: string } = {
+    checkout: 'info',
+    pending: 'payment',
+    confirmed: 'confirmation'
+  };
+
+  return `/checkout/${mapping[booking.status]}/${booking.id}`;
+}
+
+function maintainBookingLocalStorageMetaData(bookingId: string): {
   read: () => LocalStorageBookingMetaData;
   write: (key: keyof LocalStorageBookingMetaData, value: boolean) => void;
 } {
@@ -246,6 +263,21 @@ function maintainBookingLocalStorageMetadData(bookingId: string): {
   };
 }
 
+async function fileTypeFromUploadHandlerData(
+  data: AsyncIterable<Uint8Array>
+): Promise<{ type: string, buffer: Buffer } | null> {
+  const chunks = [];
+
+  for await (const chunk of data) {
+    chunks.push(chunk);
+  }
+
+  // Concatenate the chunks into a single buffer
+  const buffer = Buffer.concat(chunks);
+  const fileType = await fromBuffer(buffer);
+
+  return fileType ? { type: fileType.ext, buffer } : null;
+}
 
 export {
   getDomainUrl,
@@ -263,5 +295,7 @@ export {
   generateSlug,
   bookingAmount,
   validateIdentityCard,
-  maintainBookingLocalStorageMetadData
+  bookingRedirectRoute,
+  maintainBookingLocalStorageMetaData,
+  fileTypeFromUploadHandlerData
 };

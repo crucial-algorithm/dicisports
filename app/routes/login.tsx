@@ -1,4 +1,4 @@
-import { Role } from '@prisma/client';
+import { CheckoutStatus, Role } from '@prisma/client';
 import { Form, Link, useActionData, useSearchParams } from '@remix-run/react';
 
 import { z, ZodError } from 'zod';
@@ -21,7 +21,7 @@ import FormField from '~/components/shared/form/FormField';
 
 import { getLoginInfoSession } from '~/server/auth/login.server';
 import { getSession, getUser } from '~/server/auth/session.server';
-import { badRequest, getDomainUrl } from '~/utils/misc';
+import { badRequest, bookingRedirectRoute, getDomainUrl } from '~/utils/misc';
 
 import i18n from '~/server/i18n.server';
 import InputError from '~/components/shared/form/InputError';
@@ -30,13 +30,14 @@ import { H2, H6 } from '~/components/shared/typography';
 
 import { sendWhatsAppGroupLink, subscribeUser } from '~/server/email.server';
 import { addGroupToFavorites, findGroup } from '~/server/db/groups.server';
-import type { LoginAction } from '~/types';
+import type { Booking, LoginAction } from '~/types';
 
 import { loginUser } from '~/server/db/users.server';
 import { CanonicalMeta } from '~/utils/seo';
 import {
   changeRegistrationToAuthUser,
-  findBookingById
+  findBooking,
+  findUserOngoingBookingsByEvent
 } from '~/server/db/booking.server';
 import { getClientSession } from '~/server/auth/client.server';
 
@@ -223,7 +224,18 @@ export const action: ActionFunction = async ({ request }) => {
       try {
         const clientSession = await getClientSession(request);
         const bookingId = searchParams.get('b') as string;
-        const booking = await findBookingById(bookingId);
+        const booking = await findBooking(bookingId);
+
+        // This shouldn't happen, but in case it does...
+        if (!booking) {
+          return redirect(`/?message=${t('No Booking Found')}`, { headers });
+        }
+
+        const userOngoingEventBookings = await findUserOngoingBookingsByEvent(
+          user.id,
+          booking.eventId
+        );
+        const existingBooking = filterExistingBooking(userOngoingEventBookings);
 
         await changeRegistrationToAuthUser(
           user.id,
@@ -231,9 +243,7 @@ export const action: ActionFunction = async ({ request }) => {
         );
 
         return redirect(
-          booking?.status === 'confirmed'
-            ? `/checkout/confirmation/${bookingId}`
-            : `/checkout/info/${bookingId}`,
+          bookingRedirectRoute(existingBooking ? existingBooking : booking),
           { headers }
         );
       } catch (e) {
@@ -430,4 +440,22 @@ function AddToFavoritesHeader({ t }: { t: TFunction }) {
       </H6>
     </>
   );
+}
+
+// Since we are supporting multiple bookings of same event, we need to check if there is already an ongoing booking
+// Or if there is an ongoing/pending payment of a booking for that event
+function filterExistingBooking(bookings: Booking[]): Booking | null {
+  if (!bookings || bookings.length === 0) {
+    return null;
+  }
+
+  // Check if there is any booking with an ongoing/pending payment
+  const pendingBookings = bookings.filter((b) => b.status === CheckoutStatus.pending);
+
+  if (pendingBookings && pendingBookings.length > 0) {
+    return pendingBookings[0];
+  }
+
+  // If there is no pending bookings, filter ongoing ones and return the first one
+  return bookings.filter((b) => b.status === CheckoutStatus.checkout)[0];
 }

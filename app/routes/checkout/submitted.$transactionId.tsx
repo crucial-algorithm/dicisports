@@ -2,7 +2,7 @@ import { PaymentStatus } from '@prisma/client';
 import type { LoaderFunction } from '@remix-run/node';
 import { redirect } from '@remix-run/node';
 
-import { findBookingById } from '~/server/db/booking.server';
+import { findBooking } from '~/server/db/booking.server';
 import { addPaymentMethodDetails, findPayment, updatePaymentStatus } from '~/server/db/payments.server';
 import { getPaymentStatus } from '~/server/utils/payments';
 
@@ -16,7 +16,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     return redirect('/');
   }
 
-  const booking = await findBookingById(payment.bookingId);
+  const booking = await findBooking(payment.bookingId);
 
   if (!booking) {
     // TODO: we need to log this somehow
