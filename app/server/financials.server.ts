@@ -17,6 +17,10 @@ import { db } from './db.server';
 //
 // Commission                     -> % Dicisports takes from booking amount (defined at organizers level)
 //
+//
+// Organizer Cut                  -> % Organizer takes from booking amount stripped of commission
+//                                   1 - commission
+//
 // Net Merchandise Value(NMV)     -> Amount organizers will make from GMV:
 //                                   GMV - discounts - commission
 //
@@ -33,7 +37,7 @@ function handleCommission(value: number) {
 
 async function calculateEventNMV(eventId: string): Promise<number> {
   const commission = await findOrganizerCommission(eventId);
-  const formattedCommission = 1 - handleCommission(commission);
+  const organizerCut = 1 - handleCommission(commission);
 
   const payments = await db.payment.findMany({
     select: {
@@ -53,7 +57,7 @@ async function calculateEventNMV(eventId: string): Promise<number> {
   }
 
   return payments.reduce(
-    (total, { amount }) => total + amount * formattedCommission,
+    (total, { amount }) => total + amount * organizerCut,
     0
   );
 }
@@ -96,7 +100,7 @@ async function calculateRaceNMV(
   eventId: string
 ): Promise<RaceRevenueRegistrations[]> {
   const commission = await findOrganizerCommission(eventId);
-  const formattedCommission = 1 - handleCommission(commission);
+  const organizerCut = 1 - handleCommission(commission);
 
   const results = await db.race.findMany({
     where: {
@@ -126,7 +130,7 @@ async function calculateRaceNMV(
     const registrations = raceParticipant.length;
     const raceGMV = registrations
       ? raceParticipant.reduce(
-          (total, { price }) => total + Number(price) * formattedCommission,
+          (total, { price }) => total + Number(price) * organizerCut,
           0
         )
       : 0;
