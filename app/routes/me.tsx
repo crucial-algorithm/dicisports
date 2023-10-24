@@ -274,20 +274,16 @@ export default function Me() {
 
   return (
     <Main>
-      {bookings && bookings.length > 0 && (
-        <>
-          <H2 id="booking">{t('Your Bookings')}</H2>
-          <BookingsList
-            bookings={bookings}
-            t={t}
-            searchedName={searchedName}
-            pageNumber={pageNumber}
-            numberOfPages={numberOfPages}
-          />
+      <H2 id="booking">{t('Your Bookings')}</H2>
+      <BookingsList
+        bookings={bookings}
+        t={t}
+        searchedName={searchedName}
+        pageNumber={pageNumber}
+        numberOfPages={numberOfPages}
+      />
 
-          <Spacer size="xs" className="border-b mb-8" />
-        </>
-      )}
+      <Spacer size="xs" className="border-b mb-8" />
       <div className="flex flex-row justify-between items-center">
         <H2>{t('Your Groups')}</H2>
         <ButtonLink to="/g/group/add" data-cy="create-group">{t('Create Group')}</ButtonLink>

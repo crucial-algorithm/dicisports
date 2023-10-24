@@ -1,19 +1,8 @@
-import type { Prisma, CheckoutStatus } from '@prisma/client';
+import type { CheckoutStatus, Prisma } from '@prisma/client';
 import { PaymentStatus, PrismaClient } from '@prisma/client';
 
 import { db } from '~/server/db.server';
-
-import {
-  dbRawBookingListToBookingList,
-  dbUICartToUICart
-} from '~/server/db/codecs.server';
-import type {
-  Booking,
-  BookingList,
-  DBRawBookingList,
-  DBRawUICartRow,
-  UICartRow
-} from '~/types';
+import type { Booking, BookingList, UICartRow } from '~/types';
 import { bookingAmount } from '~/utils/misc';
 
 async function findBooking(id: string): Promise<Booking | null> {
@@ -23,25 +12,50 @@ async function findBooking(id: string): Promise<Booking | null> {
 }
 
 async function findBookingCart(bookingId: string): Promise<UICartRow[]> {
-  const results: Array<DBRawUICartRow> = await db.$queryRaw`
-    SELECT b.id,
-           r.id               AS race_id,
-           r.name,
-           CASE
-             WHEN r.price_early_bird IS NOT NULL AND r.valid_until > current_date THEN r.price_early_bird
-             ELSE r.price END as price,
-           r.distance,
-           r.start_time,
-           r.display_order,
-           count(1)           AS qty
-    FROM bookings b
-           INNER JOIN race_participants rp ON (b.id = rp.booking_id)
-           INNER JOIN races r ON rp.race_id = r.id
-    WHERE b.id = ${bookingId}
-    GROUP BY b.id, r.id, r.name, r.price, r.distance, r.start_time, r.display_order;
-  `;
+  const bookingCart = await db.raceParticipant.groupBy({
+    by: ['raceId'],
+    where: { bookingId },
+    _count: {
+      id: true
+    }
+  });
 
-  return results.map(dbUICartToUICart);
+  const bookingRaces = await db.race.findMany({
+    select: {
+      id: true,
+      name: true,
+      price: true,
+      priceEarlyBird: true,
+      validUntil: true,
+      distance: true,
+      startTime: true,
+      displayOrder: true
+    },
+    where: { id: { in: bookingCart.map((r) => r.raceId) } }
+  });
+
+  return bookingRaces.map((t) => {
+    const raceCount = bookingCart.find((c) => c.raceId === t.id);
+    const totalParticipants = raceCount ? raceCount._count.id : 0;
+
+    // This is the value displayed in cart for total price per race
+    const price =
+      totalParticipants *
+      (t.priceEarlyBird && t.validUntil && new Date(t.validUntil) > new Date()
+        ? t.priceEarlyBird
+        : t.price);
+
+    return {
+      id: bookingId,
+      raceId: t.id,
+      name: t.name,
+      price: price,
+      distance: t.distance,
+      startTime: t.startTime,
+      order: t.displayOrder,
+      qty: totalParticipants
+    };
+  });
 }
 
 async function createBooking(
@@ -105,27 +119,66 @@ async function findUserBookingsList(
   pageSize = 10
 ): Promise<{ results: BookingList[]; total: number }> {
   const name = `%${searchedName?.length ? searchedName : ''}%`;
+  const testResults = await db.booking.findMany({
+    select: {
+      id: true,
+      event: {
+        select: {
+          name: true
+        }
+      },
+      createdAt: true,
+      status: true,
+      pin: true,
+      _count: {
+        select: {
+          raceParticipant: true
+        }
+      }
+    },
+    where: {
+      userId,
+      event: {
+        name: {
+          contains: name,
+          // Same as ILIKE in postgres
+          mode: 'insensitive'
+        }
+      }
+    },
+    take: pageSize,
+    skip: page * pageSize
+  });
 
-  const results: Array<DBRawBookingList> = await db.$queryRaw`
-        SELECT *, count(1) over () as records
-        FROM (SELECT b.id,
-                     e.name       as event_name,
-                     b.created_at as booking_date,
-                     b.status,
-                     b.pin,
-                     COUNT(rp.id) as total_participants
-              FROM bookings b
-                       INNER JOIN events e on e.id = b.event_id
-                       INNER JOIN race_participants rp on b.id = rp.booking_id
-              WHERE user_id = ${userId}
-                AND e.name ILIKE ${name}
-              GROUP BY b.id, e.name, b.created_at, b.status) as P LIMIT ${pageSize}
-        OFFSET ${page * pageSize};
-    `;
-  const mapped = results.map(dbRawBookingListToBookingList);
-  const total = results.length === 0 ? 0 : Number(results[0].records);
+  // Total ignoring skip and limit
+  const testTotal = await db.booking.aggregate({
+    _count: {
+      _all: true
+    },
+    where: {
+      userId,
+      event: {
+        name: {
+          contains: name,
+          mode: 'insensitive'
+        }
+      }
+    }
+  });
 
-  return { results: mapped, total };
+  return {
+    results: testResults.map((r) => {
+      return {
+        id: r.id,
+        eventName: r.event.name as string,
+        bookingDate: r.createdAt,
+        status: r.status,
+        pin: r.pin,
+        totalParticipants: r._count.raceParticipant
+      };
+    }),
+    total: testTotal._count._all
+  };
 }
 
 async function updateBookingStatus(
