@@ -119,7 +119,7 @@ async function findUserBookingsList(
   pageSize = 10
 ): Promise<{ results: BookingList[]; total: number }> {
   const name = `%${searchedName?.length ? searchedName : ''}%`;
-  const testResults = await db.booking.findMany({
+  const results = await db.booking.findMany({
     select: {
       id: true,
       event: {
@@ -150,8 +150,8 @@ async function findUserBookingsList(
     skip: page * pageSize
   });
 
-  // Total ignoring skip and limit
-  const testTotal = await db.booking.aggregate({
+  // Total bookings ignoring skip and limit/take
+  const total = await db.booking.aggregate({
     _count: {
       _all: true
     },
@@ -167,7 +167,7 @@ async function findUserBookingsList(
   });
 
   return {
-    results: testResults.map((r) => {
+    results: results.map((r) => {
       return {
         id: r.id,
         eventName: r.event.name as string,
@@ -177,7 +177,7 @@ async function findUserBookingsList(
         totalParticipants: r._count.raceParticipant
       };
     }),
-    total: testTotal._count._all
+    total: total._count._all
   };
 }
 
