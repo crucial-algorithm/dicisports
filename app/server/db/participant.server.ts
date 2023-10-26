@@ -1,9 +1,6 @@
-import type { Prisma } from '@prisma/client';
-import { CheckoutStatus, PrismaClient, Status } from '@prisma/client';
+import { CheckoutStatus, Prisma, PrismaClient, Status } from '@prisma/client';
 
 import type {
-  DBRawParticipant,
-  DBRawUIRaceParticipant,
   Participant,
   ParticipantInput,
   RaceParticipant,
@@ -12,10 +9,6 @@ import type {
 } from '~/types';
 import { db } from '~/server/db.server';
 import Id from '~/server/utils/Id.server';
-import {
-  dbParticipantToParticipant,
-  dbUIRaceParticipantToUIRaceParticipant
-} from '~/server/db/codecs.server';
 import { findBooking } from '~/server/db/booking.server';
 import { createTeam, findEventTeamByName } from '~/server/db/teams.server';
 
@@ -207,48 +200,130 @@ async function findRaceParticipants(
   pageSize = 10,
   searchedName: string | null
 ): Promise<{ results: UIRaceParticipant[]; total: number }> {
-  const name = `%${searchedName?.length ? searchedName : ''}%`;
+  const results = await db.raceParticipant.findMany({
+    select: {
+      id: true,
+      bibNumber: true,
+      participant: {
+        select: {
+          firstName: true,
+          lastName: true,
+          birthdate: true,
+          gender: true
+        }
+      },
+      booking: {
+        select: {
+          status: true,
+          createdAt: true
+        }
+      },
+      race: {
+        select: {
+          name: true
+        }
+      },
+      team: {
+        select: {
+          name: true
+        }
+      }
+    },
+    where: {
+      participant: {
+        OR: [
+          {
+            firstName: {
+              contains: searchedName?.length ? searchedName : '',
+              mode: 'insensitive'
+            }
+          },
+          {
+            lastName: {
+              contains: searchedName?.length ? searchedName : '',
+              mode: 'insensitive'
+            }
+          }
+        ],
+        status: 'saved'
+      },
+      race: { eventId }
+    },
+    take: pageSize,
+    skip: page * pageSize
+  });
 
-  const results: Array<DBRawUIRaceParticipant> = await db.$queryRaw`
-        SELECT *, count(1) over () as records
-        FROM (SELECT rp.id,
-                     concat(p.first_name, ' ', p.last_name) as name,
-                     p.birthdate,
-                     p.gender,
-                     b.created_at                           as booking_at,
-                     b.status,
-                     r.name                                 as race_name,
-                     et.name                                as team_name,
-                     rp.bib_number
-              FROM race_participants rp
-                       INNER JOIN participants p on p.id = rp.participant_id
-                       INNER JOIN bookings b on rp.booking_id = b.id
-                       INNER JOIN races r on r.id = rp.race_id
-                       LEFT JOIN event_teams et ON rp.team_id = et.id
-              WHERE p.status = 'saved'
-                AND first_name || ' ' || last_name ILIKE ${name}
-                AND r.event_id = ${eventId}) as P LIMIT ${pageSize}
-        OFFSET ${page * pageSize};
-    `;
-  const mapped = results.map(dbUIRaceParticipantToUIRaceParticipant);
-  const total = results.length === 0 ? 0 : Number(results[0].records);
+  const total = await db.raceParticipant.aggregate({
+    _count: {
+      _all: true
+    },
+    where: {
+      participant: {
+        OR: [
+          {
+            firstName: {
+              contains: searchedName?.length ? searchedName : '',
+              mode: 'insensitive'
+            }
+          },
+          {
+            lastName: {
+              contains: searchedName?.length ? searchedName : '',
+              mode: 'insensitive'
+            }
+          }
+        ],
+        status: 'saved'
+      },
+      race: { eventId }
+    }
+  });
 
-  return { results: mapped, total };
+  return {
+    results: results.map((r) => {
+      return {
+        id: r.id,
+        name: `${r.participant.firstName} ${r.participant.lastName}`,
+        birthdate: r.participant.birthdate as Date,
+        gender: r.participant.gender as string,
+        bookingAt: r.booking.createdAt,
+        status: r.booking.status,
+        raceName: r.race.name,
+        teamName: r.team ? r.team.name : null,
+        bibNumber: r.bibNumber
+      };
+    }),
+    total: total._count._all
+  };
 }
 
 async function findUserSavedParticipants(
   userId: string
 ): Promise<Participant[] | null> {
-  const results: Array<DBRawParticipant> = await db.$queryRaw`
-    SELECT *
-    FROM participants p
-    WHERE EXISTS(SELECT 1 FROM bookings b WHERE p.user_id = b.user_id AND b.status = 'confirmed')
-      AND user_id = ${userId}
-      AND status = 'saved'
-    ORDER BY first_name;
-  `;
+  // Exists isn't supported
+  // Found this workaround in this discussion: https://github.com/prisma/prisma/issues/5022#issuecomment-1033631629
+  const isThereAnyUserConfirmedBooking = await db.booking
+    .findFirst({
+      where: {
+        userId,
+        status: 'confirmed'
+      }
+    })
+    .then((r) => Boolean(r));
 
-  return results.map(dbParticipantToParticipant);
+  if (!isThereAnyUserConfirmedBooking) {
+    return null;
+  }
+
+  return await db.participant.findMany({
+    where: {
+      userId,
+      status: 'saved'
+    },
+    orderBy: {
+      firstName: 'asc'
+    }
+  });
 }
 
 async function findUserBookingParticipants(
@@ -378,14 +453,30 @@ async function updateRaceParticipantsPrice(
   bookingId: string,
   tx?: Prisma.TransactionClient
 ) {
-  return await (tx || db).$queryRaw`
-        UPDATE race_participants rp
-        SET price = CASE
-                        WHEN r.price_early_bird IS NOT NULL AND r.valid_until > current_date THEN r.price_early_bird
-                        ELSE r.price END FROM races r
-        WHERE r.id = rp.race_id
-          AND booking_id = ${bookingId};
-    `;
+  return await db.$transaction(async (tr) => {
+    const raceParticipants = await (tx || tr).raceParticipant.findMany({
+      where: { bookingId },
+      include: {
+        race: true
+      }
+    });
+
+    await Promise.all(
+      raceParticipants.map(async (rp) => {
+        await (tx || tr).raceParticipant.update({
+          where: { id: rp.id },
+          data: {
+            price:
+              rp.race.priceEarlyBird &&
+              rp.race.validUntil &&
+              new Date(rp.race.validUntil) > new Date()
+                ? rp.race.priceEarlyBird
+                : rp.race.price
+          }
+        });
+      })
+    );
+  });
 }
 
 export {

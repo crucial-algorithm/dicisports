@@ -40,10 +40,9 @@ async function findBookingCart(bookingId: string): Promise<UICartRow[]> {
 
     // This is the value displayed in cart for total price per race
     const price =
-      totalParticipants *
-      (t.priceEarlyBird && t.validUntil && new Date(t.validUntil) > new Date()
+      t.priceEarlyBird && t.validUntil && new Date(t.validUntil) > new Date()
         ? t.priceEarlyBird
-        : t.price);
+        : t.price;
 
     return {
       id: bookingId,
