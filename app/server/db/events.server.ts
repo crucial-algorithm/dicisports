@@ -46,6 +46,20 @@ async function findEvents(): Promise<Array<Event>> {
   });
 }
 
+async function areThereTracesOfUserEventHandling(userId: string, lastNumberOfdays = 7): Promise<boolean> {
+
+  const events = await db.event.findMany({
+    where: {
+      createdById: userId,
+      createdAt: {
+        gte: new Date(Date.now() - lastNumberOfdays * 3600 * 24000)
+      }
+    }
+  });
+
+  return events.length > 0;
+}
+
 async function findOrganizerEvents(organizerId: string): Promise<Array<Event>> {
 
   const o = await db.organizer.findUnique({ where: { id: organizerId } });
@@ -454,5 +468,6 @@ export {
   updateEventRegulation,
   findEventWithRacesAndDocuments,
   findPublishedEvents,
-  findLatestPublishedEvents
+  findLatestPublishedEvents,
+  areThereTracesOfUserEventHandling
 };

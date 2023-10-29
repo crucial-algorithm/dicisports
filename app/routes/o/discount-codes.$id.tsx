@@ -159,9 +159,14 @@ export const action: ActionFunction = async ({ request, params }) => {
 export const loader: LoaderFunction = async ({ request, params }) => {
   const user = await requireUser(request);
   const discountCodeId = params.id as string;
+  const t = await i18n.getFixedT(request, 'discount-codes');
 
   if (user.role !== Role.ORGANIZER) {
-    return redirect('/');
+    return redirect(
+      `/?message=${t(
+        'You must be an approved organizer to access this functionality'
+      )}`
+    );
   }
 
   if (!discountCodeId) {
