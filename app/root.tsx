@@ -1,3 +1,4 @@
+import { Role } from '@prisma/client';
 import * as React from 'react';
 import type { LinksFunction, LoaderFunction } from '@remix-run/node';
 import { json } from '@remix-run/node';
@@ -26,6 +27,8 @@ import { locale } from 'primereact/api';
 
 import primeIcons from 'primeicons/primeicons.css';
 import primeReactCoreCss from 'primereact/resources/primereact.min.css';
+
+import { areThereTracesOfUserEventHandling } from '~/server/db/events.server';
 
 import type { KCDHandle, Sport, User } from '~/types';
 import type { Timings } from '~/server/metrics.server';
@@ -146,6 +149,16 @@ export const loader: LoaderFunction = async ({ request }) => {
     timings,
     fn: getUser
   });
+
+  // After meeting with an organizer, we found that if he doesn't submit the event immediatly and
+  // navigates out of the event page, it's hard for him to get back to edit the event
+  if (user && !(user.role === Role.ORGANIZER)) {
+    const isItAOrganizerWannabe = await areThereTracesOfUserEventHandling(user.id);
+
+    if (isItAOrganizerWannabe) {
+      user.role = Role.ORGANIZER_WANNABE;
+    }
+  }
 
   const data: RootLoaderData = {
     user,

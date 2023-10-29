@@ -293,7 +293,7 @@ function to(user: User | null) {
     return '/login';
   }
 
-  if (user.role === Role.ORGANIZER) {
+  if (user.role === Role.ORGANIZER || user.role === Role.ORGANIZER_WANNABE) {
     return '/o';
   }
 
