@@ -36,5 +36,6 @@
   "Error X": "Ocorreu um erro ao tentar {{action}} o desconto. Tente novamente mais tarde.",
   "Max 100%": "Valor percentual não pode exceder os 100%",
   "Success - Update": "Desconto atualizado!",
-  "Success - Create": "Desconto criado!"
+  "Success - Create": "Desconto criado!",
+  "You must be an approved organizer to access this functionality": "Precisa de ser um organizador aprovado para criar códigos de desconto"
 }

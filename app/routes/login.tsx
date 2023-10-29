@@ -21,6 +21,10 @@ import FormField from '~/components/shared/form/FormField';
 
 import { getLoginInfoSession } from '~/server/auth/login.server';
 import { getSession, getUser } from '~/server/auth/session.server';
+import {
+  areThereTracesOfUserEventHandling,
+  findUserEvents
+} from '~/server/db/events.server';
 import { badRequest, bookingRedirectRoute, getDomainUrl } from '~/utils/misc';
 
 import i18n from '~/server/i18n.server';
@@ -262,6 +266,17 @@ export const action: ActionFunction = async ({ request }) => {
     }
 
     if (user.role === Role.ORGANIZER) {
+      return redirect('/o', { headers });
+    }
+
+    const didUserTriedEventsRecently = await areThereTracesOfUserEventHandling(user.id);
+
+    if (didUserTriedEventsRecently) {
+      const userEvents = await findUserEvents(user.id);
+
+      if (userEvents.length === 1) {
+        return redirect(`/o/event/${userEvents[0].id}`, { headers });
+      }
       return redirect('/o', { headers });
     }
 

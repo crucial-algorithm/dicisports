@@ -28,6 +28,7 @@ enum Role {
   ADMIN
   MEMBER
   ORGANIZER
+  ORGANIZER_WANNABE
 }
 
 model User {
