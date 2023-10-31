@@ -114,7 +114,11 @@ export const action: ActionFunction = async ({ request, params }) => {
       ));
 
       if (!isEmailInUse && organizer) {
-        await addEmailToMailingList(email, organizer.id);
+        try {
+          await addEmailToMailingList(email, organizer.id);
+        } catch (e) {
+          console.log(`failed to add ${email} to mailing list of ${organizer.name}`, e);
+        }
       }
     }
 
