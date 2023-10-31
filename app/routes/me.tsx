@@ -7,10 +7,11 @@ import clsx from 'clsx';
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/20/solid';
 
 import {
-    Form,
-    useActionData,
-    useFetcher,
-    useLoaderData, useNavigate
+  Form,
+  useActionData,
+  useFetcher,
+  useLoaderData,
+  useNavigate
 } from '@remix-run/react';
 
 import {
@@ -49,7 +50,7 @@ import DisplayImg from '~/components/shared/DisplayImg';
 import { findSports } from '~/server/db/reference.server';
 import WhenListEmpty from '~/components/shared/Empty';
 
-import { displayTimeOfDay } from '~/utils/misc';
+import { displayTimeOfDay, generateSlug } from '~/utils/misc';
 import {
   findUserFavoriteEvents,
   removeEventFromFavorites
@@ -774,7 +775,7 @@ function BookingListEntry({
       data-cy="participant-row"
       onClick={handleRedirectToBooking}
     >
-      <TD value={`${booking.eventName}`} />
+      <TD value={`${booking.eventName}`} dataCy={`event-${generateSlug(booking.eventName)}`} />
       <TD value={`${date} ${hour}`} />
       <TD value={t(booking.status)} dataCy={`status-${booking.id}`} />
       <TD value={`${booking.totalParticipants}`} />

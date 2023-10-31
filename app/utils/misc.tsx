@@ -2,7 +2,14 @@ import { fromBuffer } from 'file-type';
 
 import { json } from '@remix-run/node';
 
-import type { Language, LocalStorageBookingMetaData, NonNullProperties, TranslationObject, UICartRow } from '~/types';
+import type {
+  Booking,
+  Language,
+  LocalStorageBookingMetaData,
+  NonNullProperties,
+  TranslationObject,
+  UICartRow
+} from '~/types';
 
 function getDomainUrl(request: Request) {
   const host =
@@ -211,7 +218,17 @@ function validateIdentityCard(identityCard: string): boolean {
   return sum % 10 === 0;
 }
 
-function maintainBookingLocalStorageMetadData(bookingId: string): {
+function bookingRedirectRoute(booking: Booking): string {
+  const mapping: { [key: string]: string } = {
+    checkout: 'info',
+    pending: 'payment',
+    confirmed: 'confirmation'
+  };
+
+  return `/checkout/${mapping[booking.status]}/${booking.id}`;
+}
+
+function maintainBookingLocalStorageMetaData(bookingId: string): {
   read: () => LocalStorageBookingMetaData;
   write: (key: keyof LocalStorageBookingMetaData, value: boolean) => void;
 } {
@@ -278,6 +295,7 @@ export {
   generateSlug,
   bookingAmount,
   validateIdentityCard,
-  maintainBookingLocalStorageMetadData,
+  bookingRedirectRoute,
+  maintainBookingLocalStorageMetaData,
   fileTypeFromUploadHandlerData
 };

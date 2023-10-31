@@ -338,7 +338,17 @@ export const action: ActionFunction = async ({ request, params }) => {
         const organizer = await findOrganizer(event.createdById);
 
         if (organizer) {
-          await addEmailToMailingList(authenticatedClient.email, organizer.id);
+          try {
+            await addEmailToMailingList(
+              authenticatedClient.email,
+              organizer.id
+            );
+          } catch (e) {
+            console.log(
+              `failed to add ${authenticatedClient.email} to mailing list of ${organizer.name}`,
+              e
+            );
+          }
         }
       }
 

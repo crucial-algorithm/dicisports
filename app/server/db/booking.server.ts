@@ -1,5 +1,5 @@
-import type { CheckoutStatus, Prisma } from '@prisma/client';
-import { PaymentStatus, PrismaClient } from '@prisma/client';
+import type { Prisma } from '@prisma/client';
+import { PaymentStatus, PrismaClient, CheckoutStatus } from '@prisma/client';
 
 import { db } from '~/server/db.server';
 import type { Booking, BookingList, UICartRow } from '~/types';
@@ -238,6 +238,15 @@ async function removeBookingDiscount(id: string) {
   });
 }
 
+async function findUserOngoingBookingsByEvent(
+  userId: string,
+  eventId: string
+): Promise<Booking[]> {
+  return await db.booking.findMany({
+    where: { userId, eventId, status: { not: CheckoutStatus.confirmed } }
+  });
+}
+
 export {
   updateBookingStatus,
   findBooking,
@@ -248,5 +257,6 @@ export {
   findUserBookingsList,
   findConfirmedBookings,
   applyDiscountCode,
-  removeBookingDiscount
+  removeBookingDiscount,
+  findUserOngoingBookingsByEvent
 };
