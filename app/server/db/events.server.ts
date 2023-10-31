@@ -418,8 +418,6 @@ const searchEventsResults = Prisma.validator<Prisma.EventArgs>()({
 type SearchEventsResults = Prisma.EventGetPayload<typeof searchEventsResults>
 
 async function getEventResultsByName(name: string): Promise<Array<SearchEventsResults>> {
-  const searchTerm = `%${name.length ? name : ''}%`;
-
   return await db.event.findMany({
     select: {
       name: true,
@@ -432,7 +430,7 @@ async function getEventResultsByName(name: string): Promise<Array<SearchEventsRe
     },
     where: {
       name: {
-        contains: searchTerm,
+        contains: name && name.length ? name : '',
         mode: 'insensitive'
       },
       status: Status.published

@@ -38,7 +38,7 @@ async function findBookingCart(bookingId: string): Promise<UICartRow[]> {
     const raceCount = bookingCart.find((c) => c.raceId === t.id);
     const totalParticipants = raceCount ? raceCount._count.id : 0;
 
-    // This is the value displayed in cart for total price per race
+    // This will return early bird price if it's still available
     const price =
       t.priceEarlyBird && t.validUntil && new Date(t.validUntil) > new Date()
         ? t.priceEarlyBird
@@ -48,7 +48,7 @@ async function findBookingCart(bookingId: string): Promise<UICartRow[]> {
       id: bookingId,
       raceId: t.id,
       name: t.name,
-      price: price,
+      price,
       distance: t.distance,
       startTime: t.startTime,
       order: t.displayOrder,
@@ -117,7 +117,6 @@ async function findUserBookingsList(
   searchedName: string | null,
   pageSize = 10
 ): Promise<{ results: BookingList[]; total: number }> {
-  const name = `%${searchedName?.length ? searchedName : ''}%`;
   const results = await db.booking.findMany({
     select: {
       id: true,
@@ -139,7 +138,7 @@ async function findUserBookingsList(
       userId,
       event: {
         name: {
-          contains: name,
+          contains: searchedName && searchedName.length ? searchedName : '',
           // Same as ILIKE in postgres
           mode: 'insensitive'
         }
@@ -158,7 +157,7 @@ async function findUserBookingsList(
       userId,
       event: {
         name: {
-          contains: name,
+          contains: searchedName && searchedName.length ? searchedName : '',
           mode: 'insensitive'
         }
       }

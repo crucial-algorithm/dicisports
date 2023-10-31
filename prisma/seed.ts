@@ -123,7 +123,7 @@ function events() {
   return eventsSeed.map((e) => {
     return {
       ...e,
-      startAt: new Date(e.startAt ? e.startAt : '2023-10-30T10:00:00Z'),
+      startAt: new Date(e.startAt ? e.startAt : new Date(Date.now() + 604800 * 1000)),
       endAt: new Date('2023-11-30T15:00:00Z'),
       createdAt: new Date('2021-12-31T08:00:00Z'),
       updatedAt: new Date('2021-12-31T08:00:00Z')
