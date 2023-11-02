@@ -78,30 +78,17 @@ function pickOptionFromSelect(name: string, position: number) {
 function pickDate(name: string, date: string, outside = 'body') {
   const [year, month, day] = date.split('-').map(Number);
 
-  // Get input and click to open calendar dialog
   cy.get(`input[name=${name}]`)
-    .click()
-
-    // Check if it exists
-    .get('.p-datepicker')
-    .should('exist')
-
-    // Then get input and focus on it to write new date
-    // Dialog was focused instead of input
-    .get(`input[name=${name}]`)
-    .focus()
+    .should('exist') // this + clear should be enough to delay typing and stop using 0 as prefix
     .clear()
     .type(date)
+    .then(() => {
+      cy.get(`[data-cy-year=${year}][data-cy-month=${month}][data-cy-day=${day}]`)
+        .click({ force: true }) // when within a dialog
 
-    // Check if date was written successfully
-    .get(`input[name=${name}]`)
-    .should('have.value', date)
-
-    .get(`[data-cy-year=${year}][data-cy-month=${month}][data-cy-day=${day}]`)
-    .click({ force: true }) // when within a dialog
-
-    .get(outside)
-    .click(0, 0, { force: true }); // when within a dialog
+        .get(outside)
+        .click(0, 0, { force: true }); // when within a dialog
+    });
 }
 
 
