@@ -93,7 +93,6 @@ function pickDate(name: string, date: string, outside = 'body') {
     .click(0, 0, { force: true }); // when within a dialog
 }
 
-
 function inputMaskWorkaround(selector: string, value: string) {
   cy.get(selector).then(($input) => {
     // get native DOM element
