@@ -82,6 +82,10 @@ function pickDate(name: string, date: string, outside = 'body') {
     .should('exist')// this + clear should be enough to delay typing and stop using 0 as prefix
     .clear()
     .type(date)
+
+    .get(`input[name=${name}]`)
+    .should('have.value', date)
+
     .get(`[data-cy-year=${year}][data-cy-month=${month}][data-cy-day=${day}]`)
     .click({ force: true }) // when within a dialog
 

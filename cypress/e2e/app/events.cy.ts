@@ -23,7 +23,7 @@ describe('Event', () => {
         .contains(name)
 
         .get('[data-cy=date]')
-        .contains('30 Outubro, 2023')
+        .contains('7 Maio, 2030')
 
         .get('[data-cy=location-link]')
         .should('have.attr', 'href')
