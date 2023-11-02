@@ -76,19 +76,18 @@ function pickOptionFromSelect(name: string, position: number) {
  * @param outside  format yyyy-mm-dd
  */
 function pickDate(name: string, date: string, outside = 'body') {
-  const [year, month, day] = date.split('-').map(Number);
+  const [, , day] = date.split('-').map(Number);
 
   cy.get(`input[name=${name}]`)
     .should('exist') // this + clear should be enough to delay typing and stop using 0 as prefix
     .clear()
     .type(date)
-    .then(() => {
-      cy.get(`[data-cy-year=${year}][data-cy-month=${month}][data-cy-day=${day}]`)
-        .click({ force: true }) // when within a dialog
 
-        .get(outside)
-        .click(0, 0, { force: true }); // when within a dialog
-    });
+    .get(`[data-cy-day=${day}]`)
+    .click({ force: true }) // when within a dialog
+
+    .get(outside)
+    .click(0, 0, { force: true }); // when within a dialog
 }
 
 
