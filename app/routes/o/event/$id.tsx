@@ -357,7 +357,7 @@ export const action: ActionFunction = async ({ request, params }) => {
         .nonempty(t('At least 1 race')),
       regulationPath: z.string().nullable(),
       regulationContent: z.string().nullable(),
-      externalWebsite: z.optional(z.string().url(t('External Website Url Error')))
+      externalWebsite: z.string().url(t('External Website Url Error')).nullable()
     })
     .and(
       data.useExternalBooking
