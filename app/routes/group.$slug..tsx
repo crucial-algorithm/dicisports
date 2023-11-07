@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import type { LoaderFunction, MetaFunction } from '@remix-run/node';
 import { json, redirect } from '@remix-run/node';
 import { useTranslation } from 'react-i18next';
@@ -6,7 +6,10 @@ import type { TransformerOption } from '@cld-apis/types';
 
 import { useLoaderData } from '@remix-run/react';
 
+import EventGalleria from '~/components/EventGalleria';
+
 import { findGroupBySlug } from '~/server/db/groups.server';
+import { findSports } from '~/server/db/reference.server';
 import type { Group, Language } from '~/types';
 import { H2, Paragraph } from '~/components/shared/typography';
 import Main from '~/components/shared/Main';
@@ -23,6 +26,7 @@ export const handle = {
 
 type LoaderData = {
   group: Group;
+  genericImage: string;
 };
 
 export const meta: MetaFunction = ({ data, params, location, parentsData }) => {
@@ -36,8 +40,12 @@ export const meta: MetaFunction = ({ data, params, location, parentsData }) => {
   }
 
   const description = group.description?.slice(0, 160);
-  const url = `${root.requestInfo.origin}${root.requestInfo.path}${root.requestInfo.path === '/' ? location.search : ''}`;
-  const name = group.sport ? getI18nText(group.sport.name, i18n.language as Language) : group.name;
+  const url = `${root.requestInfo.origin}${root.requestInfo.path}${
+    root.requestInfo.path === '/' ? location.search : ''
+  }`;
+  const name = group.sport
+    ? getI18nText(group.sport.name, i18n.language as Language)
+    : group.name;
 
   return {
     viewport: 'width=device-width,initial-scale=1,viewport-fit=cover',
@@ -45,8 +53,7 @@ export const meta: MetaFunction = ({ data, params, location, parentsData }) => {
       title: `Dicisports - ${group.name}`,
       url,
       description,
-      keywords:
-        `grupo ${name}`
+      keywords: `grupo ${name}`
     })
   };
 };
@@ -57,15 +64,23 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   if (!slug) {
     redirect('/');
   }
+
+  const group = await findGroupBySlug(slug);
+  const sports = await findSports();
+  const sport = sports.find((s) => s.id === group?.sport?.id);
+  const genericImage = sport?.picture || '';
+
   return json({
-    group: await findGroupBySlug(slug)
+    group,
+    genericImage
   });
 };
 
 export default function GroupDisplayRoute() {
-  const { group } = useLoaderData<LoaderData>() as LoaderData;
+  const { group, genericImage } = useLoaderData<LoaderData>() as LoaderData;
   const { t } = useTranslation('m-groups');
   const { t: tc } = useTranslation('common');
+  const galleria = useRef(null);
   const transformations: TransformerOption = {
     resize: {
       type: 'fill',
@@ -97,6 +112,10 @@ export default function GroupDisplayRoute() {
     );
   }
 
+  const images: string[] = [group.image1, group.image2, group.image3].filter(
+    Boolean
+  ) as string[];
+
   const schedule = group?.schedules
     ?.sort((a, b) => a.dayOfWeek - b.dayOfWeek)
     .map(
@@ -105,57 +124,77 @@ export default function GroupDisplayRoute() {
     )
     .join(' | ');
 
+  function handleOpenGallery(e: React.MouseEvent) {
+    // @ts-ignore
+    galleria.current?.show();
+
+    e.stopPropagation();
+  }
+
   return (
     <Main>
       <H2 className="text-sp-light-blue-900 mb-4">
         <b>{group.name}</b>
         <small>
           {t('Single Group Title Organizer')} {group.createdBy?.name}
-          <p className="text-sm" data-cy="schedule">{schedule}</p>
+          <p className="text-sm font-medium" data-cy="schedule">
+            {schedule}
+          </p>
         </small>
       </H2>
 
-      <div className="w-full m-auto flex flex-row justify-begin gap-4 md:w-full md:grid-flow-col md:grid-rows-1">
-        {group.image1 ? (
-          <DisplayImg
-            imageId={group.image1}
-            transformations={transformations}
-            alt={t('Alt For Picture 1')}
-            dataCy="image1"
-          />
-        ) : null}
-        {group.image2 ? (
-          <DisplayImg
-            imageId={group.image2}
-            transformations={transformations}
-            alt={t('Alt For Picture 2')}
-          />
-        ) : null}
-        {group.image3 ? (
-          <DisplayImg
-            imageId={group.image3}
-            transformations={transformations}
-            alt={t('Alt For Picture 3')}
-          />
-        ) : null}
-      </div>
+      <div className="flex flex-col md:flex-row">
+        {group.image1 && (
+          <div
+            className="relative w-fit m-auto flex flex-row justify-begin cursor-pointer"
+            onClick={handleOpenGallery}
+          >
+            <>
+              <DisplayImg
+                dataCy="image1"
+                imageId={group.image1}
+                transformations={transformations}
+                dontMessWithImgSize={true}
+                className="w-[500px] object-cover object-center"
+              />
+              <div className="absolute rounded bottom-2 left-0 right-0 m-auto px-2 w-fit bg-gray-500/70 text-white">
+                {t('Click for full size image')}
+              </div>
+            </>
+          </div>
+        )}
 
-      <div className="max-w-full text-lg text-secondary mt-2">
-        {t('Description')}
-        <div data-cy="description">{group.description}</div>
-      </div>
+        {!group.image1 && (
+          <DisplayImg
+            imageId={`product/sports/${genericImage}`}
+            alt={group.name || ''}
+            variant="List"
+          />
+        )}
 
-      <Paragraph className="mt-8">
-        {t('Single Group Where')} {group.near}{' '}
-        <a
-          href={`https://www.google.com/maps/search/?api=1&query=${group.lat}%2C${group.lng}`}
-          className="text-primary lowercase underlined hover:text-team-current whitespace-nowrap text-lg font-medium focus:outline-none"
-          target="_blank"
-          rel="noreferrer"
-        >
-          ({t('Single Group View Map')})
-        </a>
-      </Paragraph>
+        <EventGalleria values={images} ref={galleria} />
+
+        <div className="w-full md:w-4/6 md:px-4">
+          {group.description && (
+            <div className="max-w-full text-lg text-secondary mt-2">
+              {t('Description')}
+              <div data-cy="description">{group.description}</div>
+            </div>
+          )}
+
+          <Paragraph className="mt-8">
+            {t('Single Group Where')} {group.near}{' '}
+            <a
+              href={`https://www.google.com/maps/search/?api=1&query=${group.lat}%2C${group.lng}`}
+              className="text-primary lowercase underlined hover:text-team-current whitespace-nowrap text-lg font-medium focus:outline-none"
+              target="_blank"
+              rel="noreferrer"
+            >
+              ({t('Single Group View Map')})
+            </a>
+          </Paragraph>
+        </div>
+      </div>
     </Main>
   );
 }

@@ -115,6 +115,7 @@ type ActionData = {
     location?: string;
     externalBookingUrl?: string;
     description?: string;
+    externalWebsite?: string;
     directions?: string;
     submit?: string;
     races?: string;
@@ -298,6 +299,7 @@ export const action: ActionFunction = async ({ request, params }) => {
     image3: processImgField(image3, isUpdate),
     image4: processImgField(image4, isUpdate),
     image5: processImgField(image5, isUpdate),
+    externalWebsite: (form.get('external-website') as string) || null,
     regulationPath: path,
     regulationContent: inlineRegulation || event.regulationContent,
     regulationFileName,
@@ -354,7 +356,8 @@ export const action: ActionFunction = async ({ request, params }) => {
         .array()
         .nonempty(t('At least 1 race')),
       regulationPath: z.string().nullable(),
-      regulationContent: z.string().nullable()
+      regulationContent: z.string().nullable(),
+      externalWebsite: z.string().url(t('External Website Url Error')).nullable()
     })
     .and(
       data.useExternalBooking
@@ -888,7 +891,9 @@ export default function OrganizerEventRoute() {
               name="location"
               defaultValue={event?.location as DiciLocation}
               defaultPlaceName={event?.placeName}
-              error={actionData?.errors?.coordinates || actionData?.errors?.placeName}
+              error={
+                actionData?.errors?.coordinates || actionData?.errors?.placeName
+              }
             />
 
             <FormField
@@ -919,7 +924,11 @@ export default function OrganizerEventRoute() {
               />
             </FormField>
 
-            <FormField label={t('Event Photos')} id="event-photos">
+            <FormField
+              label={t('Event Photos')}
+              id="event-photos"
+              description={t('Event Photos Description')}
+            >
               <div className="w-full m-auto flex flex-col md:flex-row justify-begin gap-4 w-full md:grid-flow-col md:grid-rows-1 text-center">
                 <UploadImage
                   index={0}
@@ -952,6 +961,18 @@ export default function OrganizerEventRoute() {
                   className="md:w-1/3"
                 />
               </div>
+            </FormField>
+
+            <FormField
+              label={t('External Website Url')}
+              error={actionData?.errors?.externalWebsite}
+            >
+              <TextField
+                name="external-website"
+                type="text"
+                placeholder={t('External Website Url Placeholder')}
+                defaultValue={event.externalWebsite || ''}
+              />
             </FormField>
 
             <FormField

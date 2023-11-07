@@ -137,6 +137,7 @@ type CreateEventInput = {
   useExternalBooking: boolean;
   externalBookingUrl?: string | null;
   description?: string | null;
+  externalWebsite?: string | null;
   directions: string | null;
   bibStartingNumber: number;
   image1?: string | null;

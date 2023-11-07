@@ -15,15 +15,39 @@ describe('Event', () => {
       const granfondo =
         'O Granfondo tem 154km de distância e irá testar as vossas capacidades. Estão prontos para o desafio ?';
 
-      cy.visitAndWaitForHydration('/event/love-tiles-douro-granfondo-2023')
+      const months = [
+        'Janeiro',
+        'Fevereiro',
+        'Março',
+        'Abril',
+        'Maio',
+        'Junho',
+        'Julho',
+        'Agosto',
+        'Setembro',
+        'Outubro',
+        'Novembro',
+        'Dezembro'
+      ];
+
+      const formatter = (date: Date) => {
+        const day = date.getDate();
+        const month = date.getMonth();
+        const year = date.getFullYear();
+
+        return `${day} ${months[month]}, ${year}`;
+      };
+
+      cy.visitAndWaitForHydration('/pt/event/love-tiles-douro-granfondo-2023')
         .get('[data-cy=image0]')
         .should('be.visible')
 
         .get('[data-cy=name]')
         .contains(name)
 
+
         .get('[data-cy=date]')
-        .contains('7 Maio, 2030')
+        .contains(formatter(new Date(Date.now() + 6 * 30.5 * 86400 * 1000)))
 
         .get('[data-cy=location-link]')
         .should('have.attr', 'href')

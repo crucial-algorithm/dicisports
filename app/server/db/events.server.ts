@@ -241,6 +241,7 @@ async function updateEvent(
         image3: event.image3,
         image4: event.image4,
         image5: event.image5,
+        externalWebsite: event.externalWebsite,
         regulationContent: event.regulationContent,
         regulationPath: event.regulationPath,
         regulationFileName: event.regulationFileName,
