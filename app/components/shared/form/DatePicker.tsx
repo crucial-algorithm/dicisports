@@ -1,11 +1,10 @@
 import * as React from 'react';
 import { useContext } from 'react';
 
-import type {
-  CalendarChangeEvent,
-  CalendarDateTemplateEvent
-} from 'primereact/calendar';
+import type { CalendarDateTemplateEvent } from 'primereact/calendar';
 import { Calendar } from 'primereact/calendar';
+
+import type { FormEvent } from 'primereact/ts-helpers';
 
 import Label from '~/components/shared/form/Label';
 import { FormContext } from '~/components/shared/form/UploadForm';
@@ -36,7 +35,7 @@ export default function BasicDatePicker({
     );
   }
 
-  function handleOnChange(event: CalendarChangeEvent) {
+  function handleOnChange(event: FormEvent<(Date | null)>) {
     formProps.setDirty && formProps.setDirty();
     setValue(event.value as Date);
   }
@@ -47,7 +46,7 @@ export default function BasicDatePicker({
       <Calendar
         className="date-picker input-text"
         ref={input}
-        dateFormat="yy-mm-dd"
+        dateFormat="yy-mm-d"
         name={name}
         minDate={minDate}
         value={value}

@@ -80,6 +80,9 @@ function pickDate(name: string, date: string, outside = 'body') {
 
   cy.get(`input[name=${name}]`)
     .should('exist')// this + clear should be enough to delay typing and stop using 0 as prefix
+    .click()
+
+    .get(`input[name=${name}]`)
     .clear()
     .type(date)
     .get(`[data-cy-year=${year}][data-cy-month=${month}][data-cy-day=${day}]`)

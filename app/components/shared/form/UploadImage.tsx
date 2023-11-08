@@ -2,6 +2,7 @@ import React, { useContext, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import clsx from 'clsx';
 import { buildImageUrl } from 'cloudinary-build-url';
+import { useTranslation } from 'react-i18next';
 
 import { FormContext } from '~/components/shared/form/UploadForm';
 
@@ -28,6 +29,7 @@ export default function UploadImage({
   className,
   defaultValue = null
 }: UploadImageProps) {
+  const { t } = useTranslation('common');
   const [thumb, setThumb] = useState<string | null>(
     defaultValue
       ? buildImageUrl(defaultValue, {
@@ -40,10 +42,25 @@ export default function UploadImage({
         })
       : null
   );
+
+  const [error, setError] = useState<string | null>(null);
+
   const { getRootProps, getInputProps } = useDropzone({
     multiple: false,
     accept: 'image/*',
-    onDrop: (accepted) => {
+    maxSize: 1024 * 1024 * 5, // 5MB => cloudinary free account limit is 10MB, but let's cut it short
+    maxFiles: 1,
+    onDrop: (accepted, fileRejections) => {
+      if (
+        fileRejections &&
+        fileRejections.length &&
+        fileRejections.filter((r) =>
+          r.errors.filter((e) => e.code === 'file-too-large')
+        ).length
+      ) {
+        setError(t('Image size too large'));
+      }
+
       if (accepted.length === 0) {
         return;
       }
@@ -90,7 +107,11 @@ export default function UploadImage({
         {thumb ? (
           <img src={thumb} alt="" className="object-cover object-left-top" />
         ) : (
-          <p className="h-80 w-full flex items-center justify-center">{label}</p>
+          <>
+            <p className="h-80 w-full flex items-center justify-center flex-col">
+              {label} {error && <span className="text-red-500 text-sm">({error})</span>}
+            </p>
+          </>
         )}
       </div>
     </section>

@@ -9,6 +9,7 @@ import { Status } from '@prisma/client';
 import {
   ArrowTrendingUpIcon,
   CalendarDaysIcon,
+  GlobeAltIcon,
   HeartIcon,
   MapPinIcon,
   QuestionMarkCircleIcon
@@ -743,6 +744,16 @@ function EventHeader({
             )}
           />
         </div>
+        {event.externalWebsite && (
+          <div className="flex flex-row items-center mb-2">
+            <GlobeAltIcon className="h-6 w-6 m-0 inline-block text-primary" />
+            <H6 className="ml-4 md:ml-2">
+              <a href={event.externalWebsite} target="_blank" rel="noreferrer">
+                {t('External website')}
+              </a>
+            </H6>
+          </div>
+        )}
         <div className="flex flex-row justify-between items-center mt-16 dark:bg-gray-900 bg-white">
           <div className="flex flex-col justify-start">
             <H6 className="md:ml-2">{t('From')}</H6>
