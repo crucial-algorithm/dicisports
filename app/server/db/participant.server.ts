@@ -281,16 +281,11 @@ async function findRaceParticipants(
   };
 }
 
-/**
- *
- * Returns array with all user's saved participants once he has at least
- * one paid booking.
- *
- */
+// Returns all user saved participants only when they have at least one paid booking
+// to prevent premature options in the dropdown during the first registration
 async function findUserSavedParticipants(
   userId: string
 ): Promise<Participant[] | null> {
-  // This will check if user has any paid booking and return a boolean
   const isThereAnyUserConfirmedBooking = await db.booking
     .findFirst({
       where: {
@@ -300,7 +295,6 @@ async function findUserSavedParticipants(
     })
     .then((r) => Boolean(r));
 
-  // Saved participants are only suggested once user has a paid booking
   if (!isThereAnyUserConfirmedBooking) {
     return null;
   }
