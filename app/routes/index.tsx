@@ -30,7 +30,7 @@ import DisplayImg from '~/components/shared/DisplayImg';
 
 import Main from '~/components/shared/Main';
 import { Spacer } from '~/components/shared/Spacer';
-import Button from '~/components/shared/Button';
+import Button, { ButtonLink } from '~/components/shared/Button';
 import type {
   DaysOfWeek,
   DiciLocation,
@@ -690,11 +690,7 @@ export default function Index() {
   );
 }
 
-function LatestEvents({
-  events
-}: {
-  events: Event[]
-}) {
+function LatestEvents({ events }: { events: Event[] }) {
   const { t, i18n } = useTranslation('home');
 
   return (
@@ -704,7 +700,9 @@ function LatestEvents({
       </div>
       <div
         className={`w-full mb-12 m-auto gap-2 md:max-w-5xl grid-cols-1 md:grid-cols-4
-        grid grid-flow-row md:grid-flow-col md:grid-rows-1`}
+        grid grid-flow-row md:grid-flow-row md:grid-rows-${Math.ceil(
+          events.length / 4
+        )}`}
       >
         {events.map(
           ({ id, image1, image2, image3, image4, image5, slug, name }) => (
@@ -736,6 +734,11 @@ function LatestEvents({
             </Link>
           )
         )}
+      </div>
+      <div className="flex justify-center">
+        <ButtonLink to="/?coords=&search=&order=recent&actionId=search&sport=&dow=&value=&g=hide">
+          {t('View all events')}
+        </ButtonLink>
       </div>
     </>
   );
