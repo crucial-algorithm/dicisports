@@ -113,7 +113,7 @@ async function findLatestPublishedEvents(): Promise<Event[]> {
       endAt: { gte: new Date(Date.now()) }
     },
     orderBy: { createdAt: 'desc' },
-    take: 4
+    take: 12
   });
 }
 
