@@ -1,4 +1,5 @@
-import { CheckoutStatus, Prisma, PrismaClient, Status } from '@prisma/client';
+import type { Prisma } from '@prisma/client';
+import { CheckoutStatus, PrismaClient, Status } from '@prisma/client';
 
 import type {
   Participant,
@@ -200,6 +201,27 @@ async function findRaceParticipants(
   pageSize = 10,
   searchedName: string | null
 ): Promise<{ results: UIRaceParticipant[]; total: number }> {
+  const where: Prisma.RaceParticipantWhereInput = {
+    participant: {
+      OR: [
+        {
+          firstName: {
+            contains: searchedName?.length ? searchedName : '',
+            mode: 'insensitive'
+          }
+        },
+        {
+          lastName: {
+            contains: searchedName?.length ? searchedName : '',
+            mode: 'insensitive'
+          }
+        }
+      ],
+      status: 'saved'
+    },
+    race: { eventId }
+  };
+
   const results = await db.raceParticipant.findMany({
     select: {
       id: true,
@@ -229,26 +251,7 @@ async function findRaceParticipants(
         }
       }
     },
-    where: {
-      participant: {
-        OR: [
-          {
-            firstName: {
-              contains: searchedName?.length ? searchedName : '',
-              mode: 'insensitive'
-            }
-          },
-          {
-            lastName: {
-              contains: searchedName?.length ? searchedName : '',
-              mode: 'insensitive'
-            }
-          }
-        ],
-        status: 'saved'
-      },
-      race: { eventId }
-    },
+    where,
     take: pageSize,
     skip: page * pageSize
   });
@@ -257,26 +260,7 @@ async function findRaceParticipants(
     _count: {
       _all: true
     },
-    where: {
-      participant: {
-        OR: [
-          {
-            firstName: {
-              contains: searchedName?.length ? searchedName : '',
-              mode: 'insensitive'
-            }
-          },
-          {
-            lastName: {
-              contains: searchedName?.length ? searchedName : '',
-              mode: 'insensitive'
-            }
-          }
-        ],
-        status: 'saved'
-      },
-      race: { eventId }
-    }
+    where
   });
 
   return {
@@ -297,11 +281,16 @@ async function findRaceParticipants(
   };
 }
 
+/**
+ *
+ * Returns array with all user's saved participants once he has at least
+ * one paid booking.
+ *
+ */
 async function findUserSavedParticipants(
   userId: string
 ): Promise<Participant[] | null> {
-  // Exists isn't supported
-  // Found this workaround in this discussion: https://github.com/prisma/prisma/issues/5022#issuecomment-1033631629
+  // This will check if user has any paid booking and return a boolean
   const isThereAnyUserConfirmedBooking = await db.booking
     .findFirst({
       where: {
@@ -311,6 +300,7 @@ async function findUserSavedParticipants(
     })
     .then((r) => Boolean(r));
 
+  // Saved participants are only suggested once user has a paid booking
   if (!isThereAnyUserConfirmedBooking) {
     return null;
   }
@@ -453,30 +443,14 @@ async function updateRaceParticipantsPrice(
   bookingId: string,
   tx?: Prisma.TransactionClient
 ) {
-  return await db.$transaction(async (tr) => {
-    const raceParticipants = await (tx || tr).raceParticipant.findMany({
-      where: { bookingId },
-      include: {
-        race: true
-      }
-    });
-
-    await Promise.all(
-      raceParticipants.map(async (rp) => {
-        await (tx || tr).raceParticipant.update({
-          where: { id: rp.id },
-          data: {
-            price:
-              rp.race.priceEarlyBird &&
-              rp.race.validUntil &&
-              new Date(rp.race.validUntil) > new Date()
-                ? rp.race.priceEarlyBird
-                : rp.race.price
-          }
-        });
-      })
-    );
-  });
+  return await (tx || db).$queryRaw`
+      UPDATE race_participants rp
+      SET price = CASE
+                      WHEN r.price_early_bird IS NOT NULL AND r.valid_until > current_date THEN r.price_early_bird
+                      ELSE r.price END FROM races r
+      WHERE r.id = rp.race_id
+        AND booking_id = ${bookingId};
+  `;
 }
 
 export {

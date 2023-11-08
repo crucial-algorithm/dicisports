@@ -117,6 +117,17 @@ async function findUserBookingsList(
   searchedName: string | null,
   pageSize = 10
 ): Promise<{ results: BookingList[]; total: number }> {
+  const where: Prisma.BookingWhereInput = {
+    userId,
+    event: {
+      name: {
+        contains: searchedName && searchedName.length ? searchedName : '',
+        // Same as ILIKE in postgres
+        mode: 'insensitive'
+      }
+    }
+  };
+
   const results = await db.booking.findMany({
     select: {
       id: true,
@@ -134,16 +145,7 @@ async function findUserBookingsList(
         }
       }
     },
-    where: {
-      userId,
-      event: {
-        name: {
-          contains: searchedName && searchedName.length ? searchedName : '',
-          // Same as ILIKE in postgres
-          mode: 'insensitive'
-        }
-      }
-    },
+    where,
     take: pageSize,
     skip: page * pageSize
   });
@@ -153,15 +155,7 @@ async function findUserBookingsList(
     _count: {
       _all: true
     },
-    where: {
-      userId,
-      event: {
-        name: {
-          contains: searchedName && searchedName.length ? searchedName : '',
-          mode: 'insensitive'
-        }
-      }
-    }
+    where
   });
 
   return {

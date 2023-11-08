@@ -9,7 +9,7 @@ import { db } from './db.server';
 // Definitions:
 // ============
 //
-// Gross Merchandise Volume(GMV)  -> Organizer/platform total sales not including our commission and discounts:
+// Gross Merchandise Value(GMV)   -> Organizer/platform total sales not including our commission and discounts:
 //                                   participants * race price
 //
 // Booking amount                 -> Total booking price after discounts (taken from payments table)
