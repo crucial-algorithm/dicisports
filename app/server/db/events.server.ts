@@ -7,8 +7,7 @@ import type {
   CreateEventInput,
   FavoriteEvent,
   Language,
-  Organizer,
-  SearchEventsResults
+  Organizer
 } from '~/types';
 import {
   createDefaultPerks,
@@ -17,7 +16,10 @@ import {
   resetEventPerks
 } from '~/server/db/perks.server';
 import { generateSlug } from '~/utils/misc';
-import { createEventLatestBibNumber, updateEventLatestBibNumber } from '~/server/db/latestBibNumber.server';
+import {
+  createEventLatestBibNumber,
+  updateEventLatestBibNumber
+} from '~/server/db/latestBibNumber.server';
 
 const prisma = new PrismaClient();
 
@@ -402,15 +404,39 @@ async function findUserFavoriteEvent(
   });
 }
 
-async function getEventResultsByName(name: string): Promise<Array<SearchEventsResults>> {
-  const searchTerm = `%${name.length ? name : ''}%`;
+const searchEventsResults = Prisma.validator<Prisma.EventArgs>()({
+  select: {
+    name: true,
+    slug: true,
+    image1: true,
+    image2: true,
+    image3: true,
+    image4: true,
+    image5: true
+  }
+});
 
-  return await db.$queryRaw`
-    SELECT name, slug, image1, image2, image3, image4, image5
-    FROM events
-    WHERE name ILIKE ${searchTerm}
-      AND status = 'published';
-  `;
+type SearchEventsResults = Prisma.EventGetPayload<typeof searchEventsResults>
+
+async function getEventResultsByName(name: string): Promise<Array<SearchEventsResults>> {
+  return await db.event.findMany({
+    select: {
+      name: true,
+      slug: true,
+      image1: true,
+      image2: true,
+      image3: true,
+      image4: true,
+      image5: true
+    },
+    where: {
+      name: {
+        contains: name && name.length ? name : '',
+        mode: 'insensitive'
+      },
+      status: Status.published
+    }
+  });
 }
 
 async function deleteEvent(id: string) {

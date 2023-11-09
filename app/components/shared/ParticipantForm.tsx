@@ -280,9 +280,10 @@ export default function ParticipantForm({
         dataCy="postalCode"
         className="w-56"
       >
-        <TextField
+        <DiciInputMask
           name="postal-code"
           placeholder={t('Required')}
+          mask="9999-999"
           defaultValue={
             (selectedParticipant?.postalCode as string) ||
             (participant?.postalCode as string)
