@@ -1,9 +1,30 @@
-import type { Prisma } from '@prisma/client';
-import { PaymentStatus, PrismaClient, CheckoutStatus } from '@prisma/client';
+import type { Booking } from '@prisma/client';
+import { CheckoutStatus, PaymentStatus, PrismaClient, Prisma } from '@prisma/client';
 
 import { db } from '~/server/db.server';
-import type { Booking, BookingList, UICartRow } from '~/types';
+import type { UICartRow } from '~/types';
 import { bookingAmount } from '~/utils/misc';
+
+const bookingList = Prisma.validator<Prisma.BookingArgs>()({
+  select: {
+    id: true,
+    event: {
+      select: {
+        name: true
+      }
+    },
+    createdAt: true,
+    status: true,
+    pin: true,
+    _count: {
+      select: {
+        raceParticipant: true
+      }
+    }
+  }
+});
+
+type BookingList = Prisma.BookingGetPayload<typeof bookingList>;
 
 async function findBooking(id: string): Promise<Booking | null> {
   return await db.booking.findUnique({
@@ -162,11 +183,11 @@ async function findUserBookingsList(
     results: results.map((r) => {
       return {
         id: r.id,
-        eventName: r.event.name as string,
-        bookingDate: r.createdAt,
+        event: { name: r.event.name as string },
+        createdAt: r.createdAt,
         status: r.status,
         pin: r.pin,
-        totalParticipants: r._count.raceParticipant
+        _count: { raceParticipant: r._count.raceParticipant }
       };
     }),
     total: total._count._all
@@ -239,6 +260,8 @@ async function findUserOngoingBookingsByEvent(
     where: { userId, eventId, status: { not: CheckoutStatus.confirmed } }
   });
 }
+
+export type { BookingList };
 
 export {
   updateBookingStatus,

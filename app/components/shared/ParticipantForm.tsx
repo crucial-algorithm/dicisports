@@ -236,7 +236,6 @@ export default function ParticipantForm({
         label={t('Shirt Size')}
         error={errors?.shirtSize}
         dataCy="shirtSize"
-        className="w-48"
       >
         <ComboBox
           name="shirt"
@@ -249,6 +248,7 @@ export default function ParticipantForm({
             (selectedParticipant?.shirtSize as number) ||
             (participant?.shirtSize as number)
           }
+          className="w-48"
         />
       </FormField>
 

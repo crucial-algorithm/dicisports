@@ -1,9 +1,9 @@
-import type { PaymentMethod } from '@prisma/client';
 import type {
   Booking as DBBooking,
   Difficulty as DBDifficulty,
   DiscountCode as DBDiscountCode,
   Document as DBDocument,
+  EventTeam as DBEventTeam,
   Group as DBGroup,
   GroupSchedule as DBGroupSchedule,
   GroupSpirit as DBGroupSpirit,
@@ -11,17 +11,16 @@ import type {
   Organizer as DBOrganizer,
   OrganizerType as DBOrganizerType,
   Participant as DBParticipant,
-  ParticipantStatus,
+  PaymentMethod,
   Perk as DBPerk,
+  Prisma,
   Race as DBRace,
   RaceParticipant as DBRaceParticipant,
   ShirtSize as DBShirtSize,
   Sport as DBSport,
   Status as EventStatus,
-  User as DBUser,
-  EventTeam as DBEventTeam
+  User as DBUser
 } from '@prisma/client';
-import type { Prisma } from '@prisma/client';
 
 type NonNullProperties<Type> = {
   [Key in keyof Type]-?: Exclude<Type[Key], null | undefined>;
@@ -188,35 +187,6 @@ type GroupSpirit = {
   name: TranslationObject;
 } & DBGroupSpirit;
 
-type DBRawGroup = {
-  distance: number;
-  id: string;
-  name: string;
-  description: string;
-  slug: string;
-  sport_id: number;
-  group_type_id: number;
-  group_spirit_id: number;
-  lat: number;
-  lng: number;
-  location: string;
-  near: string;
-  day_of_week: number;
-  time_of_day: number;
-  whatsapp: string | null;
-  image1: string | null;
-  image2: string | null;
-  image3: string | null;
-  status: string;
-  created_at: string;
-  created_by: string;
-  updated_at: string;
-  user_name: string;
-  group_spirit: TranslationObject;
-  records: number;
-  schedules: string[];
-};
-
 type DBRawSearchResults = {
   entity: string;
   distance: number;
@@ -344,39 +314,10 @@ type GroupFilters = {
 
 type LoginAction = null | 'login' | 'ws' | 'favorite';
 
-type FavoriteEvent = {
-  userId: string;
-  eventId: string;
-  createdAt?: Date;
-  updatedAt?: Date;
-};
-
 type Difficulty = {
   name: TranslationObject;
   description: TranslationObject;
 } & DBDifficulty;
-
-type Ticket = {
-  race: Race;
-  numberOfTickets: number;
-};
-
-type PartialCart = {
-  id: string;
-  raceId: string;
-  userId: string;
-  createdAt: Date;
-  updatedAt: Date;
-};
-
-type DBRawCart = {
-  id: string;
-  race_id: string;
-  user_id: string;
-  qty: number;
-  created_at: Date;
-  updated_at: Date;
-};
 
 type UICartRow = {
   id: string;
@@ -387,27 +328,6 @@ type UICartRow = {
   order: number;
   distance: number;
   startTime: number;
-};
-
-type DBRawUICartRow = {
-  id: string;
-  race_id: string;
-  name: string;
-  price: number;
-  distance: number;
-  start_time: number;
-  display_order: number;
-  qty: number;
-};
-
-type DBRawRaceQty = {
-  id: string;
-  name: string;
-  distance: number;
-  start_time: number;
-  price: number;
-  display_order: number;
-  qty: number;
 };
 
 type RaceQty = {
@@ -449,19 +369,6 @@ type UIRaceParticipant = {
   bibNumber: number | null;
 };
 
-type DBRawUIRaceParticipant = {
-  id: string;
-  name: string;
-  birthdate: Date;
-  gender: string;
-  booking_at: Date;
-  status: string;
-  race_name: string;
-  records: number;
-  team_name: string | null;
-  bib_number: number | null;
-};
-
 type Participant = {} & DBParticipant;
 
 type ParticipantInput = {
@@ -481,44 +388,7 @@ type ParticipantInput = {
   updatedAt?: Date;
 };
 
-type DBRawParticipant = {
-  id: string;
-  user_id: string;
-  first_name: string;
-  last_name: string;
-  gender: string;
-  birthdate: Date;
-  phone_number: number;
-  identity_card: string | null;
-  federation_number: number | null;
-  shirt_size: number;
-  nationality: number | null;
-  postal_code: string;
-  status: ParticipantStatus;
-  created_at: Date;
-  updated_at: Date;
-};
-
 type Booking = {} & DBBooking;
-
-type BookingList = {
-  id: string;
-  eventName: string;
-  bookingDate: Date;
-  status: string;
-  pin: number;
-  totalParticipants: number;
-};
-
-type DBRawBookingList = {
-  id: string;
-  event_name: string;
-  booking_date: Date;
-  status: string;
-  total_participants: number;
-  pin: number;
-  records: number;
-};
 
 type ShirtSize = {} & DBShirtSize;
 
@@ -527,16 +397,6 @@ type RaceRevenueRegistrations = {
   name: string;
   registrations: number;
   revenue: number;
-};
-
-type SearchEventsResults = {
-  name: string;
-  slug: string;
-  image1?: string;
-  image2?: string;
-  image3?: string;
-  image4?: string;
-  image5?: string;
 };
 
 type Organizer = DBOrganizer & {};
@@ -642,35 +502,23 @@ export {
   CreateEventInput,
   CreatePerksInput,
   CreateRaceInput,
-  DBRawGroup,
   LoginAction,
-  FavoriteEvent,
   Difficulty,
-  Ticket,
   UICartRow,
-  DBRawUICartRow,
-  DBRawRaceQty,
   RaceQty,
-  DBRawCart,
   RaceParticipant,
   RaceParticipantInput,
-  DBRawUIRaceParticipant,
   UIRaceParticipant,
-  PartialCart,
   Participant,
   ParticipantInput,
-  DBRawParticipant,
   Booking,
   ShirtSize,
   RaceRevenueRegistrations,
   DBRawSearchResults,
   SearchResults,
-  SearchEventsResults,
   Organizer,
   OrganizerInput,
   EventStatus,
-  BookingList,
-  DBRawBookingList,
   DiscountCode,
   DiscountCodeInput,
   SibsWebHookSchema,
