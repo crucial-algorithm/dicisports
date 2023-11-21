@@ -1,4 +1,4 @@
-import { CheckoutStatus } from '@prisma/client';
+import { CheckoutStatus, PaymentStatus } from '@prisma/client';
 
 import type { RaceRevenueRegistrations } from '~/types';
 import { findEvent } from '~/server/db/events.server';
@@ -9,13 +9,17 @@ import { db } from './db.server';
 // Definitions:
 // ============
 //
-// Gross Merchandise Volume(GMV)  -> Organizer/platform total sales not including our commission and discounts:
+// Gross Merchandise Value(GMV)   -> Organizer/platform total sales not including our commission and discounts:
 //                                   participants * race price
 //
 // Booking amount                 -> Total booking price after discounts (taken from payments table)
 //                                   GMV - discount
 //
 // Commission                     -> % Dicisports takes from booking amount (defined at organizers level)
+//
+//
+// Organizer Cut                  -> % Organizer takes from booking amount stripped of commission
+//                                   1 - commission
 //
 // Net Merchandise Value(NMV)     -> Amount organizers will make from GMV:
 //                                   GMV - discounts - commission
@@ -33,19 +37,29 @@ function handleCommission(value: number) {
 
 async function calculateEventNMV(eventId: string): Promise<number> {
   const commission = await findOrganizerCommission(eventId);
+  const organizerCut = 1 - handleCommission(commission);
 
-  const results: { revenue: number }[] = await db.$queryRaw`
-        SELECT SUM(p.amount) * (1 - ${handleCommission(commission)}) as revenue
-        FROM events e
-                 LEFT JOIN (SELECT event_id, p.amount
-                            FROM bookings b
-                                     INNER JOIN public.payments p on b.id = p.booking_id
-                            WHERE b.status = 'confirmed'
-                              AND p.status = 'paid') as p ON e.id = p.event_id
-        WHERE event_id = ${eventId};
-    `;
+  const payments = await db.payment.findMany({
+    select: {
+      amount: true
+    },
+    where: {
+      booking: {
+        status: CheckoutStatus.confirmed,
+        eventId
+      },
+      status: PaymentStatus.paid
+    }
+  });
 
-  return results[0].revenue ? Number(results[0].revenue) : 0;
+  if (!payments || payments.length === 0) {
+    return 0;
+  }
+
+  return payments.reduce(
+    (total, { amount }) => total + amount * organizerCut,
+    0
+  );
 }
 
 async function calculateEventBookingsAmount(eventId: string) {
@@ -86,30 +100,46 @@ async function calculateRaceNMV(
   eventId: string
 ): Promise<RaceRevenueRegistrations[]> {
   const commission = await findOrganizerCommission(eventId);
-  const results: Array<RaceRevenueRegistrations> = await db.$queryRaw`
-        SELECT r.id,
-               r.name,
-               count(rp)                                             as registrations,
-               SUM(rp.price) * (1 - ${handleCommission(commission)}) as revenue
-        FROM races r
-                 LEFT JOIN (SELECT race_id, price
-                            FROM race_participants rp
-                                     INNER JOIN public.bookings b ON rp.booking_id = b.id
-                            WHERE b.status = 'confirmed') as rp ON rp.race_id = r.id
-        WHERE event_id = ${eventId}
-          AND status = 'auto'
-        GROUP BY r.id;
-    `;
+  const organizerCut = 1 - handleCommission(commission);
 
-  const raceDiscount = await calculateApproximateRaceDiscount(eventId, results.length);
+  const results = await db.race.findMany({
+    where: {
+      eventId: eventId,
+      status: 'auto'
+    },
+    include: {
+      raceParticipant: {
+        select: {
+          price: true
+        },
+        where: {
+          booking: {
+            status: CheckoutStatus.confirmed
+          }
+        }
+      }
+    }
+  });
 
-  return results.map(({ id, name, registrations, revenue }) => {
+  const raceDiscount = await calculateApproximateRaceDiscount(
+    eventId,
+    results.length
+  );
+
+  return results.map(({ id, name, raceParticipant }) => {
+    const registrations = raceParticipant.length;
+    const raceGMV = registrations
+      ? raceParticipant.reduce(
+          (total, { price }) => total + Number(price) * organizerCut,
+          0
+        )
+      : 0;
+
     return {
       id,
       name,
-      registrations: Number(registrations),
-      revenue:
-        Number(revenue) !== 0 ? Number(revenue) - raceDiscount : Number(revenue)
+      registrations,
+      revenue: raceGMV !== 0 ? raceGMV - raceDiscount : raceGMV
     };
   });
 }

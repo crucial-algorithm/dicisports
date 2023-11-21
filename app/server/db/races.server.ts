@@ -133,16 +133,15 @@ async function deleteRace(id: string) {
 async function findRegistrationsAddedToCart(
   eventId: string
 ): Promise<Array<{ id: string; total: number }>> {
-  const results: Array<{ id: string; total: number }> = await db.$queryRaw`
-        SELECT race_id as id, count(race_id) as total
-        FROM race_participants
-        WHERE race_id IN (SELECT id FROM races WHERE event_id = ${eventId})
-        GROUP BY race_id;
-    `;
+  const results = await db.raceParticipant.groupBy({
+    by: ['raceId'],
+    _count: { raceId: true },
+    where: { race: { eventId } }
+  });
 
-  return results.map(({ id, total }) => ({
-    id,
-    total: Number(total)
+  return results.map(({ raceId, _count }) => ({
+    id: raceId,
+    total: _count.raceId
   }));
 }
 

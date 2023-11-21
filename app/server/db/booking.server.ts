@@ -2,18 +2,7 @@ import type { Prisma } from '@prisma/client';
 import { PaymentStatus, PrismaClient, CheckoutStatus } from '@prisma/client';
 
 import { db } from '~/server/db.server';
-
-import {
-  dbRawBookingListToBookingList,
-  dbUICartToUICart
-} from '~/server/db/codecs.server';
-import type {
-  Booking,
-  BookingList,
-  DBRawBookingList,
-  DBRawUICartRow,
-  UICartRow
-} from '~/types';
+import type { Booking, BookingList, UICartRow } from '~/types';
 import { bookingAmount } from '~/utils/misc';
 
 async function findBooking(id: string): Promise<Booking | null> {
@@ -23,25 +12,49 @@ async function findBooking(id: string): Promise<Booking | null> {
 }
 
 async function findBookingCart(bookingId: string): Promise<UICartRow[]> {
-  const results: Array<DBRawUICartRow> = await db.$queryRaw`
-    SELECT b.id,
-           r.id               AS race_id,
-           r.name,
-           CASE
-             WHEN r.price_early_bird IS NOT NULL AND r.valid_until > current_date THEN r.price_early_bird
-             ELSE r.price END as price,
-           r.distance,
-           r.start_time,
-           r.display_order,
-           count(1)           AS qty
-    FROM bookings b
-           INNER JOIN race_participants rp ON (b.id = rp.booking_id)
-           INNER JOIN races r ON rp.race_id = r.id
-    WHERE b.id = ${bookingId}
-    GROUP BY b.id, r.id, r.name, r.price, r.distance, r.start_time, r.display_order;
-  `;
+  const bookingCart = await db.raceParticipant.groupBy({
+    by: ['raceId'],
+    where: { bookingId },
+    _count: {
+      id: true
+    }
+  });
 
-  return results.map(dbUICartToUICart);
+  const bookingRaces = await db.race.findMany({
+    select: {
+      id: true,
+      name: true,
+      price: true,
+      priceEarlyBird: true,
+      validUntil: true,
+      distance: true,
+      startTime: true,
+      displayOrder: true
+    },
+    where: { id: { in: bookingCart.map((r) => r.raceId) } }
+  });
+
+  return bookingRaces.map((t) => {
+    const raceCount = bookingCart.find((c) => c.raceId === t.id);
+    const totalParticipants = raceCount ? raceCount._count.id : 0;
+
+    // This will return early bird price if it's still available
+    const price =
+      t.priceEarlyBird && t.validUntil && new Date(t.validUntil) > new Date()
+        ? t.priceEarlyBird
+        : t.price;
+
+    return {
+      id: bookingId,
+      raceId: t.id,
+      name: t.name,
+      price,
+      distance: t.distance,
+      startTime: t.startTime,
+      order: t.displayOrder,
+      qty: totalParticipants
+    };
+  });
 }
 
 async function createBooking(
@@ -104,28 +117,60 @@ async function findUserBookingsList(
   searchedName: string | null,
   pageSize = 10
 ): Promise<{ results: BookingList[]; total: number }> {
-  const name = `%${searchedName?.length ? searchedName : ''}%`;
+  const where: Prisma.BookingWhereInput = {
+    userId,
+    event: {
+      name: {
+        contains: searchedName && searchedName.length ? searchedName : '',
+        // Same as ILIKE in postgres
+        mode: 'insensitive'
+      }
+    }
+  };
 
-  const results: Array<DBRawBookingList> = await db.$queryRaw`
-        SELECT *, count(1) over () as records
-        FROM (SELECT b.id,
-                     e.name       as event_name,
-                     b.created_at as booking_date,
-                     b.status,
-                     b.pin,
-                     COUNT(rp.id) as total_participants
-              FROM bookings b
-                       INNER JOIN events e on e.id = b.event_id
-                       INNER JOIN race_participants rp on b.id = rp.booking_id
-              WHERE user_id = ${userId}
-                AND e.name ILIKE ${name}
-              GROUP BY b.id, e.name, b.created_at, b.status) as P LIMIT ${pageSize}
-        OFFSET ${page * pageSize};
-    `;
-  const mapped = results.map(dbRawBookingListToBookingList);
-  const total = results.length === 0 ? 0 : Number(results[0].records);
+  const results = await db.booking.findMany({
+    select: {
+      id: true,
+      event: {
+        select: {
+          name: true
+        }
+      },
+      createdAt: true,
+      status: true,
+      pin: true,
+      _count: {
+        select: {
+          raceParticipant: true
+        }
+      }
+    },
+    where,
+    take: pageSize,
+    skip: page * pageSize
+  });
 
-  return { results: mapped, total };
+  // Total bookings ignoring skip and limit/take
+  const total = await db.booking.aggregate({
+    _count: {
+      _all: true
+    },
+    where
+  });
+
+  return {
+    results: results.map((r) => {
+      return {
+        id: r.id,
+        eventName: r.event.name as string,
+        bookingDate: r.createdAt,
+        status: r.status,
+        pin: r.pin,
+        totalParticipants: r._count.raceParticipant
+      };
+    }),
+    total: total._count._all
+  };
 }
 
 async function updateBookingStatus(
