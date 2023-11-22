@@ -4,7 +4,11 @@ import {
   PlusIcon,
   XMarkIcon
 } from '@heroicons/react/24/outline';
-import { CheckoutStatus, DiscountCodeStatus, ParticipantStatus } from '@prisma/client';
+import {
+  CheckoutStatus,
+  DiscountCodeStatus,
+  ParticipantStatus
+} from '@prisma/client';
 import type { ActionFunction, LoaderFunction } from '@remix-run/node';
 import { json, redirect } from '@remix-run/node';
 
@@ -63,7 +67,12 @@ import type {
   ShirtSize,
   UICartRow
 } from '~/types';
-import { badRequest, displayTimeOfDay, validateIdentityCard } from '~/utils/misc';
+import {
+  badRequest,
+  displayTimeOfDay,
+  validateIdentityCard,
+  validatePtVatNumber
+} from '~/utils/misc';
 import { Unauthorized } from '~/server/utils/misc';
 import InputError from '~/components/shared/form/InputError';
 import { findOrganizer } from '~/server/db/organizer.server';
@@ -176,61 +185,90 @@ export const action: ActionFunction = async ({ request, params }) => {
       lastName: form.get('last-name') as string,
       gender: form.get('gender') as string,
       birthdate: new Date(form.get('birthdate') as string),
-      phoneNumber: parseInt(phoneNumber),
+      phoneNumber: Number(phoneNumber),
       identityCard: (form.get('identity-card') as string) || '',
+      vatNumber: (form.get('vat-number') as string) || '',
       federationNumber:
-        parseInt(form.get('federation-number') as string) || null,
-      shirtSize: parseInt(form.get('shirt') as string),
-      nationality: parseInt(form.get('nationality') as string) || null,
+        Number(form.get('federation-number') as string) || null,
+      shirtSize: Number(form.get('shirt') as string),
+      nationality: Number(form.get('nationality') as string) || null,
       postalCode: form.get('postal-code') as string
     };
 
-    const isIdentityCardValid = validateIdentityCard(
-      data.identityCard as string
-    );
+    const PT_ID = 188;
 
-    const ParticipantSchema = z.object({
-      firstName: z
-        .string({ required_error: t('Field Required') })
-        .min(2, { message: t('Min 2 Chars') }),
-      lastName: z
-        .string({ required_error: t('Field Required') })
-        .min(2, { message: t('Min 2 Chars') }),
-      gender: z
-        .string({ required_error: t('Field Required') })
-        .min(1, { message: t('Field Required') }),
-      birthdate: z
-        .date({ required_error: t('Field Required') })
-        .max(new Date(), t('Past Date')),
-      phoneNumber: z
-        .number({
+    const ParticipantSchema = z
+      .object({
+        firstName: z
+          .string({ required_error: t('Field Required') })
+          .min(2, { message: t('Min 2 Chars') }),
+        lastName: z
+          .string({ required_error: t('Field Required') })
+          .min(2, { message: t('Min 2 Chars') }),
+        gender: z
+          .string({ required_error: t('Field Required') })
+          .min(1, { message: t('Field Required') }),
+        birthdate: z
+          .date({ required_error: t('Field Required') })
+          .max(new Date(), t('Past Date')),
+        phoneNumber: z
+          .number({
+            required_error: t('Field Required'),
+            invalid_type_error: t('Field Required')
+          })
+          .refine((val) => val.toString().length === 9, t('9 Digits'))
+          .refine(
+            (val) =>
+              val.toString().startsWith('91') ||
+              val.toString().startsWith('92') ||
+              val.toString().startsWith('93') ||
+              val.toString().startsWith('96'),
+            t('Invalid number')
+          ),
+        identityCard: z.string().optional(),
+        federationNumber: z.number().nullable(),
+        vatNumber: z.string().nullable(),
+        shirtSize: z.number({
           required_error: t('Field Required'),
           invalid_type_error: t('Field Required')
-        })
-        .refine((val) => val.toString().length === 9, t('9 Digits'))
-        .refine(
-          (val) =>
-            val.toString().startsWith('91') ||
-            val.toString().startsWith('92') ||
-            val.toString().startsWith('93') ||
-            val.toString().startsWith('96'),
-          t('Invalid number')
-        ),
-      identityCard: z
-        .string({ required_error: t('Field Required') })
-        .refine((v) => v && isIdentityCardValid, {
-          message: t('Invalid CC')
         }),
-      federationNumber: z.number().nullable(),
-      shirtSize: z.number({
-        required_error: t('Field Required'),
-        invalid_type_error: t('Field Required')
-      }),
-      nationality: z.number().nullable(),
-      postalCode: z
-        .string({ required_error: t('Field Required') })
-        .min(1, { message: t('Field Required') })
-    });
+        nationality: z.number().nullable(),
+        postalCode: z.string().optional()
+      })
+      .refine(({ identityCard, vatNumber }) => !!identityCard || !!vatNumber, {
+        message: t('VAT or National Citizen Card required'),
+        path: ['submit']
+      })
+      .refine(
+        ({ identityCard, nationality }) =>
+          (Number(nationality) === PT_ID && !!identityCard) ||
+          Number(nationality) !== PT_ID,
+        {
+          message: t('CC Required for PT Citizens'),
+          path: ['submit']
+        }
+      )
+      .refine(
+        ({ vatNumber, nationality }) =>
+          (Number(nationality) === PT_ID && !!vatNumber) ||
+          Number(nationality) !== PT_ID,
+        {
+          message: t('VAT Required for PT Citizens'),
+          path: ['submit']
+        }
+      )
+      .refine(
+        ({ identityCard }) =>
+          !identityCard || validateIdentityCard(identityCard),
+        {
+          message: t('Invalid CC'),
+          path: ['identityCard']
+        }
+      )
+      .refine(({ vatNumber }) => !vatNumber || validatePtVatNumber(vatNumber), {
+        message: t('Invalid VAT'),
+        path: ['vatNumber']
+      });
 
     const TermsAndRegulationSchema = z.object({
       terms: z
@@ -253,6 +291,8 @@ export const action: ActionFunction = async ({ request, params }) => {
           selectedParticipantId,
           raceId
         );
+        data.id = selectedParticipantId;
+
       } catch (e) {
         console.error(e);
 
@@ -261,29 +301,14 @@ export const action: ActionFunction = async ({ request, params }) => {
           hash: parseInt(hash)
         });
       }
-
-      data.id = selectedParticipantId;
-      ParticipantSchema.parse(data);
-
-      const raceParticipant = await findRaceParticipant(data.id, raceId);
-
-      if (!raceParticipant) {
-        return badRequest({
-          errors: {
-            selectedParticipant: t('Race Participant does not exist')
-          },
-          hash: parseInt(hash)
-        });
-      }
-
-      await updateRaceParticipantTeam(teamName, eventId, raceParticipant);
     }
 
     // Also save user on checkout, so that if user checks out before saving participant
     // It won't return an error
     if (
       actionId === CheckoutInfoActions.update ||
-      actionId === CheckoutInfoActions.checkout
+      actionId === CheckoutInfoActions.checkout ||
+      actionId === CheckoutInfoActions.updateAndSave
     ) {
       ParticipantSchema.parse(data);
       await updateParticipant(data);
@@ -478,7 +503,9 @@ export default function CheckoutInfoRoute() {
   const [showAddRacesDialog, setShowAddRacesDialog] = useState<boolean>(false);
   const [isReset, setIsReset] = useState<boolean>(false);
   const [selectedParticipant, setSelectedParticipant] =
-    useState<Participant | null>(savedParticipants?.length === 1 ? savedParticipants[0] : null);
+    useState<Participant | null>(
+      savedParticipants?.length === 1 ? savedParticipants[0] : null
+    );
   const [missingParticipants, setMissingParticipants] = useState<
     RaceParticipant[]
   >([]);
@@ -486,8 +513,7 @@ export default function CheckoutInfoRoute() {
     terms: boolean;
     regulation: boolean;
   }>({ terms: false, regulation: false });
-  const [checkedAddToMailingList, setCheckedAddToMailingList] =
-    useState(false);
+  const [checkedAddToMailingList, setCheckedAddToMailingList] = useState(false);
   const initialVisitedParticipants = raceParticipants
     .filter((p) => p.participant.status === 'saved')
     .map((p) => p.participant);
@@ -511,7 +537,9 @@ export default function CheckoutInfoRoute() {
 
   const reset = useCallback(() => {
     setErrors({});
-    setSelectedParticipant(savedParticipants?.length === 1 ? savedParticipants[0] : null);
+    setSelectedParticipant(
+      savedParticipants?.length === 1 ? savedParticipants[0] : null
+    );
     setMissingParticipants([]);
     setHash(Date.now());
   }, [savedParticipants]);
@@ -863,7 +891,7 @@ export default function CheckoutInfoRoute() {
                     </div>
                   )}
 
-                  <InputError id="terms-error" className="mb-2">
+                  <InputError id="terms-error" className="mb-8 text-lg">
                     {errors?.submit || errors?.terms || errors?.regulation}
                   </InputError>
                 </>

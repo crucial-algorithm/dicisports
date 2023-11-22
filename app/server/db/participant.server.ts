@@ -139,7 +139,7 @@ async function findUserRaceParticipants(
 async function updateParticipant(
   participant: ParticipantInput
 ): Promise<Participant> {
-  return await db.participant.update({
+  return db.participant.update({
     where: { id: participant.id },
     data: {
       firstName: participant.firstName,
@@ -148,11 +148,13 @@ async function updateParticipant(
       birthdate: participant.birthdate,
       phoneNumber: participant.phoneNumber,
       identityCard: participant.identityCard,
+      vatNumber: participant.vatNumber,
       federationNumber: participant.federationNumber,
       shirtSize: participant.shirtSize,
       nationality: participant.nationality,
       postalCode: participant.postalCode,
-      status: 'saved'
+      status: 'saved',
+      updatedAt: new Date()
     }
   });
 }
