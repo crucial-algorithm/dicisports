@@ -684,7 +684,7 @@ describe('Checkout', () => {
         .inputMaskWorkaround('input[name=identity-card]', '00000000-0-zz4')
         .should('have.value', '00000000-0-zz4')
 
-        .get('input[vat-number]')
+        .get('input[name=vat-number]')
         .type('123456789')
 
         .get('input[name=federation-number]')
@@ -837,7 +837,7 @@ describe('Checkout', () => {
         .inputMaskWorkaround('input[name=identity-card]', '00000000-0-zz4')
         .should('have.value', '00000000-0-zz4')
 
-        .get('input[vat-number]')
+        .get('input[name=vat-number]')
         .type('123456789')
 
         .get('input[name=federation-number]')
@@ -887,7 +887,7 @@ describe('Checkout', () => {
         .inputMaskWorkaround('input[name=identity-card]', '00000000-0-zz4')
         .should('have.value', '00000000-0-zz4')
 
-        .get('input[vat-number]')
+        .get('input[name=vat-number]')
         .type('123456789')
 
         .get('input[name=federation-number]')
@@ -958,7 +958,7 @@ describe('Checkout', () => {
         .get('input[name=identity-card]')
         .type('87654321')
 
-        .get('input[vat-number]')
+        .get('input[name=vat-number]')
         .type('123456789')
 
         .get('input[name=federation-number]')
@@ -1820,7 +1820,7 @@ function registerParticipant(
 
     .inputMaskWorkaround('input[name=identity-card]', '00000000-0-zz4')
 
-    .get('input[vat-number]')
+    .get('input[name=vat-number]')
     .type('123456789')
 
     .get('input[name=federation-number]')
@@ -1896,7 +1896,7 @@ function bookParticipant(slug: string, raceId: string) {
         .inputMaskWorkaround('input[name=identity-card]', '00000000-0-zz4')
         .should('have.value', '00000000-0-zz4')
 
-        .get('input[vat-number]')
+        .get('input[name=vat-number]')
         .type('123456789')
 
         .get('input[name=federation-number]')
