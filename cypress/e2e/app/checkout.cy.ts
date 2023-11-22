@@ -492,7 +492,7 @@ describe('Checkout', () => {
     });
 
 
-    it.only('should not display error when missing a identity card if user is not Portuguese, but should require VAT number', () => {
+    it('should not display error when missing a identity card if user is not Portuguese, but should require VAT number', () => {
       cy.visitAndWaitForHydration('/checkout/info/iZrqWniNHZba9n4WQTmb')
 
         .intercept('POST', '/checkout/info/*')
