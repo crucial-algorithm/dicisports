@@ -423,11 +423,30 @@ describe('Checkout', () => {
         });
     });
 
-    it('should display error when submitting form without identity card filled', () => {
+    it('should display error when a Portuguese submitts form without identity card filled', () => {
       cy.visitAndWaitForHydration('/checkout/info/iZrqWniNHZba9n4WQTmb')
 
         .intercept('POST', '/checkout/info/*')
         .as('saveParticipant')
+
+        .get('input[name=first-name]')
+        .type('Nuno')
+
+        .get('input[name=last-name]')
+        .type('Lopes')
+
+        .pickOptionFromSelect('gender', 2)
+
+        .pickDate('birthdate', '2003-10-21')
+
+        .get('input[name=phone-number]')
+        .type('937654321')
+
+
+        .get('input[name=vat-number]')
+        .type('123456789')
+
+        .pickOptionFromSelect('nationality', 1)
 
         .get('#save-button')
         .click()
@@ -435,6 +454,85 @@ describe('Checkout', () => {
         .wait('@saveParticipant')
 
         .get('#identity-card-error')
+        .should('exist');
+    });
+
+
+     it('should display error when a Portuguese submitts form without vat number filled', () => {
+      cy.visitAndWaitForHydration('/checkout/info/iZrqWniNHZba9n4WQTmb')
+
+        .intercept('POST', '/checkout/info/*')
+        .as('saveParticipant')
+
+        .get('input[name=first-name]')
+        .type('Nuno')
+
+        .get('input[name=last-name]')
+        .type('Lopes')
+
+        .pickOptionFromSelect('gender', 2)
+
+        .pickDate('birthdate', '2003-10-21')
+
+        .get('input[name=phone-number]')
+        .type('937654321')
+
+        .inputMaskWorkaround('input[name=identity-card]', '00000000-0-zz4')
+        .should('have.value', '00000000-0-zz4')
+
+        .pickOptionFromSelect('nationality', 1)
+
+        .get('#save-button')
+        .click()
+
+        .wait('@saveParticipant')
+
+        .get('#vat-number-error')
+        .should('exist');
+    });
+
+
+    it.only('should not display error when missing a identity card if user is not Portuguese, but should require VAT number', () => {
+      cy.visitAndWaitForHydration('/checkout/info/iZrqWniNHZba9n4WQTmb')
+
+        .intercept('POST', '/checkout/info/*')
+        .as('saveParticipant')
+
+        .get('input[name=first-name]')
+        .type('Nuno')
+
+        .get('input[name=last-name]')
+        .type('Lopes')
+
+        .pickOptionFromSelect('gender', 2)
+
+        .pickDate('birthdate', '2003-10-21')
+
+        .get('input[name=phone-number]')
+        .type('937654321')
+
+        .pickOptionFromSelect('shirt', 2)
+
+        .pickOptionFromSelect('nationality', 2)
+
+        .get('input[name=postal-code]')
+        .type('4730-454')
+
+        .get('input[name=regulation]')
+        .first()
+        .check()
+
+        .get('input[name=terms]')
+        .first()
+        .check()
+
+
+        .get('#save-button')
+        .click()
+
+        .wait('@saveParticipant')
+
+        .get('#form-submission-error')
         .should('exist');
     });
 
@@ -909,7 +1007,7 @@ describe('Checkout', () => {
         .wait('@checkout')
         .waitForHydration()
 
-        .get('#terms-error')
+        .get('#form-submission-error')
         .should('exist');
     });
 

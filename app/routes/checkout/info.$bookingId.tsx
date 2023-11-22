@@ -195,7 +195,7 @@ export const action: ActionFunction = async ({ request, params }) => {
       postalCode: form.get('postal-code') as string
     };
 
-    const PT_ID = 188;
+    const PT_NATIONALITY_ID = 188;
 
     const ParticipantSchema = z
       .object({
@@ -232,7 +232,10 @@ export const action: ActionFunction = async ({ request, params }) => {
           required_error: t('Field Required'),
           invalid_type_error: t('Field Required')
         }),
-        nationality: z.number().nullable(),
+        nationality: z.number({
+          required_error: t('Field Required'),
+          invalid_type_error: t('Field Required')
+        }),
         postalCode: z.string().optional()
       })
       .refine(({ identityCard, vatNumber }) => !!identityCard || !!vatNumber, {
@@ -241,20 +244,20 @@ export const action: ActionFunction = async ({ request, params }) => {
       })
       .refine(
         ({ identityCard, nationality }) =>
-          (Number(nationality) === PT_ID && !!identityCard) ||
-          Number(nationality) !== PT_ID,
+          (Number(nationality) === PT_NATIONALITY_ID && !!identityCard) ||
+          Number(nationality) !== PT_NATIONALITY_ID,
         {
-          message: t('CC Required for PT Citizens'),
-          path: ['submit']
+          message: t('Field Required'),
+          path: ['identityCard']
         }
       )
       .refine(
         ({ vatNumber, nationality }) =>
-          (Number(nationality) === PT_ID && !!vatNumber) ||
-          Number(nationality) !== PT_ID,
+          (Number(nationality) === PT_NATIONALITY_ID && !!vatNumber) ||
+          Number(nationality) !== PT_NATIONALITY_ID,
         {
-          message: t('VAT Required for PT Citizens'),
-          path: ['submit']
+          message: t('Field Required'),
+          path: ['vatNumber']
         }
       )
       .refine(
@@ -891,7 +894,7 @@ export default function CheckoutInfoRoute() {
                     </div>
                   )}
 
-                  <InputError id="terms-error" className="mb-8 text-lg">
+                  <InputError id="form-submission-error" className="mb-8 text-lg">
                     {errors?.submit || errors?.terms || errors?.regulation}
                   </InputError>
                 </>
