@@ -22,7 +22,8 @@ export default async function exportRaceParticipantsToExcel({
     { header: t('Age Group'), key: 'ageGroup', width: 10 },
     { header: t('Status'), key: 'status', width: 20 },
     { header: t('Bib Number'), key: 'bibNumber', width: 10 },
-    { header: t('Race'), key: 'race', width: 20 }
+    { header: t('Identity Card'), key: 'identityCard', width: 20 },
+    { header: t('VAT Number'), key: 'vatNumber', width: 20 }
   ];
 
   // Set column titles to be bold - setting font family as well since it keeps changing 🤷‍♂️
@@ -37,7 +38,9 @@ export default async function exportRaceParticipantsToExcel({
       ageGroup: r.participant.gender,
       status: t(r.booking?.status as string),
       bibNumber: r.bibNumber ? r.bibNumber : '-',
-      race: r.race.name
+      race: r.race.name,
+      identityCard: r.participant.identityCard,
+      vatNumber: r.participant.vatNumber
     });
   });
 
