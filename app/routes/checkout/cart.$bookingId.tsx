@@ -110,7 +110,7 @@ export const action: ActionFunction = async ({ request, params }) => {
     }
 
     if (actionId === actions.remove) {
-      const raceParticipants = await findUserRaceParticipants(clientId, raceId);
+      const raceParticipants = await findUserRaceParticipants(clientId, raceId, bookingId);
 
       if (!raceParticipants?.length) {
         return badRequest({ error: t('No Race Participants') });
@@ -124,7 +124,8 @@ export const action: ActionFunction = async ({ request, params }) => {
         draftRaceParticipants[0]
           ? draftRaceParticipants[0].participantId
           : raceParticipants[0].participantId,
-        raceId
+        raceId,
+        bookingId
       );
     }
 

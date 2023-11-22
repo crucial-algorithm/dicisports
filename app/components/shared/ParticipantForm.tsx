@@ -284,7 +284,7 @@ export default function ParticipantForm({
           name="postal-code"
           placeholder={t('Required')}
           mask="9999-999"
-          defaultValue={
+          value={
             (selectedParticipant?.postalCode as string) ||
             (participant?.postalCode as string)
           }

@@ -251,7 +251,8 @@ export const action: ActionFunction = async ({ request, params }) => {
         await updateToSelectedParticipant(
           data.id,
           selectedParticipantId,
-          raceId
+          raceId,
+          bookingId
         );
       } catch (e) {
         console.error(e);
@@ -265,7 +266,7 @@ export const action: ActionFunction = async ({ request, params }) => {
       data.id = selectedParticipantId;
       ParticipantSchema.parse(data);
 
-      const raceParticipant = await findRaceParticipant(data.id, raceId);
+      const raceParticipant = await findRaceParticipant(data.id, raceId, bookingId);
 
       if (!raceParticipant) {
         return badRequest({
@@ -289,7 +290,7 @@ export const action: ActionFunction = async ({ request, params }) => {
       await updateParticipant(data);
       const raceId = form.get('raceId') as string;
 
-      const raceParticipant = await findRaceParticipant(data.id, raceId);
+      const raceParticipant = await findRaceParticipant(data.id, raceId, bookingId);
 
       if (!raceParticipant) {
         return badRequest({

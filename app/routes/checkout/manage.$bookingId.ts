@@ -60,7 +60,7 @@ export const action: ActionFunction = async ({ request, params }) => {
       const participantId = form.get('participantId') as string;
       const raceId = form.get('raceId') as string;
 
-      await removeRaceParticipant(participantId, raceId);
+      await removeRaceParticipant(participantId, raceId, bookingId);
 
       const raceParticipants = await findUserEventRaceParticipants(bookingId);
 

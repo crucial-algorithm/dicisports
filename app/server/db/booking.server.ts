@@ -1,5 +1,5 @@
 import type { Prisma } from '@prisma/client';
-import { PaymentStatus, PrismaClient, CheckoutStatus } from '@prisma/client';
+import { PaymentStatus, PrismaClient, CheckoutStatus, RaceParticipantStatus } from '@prisma/client';
 
 import { db } from '~/server/db.server';
 import type { Booking, BookingList, UICartRow } from '~/types';
@@ -14,7 +14,10 @@ async function findBooking(id: string): Promise<Booking | null> {
 async function findBookingCart(bookingId: string): Promise<UICartRow[]> {
   const bookingCart = await db.raceParticipant.groupBy({
     by: ['raceId'],
-    where: { bookingId },
+    where: {
+      bookingId,
+      status: { not: RaceParticipantStatus.deleted }
+    },
     _count: {
       id: true
     }

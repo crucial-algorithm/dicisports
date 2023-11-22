@@ -1,5 +1,5 @@
 import type { Prisma } from '@prisma/client';
-import { CheckoutStatus, PrismaClient, Status } from '@prisma/client';
+import { CheckoutStatus, PrismaClient, RaceParticipantStatus, Status } from '@prisma/client';
 
 import type {
   Participant,
@@ -19,7 +19,7 @@ async function createParticipant(
   clientId: string,
   tx?: Prisma.TransactionClient
 ): Promise<Participant> {
-  return await (tx || db).participant.create({
+  return (tx || db).participant.create({
     data: {
       id: Id(),
       userId: clientId,
@@ -91,7 +91,7 @@ async function addParticipantToRace(
 async function findUserParticipants(
   userSessionId: string
 ): Promise<Participant[]> {
-  return await db.participant.findMany({
+  return db.participant.findMany({
     where: {
       userId: userSessionId
     }
@@ -107,27 +107,32 @@ async function findUserEventRaceParticipants(
     return null;
   }
 
-  return await db.raceParticipant.findMany({
+  return db.raceParticipant.findMany({
     where: {
-      bookingId: booking.id
+      bookingId: booking.id,
+      status: { not: RaceParticipantStatus.deleted }
     },
     include: {
       race: true,
-      participant: true
+      participant: true,
+      team: true
     }
   });
 }
 
 async function findUserRaceParticipants(
   clientId: string,
-  raceId: string
+  raceId: string,
+  bookingId: string
 ): Promise<RaceParticipant[] | null> {
   const userParticipants = await findUserParticipants(clientId);
 
-  return await db.raceParticipant.findMany({
+  return db.raceParticipant.findMany({
     where: {
       participantId: { in: userParticipants.map((p) => p.id) },
-      raceId
+      raceId,
+      bookingId,
+      status: { not: RaceParticipantStatus.deleted }
     },
     include: {
       race: true,
@@ -139,7 +144,7 @@ async function findUserRaceParticipants(
 async function updateParticipant(
   participant: ParticipantInput
 ): Promise<Participant> {
-  return await db.participant.update({
+  return db.participant.update({
     where: { id: participant.id },
     data: {
       firstName: participant.firstName,
@@ -160,11 +165,12 @@ async function updateParticipant(
 async function updateToSelectedParticipant(
   oldParticipant: string,
   savedParticipant: string,
-  raceId: string
+  raceId: string,
+  bookingId: string
 ): Promise<void> {
   await prisma.raceParticipant.update({
     where: {
-      participantId_raceId: { participantId: oldParticipant, raceId }
+      participantId_raceId_bookingId: { participantId: oldParticipant, raceId, bookingId }
     },
     data: {
       participantId: savedParticipant
@@ -174,11 +180,15 @@ async function updateToSelectedParticipant(
 
 async function removeRaceParticipant(
   participantId: string,
-  raceId: string
+  raceId: string,
+  bookingId: string
 ): Promise<void> {
-  await prisma.raceParticipant.delete({
+  await prisma.raceParticipant.update({
     where: {
-      participantId_raceId: { participantId, raceId }
+      participantId_raceId_bookingId: { participantId, raceId, bookingId }
+    },
+    data: {
+      status: RaceParticipantStatus.deleted
     }
   });
 }
@@ -299,7 +309,7 @@ async function findUserSavedParticipants(
     return null;
   }
 
-  return await db.participant.findMany({
+  return db.participant.findMany({
     where: {
       userId,
       status: 'saved'
@@ -314,7 +324,7 @@ async function findUserBookingParticipants(
   bookingId: string
 ): Promise<RaceParticipant[] | null> {
   return db.raceParticipant.findMany({
-    where: { bookingId },
+    where: { bookingId, status: { not: RaceParticipantStatus.deleted } },
     include: {
       race: true,
       participant: true,
@@ -353,11 +363,12 @@ async function findEventRaceParticipants(
 
 async function findRaceParticipant(
   participantId: string,
-  raceId: string
+  raceId: string,
+  bookingId: string
 ): Promise<RaceParticipant | null> {
-  return await db.raceParticipant.findUnique({
+  return db.raceParticipant.findUnique({
     where: {
-      participantId_raceId: { participantId, raceId }
+      participantId_raceId_bookingId: { participantId, raceId, bookingId }
     },
     include: {
       race: true,
@@ -437,7 +448,7 @@ async function updateRaceParticipantsPrice(
   bookingId: string,
   tx?: Prisma.TransactionClient
 ) {
-  return await (tx || db).$queryRaw`
+  return (tx || db).$queryRaw`
       UPDATE race_participants rp
       SET price = CASE
                       WHEN r.price_early_bird IS NOT NULL AND r.valid_until > current_date THEN r.price_early_bird
