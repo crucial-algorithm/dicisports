@@ -101,6 +101,18 @@ export const handle: { id: string; i18n: string[] } = {
   i18n: ['checkout']
 };
 
+function errorMessage(code: string) {
+  const mapping: { [key: string]: string } = {
+    P2002: 'Existing Race Participant',
+    P2003: 'Participant does not exist',
+    P2025: 'Participant does not exist'
+  };
+
+  const message = mapping[code];
+
+  return message ? message : 'Unknown error';
+}
+
 export const action: ActionFunction = async ({ request, params }) => {
   const t = await i18n.getFixedT(request, 'checkout');
   const form = await request.formData();
@@ -296,12 +308,13 @@ export const action: ActionFunction = async ({ request, params }) => {
           bookingId
         );
         data.id = selectedParticipantId;
-
       } catch (e) {
         console.error(e);
 
         return badRequest({
-          errors: { selectedParticipant: t('Existing Race Participant') },
+          // TS1196: Catch clause variable type annotation must be 'any' or 'unknown' if specified.
+          //@ts-ignore
+          errors: { submit: t(errorMessage(e.code)) },
           hash: parseInt(hash)
         });
       }
