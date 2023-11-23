@@ -6,7 +6,7 @@ import type { Booking, BookingList, UICartRow } from '~/types';
 import { bookingAmount } from '~/utils/misc';
 
 async function findBooking(id: string): Promise<Booking | null> {
-  return await db.booking.findUnique({
+  return db.booking.findUnique({
     where: { id }
   });
 }
@@ -82,8 +82,11 @@ async function removeBooking(
   bookingId: string,
   tx?: Prisma.TransactionClient
 ): Promise<void> {
-  await (tx || db).booking.delete({
-    where: { id: bookingId }
+  await (tx || db).booking.update({
+    where: { id: bookingId },
+    data: {
+      status: CheckoutStatus.deleted
+    }
   });
 }
 
@@ -239,7 +242,11 @@ async function findUserOngoingBookingsByEvent(
   eventId: string
 ): Promise<Booking[]> {
   return db.booking.findMany({
-    where: { userId, eventId, status: { not: CheckoutStatus.confirmed } }
+    where: {
+      userId,
+      eventId,
+      status: { notIn: [CheckoutStatus.confirmed, CheckoutStatus.deleted] }
+    }
   });
 }
 
