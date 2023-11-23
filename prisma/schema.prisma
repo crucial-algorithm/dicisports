@@ -297,6 +297,7 @@ model Participant {
   birthdate        DateTime?
   phoneNumber      Int?              @map("phone_number")
   identityCard     String?           @map("identity_card")
+  vatNumber        String?           @map("vat_number")
   federationNumber Int?              @map("federation_number")
   shirtSize        Int?              @map("shirt_size")
   shirt            ShirtSize?        @relation(fields: [shirtSize], references: [id])

@@ -153,11 +153,13 @@ async function updateParticipant(
       birthdate: participant.birthdate,
       phoneNumber: participant.phoneNumber,
       identityCard: participant.identityCard,
+      vatNumber: participant.vatNumber,
       federationNumber: participant.federationNumber,
       shirtSize: participant.shirtSize,
       nationality: participant.nationality,
       postalCode: participant.postalCode,
-      status: 'saved'
+      status: 'saved',
+      updatedAt: new Date()
     }
   });
 }

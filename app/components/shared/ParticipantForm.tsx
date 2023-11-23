@@ -196,27 +196,43 @@ export default function ParticipantForm({
               selectedParticipant?.identityCard ||
               undefined
             }
-            placeholder={t('Required')}
           />
         </FormField>
 
         <FormField
-          label={t('National Federation Number')}
-          id="federation-number"
-          error={errors?.federationNumber}
-          dataCy="federationNumber"
+          label={t('VAT Number')}
+          id="vat-number"
+          error={errors?.vatNumber}
+          dataCy="vatNumber"
         >
           <TextField
             type="number"
-            name="federation-number"
-            placeholder={t('Optional')}
+            name="vat-number"
             defaultValue={
-              (selectedParticipant?.federationNumber as number) ||
-              (participant?.federationNumber as number)
+              String((selectedParticipant?.vatNumber) ||
+              (participant?.vatNumber))
             }
           />
         </FormField>
       </div>
+
+      <FormField
+        label={t('National Federation Number')}
+        id="federation-number"
+        error={errors?.federationNumber}
+        dataCy="federationNumber"
+        className="w-56"
+      >
+        <TextField
+          type="number"
+          name="federation-number"
+          placeholder={t('Optional')}
+          defaultValue={
+            (selectedParticipant?.federationNumber as number) ||
+            (participant?.federationNumber as number)
+          }
+        />
+      </FormField>
 
       <FormField label={t('Team')}>
         <Creatable
@@ -282,7 +298,6 @@ export default function ParticipantForm({
       >
         <DiciInputMask
           name="postal-code"
-          placeholder={t('Required')}
           mask="9999-999"
           value={
             (selectedParticipant?.postalCode as string) ||
@@ -358,6 +373,7 @@ export type FormErrors = {
   birthdate?: string;
   phoneNumber?: string;
   identityCard?: string;
+  vatNumber?: string;
   federationNumber?: string;
   shirtSize?: string;
   nationality?: string;
