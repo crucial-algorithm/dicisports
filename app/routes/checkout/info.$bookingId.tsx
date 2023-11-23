@@ -7,7 +7,7 @@ import {
 import {
   CheckoutStatus,
   DiscountCodeStatus,
-  ParticipantStatus
+  ParticipantStatus, RaceParticipantStatus
 } from '@prisma/client';
 import type { ActionFunction, LoaderFunction } from '@remix-run/node';
 import { json, redirect } from '@remix-run/node';
@@ -119,7 +119,7 @@ export const action: ActionFunction = async ({ request, params }) => {
   const bookingId = params.bookingId as string;
   const booking = await findBooking(bookingId);
 
-  if (!booking) {
+  if (!booking || booking.status === CheckoutStatus.deleted) {
     return redirect('/');
   }
 
@@ -331,7 +331,7 @@ export const action: ActionFunction = async ({ request, params }) => {
 
       const raceParticipant = await findRaceParticipant(data.id, raceId, bookingId);
 
-      if (!raceParticipant) {
+      if (!raceParticipant || raceParticipant.status === RaceParticipantStatus.deleted) {
         return badRequest({
           errors: {
             selectedParticipant: t('Race Participant does not exist')
@@ -434,7 +434,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   const booking = await findBooking(bookingId);
   const isGuest = pin && Number(pin) === booking?.pin;
 
-  if (!booking || (booking.userId !== clientId && !isGuest)) {
+  if (!booking || (booking.userId !== clientId && !isGuest) || booking.status === CheckoutStatus.deleted) {
     return redirect('/');
   }
 

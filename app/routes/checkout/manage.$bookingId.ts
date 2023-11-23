@@ -37,7 +37,7 @@ export const action: ActionFunction = async ({ request, params }) => {
   const bookingId = params.bookingId as string;
   const booking = await findBooking(bookingId);
 
-  if (!booking) {
+  if (!booking || booking.status === CheckoutStatus.deleted) {
     return redirect('/');
   }
 

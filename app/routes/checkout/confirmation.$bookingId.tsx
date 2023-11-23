@@ -74,10 +74,8 @@ export const action: ActionFunction = async ({ request, params }) => {
 
   const booking = await findBooking(bookingId);
 
-  if (!booking) {
-    return badRequest({
-      error: t('No Booking')
-    });
+  if (!booking || booking.status === CheckoutStatus.deleted) {
+    return redirect('/');
   }
 
   if (booking.userId !== clientId) {
@@ -169,7 +167,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 
   const booking = await findBooking(bookingId);
 
-  if (!booking || booking.userId !== clientId) {
+  if (!booking || booking.userId !== clientId || booking.status === CheckoutStatus.deleted) {
     return redirect('/');
   }
 

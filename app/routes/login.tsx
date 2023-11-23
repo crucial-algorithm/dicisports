@@ -231,7 +231,7 @@ export const action: ActionFunction = async ({ request }) => {
         const booking = await findBooking(bookingId);
 
         // This shouldn't happen, but in case it does...
-        if (!booking) {
+        if (!booking || booking.status === CheckoutStatus.deleted) {
           return redirect(`/?message=${t('No Booking Found')}`, { headers });
         }
 

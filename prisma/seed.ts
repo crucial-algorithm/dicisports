@@ -281,7 +281,7 @@ function participants() {
   return participantsSeed.map((p) => {
     return {
       ...p,
-      birthdate: new Date(p.birthdate),
+      birthdate: p.birthdate ? new Date(p.birthdate) : null,
       createdAt: now,
       updatedAt: now
     };

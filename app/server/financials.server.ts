@@ -1,4 +1,4 @@
-import { CheckoutStatus, PaymentStatus } from '@prisma/client';
+import { CheckoutStatus, PaymentStatus, RaceParticipantStatus } from '@prisma/client';
 
 import type { RaceRevenueRegistrations } from '~/types';
 import { findEvent } from '~/server/db/events.server';
@@ -75,7 +75,11 @@ async function calculateEventBookingsAmount(eventId: string) {
 
 async function calculateEventGMV(eventId: string) {
   const raceParticipants = await db.raceParticipant.aggregate({
-    where: { eventId, booking: { status: CheckoutStatus.confirmed } },
+    where: {
+      eventId,
+      booking: { status: CheckoutStatus.confirmed },
+      status: { not: RaceParticipantStatus.deleted }
+    },
     _sum: {
       price: true
     }
@@ -115,7 +119,8 @@ async function calculateRaceNMV(
         where: {
           booking: {
             status: CheckoutStatus.confirmed
-          }
+          },
+          status: { not: RaceParticipantStatus.deleted }
         }
       }
     }

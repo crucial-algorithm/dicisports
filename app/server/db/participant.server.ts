@@ -103,7 +103,7 @@ async function findUserEventRaceParticipants(
 ): Promise<RaceParticipant[] | null> {
   const booking = await findBooking(bookingId);
 
-  if (!booking) {
+  if (!booking || booking.status === CheckoutStatus.deleted) {
     return null;
   }
 
@@ -231,7 +231,8 @@ async function findRaceParticipants(
       ],
       status: 'saved'
     },
-    race: { eventId }
+    race: { eventId },
+    status: { not: RaceParticipantStatus.deleted }
   };
 
   const results = await db.raceParticipant.findMany({
@@ -352,7 +353,8 @@ async function findEventRaceParticipants(
         status: {
           not: CheckoutStatus.checkout
         }
-      }
+      },
+      status: { not: RaceParticipantStatus.deleted }
     },
     include: {
       race: true,

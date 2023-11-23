@@ -8,9 +8,12 @@
 -- CreateEnum
 CREATE TYPE "RaceParticipantStatus" AS ENUM ('auto', 'deleted');
 
+-- AlterEnum
+ALTER TYPE "CheckoutStatus" ADD VALUE 'deleted';
+
 -- AlterTable
 ALTER TABLE "race_participants" DROP COLUMN "status",
 ADD COLUMN     "status" "RaceParticipantStatus" NOT NULL DEFAULT 'auto';
 
 -- CreateIndex
-CREATE UNIQUE INDEX "race_participants_participant_id_race_id_booking_id_key" ON "race_participants"("participant_id", "race_id", "booking_id");
+CREATE UNIQUE INDEX "race_participants_participant_id_race_id_booking_id_key" ON "race_participants" ("participant_id", "race_id", "booking_id");

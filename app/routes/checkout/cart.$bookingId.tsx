@@ -74,7 +74,7 @@ export const action: ActionFunction = async ({ request, params }) => {
 
   const booking: Booking | null = await findBooking(bookingId);
 
-  if (!booking || (booking && booking.userId !== clientId)) {
+  if (!booking || (booking && booking.userId !== clientId) || booking.status === CheckoutStatus.deleted) {
     return redirect('/');
   }
 
@@ -150,7 +150,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   const bookingId = params.bookingId as string;
   const booking = await findBooking(bookingId);
 
-  if (!booking || (booking && booking.userId !== clientId)) {
+  if (!booking || (booking && booking.userId !== clientId) || booking.status === CheckoutStatus.deleted) {
     return redirect('/');
   }
 

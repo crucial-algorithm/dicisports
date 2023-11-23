@@ -78,16 +78,11 @@ export const loader: LoaderFunction = async ({ request, params }) => {
       ? authenticatedClient.id
       : anonymousClient.getClientId();
 
-  if (!booking) {
-    return redirect('/');
-  }
-
-  if (booking.userId !== clientId) {
+  if (!booking || booking.userId !== clientId || booking.status === CheckoutStatus.deleted) {
     return redirect('/');
   }
 
   const eventId = booking.eventId;
-
   const event = (await findEvent(eventId)) as Event;
 
   if (!event) {
