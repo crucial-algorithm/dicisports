@@ -108,9 +108,7 @@ function errorMessage(code: string) {
     P2025: 'Participant does not exist'
   };
 
-  const message = mapping[code];
-
-  return message ? message : 'Unknown error';
+  return mapping[code] ?? 'Unknown error';
 }
 
 export const action: ActionFunction = async ({ request, params }) => {

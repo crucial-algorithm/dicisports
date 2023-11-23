@@ -66,7 +66,7 @@ async function createBooking(
   eventId: string,
   userSessionId: string
 ): Promise<Booking> {
-  return await db.booking.create({
+  return db.booking.create({
     data: {
       id: bookingId,
       pin,
@@ -142,9 +142,9 @@ async function findUserBookingsList(
       createdAt: true,
       status: true,
       pin: true,
-      _count: {
-        select: {
-          raceParticipant: true
+      raceParticipant: {
+        where: {
+          status: { not: RaceParticipantStatus.deleted }
         }
       }
     },
@@ -169,7 +169,7 @@ async function findUserBookingsList(
         bookingDate: r.createdAt,
         status: r.status,
         pin: r.pin,
-        totalParticipants: r._count.raceParticipant
+        totalParticipants: r.raceParticipant.length
       };
     }),
     total: total._count._all
@@ -180,7 +180,7 @@ async function updateBookingStatus(
   id: string,
   status: CheckoutStatus
 ): Promise<Booking> {
-  return await db.booking.update({
+  return db.booking.update({
     where: { id },
     data: {
       status
@@ -191,7 +191,7 @@ async function updateBookingStatus(
 async function findConfirmedBookings(
   eventId: string
 ): Promise<Booking[] | null> {
-  return await db.booking.findMany({
+  return db.booking.findMany({
     where: { eventId, status: 'confirmed' }
   });
 }
@@ -226,7 +226,7 @@ async function applyDiscountCode(
 }
 
 async function removeBookingDiscount(id: string) {
-  return await db.booking.update({
+  return db.booking.update({
     where: { id },
     data: {
       appliedDiscount: null
@@ -238,7 +238,7 @@ async function findUserOngoingBookingsByEvent(
   userId: string,
   eventId: string
 ): Promise<Booking[]> {
-  return await db.booking.findMany({
+  return db.booking.findMany({
     where: { userId, eventId, status: { not: CheckoutStatus.confirmed } }
   });
 }
