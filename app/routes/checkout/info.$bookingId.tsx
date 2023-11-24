@@ -7,7 +7,8 @@ import {
 import {
   CheckoutStatus,
   DiscountCodeStatus,
-  ParticipantStatus, RaceParticipantStatus
+  ParticipantStatus,
+  RaceParticipantStatus
 } from '@prisma/client';
 import type { ActionFunction, LoaderFunction } from '@remix-run/node';
 import { json, redirect } from '@remix-run/node';
