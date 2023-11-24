@@ -10,6 +10,7 @@
     "shirtSize": 1,
     "postalCode": "4730-000",
     "identityCard": "00000000-0-ZZ4",
+    "vatNumber": "123456789",
     "status": "saved"
   },
   {
@@ -23,6 +24,7 @@
     "shirtSize": 1,
     "postalCode": "4730-000",
     "identityCard": "00000000-0-ZZ4",
+    "vatNumber": "123456789",
     "status": "saved"
   },
   {
@@ -35,6 +37,7 @@
     "phoneNumber": 969102096,
     "shirtSize": 1,
     "postalCode": "4730-000",
+    "vatNumber": "123456789",
     "status": "saved"
   },
   {
@@ -42,6 +45,7 @@
     "userId": "HmYkkLPRTETEvcCrJznj",
     "birthdate": "1992-11-12 00:00:00.000",
     "postalCode": "4730-000",
+    "vatNumber": "123456789",
     "status": "auto"
   },
   {
@@ -49,6 +53,7 @@
     "userId": "HmYkkLPRTETEvcCrJznj",
     "birthdate": "1992-11-12 00:00:00.000",
     "postalCode": "4730-000",
+    "vatNumber": "123456789",
     "status": "auto"
   },
   {
@@ -62,6 +67,7 @@
     "shirtSize": 1,
     "postalCode": "4730-000",
     "identityCard": "00000000-0-ZZ4",
+    "vatNumber": "123456789",
     "status": "saved"
   },
   {
@@ -76,6 +82,7 @@
     "nationality": 188,
     "postalCode": "4730-454",
     "identityCard": "00000000-0-ZZ4",
+    "vatNumber": "123456789",
     "status": "saved"
   },
   {
@@ -89,6 +96,7 @@
     "shirtSize": 1,
     "postalCode": "4730-000",
     "identityCard": "00000000-0-ZZ4",
+    "vatNumber": "123456789",
     "status": "saved"
   },
   {
@@ -102,6 +110,7 @@
     "shirtSize": 1,
     "postalCode": "4730-000",
     "identityCard": "00000000-0-ZZ4",
+    "vatNumber": "123456789",
     "status": "saved"
   },
   {
@@ -113,6 +122,7 @@
     "birthdate": "2003-07-17 00:00:00.000",
     "phoneNumber": 937774372,
     "identityCard": "00000000-0-ZZ4",
+    "vatNumber": "123456789",
     "shirtSize": 3,
     "nationality": 188,
     "postalCode": "4730-454",
@@ -129,6 +139,7 @@
     "shirtSize": 1,
     "postalCode": "4730-000",
     "identityCard": "00000000-0-ZZ4",
+    "vatNumber": "123456789",
     "status": "saved"
   },
   {
@@ -140,6 +151,7 @@
     "birthdate": "2003-08-09 00:00:00.000",
     "phoneNumber": 960000000,
     "identityCard": "00000000-0-ZZ4",
+    "vatNumber": "123456789",
     "federationNumber": null,
     "shirtSize": 5,
     "nationality": 188,
@@ -159,6 +171,7 @@
     "shirtSize": 2,
     "nationality": 188,
     "postalCode": "4730-000",
+    "vatNumber": "123456789",
     "status": "saved"
   },
   {
@@ -174,6 +187,7 @@
     "shirtSize": 5,
     "nationality": 4,
     "postalCode": "1000-000",
+    "vatNumber": "123456789",
     "status": "saved"
   },
   {

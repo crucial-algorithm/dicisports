@@ -153,6 +153,10 @@ function handleApplyDiscount(
 // Function that validates identity card according to Autenticação.gov
 // Check /docs/pt_idcard_validation.pdf for more information
 function validateIdentityCard(identityCard: string): boolean {
+  if (!identityCard) {
+    return false;
+  }
+
   const mapping: { [key: string]: number } = {
     0: 0,
     1: 1,
@@ -216,6 +220,33 @@ function validateIdentityCard(identityCard: string): boolean {
     }, 0);
 
   return sum % 10 === 0;
+}
+
+/**
+ * Rule:
+ *  1. multiply 1st digit by 9, 2nd by 8, 3rd by 7, ... 8 by 2;
+ *  2. Sum everything
+ *  3. Calculate reminder of the sum % 11
+ *  3.1 If reminder is 0 or 1, check digit is 0; Otherwise, check digit is 11 - reminder
+ * @param vat
+ */
+function validatePtVatNumber(vat: number | string) {
+  const checkDigit = Number(String(vat)[8]);
+
+  const acum =
+    String(vat)
+      .split('')
+      .map(Number)
+      // multiplication of 1st digit by 9, ...
+      .map((v, i, a) => v * (a.length - i))
+      // remove actual check digit (must be done after the multipilication so that length - 1 starts at 9)
+      .splice(0, 8)
+      // sum everything
+      .reduce((v, a) => v + a, 0);
+
+  const reminder = acum % 11;
+
+  return reminder === 0 || reminder === 1 ? 0 : 11 - reminder === checkDigit;
 }
 
 function bookingRedirectRoute(booking: Booking): string {
@@ -295,6 +326,7 @@ export {
   generateSlug,
   bookingAmount,
   validateIdentityCard,
+  validatePtVatNumber,
   bookingRedirectRoute,
   maintainBookingLocalStorageMetaData,
   fileTypeFromUploadHandlerData
