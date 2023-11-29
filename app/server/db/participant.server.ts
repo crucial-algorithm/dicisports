@@ -180,11 +180,11 @@ async function removeRaceParticipant(
 async function addRaceParticipants(
   raceIds: string[],
   userSessionId: string,
-  registrationId: string,
+  bookingId: string,
   eventId: string
 ): Promise<void> {
   return await prisma.$transaction(async (prisma) => {
-    await addParticipantsToRace(raceIds, userSessionId, registrationId, eventId, prisma);
+    await addParticipantsToRace(raceIds, userSessionId, bookingId, eventId, prisma);
   });
 }
 

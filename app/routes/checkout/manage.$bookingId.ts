@@ -50,8 +50,6 @@ export const action: ActionFunction = async ({ request, params }) => {
     );
   }
 
-  const eventId = booking.eventId;
-
   try {
     if (actionId === actions.removeParticipant) {
       const participantId = form.get('participantId') as string;
@@ -68,9 +66,8 @@ export const action: ActionFunction = async ({ request, params }) => {
 
     if (actionId === actions.addParticipants) {
       const races = JSON.parse(form.get('races') as string);
-      const registrationId = await findBooking(bookingId).then((p) => p?.id);
 
-      await addRaceParticipants(races, bookingOwnerId, registrationId as string, eventId as string);
+      await addRaceParticipants(races, bookingOwnerId, booking.id, booking.eventId);
     }
 
     return json({ ok: true, action: actionId });
