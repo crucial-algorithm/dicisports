@@ -1,5 +1,10 @@
 import type { Prisma } from '@prisma/client';
-import { CheckoutStatus, PrismaClient, RaceParticipantStatus, Status } from '@prisma/client';
+import {
+  CheckoutStatus,
+  PrismaClient,
+  RaceParticipantStatus,
+  Status
+} from '@prisma/client';
 
 import type {
   Participant,
@@ -10,7 +15,6 @@ import type {
 } from '~/types';
 import { db } from '~/server/db.server';
 import Id from '~/server/utils/Id.server';
-import { findBooking } from '~/server/db/booking.server';
 import { createTeam, findEventTeamByName } from '~/server/db/teams.server';
 
 const prisma = new PrismaClient();
@@ -94,28 +98,6 @@ async function findUserParticipants(
   return db.participant.findMany({
     where: {
       userId: userSessionId
-    }
-  });
-}
-
-async function findUserEventRaceParticipants(
-  bookingId: string
-): Promise<RaceParticipant[] | null> {
-  const booking = await findBooking(bookingId);
-
-  if (!booking || booking.status === CheckoutStatus.deleted) {
-    return null;
-  }
-
-  return db.raceParticipant.findMany({
-    where: {
-      bookingId: booking.id,
-      status: { not: RaceParticipantStatus.deleted }
-    },
-    include: {
-      race: true,
-      participant: true,
-      team: true
     }
   });
 }
@@ -464,7 +446,6 @@ async function updateRaceParticipantsPrice(
 
 export {
   addParticipantsToRace,
-  findUserEventRaceParticipants,
   findUserParticipants,
   updateParticipant,
   updateToSelectedParticipant,

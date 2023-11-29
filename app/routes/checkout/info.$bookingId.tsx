@@ -7,7 +7,8 @@ import {
 import {
   CheckoutStatus,
   DiscountCodeStatus,
-  ParticipantStatus, RaceParticipantStatus
+  ParticipantStatus,
+  RaceParticipantStatus
 } from '@prisma/client';
 import type { ActionFunction, LoaderFunction } from '@remix-run/node';
 import { json, redirect } from '@remix-run/node';
@@ -48,7 +49,6 @@ import { findEventWithRacesAndDocuments } from '~/server/db/events.server';
 import {
   findRaceParticipant,
   findUserBookingParticipants,
-  findUserEventRaceParticipants,
   findUserParticipants,
   findUserSavedParticipants,
   updateParticipant,
@@ -352,7 +352,7 @@ export const action: ActionFunction = async ({ request, params }) => {
       raceParticipants?.length === 1
     ) {
       TermsAndRegulationSchema.parse({ regulation, terms });
-      const raceParticipants = await findUserEventRaceParticipants(bookingId);
+      const raceParticipants = await findUserBookingParticipants(bookingId);
 
       if (!raceParticipants) {
         return badRequest({ error: t('No Race Participants') });

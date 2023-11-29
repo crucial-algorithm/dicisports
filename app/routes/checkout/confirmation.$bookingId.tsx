@@ -19,9 +19,13 @@ import { getClientSession } from '~/server/auth/client.server';
 import { getUser } from '~/server/auth/session.server';
 import { findBooking, findBookingCart } from '~/server/db/booking.server';
 import { findEvent } from '~/server/db/events.server';
-import { findUserEventRaceParticipants } from '~/server/db/participant.server';
+import { findUserBookingParticipants } from '~/server/db/participant.server';
 import type { Booking, KCDHandle, UICartRow } from '~/types';
-import { badRequest, getDomainUrl, maintainBookingLocalStorageMetaData } from '~/utils/misc';
+import {
+  badRequest,
+  getDomainUrl,
+  maintainBookingLocalStorageMetaData
+} from '~/utils/misc';
 import { sendBookingConfirmationEmail } from '~/server/email.server';
 import i18n from '~/server/i18n.server';
 import InputError from '~/components/shared/form/InputError';
@@ -187,7 +191,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     return redirect('/');
   }
 
-  const raceParticipants = await findUserEventRaceParticipants(bookingId);
+  const raceParticipants = await findUserBookingParticipants(bookingId);
 
   if (!raceParticipants || raceParticipants?.length === 0) {
     return redirect(`/${lng}/event/${event.slug}`);

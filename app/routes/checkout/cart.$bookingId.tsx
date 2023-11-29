@@ -27,7 +27,7 @@ import {
 import { findEvent } from '~/server/db/events.server';
 import {
   addParticipantToRace,
-  findUserEventRaceParticipants,
+  findUserBookingParticipants,
   findUserRaceParticipants,
   removeRaceParticipant
 } from '~/server/db/participant.server';
@@ -92,7 +92,7 @@ export const action: ActionFunction = async ({ request, params }) => {
   try {
     // Triggered when user clicks continue in the cart screen
     if (actionId === actions.checkout) {
-      const userEventRaceParticipants = await findUserEventRaceParticipants(
+      const userEventRaceParticipants = await findUserBookingParticipants(
         bookingId
       );
 

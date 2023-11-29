@@ -8,13 +8,10 @@ import { badRequest } from '~/utils/misc';
 import { getUser } from '~/server/auth/session.server';
 import {
   addRaceParticipants,
-  findUserEventRaceParticipants,
+  findUserBookingParticipants,
   removeRaceParticipant
 } from '~/server/db/participant.server';
-import {
-  findBooking,
-  removeBooking
-} from '~/server/db/booking.server';
+import { findBooking, removeBooking } from '~/server/db/booking.server';
 import i18n from '~/server/i18n.server';
 import { Unauthorized } from '~/server/utils/misc';
 
@@ -62,7 +59,7 @@ export const action: ActionFunction = async ({ request, params }) => {
 
       await removeRaceParticipant(participantId, raceId, bookingId);
 
-      const raceParticipants = await findUserEventRaceParticipants(bookingId);
+      const raceParticipants = await findUserBookingParticipants(bookingId);
 
       if (raceParticipants?.length === 0) {
         await removeBooking(bookingId);

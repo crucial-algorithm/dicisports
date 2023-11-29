@@ -33,7 +33,7 @@ import {
   updateBookingStatus
 } from '~/server/db/booking.server';
 import { findEvent } from '~/server/db/events.server';
-import { findUserEventRaceParticipants } from '~/server/db/participant.server';
+import { findUserBookingParticipants } from '~/server/db/participant.server';
 import {
   findSubmittedPayments,
   findUnsuccessfulPayments,
@@ -90,7 +90,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   }
 
   const cart = await findBookingCart(bookingId);
-  const raceParticipants = await findUserEventRaceParticipants(bookingId);
+  const raceParticipants = await findUserBookingParticipants(bookingId);
 
   if (!raceParticipants || raceParticipants?.length === 0) {
     return redirect(`/${lng}/event/${event.slug}`);
