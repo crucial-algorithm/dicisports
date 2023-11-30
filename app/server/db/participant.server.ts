@@ -116,6 +116,9 @@ async function findUserRaceParticipants(
       bookingId,
       status: { not: RaceParticipantStatus.deleted }
     },
+    orderBy: {
+      displayOrder: 'desc'
+    },
     include: {
       race: true,
       participant: true
