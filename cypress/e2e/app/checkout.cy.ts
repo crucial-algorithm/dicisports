@@ -1397,7 +1397,7 @@ describe('Checkout', () => {
 
         .visitAndWaitForHydration('/me')
         .get('[data-cy=event-love-tiles-douro-granfondo-2023]')
-        .should('have.length', 4);
+        .should('have.length', 5);
     });
 
     context('add/remove race participants when', () => {
