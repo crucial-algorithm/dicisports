@@ -111,6 +111,9 @@ async function findUserEventRaceParticipants(
     where: {
       bookingId: booking.id
     },
+    orderBy: {
+      displayOrder: 'desc'
+    },
     include: {
       race: true,
       participant: true

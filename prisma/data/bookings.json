@@ -76,5 +76,12 @@
     "pin": 1031,
     "eventId": "MY4bvgxDbMtGv8rbYe5d",
     "userId": "nTQ8idPqTY8PmhzbsN4u"
+  },
+  {
+    "id": "4RzB8TRoXhEteTWtLMs6",
+    "status": "checkout",
+    "pin": 9395,
+    "eventId": "bQmGXYkbhJetjk6mniMt",
+    "userId": "nTQ8idPqTY8PmhzbsN4u"
   }
 ]

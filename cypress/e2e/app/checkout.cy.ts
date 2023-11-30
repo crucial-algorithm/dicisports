@@ -386,7 +386,8 @@ describe('Checkout', () => {
     it('should fill form with saved participant info', () => {
       cy.visitAndWaitForHydration('/checkout/info/TYFurhEhNFSRZAj5DewZ')
         .get('button[name=select-userSavedParticipants]')
-        .should('exist').and('be.visible')
+        .should('exist')
+        .and('be.visible')
         .pickOptionFromSelect('userSavedParticipants', 1)
 
         .get('input[name=first-name]')
@@ -412,7 +413,9 @@ describe('Checkout', () => {
 
         .location()
         .should((l) => {
-          expect(l.pathname).to.eq('/checkout/confirmation/qR4nqWpTdQy8QZu29ANu');
+          expect(l.pathname).to.eq(
+            '/checkout/confirmation/qR4nqWpTdQy8QZu29ANu'
+          );
         })
 
         .request({ method: 'GET', url: Cypress.env('HTTP_CATCHER') })
@@ -442,7 +445,6 @@ describe('Checkout', () => {
         .get('input[name=phone-number]')
         .type('937654321')
 
-
         .get('input[name=vat-number]')
         .type('123456789')
 
@@ -457,8 +459,7 @@ describe('Checkout', () => {
         .should('exist');
     });
 
-
-     it('should display error when a Portuguese submitts form without vat number filled', () => {
+    it('should display error when a Portuguese submitts form without vat number filled', () => {
       cy.visitAndWaitForHydration('/checkout/info/iZrqWniNHZba9n4WQTmb')
 
         .intercept('POST', '/checkout/info/*')
@@ -490,7 +491,6 @@ describe('Checkout', () => {
         .get('#vat-number-error')
         .should('exist');
     });
-
 
     it('should not display error when missing a identity card if user is not Portuguese, but should require VAT number', () => {
       cy.visitAndWaitForHydration('/checkout/info/iZrqWniNHZba9n4WQTmb')
@@ -525,7 +525,6 @@ describe('Checkout', () => {
         .get('input[name=terms]')
         .first()
         .check()
-
 
         .get('#save-button')
         .click()
@@ -823,17 +822,20 @@ describe('Checkout', () => {
     });
 
     it('should be able to book same race multiple times', () => {
-      bookParticipant('love-tiles-douro-granfondo-2023', 'xaXaCzs2t7D8DpRNnffM');
-      bookParticipant('love-tiles-douro-granfondo-2023', 'xaXaCzs2t7D8DpRNnffM');
+      bookParticipant(
+        'love-tiles-douro-granfondo-2023',
+        'xaXaCzs2t7D8DpRNnffM'
+      );
+      bookParticipant(
+        'love-tiles-douro-granfondo-2023',
+        'xaXaCzs2t7D8DpRNnffM'
+      );
     });
 
     it('Should remove race', () => {
       cy.visitAndWaitForHydration('/checkout/cart/iZrqWniNHZba9n4WQTmb')
 
-        .intercept(
-          'POST',
-          '/checkout/cart/*'
-        )
+        .intercept('POST', '/checkout/cart/*')
         .as('removeParticipant')
 
         .get('#remove-race-AhowRdNWCBQWSuivSt7h')
@@ -849,7 +851,9 @@ describe('Checkout', () => {
     });
 
     it('should not exist list of participants if there is only one', () => {
-      cy.visitAndWaitForHydration('/checkout/info/iZrqWniNHZba9n4WQTmb').get('[data-cy=participant]').should('not.exist');
+      cy.visitAndWaitForHydration('/checkout/info/iZrqWniNHZba9n4WQTmb')
+        .get('[data-cy=participant]')
+        .should('not.exist');
     });
 
     it('should be able to update cart', () => {
@@ -870,7 +874,9 @@ describe('Checkout', () => {
 
         .location()
         .should((location) => {
-          expect(location.pathname).to.eq('/checkout/info/iZrqWniNHZba9n4WQTmb');
+          expect(location.pathname).to.eq(
+            '/checkout/info/iZrqWniNHZba9n4WQTmb'
+          );
         })
 
         .get('[data-cy=participant]')
@@ -879,7 +885,8 @@ describe('Checkout', () => {
     });
 
     it('should remove race participant', () => {
-      cy.visitAndWaitForHydration('/checkout/info/TYFurhEhNFSRZAj5DewZ').intercept('POST', '/checkout/manage/*')
+      cy.visitAndWaitForHydration('/checkout/info/TYFurhEhNFSRZAj5DewZ')
+        .intercept('POST', '/checkout/manage/*')
         .as('removeParticipant')
 
         .get('[data-cy=participant]')
@@ -912,7 +919,9 @@ describe('Checkout', () => {
 
         .location()
         .should((l) => {
-          expect(l.pathname).to.include('/pt/event/love-tiles-douro-granfondo-2023');
+          expect(l.pathname).to.include(
+            '/pt/event/love-tiles-douro-granfondo-2023'
+          );
         });
     });
 
@@ -1096,6 +1105,96 @@ describe('Checkout', () => {
 
         .get('ul[data-headlessui-state="open"] li:first')
         .contains('Marretas');
+    });
+
+    it('should remove participant and select the first one from participants list', () => {
+      cy.visitAndWaitForHydration('/checkout/info/4RzB8TRoXhEteTWtLMs6')
+
+        .intercept('POST', '/checkout/manage/4RzB8TRoXhEteTWtLMs6*')
+        .as('RemoveParticipant')
+
+        .get('[data-cy=participant-3]')
+        .click()
+
+        .get('button[data-cy=remove-participant-3]')
+        .should('exist')
+        .click()
+
+        .wait('@RemoveParticipant')
+
+        .get('[data-cy=participant]')
+        .should('exist')
+        .and('have.length', 2)
+
+        .get('input[name=first-name]')
+        .should('have.value', 'António')
+
+        .get('[data-cy=participant-2]')
+        .click()
+
+        .get('button[data-cy=remove-participant-2]')
+        .should('exist')
+        .click()
+
+        .wait('@RemoveParticipant')
+
+        .get('[data-cy=participant]')
+        .should('not.exist')
+
+        .get('input[name=first-name]')
+        .should('have.value', 'António');
+    });
+
+    it('should keep same participant selected after submitting form', () => {
+      cy.visitAndWaitForHydration('/checkout/info/4RzB8TRoXhEteTWtLMs6')
+
+        .intercept('POST', '/checkout/manage/4RzB8TRoXhEteTWtLMs6*')
+        .as('RemoveParticipant')
+
+        .get('[data-cy=participant-2]')
+        .click()
+
+        .get('input[name=first-name]')
+        .type('Nuno')
+
+        .get('input[name=last-name]')
+        .type('Lopes')
+
+        .pickOptionFromSelect('gender', 2)
+
+        .pickDate('birthdate', '2003-10-21')
+
+        .get('input[name=phone-number]')
+        .type('937654321')
+
+        .inputMaskWorkaround('input[name=identity-card]', '00000000-0-zz4')
+
+        .get('input[name=vat-number]')
+        .type('123456789')
+
+        .get('input[name=federation-number]')
+        .type('8165238')
+
+        .pickOptionFromSelect('shirt', 2)
+
+        .pickOptionFromSelect('nationality', 188)
+
+        .get('input[name=postal-code]')
+        .type('4730-454')
+
+        .intercept('POST', '/checkout/info/*')
+        .as('SaveParticipant')
+        .intercept('GET', '/checkout/info/*')
+        .as('LoadRoute')
+
+        .get('#save-button')
+        .click()
+
+        .wait('@SaveParticipant')
+        .wait('@LoadRoute')
+
+        .get('input[name=first-name]')
+        .should('have.value', 'Nuno');
     });
   });
 

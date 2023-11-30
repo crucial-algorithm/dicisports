@@ -329,6 +329,13 @@ export const action: ActionFunction = async ({ request, params }) => {
       }
 
       await updateRaceParticipantTeam(teamName, eventId, raceParticipant);
+
+      if (
+        actionId === CheckoutInfoActions.update ||
+        actionId === CheckoutInfoActions.updateAndSave
+      ) {
+        return json({ ok: true, action: actionId, raceParticipant });
+      }
     }
 
     const raceParticipants = await findUserBookingParticipants(bookingId);
@@ -490,15 +497,17 @@ export default function CheckoutInfoRoute() {
     eventTeams,
     appliedDiscount
   } = useLoaderData<LoaderData>() as LoaderData;
-  const [participantTeam, setParticipantTeam] = useState<string | null>(
-    raceParticipants[0].team?.name || null
-  );
-  const [participant, setParticipant] = useState<Participant | null>(
-    raceParticipants[0].participant
-  );
-  const [selectedRace, setSelectedRace] = useState<string | null>(
-    raceParticipants[0].raceId
-  );
+  const [raceParticipant, setRaceParticipant] = useState<{
+    id: string;
+    participant: Participant;
+    team: string | null;
+    raceId: string;
+  }>({
+    id: raceParticipants[0].id,
+    participant: raceParticipants[0].participant,
+    team: raceParticipants[0].team?.name ? raceParticipants[0].team.name : null,
+    raceId: raceParticipants[0].raceId
+  });
   const [errors, setErrors] = useState<FormErrors>({});
   const [hash, setHash] = useState<number>(Date.now());
   const [message, setMessage] = useState<string>('');
@@ -538,34 +547,51 @@ export default function CheckoutInfoRoute() {
     setHash(Date.now());
   }, []);
 
-  const reset = useCallback(() => {
+  const reset = useCallback((raceParticipant?: RaceParticipant) => {
+    setHash(Date.now());
+
+    if (raceParticipant) {
+      setRaceParticipant({
+        id: raceParticipant.id,
+        participant: raceParticipant.participant,
+        raceId: raceParticipant.raceId,
+        team: raceParticipant.team?.name
+          ? raceParticipant.team.name
+          : null
+      });
+    }
+
     setErrors({});
     setSelectedParticipant(
       savedParticipants?.length === 1 ? savedParticipants[0] : null
     );
     setMissingParticipants([]);
-    setHash(Date.now());
   }, [savedParticipants]);
 
   function handleSetParticipant(e: React.MouseEvent) {
-    const [newParticipant, raceId, raceParticipantId] =
+    const [, raceId, raceParticipantId] =
       e.currentTarget.id.split('|');
-    const index = userParticipants.findIndex(
-      (a: Participant) => a.id === newParticipant
+    const index = raceParticipants.findIndex(
+      (rp) => rp.id === raceParticipantId
     );
-    const participant = userParticipants[index];
-    const isVisited = visitedParticipants.some((v) => v.id === participant.id);
+    const newRaceParticipant = raceParticipants[index];
+    const isVisited = visitedParticipants.some(
+      (v) => v.id === newRaceParticipant.participantId
+    );
 
+    setRaceParticipant({
+      id: raceParticipantId,
+      participant: newRaceParticipant.participant,
+      raceId,
+      team: null
+    });
     handleSetParticipantTeam(raceParticipantId);
-
-    setParticipant(participant);
-    setSelectedRace(raceId);
     setErrors({});
     setHash(Date.now());
     setSelectedParticipant(null);
 
     if (!isVisited) {
-      setVisitedParticipants((p) => [...p, participant]);
+      setVisitedParticipants((p) => [...p, newRaceParticipant.participant]);
     }
   }
 
@@ -575,9 +601,12 @@ export default function CheckoutInfoRoute() {
     );
     const rParticipant = raceParticipants[index];
 
-    setParticipantTeam(
-      rParticipant.team ? (rParticipant.team.name as string) : null
-    );
+    setRaceParticipant((p) => {
+      return {
+        ...p,
+        team: rParticipant.team ? (rParticipant.team.name as string) : null
+      };
+    });
   }
 
   function handlerSetShowNotificationFunction(callback: () => void) {
@@ -588,8 +617,8 @@ export default function CheckoutInfoRoute() {
     fetcher.submit(
       {
         actionId: CheckoutInfoActions.removeParticipant,
-        participantId: participant?.id as string,
-        raceId: selectedRace as string
+        participantId: raceParticipant.participant.id,
+        raceId: raceParticipant.raceId
       },
       {
         method: 'post',
@@ -640,23 +669,25 @@ export default function CheckoutInfoRoute() {
     if (
       fetcher.type === 'actionReload' &&
       fetcher.data.ok &&
-      fetcher.data.action === CheckoutInfoActions.removeParticipant
+      fetcher.data.action === CheckoutInfoActions.removeParticipant &&
+      fetcher.data.raceParticipant
     ) {
       setMessage(t('Participant Removed'));
       showNotification();
 
-      return reset;
+      return reset(fetcher.data.raceParticipant);
     }
 
     if (
       fetcher.type === 'actionReload' &&
       fetcher.data.ok &&
-      fetcher.data.action === CheckoutInfoActions.update
+      fetcher.data.action === CheckoutInfoActions.update &&
+      fetcher.data.raceParticipant
     ) {
       setMessage(t('Participant Saved'));
       showNotification();
 
-      return reset;
+      return reset(fetcher.data.raceParticipant);
     }
 
     if (
@@ -726,11 +757,11 @@ export default function CheckoutInfoRoute() {
 
                     {
                       'opacity-100':
-                        p.participantId === participant?.id &&
-                        p.race.id === selectedRace,
+                        p.participantId === raceParticipant.participant.id &&
+                        p.race.id === raceParticipant.raceId,
                       'opacity-50': !(
-                        p.participantId === participant?.id &&
-                        p.race.id === selectedRace
+                        p.participantId === raceParticipant.participant.id &&
+                        p.race.id === raceParticipant.raceId
                       ),
                       'border-red-500': missingParticipants.some(
                         (v) => v.participantId === p.participantId
@@ -754,13 +785,14 @@ export default function CheckoutInfoRoute() {
                   )}
 
                   {!isGuest &&
-                    p.participantId === participant?.id &&
-                    p.race.id === selectedRace && (
+                    p.participantId === raceParticipant.participant.id &&
+                    p.race.id === raceParticipant.raceId && (
                       <button
                         type="button"
                         onClick={handleRemoveRaceParticipant}
                         name="remove"
                         className="absolute top-[6px] right-[6px]"
+                        data-cy={`remove-participant-${index + 1}`}
                       >
                         <XMarkIcon className="dark:text-blueGray-500 md:h-6 w-6 m-0 inline-block" />
                       </button>
@@ -795,8 +827,8 @@ export default function CheckoutInfoRoute() {
         form={fetcher.Form}
         method="post"
         className={clsx('w-full', {
-          'opacity-100': participant,
-          'opacity-50': !participant
+          'opacity-100': raceParticipant,
+          'opacity-50': !raceParticipant
         })}
         key={hash}
         readOnly={isGuest}
@@ -804,11 +836,11 @@ export default function CheckoutInfoRoute() {
         <div className="flex flex-col lg:flex-row">
           <div className="flex-col w-full lg:pr-8 xl:w-[calc(100%-(480px))] xl:pr-48">
             <ParticipantForm
-              participant={participant}
+              participant={raceParticipant.participant}
               hash={hash}
               errors={errors}
               userSavedParticipants={savedParticipants}
-              raceId={selectedRace}
+              raceId={raceParticipant.raceId}
               selectedParticipant={selectedParticipant}
               setSelectedParticipant={handleSetSelectedParticipant}
               shirtSizes={shirtSizes}
@@ -816,7 +848,7 @@ export default function CheckoutInfoRoute() {
               isUserBookingOnlyForHimself={raceParticipants.length === 1}
               isReadOnly={isGuest}
               eventTeams={eventTeams}
-              participantTeam={participantTeam}
+              participantTeam={raceParticipant.team}
             >
               {!isGuest && (
                 <>
