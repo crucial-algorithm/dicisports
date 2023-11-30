@@ -116,13 +116,12 @@ export const action: ActionFunction = async ({ request, params }) => {
         return badRequest({ error: t('No Race Participants') });
       }
 
-      // We first check for "auto" participants
       const draftRaceParticipants = raceParticipants?.filter(
         (rp) => rp.participant.status === 'auto'
       );
 
-      // If there is any, remove them first
-      // Otherwise, remove random saved participant
+      // First, attempt to remove draftRaceParticipants, which contains participants in the 'auto' status
+      // If there isn't any, remove the last saved participant
       await removeRaceParticipant(
         draftRaceParticipants[0]
           ? draftRaceParticipants[0].participantId
