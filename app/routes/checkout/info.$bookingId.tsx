@@ -329,10 +329,12 @@ export const action: ActionFunction = async ({ request, params }) => {
       }
 
       await updateRaceParticipantTeam(teamName, eventId, raceParticipant);
+      const raceParticipants = await findUserBookingParticipants(bookingId);
 
       if (
-        actionId === CheckoutInfoActions.update ||
-        actionId === CheckoutInfoActions.updateAndSave
+        (actionId === CheckoutInfoActions.update ||
+          actionId === CheckoutInfoActions.updateAndSave) &&
+        raceParticipants?.length !== 1
       ) {
         return json({ ok: true, action: actionId, raceParticipant });
       }
