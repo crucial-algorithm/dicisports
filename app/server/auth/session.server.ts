@@ -84,8 +84,7 @@ async function sendRecoverPasswordToken({
   await sendRecoverPasswordEmail({
     emailAddress,
     magicLink,
-    user,
-    domainUrl
+    user
   });
 
   return magicLink;

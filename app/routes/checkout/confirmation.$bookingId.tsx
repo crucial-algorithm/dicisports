@@ -91,7 +91,6 @@ export const action: ActionFunction = async ({ request, params }) => {
     return redirect('/');
   }
 
-  const domainUrl = getDomainUrl(request);
   const cart = await findBookingCart(bookingId);
   const email = form.get('email') as string;
   const enrollInMailingList: boolean =
@@ -126,7 +125,6 @@ export const action: ActionFunction = async ({ request, params }) => {
       emailAddress: email,
       event,
       booking,
-      domainUrl,
       cart,
       userName: authenticatedClient !== null ? authenticatedClient.name : null
     });
