@@ -237,7 +237,7 @@ function validatePtVatNumber(vat: number | string) {
     String(vat)
       .split('')
       .map(Number)
-      // multiplication of 1st digit by 9, ...
+      // multiplication of 1st digit by 9, 2nd by 8, 3rd by 7...
       .map((v, i, a) => v * (a.length - i))
       // remove actual check digit (must be done after the multipilication so that length - 1 starts at 9)
       .splice(0, 8)
@@ -246,7 +246,7 @@ function validatePtVatNumber(vat: number | string) {
 
   const reminder = acum % 11;
 
-  return reminder === 0 || reminder === 1 ? 0 : 11 - reminder === checkDigit;
+  return reminder === 0 || reminder === 1 ? (0 === checkDigit) : 11 - reminder === checkDigit;
 }
 
 function bookingRedirectRoute(booking: Booking): string {
