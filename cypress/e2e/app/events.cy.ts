@@ -195,7 +195,7 @@ describe('Event', () => {
 
         .pickDate(
           'event-date',
-          new Date(Date.now() + 86400 * 1000).toISOString().split('T')[0]
+          new Date(Date.now() + 86400 * 1000 * 6).toISOString().split('T')[0]
         )
 
         .pickLocationInInlinedMap('location')

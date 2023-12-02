@@ -4,7 +4,7 @@ import { useContext } from 'react';
 import type { CalendarDateTemplateEvent } from 'primereact/calendar';
 import { Calendar } from 'primereact/calendar';
 
-import type { FormEvent } from 'primereact/ts-helpers';
+import type { FormEvent, Nullable } from 'primereact/ts-helpers';
 
 import Label from '~/components/shared/form/Label';
 import { FormContext } from '~/components/shared/form/UploadForm';
@@ -12,9 +12,9 @@ import { FormContext } from '~/components/shared/form/UploadForm';
 type DatePickerOptions = {
   name: string;
   label?: string;
-  date: Date | null | undefined;
+  date: Nullable<Date>;
   minDate?: Date;
-  input?: React.RefObject<any>;
+  viewDate?: Nullable<Date>
 } & React.ComponentProps<'input'>;
 
 export default function BasicDatePicker({
@@ -22,7 +22,7 @@ export default function BasicDatePicker({
   label,
   date = null,
   minDate,
-  input
+  viewDate
 }: DatePickerOptions) {
   const [value, setValue] = React.useState<Date | null>(date);
   const formProps = useContext(FormContext);
@@ -45,13 +45,14 @@ export default function BasicDatePicker({
       <Label htmlFor="date-picker">{label}</Label>
       <Calendar
         className="date-picker input-text"
-        ref={input}
-        dateFormat="yy-mm-d"
+        dateFormat="yy-mm-dd"
+        mask="9999-99-99"
         name={name}
         minDate={minDate}
         value={value}
         onChange={handleOnChange}
         dateTemplate={dateTemplateWithCypressTags}
+        viewDate={viewDate}
       />
     </>
   );

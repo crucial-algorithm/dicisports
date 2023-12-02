@@ -470,7 +470,7 @@ type ParticipantInput = {
   firstName: string;
   lastName: string;
   gender: string;
-  birthdate: Date;
+  birthdate?: Date | undefined;
   phoneNumber: number;
   identityCard?: string | null;
   vatNumber?: string | null;
