@@ -128,6 +128,7 @@ function events() {
     return {
       ...e,
       startAt: new Date(e.startAt ? e.startAt : futureDate),
+      bookingStopsAt: new Date(e.startAt ? e.startAt : futureDate),
       endAt: new Date(new Date(futureDate.getTime() + 6 * 60 * 1000)),
       createdAt: new Date('2021-12-31T08:00:00Z'),
       updatedAt: new Date('2021-12-31T08:00:00Z')
