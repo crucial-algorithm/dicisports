@@ -60,9 +60,7 @@ import Main from '~/components/shared/Main';
 import { H2, H6 } from '~/components/shared/typography';
 import { requireUser } from '~/server/auth/session.server';
 import Config from '~/server/config.server';
-import type {
-  EventWithRacesDifficultiesAndDocuments
-} from '~/server/db/events.server';
+import type { EventWithRacesDifficultiesAndDocuments } from '~/server/db/events.server';
 import {
   deleteEvent,
   findEventWithRacesAndDocuments,
@@ -102,7 +100,7 @@ import type {
   Sport,
   User
 } from '~/types';
-import { badRequest } from '~/utils/misc';
+import { badRequest, formHelperReadDate } from '~/utils/misc';
 import UploadFile from '~/components/UploadFile';
 import { findConfirmedBookings } from '~/server/db/booking.server';
 
@@ -123,6 +121,7 @@ type ActionData = {
     bibStartingNumber?: string;
     coordinates?: string;
     placeName?: string;
+    bookingStopsAt?: string;
   };
   ok?: boolean;
 };
@@ -210,7 +209,9 @@ export const action: ActionFunction = async ({ request, params }) => {
 
       const uploadedImage = await uploadImageToCloudinary(
         data,
-       `events/${event.createdAt.getFullYear()}${String(event.createdAt.getMonth() + 1).padStart(2, '0')}/${params.id}`
+        `events/${event.createdAt.getFullYear()}${String(
+          event.createdAt.getMonth() + 1
+        ).padStart(2, '0')}/${params.id}`
       );
 
       return uploadedImage.public_id;
@@ -219,7 +220,9 @@ export const action: ActionFunction = async ({ request, params }) => {
     unstable_createMemoryUploadHandler()
   );
 
-  const event = params.id ? await findEventWithRacesAndDocuments(params.id) : null;
+  const event = params.id
+    ? await findEventWithRacesAndDocuments(params.id)
+    : null;
 
   if (!event) {
     throw NotFound(t('Event not found'));
@@ -246,13 +249,14 @@ export const action: ActionFunction = async ({ request, params }) => {
   }
 
   const isUpdate = event.status !== 'auto';
-  const date = form.get('event-date') as string;
+  const date = formHelperReadDate(form, 'event-date');
   const image1 = form.get('/file/image/0') as string;
   const image2 = form.get('/file/image/1') as string;
   const image3 = form.get('/file/image/2') as string;
   const image4 = form.get('/file/image/3') as string;
   const image5 = form.get('/file/image/4') as string;
   const location = parseLocation(form.get('location') as string);
+  const bookingStopsAt = formHelperReadDate(form, 'booking-stops-at');
   const races: Race[] = (await findEventRaces(event.id)) || [];
   let eventStatus = event.status;
 
@@ -272,14 +276,21 @@ export const action: ActionFunction = async ({ request, params }) => {
   }
 
   const confirmedBookings = await findConfirmedBookings(event.id);
-  const hasRegistrations: boolean = !!confirmedBookings && confirmedBookings?.length > 0;
+  const hasRegistrations: boolean =
+    !!confirmedBookings && confirmedBookings?.length > 0;
+
+  if (bookingStopsAt) {
+    bookingStopsAt.setUTCHours(23);
+    bookingStopsAt.setUTCMinutes(59);
+    bookingStopsAt.setUTCSeconds(59);
+  }
 
   const data: CreateEventInput = {
     id: params.id as string,
     name: form.get('event-name') as string,
     sportId: parseInt(form.get('sport') as string),
     difficultyId: parseInt(form.get('difficulty') as string),
-    startAt: new Date(date), //TODO: hour
+    startAt: date,
     lat: location.lat,
     lng: location.lng,
     // @ts-ignore TODO: find out the proper type declaration for json inputs in prisma
@@ -303,7 +314,8 @@ export const action: ActionFunction = async ({ request, params }) => {
     regulationPath: path,
     regulationContent: inlineRegulation || event.regulationContent,
     regulationFileName,
-    status: eventStatus
+    status: eventStatus,
+    bookingStopsAt
   };
 
   const perks: string[] = form.getAll('perks') as string[];
@@ -332,7 +344,12 @@ export const action: ActionFunction = async ({ request, params }) => {
         .number()
         .nonnegative({ message: t('Nonexistent Sport') })
         .lte(7, { message: t('Nonexistent Sport') }),
-      startAt: z.date().min(new Date(), { message: t('Future Date') }),
+      startAt: z
+        .date({
+          required_error: t('Field Required'),
+          invalid_type_error: t('Invalid Date Format')
+        })
+        .min(new Date(), { message: t('Future Date') }),
       placeName: z.string({
         required_error: t('Field required'),
         invalid_type_error: t('Field required')
@@ -357,16 +374,38 @@ export const action: ActionFunction = async ({ request, params }) => {
         .nonempty(t('At least 1 race')),
       regulationPath: z.string().nullable(),
       regulationContent: z.string().nullable(),
-      externalWebsite: z.string().url(t('External Website Url Error')).nullable()
+      externalWebsite: z
+        .string()
+        .url(t('External Website Url Error'))
+        .nullable()
     })
     .and(
-      data.useExternalBooking
-        ? z.object({
-            externalBookingUrl: z
-              .string({ invalid_type_error: t('Invalid URL') })
-              .url({ message: t('Invalid URL') })
-          })
-        : z.object({})
+      z.object(
+        data.useExternalBooking
+          ? {
+              externalBookingUrl: z
+                .string({ invalid_type_error: t('Invalid URL') })
+                .url({ message: t('Invalid URL') })
+            }
+          : {}
+      )
+    )
+    .and(
+      z.object(
+        data.useExternalBooking
+          ? {}
+          : {
+              bookingStopsAt: z
+                .date({
+                  required_error: t('Field required'),
+                  invalid_type_error: t('Invalid Date Format')
+                })
+                .max(
+                  data.startAt || new Date('2100-12-31'),
+                  t('Date Limit = to event start date')
+                )
+            }
+      )
     )
     .refine(
       (s) =>
@@ -428,7 +467,7 @@ export const action: ActionFunction = async ({ request, params }) => {
         }
 
         return redirect(
-            `/o/event/${event.id}/dashboard?message=${t('Event Published')}`
+          `/o/event/${event.id}/dashboard?message=${t('Event Published')}`
         );
       } else {
         // User is not yet an organizer, so let's redirect him to create his organizer profile.
@@ -520,8 +559,9 @@ export default function OrganizerEventRoute() {
     useState<boolean>(false);
   const [isPublish, setIsPublish] = useState<boolean>(false);
   const [isUnpublish, setIsUnpublish] = useState<boolean>(false);
+  const [eventDate, setEventDate] = useState<Date | null>(event.startAt ? new Date(event.startAt) : null);
   const [selectedDifficulty, setSelectedDifficulty] = useState<number>(
-      event.difficultyId ? event?.difficultyId : 1
+    event.difficultyId ? event?.difficultyId : 1
   );
   const inputEl = useRef<HTMLInputElement>(null);
   const deleteForm = useRef<HTMLFormElement>(null);
@@ -753,6 +793,10 @@ export default function OrganizerEventRoute() {
     return 0;
   });
 
+  function handleOnEventDateChange(date: Date | null) {
+    setEventDate(date);
+  }
+
   function handleOnSelectDifficulty(value: number) {
     setSelectedDifficulty(value);
   }
@@ -868,6 +912,7 @@ export default function OrganizerEventRoute() {
                   name="event-date"
                   date={event?.startAt}
                   minDate={new Date()}
+                  onChange={handleOnEventDateChange}
                 />
               </FormField>
 
@@ -896,33 +941,17 @@ export default function OrganizerEventRoute() {
               }
             />
 
-            <FormField
-              label={t('How Is Booking Going To Be Managed')}
-              error={actionData?.errors?.externalBookingUrl}
-            >
-              <PickBookingSystem
-                name="booking"
-                t={t}
-                useExternal={event?.useExternalBooking}
-                url={event?.externalBookingUrl}
-              />
-            </FormField>
-
-            <FormField
-              label={t('Bib Starting Number')}
-              id="bib-number"
-              description={t('Bib Starting Number Description')}
-              error={actionData?.errors?.bibStartingNumber}
-            >
-              <TextField
-                name="bib-number"
-                type="number"
-                placeholder={t('Bib number placeholder')}
-                defaultValue={event.bibStartingNumber || 1}
-                className="w-full md:w-48"
-                disabled={isPublished && hasRegistrations}
-              />
-            </FormField>
+            <PickBookingSystem
+              name="booking"
+              t={t}
+              event={event}
+              isPublished={isPublished}
+              hasRegistrations={hasRegistrations}
+              errorBibStartingNumber={actionData?.errors?.bibStartingNumber}
+              errorBookingStopsAt={actionData?.errors?.bookingStopsAt}
+              errorExternalBookingUrl={actionData?.errors?.externalBookingUrl}
+              eventDate={eventDate}
+            />
 
             <FormField
               label={t('Event Photos')}

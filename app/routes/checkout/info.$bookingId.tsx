@@ -70,6 +70,7 @@ import type {
 import {
   badRequest,
   displayTimeOfDay,
+  formHelperReadDate,
   validateIdentityCard,
   validatePtVatNumber
 } from '~/utils/misc';
@@ -179,14 +180,7 @@ export const action: ActionFunction = async ({ request, params }) => {
     }
 
     const phoneNumber = form.get('phone-number') as string;
-    const rawBirthDate = form.get('birthdate') as string || undefined;
-    const birthDate =
-      rawBirthDate && new Date(rawBirthDate).toString() !== 'Invalid Date'
-        ? new Date(rawBirthDate)
-        : undefined;
-
-
-    console.log('The bd is >>', birthDate, '<---');
+    const birthDate = formHelperReadDate(form, 'birthdate');
 
     const data: ParticipantInput = {
       id: form.get('participant-id') as string,

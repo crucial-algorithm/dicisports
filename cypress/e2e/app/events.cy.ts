@@ -1,7 +1,7 @@
 describe('Event', () => {
   before(() => {
-    cy.task('db:reset');
-    cy.task('clearDownloadFolder');
+    // cy.task('db:reset');
+    // cy.task('clearDownloadFolder');
   });
 
   context('Public', () => {
@@ -286,6 +286,32 @@ describe('Event', () => {
 
         .get('#publish')
         .should('exist');
+    });
+
+    it('should disable booking limit date after event date', () => {
+      cy.intercept('GET', '/o/event/*?_data=routes*')
+        .as('EventRequests')
+        .visitAndWaitForHydration('/o')
+        .get('button[name=create-event]')
+        .click()
+
+        .wait('@EventRequests')
+
+        .pickDate(
+          'event-date',
+          new Date(`${new Date().getUTCFullYear() + 1}-10-21`)
+            .toISOString()
+            .split('T')[0]
+        )
+
+        .get('input[name=booking-stops-at]')
+        .should('exist')
+        .click()
+
+        .get(`[data-cy-year=${new Date().getUTCFullYear() + 1}][data-cy-month=10][data-cy-day=22]`)
+        .parent()
+        .should('exist')
+        .and('have.class', 'p-disabled');
     });
 
     it('should publish an event', () => {

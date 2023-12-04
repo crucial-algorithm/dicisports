@@ -14,15 +14,21 @@ type DatePickerOptions = {
   label?: string;
   date: Nullable<Date>;
   minDate?: Date;
-  viewDate?: Nullable<Date>
-} & React.ComponentProps<'input'>;
+  maxDate?: Date;
+  viewDate?: Nullable<Date>;
+  onChange?: (v: Date | null) => void;
+  disabled?: boolean;
+} & Omit<React.ComponentProps<'input'>, 'onChange'>;
 
 export default function BasicDatePicker({
   name,
   label,
   date = null,
   minDate,
-  viewDate
+  maxDate,
+  viewDate,
+  disabled,
+  onChange
 }: DatePickerOptions) {
   const [value, setValue] = React.useState<Date | null>(date);
   const formProps = useContext(FormContext);
@@ -38,6 +44,7 @@ export default function BasicDatePicker({
   function handleOnChange(event: FormEvent<(Date | null)>) {
     formProps.setDirty && formProps.setDirty();
     setValue(event.value as Date);
+    onChange && onChange(event.value ? event.value as Date : null);
   }
 
   return (
@@ -49,10 +56,12 @@ export default function BasicDatePicker({
         mask="9999-99-99"
         name={name}
         minDate={minDate}
+        maxDate={maxDate}
         value={value}
         onChange={handleOnChange}
         dateTemplate={dateTemplateWithCypressTags}
         viewDate={viewDate}
+        disabled={disabled}
       />
     </>
   );
