@@ -97,6 +97,8 @@ jobs:
           DEFAULT_COMMISSION: 25
           ORGANIZER_REVIEWERS_EMAILS: "admin@gmail.com, admin1@gmail.com"
 
+          DOMAIN_URL: "http://localhost:3000"
+
       - uses: actions/upload-artifact@v2
         if: failure()
         with:
