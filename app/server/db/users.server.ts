@@ -34,6 +34,30 @@ async function findUserByEmail(email: string) {
   return dbUserToUser(user);
 }
 
+async function findUserById(id: string) {
+  const user = await db.user.findUnique({
+    where: { id },
+    select: {
+      id: true,
+      createdAt: true,
+      updatedAt: true,
+      email: true,
+      password: false,
+      salt: false,
+      lat: true,
+      lng: true,
+      location: true,
+      name: true,
+      role: true
+    }
+  });
+
+  if (user === null) {
+    return null;
+  }
+  return dbUserToUser(user);
+}
+
 /**
  * This method is used for login, so don't use dbUserToUser!
  * @param email
@@ -162,5 +186,6 @@ export {
   createUser,
   updateUser,
   loginUser,
-  updateUserPassword
+  updateUserPassword,
+  findUserById
 };

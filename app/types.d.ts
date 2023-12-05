@@ -380,6 +380,7 @@ type ParticipantInput = {
   birthdate: Date;
   phoneNumber: number;
   identityCard?: string | null;
+  vatNumber?: string | null;
   federationNumber?: number | null;
   shirtSize: number;
   nationality?: number | null;
