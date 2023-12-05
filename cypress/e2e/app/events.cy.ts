@@ -284,7 +284,7 @@ describe('Event', () => {
         .should('exist');
     });
 
-    it.only('should disable booking on the day before event date', () => {
+    it('should disable booking on the day before event date', () => {
       cy.intercept('GET', '/o/event/*?_data=routes*')
         .as('EventRequests')
         .visitAndWaitForHydration('/o')
