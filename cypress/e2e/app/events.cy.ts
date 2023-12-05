@@ -45,9 +45,8 @@ describe('Event', () => {
         .get('[data-cy=name]')
         .contains(name)
 
-
         .get('[data-cy=date]')
-        .contains(formatter(new Date(Date.now() + 6 * 30.5 * 86400 * 1000)))
+        .contains(formatter(new Date(`${new Date().getUTCFullYear() + 1}-10-21`)))
 
         .get('[data-cy=location-link]')
         .should('have.attr', 'href')
@@ -193,10 +192,7 @@ describe('Event', () => {
           cy.get('.p-dropdown-items > li').eq(2).click();
         })
 
-        .pickDate(
-          'event-date',
-          new Date(Date.now() + 86400 * 1000).toISOString().split('T')[0]
-        )
+        .pickDate('event-date', futureDate(11, 21).toISOString().split('T')[0])
 
         .pickLocationInInlinedMap('location')
 
@@ -244,7 +240,7 @@ describe('Event', () => {
 
         .pickDate(
           'earlyBirdValidUntil',
-          new Date(Date.now() + 86400 * 1000).toISOString().split('T')[0]
+          futureDate(10, 21).toISOString().split('T')[0]
         )
 
         .write('description', '10km run')
@@ -286,6 +282,31 @@ describe('Event', () => {
 
         .get('#publish')
         .should('exist');
+    });
+
+    it('should disable booking on the day before event date', () => {
+      cy.intercept('GET', '/o/event/*?_data=routes*')
+        .as('EventRequests')
+        .visitAndWaitForHydration('/o')
+        .get('button[name=create-event]')
+        .click()
+
+        .wait('@EventRequests')
+
+        .pickDate('event-date', futureDate(10, 21).toISOString().split('T')[0])
+
+        .get('input[name=booking-stops-at]')
+        .should('exist')
+        .click()
+
+        .get(
+          `[data-cy-year=${
+            new Date().getUTCFullYear() + 1
+          }][data-cy-month=10][data-cy-day=21]`
+        )
+        .parent()
+        .should('exist')
+        .and('have.class', 'p-disabled');
     });
 
     it('should publish an event', () => {
@@ -581,9 +602,10 @@ describe('Event', () => {
         .get('input[name=priceEarlyBird]')
         .type('15')
 
+        // assumes seed data is creating a similar future date
         .pickDate(
           'earlyBirdValidUntil',
-          new Date(Date.now() + 86400 * 1000).toISOString().split('T')[0]
+          futureDate(10, 10).toISOString().split('T')[0]
         )
 
         .write('description', '10km run')
@@ -628,7 +650,7 @@ describe('Event', () => {
 
         .pickDate(
           'earlyBirdValidUntil',
-          new Date(Date.now() + 86400 * 1000).toISOString().split('T')[0]
+          futureDate(10, 10).toISOString().split('T')[0]
         )
 
         .intercept('POST', '/o/event/MY4bvgxDbMtGv8rbYe5d/race/*')
@@ -1016,11 +1038,8 @@ describe('Event', () => {
         .contains('Avenida Fernão De Magalhães, onde é? Defina no mapa.');
     });
 
-
     it('should redirect to external booking', () => {
-      cy.visitAndWaitForHydration(
-        '/pt/event/corrida-spedro-one-place'
-      )
+      cy.visitAndWaitForHydration('/pt/event/corrida-spedro-one-place')
         .get('#book-race-2Q8dMm4gz7b2GeuGRocj')
         .should('have.prop', 'href')
         .and((l) => {
@@ -1207,4 +1226,10 @@ function verifyRace(
       .click()
       .readFile(`./cypress/downloads/${name}.gpx`);
   }
+}
+
+function futureDate(month = 10, day = 21, offset = 1) {
+  const now = new Date();
+
+  return new Date(`${now.getUTCFullYear() + offset}-${month}-${day}`);
 }

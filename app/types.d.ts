@@ -129,13 +129,14 @@ type CreateEventInput = {
   slug?: string;
   sportId: number;
   difficultyId: number;
-  startAt: Date | string;
+  startAt?: Date;
   lat: number | null;
   lng: number | null;
   location: Prisma.InputJsonValue | Prisma.NullableJsonNullValueInput;
   placeName: string | null;
   useExternalBooking: boolean;
   externalBookingUrl?: string | null;
+  bookingStopsAt?: Date;
   description?: string | null;
   externalWebsite?: string | null;
   directions: string | null;
@@ -470,7 +471,7 @@ type ParticipantInput = {
   firstName: string;
   lastName: string;
   gender: string;
-  birthdate: Date;
+  birthdate?: Date | undefined;
   phoneNumber: number;
   identityCard?: string | null;
   vatNumber?: string | null;

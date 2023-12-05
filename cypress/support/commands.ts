@@ -69,14 +69,22 @@ function pickOptionFromSelect(name: string, position: number) {
     .click();
 }
 
+function convertDateInput(value: string) {
+  if (value.split('-').length === 1) {
+    return [value.substring(0, 4), value.substring(4, 6), value.substring(6)].map(Number);
+  }
+
+  return value.split('-').map(Number);
+}
+
 /**
  *
  * @param name
- * @param date  format yyyy-mm-dd
+ * @param date  format yyyy-mm-dd | yyyymmdd
  * @param outside  format yyyy-mm-dd
  */
 function pickDate(name: string, date: string, outside = 'body') {
-  const [year, month, day] = date.split('-').map(Number);
+  const [year, month, day] = convertDateInput(date);
 
   cy.get(`input[name=${name}]`)
     .should('exist') // this + clear should be enough to delay typing and stop using 0 as prefix

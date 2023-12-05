@@ -26,7 +26,7 @@ const FormField: React.FC<Props> = ({
   const descriptionId = `${inputId}-description`;
 
   return (
-    <div className={clsx('mb-8', className)} data-cy={dataCy} onClick={onClick}>
+    <div className={clsx('mb-8 form-field', className)} data-cy={dataCy} onClick={onClick}>
       <div
         className={clsx('flex flex-col', {
           'mb-2': !description

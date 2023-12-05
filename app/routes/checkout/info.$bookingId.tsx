@@ -70,6 +70,7 @@ import type {
 import {
   badRequest,
   displayTimeOfDay,
+  formHelperReadDate,
   validateIdentityCard,
   validatePtVatNumber
 } from '~/utils/misc';
@@ -179,12 +180,14 @@ export const action: ActionFunction = async ({ request, params }) => {
     }
 
     const phoneNumber = form.get('phone-number') as string;
+    const birthDate = formHelperReadDate(form, 'birthdate');
+
     const data: ParticipantInput = {
       id: form.get('participant-id') as string,
       firstName: form.get('first-name') as string,
       lastName: form.get('last-name') as string,
       gender: form.get('gender') as string,
-      birthdate: new Date(form.get('birthdate') as string),
+      birthdate:  birthDate,
       phoneNumber: Number(phoneNumber),
       identityCard: (form.get('identity-card') as string) || '',
       vatNumber: (form.get('vat-number') as string) || '',
@@ -209,8 +212,11 @@ export const action: ActionFunction = async ({ request, params }) => {
           .string({ required_error: t('Field Required') })
           .min(1, { message: t('Field Required') }),
         birthdate: z
-          .date({ required_error: t('Field Required') })
-          .max(new Date(), t('Past Date')),
+          .date({
+            required_error: t('Field Required'),
+            invalid_type_error: t('Invalid Date Format')
+          })
+          .max(new Date(), t('Date Must Be In The Past')),
         phoneNumber: z
           .number({
             required_error: t('Field Required'),
@@ -313,7 +319,9 @@ export const action: ActionFunction = async ({ request, params }) => {
       actionId === CheckoutInfoActions.checkout ||
       actionId === CheckoutInfoActions.updateAndSave
     ) {
+
       ParticipantSchema.parse(data);
+
       await updateParticipant(data);
       const raceId = form.get('raceId') as string;
 
