@@ -140,7 +140,7 @@ export default function PickBookingSystem({
             date={
               event.bookingStopsAt ? new Date(event.bookingStopsAt) : undefined
             }
-            maxDate={eventDate || undefined}
+            maxDate={eventDate ? new Date(eventDate.getTime() - 86400000) : undefined}
             viewDate={
               event.bookingStopsAt ? new Date(event.bookingStopsAt) : eventDate
             }

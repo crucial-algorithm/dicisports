@@ -1,7 +1,7 @@
 describe('Event', () => {
   before(() => {
-    // cy.task('db:reset');
-    // cy.task('clearDownloadFolder');
+    cy.task('db:reset');
+    cy.task('clearDownloadFolder');
   });
 
   context('Public', () => {
@@ -44,7 +44,6 @@ describe('Event', () => {
 
         .get('[data-cy=name]')
         .contains(name)
-
 
         .get('[data-cy=date]')
         .contains(formatter(new Date(Date.now() + 6 * 30.5 * 86400 * 1000)))
@@ -308,7 +307,11 @@ describe('Event', () => {
         .should('exist')
         .click()
 
-        .get(`[data-cy-year=${new Date().getUTCFullYear() + 1}][data-cy-month=10][data-cy-day=22]`)
+        .get(
+          `[data-cy-year=${
+            new Date().getUTCFullYear() + 1
+          }][data-cy-month=10][data-cy-day=22]`
+        )
         .parent()
         .should('exist')
         .and('have.class', 'p-disabled');
@@ -1042,11 +1045,8 @@ describe('Event', () => {
         .contains('Avenida Fernão De Magalhães, onde é? Defina no mapa.');
     });
 
-
     it('should redirect to external booking', () => {
-      cy.visitAndWaitForHydration(
-        '/pt/event/corrida-spedro-one-place'
-      )
+      cy.visitAndWaitForHydration('/pt/event/corrida-spedro-one-place')
         .get('#book-race-2Q8dMm4gz7b2GeuGRocj')
         .should('have.prop', 'href')
         .and((l) => {

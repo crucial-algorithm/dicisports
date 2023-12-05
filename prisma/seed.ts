@@ -125,10 +125,13 @@ function events() {
   const futureDate = new Date(Date.now() + 6 * 30.5 * 86400 * 1000);
 
   return eventsSeed.map((e) => {
+    const startAt = new Date(e.startAt ? e.startAt : futureDate);
+    const bookingStopsAt = new Date(startAt.getTime() - 86400 * 1000);
+
     return {
       ...e,
-      startAt: new Date(e.startAt ? e.startAt : futureDate),
-      bookingStopsAt: new Date(e.startAt ? e.startAt : futureDate),
+      startAt,
+      bookingStopsAt,
       endAt: new Date(new Date(futureDate.getTime() + 6 * 60 * 1000)),
       createdAt: new Date('2021-12-31T08:00:00Z'),
       updatedAt: new Date('2021-12-31T08:00:00Z')
