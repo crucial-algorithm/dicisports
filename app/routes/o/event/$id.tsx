@@ -275,9 +275,20 @@ export const action: ActionFunction = async ({ request, params }) => {
     eventStatus = Status.draft;
   }
 
+  // bib start number, and registration system in general, can't be
+  // changed if the event already has registration recorded
   const confirmedBookings = await findConfirmedBookings(event.id);
   const hasRegistrations: boolean =
     !!confirmedBookings && confirmedBookings?.length > 0;
+  const useExternalBooking = hasRegistrations
+    ? event.useExternalBooking
+    : form.get('booking') === 'external';
+  const bibNumberField = form.get('bib-number');
+  const bibStartingNumber = useExternalBooking
+    ? 1
+    : hasRegistrations
+    ? event.bibStartingNumber
+    : Number(bibNumberField || 1);
 
   if (bookingStopsAt) {
     bookingStopsAt.setUTCHours(23);
@@ -296,15 +307,12 @@ export const action: ActionFunction = async ({ request, params }) => {
     // @ts-ignore TODO: find out the proper type declaration for json inputs in prisma
     location: location.location,
     placeName: (form.get('place4location') as string) || null,
-    useExternalBooking: form.get('booking') === 'external',
+    useExternalBooking,
+    bookingStopsAt,
     externalBookingUrl: (form.get('booking-url') as string) || null,
     description: (form.get('event-description') as string) || null,
     directions: (form.get('get-there') as string) || null,
-    // We shouldn't allow user to update bib starting number when there are booked participants
-    // Otherwise bib numbers will skip, or we'll try to assign already assigned numbers
-    bibStartingNumber: hasRegistrations
-      ? (event.bibStartingNumber as number)
-      : parseInt(form.get('bib-number') as string),
+    bibStartingNumber,
     image1: processImgField(image1, isUpdate),
     image2: processImgField(image2, isUpdate),
     image3: processImgField(image3, isUpdate),
@@ -314,8 +322,7 @@ export const action: ActionFunction = async ({ request, params }) => {
     regulationPath: path,
     regulationContent: inlineRegulation || event.regulationContent,
     regulationFileName,
-    status: eventStatus,
-    bookingStopsAt
+    status: eventStatus
   };
 
   const perks: string[] = form.getAll('perks') as string[];

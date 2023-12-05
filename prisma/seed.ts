@@ -122,7 +122,7 @@ function groupsSpirit() {
 function events() {
 
   // a date in ~ 6 months
-  const futureDate = new Date(Date.now() + 6 * 30.5 * 86400 * 1000);
+  const futureDate = new Date(`${new Date().getUTCFullYear() + 1}-10-21`);
 
   return eventsSeed.map((e) => {
     const startAt = new Date(e.startAt ? e.startAt : futureDate);
@@ -132,7 +132,7 @@ function events() {
       ...e,
       startAt,
       bookingStopsAt,
-      endAt: new Date(new Date(futureDate.getTime() + 6 * 60 * 1000)),
+      endAt: startAt,
       createdAt: new Date('2021-12-31T08:00:00Z'),
       updatedAt: new Date('2021-12-31T08:00:00Z')
     };
