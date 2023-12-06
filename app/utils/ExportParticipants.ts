@@ -19,8 +19,6 @@ export default async function exportRaceParticipantsToExcel({
   worksheet.columns = [
     { header: t('Athlete'), key: 'athlete', width: 20 },
     { header: t('Team'), key: 'team', width: 20 },
-    { header: t('Age Group'), key: 'ageGroup', width: 10 },
-    { header: t('Status'), key: 'status', width: 20 },
     { header: t('Bib Number'), key: 'bibNumber', width: 10 },
     { header: t('Identity Card'), key: 'identityCard', width: 20 },
     { header: t('VAT Number'), key: 'vatNumber', width: 20 }
@@ -35,12 +33,12 @@ export default async function exportRaceParticipantsToExcel({
     return worksheet.addRow({
       athlete: `${r.participant.firstName} ${r.participant.lastName}`,
       team: r.team ? r.team.name : t('Individual'),
-      ageGroup: r.participant.gender,
-      status: t(r.booking?.status as string),
       bibNumber: r.bibNumber ? r.bibNumber : '-',
       race: r.race.name,
-      identityCard: r.participant.identityCard,
-      vatNumber: r.participant.vatNumber
+      identityCard: r.participant.identityCard
+        ? r.participant.identityCard
+        : '-',
+      vatNumber: r.participant.vatNumber ? r.participant.vatNumber : '-'
     });
   });
 
