@@ -35,8 +35,10 @@ export default async function exportRaceParticipantsToExcel({
       team: r.team ? r.team.name : t('Individual'),
       bibNumber: r.bibNumber ? r.bibNumber : '-',
       race: r.race.name,
-      identityCard: r.participant.identityCard,
-      vatNumber: r.participant.vatNumber
+      identityCard: r.participant.identityCard
+        ? r.participant.identityCard
+        : '-',
+      vatNumber: r.participant.vatNumber ? r.participant.vatNumber : '-'
     });
   });
 
