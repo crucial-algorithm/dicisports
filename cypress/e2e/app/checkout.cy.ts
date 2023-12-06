@@ -437,7 +437,7 @@ describe('Checkout', () => {
 
         .pickOptionFromSelect('gender', 2)
 
-        .pickDate('birthdate', '2003-10-21')
+        .pickDate('birthdate', '20031021')
 
         .get('input[name=phone-number]')
         .type('937654321')
@@ -472,7 +472,7 @@ describe('Checkout', () => {
 
         .pickOptionFromSelect('gender', 2)
 
-        .pickDate('birthdate', '2003-10-21')
+        .pickDate('birthdate', '20031021')
 
         .get('input[name=phone-number]')
         .type('937654321')
@@ -506,7 +506,7 @@ describe('Checkout', () => {
 
         .pickOptionFromSelect('gender', 2)
 
-        .pickDate('birthdate', '2003-10-21')
+        .pickDate('birthdate', '20031001')
 
         .get('input[name=phone-number]')
         .type('937654321')
@@ -774,7 +774,7 @@ describe('Checkout', () => {
 
         .pickOptionFromSelect('gender', 2)
 
-        .pickDate('birthdate', '2003-10-21')
+        .pickDate('birthdate', '20031021')
 
         .get('input[name=phone-number]')
         .type('937654321')
@@ -927,7 +927,7 @@ describe('Checkout', () => {
 
         .pickOptionFromSelect('gender', 2)
 
-        .pickDate('birthdate', '2003-10-21')
+        .pickDate('birthdate', '20031021')
 
         .get('input[name=phone-number]')
         .type('937654321')
@@ -977,7 +977,7 @@ describe('Checkout', () => {
 
         .pickOptionFromSelect('gender', 2)
 
-        .pickDate('birthdate', '2003-10-21')
+        .pickDate('birthdate', '20031021')
 
         .get('input[name=phone-number]')
         .type('937654321')
@@ -1048,7 +1048,7 @@ describe('Checkout', () => {
 
         .pickOptionFromSelect('gender', 2)
 
-        .pickDate('birthdate', '2003-10-21')
+        .pickDate('birthdate', '20031021')
 
         .get('input[name=phone-number]')
         .type('937654321')
@@ -1911,7 +1911,7 @@ function registerParticipant(
 
     .pickOptionFromSelect('gender', 2)
 
-    .pickDate('birthdate', '2003-10-21')
+    .pickDate('birthdate', '20031021')
 
     .get('input[name=phone-number]')
     .type('937654321')
@@ -1986,7 +1986,7 @@ function bookParticipant(slug: string, raceId: string) {
 
         .pickOptionFromSelect('gender', 2)
 
-        .pickDate('birthdate', '2003-10-21')
+        .pickDate('birthdate', '20031021')
 
         .get('input[name=phone-number]')
         .type('937654321')

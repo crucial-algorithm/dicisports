@@ -5,12 +5,15 @@ import { json } from '@remix-run/router';
 import { CheckoutStatus } from '@prisma/client';
 
 import Config from '~/server/config.server';
-import { updateBookingStatus } from '~/server/db/booking.server';
+import { findBooking, findBookingCart, updateBookingStatus } from '~/server/db/booking.server';
 
 import { decline, findPayment, pay, saveNotification } from '~/server/db/payments.server';
 import type { SibsWebHookSchema } from '~/types';
 import { assignParticipantsBibNumber, findUserBookingParticipants } from '~/server/db/participant.server';
 import type { RaceParticipant } from '~/types';
+import { findEvent } from '~/server/db/events.server';
+import { sendBookingConfirmationEmail } from '~/server/email.server';
+import { findUserById } from '~/server/db/users.server';
 
 export const action: ActionFunction = async ({ request }) => {
   console.log('SIBS webhook called');
@@ -52,6 +55,7 @@ export const action: ActionFunction = async ({ request }) => {
 
         await assignParticipantsBibNumber(raceParticipants, raceParticipants[0].eventId as string);
         await updateBookingStatus(payment.bookingId, CheckoutStatus.confirmed);
+        await sendConfirmationEmail(payment.bookingId, raceParticipants[0].eventId as string);
       }
     }
 
@@ -83,4 +87,26 @@ function decrypt(encryptedText: string, key: string, iv: string, authTag: string
   const decryptedText = decipher.update(Buffer.from(encryptedText, 'base64'));
 
   return JSON.parse(decryptedText.toString()) as SibsWebHookSchema;
+}
+
+async function sendConfirmationEmail(bookingId: string, eventId: string) {
+  const booking = await findBooking(bookingId);
+  const event = await findEvent(eventId);
+  const cart = await findBookingCart(bookingId);
+
+  if (!booking) {
+    return new Response('No booking', { status: 500 });
+  }
+
+  const user = await findUserById(booking.userId);
+
+  if (user) {
+    await sendBookingConfirmationEmail({
+      emailAddress: user.email,
+      event,
+      booking,
+      cart,
+      userName: user.name
+    });
+  }
 }

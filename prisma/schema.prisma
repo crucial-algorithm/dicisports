@@ -129,6 +129,7 @@ model Event {
   updatedAt             DateTime    @updatedAt @map("updated_at")
   hideFromLatestEvents  Boolean     @default(false) @map("hide_from_latest_events")
   externalWebsite       String?     @map("external_website")
+  bookingStopsAt        DateTime?   @map("booking_stops_at")
   documents             Document[]
   perks                 Perk[]
   races                 Race[]

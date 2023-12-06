@@ -42,7 +42,8 @@
 
   "Field Required": "Campo obrigatório",
   "Min 2 Chars": "Insere no mínimo 2 caracteres",
-  "Past Date": "Data tem que estar no passado",
+  "Date Must Be In The Past": "Data tem que estar no passado",
+  "Invalid Date Format": "Data inválida",
   "9 Digits": "Número tem de conter 9 dígitos",
   "Invalid number": "Número inválido",
   "Max 9 Number": "Apenas permitidos 9 dígitos",

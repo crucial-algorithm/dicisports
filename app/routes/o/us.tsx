@@ -20,13 +20,18 @@ import { z, ZodError } from 'zod';
 import Main from '~/components/shared/Main';
 import { getUser, requireUser } from '~/server/auth/session.server';
 import i18n from '~/server/i18n.server';
-import { badRequest, getDomainUrl } from '~/utils/misc';
+import { badRequest } from '~/utils/misc';
 import {
   createOrganizer,
   findOrganizer,
   updateOrganizer
 } from '~/server/db/organizer.server';
-import type { Organizer, OrganizerInput, OrganizerType, ResponseFeedback } from '~/types';
+import type {
+  Organizer,
+  OrganizerInput,
+  OrganizerType,
+  ResponseFeedback
+} from '~/types';
 import { H2, H4, Paragraph } from '~/components/shared/typography';
 import { uploadImageToCloudinary } from '~/server/storage/cloudinary.server';
 import Id from '~/server/utils/Id.server';
@@ -189,15 +194,12 @@ export const action: ActionFunction = async ({ request }) => {
           .refine((v) => v, { message: t('Accept Dici Terms') })
       }).parse({ terms });
 
-      const domainUrl = getDomainUrl(request);
-
       await createOrganizer(data);
       feedback = { severity: 'success', message: t('Organizer Created') };
 
       await sendSubmittedOrganizerProfileConfirmation({
         emailAddress: data.email,
-        organizerName: data.email,
-        domainUrl
+        organizerName: data.email
       });
 
       const { ORGANIZER_REVIEWERS_EMAILS: organizerReviewersEmails } = Config();
@@ -205,8 +207,7 @@ export const action: ActionFunction = async ({ request }) => {
       await sendSubmittedOrganizerProfileNotification({
         emailAddress: organizerReviewersEmails,
         organizerId,
-        name: data.name,
-        domainUrl
+        name: data.name
       });
     }
 
