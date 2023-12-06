@@ -339,7 +339,6 @@ model RaceParticipant {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   @@unique([participantId, raceId])
-  @@unique([eventId, bibNumber])
   @@map("race_participants")
 }
 
