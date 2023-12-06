@@ -29,6 +29,12 @@ function parseLocation(locationValue: string): {
   return { lat, lng, location };
 }
 
+
+const Dates = {
+  max: (a: Date, b: Date) => a.getTime() > b.getTime() ? a : b,
+  min: (a: Date, b: Date) => a.getTime() < b.getTime() ? a : b
+};
+
 function processImgField(
   value: string | null | File,
   isUpdate: boolean
@@ -51,4 +57,11 @@ function InternalServerError(message: string) {
   return new Response(message, { status: 500 });
 }
 
-export { parseLocation, processImgField, Unauthorized, NotFound, InternalServerError };
+export {
+  parseLocation,
+  processImgField,
+  Unauthorized,
+  NotFound,
+  InternalServerError,
+  Dates
+};
