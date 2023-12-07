@@ -45,6 +45,10 @@ import {
 } from '~/server/db/booking.server';
 import type { EventWithRacesDifficultiesAndDocuments } from '~/server/db/events.server';
 import { findEventWithRacesAndDocuments } from '~/server/db/events.server';
+import type {
+  RaceParticipantWithRaceAndParticipant,
+  RaceParticipantWithRaceParticipantAndTeam
+} from '~/server/db/participant.server';
 import {
   findRaceParticipant,
   findUserBookingParticipants,
@@ -63,7 +67,6 @@ import type {
   Participant,
   ParticipantInput,
   Race,
-  RaceParticipant,
   ShirtSize,
   UICartRow
 } from '~/types';
@@ -84,7 +87,7 @@ import { FetcherForm } from '~/components/shared/form/UploadForm';
 type LoaderData = {
   event: EventWithRacesDifficultiesAndDocuments;
   cart: UICartRow[];
-  raceParticipants: RaceParticipant[];
+  raceParticipants: RaceParticipantWithRaceParticipantAndTeam[];
   userParticipants: Participant[];
   savedParticipants: Participant[] | null;
   shirtSizes: ShirtSize[];
@@ -510,7 +513,7 @@ export default function CheckoutInfoRoute() {
       savedParticipants?.length === 1 ? savedParticipants[0] : null
     );
   const [missingParticipants, setMissingParticipants] = useState<
-    RaceParticipant[]
+    RaceParticipantWithRaceAndParticipant[]
   >([]);
   const [checkedTermsAndRegulation, setCheckedTermsAndRegulation] = useState<{
     terms: boolean;
@@ -715,10 +718,10 @@ export default function CheckoutInfoRoute() {
         <div className="w-full mb-8 flex flex-row scroll-mx-2 items-center items-start flex-nowrap overflow-x-auto snap-x">
           {raceParticipants
             .sort(
-              (a: RaceParticipant, b: RaceParticipant) =>
+              (a, b) =>
                 a.displayOrder - b.displayOrder
             )
-            .map((p: RaceParticipant, index: number) => (
+            .map((p, index) => (
               <div className="flex flex-col items-center mt-4" key={p.id}>
                 <div
                   className={clsx(

@@ -2,14 +2,14 @@ import Excel from 'exceljs';
 import { saveAs } from 'file-saver';
 import type { TFunction } from 'i18next';
 
-import type { RaceParticipant } from '~/types';
+import type { RaceParticipantWithRaceParticipantBookingAndTeam } from '~/server/db/participant.server';
 
 export default async function exportRaceParticipantsToExcel({
   raceParticipants,
   fileName,
   t
 }: {
-  raceParticipants: RaceParticipant[];
+  raceParticipants: RaceParticipantWithRaceParticipantBookingAndTeam[];
   fileName: string;
   t: TFunction;
 }) {

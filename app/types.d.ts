@@ -15,12 +15,13 @@ import type {
   Perk as DBPerk,
   Prisma,
   Race as DBRace,
-  RaceParticipant as DBRaceParticipant,
   ShirtSize as DBShirtSize,
   Sport as DBSport,
   Status as EventStatus,
   User as DBUser
 } from '@prisma/client';
+
+import type { findBookingCart } from '~/server/db/booking.server';
 
 type NonNullProperties<Type> = {
   [Key in keyof Type]-?: Exclude<Type[Key], null | undefined>;
@@ -122,66 +123,15 @@ type GroupInput = {
   description: string | null;
 } & DBGroup;
 
-type CreateEventInput = {
-  id: string;
-  name: string;
-  slug?: string;
-  sportId: number;
-  difficultyId: number;
-  startAt: Date | string;
-  lat: number | null;
-  lng: number | null;
-  location: Prisma.InputJsonValue | Prisma.NullableJsonNullValueInput;
-  placeName: string | null;
-  useExternalBooking: boolean;
-  externalBookingUrl?: string | null;
-  description?: string | null;
-  externalWebsite?: string | null;
-  directions: string | null;
-  bibStartingNumber: number;
-  image1?: string | null;
-  image2?: string | null;
-  image3?: string | null;
-  image4?: string | null;
-  image5?: string | null;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-  regulationPath: string | null;
-  regulationContent: string | null;
-  regulationFileName: string | null;
-  status?: EventStatus;
-};
+type CreateEventInput = Prisma.EventCreateInput;
 
 type Perk = {} & DBPerk;
 
-type CreatePerksInput = {
-  id?: string;
-  name: string;
-  createdAt?: Date | string;
-  isDefault: boolean;
-  isEnabled: boolean;
-  eventId: string;
-};
+type CreatePerksInput = Prisma.PerkUncheckedCreateInput;
 
 type Race = {} & DBRace;
 
-type CreateRaceInput = {
-  id: string | null;
-  name: string;
-  distance: number;
-  createdAt?: Date;
-  updatedAt?: Date;
-  startTime: number;
-  elevationGain: number;
-  elevationLoss?: number | null;
-  price: number;
-  priceEarlyBird?: number | null;
-  validUntil?: Date | null;
-  raceDescription?: string | null;
-  displayOrder?: number | null;
-  eventId: string;
-  track: string | null;
-};
+type CreateRaceInput = Prisma.RaceCreateInput;
 
 type GroupSpirit = {
   name: TranslationObject;
@@ -268,42 +218,13 @@ type Group = {
 } & DBGroup;
 
 type GroupSchedule = {
-  id?: string;
-  dayOfWeek: number;
-  timeOfDay: number;
   hour?: number;
   minute?: number;
-  groupId: string;
 } & DBGroupSchedule;
 
-type CreateScheduleInput = {
-  id?: string;
-  dayOfWeek: number;
-  timeOfDay: number;
-  groupId: string;
-};
+type CreateScheduleInput = Prisma.GroupScheduleUncheckedCreateInput;
 
-type CreateGroupInput = {
-  id?: string;
-  name: string;
-  slug?: string;
-  sportId?: number | null;
-  groupTypeId: number;
-  groupSpiritId: number;
-  lat: number;
-  lng: number;
-  location: string;
-  near: string;
-  dayOfWeek: number;
-  timeOfDay: number;
-  whatsapp?: string | null;
-  image1?: string | null;
-  image2?: string | null;
-  image3?: string | null;
-  createdAt?: Date | string;
-  createdById?: string;
-  updatedAt?: Date | string;
-};
+type CreateGroupInput = Prisma.GroupCreateInput;
 
 type GroupFilters = {
   spirit: number[] | null;
@@ -319,16 +240,7 @@ type Difficulty = {
   description: TranslationObject;
 } & DBDifficulty;
 
-type UICartRow = {
-  id: string;
-  raceId: string;
-  qty: number;
-  name: string;
-  price: number;
-  order: number;
-  distance: number;
-  startTime: number;
-};
+type UICartRow = Prisma.PromiseReturnType<typeof findBookingCart>;
 
 type RaceQty = {
   id: string;
@@ -340,22 +252,7 @@ type RaceQty = {
   qty: number;
 };
 
-type RaceParticipant = {
-  race: Race;
-  participant: Participant;
-  booking?: Booking;
-  team?: EventTeam | null;
-} & DBRaceParticipant;
-
-type RaceParticipantInput = {
-  id?: string;
-  participantId: string;
-  raceId: string;
-  bookingId: string;
-  eventId: string;
-  createdAt: Date;
-  updatedAt: Date;
-};
+type RaceParticipantInput = Prisma.RaceParticipantCreateInput;
 
 type UIRaceParticipant = {
   id: string;
@@ -507,7 +404,6 @@ export {
   Difficulty,
   UICartRow,
   RaceQty,
-  RaceParticipant,
   RaceParticipantInput,
   UIRaceParticipant,
   Participant,

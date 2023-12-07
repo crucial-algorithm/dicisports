@@ -32,7 +32,7 @@ async function findBooking(id: string): Promise<Booking | null> {
   });
 }
 
-async function findBookingCart(bookingId: string): Promise<UICartRow[]> {
+async function findBookingCart(bookingId: string) {
   const bookingCart = await db.raceParticipant.groupBy({
     by: ['raceId'],
     where: { bookingId },

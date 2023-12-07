@@ -1,10 +1,9 @@
-import type { Prisma } from '@prisma/client';
-import { PrismaClient, Status } from '@prisma/client';
+import type { Group } from '@prisma/client';
+import { PrismaClient, Status, Prisma } from '@prisma/client';
 
 import type {
   CreateGroupInput,
-  CreateScheduleInput,
-  Group
+  CreateScheduleInput
 } from '~/types';
 import { db } from '~/server/db.server';
 import { dbGroupToGroup } from '~/server/db/codecs.server';
@@ -12,6 +11,44 @@ import Id from '~/server/utils/Id.server';
 import { generateSlug, hoursMinutesToTimeOfDay } from '~/utils/misc';
 
 const prisma = new PrismaClient();
+
+const groupWithGroupSpiritOwnerAndSchedules =
+  Prisma.validator<Prisma.GroupArgs>()({
+    include: {
+      groupSpirit: true,
+      createdBy: true,
+      schedules: true
+    }
+  });
+
+const groupWithGroupSpiritAndOwner = Prisma.validator<Prisma.GroupArgs>()({
+  include: {
+    groupSpirit: true,
+    createdBy: true
+  }
+});
+
+const groupWithGroupSpiritAndTypeSportOwnerAndSchedules =
+  Prisma.validator<Prisma.GroupArgs>()({
+    include: {
+      groupType: true,
+      groupSpirit: true,
+      sport: true,
+      createdBy: true,
+      schedules: true
+    }
+  });
+
+type GroupWithGroupSpiritOwnerAndSchedules = Prisma.GroupGetPayload<
+  typeof groupWithGroupSpiritOwnerAndSchedules
+>;
+type GroupWithGroupSpiritAndOwner = Prisma.GroupGetPayload<
+  typeof groupWithGroupSpiritAndOwner
+>;
+type GroupWithGroupSpiritAndTypeSportOwnerAndSchedules =
+  Prisma.GroupGetPayload<
+    typeof groupWithGroupSpiritAndTypeSportOwnerAndSchedules
+  >;
 
 async function findGroups(): Promise<Array<Group>> {
   const groups = await db.group.findMany({
@@ -23,8 +60,8 @@ async function findGroups(): Promise<Array<Group>> {
   return groups.map(dbGroupToGroup);
 }
 
-async function findUserGroups(userId: string): Promise<Array<Group>> {
-  const groups = await db.group.findMany({
+async function findUserGroups(userId: string): Promise<Array<GroupWithGroupSpiritOwnerAndSchedules>> {
+  return await db.group.findMany({
     where: { createdById: userId, status: Status.published },
     include: {
       groupSpirit: true,
@@ -33,11 +70,9 @@ async function findUserGroups(userId: string): Promise<Array<Group>> {
     },
     orderBy: { name: 'asc' }
   });
-
-  return groups.map(dbGroupToGroup);
 }
 
-async function findUserFavoriteGroups(id: string): Promise<Array<Group>> {
+async function findUserFavoriteGroups(id: string): Promise<Array<GroupWithGroupSpiritAndOwner>> {
   const user = await db.user.findUnique({
     where: { id },
     include: {
@@ -48,12 +83,11 @@ async function findUserFavoriteGroups(id: string): Promise<Array<Group>> {
   if (!user) {
     return [];
   }
-  const groups = await db.group.findMany({
+
+  return await db.group.findMany({
     where: { id: { in: user?.favGroups.map((fg) => fg.groupId) } },
     include: { createdBy: true, groupSpirit: true }
   });
-
-  return groups.map(dbGroupToGroup);
 }
 
 async function findGroup(id: string): Promise<Group | null> {
@@ -73,7 +107,9 @@ async function findGroup(id: string): Promise<Group | null> {
   return dbGroupToGroup(group);
 }
 
-async function findGroupBySlug(slug: string): Promise<Group | null> {
+async function findGroupBySlug(
+  slug: string
+): Promise<GroupWithGroupSpiritAndTypeSportOwnerAndSchedules | null> {
   const group = await db.group.findUnique({
     where: { slug },
     include: {
@@ -87,8 +123,9 @@ async function findGroupBySlug(slug: string): Promise<Group | null> {
 
   if (!group || group.status === Status.deleted) {
     return null;
+  } else {
+    return group;
   }
-  return dbGroupToGroup(group);
 }
 
 async function assignUniqueSlug(name: string, attempt = 0): Promise<string> {
@@ -113,7 +150,7 @@ async function updateGroup(
     const groupInDb = await findGroup(group.id as string);
 
     if (!groupInDb || groupInDb.slug === null) {
-      group.slug = await assignUniqueSlug(group.name);
+      group.slug = await assignUniqueSlug(group.name as string);
     }
 
     await tx.group.update({

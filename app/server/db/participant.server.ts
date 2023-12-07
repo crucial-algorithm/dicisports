@@ -1,10 +1,9 @@
-import type { Prisma } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 import { CheckoutStatus, PrismaClient, Status } from '@prisma/client';
 
 import type {
   Participant,
   ParticipantInput,
-  RaceParticipant,
   RaceParticipantInput,
   UIRaceParticipant
 } from '~/types';
@@ -14,6 +13,47 @@ import { findBooking } from '~/server/db/booking.server';
 import { createTeam, findEventTeamByName } from '~/server/db/teams.server';
 
 const prisma = new PrismaClient();
+
+const raceParticipantWithRaceParticipantBookingAndTeam =
+  Prisma.validator<Prisma.RaceParticipantArgs>()({
+    include: {
+      race: true,
+      participant: true,
+      booking: true,
+      team: true
+    }
+  });
+
+const raceParticipantWithRaceParticipantAndTeam =
+  Prisma.validator<Prisma.RaceParticipantArgs>()({
+    include: {
+      race: true,
+      participant: true,
+      team: true
+    }
+  });
+
+const raceParticipantWithRaceAndParticipant =
+  Prisma.validator<Prisma.RaceParticipantArgs>()({
+    include: {
+      race: true,
+      participant: true
+    }
+  });
+
+type RaceParticipantWithRaceParticipantBookingAndTeam =
+  Prisma.RaceParticipantGetPayload<
+    typeof raceParticipantWithRaceParticipantBookingAndTeam
+  >;
+
+type RaceParticipantWithRaceParticipantAndTeam =
+  Prisma.RaceParticipantGetPayload<
+    typeof raceParticipantWithRaceParticipantAndTeam
+  >;
+
+type RaceParticipantWithRaceAndParticipant = Prisma.RaceParticipantGetPayload<
+  typeof raceParticipantWithRaceAndParticipant
+>;
 
 async function createParticipant(
   clientId: string,
@@ -100,7 +140,7 @@ async function findUserParticipants(
 
 async function findUserEventRaceParticipants(
   bookingId: string
-): Promise<RaceParticipant[] | null> {
+): Promise<RaceParticipantWithRaceAndParticipant[] | null> {
   const booking = await findBooking(bookingId);
 
   if (!booking) {
@@ -121,7 +161,7 @@ async function findUserEventRaceParticipants(
 async function findUserRaceParticipants(
   clientId: string,
   raceId: string
-): Promise<RaceParticipant[] | null> {
+): Promise<RaceParticipantWithRaceAndParticipant[] | null> {
   const userParticipants = await findUserParticipants(clientId);
 
   return await db.raceParticipant.findMany({
@@ -314,20 +354,23 @@ async function findUserSavedParticipants(
 
 async function findUserBookingParticipants(
   bookingId: string
-): Promise<RaceParticipant[] | null> {
+): Promise<RaceParticipantWithRaceParticipantAndTeam[] | null> {
   return db.raceParticipant.findMany({
     where: { bookingId },
     include: {
       race: true,
       participant: true,
       team: true
+    },
+    orderBy: {
+      displayOrder: 'asc'
     }
   });
 }
 
 async function findEventRaceParticipants(
   eventId: string
-): Promise<RaceParticipant[] | null> {
+): Promise<RaceParticipantWithRaceParticipantBookingAndTeam[] | null> {
   return db.raceParticipant.findMany({
     where: {
       race: {
@@ -356,7 +399,7 @@ async function findEventRaceParticipants(
 async function findRaceParticipant(
   participantId: string,
   raceId: string
-): Promise<RaceParticipant | null> {
+): Promise<RaceParticipantWithRaceParticipantBookingAndTeam | null> {
   return await db.raceParticipant.findUnique({
     where: {
       participantId_raceId: { participantId, raceId }
@@ -373,7 +416,7 @@ async function findRaceParticipant(
 async function updateRaceParticipantTeam(
   teamName: string | null,
   eventId: string,
-  raceParticipant: RaceParticipant
+  raceParticipant: RaceParticipantWithRaceParticipantBookingAndTeam
 ): Promise<void> {
   return await prisma.$transaction(async (prisma) => {
     let teamId: string | null = teamName;
@@ -400,7 +443,7 @@ async function updateRaceParticipantTeam(
 }
 
 async function assignParticipantsBibNumber(
-  raceParticipants: RaceParticipant[],
+  raceParticipants: RaceParticipantWithRaceParticipantBookingAndTeam[],
   eventId: string
 ): Promise<void> {
   return await db.$transaction(async (tx) => {
@@ -467,4 +510,10 @@ export {
   updateRaceParticipantTeam,
   assignParticipantsBibNumber,
   updateRaceParticipantsPrice
+};
+
+export type {
+  RaceParticipantWithRaceParticipantBookingAndTeam,
+  RaceParticipantWithRaceParticipantAndTeam,
+  RaceParticipantWithRaceAndParticipant
 };
