@@ -353,6 +353,32 @@ async function findEventRaceParticipants(
   });
 }
 
+async function findConfirmedRaceParticipants(
+  eventId: string
+): Promise<RaceParticipant[] | null> {
+  return db.raceParticipant.findMany({
+    where: {
+      race: {
+        eventId
+      },
+      participant: {
+        status: {
+          not: Status.auto
+        }
+      },
+      booking: {
+        status: CheckoutStatus.confirmed
+      }
+    },
+    include: {
+      race: true,
+      participant: true,
+      booking: true,
+      team: true
+    }
+  });
+}
+
 async function findRaceParticipant(
   participantId: string,
   raceId: string
@@ -466,5 +492,6 @@ export {
   findRaceParticipant,
   updateRaceParticipantTeam,
   assignParticipantsBibNumber,
-  updateRaceParticipantsPrice
+  updateRaceParticipantsPrice,
+  findConfirmedRaceParticipants
 };
