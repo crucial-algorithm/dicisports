@@ -110,3 +110,12 @@ fly logs -a dicistg
 ```shell
 fly scale memory 1024 -a diciprd
 ```
+
+## Project Setup in WebStorm
+
+Once all the necessary packages are installed, follow these steps:
+
+1. Open the `node_modules` directory in your WebStorm project.
+2. Locate the `.prisma` folder within the `node_modules` directory.
+3. Right-click on the `.prisma` folder and choose the option "**_Mark Directory as_**".
+4. Select "**_Not Excluded_**".
