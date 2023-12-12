@@ -126,7 +126,7 @@ function events() {
 
   return eventsSeed.map((e) => {
     const startAt = new Date(e.startAt ? e.startAt : futureDate);
-    const bookingStopsAt = new Date(startAt.getTime() - 86400 * 1000);
+    const bookingStopsAt = new Date(startAt.getTime() - 86400 * 1000 * 7);
 
     return {
       ...e,

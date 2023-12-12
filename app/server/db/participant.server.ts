@@ -313,6 +313,9 @@ async function findUserBookingParticipants(
 ): Promise<RaceParticipant[] | null> {
   return db.raceParticipant.findMany({
     where: { bookingId, status: { not: RaceParticipantStatus.deleted } },
+    orderBy: {
+      displayOrder: 'desc'
+    },
     include: {
       race: true,
       participant: true,
