@@ -2,12 +2,17 @@ import { Column } from 'primereact/column';
 import type { DataTableRowClickEvent } from 'primereact/datatable';
 import { DataTable } from 'primereact/datatable';
 import * as React from 'react';
-import { OrganizerStatus, Role  } from '@prisma/client';
 import type { Event } from '@prisma/client';
+import { OrganizerStatus, Role } from '@prisma/client';
 
 import type { ActionFunction, LoaderFunction } from '@remix-run/node';
 import { json } from '@remix-run/node';
-import { Form, useActionData, useLoaderData, useNavigate } from '@remix-run/react';
+import {
+  Form,
+  useActionData,
+  useLoaderData,
+  useNavigate
+} from '@remix-run/react';
 import { redirect } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { z, ZodError } from 'zod';
@@ -31,7 +36,7 @@ import Main from '~/components/shared/Main';
 import FormField from '~/components/shared/form/FormField';
 import TextField from '~/components/shared/form/TextField';
 
-import { badRequest, getDomainUrl } from '~/utils/misc';
+import { badRequest } from '~/utils/misc';
 import i18n from '~/server/i18n.server';
 import OrganizerForm from '~/components/shared/OrganizerForm';
 import Config from '~/server/config.server';
@@ -89,8 +94,7 @@ export const action: ActionFunction = async ({ request, params }) => {
       await approveOrganizer(id, commission);
       await sendApprovedOrganizerProfileEmail({
         emailAddress: organizer.email,
-        organizerName: organizer.name,
-        domainUrl: getDomainUrl(request)
+        organizerName: organizer.name
       });
     } else {
       await rejectOrganizer(id);

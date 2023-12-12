@@ -6,7 +6,8 @@ const {
   MAILGUN_ENDPOINT,
   MAILGUN_SENDING_KEY,
   CONVERT_KIT_API_KEY,
-  CONVERT_KIT_FORM
+  CONVERT_KIT_FORM,
+  DOMAIN_URL
 } = Config();
 
 const mailgunEndpoint: string = MAILGUN_ENDPOINT;
@@ -50,16 +51,14 @@ async function sendEmail({ to, from, subject, text, html }: MailgunMessage) {
 async function sendMagicLinkEmail({
   emailAddress,
   magicLink,
-  user,
-  domainUrl
+  user
 }: {
   emailAddress: string;
   magicLink: string;
   user?: User | null;
-  domainUrl: string;
 }) {
   const sender = '"DiciSports" <noreply@mail.dicisports.com>';
-  const { hostname } = new URL(domainUrl);
+  const { hostname } = new URL(DOMAIN_URL);
   const userExists = Boolean(user);
 
   const text = `
@@ -122,14 +121,14 @@ P.S.  Se não solicitaste o email, ignora sem clickar no link (não incorres em 
 
       <div style='text-align: center; margin-top: 1rem; font-size: .9rem'>
         <div style='color: grey'>O link é válido por 30 minutos</div>
-        <a href='${domainUrl}/login' style='margin-top: .4rem; display: block'>Solicitar novo link.</a>
+        <a href='${DOMAIN_URL}/login' style='margin-top: .4rem; display: block'>Solicitar novo link.</a>
       </div>
         
       <hr style='width: 20%; height: 0px; border: 1px solid lightgrey; margin-top: 2rem; margin-bottom: 2rem'>
         
       <div style='text-align: center; color: grey; font-size: .8rem; line-height: 1.2rem'>
         Recebeste este email porque o teu endereço de email foi usado para fazer login em
-        <a href='${domainUrl}' style='color: grey'>${hostname}</a>. Se não solicitaste o email,
+        <a href='${DOMAIN_URL}' style='color: grey'>${hostname}</a>. Se não solicitaste o email,
         ignora sem clickar no link (não corres qualquer risco de segurança).
       </div>
     </div>
@@ -150,17 +149,15 @@ P.S.  Se não solicitaste o email, ignora sem clickar no link (não incorres em 
 
 async function sendWhatsAppGroupLink({
   emailAddress,
-  domainUrl,
   groupName,
   whatsAppLink
 }: {
   emailAddress: string;
-  domainUrl: string;
   groupName: string;
   whatsAppLink: string;
 }) {
   const sender = '"DiciSports" <noreply@mail.dicisports.com>';
-  const { hostname } = new URL(domainUrl);
+  const { hostname } = new URL(DOMAIN_URL);
 
   const text = `
 Abre o link no teu telemóvel para te juntares ao group "${groupName}":
@@ -212,7 +209,7 @@ Obrigado!
         
       <div style='text-align: center; color: grey; font-size: .8rem; line-height: 1.2rem'>
         Recebeste este email porque o teu endereço de email foi usado para tentar juntar-te a um grupo no
-        <a href='${domainUrl}' style='color: grey'>${hostname}</a>. Se não solicitaste o email,
+        <a href='${DOMAIN_URL}' style='color: grey'>${hostname}</a>. Se não solicitaste o email,
         ignora sem clickar no link.
       </div>
     </div>
@@ -258,16 +255,14 @@ async function subscribeUser(email: string, name?: string) {
 async function sendRecoverPasswordEmail({
   emailAddress,
   magicLink,
-  user,
-  domainUrl
+  user
 }: {
   emailAddress: string;
   magicLink: string;
   user: User;
-  domainUrl: string;
 }) {
   const sender = '"DiciSports" <noreply@mail.dicisports.com>';
-  const { hostname } = new URL(domainUrl);
+  const { hostname } = new URL(DOMAIN_URL);
 
   const text = `
 Olá ${user.name},
@@ -318,14 +313,14 @@ P.S.  Se não solicitaste o email, ignora sem clickar no link (não incorres em 
 
       <div style="text-align: center; margin-top: 1rem; font-size: .9rem">
         <div style="color: grey">O link é válido por 30 minutos</div>
-        <a href="${domainUrl}/recover" style="margin-top: .4rem; display: block">Solicitar novo link.</a>
+        <a href="${DOMAIN_URL}/recover" style="margin-top: .4rem; display: block">Solicitar novo link.</a>
       </div>
         
       <hr style="width: 20%; height: 0px; border: 1px solid lightgrey; margin-top: 2rem; margin-bottom: 2rem">
         
       <div style="text-align: center; color: grey; font-size: .8rem; line-height: 1.2rem">
         Recebeste este email porque o teu endereço de email foi usado para solicitar a recuperação de password em
-        <a href="${domainUrl}" style="color: grey">${hostname}</a>. Se não solicitaste o email,
+        <a href="${DOMAIN_URL}" style="color: grey">${hostname}</a>. Se não solicitaste o email,
         ignora sem clickar no link (não corres qualquer risco de segurança).
       </div>
     </div>
@@ -348,19 +343,17 @@ async function sendBookingConfirmationEmail({
   emailAddress,
   event,
   booking,
-  domainUrl,
   cart,
   userName
 }: {
   emailAddress: string;
   event: any;
   booking: Booking;
-  domainUrl: string;
   cart: UICartRow[];
   userName: string | null;
 }) {
   const sender = '"DiciSports" <noreply@mail.dicisports.com>';
-  const { hostname } = new URL(domainUrl);
+  const { hostname } = new URL(DOMAIN_URL);
 
   const total = cart.reduce((total, c) => total + c.price, 0);
 
@@ -531,7 +524,7 @@ P.S. Recebeste este email porque o teu endereço de email foi usado para fazer l
       <h3 style='text-align: center; margin-top: 2rem'>
         Clica no botão para acederes ao teu booking
       </h3>
-      <a href='${domainUrl}/checkout/info/${booking.id}?p=${
+      <a href='${DOMAIN_URL}/checkout/info/${booking.id}?p=${
     booking.pin
   }' style='display: block; margin: 0 auto; width: 80%; padding: 1.5rem; background: #A6DEE4; border-radius: 7px; border-width: 0; font-size: 1.1rem; text-align: center; font-family: sans-serif; text-decoration: none; color: black'>
       Aceder ao booking
@@ -539,7 +532,7 @@ P.S. Recebeste este email porque o teu endereço de email foi usado para fazer l
       <hr style='width: 20%; height: 0px; border: 1px solid lightgrey; margin-top: 2rem; margin-bottom: 2rem'>
       <div style='text-align: center; color: grey; font-size: .8rem; line-height: 1.2rem'>
         Recebeste este email porque o teu endereço de email foi usado para fazer login em
-        <a href='${domainUrl}' style='color: grey'>${hostname}</a>. Se não solicitaste o email,
+        <a href='${DOMAIN_URL}' style='color: grey'>${hostname}</a>. Se não solicitaste o email,
         ignora sem clickar no link (não corres qualquer risco de segurança).
       </div>
     </div>
@@ -560,15 +553,13 @@ P.S. Recebeste este email porque o teu endereço de email foi usado para fazer l
 
 async function sendSubmittedOrganizerProfileConfirmation({
   emailAddress,
-  organizerName: organizer,
-  domainUrl
+  organizerName: organizer
 }: {
   emailAddress: string;
   organizerName: string;
-  domainUrl: string;
 }) {
   const sender = '"DiciSports" <noreply@mail.dicisports.com>';
-  const { hostname } = new URL(domainUrl);
+  const { hostname } = new URL(DOMAIN_URL);
 
   const text = `
 Olá ${organizer},
@@ -630,15 +621,13 @@ P.S.  Se não solicitaste o email, ignora.
 
 async function sendApprovedOrganizerProfileEmail({
   emailAddress,
-  organizerName: organizer,
-  domainUrl
+  organizerName: organizer
 }: {
   emailAddress: string;
   organizerName: string;
-  domainUrl: string;
 }) {
   const sender = '"DiciSports" <noreply@mail.dicisports.com>';
-  const { hostname } = new URL(domainUrl);
+  const { hostname } = new URL(DOMAIN_URL);
 
   const text = `
 Olá, ${organizer},
@@ -700,12 +689,10 @@ O seu perfil de Organizador no ${hostname} foi aprovado!
 async function sendSubmittedOrganizerProfileNotification({
   emailAddress,
   organizerId,
-  domainUrl,
   name
 }: {
   emailAddress: string;
   organizerId: string;
-  domainUrl: string;
   name: string;
 }) {
   const sender = '"DiciSports" <noreply@mail.dicisports.com>';
@@ -744,7 +731,7 @@ Olá,
   <body style="font-family:Matter, sans-serif;">
     <div style="margin: 0 auto; max-width: 450px;">
   
-      <a href="${domainUrl}/a/organizers/${organizerId}" style="display: block; margin: 0 auto; width: 80%; padding: 1.5rem; background: #A6DEE4; border-radius: 7px; border-width: 0; font-size: 1.1rem; text-align: center; font-family: sans-serif; text-decoration: none; color: black">
+      <a href="${DOMAIN_URL}/a/organizers/${organizerId}" style="display: block; margin: 0 auto; width: 80%; padding: 1.5rem; background: #A6DEE4; border-radius: 7px; border-width: 0; font-size: 1.1rem; text-align: center; font-family: sans-serif; text-decoration: none; color: black">
         Rever Organizador
       </a>
 

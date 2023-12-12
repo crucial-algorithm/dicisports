@@ -211,5 +211,30 @@
     "id": "NBawaRTQkWHPxaxYvcgj",
     "userId": "nTQ8idPqTY8PmhzbsN4u",
     "status": "auto"
+  },
+  {
+    "id": "cjBqGSaiRusTS57DEKbE",
+    "userId": "nTQ8idPqTY8PmhzbsN4u",
+    "status": "auto"
+  },
+  {
+    "id": "hM57KFcxhukRT2d2X3ni",
+    "userId": "nTQ8idPqTY8PmhzbsN4u",
+    "status": "auto"
+  },
+  {
+    "id": "Mwg9gHiKoPFYpepq2q7f",
+    "userId": "nTQ8idPqTY8PmhzbsN4u",
+    "firstName": "António",
+    "lastName": "Mendes",
+    "gender": "M",
+    "birthdate": "1999-11-10 00:00:00.000",
+    "phoneNumber": 930786481,
+    "identityCard": "00000000-0-zz4",
+    "federationNumber": null,
+    "shirtSize": 5,
+    "nationality": 2,
+    "postalCode": "4730-454",
+    "vatNumber": "saved"
   }
 ]

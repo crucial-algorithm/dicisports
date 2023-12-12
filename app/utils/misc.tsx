@@ -233,20 +233,21 @@ function validateIdentityCard(identityCard: string): boolean {
 function validatePtVatNumber(vat: number | string) {
   const checkDigit = Number(String(vat)[8]);
 
-  const acum =
-    String(vat)
-      .split('')
-      .map(Number)
-      // multiplication of 1st digit by 9, ...
-      .map((v, i, a) => v * (a.length - i))
-      // remove actual check digit (must be done after the multipilication so that length - 1 starts at 9)
-      .splice(0, 8)
-      // sum everything
-      .reduce((v, a) => v + a, 0);
+  const acum = String(vat)
+    .split('')
+    .map(Number)
+    // multiplication of 1st digit by 9, 2nd by 8, 3rd by 7...
+    .map((v, i, a) => v * (a.length - i))
+    // remove actual check digit (must be done after the multipilication so that length - 1 starts at 9)
+    .splice(0, 8)
+    // sum everything
+    .reduce((v, a) => v + a, 0);
 
   const reminder = acum % 11;
 
-  return reminder === 0 || reminder === 1 ? 0 : 11 - reminder === checkDigit;
+  return reminder === 0 || reminder === 1
+    ? 0 === checkDigit
+    : 11 - reminder === checkDigit;
 }
 
 function bookingRedirectRoute(booking: Booking): string {
@@ -263,7 +264,6 @@ function maintainBookingLocalStorageMetaData(bookingId: string): {
   read: () => LocalStorageBookingMetaData;
   write: (key: keyof LocalStorageBookingMetaData, value: boolean) => void;
 } {
-
   const initialize = (): LocalStorageBookingMetaData => {
     return { loginCTASeen: false, confirmationEmailSent: false };
   };
@@ -296,7 +296,7 @@ function maintainBookingLocalStorageMetaData(bookingId: string): {
 
 async function fileTypeFromUploadHandlerData(
   data: AsyncIterable<Uint8Array>
-): Promise<{ type: string, buffer: Buffer } | null> {
+): Promise<{ type: string; buffer: Buffer } | null> {
   const chunks = [];
 
   for await (const chunk of data) {
@@ -308,6 +308,14 @@ async function fileTypeFromUploadHandlerData(
   const fileType = await fromBuffer(buffer);
 
   return fileType ? { type: fileType.ext, buffer } : null;
+}
+
+function formHelperReadDate(form: FormData, field: string) {
+  const rawDate = (form.get(field) as string) || undefined;
+
+  return rawDate && new Date(rawDate).toString() !== 'Invalid Date'
+    ? new Date(rawDate)
+    : undefined;
 }
 
 export {
@@ -329,5 +337,6 @@ export {
   validatePtVatNumber,
   bookingRedirectRoute,
   maintainBookingLocalStorageMetaData,
-  fileTypeFromUploadHandlerData
+  fileTypeFromUploadHandlerData,
+  formHelperReadDate
 };

@@ -21,11 +21,7 @@ import { findBooking, findBookingCart } from '~/server/db/booking.server';
 import { findEvent } from '~/server/db/events.server';
 import { findUserBookingParticipants } from '~/server/db/participant.server';
 import type { Booking, KCDHandle, UICartRow } from '~/types';
-import {
-  badRequest,
-  getDomainUrl,
-  maintainBookingLocalStorageMetaData
-} from '~/utils/misc';
+import { badRequest, maintainBookingLocalStorageMetaData } from '~/utils/misc';
 import { sendBookingConfirmationEmail } from '~/server/email.server';
 import i18n from '~/server/i18n.server';
 import InputError from '~/components/shared/form/InputError';
@@ -93,7 +89,6 @@ export const action: ActionFunction = async ({ request, params }) => {
     return redirect('/');
   }
 
-  const domainUrl = getDomainUrl(request);
   const cart = await findBookingCart(bookingId);
   const email = form.get('email') as string;
   const enrollInMailingList: boolean =
@@ -128,7 +123,6 @@ export const action: ActionFunction = async ({ request, params }) => {
       emailAddress: email,
       event,
       booking,
-      domainUrl,
       cart,
       userName: authenticatedClient !== null ? authenticatedClient.name : null
     });

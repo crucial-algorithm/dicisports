@@ -121,14 +121,12 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 
     if (authenticatedClient !== null) {
       const event = await findEvent(eventId);
-      const domainUrl = getDomainUrl(request);
       const cart = await findBookingCart(bookingId);
 
       await sendBookingConfirmationEmail({
         emailAddress: authenticatedClient.email,
         event,
         booking,
-        domainUrl,
         cart,
         userName: authenticatedClient.name
       });
