@@ -41,7 +41,7 @@ import Button from '~/components/shared/Button';
 type LoaderData = {
   event: Event;
   races: Race[];
-  userCheckoutRaces: UICartRow[];
+  userCheckoutRaces: UICartRow;
   hasCheckout: boolean;
   bookingId: string;
 };

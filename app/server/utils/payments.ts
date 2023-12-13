@@ -83,7 +83,7 @@ function getAuthHeaders() {
 export async function createPaymentTransaction(
   booking: Booking,
   event: Event,
-  cart: Array<UICartRow>
+  cart: UICartRow
 ): Promise<{ gatewayResponse: TransactionResponse; ourTransactionId: string }> {
   const {
     SIBS_URL_ENDPOINT: url,

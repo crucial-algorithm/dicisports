@@ -218,7 +218,7 @@ async function findConfirmedBookings(
 async function applyDiscountCode(
   id: string,
   discountInfo: string,
-  cart: UICartRow[]
+  cart: UICartRow
 ) {
   return await db.$transaction(async (tx) => {
     const [, value, fixed] = discountInfo.split('|');

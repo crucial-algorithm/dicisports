@@ -51,7 +51,7 @@ import ScrollToTop from '~/components/ScrollToTop';
 type LoaderData = {
   event: EventWithRacesDifficultiesAndDocuments;
   eventRevenue: number;
-  racesRevenueAndRegistrations: RaceRevenueRegistrations[];
+  racesRevenueAndRegistrations: RaceRevenueRegistrations;
   raceParticipants: UIRaceParticipant[];
   totalRaceParticipants: number;
   pageNumber: number;
@@ -509,7 +509,7 @@ function EventStats({
   t
 }: {
   eventRevenue: number;
-  racesRevenueAndRegistrations: RaceRevenueRegistrations[];
+  racesRevenueAndRegistrations: RaceRevenueRegistrations;
   totalClicks: number;
   t: TFunction;
 }) {

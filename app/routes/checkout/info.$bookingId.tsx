@@ -84,7 +84,7 @@ import { FetcherForm } from '~/components/shared/form/UploadForm';
 
 type LoaderData = {
   event: EventWithRacesDifficultiesAndDocuments;
-  cart: UICartRow[];
+  cart: UICartRow;
   raceParticipants: RaceParticipantWithRaceParticipantAndTeam[];
   userParticipants: Participant[];
   savedParticipants: Participant[] | null;

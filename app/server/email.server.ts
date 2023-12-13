@@ -351,7 +351,7 @@ async function sendBookingConfirmationEmail({
   emailAddress: string;
   event: any;
   booking: Booking;
-  cart: UICartRow[];
+  cart: UICartRow;
   userName: string | null;
 }) {
   const sender = '"DiciSports" <noreply@mail.dicisports.com>';
