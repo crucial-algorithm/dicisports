@@ -155,9 +155,11 @@ async function updateToSelectedParticipant(
   raceId: string,
   bookingId: string
 ): Promise<void> {
-  await prisma.raceParticipant.update({
+  await prisma.raceParticipant.updateMany({
     where: {
-      participantId_raceId_bookingId: { participantId: oldParticipant, raceId, bookingId }
+      participantId: oldParticipant,
+      raceId,
+      bookingId
     },
     data: {
       participantId: savedParticipant
@@ -170,9 +172,11 @@ async function removeRaceParticipant(
   raceId: string,
   bookingId: string
 ): Promise<void> {
-  await prisma.raceParticipant.update({
+  await prisma.raceParticipant.updateMany({
     where: {
-      participantId_raceId_bookingId: { participantId, raceId, bookingId }
+      participantId,
+      raceId,
+      bookingId
     },
     data: {
       status: RaceParticipantStatus.deleted
@@ -384,9 +388,11 @@ async function findRaceParticipant(
   raceId: string,
   bookingId: string
 ): Promise<RaceParticipant | null> {
-  return db.raceParticipant.findUnique({
+  const participants = await db.raceParticipant.findMany({
     where: {
-      participantId_raceId_bookingId: { participantId, raceId, bookingId }
+      participantId,
+      raceId,
+      bookingId
     },
     include: {
       race: true,
@@ -395,6 +401,8 @@ async function findRaceParticipant(
       team: true
     }
   });
+
+  return participants ? participants[0] : null;
 }
 
 async function updateRaceParticipantTeam(
