@@ -65,6 +65,7 @@ type LoaderData = {
   event: EventWithRacesDifficultiesAndDocuments;
   isUserFavorite: boolean;
   races: Race[];
+  perks: Perk[];
   organizer?: Organizer;
 };
 
@@ -133,7 +134,7 @@ export const loader: LoaderFunction = async ({ params, request }) => {
 export default function EventDisplayRoute() {
   const favorite = useFetcher();
   const { event, isUserFavorite, races, perks, organizer } =
-    useLoaderData<LoaderData>();
+    useLoaderData<LoaderData>() as LoaderData;
   const { i18n, t } = useTranslation('event');
 
   let minPrice = 0;
@@ -182,7 +183,10 @@ export default function EventDisplayRoute() {
     minPrice = prices[0];
   }
 
-  const isBookingClosed = new Date(event.startAt) < new Date();
+  const isBookingClosed =
+    new Date(
+      event.bookingStopsAt ? event.bookingStopsAt : (event.startAt as Date)
+    ) < new Date();
 
   return (
     <>

@@ -66,6 +66,10 @@
     .input-text.slim {
         @apply px-4
     }
+
+    .form-field:has(input:disabled) {
+        @apply opacity-30;
+    }
 }
 
 @layer utilities {

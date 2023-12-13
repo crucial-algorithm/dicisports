@@ -1,7 +1,8 @@
-import type { Payment, Event, Booking } from '@prisma/client';
+import type { Booking, Event, Payment } from '@prisma/client';
 
 import Config from '~/server/config.server';
 import { addGatewayDetailsToPayment, createPaymentRequest } from '~/server/db/payments.server';
+import { Dates } from '~/server/utils/misc';
 import type { SibsStatusResponse, UICartRow } from '~/types';
 import { bookingAmount } from '~/utils/misc';
 
@@ -122,7 +123,10 @@ export async function createPaymentTransaction(
       paymentMethod: ['MBWAY', 'REFERENCE', 'CARD'],
       paymentReference: {
         initialDatetime: initial.toISOString(),
-        finalDatetime: final.toISOString(),
+        finalDatetime: Dates.min(
+          final,
+          event.bookingStopsAt || event.startAt || final
+        ).toISOString(),
         maxAmount: {
           value: amount,
           currency: 'EUR'

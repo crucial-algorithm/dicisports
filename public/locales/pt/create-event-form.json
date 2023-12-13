@@ -34,6 +34,8 @@
   "How to get there": "Como chegar lá... Onde estacionar...",
   "Directions": "Como chegar",
   "Perks": "Comodidades",
+  "Booking stops at": "Data de fecho das inscrições",
+  "Booking stops at Description": "Dia a partir do qual não é mais possível inscrever-se na plataforma.",
   "Type to create new": "Adicione uma nova comodidade",
   "Description": "Descrição",
   "Distance Modal": "Distância",
@@ -85,6 +87,8 @@
   "Back Button": "Voltar",
 
   "Field required": "Campo obrigatório",
+  "Invalid Date Format": "Data inválida",
+  "Date Limit = to event start date": "Escolha uma data até ao dia do evento",
   "Must Be Number": "Insira um número positivo",
   "Start Time": "Insira uma hora",
   "Min 5 chars": "O campo tem de conter pelo menos 5 caracteres",

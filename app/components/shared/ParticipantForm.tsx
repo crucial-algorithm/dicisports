@@ -154,8 +154,9 @@ export default function ParticipantForm({
                 ? new Date(selectedParticipant.birthdate)
                 : participant?.birthdate
                 ? new Date(participant.birthdate)
-                : new Date(Date.now() - 3600 * 24 * 365 * 20 * 1000)
+                : null
             }
+            viewDate={new Date(`${new Date().getUTCFullYear() - 35}-06-21`)}
           />
         </FormField>
 
