@@ -6,6 +6,8 @@ import * as React from 'react';
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Form, useLoaderData } from '@remix-run/react';
+import type { Race } from '@prisma/client';
+
 import {
   ArrowDownTrayIcon,
   ArrowTrendingUpIcon,
@@ -33,7 +35,6 @@ import Main from '~/components/shared/Main';
 import { findOrganizer } from '~/server/db/organizer.server';
 import type {
   KCDHandle,
-  Race,
   RaceRevenueRegistrations,
   TranslationObject,
   UIRaceParticipant

@@ -1,4 +1,6 @@
-import type { Booking, UICartRow, User } from '~/types';
+import type { Booking } from '@prisma/client';
+
+import type { UICartRow, User } from '~/types';
 
 import Config from '~/server/config.server';
 

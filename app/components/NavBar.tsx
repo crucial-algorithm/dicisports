@@ -1,3 +1,4 @@
+import type { Organizer } from '@prisma/client';
 import { Role } from '@prisma/client';
 import * as React from 'react';
 import { Link, useLocation } from '@remix-run/react';
@@ -15,7 +16,7 @@ import { useTranslation } from 'react-i18next';
 
 import { ButtonLink } from '~/components/shared/Button';
 import { IsNotAnOrganizer } from '~/components/shared/Roles';
-import type { Organizer, User } from '~/types';
+import type { User } from '~/types';
 
 import { Theme, Themed, useTheme } from '~/utils/theme-provider';
 

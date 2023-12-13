@@ -4,6 +4,7 @@ import { DataTable } from 'primereact/datatable';
 import * as React from 'react';
 import type { Event } from '@prisma/client';
 import { OrganizerStatus, Role } from '@prisma/client';
+import type { Organizer } from '@prisma/client';
 
 import type { ActionFunction, LoaderFunction } from '@remix-run/node';
 import { json } from '@remix-run/node';
@@ -29,7 +30,7 @@ import {
   rejectOrganizer,
   updateOrganizerCommission
 } from '~/server/db/organizer.server';
-import type { Organizer, OrganizerType } from '~/types';
+import type { OrganizerType } from '~/types';
 import ButtonGroup from '~/components/shared/ButtonGroup';
 import Button, { ButtonLink } from '~/components/shared/Button';
 import Main from '~/components/shared/Main';

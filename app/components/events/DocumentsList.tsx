@@ -3,9 +3,9 @@ import { ArrowDownTrayIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { Link, useFetcher } from '@remix-run/react';
 import * as React from 'react';
 import { useCallback, useState } from 'react';
+import type { Document } from '@prisma/client';
 
 import DeleteDocumentDialog from '~/components/events/DeleteDocumentDialog';
-import type { Document } from '~/types';
 
 export default function DocumentsList(props: {
   documents: Document[];

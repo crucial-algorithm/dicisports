@@ -8,11 +8,11 @@ import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { useTranslation } from 'react-i18next';
 import { OrganizerStatus } from '@prisma/client';
+import type { Organizer } from '@prisma/client';
 import clsx from 'clsx';
 
 import { requireAdminUser } from '~/server/auth/session.server';
 import { findOrganizers } from '~/server/db/organizer.server';
-import type { Organizer } from '~/types';
 import Main from '~/components/shared/Main';
 import { H3 } from '~/components/shared/typography';
 

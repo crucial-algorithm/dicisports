@@ -1,21 +1,13 @@
 import type {
-  Booking as DBBooking,
   Difficulty as DBDifficulty,
-  DiscountCode as DBDiscountCode,
-  Document as DBDocument,
-  EventTeam as DBEventTeam,
   Group as DBGroup,
   GroupSchedule as DBGroupSchedule,
   GroupSpirit as DBGroupSpirit,
   GroupType as DBGroupType,
-  Organizer as DBOrganizer,
+  Organizer,
   OrganizerType as DBOrganizerType,
-  Participant as DBParticipant,
   PaymentMethod,
-  Perk as DBPerk,
   Prisma,
-  Race as DBRace,
-  ShirtSize as DBShirtSize,
   Sport as DBSport,
   Status as EventStatus,
   User as DBUser
@@ -110,27 +102,14 @@ type User = { organizer?: Organizer | null } & Omit<DBUser, 'password' | 'salt'>
 type Sport = {
   name: TranslationObject;
 } & DBSport;
-type Document = {} & DBDocument;
 
 type GroupType = {
   name: TranslationObject;
 } & DBGroupType;
 
-type GroupInput = {
-  groupSpirit?: DBGroupSpirit | undefined;
-  groupType?: DBGroupType | undefined;
-  sport?: DBSport | undefined | null;
-  createdBy?: User | DBUser;
-  description: string | null;
-} & DBGroup;
-
 type CreateEventInput = Prisma.EventCreateInput;
 
-type Perk = {} & DBPerk;
-
 type CreatePerksInput = Prisma.PerkUncheckedCreateInput;
-
-type Race = {} & DBRace;
 
 type CreateRaceInput = Prisma.RaceCreateInput;
 
@@ -253,7 +232,7 @@ type RaceQty = {
   qty: number;
 };
 
-type RaceParticipantInput = Prisma.RaceParticipantCreateInput;
+type RaceParticipantInput = Prisma.RaceParticipantUncheckedCreateInput;
 
 type UIRaceParticipant = {
   id: string;
@@ -267,47 +246,17 @@ type UIRaceParticipant = {
   bibNumber: number | null;
 };
 
-type Participant = {} & DBParticipant;
-
-type ParticipantInput = Prisma.ParticipantCreateInput;
-
-type Booking = {} & DBBooking;
-
-type ShirtSize = {} & DBShirtSize;
+type ParticipantInput = Prisma.ParticipantUncheckedCreateInput;
 
 type RaceRevenueRegistrations = Prisma.PromiseReturnType<typeof calculateRaceNMV>
 
-type Organizer = DBOrganizer & {};
 type OrganizerType = {
   name: TranslationObject;
 } & DBOrganizerType;
 
-type OrganizerInput = {
-  // id will be null if the user has no organizer profile and is creating it
-  id: string | null;
-  name: string;
-  email: string;
-  phoneNumber?: number | null;
-  address: string;
-  postalCode: string;
-  city: string;
-  description: string;
-  taxNumber: number;
-  contactName: string;
-  typeId: number;
-  logo: string;
-  userId: string;
-};
+type OrganizerInput = Prisma.OrganizerUncheckedCreateInput;
 
-type DiscountCode = DBDiscountCode & {};
-
-type DiscountCodeInput = {
-  code: string;
-  value: number;
-  fixed: boolean;
-  organizerId: string;
-  createdById: string;
-};
+type DiscountCodeInput = Prisma.DiscountCodeUncheckedCreateInput;
 
 type SibsWebHookSchema = {
   returnStatus: { statusMsg: string; statusCode: string };
@@ -339,8 +288,6 @@ type SibsStatusResponse = {
   }
 };
 
-type EventTeam = {} & DBEventTeam;
-
 type ResponseFeedback = {
   severity: 'error' | 'success' | 'info' | 'warn';
   message: string;
@@ -367,16 +314,12 @@ export {
   // entities
   User,
   Group,
-  GroupInput,
   CreateGroupInput,
   GroupType,
   GroupSpirit,
   GroupSchedule,
   CreateScheduleInput,
   Sport,
-  Document,
-  Perk,
-  Race,
   CreateEventInput,
   CreatePerksInput,
   CreateRaceInput,
@@ -386,21 +329,15 @@ export {
   RaceQty,
   RaceParticipantInput,
   UIRaceParticipant,
-  Participant,
   ParticipantInput,
-  Booking,
-  ShirtSize,
   RaceRevenueRegistrations,
   DBRawSearchResults,
   SearchResults,
-  Organizer,
   OrganizerInput,
   EventStatus,
-  DiscountCode,
   DiscountCodeInput,
   SibsWebHookSchema,
   SibsStatusResponse,
-  EventTeam,
   OrganizerType,
   ResponseFeedback,
   LocalStorageBookingMetaData

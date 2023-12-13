@@ -1,8 +1,8 @@
-import type { Payment, Event } from '@prisma/client';
+import type { Payment, Event, Booking } from '@prisma/client';
 
 import Config from '~/server/config.server';
 import { addGatewayDetailsToPayment, createPaymentRequest } from '~/server/db/payments.server';
-import type { Booking, SibsStatusResponse, UICartRow } from '~/types';
+import type { SibsStatusResponse, UICartRow } from '~/types';
 import { bookingAmount } from '~/utils/misc';
 
 //  Example response from SIBS:

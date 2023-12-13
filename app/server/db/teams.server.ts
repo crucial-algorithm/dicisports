@@ -1,7 +1,6 @@
-import type { Prisma } from '@prisma/client';
+import type { Prisma, EventTeam } from '@prisma/client';
 
 import { db } from '~/server/db.server';
-import type { EventTeam } from '~/types';
 import Id from '~/server/utils/Id.server';
 
 async function findEventTeams(eventId: string): Promise<EventTeam[] | null> {

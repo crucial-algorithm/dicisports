@@ -1,3 +1,4 @@
+import type { DiscountCode } from '@prisma/client';
 import { Role } from '@prisma/client';
 import * as React from 'react';
 import { useEffect, useRef, useState } from 'react';
@@ -27,7 +28,7 @@ import {
 } from '~/server/db/discounts.server';
 import { findOrganizer } from '~/server/db/organizer.server';
 import i18n from '~/server/i18n.server';
-import type { DiscountCode, ResponseFeedback } from '~/types';
+import type { ResponseFeedback } from '~/types';
 import { badRequest } from '~/utils/misc';
 
 import { ConfirmationDialog } from '~/components/shared/Dialog';

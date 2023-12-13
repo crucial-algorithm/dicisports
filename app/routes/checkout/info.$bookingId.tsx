@@ -18,6 +18,7 @@ import * as React from 'react';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { z, ZodError } from 'zod';
+import type { Race, Participant, ShirtSize, EventTeam } from '@prisma/client';
 
 import { CheckoutInfoActions } from '~/action.keys';
 import BookingLoginCTADialog from '~/components/BookingLoginCTADialog';
@@ -63,11 +64,7 @@ import { findShirtSizes } from '~/server/db/reference.server';
 import i18n from '~/server/i18n.server';
 
 import type {
-  EventTeam,
-  Participant,
   ParticipantInput,
-  Race,
-  ShirtSize,
   UICartRow
 } from '~/types';
 import {

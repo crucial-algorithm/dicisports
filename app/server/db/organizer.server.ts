@@ -1,7 +1,8 @@
 import { OrganizerStatus, Role } from '@prisma/client';
+import type { Organizer } from '@prisma/client';
 
 import { db } from '~/server/db.server';
-import type { Organizer, OrganizerInput } from '~/types';
+import type { OrganizerInput } from '~/types';
 import Id from '~/server/utils/Id.server';
 
 async function createOrganizer(organizer: OrganizerInput): Promise<Organizer> {

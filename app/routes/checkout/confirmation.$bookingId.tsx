@@ -7,6 +7,7 @@ import * as React from 'react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { z, ZodError } from 'zod';
+import type { Booking } from '@prisma/client';
 
 import Button from '~/components/shared/Button';
 import DisplayCart from '~/components/shared/DisplayCart';
@@ -20,7 +21,7 @@ import { getUser } from '~/server/auth/session.server';
 import { findBooking, findBookingCart } from '~/server/db/booking.server';
 import { findEvent } from '~/server/db/events.server';
 import { findUserEventRaceParticipants } from '~/server/db/participant.server';
-import type { Booking, KCDHandle, UICartRow } from '~/types';
+import type { KCDHandle, UICartRow } from '~/types';
 import { badRequest, maintainBookingLocalStorageMetaData } from '~/utils/misc';
 import { sendBookingConfirmationEmail } from '~/server/email.server';
 import i18n from '~/server/i18n.server';

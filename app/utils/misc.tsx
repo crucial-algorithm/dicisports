@@ -1,9 +1,9 @@
 import { fromBuffer } from 'file-type';
 
 import { json } from '@remix-run/node';
+import type { Booking } from '@prisma/client';
 
 import type {
-  Booking,
   Language,
   LocalStorageBookingMetaData,
   NonNullProperties,

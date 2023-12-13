@@ -1,8 +1,8 @@
 import { Prisma } from '@prisma/client';
+import type { Participant } from '@prisma/client';
 import { CheckoutStatus, PrismaClient, Status } from '@prisma/client';
 
 import type {
-  Participant,
   ParticipantInput,
   RaceParticipantInput,
   UIRaceParticipant

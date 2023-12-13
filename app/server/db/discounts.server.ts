@@ -1,24 +1,20 @@
 import { DiscountCodeStatus } from '@prisma/client';
 
 import { db } from '~/server/db.server';
-
-import { dbDiscountCodeToDiscountCode } from '~/server/db/codecs.server';
 import type { DiscountCode, DiscountCodeInput } from '~/types';
 
 import Id from '../utils/Id.server';
 
 async function findDiscountCodesForOrganizer(organizerId: string) {
-  return (
-    await db.discountCode.findMany({
-      where: {
-        organizerId,
-        status: { not: DiscountCodeStatus.deleted }
-      },
-      orderBy: {
-        createdAt: 'desc'
-      }
-    })
-  ).map(dbDiscountCodeToDiscountCode);
+  return db.discountCode.findMany({
+    where: {
+      organizerId,
+      status: { not: DiscountCodeStatus.deleted }
+    },
+    orderBy: {
+      createdAt: 'desc'
+    }
+  });
 }
 
 async function upsertDiscountCode(data: DiscountCodeInput) {

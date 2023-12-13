@@ -1,12 +1,8 @@
 import type { Group } from '@prisma/client';
-import { PrismaClient, Status, Prisma } from '@prisma/client';
+import { Prisma, PrismaClient, Status } from '@prisma/client';
 
-import type {
-  CreateGroupInput,
-  CreateScheduleInput
-} from '~/types';
+import type { CreateGroupInput, CreateScheduleInput } from '~/types';
 import { db } from '~/server/db.server';
-import { dbGroupToGroup } from '~/server/db/codecs.server';
 import Id from '~/server/utils/Id.server';
 import { generateSlug, hoursMinutesToTimeOfDay } from '~/utils/misc';
 
@@ -28,7 +24,7 @@ const groupWithGroupSpiritAndOwner = Prisma.validator<Prisma.GroupArgs>()({
   }
 });
 
-const groupWithGroupSpiritAndTypeSportOwnerAndSchedules =
+const groupWithGroupSpiritTypeSportOwnerAndSchedules =
   Prisma.validator<Prisma.GroupArgs>()({
     include: {
       groupType: true,
@@ -39,25 +35,38 @@ const groupWithGroupSpiritAndTypeSportOwnerAndSchedules =
     }
   });
 
+const groupWithGroupSpiritTypeSportAndSchedules =
+  Prisma.validator<Prisma.GroupArgs>()({
+    include: {
+      groupType: true,
+      groupSpirit: true,
+      sport: true,
+      schedules: true
+    }
+  });
+
 type GroupWithGroupSpiritOwnerAndSchedules = Prisma.GroupGetPayload<
   typeof groupWithGroupSpiritOwnerAndSchedules
 >;
 type GroupWithGroupSpiritAndOwner = Prisma.GroupGetPayload<
   typeof groupWithGroupSpiritAndOwner
 >;
-type GroupWithGroupSpiritAndTypeSportOwnerAndSchedules =
+type GroupWithGroupSpiritTypeSportOwnerAndSchedules =
   Prisma.GroupGetPayload<
-    typeof groupWithGroupSpiritAndTypeSportOwnerAndSchedules
+    typeof groupWithGroupSpiritTypeSportOwnerAndSchedules
+  >;
+
+type GroupWithGroupSpiritTypeSportAndSchedules =
+  Prisma.GroupGetPayload<
+    typeof groupWithGroupSpiritTypeSportAndSchedules
   >;
 
 async function findGroups(): Promise<Array<Group>> {
-  const groups = await db.group.findMany({
+  return db.group.findMany({
     where: {
       status: Status.published
     }
   });
-
-  return groups.map(dbGroupToGroup);
 }
 
 async function findUserGroups(userId: string): Promise<Array<GroupWithGroupSpiritOwnerAndSchedules>> {
@@ -90,8 +99,10 @@ async function findUserFavoriteGroups(id: string): Promise<Array<GroupWithGroupS
   });
 }
 
-async function findGroup(id: string): Promise<Group | null> {
-  const group = await db.group.findUnique({
+async function findGroup(
+  id: string
+): Promise<GroupWithGroupSpiritTypeSportAndSchedules | null> {
+  return db.group.findUnique({
     where: { id },
     include: {
       groupType: true,
@@ -100,16 +111,11 @@ async function findGroup(id: string): Promise<Group | null> {
       schedules: true
     }
   });
-
-  if (!group) {
-    return null;
-  }
-  return dbGroupToGroup(group);
 }
 
 async function findGroupBySlug(
   slug: string
-): Promise<GroupWithGroupSpiritAndTypeSportOwnerAndSchedules | null> {
+): Promise<GroupWithGroupSpiritTypeSportOwnerAndSchedules | null> {
   const group = await db.group.findUnique({
     where: { slug },
     include: {
@@ -180,24 +186,22 @@ async function createDraftGroup(
   const createdAt = new Date();
   const updatedAt = createdAt;
 
-  return dbGroupToGroup(
-    await db.group.create({
-      data: {
-        id: groupId,
-        slug: null,
-        sportId: 1,
-        groupTypeId: 1,
-        groupSpiritId: 1,
-        dayOfWeek: 6,
-        timeOfDay: 900,
-        createdById,
-        createdAt,
-        updatedAt,
-        lat: 0,
-        lng: 0
-      }
-    })
-  );
+  return db.group.create({
+    data: {
+      id: groupId,
+      slug: null,
+      sportId: 1,
+      groupTypeId: 1,
+      groupSpiritId: 1,
+      dayOfWeek: 6,
+      timeOfDay: 900,
+      createdById,
+      createdAt,
+      updatedAt,
+      lat: 0,
+      lng: 0
+    }
+  });
 }
 
 async function deleteGroup(id: string): Promise<void> {

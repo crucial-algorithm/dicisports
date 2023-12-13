@@ -1,6 +1,7 @@
 import clsx from 'clsx';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
+import type { Participant, ShirtSize, EventTeam } from '@prisma/client';
 
 import { CheckoutInfoActions } from '~/action.keys';
 
@@ -11,7 +12,7 @@ import BasicDatePicker from '~/components/shared/form/DatePicker';
 import FormField from '~/components/shared/form/FormField';
 import TextField from '~/components/shared/form/TextField';
 import countries from '~/server/db/countries.json';
-import type { EventTeam, Language, Participant, ShirtSize } from '~/types';
+import type { Language } from '~/types';
 import { DiciInputMask } from '~/components/shared/form/InputMask';
 
 export default function ParticipantForm({

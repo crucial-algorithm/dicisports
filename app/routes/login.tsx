@@ -1,5 +1,6 @@
 import { CheckoutStatus, Role } from '@prisma/client';
 import { Form, Link, useActionData, useSearchParams } from '@remix-run/react';
+import type { Booking } from '@prisma/client';
 
 import { z, ZodError } from 'zod';
 
@@ -34,7 +35,7 @@ import { H2, H6 } from '~/components/shared/typography';
 
 import { sendWhatsAppGroupLink, subscribeUser } from '~/server/email.server';
 import { addGroupToFavorites, findGroup } from '~/server/db/groups.server';
-import type { Booking, LoginAction } from '~/types';
+import type { LoginAction } from '~/types';
 
 import { loginUser } from '~/server/db/users.server';
 import { CanonicalMeta } from '~/utils/seo';

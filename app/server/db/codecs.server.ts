@@ -1,11 +1,8 @@
 import type {
   Difficulty as DBDifficulty,
-  DiscountCode as DBDiscountCode,
   GroupSpirit as DBGroupSpirit,
   GroupType as DBGroupType,
   OrganizerType as DBOrganizerType,
-  Perk as DBPerk,
-  ShirtSize as DBShirtSize,
   Sport as DBSport,
   Status,
   User as DBUser
@@ -16,15 +13,10 @@ import type {
   DaysOfWeek,
   DBRawSearchResults,
   Difficulty,
-  DiscountCode,
-  Group,
-  GroupInput,
   GroupSpirit,
   GroupType,
   OrganizerType,
-  Perk,
   SearchResults,
-  ShirtSize,
   Sport,
   TranslationObject,
   User
@@ -32,12 +24,35 @@ import type {
 
 function dbUserToUser(user: DBUser | User): User {
   if ('organizer' in user) {
-    const { id, name, email, lat, lng, location, role, createdAt, updatedAt, organizer } = user as User;
+    const {
+      id,
+      name,
+      email,
+      lat,
+      lng,
+      location,
+      role,
+      createdAt,
+      updatedAt,
+      organizer
+    } = user as User;
 
-    return { id, name, email, lat, lng, location, role, createdAt, updatedAt, organizer };
+    return {
+      id,
+      name,
+      email,
+      lat,
+      lng,
+      location,
+      role,
+      createdAt,
+      updatedAt,
+      organizer
+    };
   }
 
-  const { id, name, email, lat, lng, location, role, createdAt, updatedAt } = user;
+  const { id, name, email, lat, lng, location, role, createdAt, updatedAt } =
+    user;
 
   return { id, name, email, lat, lng, location, role, createdAt, updatedAt };
 }
@@ -66,21 +81,6 @@ function dbDifficultyToDifficulty(difficulty: DBDifficulty): Difficulty {
   };
 }
 
-function dbPerkToPerk(perk: DBPerk): Perk {
-  const { id, name, createdAt, isDefault, isEnabled, eventId, displayOrder } =
-    perk;
-
-  return {
-    id,
-    name,
-    createdAt: new Date(createdAt),
-    isDefault,
-    isEnabled,
-    eventId,
-    displayOrder
-  };
-}
-
 function dbGroupSpiritToGroupSpirit(group: DBGroupSpirit): GroupSpirit {
   const { id, name, createdAt, updatedAt } = group;
 
@@ -100,31 +100,6 @@ function dbGroupTypeToGroupType(group: DBGroupType): GroupType {
     createdAt,
     updatedAt,
     name: name as TranslationObject
-  };
-}
-
-function dbShirtSizeToShirtSize(shirt: DBShirtSize): ShirtSize {
-  const { id, name, createdAt, updatedAt } = shirt;
-
-  return {
-    id,
-    name: name as TranslationObject,
-    createdAt,
-    updatedAt
-  };
-}
-
-function dbGroupToGroup(group: GroupInput): Group {
-  return {
-    ...group,
-    dayOfWeek: group.dayOfWeek as DaysOfWeek,
-    groupSpirit: group.groupSpirit
-      ? dbGroupSpiritToGroupSpirit(group.groupSpirit)
-      : undefined,
-    groupType: group.groupType
-      ? dbGroupTypeToGroupType(group.groupType)
-      : undefined,
-    sport: group.sport ? dbSportToSport(group.sport) : undefined
   };
 }
 
@@ -188,12 +163,6 @@ function dbRawSearchResultsToSearchResults(results: DBRawSearchResults): SearchR
   };
 }
 
-function dbDiscountCodeToDiscountCode(discountCode: DBDiscountCode): DiscountCode {
-  const { id, code, value, fixed, createdById, organizerId, status, createdAt, updatedAt  } = discountCode;
-
-  return { id, code, value, fixed, createdById, organizerId, status, createdAt, updatedAt };
-}
-
 function dbOrganizerTypeToOrganizerType(
   organizerType: DBOrganizerType
 ): OrganizerType {
@@ -212,11 +181,7 @@ export {
   dbSportToSport,
   dbGroupSpiritToGroupSpirit,
   dbGroupTypeToGroupType,
-  dbGroupToGroup,
-  dbPerkToPerk,
   dbDifficultyToDifficulty,
-  dbShirtSizeToShirtSize,
   dbRawSearchResultsToSearchResults,
-  dbDiscountCodeToDiscountCode,
   dbOrganizerTypeToOrganizerType
 };

@@ -20,6 +20,7 @@ import {
   unstable_createMemoryUploadHandler,
   unstable_parseMultipartFormData
 } from '@remix-run/node';
+import type { Perk, Race, Document } from '@prisma/client';
 
 import clsx from 'clsx';
 import { Toast } from 'primereact/toast';
@@ -94,10 +95,7 @@ import type {
   CreateEventInput,
   DiciLocation,
   Difficulty,
-  Document,
   Language,
-  Perk,
-  Race,
   ResponseFeedback,
   Sport,
   User
