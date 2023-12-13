@@ -7,7 +7,8 @@ import {
 import {
   CheckoutStatus,
   DiscountCodeStatus,
-  ParticipantStatus
+  ParticipantStatus,
+  RaceParticipantStatus
 } from '@prisma/client';
 import type { ActionFunction, LoaderFunction } from '@remix-run/node';
 import { json, redirect } from '@remix-run/node';
@@ -48,7 +49,6 @@ import { findEventWithRacesAndDocuments } from '~/server/db/events.server';
 import {
   findRaceParticipant,
   findUserBookingParticipants,
-  findUserEventRaceParticipants,
   findUserParticipants,
   findUserSavedParticipants,
   updateParticipant,
@@ -102,6 +102,16 @@ export const handle: { id: string; i18n: string[] } = {
   i18n: ['checkout']
 };
 
+function errorMessage(code: string) {
+  const mapping: { [key: string]: string } = {
+    P2002: 'Existing Race Participant',
+    P2003: 'Participant does not exist',
+    P2025: 'Participant does not exist'
+  };
+
+  return mapping[code] ?? 'Unknown error';
+}
+
 export const action: ActionFunction = async ({ request, params }) => {
   const t = await i18n.getFixedT(request, 'checkout');
   const form = await request.formData();
@@ -110,7 +120,7 @@ export const action: ActionFunction = async ({ request, params }) => {
   const bookingId = params.bookingId as string;
   const booking = await findBooking(bookingId);
 
-  if (!booking) {
+  if (!booking || booking.status === CheckoutStatus.deleted) {
     return redirect('/');
   }
 
@@ -298,15 +308,17 @@ export const action: ActionFunction = async ({ request, params }) => {
         await updateToSelectedParticipant(
           data.id,
           selectedParticipantId,
-          raceId
+          raceId,
+          bookingId
         );
         data.id = selectedParticipantId;
-
       } catch (e) {
         console.error(e);
 
         return badRequest({
-          errors: { selectedParticipant: t('Existing Race Participant') },
+          // TS1196: Catch clause variable type annotation must be 'any' or 'unknown' if specified.
+          //@ts-ignore
+          errors: { submit: t(errorMessage(e.code)) },
           hash: parseInt(hash)
         });
       }
@@ -325,9 +337,9 @@ export const action: ActionFunction = async ({ request, params }) => {
       await updateParticipant(data);
       const raceId = form.get('raceId') as string;
 
-      const raceParticipant = await findRaceParticipant(data.id, raceId);
+      const raceParticipant = await findRaceParticipant(data.id, raceId, bookingId);
 
-      if (!raceParticipant) {
+      if (!raceParticipant || raceParticipant.status === RaceParticipantStatus.deleted) {
         return badRequest({
           errors: {
             selectedParticipant: t('Race Participant does not exist')
@@ -357,7 +369,7 @@ export const action: ActionFunction = async ({ request, params }) => {
       raceParticipants?.length === 1
     ) {
       TermsAndRegulationSchema.parse({ regulation, terms });
-      const raceParticipants = await findUserEventRaceParticipants(bookingId);
+      const raceParticipants = await findUserBookingParticipants(bookingId);
 
       if (!raceParticipants) {
         return badRequest({ error: t('No Race Participants') });
@@ -439,7 +451,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   const booking = await findBooking(bookingId);
   const isGuest = pin && Number(pin) === booking?.pin;
 
-  if (!booking || (booking.userId !== clientId && !isGuest)) {
+  if (!booking || (booking.userId !== clientId && !isGuest) || booking.status === CheckoutStatus.deleted) {
     return redirect('/');
   }
 

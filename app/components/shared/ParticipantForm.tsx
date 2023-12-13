@@ -300,7 +300,7 @@ export default function ParticipantForm({
         <DiciInputMask
           name="postal-code"
           mask="9999-999"
-          defaultValue={
+          value={
             (selectedParticipant?.postalCode as string) ||
             (participant?.postalCode as string)
           }

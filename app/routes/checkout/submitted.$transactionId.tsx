@@ -1,4 +1,4 @@
-import { PaymentStatus } from '@prisma/client';
+import { CheckoutStatus, PaymentStatus } from '@prisma/client';
 import type { LoaderFunction } from '@remix-run/node';
 import { redirect } from '@remix-run/node';
 
@@ -18,7 +18,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 
   const booking = await findBooking(payment.bookingId);
 
-  if (!booking) {
+  if (!booking || booking.status === CheckoutStatus.deleted) {
     // TODO: we need to log this somehow
     return redirect('/');
   }

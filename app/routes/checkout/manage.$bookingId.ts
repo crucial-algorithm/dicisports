@@ -8,13 +8,10 @@ import { badRequest } from '~/utils/misc';
 import { getUser } from '~/server/auth/session.server';
 import {
   addRaceParticipants,
-  findUserEventRaceParticipants,
+  findUserBookingParticipants,
   removeRaceParticipant
 } from '~/server/db/participant.server';
-import {
-  findBooking,
-  removeBooking
-} from '~/server/db/booking.server';
+import { findBooking, removeBooking } from '~/server/db/booking.server';
 import i18n from '~/server/i18n.server';
 import { Unauthorized } from '~/server/utils/misc';
 
@@ -37,7 +34,7 @@ export const action: ActionFunction = async ({ request, params }) => {
   const bookingId = params.bookingId as string;
   const booking = await findBooking(bookingId);
 
-  if (!booking) {
+  if (!booking || booking.status === CheckoutStatus.deleted) {
     return redirect('/');
   }
 
@@ -53,16 +50,14 @@ export const action: ActionFunction = async ({ request, params }) => {
     );
   }
 
-  const eventId = booking.eventId;
-
   try {
     if (actionId === actions.removeParticipant) {
       const participantId = form.get('participantId') as string;
       const raceId = form.get('raceId') as string;
 
-      await removeRaceParticipant(participantId, raceId);
+      await removeRaceParticipant(participantId, raceId, bookingId);
 
-      const raceParticipants = await findUserEventRaceParticipants(bookingId);
+      const raceParticipants = await findUserBookingParticipants(bookingId);
 
       if (!raceParticipants || raceParticipants?.length === 0) {
         await removeBooking(bookingId);
@@ -75,9 +70,8 @@ export const action: ActionFunction = async ({ request, params }) => {
 
     if (actionId === actions.addParticipants) {
       const races = JSON.parse(form.get('races') as string);
-      const registrationId = await findBooking(bookingId).then((p) => p?.id);
 
-      await addRaceParticipants(races, bookingOwnerId, registrationId as string, eventId as string);
+      await addRaceParticipants(races, bookingOwnerId, booking.id, booking.eventId);
     }
 
     return json({ ok: true, action: actionId });

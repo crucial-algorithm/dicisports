@@ -27,7 +27,7 @@ import {
 import { findEvent } from '~/server/db/events.server';
 import {
   addParticipantToRace,
-  findUserEventRaceParticipants,
+  findUserBookingParticipants,
   findUserRaceParticipants,
   removeRaceParticipant
 } from '~/server/db/participant.server';
@@ -74,7 +74,7 @@ export const action: ActionFunction = async ({ request, params }) => {
 
   const booking: Booking | null = await findBooking(bookingId);
 
-  if (!booking || (booking && booking.userId !== clientId)) {
+  if (!booking || (booking && booking.userId !== clientId) || booking.status === CheckoutStatus.deleted) {
     return redirect('/');
   }
 
@@ -92,7 +92,7 @@ export const action: ActionFunction = async ({ request, params }) => {
   try {
     // Triggered when user clicks continue in the cart screen
     if (actionId === actions.checkout) {
-      const userEventRaceParticipants = await findUserEventRaceParticipants(
+      const userEventRaceParticipants = await findUserBookingParticipants(
         bookingId
       );
 
@@ -110,7 +110,7 @@ export const action: ActionFunction = async ({ request, params }) => {
     }
 
     if (actionId === actions.remove) {
-      const raceParticipants = await findUserRaceParticipants(clientId, raceId);
+      const raceParticipants = await findUserRaceParticipants(clientId, raceId, bookingId);
 
       if (!raceParticipants?.length) {
         return badRequest({ error: t('No Race Participants') });
@@ -120,11 +120,14 @@ export const action: ActionFunction = async ({ request, params }) => {
         (rp) => rp.participant.status === 'auto'
       );
 
+      // First, attempt to remove draftRaceParticipants, which contains participants in the 'auto' status
+      // If there isn't any, remove the last saved participant
       await removeRaceParticipant(
         draftRaceParticipants[0]
           ? draftRaceParticipants[0].participantId
           : raceParticipants[0].participantId,
-        raceId
+        raceId,
+        bookingId
       );
     }
 
@@ -149,7 +152,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   const bookingId = params.bookingId as string;
   const booking = await findBooking(bookingId);
 
-  if (!booking || (booking && booking.userId !== clientId)) {
+  if (!booking || (booking && booking.userId !== clientId) || booking.status === CheckoutStatus.deleted) {
     return redirect('/');
   }
 
