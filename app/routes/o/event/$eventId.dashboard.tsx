@@ -243,7 +243,7 @@ export default function DashboardRoute() {
         *{t('Race NMV Disclaimer')}
       </div>
       <div className="flex flex-col mt-2 scroll-mx-2 items-center gap-y-2 md:items-start md:flex-row md:flex-nowrap md:overflow-x-auto pb-10 hide-scrollbar">
-        {racesRevenueAndRegistrations.map((r: RaceRevenueRegistrations) => (
+        {racesRevenueAndRegistrations.map((r) => (
           <DisplayRaceStats
             id={r.id}
             name={r.name}

@@ -22,6 +22,7 @@ import type {
 } from '@prisma/client';
 
 import type { findBookingCart } from '~/server/db/booking.server';
+import type { calculateRaceNMV } from '~/server/financials.server';
 
 type NonNullProperties<Type> = {
   [Key in keyof Type]-?: Exclude<Type[Key], null | undefined>;
@@ -268,34 +269,13 @@ type UIRaceParticipant = {
 
 type Participant = {} & DBParticipant;
 
-type ParticipantInput = {
-  id: string;
-  userId?: string | null;
-  firstName: string;
-  lastName: string;
-  gender: string;
-  birthdate: Date;
-  phoneNumber: number;
-  identityCard?: string | null;
-  vatNumber?: string | null;
-  federationNumber?: number | null;
-  shirtSize: number;
-  nationality?: number | null;
-  postalCode: string;
-  createdAt?: Date;
-  updatedAt?: Date;
-};
+type ParticipantInput = Prisma.ParticipantCreateInput;
 
 type Booking = {} & DBBooking;
 
 type ShirtSize = {} & DBShirtSize;
 
-type RaceRevenueRegistrations = {
-  id: string;
-  name: string;
-  registrations: number;
-  revenue: number;
-};
+type RaceRevenueRegistrations = Prisma.PromiseReturnType<typeof calculateRaceNMV>
 
 type Organizer = DBOrganizer & {};
 type OrganizerType = {
