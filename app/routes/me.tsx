@@ -44,7 +44,7 @@ import { updateUser } from '~/server/db/users.server';
 
 import Main from '~/components/shared/Main';
 import { Spacer } from '~/components/shared/Spacer';
-import type { Group, GroupSchedule, Sport } from '~/types';
+import type { Group, GroupSchedule, Sport, BookingList } from '~/types';
 
 import DisplayImg from '~/components/shared/DisplayImg';
 import { findSports } from '~/server/db/reference.server';
@@ -56,7 +56,6 @@ import {
   removeEventFromFavorites
 } from '~/server/db/events.server';
 
-import type { BookingList } from '~/server/db/booking.server';
 import { findUserBookingsList } from '~/server/db/booking.server';
 
 const actionIds = {

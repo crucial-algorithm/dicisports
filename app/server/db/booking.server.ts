@@ -10,10 +10,6 @@ import { db } from '~/server/db.server';
 import type { UICartRow } from '~/types';
 import { bookingAmount } from '~/utils/misc';
 
-// findUserBookingsList returns object { results, total }, so ['results'] retrieves type from results
-// [0] makes this a single object type, instead of array
-type BookingList = Prisma.PromiseReturnType<typeof findUserBookingsList>['results'][0];
-
 async function findBooking(id: string): Promise<Booking | null> {
   return db.booking.findUnique({
     where: { id }
@@ -258,8 +254,6 @@ async function findUserOngoingBookingsByEvent(
     }
   });
 }
-
-export type { BookingList };
 
 export {
   updateBookingStatus,

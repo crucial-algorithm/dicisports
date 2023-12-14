@@ -14,7 +14,9 @@ import type {
 } from '@prisma/client';
 
 import type { findBookingCart } from '~/server/db/booking.server';
+import type { findUserBookingsList } from '~/server/db/booking.server';
 import type { calculateRaceNMV } from '~/server/financials.server';
+import type { findRaceParticipants } from '~/server/db/participant.server';
 
 type NonNullProperties<Type> = {
   [Key in keyof Type]-?: Exclude<Type[Key], null | undefined>;
@@ -220,7 +222,7 @@ type Difficulty = {
   description: TranslationObject;
 } & DBDifficulty;
 
-type UICartRow = Prisma.PromiseReturnType<typeof findBookingCart>;
+type UICartRow = Prisma.PromiseReturnType<typeof findBookingCart>[0];
 
 type RaceQty = {
   id: string;
@@ -234,21 +236,19 @@ type RaceQty = {
 
 type RaceParticipantInput = Prisma.RaceParticipantUncheckedCreateInput;
 
-type UIRaceParticipant = {
-  id: string;
-  name: string;
-  birthdate: Date;
-  gender: string;
-  bookingAt: Date;
-  status: string;
-  raceName: string;
-  teamName: string | null;
-  bibNumber: number | null;
-};
+type UIRaceParticipant = Prisma.PromiseReturnType<
+  typeof findRaceParticipants
+>['results'][0];
+
+// The findUserBookingsList function returns an object { results, total }.
+// Accessing ['results'] retrieves the type from the results property, and [0] is used to treat it as a single object type instead of an array.
+type BookingList = Prisma.PromiseReturnType<typeof findUserBookingsList>['results'][0];
 
 type ParticipantInput = Prisma.ParticipantUncheckedCreateInput;
 
-type RaceRevenueRegistrations = Prisma.PromiseReturnType<typeof calculateRaceNMV>
+type RaceRevenueRegistrations = Prisma.PromiseReturnType<
+  typeof calculateRaceNMV
+>;
 
 type OrganizerType = {
   name: TranslationObject;
@@ -340,7 +340,8 @@ export {
   SibsStatusResponse,
   OrganizerType,
   ResponseFeedback,
-  LocalStorageBookingMetaData
+  LocalStorageBookingMetaData,
+  BookingList
 };
 
 // https://www.i18next.com/overview/typescript#argument-of-type-defaulttfuncreturn-is-not-assignable-to-parameter-of-type-xyz

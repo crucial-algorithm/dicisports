@@ -17,13 +17,6 @@ const groupWithGroupSpiritOwnerAndSchedules =
     }
   });
 
-const groupWithGroupSpiritAndOwner = Prisma.validator<Prisma.GroupArgs>()({
-  include: {
-    groupSpirit: true,
-    createdBy: true
-  }
-});
-
 const groupWithGroupSpiritTypeSportOwnerAndSchedules =
   Prisma.validator<Prisma.GroupArgs>()({
     include: {
@@ -48,9 +41,7 @@ const groupWithGroupSpiritTypeSportAndSchedules =
 type GroupWithGroupSpiritOwnerAndSchedules = Prisma.GroupGetPayload<
   typeof groupWithGroupSpiritOwnerAndSchedules
 >;
-type GroupWithGroupSpiritAndOwner = Prisma.GroupGetPayload<
-  typeof groupWithGroupSpiritAndOwner
->;
+
 type GroupWithGroupSpiritTypeSportOwnerAndSchedules =
   Prisma.GroupGetPayload<
     typeof groupWithGroupSpiritTypeSportOwnerAndSchedules
@@ -81,7 +72,7 @@ async function findUserGroups(userId: string): Promise<Array<GroupWithGroupSpiri
   });
 }
 
-async function findUserFavoriteGroups(id: string): Promise<Array<GroupWithGroupSpiritAndOwner>> {
+async function findUserFavoriteGroups(id: string): Promise<Array<GroupWithGroupSpiritOwnerAndSchedules>> {
   const user = await db.user.findUnique({
     where: { id },
     include: {
@@ -93,9 +84,9 @@ async function findUserFavoriteGroups(id: string): Promise<Array<GroupWithGroupS
     return [];
   }
 
-  return await db.group.findMany({
+  return db.group.findMany({
     where: { id: { in: user?.favGroups.map((fg) => fg.groupId) } },
-    include: { createdBy: true, groupSpirit: true }
+    include: { createdBy: true, groupSpirit: true, schedules: true }
   });
 }
 

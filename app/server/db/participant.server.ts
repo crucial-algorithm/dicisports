@@ -9,8 +9,7 @@ import {
 
 import type {
   ParticipantInput,
-  RaceParticipantInput,
-  UIRaceParticipant
+  RaceParticipantInput
 } from '~/types';
 import { db } from '~/server/db.server';
 import Id from '~/server/utils/Id.server';
@@ -241,7 +240,7 @@ async function findRaceParticipants(
   page: number,
   pageSize = 10,
   searchedName: string | null
-): Promise<{ results: UIRaceParticipant[]; total: number }> {
+) {
   const where: Prisma.RaceParticipantWhereInput = {
     participant: {
       OR: [
