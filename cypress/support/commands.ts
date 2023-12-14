@@ -92,7 +92,8 @@ function pickDate(name: string, date: string, outside = 'body') {
 
     .get(`input[name=${name}]`)
     .clear()
-    .type(date)
+    .invoke('val', date)
+    .trigger('input')
 
     .get(`[data-cy-year=${year}][data-cy-month=${month}][data-cy-day=${day}]`)
     .click({ force: true }) // when within a dialog
