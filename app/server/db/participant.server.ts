@@ -363,7 +363,7 @@ async function findUserBookingParticipants(
       team: true
     },
     orderBy: {
-      displayOrder: 'asc'
+      displayOrder: 'desc'
     }
   });
 }
