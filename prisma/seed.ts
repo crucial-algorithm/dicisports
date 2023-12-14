@@ -126,7 +126,7 @@ function events() {
 
   return eventsSeed.map((e) => {
     const startAt = new Date(e.startAt ? e.startAt : futureDate);
-    const bookingStopsAt = new Date(startAt.getTime() - 86400 * 1000);
+    const bookingStopsAt = new Date(startAt.getTime() - 86400 * 1000 * 7);
 
     return {
       ...e,
@@ -285,7 +285,7 @@ function participants() {
   return participantsSeed.map((p) => {
     return {
       ...p,
-      birthdate: new Date(p.birthdate),
+      birthdate: p.birthdate ? new Date(p.birthdate) : null,
       createdAt: now,
       updatedAt: now
     };

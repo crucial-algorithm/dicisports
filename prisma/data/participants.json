@@ -11,7 +11,8 @@
     "postalCode": "4730-000",
     "identityCard": "00000000-0-ZZ4",
     "vatNumber": "123456789",
-    "status": "saved"
+    "status": "saved",
+    "nationality": 188
   },
   {
     "id": "3REnDGXqkCekehnPiLkG",
@@ -25,7 +26,8 @@
     "postalCode": "4730-000",
     "identityCard": "00000000-0-ZZ4",
     "vatNumber": "123456789",
-    "status": "saved"
+    "status": "saved",
+    "nationality": 188
   },
   {
     "id": "7Qh7mDMFHybSsfTaySNA",
@@ -38,7 +40,8 @@
     "shirtSize": 1,
     "postalCode": "4730-000",
     "vatNumber": "123456789",
-    "status": "saved"
+    "status": "saved",
+    "nationality": 188
   },
   {
     "id": "GJpxcRjamQyYWQjdPF24",
@@ -68,7 +71,8 @@
     "postalCode": "4730-000",
     "identityCard": "00000000-0-ZZ4",
     "vatNumber": "123456789",
-    "status": "saved"
+    "status": "saved",
+    "nationality": 188
   },
   {
     "id": "5Bfq2Asmsuv9LzDKGaTt",
@@ -97,7 +101,8 @@
     "postalCode": "4730-000",
     "identityCard": "00000000-0-ZZ4",
     "vatNumber": "123456789",
-    "status": "saved"
+    "status": "saved",
+    "nationality": 188
   },
   {
     "id": "Xa3dfa3gop3O12Hgz9x",
@@ -111,7 +116,8 @@
     "postalCode": "4730-000",
     "identityCard": "00000000-0-ZZ4",
     "vatNumber": "123456789",
-    "status": "saved"
+    "status": "saved",
+    "nationality": 188
   },
   {
     "id": "sEnZEkphxcgnjdRexCWv",
@@ -140,7 +146,8 @@
     "postalCode": "4730-000",
     "identityCard": "00000000-0-ZZ4",
     "vatNumber": "123456789",
-    "status": "saved"
+    "status": "saved",
+    "nationality": 188
   },
   {
     "id": "dCieNujaqmmWwCjjjchi",

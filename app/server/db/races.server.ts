@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, RaceParticipantStatus } from '@prisma/client';
 import type { Race } from '@prisma/client';
 
 import { db } from '~/server/db.server';
@@ -11,7 +11,7 @@ async function createRace(race: CreateRaceInput): Promise<Race> {
   const raceId = race.id || Id();
   const raceAt = new Date();
 
-  return await db.race.create({
+  return db.race.create({
     data: {
       id: raceId,
       name: race.name,
@@ -32,14 +32,14 @@ async function createRace(race: CreateRaceInput): Promise<Race> {
 }
 
 async function findEventRaces(eventId: string): Promise<Race[] | null> {
-  return await db.race.findMany({
+  return db.race.findMany({
     where: { eventId: eventId, status: { not: 'deleted' } },
     orderBy: { displayOrder: 'asc' }
   });
 }
 
 async function findRace(raceId: string): Promise<Race | null> {
-  return await db.race.findUnique({
+  return db.race.findUnique({
     where: { id: raceId }
   });
 }
@@ -137,7 +137,7 @@ async function findRegistrationsAddedToCart(
   const results = await db.raceParticipant.groupBy({
     by: ['raceId'],
     _count: { raceId: true },
-    where: { race: { eventId } }
+    where: { race: { eventId }, status: { not: RaceParticipantStatus.deleted } }
   });
 
   return results.map(({ raceId, _count }) => ({

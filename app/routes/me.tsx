@@ -779,7 +779,7 @@ function BookingListEntry({
       <TD value={`${booking.event.name}`} dataCy={`event-${generateSlug(booking.event.name as string)}`} />
       <TD value={`${date} ${hour}`} />
       <TD value={t(booking.status)} dataCy={`status-${booking.id}`} />
-      <TD value={`${booking._count.raceParticipant}`} />
+      <TD value={`${booking.totalParticipants}`} />
     </tr>
   );
 }

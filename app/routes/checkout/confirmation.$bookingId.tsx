@@ -1,4 +1,4 @@
-import type { Event } from '@prisma/client';
+import type { Booking, Event } from '@prisma/client';
 import { CheckoutStatus } from '@prisma/client';
 import type { ActionFunction, LoaderFunction } from '@remix-run/node';
 import { json, redirect } from '@remix-run/node';
@@ -7,7 +7,6 @@ import * as React from 'react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { z, ZodError } from 'zod';
-import type { Booking } from '@prisma/client';
 
 import Button from '~/components/shared/Button';
 import DisplayCart from '~/components/shared/DisplayCart';
@@ -20,7 +19,7 @@ import { getClientSession } from '~/server/auth/client.server';
 import { getUser } from '~/server/auth/session.server';
 import { findBooking, findBookingCart } from '~/server/db/booking.server';
 import { findEvent } from '~/server/db/events.server';
-import { findUserEventRaceParticipants } from '~/server/db/participant.server';
+import { findUserBookingParticipants } from '~/server/db/participant.server';
 import type { KCDHandle, UICartRow } from '~/types';
 import { badRequest, maintainBookingLocalStorageMetaData } from '~/utils/misc';
 import { sendBookingConfirmationEmail } from '~/server/email.server';
@@ -75,10 +74,8 @@ export const action: ActionFunction = async ({ request, params }) => {
 
   const booking = await findBooking(bookingId);
 
-  if (!booking) {
-    return badRequest({
-      error: t('No Booking')
-    });
+  if (!booking || booking.status === CheckoutStatus.deleted) {
+    return redirect('/');
   }
 
   if (booking.userId !== clientId) {
@@ -168,7 +165,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 
   const booking = await findBooking(bookingId);
 
-  if (!booking || booking.userId !== clientId) {
+  if (!booking || booking.userId !== clientId || booking.status === CheckoutStatus.deleted) {
     return redirect('/');
   }
 
@@ -188,7 +185,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     return redirect('/');
   }
 
-  const raceParticipants = await findUserEventRaceParticipants(bookingId);
+  const raceParticipants = await findUserBookingParticipants(bookingId);
 
   if (!raceParticipants || raceParticipants?.length === 0) {
     return redirect(`/${lng}/event/${event.slug}`);

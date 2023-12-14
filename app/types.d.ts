@@ -111,7 +111,7 @@ type CreateEventInput = Prisma.EventCreateInput;
 
 type CreatePerksInput = Prisma.PerkUncheckedCreateInput;
 
-type CreateRaceInput = Prisma.RaceCreateInput;
+type CreateRaceInput = Prisma.RaceUncheckedCreateInput;
 
 type GroupSpirit = {
   name: TranslationObject;
