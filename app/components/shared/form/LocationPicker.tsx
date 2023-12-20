@@ -1,5 +1,6 @@
 import { MapPinIcon } from '@heroicons/react/24/solid';
 import MapboxGeocoder from '@mapbox/mapbox-gl-geocoder';
+import type { MapboxOptions } from 'mapbox-gl';
 import mapboxgl from 'mapbox-gl';
 import { ProgressSpinner } from 'primereact/progressspinner';
 import type { ChangeEvent } from 'react';
@@ -33,7 +34,7 @@ type Props = {
   error?: string;
 } & Omit<React.ComponentProps<'div'>, 'defaultValue'>;
 
-const MAP_BOX_URL = 'api.mapbox.com/geocoding/v5/mapbox.places';
+const MAPBOX_URL = 'api.mapbox.com/geocoding/v5/mapbox.places';
 const MAP_STYLE = 'mapbox://styles/mapbox/streets-v11';
 const types = [
   'address',
@@ -44,6 +45,33 @@ const types = [
   'place',
   'locality'
 ];
+
+const MAPBOX_TEST_STYLE = {
+  version: 8,
+  sources: {
+    land: {
+      type: 'geojson',
+      data: '/test/land.json'
+    }
+  },
+  layers: [
+    {
+      id: 'background',
+      type: 'background',
+      paint: {
+        'background-color': '#72d0f2'
+      }
+    },
+    {
+      id: 'land',
+      type: 'fill',
+      source: 'land',
+      paint: {
+        'fill-color': '#f0e9e1'
+      }
+    }
+  ]
+};
 
 export default function LocationPicker({
   token,
@@ -86,14 +114,25 @@ export default function LocationPicker({
       return;
     }
 
-    const map = new mapboxgl.Map({
+    const mapBoxOptions: MapboxOptions = {
       container: mapWrapper.current,
       accessToken: token,
       style: MAP_STYLE,
       center: [info.lng, info.lat],
       zoom: info.zoom,
       boxZoom: false
-    });
+    };
+
+    const hackyEnableTestMode = window.localStorage.getItem('cypress.mapbox');
+
+    if (hackyEnableTestMode && hackyEnableTestMode === 'test') {
+      mapBoxOptions.testMode = true;
+      // @ts-ignore
+      mapBoxOptions.style = MAPBOX_TEST_STYLE;
+      mapBoxOptions.accessToken = undefined;
+    }
+
+    const map = new mapboxgl.Map(mapBoxOptions);
 
     map.addControl(
       new mapboxgl.GeolocateControl({
@@ -299,7 +338,7 @@ async function fetchAddress(
   token: string
 ): Promise<DiciLocation | null> {
   const location = [lng, lat].join(',');
-  const url = `https://${MAP_BOX_URL}/${location}.json?limit=1&types=${types.join(
+  const url = `https://${MAPBOX_URL}/${location}.json?limit=1&types=${types.join(
     '%2C'
   )}&access_token=${token}`;
   const res = await fetch(url);
