@@ -2,6 +2,7 @@ describe('Event', () => {
   before(() => {
     cy.task('db:reset');
     cy.task('clearDownloadFolder');
+    cy.clearAllLocalStorage();
   });
 
   context('Public', () => {
@@ -46,7 +47,9 @@ describe('Event', () => {
         .contains(name)
 
         .get('[data-cy=date]')
-        .contains(formatter(new Date(`${new Date().getUTCFullYear() + 1}-10-21`)))
+        .contains(
+          formatter(new Date(`${new Date().getUTCFullYear() + 1}-10-21`))
+        )
 
         .get('[data-cy=location-link]')
         .should('have.attr', 'href')
@@ -174,11 +177,18 @@ describe('Event', () => {
     it('should create an event', () => {
       cy.intercept('GET', '/o/event/*?_data=routes*')
         .as('EventRequests')
-        .visitAndWaitForHydration('/o')
+        .visitAndWaitForHydration('/o', {
+          onBeforeLoad(win: Cypress.AUTWindow) {
+            win.localStorage.setItem('cypress.mapbox', 'test');
+          }
+        })
         .get('button[name=create-event]')
         .click()
 
         .wait('@EventRequests')
+
+        .get('[data-cy=transition-indication]')
+        .should('not.exist')
 
         .get('input[name=event-name]')
         .type('a new event')

@@ -298,6 +298,10 @@ table.privacy-policy td {
 .dark .prose :where(strong):not(:where([class~="not-prose"] *)) {
     font-weight: 900;
 }
+.prose :where(p):not(:where([class~="not-prose"] *)) {
+    margin-top: 0.325em;
+    margin-bottom: 0.325em;
+}
 
 .prose {
     max-width: 100ch;

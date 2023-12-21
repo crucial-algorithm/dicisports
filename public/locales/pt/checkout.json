@@ -64,7 +64,8 @@
 
   "Update Cart": "Atualizar carrinho",
   "Existing Race Participant": "Este participante já está a participar nesta distância!",
-  "Unknow error": "Ups.. Não sabemos o que aconteceu. Envie um e-mail para filipe@dicisports.com!",
+  "Participant does not exist": "Ups.. Parece que este participante não existe.",
+  "Unknown error": "Ups.. Não sabemos o que aconteceu. Envie um e-mail para filipe@dicisports.com!",
   "Participant Selected": "Participante selecionado",
   "Participant Saved": "Participante guardado",
   "Participant Saved and Updated": "Participante guardado e atualizado",

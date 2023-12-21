@@ -1,12 +1,12 @@
 import type { Prisma } from '@prisma/client';
-import { PaymentStatus, PrismaClient, CheckoutStatus } from '@prisma/client';
+import { PaymentStatus, PrismaClient, CheckoutStatus, RaceParticipantStatus } from '@prisma/client';
 
 import { db } from '~/server/db.server';
 import type { Booking, BookingList, UICartRow } from '~/types';
 import { bookingAmount } from '~/utils/misc';
 
 async function findBooking(id: string): Promise<Booking | null> {
-  return await db.booking.findUnique({
+  return db.booking.findUnique({
     where: { id }
   });
 }
@@ -14,7 +14,10 @@ async function findBooking(id: string): Promise<Booking | null> {
 async function findBookingCart(bookingId: string): Promise<UICartRow[]> {
   const bookingCart = await db.raceParticipant.groupBy({
     by: ['raceId'],
-    where: { bookingId },
+    where: {
+      bookingId,
+      status: { not: RaceParticipantStatus.deleted }
+    },
     _count: {
       id: true
     }
@@ -63,7 +66,7 @@ async function createBooking(
   eventId: string,
   userSessionId: string
 ): Promise<Booking> {
-  return await db.booking.create({
+  return db.booking.create({
     data: {
       id: bookingId,
       pin,
@@ -79,8 +82,11 @@ async function removeBooking(
   bookingId: string,
   tx?: Prisma.TransactionClient
 ): Promise<void> {
-  await (tx || db).booking.delete({
-    where: { id: bookingId }
+  await (tx || db).booking.update({
+    where: { id: bookingId },
+    data: {
+      status: CheckoutStatus.deleted
+    }
   });
 }
 
@@ -139,9 +145,9 @@ async function findUserBookingsList(
       createdAt: true,
       status: true,
       pin: true,
-      _count: {
-        select: {
-          raceParticipant: true
+      raceParticipant: {
+        where: {
+          status: { not: RaceParticipantStatus.deleted }
         }
       }
     },
@@ -166,7 +172,7 @@ async function findUserBookingsList(
         bookingDate: r.createdAt,
         status: r.status,
         pin: r.pin,
-        totalParticipants: r._count.raceParticipant
+        totalParticipants: r.raceParticipant.length
       };
     }),
     total: total._count._all
@@ -177,7 +183,7 @@ async function updateBookingStatus(
   id: string,
   status: CheckoutStatus
 ): Promise<Booking> {
-  return await db.booking.update({
+  return db.booking.update({
     where: { id },
     data: {
       status
@@ -188,7 +194,7 @@ async function updateBookingStatus(
 async function findConfirmedBookings(
   eventId: string
 ): Promise<Booking[] | null> {
-  return await db.booking.findMany({
+  return db.booking.findMany({
     where: { eventId, status: 'confirmed' }
   });
 }
@@ -223,7 +229,7 @@ async function applyDiscountCode(
 }
 
 async function removeBookingDiscount(id: string) {
-  return await db.booking.update({
+  return db.booking.update({
     where: { id },
     data: {
       appliedDiscount: null
@@ -235,8 +241,12 @@ async function findUserOngoingBookingsByEvent(
   userId: string,
   eventId: string
 ): Promise<Booking[]> {
-  return await db.booking.findMany({
-    where: { userId, eventId, status: { not: CheckoutStatus.confirmed } }
+  return db.booking.findMany({
+    where: {
+      userId,
+      eventId,
+      status: { notIn: [CheckoutStatus.confirmed, CheckoutStatus.deleted] }
+    }
   });
 }
 
