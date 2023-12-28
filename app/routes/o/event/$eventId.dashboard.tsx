@@ -322,14 +322,6 @@ export default function DashboardRoute() {
                         <TD value={t(rp.status)} />
                         <TD value={rp.bibNumber ? String(rp.bibNumber) : '-'} />
                         <TD value={rp.raceName} />
-                        <td>
-                          <button
-                            type="button"
-                            className="w-[24px] h-[24px] dark:text-blueGray-500"
-                          >
-                            <EllipsisVerticalIcon className="md:h-6 w-6 m-0 inline-block" />
-                          </button>
-                        </td>
                       </tr>
                     ))}
                   </tbody>
