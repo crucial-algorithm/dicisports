@@ -58,7 +58,7 @@ describe('Checkout', () => {
         .then(({ body }) => {
           expect(body.to).to.eq('asd@gmail.com');
           expect(body.subject).to.eq(
-            'Informações do teu booking no evento Love Tiles Douro Granfondo 2023.'
+            'Informações da tua inscrição no evento Love Tiles Douro Granfondo 2023.'
           );
         });
     });
@@ -421,7 +421,7 @@ describe('Checkout', () => {
         .request({ method: 'GET', url: Cypress.env('HTTP_CATCHER') })
         .then(({ body }) => {
           expect(body.subject).to.eq(
-            'Informações do teu booking no evento Viana Granfondo.'
+            'Informações da tua inscrição no evento Viana Granfondo.'
           );
         });
     });
