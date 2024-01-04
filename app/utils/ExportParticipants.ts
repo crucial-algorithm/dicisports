@@ -4,6 +4,19 @@ import type { TFunction } from 'i18next';
 
 import type { RaceParticipant } from '~/types';
 
+function shortDateformatter(date: Date | null) {
+  if (!date) {
+    return '';
+  }
+
+  const dt = new Date(date);
+  const day = dt.getDate();
+  const month = dt.getMonth() + 1;
+  const year = dt.getFullYear();
+
+  return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+}
+
 export default async function exportRaceParticipantsToExcel({
   raceParticipants,
   fileName,
@@ -18,10 +31,12 @@ export default async function exportRaceParticipantsToExcel({
 
   worksheet.columns = [
     { header: t('Athlete'), key: 'athlete', width: 20 },
-    { header: t('Team'), key: 'team', width: 20 },
+    { header: t('Team'), key: 'team', width: 30 },
     { header: t('Bib Number'), key: 'bibNumber', width: 10 },
     { header: t('Identity Card'), key: 'identityCard', width: 20 },
-    { header: t('VAT Number'), key: 'vatNumber', width: 20 }
+    { header: t('VAT Number'), key: 'vatNumber', width: 14 },
+    { header: t('Birthdate'), key: 'birthdate', width: 14 },
+    { header: t('Gender'), key: 'gender', width: 14 }
   ];
 
   // Set column titles to be bold - setting font family as well since it keeps changing 🤷‍♂️
@@ -38,7 +53,9 @@ export default async function exportRaceParticipantsToExcel({
       identityCard: r.participant.identityCard
         ? r.participant.identityCard
         : '-',
-      vatNumber: r.participant.vatNumber ? r.participant.vatNumber : '-'
+      vatNumber: r.participant.vatNumber ? r.participant.vatNumber : '-',
+      birthdate: shortDateformatter(r.participant.birthdate),
+      gender: t(`Gender-${r.participant.gender}`)
     });
   });
 

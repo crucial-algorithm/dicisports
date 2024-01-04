@@ -1,4 +1,4 @@
-import type { Prisma } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 import {
   CheckoutStatus,
   PrismaClient,
@@ -16,6 +16,8 @@ import type {
 import { db } from '~/server/db.server';
 import Id from '~/server/utils/Id.server';
 import { createTeam, findEventTeamByName } from '~/server/db/teams.server';
+
+import SortOrder = Prisma.SortOrder;
 
 const prisma = new PrismaClient();
 
@@ -254,6 +256,10 @@ async function findRaceParticipants(
       }
     },
     where,
+    orderBy: [
+      { bibNumber: { sort: SortOrder.desc, nulls: 'last' } },
+      { booking: { createdAt: SortOrder.desc } }
+    ],
     take: pageSize,
     skip: page * pageSize
   });
