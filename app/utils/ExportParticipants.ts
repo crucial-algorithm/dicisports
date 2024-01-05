@@ -44,7 +44,10 @@ export default async function exportRaceParticipantsToExcel({
 
   row.font = { bold: true, name: 'Calibri' };
 
-  raceParticipants.map((r) => {
+  raceParticipants
+    // @ts-ignore
+    .sort((a, b) => a.bibNumber - b.bibNumber)
+    .map((r) => {
     return worksheet.addRow({
       athlete: `${r.participant.firstName} ${r.participant.lastName}`,
       team: r.team ? r.team.name : t('Individual'),
