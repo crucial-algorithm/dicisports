@@ -78,7 +78,7 @@
     }
 
     .focus-ring.danger {
-        @apply dark:focus:ring-red-500 dark:hover:ring-red-500 dark:focus-within:ring-red-500 dark:group-hover:ring-red-500 group-focus:dark:ring-red-500 focus:ring-red-500 hover:ring-red-500 focus-within:ring-red-500 group-hover:ring-red-500 group-focus:ring-red-500 ring-red-500;
+        @apply dark:focus:ring-blaze-orange-500 dark:hover:ring-blaze-orange-500 dark:focus-within:ring-blaze-orange-500 dark:group-hover:ring-blaze-orange-500 group-focus:dark:ring-blaze-orange-500 focus:ring-blaze-orange-500 hover:ring-blaze-orange-500 focus-within:ring-blaze-orange-500 group-hover:ring-blaze-orange-500 group-focus:ring-blaze-orange-500 ring-blaze-orange-500;
     }
 
     .bg-primary {

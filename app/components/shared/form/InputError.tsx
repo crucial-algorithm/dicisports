@@ -11,7 +11,7 @@ const InputError: React.FC<Props> = ({ id, className, children }) => {
   }
 
   return (
-    <p role="alert" id={id} className={clsx('text-red-500 text-sm', className)}>
+    <p role="alert" id={id} className={clsx('text-blaze-orange-500 text-sm', className)}>
       {children}
     </p>
   );

@@ -785,7 +785,7 @@ export default function CheckoutInfoRoute() {
                         p.participantId === raceParticipant.participant.id &&
                         p.race.id === raceParticipant.raceId
                       ),
-                      'border-red-500': missingParticipants.some(
+                      'border-blaze-orange-500': missingParticipants.some(
                         (v) => v.participantId === p.participantId
                       ),
                       'border-gray-500': !missingParticipants.some(
@@ -801,8 +801,8 @@ export default function CheckoutInfoRoute() {
                     (v) => v.id === p.participantId
                   ) && (
                     <span className="flex absolute h-4 w-4 top-0 right-0 -mt-[0.3rem] -mr-[0.7rem]">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
-                      <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blaze-orange-500 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-3 w-3 bg-blaze-orange-500"></span>
                     </span>
                   )}
 

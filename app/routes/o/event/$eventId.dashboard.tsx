@@ -308,7 +308,7 @@ export default function DashboardRoute() {
                     {raceParticipants
                       .map((rp) => (
                         <tr
-                          className="border-b transition duration-300 ease-in-out hover:bg-red"
+                          className="border-b"
                           key={rp.id}
                           data-cy="participant-row"
                           id={`participant-${rp.id}`}

@@ -161,7 +161,6 @@ async function sendWhatsAppLinkFlow(request: Request, params: URLSearchParams) {
 
   await sendWhatsAppGroupLink({
     emailAddress: email,
-    domainUrl,
     groupName: group.name || '',
     whatsAppLink: group.whatsapp
   });
