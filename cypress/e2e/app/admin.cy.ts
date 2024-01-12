@@ -22,7 +22,7 @@ describe('Admin', () => {
         .as('ApproveOrganizer')
 
         .get('button[name=actionId]')
-        .should('have.length', 2)
+        .should('have.length', 3)
         .eq(1)
         .click()
 
@@ -43,7 +43,7 @@ describe('Admin', () => {
         .as('RejectOrganizer')
 
         .get('button[name=actionId]')
-        .should('have.length', 2)
+        .should('have.length', 3)
         .eq(0)
         .click()
 
@@ -70,7 +70,7 @@ describe('Admin', () => {
         .as('ApproveOrganizer')
 
         .get('button[name=actionId]')
-        .should('have.length', 2)
+        .should('have.length', 3)
         .eq(1)
         .click()
 

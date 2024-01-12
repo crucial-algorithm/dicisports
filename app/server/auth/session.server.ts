@@ -7,7 +7,12 @@ import {
   findUserByEmail,
   findUserFromSessionId
 } from '~/server/db/users.server';
-import { createSession, deleteSession } from '~/server/db/sessions.server';
+import {
+  createSession,
+  deleteSession,
+  setSessionImpersonated,
+  setSessionUnImpersonated
+} from '~/server/db/sessions.server';
 import type { LoginAction, User } from '~/types';
 
 import { sendRecoverPasswordEmail } from '../email.server';
@@ -61,9 +66,9 @@ const sessionStorage = createCookieSessionStorage({
 });
 
 async function sendRecoverPasswordToken({
-  emailAddress,
-  domainUrl
-}: {
+                                          emailAddress,
+                                          domainUrl
+                                        }: {
   emailAddress: string;
   domainUrl: string;
 }) {
@@ -106,18 +111,20 @@ async function getSession(request: Request) {
 
   return {
     session,
-    getUser: async () => {
+    getUser: async (): Promise<{ user: User | null; impersonatedUser: User | null }> => {
       const token = getSessionId();
 
       if (!token) {
-        return null;
+        return { user: null, impersonatedUser: null };
       }
 
-      return findUserFromSessionId(token).catch((error: unknown) => {
-        unsetSessionId();
-        console.error('Failure getting user from session ID:', error);
-        return null;
-      });
+      return await findUserFromSessionId(token).catch(
+        (error: unknown) => {
+          unsetSessionId();
+          console.error('Failure getting user from session ID:', error);
+          return { user: null, impersonatedUser: null };
+        }
+      );
     },
     getSessionId,
     unsetSessionId,
@@ -170,10 +177,38 @@ async function getUser(request: Request) {
     return null;
   }
 
-  return findUserFromSessionId(token).catch((error: unknown) => {
-    console.error('Failure getting user from session ID:', error);
-    return null;
-  });
+  const { user, impersonatedUser } = await findUserFromSessionId(token).catch(
+    (error: unknown) => {
+      console.error('Failure getting user from session ID:', error);
+      return { user: null, impersonatedUser: null };
+    }
+  );
+
+  return impersonatedUser || user;
+}
+
+async function impersonateSession(request: Request, userId: string) {
+  const { session } = await getSession(request);
+
+  const token = session.get(sessionIdKey) as string | undefined;
+
+  if (!token) {
+    return;
+  }
+
+  return setSessionImpersonated(token, userId);
+}
+
+async function unImpersonateSession(request: Request) {
+  const { session } = await getSession(request);
+
+  const token = session.get(sessionIdKey) as string | undefined;
+
+  if (!token) {
+    return;
+  }
+
+  return setSessionUnImpersonated(token);
 }
 
 async function getUserSessionFromMagicLink(request: Request) {
@@ -326,5 +361,7 @@ export {
   requireAdminUser,
   requireOrganizer,
   getUser,
-  sendRecoverPasswordToken
+  sendRecoverPasswordToken,
+  unImpersonateSession,
+  impersonateSession
 };

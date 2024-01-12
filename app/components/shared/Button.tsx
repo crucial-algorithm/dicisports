@@ -121,7 +121,7 @@ function ButtonInner({
           {
             'text-primary': variant === 'secondary',
             'text-inverse': variant === 'primary',
-            'text-red-500': variant === 'danger',
+            'text-blaze-orange-500': variant === 'danger',
             'px-11 py-6 space-x-5': size === 'large',
             'px-8 py-4 space-x-3': size === 'medium',
             'px-6 py-3 space-x-3': size === 'small',
