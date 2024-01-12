@@ -116,6 +116,7 @@ export const handle: KCDHandle & { id: string; i18n: string[] } = {
 
 export type RootLoaderData = {
   user: User | null;
+  ancestorUser: User | null;
   ENV: { CLOUDINARY_CLOUD_NAME: string, RELEASE: string };
   requestInfo: {
     canonicalUrl: string;
@@ -131,7 +132,7 @@ export type RootLoaderData = {
 };
 
 export const loader: LoaderFunction = async ({ request }) => {
-  function getUser() {
+  function getUser(): Promise<{ user: User | null; impersonatedUser: User | null }> {
     return session.getUser();
   }
 
@@ -143,25 +144,28 @@ export const loader: LoaderFunction = async ({ request }) => {
   const locationSession = await getLocationSession(request);
   const sports = await findSports();
 
-  const user = await time({
+  const { user, impersonatedUser } = await time({
     name: 'getUser in root loader',
     type: 'postgres read',
     timings,
     fn: getUser
   });
 
+  const refUser = impersonatedUser || user;
+
   // After meeting with an organizer, we found that if he doesn't submit the event immediatly and
   // navigates out of the event page, it's hard for him to get back to edit the event
-  if (user && !(user.role === Role.ORGANIZER)) {
-    const isItAOrganizerWannabe = await areThereTracesOfUserEventHandling(user.id);
+  if (refUser && !(refUser.role === Role.ORGANIZER)) {
+    const isItAOrganizerWannabe = await areThereTracesOfUserEventHandling(refUser.id);
 
     if (isItAOrganizerWannabe) {
-      user.role = Role.ORGANIZER_WANNABE;
+      refUser.role = Role.ORGANIZER_WANNABE;
     }
   }
 
   const data: RootLoaderData = {
-    user,
+    user: impersonatedUser || user,
+    ancestorUser: impersonatedUser ? user : null,
     ENV: {
       CLOUDINARY_CLOUD_NAME: Config().CLOUDINARY_CLOUD_NAME,
       RELEASE: Config().RELEASE
@@ -317,8 +321,16 @@ function Html({ lang }: { lang: string }) {
         className="dark:bg-gray-900 bg-white transition duration-500 w-full"
         data-path={handle ? handle.id : ''}
       >
+
         <PageLoadingMessage />
         <NotificationMessage queryStringKey="message" delay={0.3} />
+        {data.ancestorUser && (
+          <header className="sticky top-0 z-10 bg-red-500 text-white w-full h-20 flex items-center justify-end py-4 px-6">
+            <ButtonLink to="/action/be-myself" variant="secondary">
+              {data.ancestorUser.name}
+            </ButtonLink>
+          </header>
+        )}
         {pathname !== '/o' && <Navbar />}
         <Outlet />
         <ScrollRestoration />

@@ -109,7 +109,7 @@ export default function UploadImage({
         ) : (
           <>
             <p className="h-80 w-full flex items-center justify-center flex-col">
-              {label} {error && <span className="text-red-500 text-sm">({error})</span>}
+              {label} {error && <span className="text-blaze-orange-500 text-sm">({error})</span>}
             </p>
           </>
         )}

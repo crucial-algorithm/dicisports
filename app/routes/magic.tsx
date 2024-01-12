@@ -20,7 +20,7 @@ export const loader: LoaderFunction = async ({ request }) => {
     return redirect(`/recover?e=${t('Recover Password Failed')}`);
   }
 
-  const user = await s.getUser();
+  const { user } = await s.getUser();
 
   if (!user) {
     return redirect(`/recover?e=${t('Recover Password Failed')}`);

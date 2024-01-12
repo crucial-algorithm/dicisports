@@ -21,7 +21,7 @@ import { dateFormatter } from '~/components/shared/DIsplayDate';
 
 import { H3 } from '~/components/shared/typography';
 
-import { getUser, requireAdminUser } from '~/server/auth/session.server';
+import { getUser, impersonateSession, requireAdminUser } from '~/server/auth/session.server';
 import { findOrganizerEvents } from '~/server/db/events.server';
 import {
   approveOrganizer,
@@ -71,7 +71,7 @@ export const action: ActionFunction = async ({ request, params }) => {
   }
 
   const form = await request.formData();
-  const approve = form.get('actionId') === 'approve';
+  const action = form.get('actionId');
   const commission = Number(form.get('commission') as string);
 
   const Schema = z.object({
@@ -82,7 +82,7 @@ export const action: ActionFunction = async ({ request, params }) => {
   });
 
   try {
-    if (approve) {
+    if (action === 'approve') {
       Schema.parse({ commission });
 
       if (organizer.status === OrganizerStatus.APPROVED) {
@@ -96,6 +96,11 @@ export const action: ActionFunction = async ({ request, params }) => {
         emailAddress: organizer.email,
         organizerName: organizer.name
       });
+    }
+    else if (action === 'impersonate') {
+      await impersonateSession(request, organizer.userId);
+
+      return redirect('/o/us');
     } else {
       await rejectOrganizer(id);
     }
@@ -213,6 +218,13 @@ export default function ReviewOrganizerRoute() {
             {organizer.status === OrganizerStatus.APPROVED
               ? t('Update')
               : t('Approve')}
+          </Button>
+          <Button
+            name="actionId"
+            type="submit"
+            value="impersonate"
+          >
+            {t('Impersonate')}
           </Button>
         </ButtonGroup>
       </Form>
