@@ -203,7 +203,6 @@ export const action: ActionFunction = async ({ request, params }) => {
       vatNumber: (form.get('vat-number') as string) || '',
       federationNumber:
         Number(form.get('federation-number') as string) || null,
-      shirtSize: Number(form.get('shirt') as string),
       nationality: Number(form.get('nationality') as string) || null,
       postalCode: form.get('postal-code') as string
     };
@@ -244,10 +243,6 @@ export const action: ActionFunction = async ({ request, params }) => {
         identityCard: z.string().optional(),
         federationNumber: z.number().nullable(),
         vatNumber: z.string().nullable(),
-        shirtSize: z.number({
-          required_error: t('Field Required'),
-          invalid_type_error: t('Field Required')
-        }),
         nationality: z.number({
           required_error: t('Field Required'),
           invalid_type_error: t('Field Required')
@@ -865,7 +860,6 @@ export default function CheckoutInfoRoute() {
               raceId={raceParticipant.raceId}
               selectedParticipant={selectedParticipant}
               setSelectedParticipant={handleSetSelectedParticipant}
-              shirtSizes={shirtSizes}
               resetForm={resetForm}
               isUserBookingOnlyForHimself={raceParticipants.length === 1}
               isReadOnly={isGuest}
