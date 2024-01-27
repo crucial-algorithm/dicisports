@@ -1,5 +1,9 @@
 import { Form, Link, useActionData, useSearchParams } from '@remix-run/react';
-import type { ActionFunction, LoaderFunction, MetaFunction } from '@remix-run/node';
+import type {
+  ActionFunction,
+  LoaderFunction,
+  MetaFunction
+} from '@remix-run/node';
 import { json, redirect } from '@remix-run/node';
 
 import { z, ZodError } from 'zod';
@@ -23,7 +27,10 @@ import { verifyEmailAddress } from '~/server/auth/verifier.server';
 import { addGroupToFavorites } from '~/server/db/groups.server';
 import InputError from '~/components/shared/form/InputError';
 import { CanonicalMeta } from '~/utils/seo';
-import { changeRegistrationToAuthUser, findBooking } from '~/server/db/booking.server';
+import {
+  changeRegistrationToAuthUser,
+  findBooking
+} from '~/server/db/booking.server';
 import { getClientSession } from '~/server/auth/client.server';
 import { bookingRedirectRoute } from '~/utils/misc';
 
@@ -70,14 +77,23 @@ export const action: ActionFunction = async ({ request }) => {
     password: form.get('password')
   };
 
+  data.email = data.email ? data.email.trim() : null;
+  data.confirmation = data.confirmation ? data.confirmation.trim() : null;
+
   const Schema = z
     .object({
       name: z
         .string()
         .min(2, t('Name min length'))
         .max(60, t('Name max length')),
-      email: z.string().email(t('Invalid Email')),
-      confirmation: z.string().email(t('Invalid Email')),
+      email: z
+        .string({
+          invalid_type_error: t('Required Field')
+        })
+        .email(t('Invalid Email')),
+      confirmation: z
+        .string({ invalid_type_error: t('Required Field') })
+        .email(t('Invalid Email')),
       password: z.string().min(6, t('Password min length'))
     })
     .refine((data) => data.email === data.confirmation, {
