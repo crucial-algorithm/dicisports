@@ -18,7 +18,7 @@ export default function TransitionIndicator({
 }: Props) {
   return (
     <NotificationMessage position="bottom-right" visible={visible}>
-      <div className="flex items-center w-64">
+      <div className="flex items-center w-64" data-cy="transition-indication">
         <motion.div
           transition={{ repeat: Infinity, duration: 2, ease: 'linear' }}
           animate={{ rotate: 360 }}

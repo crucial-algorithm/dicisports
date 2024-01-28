@@ -23,7 +23,6 @@ export default function ParticipantForm({
   raceId,
   selectedParticipant,
   setSelectedParticipant,
-  shirtSizes,
   resetForm,
   isUserBookingOnlyForHimself,
   isReadOnly,
@@ -38,7 +37,6 @@ export default function ParticipantForm({
   raceId: string | null;
   selectedParticipant: Participant | null;
   setSelectedParticipant: (v: string | number) => void;
-  shirtSizes: ShirtSize[];
   resetForm: () => void;
   isUserBookingOnlyForHimself: boolean;
   isReadOnly: boolean;
@@ -247,26 +245,6 @@ export default function ParticipantForm({
           defaultValue={participantTeam ? participantTeam : ''}
           emptyLabel={t('Individual')}
           defaultOption={{ value: '', label: t('Individual') }}
-        />
-      </FormField>
-
-      <FormField
-        label={t('Shirt Size')}
-        error={errors?.shirtSize}
-        dataCy="shirtSize"
-      >
-        <ComboBox
-          name="shirt"
-          placeholder={t('Shirt Placeholder')}
-          lang={language}
-          options={shirtSizes.map((ss: ShirtSize) => {
-            return { value: ss.id, label: ss.name as string };
-          })}
-          defaultValue={
-            (selectedParticipant?.shirtSize as number) ||
-            (participant?.shirtSize as number)
-          }
-          className="w-48"
         />
       </FormField>
 

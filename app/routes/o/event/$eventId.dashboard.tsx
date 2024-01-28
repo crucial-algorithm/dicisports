@@ -16,8 +16,7 @@ import {
 } from '@heroicons/react/24/outline';
 import {
   ChevronLeftIcon,
-  ChevronRightIcon,
-  EllipsisVerticalIcon
+  ChevronRightIcon
 } from '@heroicons/react/20/solid';
 import clsx from 'clsx';
 
@@ -307,32 +306,27 @@ export default function DashboardRoute() {
                     </tr>
                   </thead>
                   <tbody>
-                    {raceParticipants.map((rp) => (
-                      <tr
-                        className="border-b transition duration-300 ease-in-out hover:bg-red"
-                        key={rp.id}
-                        data-cy="participant-row"
-                        id={`participant-${rp.id}`}
-                      >
-                        <TD value={`${rp.name}`} />
-                        <TD
-                          value={rp.teamName ? rp.teamName : t('Individual')}
-                        />
-                        <TD value={rp.gender} />
-                        <TD value={String(rp.bookingAt).split('T')[0]} />
-                        <TD value={t(rp.status)} />
-                        <TD value={rp.bibNumber ? String(rp.bibNumber) : '-'} />
-                        <TD value={rp.raceName} />
-                        <td>
-                          <button
-                            type="button"
-                            className="w-[24px] h-[24px] dark:text-blueGray-500"
-                          >
-                            <EllipsisVerticalIcon className="md:h-6 w-6 m-0 inline-block" />
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
+                    {raceParticipants
+                      .map((rp) => (
+                        <tr
+                          className="border-b"
+                          key={rp.id}
+                          data-cy="participant-row"
+                          id={`participant-${rp.id}`}
+                        >
+                          <TD value={`${rp.name}`} />
+                          <TD
+                            value={rp.teamName ? rp.teamName : t('Individual')}
+                          />
+                          <TD value={rp.gender} />
+                          <TD value={String(rp.bookingAt).split('T')[0]} />
+                          <TD value={t(rp.status)} />
+                          <TD
+                            value={rp.bibNumber ? String(rp.bibNumber) : '-'}
+                          />
+                          <TD value={rp.raceName} />
+                        </tr>
+                      ))}
                   </tbody>
                 </table>
 

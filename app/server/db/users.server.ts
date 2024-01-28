@@ -89,6 +89,11 @@ async function findUserFromSessionId(sessionId: string) {
         include: {
           organizer: true
         }
+      },
+      impersonatedUser: {
+        include: {
+          organizer: true
+        }
       }
     }
   });
@@ -114,7 +119,12 @@ async function findUserFromSessionId(sessionId: string) {
     });
   }
 
-  return dbUserToUser(session.user);
+  return {
+    user: dbUserToUser(session.user),
+    impersonatedUser: session.impersonatedUser
+      ? dbUserToUser(session.impersonatedUser)
+      : null
+  };
 }
 
 async function createUser({

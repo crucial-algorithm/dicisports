@@ -75,7 +75,7 @@ module.exports = {
         700: '#74748e',
         800: '#5f6074',
         900: '#50505f',
-        950: '#2f3037',
+        950: '#2f3037'
       },
       team: {
         unknown: 'var(--color-team-unknown)',
@@ -91,14 +91,25 @@ module.exports = {
         100: 'var(--color-blue-100)',
         500: 'var(--color-blue-500)'
       },
-      red: {
-        500: 'var(--color-red-500)'
-      },
       green: {
         100: 'var(--color-green-100)',
         500: 'var(--color-green-500)',
         600: 'var(--color-green-600)'
-      }
+      },
+      'blaze-orange': {
+        DEFAULT: '#FF5C00',
+        50: '#FFD1B8',
+        100: '#FFC4A3',
+        200: '#FFAA7A',
+        300: '#FF9052',
+        400: '#FF7629',
+        500: '#FF5C00',
+        600: '#C74800',
+        700: '#8F3400',
+        800: '#571F00',
+        900: '#1F0B00',
+        950: '#030100'
+      },
     },
     extend: {
       fontFamily: {
@@ -129,7 +140,7 @@ module.exports = {
           '100%': {
             opacity: '1',
             transform: 'translateY(0)'
-          },
+          }
         }
       },
       animation: {

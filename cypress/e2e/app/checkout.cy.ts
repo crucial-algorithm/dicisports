@@ -58,7 +58,7 @@ describe('Checkout', () => {
         .then(({ body }) => {
           expect(body.to).to.eq('asd@gmail.com');
           expect(body.subject).to.eq(
-            'Informações do teu booking no evento Love Tiles Douro Granfondo 2023.'
+            'Informações da tua inscrição no evento Love Tiles Douro Granfondo 2023.'
           );
         });
     });
@@ -421,7 +421,7 @@ describe('Checkout', () => {
         .request({ method: 'GET', url: Cypress.env('HTTP_CATCHER') })
         .then(({ body }) => {
           expect(body.subject).to.eq(
-            'Informações do teu booking no evento Viana Granfondo.'
+            'Informações da tua inscrição no evento Viana Granfondo.'
           );
         });
     });
@@ -510,8 +510,6 @@ describe('Checkout', () => {
 
         .get('input[name=phone-number]')
         .type('937654321')
-
-        .pickOptionFromSelect('shirt', 2)
 
         .pickOptionFromSelect('nationality', 2)
 
@@ -787,8 +785,6 @@ describe('Checkout', () => {
         .get('input[name=federation-number]')
         .type('8165238')
 
-        .pickOptionFromSelect('shirt', 2)
-
         .pickOptionFromSelect('nationality', 188)
 
         .get('input[name=postal-code]')
@@ -950,8 +946,6 @@ describe('Checkout', () => {
         .get('input[name=federation-number]')
         .type('8165238')
 
-        .pickOptionFromSelect('shirt', 2)
-
         .pickOptionFromSelect('nationality', 188)
 
         .get('input[name=postal-code]')
@@ -999,8 +993,6 @@ describe('Checkout', () => {
 
         .get('input[name=federation-number]')
         .type('8165238')
-
-        .pickOptionFromSelect('shirt', 2)
 
         .pickOptionFromSelect('nationality', 188)
 
@@ -1078,8 +1070,6 @@ describe('Checkout', () => {
         .get('ul[data-headlessui-state="open"] li:first')
         .contains('Criar: Marretas')
         .click()
-
-        .pickOptionFromSelect('shirt', 2)
 
         .pickOptionFromSelect('nationality', 188)
 
@@ -1174,8 +1164,6 @@ describe('Checkout', () => {
 
         .get('input[name=federation-number]')
         .type('8165238')
-
-        .pickOptionFromSelect('shirt', 2)
 
         .pickOptionFromSelect('nationality', 188)
 
@@ -2023,8 +2011,6 @@ function registerParticipant(
     .get('input[name=federation-number]')
     .type('8165238')
 
-    .pickOptionFromSelect('shirt', 2)
-
     .pickOptionFromSelect('nationality', 188)
 
     .get('input[name=postal-code]')
@@ -2098,8 +2084,6 @@ function bookParticipant(slug: string, raceId: string) {
 
         .get('input[name=federation-number]')
         .type('8165238')
-
-        .pickOptionFromSelect('shirt', 2)
 
         .pickOptionFromSelect('nationality', 188)
 

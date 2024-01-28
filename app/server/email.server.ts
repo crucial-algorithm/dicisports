@@ -419,7 +419,7 @@ P.S. Recebeste este email porque o teu endereço de email foi usado para fazer l
   }!
       </h2>
       <h2 style='text-align: center'>
-        Aqui tens a informação do teu booking:
+        Aqui tens a informação da tua inscrição:
       </h2>
       <div style='text-align: center; line-height: 1rem; margin-bottom: 2rem'>
         <h2 style='text-align: center'>
@@ -545,7 +545,7 @@ P.S. Recebeste este email porque o teu endereço de email foi usado para fazer l
   const message = {
     from: sender,
     to: emailAddress,
-    subject: `Informações do teu booking no evento ${event.name}.`,
+    subject: `Informações da tua inscrição no evento ${event.name}.`,
     text,
     html
   };

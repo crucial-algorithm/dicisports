@@ -9,14 +9,13 @@
 // `npx prisma migrate dev --name <descriptive-name>` - generate a migration file for any changes you make to the schema (this will be committed).
 // `npx prisma migrate dev --name <descriptive-name> --create-only` - generate migration script... example: npx prisma migrate dev --name login_with_password --create-only
 
-
 // Currency handling: Integer * 1000
 
 // Partial types: https://www.prisma.io/docs/concepts/components/prisma-client/advanced-type-safety/operating-against-partial-structures-of-model-types
 
 generator client {
   provider        = "prisma-client-js"
-  previewFeatures = ["fullTextSearch"]
+  previewFeatures = ["fullTextSearch", "orderByNulls"]
 }
 
 datasource db {
@@ -43,7 +42,8 @@ model User {
   location     String?
   name         String
   role         Role            @default(MEMBER)
-  sessions     Session[]
+  sessions     Session[]       @relation(name: "sessions_user_id_fk")
+  impersonates Session[]       @relation(name: "sessions_imp_user_id_fk")
   groups       Group[]
   favGroups    FavoriteGroup[]
   events       Event[]
@@ -55,11 +55,13 @@ model User {
 }
 
 model Session {
-  id             String   @id @default(uuid())
-  createdAt      DateTime @default(now()) @map("created_at")
-  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId         String   @map("user_id")
-  expirationDate DateTime @map("expiration_date")
+  id                 String   @id @default(uuid())
+  createdAt          DateTime @default(now()) @map("created_at")
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade, name: "sessions_user_id_fk")
+  userId             String   @map("user_id")
+  impersonatedUser   User?    @relation(fields: [impersonatedUserId], references: [id], name: "sessions_imp_user_id_fk")
+  impersonatedUserId String?  @map("impersonated_user")
+  expirationDate     DateTime @map("expiration_date")
 
   @@map("sessions")
 }
@@ -77,12 +79,12 @@ model Sport {
 }
 
 model Difficulty {
-  id            Int      @id @default(autoincrement())
-  createdAt     DateTime @default(now()) @map("created_at")
-  updatedAt     DateTime @updatedAt @map("updated_at")
-  name          Json
-  description   Json
-  events        Event[]
+  id          Int      @id @default(autoincrement())
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  name        Json
+  description Json
+  events      Event[]
 
   @@map("difficulties")
 }
@@ -96,47 +98,47 @@ enum Status {
 }
 
 model Event {
-  id                    String      @id @default(uuid())
-  name                  String?
-  slug                  String?     @unique
-  sport                 Sport?      @relation(fields: [sportId], references: [id])
-  sportId               Int?        @map("sport_id")
-  difficulty            Difficulty? @relation(fields: [difficultyId], references: [id])
-  difficultyId          Int?        @map("difficulty_id")
-  startAt               DateTime?   @map("start_at")
-  endAt                 DateTime?   @map("end_at")
-  lat                   Float?
-  lng                   Float?
-  location              Json?
-  placeName             String?     @map("place_name")
-  useExternalBooking    Boolean     @default(false) @map("use_external_booking")
-  externalBookingUrl    String?     @map("external_booking_url")
-  description           String?
-  status                Status      @default(auto)
-  image1                String?
-  image2                String?
-  image3                String?
-  image4                String?
-  image5                String?
-  directions            String?
-  regulationPath        String?     @map("regulation_path")
-  regulationContent     String?     @map("regulation_content")
-  regulationFileName    String?     @map("regulation_file_name")
-  bibStartingNumber     Int?        @map("bib_starting_number") @default(1)
-  createdBy             User        @relation(fields: [createdById], references: [id])
-  createdById           String      @map("created_by")
-  createdAt             DateTime    @default(now()) @map("created_at")
-  updatedAt             DateTime    @updatedAt @map("updated_at")
-  hideFromLatestEvents  Boolean     @default(false) @map("hide_from_latest_events")
-  externalWebsite       String?     @map("external_website")
-  bookingStopsAt        DateTime?   @map("booking_stops_at")
-  documents             Document[]
-  perks                 Perk[]
-  races                 Race[]
-  bookings              Booking[]
-  teams                 EventTeam[]
-  latestBibNumber       LatestBibNumber?
-  raceParticipant       RaceParticipant[]
+  id                   String            @id @default(uuid())
+  name                 String?
+  slug                 String?           @unique
+  sport                Sport?            @relation(fields: [sportId], references: [id])
+  sportId              Int?              @map("sport_id")
+  difficulty           Difficulty?       @relation(fields: [difficultyId], references: [id])
+  difficultyId         Int?              @map("difficulty_id")
+  startAt              DateTime?         @map("start_at")
+  endAt                DateTime?         @map("end_at")
+  lat                  Float?
+  lng                  Float?
+  location             Json?
+  placeName            String?           @map("place_name")
+  useExternalBooking   Boolean           @default(false) @map("use_external_booking")
+  externalBookingUrl   String?           @map("external_booking_url")
+  description          String?
+  status               Status            @default(auto)
+  image1               String?
+  image2               String?
+  image3               String?
+  image4               String?
+  image5               String?
+  directions           String?
+  regulationPath       String?           @map("regulation_path")
+  regulationContent    String?           @map("regulation_content")
+  regulationFileName   String?           @map("regulation_file_name")
+  bibStartingNumber    Int?              @default(1) @map("bib_starting_number")
+  createdBy            User              @relation(fields: [createdById], references: [id])
+  createdById          String            @map("created_by")
+  createdAt            DateTime          @default(now()) @map("created_at")
+  updatedAt            DateTime          @updatedAt @map("updated_at")
+  hideFromLatestEvents Boolean           @default(false) @map("hide_from_latest_events")
+  externalWebsite      String?           @map("external_website")
+  bookingStopsAt       DateTime?         @map("booking_stops_at")
+  documents            Document[]
+  perks                Perk[]
+  races                Race[]
+  bookings             Booking[]
+  teams                EventTeam[]
+  latestBibNumber      LatestBibNumber?
+  raceParticipant      RaceParticipant[]
 
   favEvents FavoriteEvent[]
 
@@ -325,24 +327,24 @@ enum RaceParticipantStatus {
 }
 
 model RaceParticipant {
-  id            String                  @id @default(uuid())
-  participantId String                  @map("participant_id")
-  participant   Participant             @relation(fields: [participantId], references: [id])
-  raceId        String                  @map("race_id")
-  race          Race                    @relation(fields: [raceId], references: [id])
-  status        RaceParticipantStatus   @default(auto)
-  displayOrder  Int                     @default(autoincrement()) @map("display_order")
-  bookingId     String                  @map("booking_id")
-  booking       Booking                 @relation(fields: [bookingId], references: [id])
-  teamId        String?                 @map("team_id")
-  team          EventTeam?              @relation(fields: [teamId], references: [id])
-  eventId       String                  @map("event_id")
-  event         Event?                  @relation(fields: [eventId], references: [id])
-  bibNumber     Int?                    @map("bib_number")
+  id            String                @id @default(uuid())
+  participantId String                @map("participant_id")
+  participant   Participant           @relation(fields: [participantId], references: [id])
+  raceId        String                @map("race_id")
+  race          Race                  @relation(fields: [raceId], references: [id])
+  status        RaceParticipantStatus @default(auto)
+  displayOrder  Int                   @default(autoincrement()) @map("display_order")
+  bookingId     String                @map("booking_id")
+  booking       Booking               @relation(fields: [bookingId], references: [id])
+  teamId        String?               @map("team_id")
+  team          EventTeam?            @relation(fields: [teamId], references: [id])
+  eventId       String                @map("event_id")
+  event         Event?                @relation(fields: [eventId], references: [id])
+  bibNumber     Int?                  @map("bib_number")
   price         Int?
 
-  createdAt     DateTime                @default(now()) @map("created_at")
-  updatedAt     DateTime                @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   @@unique([participantId, raceId])
   @@unique([participantId, raceId, bookingId])
@@ -433,39 +435,39 @@ enum OrganizerStatus {
 }
 
 model Organizer {
-  id                String              @id
-  name              String
-  description       String
-  logo              String
-  email             String              @unique
-  phoneNumber       Int?                @unique @map("phone_number")
-  address           String
-  postalCode        String              @map("postal_code")
-  city              String
-  commission        Int?
-  taxNumber         Int                 @map("tax_number")
-  userId            String              @map("user_id") @unique
-  contactName       String              @map("contact_name")
-  user              User                @relation(fields: [userId], references: [id])
-  status            OrganizerStatus     @default(PENDING)
-  typeId            Int                 @map("type_id")
-  type              OrganizerType       @relation(fields: [typeId], references: [id])
-  createdAt         DateTime            @default(now()) @map("created_at")
-  updatedAt         DateTime            @updatedAt @map("updated_at")
-  DiscountCode      DiscountCode[]
-  MailingList       MailingList[]
+  id           String          @id
+  name         String
+  description  String
+  logo         String
+  email        String          @unique
+  phoneNumber  Int?            @unique @map("phone_number")
+  address      String
+  postalCode   String          @map("postal_code")
+  city         String
+  commission   Int?
+  taxNumber    Int             @map("tax_number")
+  userId       String          @unique @map("user_id")
+  contactName  String          @map("contact_name")
+  user         User            @relation(fields: [userId], references: [id])
+  status       OrganizerStatus @default(PENDING)
+  typeId       Int             @map("type_id")
+  type         OrganizerType   @relation(fields: [typeId], references: [id])
+  createdAt    DateTime        @default(now()) @map("created_at")
+  updatedAt    DateTime        @updatedAt @map("updated_at")
+  DiscountCode DiscountCode[]
+  MailingList  MailingList[]
 
   @@map("organizers")
 }
 
 model OrganizerType {
-    id              Int                 @id
-    name            Json
-    createdAt       DateTime            @default(now()) @map("created_at")
-    updatedAt       DateTime            @updatedAt @map("updated_at")
-    organizers      Organizer[]
+  id         Int         @id
+  name       Json
+  createdAt  DateTime    @default(now()) @map("created_at")
+  updatedAt  DateTime    @updatedAt @map("updated_at")
+  organizers Organizer[]
 
-    @@map("organizer_types")
+  @@map("organizer_types")
 }
 
 enum DiscountCodeStatus {
@@ -475,17 +477,17 @@ enum DiscountCodeStatus {
 }
 
 model DiscountCode {
-  id          String              @id
-  code        String              @db.VarChar(20)
+  id          String             @id
+  code        String             @db.VarChar(20)
   value       Int
   fixed       Boolean
-  createdBy   User                @relation(fields: [createdById], references: [id])
-  createdById String              @map("created_by") @db.VarChar(20)
-  organizer   Organizer           @relation(fields: [organizerId], references: [id])
-  organizerId String              @map("organizer_id") @db.VarChar(20)
-  status      DiscountCodeStatus  @default(active)
-  createdAt   DateTime            @default(now()) @map("created_at")
-  updatedAt   DateTime            @updatedAt @map("updated_at")
+  createdBy   User               @relation(fields: [createdById], references: [id])
+  createdById String             @map("created_by") @db.VarChar(20)
+  organizer   Organizer          @relation(fields: [organizerId], references: [id])
+  organizerId String             @map("organizer_id") @db.VarChar(20)
+  status      DiscountCodeStatus @default(active)
+  createdAt   DateTime           @default(now()) @map("created_at")
+  updatedAt   DateTime           @updatedAt @map("updated_at")
 
   @@unique([code, organizerId])
   @@map("discount_codes")
@@ -493,34 +495,34 @@ model DiscountCode {
 
 // Saves email from users that want to receive news from certain organizers
 model MailingList {
-    email           String
-    organizerId     String      @map("organizer_id")
-    organizer       Organizer   @relation(fields: [organizerId], references: [id])
-    createdAt       DateTime    @default(now()) @map("created_at")
+  email       String
+  organizerId String    @map("organizer_id")
+  organizer   Organizer @relation(fields: [organizerId], references: [id])
+  createdAt   DateTime  @default(now()) @map("created_at")
 
-    @@unique([email, organizerId])
-    @@map("mailing_list")
+  @@unique([email, organizerId])
+  @@map("mailing_list")
 }
 
 model EventTeam {
-    id                  String                  @id
-    name                String
-    eventId             String                  @map("event_id")
-    event               Event                   @relation(fields: [eventId], references: [id])
-    createdAt           DateTime                @default(now()) @map("created_at")
-    updatedAt           DateTime                @updatedAt @map("updated_at")
-    raceParticipants    RaceParticipant[]
+  id               String            @id
+  name             String
+  eventId          String            @map("event_id")
+  event            Event             @relation(fields: [eventId], references: [id])
+  createdAt        DateTime          @default(now()) @map("created_at")
+  updatedAt        DateTime          @updatedAt @map("updated_at")
+  raceParticipants RaceParticipant[]
 
-    @@unique([name, eventId])
-    @@map("event_teams")
+  @@unique([name, eventId])
+  @@map("event_teams")
 }
 
 model LatestBibNumber {
-    eventId             String                  @map("event_id") @id
-    bibNumber           Int                     @default(0) @map("bib_number")
-    event               Event                   @relation(fields: [eventId], references: [id])
-    createdAt           DateTime                @default(now()) @map("created_at")
-    updatedAt           DateTime                @updatedAt @map("updated_at")
+  eventId   String   @id @map("event_id")
+  bibNumber Int      @default(0) @map("bib_number")
+  event     Event    @relation(fields: [eventId], references: [id])
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
-    @@map("latest_bib_number")
+  @@map("latest_bib_number")
 }

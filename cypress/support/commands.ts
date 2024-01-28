@@ -155,17 +155,18 @@ function pickLocationInMap(triggerOpenMapButtonName: string) {
 }
 
 function pickLocationInInlinedMap(name: string) {
-  cy.intercept('**/geocoding//v5/mapbox.places/f*', {
+  cy.intercept('GET', '**/geocoding/v5/mapbox.places/F**Portugal.json**', {
     fixture: 'mapbox.search.json'
   })
-    .as('fetchSearchResults')
+    .as('mapFetchSearchResults')
     .intercept(
       '**/geocoding/**/mapbox.places/-8.644798450000053,39.59423606030617.json*',
       { fixture: 'mapbox.details.json' }
     )
-    .as('fetchAddressDetails')
+    .as('mapFetchAddressDetails')
 
-    .intercept('**/mapbox.mapbox-terrain*', { fixture: 'mapbox.vector.pbf' })
+    .intercept('POST', '**/events/*', { body: {} })
+    .as('mapPostToEvents')
 
     // open modal
     .get(`div[data-location-picker=${name}] .mapboxgl-ctrl-geocoder--input`)
@@ -176,7 +177,7 @@ function pickLocationInInlinedMap(name: string) {
     .first()
     .click()
 
-    .wait('@fetchAddressDetails', { timeout: 10000 });
+    .wait('@mapFetchAddressDetails', { timeout: 10000 });
 }
 
 function wasImageLoaded(selector: string) {

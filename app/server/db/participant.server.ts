@@ -15,6 +15,8 @@ import { db } from '~/server/db.server';
 import Id from '~/server/utils/Id.server';
 import { createTeam, findEventTeamByName } from '~/server/db/teams.server';
 
+import SortOrder = Prisma.SortOrder;
+
 const prisma = new PrismaClient();
 
 const raceParticipantWithRaceParticipantBookingAndTeam =
@@ -293,6 +295,10 @@ async function findRaceParticipants(
       }
     },
     where,
+    orderBy: [
+      { bibNumber: { sort: SortOrder.desc, nulls: 'last' } },
+      { booking: { createdAt: SortOrder.desc } }
+    ],
     take: pageSize,
     skip: page * pageSize
   });

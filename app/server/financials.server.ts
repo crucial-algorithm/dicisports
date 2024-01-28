@@ -63,7 +63,10 @@ async function calculateEventNMV(eventId: string): Promise<number> {
 
 async function calculateEventBookingsAmount(eventId: string) {
   const payments = await db.payment.aggregate({
-    where: { booking: { status: CheckoutStatus.confirmed, eventId } },
+    where: {
+      status: PaymentStatus.paid,
+      booking: { eventId }
+    },
     _sum: {
       amount: true
     }
