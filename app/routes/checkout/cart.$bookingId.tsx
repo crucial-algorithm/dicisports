@@ -11,6 +11,7 @@ import {
 } from '@remix-run/react';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
+import type { Race, Booking } from '@prisma/client';
 
 import DisplayCart from '~/components/shared/DisplayCart';
 import DisplayDate from '~/components/shared/DIsplayDate';
@@ -33,14 +34,14 @@ import {
 } from '~/server/db/participant.server';
 import { findEventRaces } from '~/server/db/races.server';
 import i18n from '~/server/i18n.server';
-import type { Booking, Race, RaceQty, UICartRow } from '~/types';
+import type { RaceQty, UICartRow } from '~/types';
 import { badRequest, displayTimeOfDay } from '~/utils/misc';
 import Button from '~/components/shared/Button';
 
 type LoaderData = {
   event: Event;
   races: Race[];
-  userCheckoutRaces: UICartRow[];
+  userCheckoutRaces: UICartRow;
   hasCheckout: boolean;
   bookingId: string;
 };

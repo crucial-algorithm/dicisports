@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { Link } from '@remix-run/react';
 import { useTranslation } from 'react-i18next';
+import type { Organizer } from '@prisma/client';
 
 import UploadForm from '~/components/shared/form/UploadForm';
 import FormField from '~/components/shared/form/FormField';
@@ -9,7 +10,7 @@ import UploadImage from '~/components/shared/form/UploadImage';
 import InputError from '~/components/shared/form/InputError';
 import ButtonGroup from '~/components/shared/ButtonGroup';
 import Button, { ButtonLink } from '~/components/shared/Button';
-import type { Organizer, OrganizerType } from '~/types';
+import type { OrganizerType } from '~/types';
 import type { Language } from '~/types';
 import ComboBox from '~/components/shared/form/ComboBox';
 

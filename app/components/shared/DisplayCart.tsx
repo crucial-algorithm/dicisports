@@ -19,7 +19,7 @@ export default function DisplayCart({
   showDiscountCodeInput = false,
   children
 }: {
-  cart: UICartRow[];
+  cart: UICartRow;
   event: Event;
   error?: string;
   discountCodeError?: string;

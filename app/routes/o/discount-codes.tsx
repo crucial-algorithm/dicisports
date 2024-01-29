@@ -1,6 +1,7 @@
 import type { LoaderFunction } from '@remix-run/node';
 import { json } from '@remix-run/node';
 import { DiscountCodeStatus } from '@prisma/client';
+import type { DiscountCode } from '@prisma/client';
 
 import { useLoaderData, useNavigate } from '@remix-run/react';
 import clsx from 'clsx';
@@ -17,7 +18,6 @@ import SearchField from '~/components/shared/SearchField';
 import { requireUser } from '~/server/auth/session.server';
 import { findDiscountCodesForOrganizer } from '~/server/db/discounts.server';
 import { findOrganizer } from '~/server/db/organizer.server';
-import type { DiscountCode } from '~/types';
 
 export const handle = {
   i18n: ['discount-codes']

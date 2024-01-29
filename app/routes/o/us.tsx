@@ -12,6 +12,7 @@ import {
   unstable_parseMultipartFormData
 } from '@remix-run/node';
 import { Toast } from 'primereact/toast';
+import type { Organizer } from '@prisma/client';
 
 import { useActionData, useLoaderData } from '@remix-run/react';
 import { useTranslation } from 'react-i18next';
@@ -27,7 +28,6 @@ import {
   updateOrganizer
 } from '~/server/db/organizer.server';
 import type {
-  Organizer,
   OrganizerInput,
   OrganizerType,
   ResponseFeedback

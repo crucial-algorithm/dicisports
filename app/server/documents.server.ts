@@ -1,8 +1,7 @@
 import { PrismaClient } from '@prisma/client';
-import type { Prisma } from '@prisma/client';
+import type { Prisma, Document } from '@prisma/client';
 
 import { db } from '~/server/db.server';
-import type { Document } from '~/types';
 
 const prisma = new PrismaClient();
 

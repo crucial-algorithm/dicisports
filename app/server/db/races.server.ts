@@ -1,8 +1,9 @@
 import { PrismaClient, RaceParticipantStatus } from '@prisma/client';
+import type { Race } from '@prisma/client';
 
 import { db } from '~/server/db.server';
 import Id from '~/server/utils/Id.server';
-import type { CreateRaceInput, Race } from '~/types';
+import type { CreateRaceInput } from '~/types';
 
 const prisma = new PrismaClient();
 

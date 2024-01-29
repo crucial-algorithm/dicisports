@@ -10,7 +10,6 @@ import { findBooking, findBookingCart, updateBookingStatus } from '~/server/db/b
 import { decline, findPayment, pay, saveNotification } from '~/server/db/payments.server';
 import type { SibsWebHookSchema } from '~/types';
 import { assignParticipantsBibNumber, findUserBookingParticipants } from '~/server/db/participant.server';
-import type { RaceParticipant } from '~/types';
 import { findEvent } from '~/server/db/events.server';
 import { sendBookingConfirmationEmail } from '~/server/email.server';
 import { findUserById } from '~/server/db/users.server';
@@ -47,7 +46,7 @@ export const action: ActionFunction = async ({ request }) => {
       // update payment status with success
       await pay(payload.transactionID, payload.paymentMethod);
       if (payment) {
-        const raceParticipants: RaceParticipant[] | null = await findUserBookingParticipants(payment.bookingId);
+        const raceParticipants = await findUserBookingParticipants(payment.bookingId);
 
         if (!raceParticipants) {
           return new Response('No race participants', { status: 500 });

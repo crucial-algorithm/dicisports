@@ -1,5 +1,6 @@
 import { CheckoutStatus, Role } from '@prisma/client';
 import { Form, Link, useActionData, useSearchParams } from '@remix-run/react';
+import type { Booking } from '@prisma/client';
 
 import { z, ZodError } from 'zod';
 
@@ -25,7 +26,7 @@ import {
   areThereTracesOfUserEventHandling,
   findUserEvents
 } from '~/server/db/events.server';
-import { badRequest, bookingRedirectRoute, getDomainUrl } from '~/utils/misc';
+import { badRequest, bookingRedirectRoute } from '~/utils/misc';
 
 import i18n from '~/server/i18n.server';
 import InputError from '~/components/shared/form/InputError';
@@ -34,7 +35,7 @@ import { H2, H6 } from '~/components/shared/typography';
 
 import { sendWhatsAppGroupLink, subscribeUser } from '~/server/email.server';
 import { addGroupToFavorites, findGroup } from '~/server/db/groups.server';
-import type { Booking, LoginAction } from '~/types';
+import type { LoginAction } from '~/types';
 
 import { loginUser } from '~/server/db/users.server';
 import { CanonicalMeta } from '~/utils/seo';
@@ -126,7 +127,6 @@ type ActionData = {
 async function sendWhatsAppLinkFlow(request: Request, params: URLSearchParams) {
   const t = await i18n.getFixedT(request, 'login');
   const email = params.get('email') as string;
-  const domainUrl = getDomainUrl(request);
   const redirectTo = params.get('location');
   const groupId = params.get('group');
 

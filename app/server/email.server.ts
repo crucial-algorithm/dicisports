@@ -1,4 +1,6 @@
-import type { Booking, UICartRow, User } from '~/types';
+import type { Booking } from '@prisma/client';
+
+import type { UICartRow, User } from '~/types';
 
 import Config from '~/server/config.server';
 
@@ -349,7 +351,7 @@ async function sendBookingConfirmationEmail({
   emailAddress: string;
   event: any;
   booking: Booking;
-  cart: UICartRow[];
+  cart: UICartRow;
   userName: string | null;
 }) {
   const sender = '"DiciSports" <noreply@mail.dicisports.com>';

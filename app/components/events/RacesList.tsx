@@ -4,8 +4,9 @@ import { TrashIcon } from '@heroicons/react/24/outline';
 import { Link, useFetcher } from '@remix-run/react';
 import { ArrowDownIcon, ArrowUpIcon } from '@heroicons/react/20/solid';
 
+import type { Race } from '@prisma/client';
+
 import DeleteRaceDialog from '~/components/events/DeleteRaceDialog';
-import type { Race } from '~/types';
 
 export default function RacesList(props: { races: Race[]; eventId: string }) {
   const { races, eventId } = props;

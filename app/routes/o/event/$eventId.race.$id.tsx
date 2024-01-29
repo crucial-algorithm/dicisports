@@ -21,6 +21,7 @@ import * as React from 'react';
 import { useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { useTranslation } from 'react-i18next';
+import type { Race } from '@prisma/client';
 
 import { z, ZodError } from 'zod';
 
@@ -42,7 +43,7 @@ import i18n from '~/server/i18n.server';
 import Id from '~/server/utils/Id.server';
 import { NotFound, Unauthorized } from '~/server/utils/misc';
 import { uploadToS3 } from '~/server/utils/s3';
-import type { CreateRaceInput, Race } from '~/types';
+import type { CreateRaceInput } from '~/types';
 import {
   badRequest,
   hoursMinutesToTimeOfDay,

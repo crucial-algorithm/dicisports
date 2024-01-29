@@ -1,27 +1,22 @@
-import type { PaymentMethod } from '@prisma/client';
 import type {
-  Booking as DBBooking,
   Difficulty as DBDifficulty,
-  DiscountCode as DBDiscountCode,
-  Document as DBDocument,
   Group as DBGroup,
   GroupSchedule as DBGroupSchedule,
   GroupSpirit as DBGroupSpirit,
   GroupType as DBGroupType,
-  Organizer as DBOrganizer,
+  Organizer,
   OrganizerType as DBOrganizerType,
-  Participant as DBParticipant,
-  ParticipantStatus,
-  Perk as DBPerk,
-  Race as DBRace,
-  RaceParticipant as DBRaceParticipant,
-  ShirtSize as DBShirtSize,
+  PaymentMethod,
+  Prisma,
   Sport as DBSport,
   Status as EventStatus,
-  User as DBUser,
-  EventTeam as DBEventTeam
+  User as DBUser
 } from '@prisma/client';
-import type { Prisma } from '@prisma/client';
+
+import type { findBookingCart } from '~/server/db/booking.server';
+import type { findUserBookingsList } from '~/server/db/booking.server';
+import type { calculateRaceNMV } from '~/server/financials.server';
+import type { findRaceParticipants } from '~/server/db/participant.server';
 
 type NonNullProperties<Type> = {
   [Key in keyof Type]-?: Exclude<Type[Key], null | undefined>;
@@ -109,114 +104,20 @@ type User = { organizer?: Organizer | null } & Omit<DBUser, 'password' | 'salt'>
 type Sport = {
   name: TranslationObject;
 } & DBSport;
-type Document = {} & DBDocument;
 
 type GroupType = {
   name: TranslationObject;
 } & DBGroupType;
 
-type GroupInput = {
-  groupSpirit?: DBGroupSpirit | undefined;
-  groupType?: DBGroupType | undefined;
-  sport?: DBSport | undefined | null;
-  createdBy?: User | DBUser;
-  description: string | null;
-} & DBGroup;
+type CreateEventInput = Prisma.EventCreateInput;
 
-type CreateEventInput = {
-  id: string;
-  name: string;
-  slug?: string;
-  sportId: number;
-  difficultyId: number;
-  startAt?: Date;
-  lat: number | null;
-  lng: number | null;
-  location: Prisma.InputJsonValue | Prisma.NullableJsonNullValueInput;
-  placeName: string | null;
-  useExternalBooking: boolean;
-  externalBookingUrl?: string | null;
-  bookingStopsAt?: Date;
-  description?: string | null;
-  externalWebsite?: string | null;
-  directions: string | null;
-  bibStartingNumber: number;
-  image1?: string | null;
-  image2?: string | null;
-  image3?: string | null;
-  image4?: string | null;
-  image5?: string | null;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-  regulationPath: string | null;
-  regulationContent: string | null;
-  regulationFileName: string | null;
-  status?: EventStatus;
-};
+type CreatePerksInput = Prisma.PerkUncheckedCreateInput;
 
-type Perk = {} & DBPerk;
-
-type CreatePerksInput = {
-  id?: string;
-  name: string;
-  createdAt?: Date | string;
-  isDefault: boolean;
-  isEnabled: boolean;
-  eventId: string;
-};
-
-type Race = {} & DBRace;
-
-type CreateRaceInput = {
-  id: string | null;
-  name: string;
-  distance: number;
-  createdAt?: Date;
-  updatedAt?: Date;
-  startTime: number;
-  elevationGain: number;
-  elevationLoss?: number | null;
-  price: number;
-  priceEarlyBird?: number | null;
-  validUntil?: Date | null;
-  raceDescription?: string | null;
-  displayOrder?: number | null;
-  eventId: string;
-  track: string | null;
-};
+type CreateRaceInput = Prisma.RaceUncheckedCreateInput;
 
 type GroupSpirit = {
   name: TranslationObject;
 } & DBGroupSpirit;
-
-type DBRawGroup = {
-  distance: number;
-  id: string;
-  name: string;
-  description: string;
-  slug: string;
-  sport_id: number;
-  group_type_id: number;
-  group_spirit_id: number;
-  lat: number;
-  lng: number;
-  location: string;
-  near: string;
-  day_of_week: number;
-  time_of_day: number;
-  whatsapp: string | null;
-  image1: string | null;
-  image2: string | null;
-  image3: string | null;
-  status: string;
-  created_at: string;
-  created_by: string;
-  updated_at: string;
-  user_name: string;
-  group_spirit: TranslationObject;
-  records: number;
-  schedules: string[];
-};
 
 type DBRawSearchResults = {
   entity: string;
@@ -299,42 +200,13 @@ type Group = {
 } & DBGroup;
 
 type GroupSchedule = {
-  id?: string;
-  dayOfWeek: number;
-  timeOfDay: number;
   hour?: number;
   minute?: number;
-  groupId: string;
 } & DBGroupSchedule;
 
-type CreateScheduleInput = {
-  id?: string;
-  dayOfWeek: number;
-  timeOfDay: number;
-  groupId: string;
-};
+type CreateScheduleInput = Prisma.GroupScheduleUncheckedCreateInput;
 
-type CreateGroupInput = {
-  id?: string;
-  name: string;
-  slug?: string;
-  sportId?: number | null;
-  groupTypeId: number;
-  groupSpiritId: number;
-  lat: number;
-  lng: number;
-  location: string;
-  near: string;
-  dayOfWeek: number;
-  timeOfDay: number;
-  whatsapp?: string | null;
-  image1?: string | null;
-  image2?: string | null;
-  image3?: string | null;
-  createdAt?: Date | string;
-  createdById?: string;
-  updatedAt?: Date | string;
-};
+type CreateGroupInput = Prisma.GroupCreateInput;
 
 type GroupFilters = {
   spirit: number[] | null;
@@ -345,71 +217,12 @@ type GroupFilters = {
 
 type LoginAction = null | 'login' | 'ws' | 'favorite';
 
-type FavoriteEvent = {
-  userId: string;
-  eventId: string;
-  createdAt?: Date;
-  updatedAt?: Date;
-};
-
 type Difficulty = {
   name: TranslationObject;
   description: TranslationObject;
 } & DBDifficulty;
 
-type Ticket = {
-  race: Race;
-  numberOfTickets: number;
-};
-
-type PartialCart = {
-  id: string;
-  raceId: string;
-  userId: string;
-  createdAt: Date;
-  updatedAt: Date;
-};
-
-type DBRawCart = {
-  id: string;
-  race_id: string;
-  user_id: string;
-  qty: number;
-  created_at: Date;
-  updated_at: Date;
-};
-
-type UICartRow = {
-  id: string;
-  raceId: string;
-  qty: number;
-  name: string;
-  price: number;
-  order: number;
-  distance: number;
-  startTime: number;
-};
-
-type DBRawUICartRow = {
-  id: string;
-  race_id: string;
-  name: string;
-  price: number;
-  distance: number;
-  start_time: number;
-  display_order: number;
-  qty: number;
-};
-
-type DBRawRaceQty = {
-  id: string;
-  name: string;
-  distance: number;
-  start_time: number;
-  price: number;
-  display_order: number;
-  qty: number;
-};
+type UICartRow = Prisma.PromiseReturnType<typeof findBookingCart>[0];
 
 type RaceQty = {
   id: string;
@@ -421,156 +234,29 @@ type RaceQty = {
   qty: number;
 };
 
-type RaceParticipant = {
-  race: Race;
-  participant: Participant;
-  booking?: Booking;
-  team?: EventTeam | null;
-} & DBRaceParticipant;
+type RaceParticipantInput = Prisma.RaceParticipantUncheckedCreateInput;
 
-type RaceParticipantInput = {
-  id?: string;
-  participantId: string;
-  raceId: string;
-  bookingId: string;
-  eventId: string;
-  createdAt: Date;
-  updatedAt: Date;
-};
+type UIRaceParticipant = Prisma.PromiseReturnType<
+  typeof findRaceParticipants
+>['results'][0];
 
-type UIRaceParticipant = {
-  id: string;
-  name: string;
-  birthdate: Date;
-  gender: string;
-  bookingAt: Date;
-  status: string;
-  raceName: string;
-  teamName: string | null;
-  bibNumber: number | null;
-};
+// The findUserBookingsList function returns an object { results, total }.
+// Accessing ['results'] retrieves the type from the results property, and [0] is used to treat it as a single object type instead of an array.
+type BookingList = Prisma.PromiseReturnType<typeof findUserBookingsList>['results'][0];
 
-type DBRawUIRaceParticipant = {
-  id: string;
-  name: string;
-  birthdate: Date;
-  gender: string;
-  booking_at: Date;
-  status: string;
-  race_name: string;
-  records: number;
-  team_name: string | null;
-  bib_number: number | null;
-};
+type ParticipantInput = Prisma.ParticipantUncheckedCreateInput;
 
-type Participant = {} & DBParticipant;
+type RaceRevenueRegistrations = Prisma.PromiseReturnType<
+  typeof calculateRaceNMV
+>;
 
-type ParticipantInput = {
-  id: string;
-  userId?: string | null;
-  firstName: string;
-  lastName: string;
-  gender: string;
-  birthdate?: Date | undefined;
-  phoneNumber: number;
-  identityCard?: string | null;
-  vatNumber?: string | null;
-  federationNumber?: number | null;
-  nationality?: number | null;
-  postalCode: string;
-  createdAt?: Date;
-  updatedAt?: Date;
-};
-
-type DBRawParticipant = {
-  id: string;
-  user_id: string;
-  first_name: string;
-  last_name: string;
-  gender: string;
-  birthdate: Date;
-  phone_number: number;
-  identity_card: string | null;
-  federation_number: number | null;
-  shirt_size: number;
-  nationality: number | null;
-  postal_code: string;
-  status: ParticipantStatus;
-  created_at: Date;
-  updated_at: Date;
-};
-
-type Booking = {} & DBBooking;
-
-type BookingList = {
-  id: string;
-  eventName: string;
-  bookingDate: Date;
-  status: string;
-  pin: number;
-  totalParticipants: number;
-};
-
-type DBRawBookingList = {
-  id: string;
-  event_name: string;
-  booking_date: Date;
-  status: string;
-  total_participants: number;
-  pin: number;
-  records: number;
-};
-
-type ShirtSize = {} & DBShirtSize;
-
-type RaceRevenueRegistrations = {
-  id: string;
-  name: string;
-  registrations: number;
-  revenue: number;
-};
-
-type SearchEventsResults = {
-  name: string;
-  slug: string;
-  image1?: string;
-  image2?: string;
-  image3?: string;
-  image4?: string;
-  image5?: string;
-};
-
-type Organizer = DBOrganizer & {};
 type OrganizerType = {
   name: TranslationObject;
 } & DBOrganizerType;
 
-type OrganizerInput = {
-  // id will be null if the user has no organizer profile and is creating it
-  id: string | null;
-  name: string;
-  email: string;
-  phoneNumber?: number | null;
-  address: string;
-  postalCode: string;
-  city: string;
-  description: string;
-  taxNumber: number;
-  contactName: string;
-  typeId: number;
-  logo: string;
-  userId: string;
-};
+type OrganizerInput = Prisma.OrganizerUncheckedCreateInput;
 
-type DiscountCode = DBDiscountCode & {};
-
-type DiscountCodeInput = {
-  code: string;
-  value: number;
-  fixed: boolean;
-  organizerId: string;
-  createdById: string;
-};
+type DiscountCodeInput = Prisma.DiscountCodeUncheckedCreateInput;
 
 type SibsWebHookSchema = {
   returnStatus: { statusMsg: string; statusCode: string };
@@ -602,8 +288,6 @@ type SibsStatusResponse = {
   }
 };
 
-type EventTeam = {} & DBEventTeam;
-
 type ResponseFeedback = {
   severity: 'error' | 'success' | 'info' | 'warn';
   message: string;
@@ -630,56 +314,34 @@ export {
   // entities
   User,
   Group,
-  GroupInput,
   CreateGroupInput,
   GroupType,
   GroupSpirit,
   GroupSchedule,
   CreateScheduleInput,
   Sport,
-  Document,
-  Perk,
-  Race,
   CreateEventInput,
   CreatePerksInput,
   CreateRaceInput,
-  DBRawGroup,
   LoginAction,
-  FavoriteEvent,
   Difficulty,
-  Ticket,
   UICartRow,
-  DBRawUICartRow,
-  DBRawRaceQty,
   RaceQty,
-  DBRawCart,
-  RaceParticipant,
   RaceParticipantInput,
-  DBRawUIRaceParticipant,
   UIRaceParticipant,
-  PartialCart,
-  Participant,
   ParticipantInput,
-  DBRawParticipant,
-  Booking,
-  ShirtSize,
   RaceRevenueRegistrations,
   DBRawSearchResults,
   SearchResults,
-  SearchEventsResults,
-  Organizer,
   OrganizerInput,
   EventStatus,
-  BookingList,
-  DBRawBookingList,
-  DiscountCode,
   DiscountCodeInput,
   SibsWebHookSchema,
   SibsStatusResponse,
-  EventTeam,
   OrganizerType,
   ResponseFeedback,
-  LocalStorageBookingMetaData
+  LocalStorageBookingMetaData,
+  BookingList
 };
 
 // https://www.i18next.com/overview/typescript#argument-of-type-defaulttfuncreturn-is-not-assignable-to-parameter-of-type-xyz

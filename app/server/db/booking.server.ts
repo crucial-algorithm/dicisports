@@ -1,8 +1,13 @@
-import type { Prisma } from '@prisma/client';
-import { PaymentStatus, PrismaClient, CheckoutStatus, RaceParticipantStatus } from '@prisma/client';
+import type { Booking, Prisma } from '@prisma/client';
+import {
+  CheckoutStatus,
+  PaymentStatus,
+  PrismaClient,
+  RaceParticipantStatus
+} from '@prisma/client';
 
 import { db } from '~/server/db.server';
-import type { Booking, BookingList, UICartRow } from '~/types';
+import type { UICartRow } from '~/types';
 import { bookingAmount } from '~/utils/misc';
 
 async function findBooking(id: string): Promise<Booking | null> {
@@ -11,7 +16,7 @@ async function findBooking(id: string): Promise<Booking | null> {
   });
 }
 
-async function findBookingCart(bookingId: string): Promise<UICartRow[]> {
+async function findBookingCart(bookingId: string) {
   const bookingCart = await db.raceParticipant.groupBy({
     by: ['raceId'],
     where: {
@@ -122,7 +127,7 @@ async function findUserBookingsList(
   page: number,
   searchedName: string | null,
   pageSize = 10
-): Promise<{ results: BookingList[]; total: number }> {
+) {
   const where: Prisma.BookingWhereInput = {
     userId,
     event: {
@@ -168,8 +173,8 @@ async function findUserBookingsList(
     results: results.map((r) => {
       return {
         id: r.id,
-        eventName: r.event.name as string,
-        bookingDate: r.createdAt,
+        event: { name: r.event.name as string },
+        createdAt: r.createdAt,
         status: r.status,
         pin: r.pin,
         totalParticipants: r.raceParticipant.length
@@ -203,7 +208,7 @@ async function findConfirmedBookings(
 async function applyDiscountCode(
   id: string,
   discountInfo: string,
-  cart: UICartRow[]
+  cart: UICartRow
 ) {
   return await db.$transaction(async (tx) => {
     const [, value, fixed] = discountInfo.split('|');

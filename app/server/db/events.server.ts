@@ -1,14 +1,9 @@
-import type { Event } from '@prisma/client';
+import type { Event, FavoriteEvent, Organizer } from '@prisma/client';
 import { Prisma, PrismaClient, Status } from '@prisma/client';
 
 import { db } from '~/server/db.server';
 import Id from '~/server/utils/Id.server';
-import type {
-  CreateEventInput,
-  FavoriteEvent,
-  Language,
-  Organizer
-} from '~/types';
+import type { CreateEventInput, Language } from '~/types';
 import {
   createDefaultPerks,
   createPerks,
@@ -23,13 +18,34 @@ import {
 
 const prisma = new PrismaClient();
 
-const eventWithRacesDifficultiesAndDocuments = Prisma.validator<Prisma.EventArgs>()({
-  include: { races: true, difficulty: true, documents: true }
+const eventWithRacesDifficultiesAndDocuments =
+  Prisma.validator<Prisma.EventArgs>()({
+    include: { races: true, difficulty: true, documents: true }
+  });
+
+const eventWithDocuments = Prisma.validator<Prisma.EventArgs>()({
+  include: { documents: true }
 });
 
-type EventWithRacesDifficultiesAndDocuments = Prisma.EventGetPayload<typeof eventWithRacesDifficultiesAndDocuments>
+const searchEventResults = Prisma.validator<Prisma.EventArgs>()({
+  select: {
+    name: true,
+    slug: true,
+    image1: true,
+    image2: true,
+    image3: true,
+    image4: true,
+    image5: true
+  }
+});
 
-async function findEvents(): Promise<Array<Event>> {
+type EventWithRacesDifficultiesAndDocuments = Prisma.EventGetPayload<typeof eventWithRacesDifficultiesAndDocuments>;
+type EventWithDocuments = Prisma.EventGetPayload<typeof eventWithDocuments>;
+type SearchEventResults = Prisma.EventGetPayload<typeof searchEventResults>;
+
+async function findEvents(): Promise<
+  Array<EventWithRacesDifficultiesAndDocuments>
+> {
   return db.event.findMany({
     where: {
       status: { notIn: [Status.auto, Status.deleted] }
@@ -48,8 +64,10 @@ async function findEvents(): Promise<Array<Event>> {
   });
 }
 
-async function areThereTracesOfUserEventHandling(userId: string, lastNumberOfdays = 7): Promise<boolean> {
-
+async function areThereTracesOfUserEventHandling(
+  userId: string,
+  lastNumberOfdays = 7
+): Promise<boolean> {
   const events = await db.event.findMany({
     where: {
       createdById: userId,
@@ -63,7 +81,6 @@ async function areThereTracesOfUserEventHandling(userId: string, lastNumberOfday
 }
 
 async function findOrganizerEvents(organizerId: string): Promise<Array<Event>> {
-
   const o = await db.organizer.findUnique({ where: { id: organizerId } });
 
   if (!o) {
@@ -95,7 +112,6 @@ async function findEventOrganizer(eventId: string): Promise<Organizer | null> {
   return db.organizer.findUnique({ where: { userId: user.id } });
 }
 
-
 async function findPublishedEvents(): Promise<Event[]> {
   return db.event.findMany({
     where: {
@@ -119,7 +135,9 @@ async function findLatestPublishedEvents(): Promise<Event[]> {
   });
 }
 
-async function findUserEvents(userId: string): Promise<Array<Event>> {
+async function findUserEvents(
+  userId: string
+): Promise<Array<EventWithDocuments>> {
   return db.event.findMany({
     where: {
       status: { notIn: [Status.auto, Status.deleted] },
@@ -137,7 +155,7 @@ async function findUserEvents(userId: string): Promise<Array<Event>> {
   });
 }
 
-async function findEvent(id: string): Promise<Event | null> {
+async function findEvent(id: string): Promise<EventWithDocuments | null> {
   return db.event.findUnique({
     where: { id },
     include: {
@@ -278,7 +296,11 @@ async function updateEvent(
 
     // Only update the latest bib number when there are no registrations
     if (!hasRegistrations) {
-      await updateEventLatestBibNumber(event.id, event.bibStartingNumber - 1, prisma);
+      await updateEventLatestBibNumber(
+        event.id,
+        event.bibStartingNumber - 1,
+        prisma
+      );
     }
     console.debug('latest bib number updated...');
   });
@@ -329,7 +351,9 @@ async function assignUniqueSlug(name: string, attempt = 0): Promise<string> {
   return await assignUniqueSlug(name, ++attempt);
 }
 
-async function findEventBySlug(slug: string): Promise<Event | null> {
+async function findEventBySlug(
+  slug: string
+): Promise<EventWithRacesDifficultiesAndDocuments | null> {
   return await db.event.findUnique({
     where: { slug },
     include: {
@@ -347,7 +371,9 @@ async function findEventBySlug(slug: string): Promise<Event | null> {
   });
 }
 
-async function findUserFavoriteEvents(id: string): Promise<Array<Event>> {
+async function findUserFavoriteEvents(
+  id: string
+): Promise<Array<EventWithRacesDifficultiesAndDocuments>> {
   const user = await db.user.findUnique({
     where: { id },
     include: {
@@ -405,21 +431,9 @@ async function findUserFavoriteEvent(
   });
 }
 
-const searchEventsResults = Prisma.validator<Prisma.EventArgs>()({
-  select: {
-    name: true,
-    slug: true,
-    image1: true,
-    image2: true,
-    image3: true,
-    image4: true,
-    image5: true
-  }
-});
-
-type SearchEventsResults = Prisma.EventGetPayload<typeof searchEventsResults>
-
-async function getEventResultsByName(name: string): Promise<Array<SearchEventsResults>> {
+async function getEventResultsByName(
+  name: string
+): Promise<Array<SearchEventResults>> {
   return await db.event.findMany({
     select: {
       name: true,
@@ -473,7 +487,9 @@ async function updateEventRegulation({
 }
 
 export type {
-  EventWithRacesDifficultiesAndDocuments
+  EventWithRacesDifficultiesAndDocuments,
+  EventWithDocuments,
+  SearchEventResults
 };
 
 export {

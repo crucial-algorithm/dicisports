@@ -1,18 +1,18 @@
+import type { ShirtSize } from '@prisma/client';
+
 import { db } from '~/server/db.server';
 import type {
   Difficulty,
   GroupSpirit,
   GroupType,
-  Sport,
-  ShirtSize,
-  OrganizerType
+  OrganizerType,
+  Sport
 } from '~/types';
 import {
   dbDifficultyToDifficulty,
   dbGroupSpiritToGroupSpirit,
   dbGroupTypeToGroupType,
   dbOrganizerTypeToOrganizerType,
-  dbShirtSizeToShirtSize,
   dbSportToSport
 } from '~/server/db/codecs.server';
 
@@ -49,13 +49,11 @@ async function findDifficulties(): Promise<Array<Difficulty>> {
 }
 
 async function findShirtSizes(): Promise<Array<ShirtSize>> {
-  const shirtSizes = await db.shirtSize.findMany({
+  return db.shirtSize.findMany({
     orderBy: {
       id: 'asc'
     }
   });
-
-  return shirtSizes.map(dbShirtSizeToShirtSize);
 }
 
 async function findOrganizerTypes(): Promise<Array<OrganizerType>> {

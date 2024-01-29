@@ -6,6 +6,8 @@ import * as React from 'react';
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Form, useLoaderData } from '@remix-run/react';
+import type { Race } from '@prisma/client';
+
 import {
   ArrowDownTrayIcon,
   ArrowTrendingUpIcon,
@@ -32,7 +34,6 @@ import Main from '~/components/shared/Main';
 import { findOrganizer } from '~/server/db/organizer.server';
 import type {
   KCDHandle,
-  Race,
   RaceRevenueRegistrations,
   TranslationObject,
   UIRaceParticipant
@@ -49,7 +50,7 @@ import ScrollToTop from '~/components/ScrollToTop';
 type LoaderData = {
   event: EventWithRacesDifficultiesAndDocuments;
   eventRevenue: number;
-  racesRevenueAndRegistrations: RaceRevenueRegistrations[];
+  racesRevenueAndRegistrations: RaceRevenueRegistrations;
   raceParticipants: UIRaceParticipant[];
   totalRaceParticipants: number;
   pageNumber: number;
@@ -242,7 +243,7 @@ export default function DashboardRoute() {
         *{t('Race NMV Disclaimer')}
       </div>
       <div className="flex flex-col mt-2 scroll-mx-2 items-center gap-y-2 md:items-start md:flex-row md:flex-nowrap md:overflow-x-auto pb-10 hide-scrollbar">
-        {racesRevenueAndRegistrations.map((r: RaceRevenueRegistrations) => (
+        {racesRevenueAndRegistrations.map((r) => (
           <DisplayRaceStats
             id={r.id}
             name={r.name}
@@ -502,7 +503,7 @@ function EventStats({
   t
 }: {
   eventRevenue: number;
-  racesRevenueAndRegistrations: RaceRevenueRegistrations[];
+  racesRevenueAndRegistrations: RaceRevenueRegistrations;
   totalClicks: number;
   t: TFunction;
 }) {

@@ -2,9 +2,9 @@ import { useFetcher } from '@remix-run/react';
 import * as React from 'react';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import type { Document } from '@prisma/client';
 
 import { ConfirmationDialog } from '~/components/shared/Dialog';
-import type { Document } from '~/types';
 
 const RESOURCES_NS = 'create-event-form';
 

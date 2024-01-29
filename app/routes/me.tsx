@@ -44,7 +44,7 @@ import { updateUser } from '~/server/db/users.server';
 
 import Main from '~/components/shared/Main';
 import { Spacer } from '~/components/shared/Spacer';
-import type { BookingList, Group, GroupSchedule, Sport } from '~/types';
+import type { Group, GroupSchedule, Sport, BookingList } from '~/types';
 
 import DisplayImg from '~/components/shared/DisplayImg';
 import { findSports } from '~/server/db/reference.server';
@@ -747,8 +747,8 @@ function BookingListEntry({
   booking: BookingList;
   t: TFunction;
 }) {
-  const date = String(booking.bookingDate).split('T')[0];
-  const hour = getHoursAndMinutes(new Date(booking.bookingDate));
+  const date = String(booking.createdAt).split('T')[0];
+  const hour = getHoursAndMinutes(new Date(booking.createdAt));
   const navigate = useNavigate();
 
   function getHoursAndMinutes(date: Date) {
@@ -775,7 +775,7 @@ function BookingListEntry({
       data-cy="participant-row"
       onClick={handleRedirectToBooking}
     >
-      <TD value={`${booking.eventName}`} dataCy={`event-${generateSlug(booking.eventName)}`} />
+      <TD value={`${booking.event.name}`} dataCy={`event-${generateSlug(booking.event.name as string)}`} />
       <TD value={`${date} ${hour}`} />
       <TD value={t(booking.status)} dataCy={`status-${booking.id}`} />
       <TD value={`${booking.totalParticipants}`} />
