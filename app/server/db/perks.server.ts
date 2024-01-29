@@ -1,21 +1,17 @@
-import type { Prisma } from '@prisma/client';
+import type { Perk, Prisma } from '@prisma/client';
 
 import { db } from '~/server/db.server';
 
 import Id from '~/server/utils/Id.server';
-import { dbPerkToPerk } from '~/server/db/codecs.server';
 
-import type { CreatePerksInput, Language, Perk } from '~/types';
+import type { CreatePerksInput, Language } from '~/types';
 
 import json from './perks.json';
 
-
 async function findEventPerks(eventId: string): Promise<Array<Perk>> {
-  const perks = await db.perk.findMany({
+  return db.perk.findMany({
     where: { eventId: eventId }
   });
-
-  return perks.map(dbPerkToPerk);
 }
 
 async function findPerk(id: string): Promise<Perk | null> {

@@ -52,7 +52,7 @@ import ButtonGroup from '~/components/shared/ButtonGroup';
 
 type LoaderData = {
   event: Event;
-  cart: UICartRow[];
+  cart: UICartRow;
   regulation: Document;
   submittedPayments: Payment[];
   unsuccessfulPayments: Payment[];
@@ -449,7 +449,7 @@ export default function CheckoutPaymentRoute() {
 type PaymentFormProps = {
   script: string;
   gatewayTransactionId: string;
-  cart: UICartRow[];
+  cart: UICartRow;
   formContext: string;
   redirectUrl: string;
   appliedDiscount?: string | null;

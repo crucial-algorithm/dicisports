@@ -3,10 +3,11 @@ import * as React from 'react';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { SearchAutoComplete } from '~/components/SearchAutoComplete';
 import type { SearchResult } from '~/components/SearchAutoComplete';
-import type { DiciLocation, SearchEventsResults } from '~/types';
+import { SearchAutoComplete } from '~/components/SearchAutoComplete';
+import type { DiciLocation } from '~/types';
 import MapUtils from '~/utils/MapUtils';
+import type { SearchEventResults } from '~/server/db/events.server';
 
 type SearchLocationsProps = {
   placeholder?: string;
@@ -54,10 +55,10 @@ export default function SearchLocations({
     const mapped: Array<SearchResult> = [];
 
     if (events && events.length) {
-      events.map((e: SearchEventsResults) =>
+      events.map((e: SearchEventResults) =>
         mapped.push({
-          value: e.slug,
-          label: e.name,
+          value: e.slug as string,
+          label: e.name as string,
           image: e.image1 || e.image2 || e.image3 || e.image4 || e.image5 || '',
           type: 'Event'
         })

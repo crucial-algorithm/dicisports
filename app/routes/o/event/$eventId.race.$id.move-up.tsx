@@ -1,12 +1,12 @@
 import type { ActionFunction } from '@remix-run/node';
 import { json } from '@remix-run/node';
+import type { Race } from '@prisma/client';
 
 import {
   findEventRaces,
   findRace,
   updateDisplayOrderUp
 } from '~/server/db/races.server';
-import type { Race } from '~/types';
 import i18n from '~/server/i18n.server';
 import { requireUser } from '~/server/auth/session.server';
 import { findEvent } from '~/server/db/events.server';

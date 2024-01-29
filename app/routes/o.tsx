@@ -6,6 +6,8 @@ import {
   UsersIcon
 } from '@heroicons/react/20/solid';
 import { XMarkIcon } from '@heroicons/react/24/outline';
+import type { Organizer } from '@prisma/client';
+
 import type { LoaderFunction } from '@remix-run/node';
 import { json } from '@remix-run/node';
 import { Link, Outlet, useLocation } from '@remix-run/react';
@@ -27,7 +29,7 @@ import { useOrganizer } from '~/hooks/useOrganizer';
 
 import { requireUser } from '~/server/auth/session.server';
 import { findOrganizer } from '~/server/db/organizer.server';
-import type { KCDHandle, Organizer } from '~/types';
+import type { KCDHandle } from '~/types';
 
 export const handle: KCDHandle & { id: string; i18n: string[] } = {
   id: 'organizer',

@@ -1,6 +1,5 @@
 import { CheckoutStatus, PaymentStatus, RaceParticipantStatus } from '@prisma/client';
 
-import type { RaceRevenueRegistrations } from '~/types';
 import { findEvent } from '~/server/db/events.server';
 import { findOrganizer } from '~/server/db/organizer.server';
 
@@ -105,7 +104,7 @@ async function calculateApproximateRaceDiscount(
 
 async function calculateRaceNMV(
   eventId: string
-): Promise<RaceRevenueRegistrations[]> {
+) {
   const commission = await findOrganizerCommission(eventId);
   const organizerCut = 1 - handleCommission(commission);
 

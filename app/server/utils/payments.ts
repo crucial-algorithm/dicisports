@@ -1,9 +1,9 @@
-import type { Payment, Event } from '@prisma/client';
+import type { Booking, Event, Payment } from '@prisma/client';
 
 import Config from '~/server/config.server';
 import { addGatewayDetailsToPayment, createPaymentRequest } from '~/server/db/payments.server';
 import { Dates } from '~/server/utils/misc';
-import type { Booking, SibsStatusResponse, UICartRow } from '~/types';
+import type { SibsStatusResponse, UICartRow } from '~/types';
 import { bookingAmount } from '~/utils/misc';
 
 //  Example response from SIBS:
@@ -83,7 +83,7 @@ function getAuthHeaders() {
 export async function createPaymentTransaction(
   booking: Booking,
   event: Event,
-  cart: Array<UICartRow>
+  cart: UICartRow
 ): Promise<{ gatewayResponse: TransactionResponse; ourTransactionId: string }> {
   const {
     SIBS_URL_ENDPOINT: url,

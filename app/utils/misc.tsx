@@ -1,9 +1,9 @@
 import { fromBuffer } from 'file-type';
 
 import { json } from '@remix-run/node';
+import type { Booking } from '@prisma/client';
 
 import type {
-  Booking,
   Language,
   LocalStorageBookingMetaData,
   NonNullProperties,
@@ -127,7 +127,7 @@ function generateSlug(str: string) {
 }
 
 function bookingAmount(
-  cart: UICartRow[],
+  cart: UICartRow,
   discountValue?: number,
   isFixedDiscount: boolean = false
 ) {

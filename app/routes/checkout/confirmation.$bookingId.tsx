@@ -1,4 +1,4 @@
-import type { Event } from '@prisma/client';
+import type { Booking, Event } from '@prisma/client';
 import { CheckoutStatus } from '@prisma/client';
 import type { ActionFunction, LoaderFunction } from '@remix-run/node';
 import { json, redirect } from '@remix-run/node';
@@ -20,7 +20,7 @@ import { getUser } from '~/server/auth/session.server';
 import { findBooking, findBookingCart } from '~/server/db/booking.server';
 import { findEvent } from '~/server/db/events.server';
 import { findUserBookingParticipants } from '~/server/db/participant.server';
-import type { Booking, KCDHandle, UICartRow } from '~/types';
+import type { KCDHandle, UICartRow } from '~/types';
 import { badRequest, maintainBookingLocalStorageMetaData } from '~/utils/misc';
 import { sendBookingConfirmationEmail } from '~/server/email.server';
 import i18n from '~/server/i18n.server';
