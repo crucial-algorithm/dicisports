@@ -361,7 +361,7 @@ async function sendBookingConfirmationEmail({
 
   const text = `
 ${userName && `Olá ${userName},`}
-Segue a informação do teu booking no evento ${event.name}:
+Segue a informação da tua inscrição no evento ${event.name}:
 
 ID: ${booking.id}
 PIN: ${booking.pin}
@@ -524,12 +524,12 @@ P.S. Recebeste este email porque o teu endereço de email foi usado para fazer l
       </table>
       <!-- End cart table -->
       <h3 style='text-align: center; margin-top: 2rem'>
-        Clica no botão para acederes ao teu booking
+        Clica no botão para acederes à tua inscrição
       </h3>
       <a href='${DOMAIN_URL}/checkout/info/${booking.id}?p=${
     booking.pin
   }' style='display: block; margin: 0 auto; width: 80%; padding: 1.5rem; background: #A6DEE4; border-radius: 7px; border-width: 0; font-size: 1.1rem; text-align: center; font-family: sans-serif; text-decoration: none; color: black'>
-      Aceder ao booking
+      Aceder à inscrição
       </a>
       <hr style='width: 20%; height: 0px; border: 1px solid lightgrey; margin-top: 2rem; margin-bottom: 2rem'>
       <div style='text-align: center; color: grey; font-size: .8rem; line-height: 1.2rem'>
