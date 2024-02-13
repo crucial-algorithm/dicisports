@@ -17,7 +17,7 @@
   "Phone Number": "Número de telemóvel",
   "Shirt Size": "Tamanho da camisola",
   "Native From": "Natural de",
-  "Identity Card": "Cartão de Cidadão",
+  "Identity Card": "CC/BI/Passaporte/DNI(ESP)",
   "VAT Number": "NIF",
   "Postal Code": "Código postal",
   "Birthdate": "Data de nascimento",
@@ -37,6 +37,7 @@
 
   "Add": "Adicionar",
   "Save": "Guardar",
+  "Next": "Avançar",
   "Remove": "Remover",
   "Discard": "Cancelar",
 
@@ -53,7 +54,7 @@
   "Invalid VAT": "NIF inválido",
   "CC Required for PT Citizens": "Cartão de cidadão obrigatório para cidadãos portugueses",
   "VAT Required for PT Citizens": "NIF obrigatório para cidadãos portugueses",
-  "VAT or National Citizen Card required": "Preencha pelo menos um dos campos \"Cartão de Cidadão\" ou \"NIF\"",
+  "VAT or National Citizen Card required": "Preencha pelo menos um dos campos \"CC/BI/Passaporte/DNI(ESP)\" ou \"NIF\"",
 
   "No Races In Checkout": "Nenhuma distância no carrinho!",
   "Can't Create Booking": "Não foi possível criar o booking",

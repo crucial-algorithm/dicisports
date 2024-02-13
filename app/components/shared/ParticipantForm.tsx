@@ -1,7 +1,8 @@
 import clsx from 'clsx';
+import { useState } from 'react';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
-import type { Participant, ShirtSize, EventTeam } from '@prisma/client';
+import type { Participant, EventTeam } from '@prisma/client';
 
 import { CheckoutInfoActions } from '~/action.keys';
 
@@ -46,10 +47,20 @@ export default function ParticipantForm({
   const { t, i18n } = useTranslation('checkout');
   const language = i18n.language as Language;
 
+  const [country, setCountry] = useState<string | number>(
+    (selectedParticipant?.nationality as number) ||
+      (participant?.nationality as number) ||
+      188
+  );
+
   const genderOptions = [
     { value: 'F', label: t('Female') },
     { value: 'M', label: t('Male') }
   ];
+
+  function onCountryChange(v: string | number) {
+    setCountry(v);
+  }
 
   return (
     <>
@@ -119,7 +130,7 @@ export default function ParticipantForm({
         label={t('Gender')}
         error={errors?.gender}
         dataCy="gender"
-        className="w-48"
+        className="w-full md:w-48"
       >
         <ComboBox
           name="gender"
@@ -144,6 +155,7 @@ export default function ParticipantForm({
           id="birthdate"
           error={errors?.birthdate}
           dataCy="birthdate"
+          className="w-full md:w-56"
         >
           <BasicDatePicker
             name="birthdate"
@@ -163,6 +175,7 @@ export default function ParticipantForm({
           id="phone-number"
           error={errors?.phoneNumber}
           dataCy="phoneNumber"
+          className="w-full md:w-56"
         >
           <TextField
             type="number"
@@ -176,6 +189,25 @@ export default function ParticipantForm({
         </FormField>
       </div>
 
+      <FormField
+        label={t('Native From')}
+        id="nationality"
+        error={errors?.nationality}
+        dataCy="nationality"
+        className="w-full md:w-72"
+      >
+        <ComboBox
+          name="nationality"
+          placeholder={t('Optional')}
+          lang={language}
+          onChange={onCountryChange}
+          options={countries.map((c) => {
+            return { value: c.id, label: c.name };
+          })}
+          defaultValue={country}
+        />
+      </FormField>
+
       <div
         className={clsx('flex flex-col md:flex-row', {
           'md:space-x-12': isReadOnly,
@@ -188,15 +220,29 @@ export default function ParticipantForm({
           error={errors?.identityCard}
           dataCy="identityCard"
         >
-          <DiciInputMask
-            mask="99999999-9-aa9"
-            name="identity-card"
-            value={
-              participant?.identityCard ||
-              selectedParticipant?.identityCard ||
-              undefined
-            }
-          />
+          {country === 188 && (
+            <DiciInputMask
+              mask="99999999-9-aa9"
+              name="identity-card"
+              value={
+                participant?.identityCard ||
+                selectedParticipant?.identityCard ||
+                undefined
+              }
+            />
+          )}
+          {country !== 188 && (
+            <TextField
+              type="text"
+              name="identity-card"
+              placeholder={t('Required')}
+              defaultValue={
+                selectedParticipant?.identityCard ||
+                participant?.identityCard ||
+                ''
+              }
+            />
+          )}
         </FormField>
 
         <FormField
@@ -208,10 +254,9 @@ export default function ParticipantForm({
           <TextField
             type="number"
             name="vat-number"
-            defaultValue={
-              String((selectedParticipant?.vatNumber) ||
-              (participant?.vatNumber))
-            }
+            defaultValue={String(
+              selectedParticipant?.vatNumber || participant?.vatNumber
+            )}
           />
         </FormField>
       </div>
@@ -221,7 +266,7 @@ export default function ParticipantForm({
         id="federation-number"
         error={errors?.federationNumber}
         dataCy="federationNumber"
-        className="w-56"
+        className="w-full md:w-56"
       >
         <TextField
           type="number"
@@ -249,41 +294,34 @@ export default function ParticipantForm({
       </FormField>
 
       <FormField
-        label={t('Native From')}
-        id="nationality"
-        error={errors?.nationality}
-        dataCy="nationality"
-        className="w-80"
-      >
-        <ComboBox
-          name="nationality"
-          placeholder={t('Optional')}
-          lang={language}
-          options={countries.map((c) => {
-            return { value: c.id, label: c.name };
-          })}
-          defaultValue={
-            (selectedParticipant?.nationality as number) ||
-            (participant?.nationality as number)
-          }
-        />
-      </FormField>
-
-      <FormField
         label={t('Postal Code')}
         id="postal-code"
         error={errors?.postalCode}
         dataCy="postalCode"
-        className="w-56"
+        className="w-full md:w-56"
       >
-        <DiciInputMask
-          name="postal-code"
-          mask="9999-999"
-          value={
-            (selectedParticipant?.postalCode as string) ||
-            (participant?.postalCode as string)
-          }
-        />
+        {country === 188 && (
+          <DiciInputMask
+            name="postal-code"
+            mask="9999-999"
+            value={
+              (selectedParticipant?.postalCode as string) ||
+              (participant?.postalCode as string)
+            }
+          />
+        )}
+
+        {country !== 188 && (
+          <TextField
+            type="text"
+            name="postal-code"
+            defaultValue={
+              (selectedParticipant?.postalCode as string) ||
+              (participant?.postalCode as string) ||
+              ''
+            }
+          />
+        )}
       </FormField>
 
       {participant && (
@@ -319,7 +357,7 @@ export default function ParticipantForm({
               id="save-button"
               variant={selectedParticipant ? 'secondary' : 'primary'}
             >
-              {t('Save')}
+              {t(isUserBookingOnlyForHimself ? 'Next' : 'Save')}
             </Button>
           )}
 
@@ -333,7 +371,7 @@ export default function ParticipantForm({
               variant="primary"
             >
               {isUserBookingOnlyForHimself
-                ? t('Save')
+                ? t('Next')
                 : t('Save and Update', {
                     first: selectedParticipant.firstName,
                     last: selectedParticipant.lastName

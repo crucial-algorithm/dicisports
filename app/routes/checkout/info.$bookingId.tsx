@@ -249,11 +249,19 @@ export const action: ActionFunction = async ({ request, params }) => {
         }),
         postalCode: z.string().optional()
       })
-      .refine(({ identityCard, vatNumber }) => !!identityCard || !!vatNumber, {
-        message: t('VAT or National Citizen Card required'),
-        path: ['submit']
-      })
       .refine(
+        // Foreign citizens must still fill either identity card or vat number
+        ({ identityCard, vatNumber, nationality }) =>
+          Number(nationality) === PT_NATIONALITY_ID
+            ? true
+            : Boolean(identityCard) || Boolean(vatNumber),
+        {
+          message: t('VAT or National Citizen Card required'),
+          path: ['submit']
+        }
+      )
+      .refine(
+        // require identity card for portuguese citizens
         ({ identityCard, nationality }) =>
           (Number(nationality) === PT_NATIONALITY_ID && !!identityCard) ||
           Number(nationality) !== PT_NATIONALITY_ID,
@@ -263,6 +271,7 @@ export const action: ActionFunction = async ({ request, params }) => {
         }
       )
       .refine(
+        // require VAT number for portuguese citizens
         ({ vatNumber, nationality }) =>
           (Number(nationality) === PT_NATIONALITY_ID && !!vatNumber) ||
           Number(nationality) !== PT_NATIONALITY_ID,
@@ -272,17 +281,27 @@ export const action: ActionFunction = async ({ request, params }) => {
         }
       )
       .refine(
-        ({ identityCard }) =>
-          !identityCard || validateIdentityCard(identityCard),
+        // for portuguese participants, validate identity card format
+        ({ identityCard, nationality }) =>
+          Number(nationality) !== PT_NATIONALITY_ID
+            ? true
+            : !identityCard || validateIdentityCard(identityCard),
         {
           message: t('Invalid CC'),
           path: ['identityCard']
         }
       )
-      .refine(({ vatNumber }) => !vatNumber || validatePtVatNumber(vatNumber), {
-        message: t('Invalid VAT'),
-        path: ['vatNumber']
-      });
+      .refine(
+        // for portuguese participants, validate VAT number format
+        ({ vatNumber, nationality }) =>
+          Number(nationality) !== PT_NATIONALITY_ID
+            ? true
+            : !vatNumber || validatePtVatNumber(vatNumber),
+        {
+          message: t('Invalid VAT'),
+          path: ['vatNumber']
+        }
+      );
 
     const TermsAndRegulationSchema = z.object({
       terms: z
