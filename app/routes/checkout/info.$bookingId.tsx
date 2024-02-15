@@ -19,7 +19,13 @@ import * as React from 'react';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { z, ZodError } from 'zod';
-import type { Race, Participant, ShirtSize, EventTeam, RaceParticipant } from '@prisma/client';
+import type {
+  Race,
+  Participant,
+  ShirtSize,
+  EventTeam,
+  RaceParticipant
+} from '@prisma/client';
 
 import { CheckoutInfoActions } from '~/action.keys';
 import BookingLoginCTADialog from '~/components/BookingLoginCTADialog';
@@ -63,10 +69,7 @@ import {
 import { findShirtSizes } from '~/server/db/reference.server';
 import i18n from '~/server/i18n.server';
 
-import type {
-  ParticipantInput,
-  UICartRow
-} from '~/types';
+import type { ParticipantInput, UICartRow } from '~/types';
 import {
   badRequest,
   displayTimeOfDay,
@@ -189,7 +192,6 @@ export const action: ActionFunction = async ({ request, params }) => {
       return json({ ok: true });
     }
 
-    const phoneNumber = form.get('phone-number') as string;
     const birthDate = formHelperReadDate(form, 'birthdate');
 
     const data: ParticipantInput = {
@@ -197,12 +199,11 @@ export const action: ActionFunction = async ({ request, params }) => {
       firstName: form.get('first-name') as string,
       lastName: form.get('last-name') as string,
       gender: form.get('gender') as string,
-      birthdate:  birthDate,
-      phoneNumber: Number(phoneNumber),
+      birthdate: birthDate,
+      phone: form.get('phone-number') as string,
       identityCard: (form.get('identity-card') as string) || '',
       vatNumber: (form.get('vat-number') as string) || '',
-      federationNumber:
-        Number(form.get('federation-number') as string) || null,
+      federationNumber: Number(form.get('federation-number') as string) || null,
       nationality: Number(form.get('nationality') as string) || null,
       postalCode: form.get('postal-code') as string
     };
@@ -226,27 +227,56 @@ export const action: ActionFunction = async ({ request, params }) => {
             invalid_type_error: t('Invalid Date Format')
           })
           .max(new Date(), t('Date Must Be In The Past')),
-        phoneNumber: z
-          .number({
-            required_error: t('Field Required'),
-            invalid_type_error: t('Field Required')
-          })
-          .refine((val) => val.toString().length === 9, t('9 Digits'))
+        identityCard: z
+          .string()
+          .optional()
           .refine(
-            (val) =>
-              val.toString().startsWith('91') ||
-              val.toString().startsWith('92') ||
-              val.toString().startsWith('93') ||
-              val.toString().startsWith('96'),
-            t('Invalid number')
+            // require identity card for portuguese citizens
+            (idCard) =>
+              (Number(data.nationality) === PT_NATIONALITY_ID &&
+                Boolean(idCard)) ||
+              Number(data.nationality) !== PT_NATIONALITY_ID,
+            t('Field Required')
           ),
-        identityCard: z.string().optional(),
         federationNumber: z.number().nullable(),
-        vatNumber: z.string().nullable(),
+        vatNumber: z
+          .string()
+          .optional()
+          .refine(
+            // require VAT number for portuguese citizens
+            (vatNumber) =>
+              (Number(data.nationality) === PT_NATIONALITY_ID &&
+                Boolean(vatNumber)) ||
+              Number(data.nationality) !== PT_NATIONALITY_ID,
+            t('Field Required')
+          ),
         nationality: z.number({
           required_error: t('Field Required'),
           invalid_type_error: t('Field Required')
         }),
+        phone: z
+          .string({
+            required_error: t('Field Required'),
+            invalid_type_error: t('Field Required')
+          })
+          .refine(
+            (val) =>
+              (Number(data.nationality) === PT_NATIONALITY_ID &&
+                val.toString().length === 9) ||
+              Number(data.nationality) !== PT_NATIONALITY_ID,
+            t('9 Digits')
+          )
+          .refine(
+            // require proper phone number for portuguese citizens
+            (number) =>
+              (Number(data.nationality) === PT_NATIONALITY_ID &&
+                (number.toString().startsWith('91') ||
+                  number.toString().startsWith('92') ||
+                  number.toString().startsWith('93') ||
+                  number.toString().startsWith('96'))) ||
+              Number(data.nationality) !== PT_NATIONALITY_ID,
+            t('Invalid number')
+          ),
         postalCode: z.string().optional()
       })
       .refine(
@@ -345,15 +375,21 @@ export const action: ActionFunction = async ({ request, params }) => {
       actionId === CheckoutInfoActions.checkout ||
       actionId === CheckoutInfoActions.updateAndSave
     ) {
-
       ParticipantSchema.parse(data);
 
       await updateParticipant(data);
       const raceId = form.get('raceId') as string;
 
-      const raceParticipant = await findRaceParticipant(data.id, raceId, bookingId);
+      const raceParticipant = await findRaceParticipant(
+        data.id,
+        raceId,
+        bookingId
+      );
 
-      if (!raceParticipant || raceParticipant.status === RaceParticipantStatus.deleted) {
+      if (
+        !raceParticipant ||
+        raceParticipant.status === RaceParticipantStatus.deleted
+      ) {
         return badRequest({
           errors: {
             selectedParticipant: t('Race Participant does not exist')
@@ -465,7 +501,11 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   const booking = await findBooking(bookingId);
   const isGuest = pin && Number(pin) === booking?.pin;
 
-  if (!booking || (booking.userId !== clientId && !isGuest) || booking.status === CheckoutStatus.deleted) {
+  if (
+    !booking ||
+    (booking.userId !== clientId && !isGuest) ||
+    booking.status === CheckoutStatus.deleted
+  ) {
     return redirect('/');
   }
 
@@ -583,30 +623,30 @@ export default function CheckoutInfoRoute() {
     setHash(Date.now());
   }, []);
 
-  const reset = useCallback((raceParticipant?: RaceParticipant) => {
-    setHash(Date.now());
+  const reset = useCallback(
+    (raceParticipant?: RaceParticipant) => {
+      setHash(Date.now());
 
-    if (raceParticipant) {
-      setRaceParticipant({
-        id: raceParticipant.id,
-        participant: raceParticipant.participant,
-        raceId: raceParticipant.raceId,
-        team: raceParticipant.team?.name
-          ? raceParticipant.team.name
-          : null
-      });
-    }
+      if (raceParticipant) {
+        setRaceParticipant({
+          id: raceParticipant.id,
+          participant: raceParticipant.participant,
+          raceId: raceParticipant.raceId,
+          team: raceParticipant.team?.name ? raceParticipant.team.name : null
+        });
+      }
 
-    setErrors({});
-    setSelectedParticipant(
-      savedParticipants?.length === 1 ? savedParticipants[0] : null
-    );
-    setMissingParticipants([]);
-  }, [savedParticipants]);
+      setErrors({});
+      setSelectedParticipant(
+        savedParticipants?.length === 1 ? savedParticipants[0] : null
+      );
+      setMissingParticipants([]);
+    },
+    [savedParticipants]
+  );
 
   function handleSetParticipant(e: React.MouseEvent) {
-    const [, raceId, raceParticipantId] =
-      e.currentTarget.id.split('|');
+    const [, raceId, raceParticipantId] = e.currentTarget.id.split('|');
     const index = raceParticipants.findIndex(
       (rp) => rp.id === raceParticipantId
     );
@@ -781,10 +821,7 @@ export default function CheckoutInfoRoute() {
       {raceParticipants.length > 1 && (
         <div className="w-full mb-8 flex flex-row scroll-mx-2 items-center items-start flex-nowrap overflow-x-auto snap-x">
           {raceParticipants
-            .sort(
-              (a, b) =>
-                a.displayOrder - b.displayOrder
-            )
+            .sort((a, b) => a.displayOrder - b.displayOrder)
             .map((p, index) => (
               <div className="flex flex-col items-center mt-4" key={p.id}>
                 <div
@@ -961,7 +998,10 @@ export default function CheckoutInfoRoute() {
                     </div>
                   )}
 
-                  <InputError id="form-submission-error" className="mb-8 text-lg">
+                  <InputError
+                    id="form-submission-error"
+                    className="mb-8 text-lg"
+                  >
                     {errors?.submit || errors?.terms || errors?.regulation}
                   </InputError>
                 </>

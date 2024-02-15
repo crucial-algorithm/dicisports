@@ -299,6 +299,7 @@ model Participant {
   gender           String?           @db.Char(1)
   birthdate        DateTime?
   phoneNumber      Int?              @map("phone_number")
+  phone            String?
   identityCard     String?           @map("identity_card")
   vatNumber        String?           @map("vat_number")
   federationNumber Int?              @map("federation_number")
