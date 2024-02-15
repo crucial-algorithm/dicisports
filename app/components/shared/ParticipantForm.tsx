@@ -173,18 +173,15 @@ export default function ParticipantForm({
         <FormField
           label={t('Phone Number')}
           id="phone-number"
-          error={errors?.phoneNumber}
+          error={errors?.phone}
           dataCy="phoneNumber"
           className="w-full md:w-56"
         >
           <TextField
-            type="number"
+            type="tel"
             name="phone-number"
             placeholder={t('Required')}
-            defaultValue={
-              (selectedParticipant?.phoneNumber as number) ||
-              (participant?.phoneNumber as number)
-            }
+            defaultValue={selectedParticipant?.phone || participant?.phone || ''}
           />
         </FormField>
       </div>
@@ -389,7 +386,7 @@ export type FormErrors = {
   lastName?: string;
   gender?: string;
   birthdate?: string;
-  phoneNumber?: string;
+  phone?: string;
   identityCard?: string;
   vatNumber?: string;
   federationNumber?: string;
