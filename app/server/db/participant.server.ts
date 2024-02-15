@@ -177,7 +177,7 @@ async function updateParticipant(
       lastName: participant.lastName,
       gender: participant.gender,
       birthdate: participant.birthdate,
-      phoneNumber: participant.phoneNumber,
+      phone: participant.phone,
       identityCard: participant.identityCard,
       vatNumber: participant.vatNumber,
       federationNumber: participant.federationNumber,

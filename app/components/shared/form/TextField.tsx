@@ -10,7 +10,7 @@ type Props = {
   size?: 'regular' | 'large';
   adornment?: React.ReactNode;
   onChange?: (value: any) => void;
-  type?: 'text' | 'password' | 'number';
+  type?: 'text' | 'password' | 'number' | 'tel';
   input?: React.RefObject<HTMLInputElement>;
 } & React.ComponentProps<'input'>;
 
