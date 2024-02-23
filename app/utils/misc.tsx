@@ -128,8 +128,8 @@ function generateSlug(str: string) {
 
 function bookingAmount(
   cart: UICartRow[],
-  discountValue?: number,
-  isFixedDiscount: boolean = false
+  discountValue?: number | null,
+  isFixedDiscount: boolean | null = false
 ) {
   const total = cart.reduce((total, { qty, price }) => total + qty * price, 0);
 
@@ -141,7 +141,7 @@ function bookingAmount(
 function handleApplyDiscount(
   subtotal: number,
   discountValue: number,
-  isFixedDiscount: boolean
+  isFixedDiscount: boolean | null
 ): number {
   if (isFixedDiscount) {
     return subtotal - discountValue <= 0 ? 0 : subtotal - discountValue;

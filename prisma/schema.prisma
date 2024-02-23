@@ -298,7 +298,6 @@ model Participant {
   lastName         String?           @map("last_name")
   gender           String?           @db.Char(1)
   birthdate        DateTime?
-  phoneNumber      Int?              @map("phone_number")
   phone            String?
   identityCard     String?           @map("identity_card")
   vatNumber        String?           @map("vat_number")
@@ -364,6 +363,9 @@ model Booking {
   // This field will contain 'discountCode|value|fixed'
   // This way, even if the discount code values get updated, we'll know what discount was applied
   appliedDiscount String?           @map("applied_discount")
+  discountCode    String?           @map("discount_code")
+  discountValue   Int?              @map("discount_value")
+  discountFixed   Boolean?          @map("discount_fixed")
   createdAt       DateTime          @default(now()) @map("created_at")
   updatedAt       DateTime          @updatedAt @map("updated_at")
   raceParticipant RaceParticipant[]

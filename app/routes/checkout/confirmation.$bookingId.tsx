@@ -40,7 +40,9 @@ type LoaderData = {
   isAuth: boolean;
   bookingId: string;
   organizerName: string;
-  appliedDiscount: string | null;
+  discountCode?: string;
+  discountValue?: number;
+  discountFixed?: boolean;
 };
 
 type ActionData = {
@@ -114,7 +116,10 @@ export const action: ActionFunction = async ({ request, params }) => {
         try {
           await addEmailToMailingList(email, organizer.id);
         } catch (e) {
-          console.log(`failed to add ${email} to mailing list of ${organizer.name}`, e);
+          console.log(
+            `failed to add ${email} to mailing list of ${organizer.name}`,
+            e
+          );
         }
       }
     }
@@ -165,15 +170,19 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 
   const booking = await findBooking(bookingId);
 
-  if (!booking || booking.userId !== clientId || booking.status === CheckoutStatus.deleted) {
+  if (
+    !booking ||
+    booking.userId !== clientId ||
+    booking.status === CheckoutStatus.deleted
+  ) {
     return redirect('/');
   }
 
   if (booking.status !== CheckoutStatus.confirmed) {
     return redirect(
-        `/checkout/${
-            booking?.status === CheckoutStatus.pending ? 'payment' : 'cart'
-        }/${bookingId}`
+      `/checkout/${
+        booking?.status === CheckoutStatus.pending ? 'payment' : 'cart'
+      }/${bookingId}`
     );
   }
 
@@ -201,33 +210,39 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     isAuth: !!authenticatedClient,
     bookingId,
     organizerName: organizer?.name as string,
-    appliedDiscount: booking.appliedDiscount
+    discountCode: booking.discountCode,
+    discountValue: booking.discountValue,
+    discountFixed: booking.discountFixed
   });
 };
 
 export default function CheckoutConfirmationRoute() {
-  const { registration, event, cart, isAuth, bookingId, organizerName, appliedDiscount } =
-    useLoaderData<LoaderData>() as unknown as LoaderData;
+  const {
+    registration,
+    event,
+    cart,
+    isAuth,
+    bookingId,
+    organizerName,
+    discountCode,
+    discountValue,
+    discountFixed
+  } = useLoaderData<LoaderData>() as unknown as LoaderData;
   const actionData = useActionData<ActionData>() as ActionData;
   const [checkedAddToMailingList, setCheckedAddToMailingList] =
     useState<boolean>(false);
   const { t } = useTranslation('checkout');
-  const [
-    isSendConfirmationEmailDisabled,
-    setIsSendConfirmationEmailDisabled
-  ] = useState(true);
-  const [
-    hideConfirmationEmailForm,
-    setHideConfirmationEmailForm
-  ] = useState(true);
+  const [isSendConfirmationEmailDisabled, setIsSendConfirmationEmailDisabled] =
+    useState(true);
+  const [hideConfirmationEmailForm, setHideConfirmationEmailForm] =
+    useState(true);
 
   function handleCheckAddToMailingList() {
     setCheckedAddToMailingList(!checkedAddToMailingList);
   }
 
   useEffect(() => {
-    const { read, write } =
-      maintainBookingLocalStorageMetaData(bookingId);
+    const { read, write } = maintainBookingLocalStorageMetaData(bookingId);
 
     // When we re-load the page, after having already sent an e-mail, don't even show the form:
     // check that local storage has already been set to true, but we haven't submitted the form in this page load
@@ -244,8 +259,6 @@ export default function CheckoutConfirmationRoute() {
     if (actionData?.successMessage) {
       write('confirmationEmailSent', true);
     }
-
-
   }, [actionData, bookingId, setIsSendConfirmationEmailDisabled]);
 
   return (
@@ -316,11 +329,17 @@ export default function CheckoutConfirmationRoute() {
                         className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300"
                         htmlFor="add-to-mail-list"
                       >
-                        {t('Add to X Mailing List', { organizer: organizerName })}
+                        {t('Add to X Mailing List', {
+                          organizer: organizerName
+                        })}
                       </label>
                     </div>
                   </FormField>
-                  <Button name="send-confirmation" type="submit" disabled={isSendConfirmationEmailDisabled}>
+                  <Button
+                    name="send-confirmation"
+                    type="submit"
+                    disabled={isSendConfirmationEmailDisabled}
+                  >
                     {t('Send')}
                   </Button>
                   {actionData?.errors?.submit && (
@@ -348,7 +367,9 @@ export default function CheckoutConfirmationRoute() {
           <DisplayCart
             cart={cart}
             event={event}
-            appliedDiscount={appliedDiscount}
+            discountCode={discountCode}
+            discountValue={discountValue}
+            discountFixed={discountFixed}
           />
         </div>
       </div>

@@ -40,7 +40,9 @@
     "pin": 1303,
     "eventId": "nGhb8Lu8xdg3oJk4N4g6",
     "userId": "nTQ8idPqTY8PmhzbsN4u",
-    "appliedDiscount": "GET-FIT-5|5000|true"
+    "discountCode": "GET-FIT-5",
+    "discountValue": 5000,
+    "discountFixed": true
   },
   {
     "id": "MpmnjPvEsea6z2kdbj8g",

@@ -15,7 +15,9 @@ export default function DisplayCart({
   event,
   error,
   discountCodeError,
-  appliedDiscount = null,
+  discountCode = null,
+  discountValue,
+  discountFixed: isFixedDiscount,
   showDiscountCodeInput = false,
   children
 }: {
@@ -23,18 +25,17 @@ export default function DisplayCart({
   event: Event;
   error?: string;
   discountCodeError?: string;
-  appliedDiscount?: string | null;
+  discountCode?: string | null;
+  discountValue?: number;
+  discountFixed?: boolean;
   showDiscountCodeInput?: boolean;
 } & React.ComponentProps<'div'>) {
   const { t } = useTranslation('checkout');
-  const [discountCode, discountValue, isFixedDiscount] = appliedDiscount?.split(
-    '|'
-  ) || ['', '', ''];
   const subtotal = bookingAmount(cart);
   const totalPrice = bookingAmount(
     cart,
     discountValue ? Number(discountValue) : undefined,
-    isFixedDiscount ? JSON.parse(isFixedDiscount) : false
+    isFixedDiscount
   );
 
   return (
@@ -68,14 +69,14 @@ export default function DisplayCart({
 
       {showDiscountCodeInput && (
         <>
-          {!appliedDiscount ? (
+          {!discountCode ? (
             <>
               <div className="flex flex-row mt-8 justify-between gap-3">
                 <input
                   type="text"
                   name="discount-code"
                   placeholder={t('Discount Code')}
-                  defaultValue={discountCode}
+                  defaultValue={discountValue}
                   className="input-text slim w-full"
                 />
                 <button
@@ -99,7 +100,7 @@ export default function DisplayCart({
               <DisplayAppliedDiscount
                 code={discountCode}
                 value={Number(discountValue)}
-                isFixedDiscount={JSON.parse(isFixedDiscount)}
+                isFixedDiscount={Boolean(isFixedDiscount)}
                 t={t}
               />
             </div>
@@ -107,9 +108,9 @@ export default function DisplayCart({
         </>
       )}
 
-      {(totalPrice > 0 || (totalPrice === 0 && appliedDiscount)) && (
+      {(totalPrice > 0 || (totalPrice === 0 && discountCode)) && (
         <div className="flex flex-col gap-y-2 mt-4 py-4 border-t-2 border-grey-300">
-          {appliedDiscount && (
+          {discountCode && (
             <>
               <div className="flex flex-row items-center justify-between">
                 <H6 className="text-gray-400 dark:text-blueGray-500">

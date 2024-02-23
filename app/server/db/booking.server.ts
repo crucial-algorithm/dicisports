@@ -207,12 +207,13 @@ async function findConfirmedBookings(
 // discountInfo contains applied discount information - discount code|value|fixed
 async function applyDiscountCode(
   id: string,
-  discountInfo: string,
+  code: string,
+  value: number,
+  fixed: boolean,
   cart: UICartRow[]
 ) {
   return await db.$transaction(async (tx) => {
-    const [, value, fixed] = discountInfo.split('|');
-    const amount = bookingAmount(cart, Number(value), JSON.parse(fixed));
+    const amount = bookingAmount(cart, Number(value), fixed);
 
     await tx.payment.updateMany({
       where: {
@@ -227,7 +228,9 @@ async function applyDiscountCode(
     await tx.booking.update({
       where: { id },
       data: {
-        appliedDiscount: discountInfo
+        discountCode: code,
+        discountValue: value,
+        discountFixed: fixed
       }
     });
   });
@@ -237,7 +240,9 @@ async function removeBookingDiscount(id: string) {
   return db.booking.update({
     where: { id },
     data: {
-      appliedDiscount: null
+      discountCode: null,
+      discountValue: null,
+      discountFixed: null
     }
   });
 }
