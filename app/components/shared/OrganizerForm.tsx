@@ -10,8 +10,7 @@ import UploadImage from '~/components/shared/form/UploadImage';
 import InputError from '~/components/shared/form/InputError';
 import ButtonGroup from '~/components/shared/ButtonGroup';
 import Button, { ButtonLink } from '~/components/shared/Button';
-import type { OrganizerType } from '~/types';
-import type { Language } from '~/types';
+import type { Language, OrganizerType } from '~/types';
 import ComboBox from '~/components/shared/form/ComboBox';
 
 type FormErrors = {

@@ -1,5 +1,5 @@
 import { ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline';
-import type { Event } from '@prisma/client';
+import type { Event, Race, Booking } from '@prisma/client';
 import { CheckoutStatus, Status } from '@prisma/client';
 import type { ActionFunction, LoaderFunction } from '@remix-run/node';
 import { json, redirect } from '@remix-run/node';
@@ -11,7 +11,6 @@ import {
 } from '@remix-run/react';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
-import type { Race, Booking } from '@prisma/client';
 
 import DisplayCart from '~/components/shared/DisplayCart';
 import DisplayDate from '~/components/shared/DIsplayDate';
@@ -41,7 +40,7 @@ import Button from '~/components/shared/Button';
 type LoaderData = {
   event: Event;
   races: Race[];
-  userCheckoutRaces: UICartRow;
+  userCheckoutRaces: UICartRow[];
   hasCheckout: boolean;
   bookingId: string;
 };
@@ -181,7 +180,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 export default function CheckoutRegistrationsRoute() {
   const { t } = useTranslation('checkout');
   const { event, races, userCheckoutRaces, bookingId } =
-    useLoaderData<LoaderData>() as LoaderData;
+    useLoaderData<LoaderData>() as unknown as LoaderData;
   const fetcher = useFetcher();
   const [searchParams] = useSearchParams();
   const raceQties: RaceQty[] = races.map((r) => {

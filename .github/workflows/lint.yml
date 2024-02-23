@@ -26,3 +26,6 @@ jobs:
           npm run deploy:css
       - name: Run Lint
         run: npm run lint
+
+      - name: Run TypeScript type checking
+        run: npm run typecheck

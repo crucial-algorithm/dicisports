@@ -23,8 +23,7 @@ import type {
   Race,
   Participant,
   ShirtSize,
-  EventTeam,
-  RaceParticipant
+  EventTeam
 } from '@prisma/client';
 
 import { CheckoutInfoActions } from '~/action.keys';
@@ -69,7 +68,7 @@ import {
 import { findShirtSizes } from '~/server/db/reference.server';
 import i18n from '~/server/i18n.server';
 
-import type { ParticipantInput, UICartRow } from '~/types';
+import type { UICartRow } from '~/types';
 import {
   badRequest,
   displayTimeOfDay,
@@ -87,7 +86,7 @@ import { FetcherForm } from '~/components/shared/form/UploadForm';
 
 type LoaderData = {
   event: EventWithRacesDifficultiesAndDocuments;
-  cart: UICartRow;
+  cart: UICartRow[];
   raceParticipants: RaceParticipantWithRaceParticipantAndTeam[];
   userParticipants: Participant[];
   savedParticipants: Participant[] | null;
@@ -194,7 +193,7 @@ export const action: ActionFunction = async ({ request, params }) => {
 
     const birthDate = formHelperReadDate(form, 'birthdate');
 
-    const data: ParticipantInput = {
+    const data = {
       id: form.get('participant-id') as string,
       firstName: form.get('first-name') as string,
       lastName: form.get('last-name') as string,
@@ -350,7 +349,7 @@ export const action: ActionFunction = async ({ request, params }) => {
 
       try {
         await updateToSelectedParticipant(
-          data.id,
+          data.id as string,
           selectedParticipantId,
           raceId,
           bookingId
@@ -381,7 +380,7 @@ export const action: ActionFunction = async ({ request, params }) => {
       const raceId = form.get('raceId') as string;
 
       const raceParticipant = await findRaceParticipant(
-        data.id,
+        data.id as string,
         raceId,
         bookingId
       );
@@ -565,14 +564,13 @@ export default function CheckoutInfoRoute() {
     raceParticipants,
     userParticipants,
     savedParticipants,
-    shirtSizes,
     isAuth,
     isGuest,
     bookingId,
     organizerName,
     eventTeams,
     appliedDiscount
-  } = useLoaderData<LoaderData>() as LoaderData;
+  } = useLoaderData<LoaderData>() as unknown as LoaderData;
   const [raceParticipant, setRaceParticipant] = useState<{
     id: string;
     participant: Participant;
@@ -624,7 +622,7 @@ export default function CheckoutInfoRoute() {
   }, []);
 
   const reset = useCallback(
-    (raceParticipant?: RaceParticipant) => {
+    (raceParticipant?: RaceParticipantWithRaceParticipantAndTeam) => {
       setHash(Date.now());
 
       if (raceParticipant) {

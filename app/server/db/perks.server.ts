@@ -15,7 +15,7 @@ async function findEventPerks(eventId: string): Promise<Array<Perk>> {
 }
 
 async function findPerk(id: string): Promise<Perk | null> {
-  return await db.perk.findUnique({
+  return db.perk.findUnique({
     where: { id: id }
   });
 }

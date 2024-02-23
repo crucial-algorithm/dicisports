@@ -20,7 +20,7 @@ async function findMailingListEnrolledEmail(email: string, organizerId: string):
   organizerId: string;
   createdAt: Date;
 } | null> {
-  return await db.mailingList.findUnique({
+  return db.mailingList.findUnique({
     where: {
       email_organizerId: {
         email, organizerId

@@ -8,7 +8,7 @@ async function createEventLatestBibNumber(
 ): Promise<LatestBibNumber> {
   const now = new Date();
 
-  return await (tx || db).latestBibNumber.create({
+  return (tx || db).latestBibNumber.create({
     data: {
       eventId,
       createdAt: now,
@@ -22,7 +22,7 @@ async function updateEventLatestBibNumber(
   bibNumber: number,
   tx?: Prisma.TransactionClient
 ): Promise<LatestBibNumber> {
-  return await (tx || db).latestBibNumber.update({
+  return (tx || db).latestBibNumber.update({
     where: {
       eventId
     },

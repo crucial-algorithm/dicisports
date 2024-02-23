@@ -147,9 +147,9 @@ export default function DashboardRoute() {
     pageNumber,
     statsPerRace,
     searchedName
-  } = useLoaderData<LoaderData>() as LoaderData;
+  } = useLoaderData<LoaderData>() as unknown as LoaderData;
   const { t, i18n } = useTranslation('dashboard');
-  const searchForm = useRef<HTMLFormElement>(null);
+  const searchForm = useRef<HTMLFormElement | null>(null);
   const [searchedParticipantName, setSearchedParticipantName] =
     useState<string>(searchedName);
 

@@ -42,7 +42,7 @@ function cellDiscountValue({ value, fixed }: DiscountCode) {
 }
 
 export default function OrganizerDiscountCodesRoute() {
-  const { discounts: existingDiscounts } = useLoaderData() as {
+  const { discounts: existingDiscounts } = useLoaderData<typeof loader>() as unknown as {
     discounts: DiscountCode[];
   };
 

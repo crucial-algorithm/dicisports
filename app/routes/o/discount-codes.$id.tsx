@@ -1,7 +1,6 @@
-import type { DiscountCode } from '@prisma/client';
 import { Role } from '@prisma/client';
 import * as React from 'react';
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import type { ActionFunction, LoaderFunction } from '@remix-run/node';
 import { Form, useActionData, useLoaderData } from '@remix-run/react';
 import type { TFunction } from 'i18next';
@@ -32,10 +31,6 @@ import type { ResponseFeedback } from '~/types';
 import { badRequest } from '~/utils/misc';
 
 import { ConfirmationDialog } from '~/components/shared/Dialog';
-
-type LoaderData = {
-  discountCode: DiscountCode | null;
-};
 
 type ActionData = {
   errors?: {
@@ -130,7 +125,8 @@ export const action: ActionFunction = async ({ request, params }) => {
       await upsertDiscountCode({
         ...data,
         organizerId: organizer?.id as string,
-        createdById: user.id
+        createdById: user.id,
+        id: discountCodeId
       });
     }
 
@@ -182,17 +178,16 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 };
 
 export default function ManageDiscountCodesRoute() {
-  const { discountCode } = useLoaderData<LoaderData>();
-  const actionData = useActionData<ActionData>();
-  const toast = useRef<Toast>(null);
-  const feedback = actionData?.feedback;
+  const { discountCode } = useLoaderData<typeof loader>();
+  const actionData = useActionData<typeof action>() as unknown as ActionData;
+  const toast = useRef<Toast | null>(null);
 
   const [deleteModalOpen, setDeleteModalOpen] = useState<boolean>(false);
 
   const { t } = useTranslation('discount-codes');
   const isUpdate = !!discountCode;
 
-  const discountActionForm = useRef<HTMLFormElement>(null);
+  const discountActionForm = useRef<HTMLFormElement | null>(null);
 
   function handleOpenDeleteDiscountModal() {
     setDeleteModalOpen(true);
@@ -206,29 +201,13 @@ export default function ManageDiscountCodesRoute() {
     if (!discountActionForm.current) {
       return;
     }
-    discountActionForm.current.submit();
+    discountActionForm.current?.submit();
   }
 
   function handleConfirmDelete() {
     handleSubmitForm();
     handleResetDeleteDiscount();
   }
-
-  useEffect(() => {
-    const main = window.document.querySelector('#organizer-main-container');
-
-    if (!toast.current || !feedback) {
-      return;
-    }
-
-    toast.current.show({
-      severity: feedback.severity,
-      detail: feedback.message,
-      life: 3000
-    });
-
-    main && main.scrollTo({ top: 0, behavior: 'smooth' });
-  }, [feedback]);
 
   return (
     <Main>

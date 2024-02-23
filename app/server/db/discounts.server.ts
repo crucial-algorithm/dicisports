@@ -1,9 +1,11 @@
-import { DiscountCodeStatus } from '@prisma/client';
+import type { DiscountCode } from '@prisma/client';
+import { DiscountCodeStatus, Prisma } from '@prisma/client';
 
 import { db } from '~/server/db.server';
-import type { DiscountCode, DiscountCodeInput } from '~/types';
 
 import Id from '../utils/Id.server';
+
+import DiscountCodeUncheckedCreateInput = Prisma.DiscountCodeUncheckedCreateInput;
 
 async function findDiscountCodesForOrganizer(organizerId: string) {
   return db.discountCode.findMany({
@@ -17,10 +19,10 @@ async function findDiscountCodesForOrganizer(organizerId: string) {
   });
 }
 
-async function upsertDiscountCode(data: DiscountCodeInput) {
+async function upsertDiscountCode(data: DiscountCodeUncheckedCreateInput) {
   const now = new Date();
 
-  return await db.discountCode.upsert({
+  return db.discountCode.upsert({
     where: {
       code_organizerId: { code: data.code, organizerId: data.organizerId }
     },
@@ -49,7 +51,7 @@ async function updateDiscountCode(
   value: number,
   fixed: boolean
 ) {
-  return await db.discountCode.update({
+  return db.discountCode.update({
     where: {
       id
     },
@@ -65,19 +67,19 @@ async function findDiscountCode(
   code: string,
   organizerId: string
 ): Promise<DiscountCode | null> {
-  return await db.discountCode.findUnique({
+  return db.discountCode.findUnique({
     where: { code_organizerId: { code, organizerId } }
   });
 }
 
 async function findDiscountCodeById(id: string): Promise<DiscountCode | null> {
-  return await db.discountCode.findUnique({
+  return db.discountCode.findUnique({
     where: { id }
   });
 }
 
 async function deleteDiscountCode(id: string) {
-  return await db.discountCode.update({
+  return db.discountCode.update({
     where: { id },
     data: {
       status: DiscountCodeStatus.deleted
@@ -86,7 +88,7 @@ async function deleteDiscountCode(id: string) {
 }
 
 async function disableDiscountCode(id: string) {
-  return await db.discountCode.update({
+  return db.discountCode.update({
     where: { id },
     data: {
       status: DiscountCodeStatus.disabled
@@ -95,7 +97,7 @@ async function disableDiscountCode(id: string) {
 }
 
 async function enableDiscountCode(id: string) {
-  return await db.discountCode.update({
+  return db.discountCode.update({
     where: { id },
     data: {
       status: DiscountCodeStatus.active

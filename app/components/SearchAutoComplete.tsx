@@ -6,8 +6,7 @@ import type { ReactElement } from 'react';
 import * as React from 'react';
 import { Fragment, useRef } from 'react';
 
-import type { Language } from '~/types';
-import type { DiciLocation, TranslationObject } from '~/types';
+import type { DiciLocation, Language, TranslationObject } from '~/types';
 import { getLocalizedText } from '~/utils/misc';
 import { useTheme } from '~/utils/theme-provider';
 

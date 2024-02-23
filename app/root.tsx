@@ -278,11 +278,11 @@ function PageLoadingMessage() {
 
 function Html({ lang }: { lang: string }) {
   const [theme] = useTheme();
-  const data = useLoaderData<RootLoaderData>() as RootLoaderData;
+  const data = useLoaderData<typeof loader>();
   const analyticsUrl = 'https://plausible.io/js/plausible.js';
   const matches = useMatches();
   const [, { pathname }] = matches;
-  const { handle } = matches.pop() || { handle: {} };
+  const { handle } = matches.pop() || { handle: { id: '' } };
 
   // useChangeLanguage(lang);
   // script bellow setting window.ENV is not actually being used; Just keeping
@@ -350,7 +350,7 @@ function Html({ lang }: { lang: string }) {
 export default function App() {
   // set locale statically
   const lang = 'pt';
-  const data = useLoaderData<RootLoaderData>() as RootLoaderData;
+  const data = useLoaderData<typeof loader>();
 
   locale(lang);
 

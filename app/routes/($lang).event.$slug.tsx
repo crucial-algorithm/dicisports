@@ -4,7 +4,7 @@ import type { FetcherWithComponents } from '@remix-run/react';
 import { Form, Link, useFetcher, useLoaderData } from '@remix-run/react';
 import type { TFunction } from 'i18next';
 
-import type { Event, Perk } from '@prisma/client';
+import type { Document, Event, Organizer, Perk, Race } from '@prisma/client';
 import { Status } from '@prisma/client';
 import {
   ArrowTrendingUpIcon,
@@ -28,7 +28,6 @@ import { useTranslation } from 'react-i18next';
 import clsx from 'clsx';
 import { InView } from 'react-intersection-observer';
 import { Tooltip } from 'primereact/tooltip';
-import type { Race, Organizer, Document } from '@prisma/client';
 
 import CopyToClipboard from '~/components/shared/CopyToClipboard';
 
@@ -134,7 +133,7 @@ export const loader: LoaderFunction = async ({ params, request }) => {
 export default function EventDisplayRoute() {
   const favorite = useFetcher();
   const { event, isUserFavorite, races, perks, organizer } =
-    useLoaderData<LoaderData>() as LoaderData;
+    useLoaderData<LoaderData>() as unknown as LoaderData;
   const { i18n, t } = useTranslation('event');
 
   let minPrice = 0;
@@ -319,7 +318,7 @@ type DisplayRaceProps = {
   eventId: string;
   isBookingClosed: boolean;
   minHeight: number | null;
-  externalBookingUrl?: string;
+  externalBookingUrl?: string | null;
 };
 
 function DisplayRace({
@@ -642,6 +641,9 @@ function EventHeader({
     e.stopPropagation();
   }
 
+  // @ts-ignore
+  const location: undefined | { place: string } = event.location;
+
   return (
     <div className="flex flex-col md:flex-row mt-4">
       <div
@@ -725,8 +727,8 @@ function EventHeader({
           >
             <H6 className="ml-4 mr-2 md:ml-2">
               <span data-cy="location">{event.placeName}</span>
-              {event.location?.place && (
-                <>,&nbsp;{event.location?.place}</>
+              {location && location.place && (
+                <>,&nbsp;{location.place}</>
               )}
               <span className="text-sm link">&nbsp;{t('Open map')}</span>
             </H6>

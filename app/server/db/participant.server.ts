@@ -1,14 +1,13 @@
-import { Prisma } from '@prisma/client';
-import type { Participant, RaceParticipant } from '@prisma/client';
 import {
   CheckoutStatus,
   PrismaClient,
   RaceParticipantStatus,
-  Status
+  Status,
+  Prisma
 } from '@prisma/client';
+import type { Participant, RaceParticipant } from '@prisma/client';
 
 import type {
-  ParticipantInput,
   RaceParticipantInput
 } from '~/types';
 import { db } from '~/server/db.server';
@@ -16,6 +15,7 @@ import Id from '~/server/utils/Id.server';
 import { createTeam, findEventTeamByName } from '~/server/db/teams.server';
 
 import SortOrder = Prisma.SortOrder;
+import ParticipantUncheckedUpdateInput = Prisma.ParticipantUncheckedUpdateInput;
 
 const prisma = new PrismaClient();
 
@@ -168,10 +168,10 @@ async function findUserRaceParticipants(
 }
 
 async function updateParticipant(
-  participant: ParticipantInput
+  participant: ParticipantUncheckedUpdateInput
 ): Promise<Participant> {
   return db.participant.update({
-    where: { id: participant.id },
+    where: { id: participant.id as string },
     data: {
       firstName: participant.firstName,
       lastName: participant.lastName,
@@ -480,7 +480,7 @@ async function updateRaceParticipantTeam(
 }
 
 async function assignParticipantsBibNumber(
-  raceParticipants: RaceParticipantWithRaceParticipantBookingAndTeam[],
+  raceParticipants: RaceParticipantWithRaceParticipantAndTeam[],
   eventId: string
 ): Promise<void> {
   return await db.$transaction(async (tx) => {
