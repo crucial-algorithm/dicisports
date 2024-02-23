@@ -23,8 +23,7 @@ import type {
   Race,
   Participant,
   ShirtSize,
-  EventTeam,
-  RaceParticipant
+  EventTeam
 } from '@prisma/client';
 
 import { CheckoutInfoActions } from '~/action.keys';
@@ -69,7 +68,7 @@ import {
 import { findShirtSizes } from '~/server/db/reference.server';
 import i18n from '~/server/i18n.server';
 
-import type { ParticipantInput, UICartRow } from '~/types';
+import type { UICartRow } from '~/types';
 import {
   badRequest,
   displayTimeOfDay,
@@ -565,7 +564,6 @@ export default function CheckoutInfoRoute() {
     raceParticipants,
     userParticipants,
     savedParticipants,
-    shirtSizes,
     isAuth,
     isGuest,
     bookingId,

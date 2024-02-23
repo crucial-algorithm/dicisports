@@ -1,7 +1,6 @@
-import type { DiscountCode } from '@prisma/client';
 import { Role } from '@prisma/client';
 import * as React from 'react';
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import type { ActionFunction, LoaderFunction } from '@remix-run/node';
 import { Form, useActionData, useLoaderData } from '@remix-run/react';
 import type { TFunction } from 'i18next';
@@ -181,14 +180,14 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 export default function ManageDiscountCodesRoute() {
   const { discountCode } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>() as unknown as ActionData;
-  const toast = useRef<Toast>(null);
+  const toast = useRef<Toast | null>(null);
 
   const [deleteModalOpen, setDeleteModalOpen] = useState<boolean>(false);
 
   const { t } = useTranslation('discount-codes');
   const isUpdate = !!discountCode;
 
-  const discountActionForm = useRef<HTMLFormElement>(null);
+  const discountActionForm = useRef<HTMLFormElement | null>(null);
 
   function handleOpenDeleteDiscountModal() {
     setDeleteModalOpen(true);

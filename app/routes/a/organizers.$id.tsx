@@ -2,9 +2,8 @@ import { Column } from 'primereact/column';
 import type { DataTableRowClickEvent } from 'primereact/datatable';
 import { DataTable } from 'primereact/datatable';
 import * as React from 'react';
-import type { Event } from '@prisma/client';
+import type { Event, Organizer } from '@prisma/client';
 import { OrganizerStatus, Role } from '@prisma/client';
-import type { Organizer } from '@prisma/client';
 
 import type { ActionFunction, LoaderFunction } from '@remix-run/node';
 import { json } from '@remix-run/node';

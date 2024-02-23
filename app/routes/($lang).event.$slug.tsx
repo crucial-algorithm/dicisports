@@ -4,7 +4,7 @@ import type { FetcherWithComponents } from '@remix-run/react';
 import { Form, Link, useFetcher, useLoaderData } from '@remix-run/react';
 import type { TFunction } from 'i18next';
 
-import type { Event, Perk } from '@prisma/client';
+import type { Document, Event, Organizer, Perk, Race } from '@prisma/client';
 import { Status } from '@prisma/client';
 import {
   ArrowTrendingUpIcon,
@@ -28,7 +28,6 @@ import { useTranslation } from 'react-i18next';
 import clsx from 'clsx';
 import { InView } from 'react-intersection-observer';
 import { Tooltip } from 'primereact/tooltip';
-import type { Race, Organizer, Document } from '@prisma/client';
 
 import CopyToClipboard from '~/components/shared/CopyToClipboard';
 
