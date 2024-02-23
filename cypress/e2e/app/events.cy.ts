@@ -320,7 +320,11 @@ describe('Event', () => {
     });
 
     it('should publish an event', () => {
-      cy.visitAndWaitForHydration('/o/event/TgKZi8NQKNoJQGArd3zc')
+      cy.visitAndWaitForHydration('/o/event/TgKZi8NQKNoJQGArd3zc', {
+        onBeforeLoad(win: Cypress.AUTWindow) {
+          win.localStorage.setItem('cypress.mapbox', 'test');
+        }
+      })
 
         .get('#publish')
         .click()
@@ -347,7 +351,11 @@ describe('Event', () => {
       cy.intercept('POST', '/o/event/*_data=routes*')
         .as('unpublishEvent')
 
-        .visitAndWaitForHydration('/o/event/bQmGXYkbhJetjk6mniMt')
+        .visitAndWaitForHydration('/o/event/bQmGXYkbhJetjk6mniMt', {
+          onBeforeLoad(win: Cypress.AUTWindow) {
+            win.localStorage.setItem('cypress.mapbox', 'test');
+          }
+        })
 
         .get('#unpublish')
         .click()
@@ -404,7 +412,11 @@ describe('Event', () => {
       )
         .as('MoveRaceDown')
 
-        .visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d')
+        .visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d', {
+          onBeforeLoad(win: Cypress.AUTWindow) {
+            win.localStorage.setItem('cypress.mapbox', 'test');
+          }
+        })
 
         .get('button[name=move-down-AhowRdNWCBQWSuivSt7h]')
         .click({ force: true })
@@ -429,7 +441,11 @@ describe('Event', () => {
       )
         .as('MoveDocumentDown')
 
-        .visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d')
+        .visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d', {
+          onBeforeLoad(win: Cypress.AUTWindow) {
+            win.localStorage.setItem('cypress.mapbox', 'test');
+          }
+        })
 
         .get('button[name=move-down-MY4bvgxDbMtGv8rbYe5d]')
         .click({ force: true })
@@ -448,7 +464,11 @@ describe('Event', () => {
     });
 
     it('should download document', () => {
-      cy.visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d')
+      cy.visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d', {
+        onBeforeLoad(win: Cypress.AUTWindow) {
+          win.localStorage.setItem('cypress.mapbox', 'test');
+        }
+      })
 
         .get('[data-cy=download-MY4bvgxDbMtGv8rbYe5d]')
         .then((link) => {
@@ -459,7 +479,11 @@ describe('Event', () => {
     it('should add a new perk', () => {
       cy.intercept('POST', '/o/event/MY4bvgxDbMtGv8rbYe5d*')
         .as('postPerk')
-        .visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d')
+        .visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d', {
+          onBeforeLoad(win: Cypress.AUTWindow) {
+            win.localStorage.setItem('cypress.mapbox', 'test');
+          }
+        })
 
         .get('input[name=new-perk-input]')
         .type('a new perk')
@@ -554,7 +578,11 @@ describe('Event', () => {
     });
 
     it('should delete document', () => {
-      cy.visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d')
+      cy.visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d', {
+        onBeforeLoad(win: Cypress.AUTWindow) {
+          win.localStorage.setItem('cypress.mapbox', 'test');
+        }
+      })
 
         .intercept(
           'POST',
@@ -645,7 +673,11 @@ describe('Event', () => {
 
     it('should update race', () => {
       cy.loginOrganizer()
-        .visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d')
+        .visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d', {
+          onBeforeLoad(win: Cypress.AUTWindow) {
+            win.localStorage.setItem('cypress.mapbox', 'test');
+          }
+        })
 
         .get('[data-cy=race-xaXaCzs2t7D8DpRNnffM]')
         .click()
@@ -761,7 +793,11 @@ describe('Event', () => {
 
     it('should be able to update inline regulation', () => {
       cy.loginOrganizer()
-        .visitAndWaitForHydration('/o/event/gLqrDfMx6qkTHn6hoZqA')
+        .visitAndWaitForHydration('/o/event/gLqrDfMx6qkTHn6hoZqA', {
+          onBeforeLoad(win: Cypress.AUTWindow) {
+            win.localStorage.setItem('cypress.mapbox', 'test');
+          }
+        })
 
         .write(
           'regulation',
@@ -827,11 +863,16 @@ describe('Event', () => {
         .should('have.length', 4)
         .and('contain', 'a new race');
     });
+
     it('should unpublish and publish an event with internal booking', () => {
       cy.intercept('POST', '/o/event/*_data=routes*')
         .as('publishAndUnpublishEvent')
 
-        .visitAndWaitForHydration('/o/event/gLqrDfMx6qkTHn6hoZqA')
+        .visitAndWaitForHydration('/o/event/gLqrDfMx6qkTHn6hoZqA', {
+          onBeforeLoad(win: Cypress.AUTWindow) {
+            win.localStorage.setItem('cypress.mapbox', 'test');
+          }
+        })
 
         .get('#unpublish')
         .click()
@@ -870,7 +911,11 @@ describe('Event', () => {
     });
 
     it('should save event changes when adding race/doc - not published', () => {
-      cy.visitAndWaitForHydration('/o/event/TgKZi8NQKNoJQGArd3zc')
+      cy.visitAndWaitForHydration('/o/event/TgKZi8NQKNoJQGArd3zc', {
+        onBeforeLoad(win: Cypress.AUTWindow) {
+          win.localStorage.setItem('cypress.mapbox', 'test');
+        }
+      })
 
         .get('input[name=event-name]')
         .type(' updated')
@@ -902,7 +947,11 @@ describe('Event', () => {
     });
 
     it('should save event changes when adding race/doc - published', () => {
-      cy.visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d')
+      cy.visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d', {
+        onBeforeLoad(win: Cypress.AUTWindow) {
+          win.localStorage.setItem('cypress.mapbox', 'test');
+        }
+      })
 
         .get('input[name=event-name]')
         .type(' updated')
@@ -973,7 +1022,11 @@ describe('Event', () => {
     });
 
     it('should not update bib starting number when event has race participants', () => {
-      cy.visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d')
+      cy.visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d', {
+        onBeforeLoad(win: Cypress.AUTWindow) {
+          win.localStorage.setItem('cypress.mapbox', 'test');
+        }
+      })
         .get('input[name=bib-number]')
         .should('have.value', '1')
         .and('have.prop', 'disabled')
@@ -1026,7 +1079,11 @@ describe('Event', () => {
     });
 
     it('should show handled error when location is not picked on map', () => {
-      cy.visitAndWaitForHydration('/o/event/cmWJ3DMDwzJRwMaTQv53')
+      cy.visitAndWaitForHydration('/o/event/cmWJ3DMDwzJRwMaTQv53', {
+        onBeforeLoad(win: Cypress.AUTWindow) {
+          win.localStorage.setItem('cypress.mapbox', 'test');
+        }
+      })
 
         .get('#publish')
         .click()
