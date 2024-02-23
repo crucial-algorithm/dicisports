@@ -92,13 +92,7 @@ export async function createPaymentTransaction(
   } = Config();
 
   function handleAmount(): number {
-    if (booking.appliedDiscount) {
-      const [, value, fixed] = booking.appliedDiscount.split('|');
-
-      return bookingAmount(cart, Number(value), JSON.parse(fixed)) / 1000;
-    }
-
-    return bookingAmount(cart) / 1000;
+    return bookingAmount(cart, booking.discountValue, booking.discountFixed) / 1000;
   }
 
   const amount = handleAmount();

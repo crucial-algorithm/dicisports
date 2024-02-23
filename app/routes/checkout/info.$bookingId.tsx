@@ -19,12 +19,7 @@ import * as React from 'react';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { z, ZodError } from 'zod';
-import type {
-  Race,
-  Participant,
-  ShirtSize,
-  EventTeam
-} from '@prisma/client';
+import type { Race, Participant, ShirtSize, EventTeam } from '@prisma/client';
 
 import { CheckoutInfoActions } from '~/action.keys';
 import BookingLoginCTADialog from '~/components/BookingLoginCTADialog';
@@ -96,7 +91,9 @@ type LoaderData = {
   bookingId: string;
   organizerName: string;
   eventTeams: EventTeam[];
-  appliedDiscount: string | null;
+  discountCode?: string;
+  discountValue?: number;
+  discountFixed?: boolean;
 };
 
 export const handle: { id: string; i18n: string[] } = {
@@ -178,7 +175,9 @@ export const action: ActionFunction = async ({ request, params }) => {
 
       await applyDiscountCode(
         booking.id,
-        `${dbDiscountCode.code}|${dbDiscountCode.value}|${dbDiscountCode.fixed}`,
+        dbDiscountCode.code,
+        dbDiscountCode.value,
+        dbDiscountCode.fixed,
         cart
       );
 
@@ -551,7 +550,9 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     bookingId,
     organizerName: organizer?.name as string,
     eventTeams,
-    appliedDiscount: booking.appliedDiscount
+    discountCode: booking.discountCode,
+    discountValue: booking.discountValue,
+    discountFixed: booking.discountFixed
   });
 };
 
@@ -569,7 +570,9 @@ export default function CheckoutInfoRoute() {
     bookingId,
     organizerName,
     eventTeams,
-    appliedDiscount
+    discountCode,
+    discountValue,
+    discountFixed
   } = useLoaderData<LoaderData>() as unknown as LoaderData;
   const [raceParticipant, setRaceParticipant] = useState<{
     id: string;
@@ -1015,7 +1018,9 @@ export default function CheckoutInfoRoute() {
               event={event}
               error={errors.missingFilledParticipants}
               showDiscountCodeInput={!isGuest}
-              appliedDiscount={appliedDiscount}
+              discountCode={discountCode}
+              discountValue={discountValue}
+              discountFixed={discountFixed}
             >
               {!isGuest && (
                 <>

@@ -33,7 +33,7 @@ import {
   updateBookingStatus
 } from '~/server/db/booking.server';
 import { findEvent } from '~/server/db/events.server';
-import { findUserBookingParticipants } from '~/server/db/participant.server';
+import { assignParticipantsBibNumber, findUserBookingParticipants } from '~/server/db/participant.server';
 import {
   findSubmittedPayments,
   findUnsuccessfulPayments,
@@ -61,7 +61,9 @@ type LoaderData = {
   ourTransactionId: string;
   CHECKOUT_FORM_SCRIPT: string;
   domainUrl: string;
-  appliedDiscount?: string;
+  discountCode?: string;
+  discountValue?: number;
+  discountFixed?: boolean;
   displayTransactionError: boolean;
 };
 
@@ -78,7 +80,11 @@ export const loader: LoaderFunction = async ({ request, params }) => {
       ? authenticatedClient.id
       : anonymousClient.getClientId();
 
-  if (!booking || booking.userId !== clientId || booking.status === CheckoutStatus.deleted) {
+  if (
+    !booking ||
+    booking.userId !== clientId ||
+    booking.status === CheckoutStatus.deleted
+  ) {
     return redirect('/');
   }
 
@@ -100,20 +106,20 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     return redirect(`/checkout/info/${bookingId}`);
   }
 
-  if (booking.appliedDiscount) {
-    const [, value, fixed] = booking.appliedDiscount.split('|');
-    const amount = bookingAmount(cart, Number(value), JSON.parse(fixed));
+  let fullyDiscounted = false;
+
+  if (booking.discountCode) {
+    const amount = bookingAmount(cart, booking.discountValue, booking.discountFixed);
 
     if (amount === 0) {
-      await updateBookingStatus(bookingId, CheckoutStatus.confirmed);
-
-      return redirect(`/checkout/confirmation/${bookingId}`);
+      await assignParticipantsBibNumber(raceParticipants, eventId);
+      fullyDiscounted = true;
     }
   }
 
   const hasASuccessfulPayment = await isBookingPaid(bookingId);
 
-  if (hasASuccessfulPayment) {
+  if (hasASuccessfulPayment || fullyDiscounted) {
     // check if for some reason the booking status is inconsistent
     if (booking.status !== CheckoutStatus.confirmed) {
       await updateBookingStatus(bookingId, CheckoutStatus.confirmed);
@@ -142,7 +148,9 @@ export const loader: LoaderFunction = async ({ request, params }) => {
       event,
       cart,
       submittedPayments,
-      appliedDiscount: booking.appliedDiscount,
+      discountCode: booking.discountCode,
+      discountValue: booking.discountValue,
+      discountFixed: booking.discountFixed,
       domainUrl: getDomainUrl(request)
     });
   }
@@ -162,7 +170,9 @@ export const loader: LoaderFunction = async ({ request, params }) => {
       CHECKOUT_FORM_SCRIPT: Config().SIBS_CHECKOUT_FORM_SCRIPT,
       unsuccessfulPayments,
       domainUrl: getDomainUrl(request),
-      appliedDiscount: booking.appliedDiscount,
+      discountCode: booking.discountCode,
+      discountValue: booking.discountValue,
+      discountFixed: booking.discountFixed,
       displayTransactionError: false
     });
   } catch (e) {
@@ -244,14 +254,19 @@ export const action: ActionFunction = async ({ request, params }) => {
         organizer?.id as string
       );
 
-      if (!dbDiscountCode || dbDiscountCode.status !== DiscountCodeStatus.active) {
+      if (
+        !dbDiscountCode ||
+        dbDiscountCode.status !== DiscountCodeStatus.active
+      ) {
         return badRequest({ errors: { discountError: t('No Discount Code') } });
       }
       const cart = await findBookingCart(bookingId);
 
       await applyDiscountCode(
         booking.id,
-        `${dbDiscountCode.code}|${dbDiscountCode.value}|${dbDiscountCode.fixed}`,
+        dbDiscountCode.code,
+        dbDiscountCode.value,
+        dbDiscountCode.fixed,
         cart
       );
 
@@ -338,7 +353,9 @@ export default function CheckoutPaymentRoute() {
     ourTransactionId,
     CHECKOUT_FORM_SCRIPT,
     domainUrl,
-    appliedDiscount,
+    discountCode,
+    discountValue,
+    discountFixed,
     displayTransactionError
   } = useLoaderData() as unknown as LoaderData;
   const { t } = useTranslation('checkout');
@@ -409,7 +426,8 @@ export default function CheckoutPaymentRoute() {
                 script={CHECKOUT_FORM_SCRIPT}
                 gatewayTransactionId={gatewayTransactionId}
                 cart={cart}
-                appliedDiscount={appliedDiscount}
+                discountValue={discountValue}
+                discountFixed={discountFixed}
                 formContext={formContext}
                 redirectUrl={`${domainUrl}/checkout/submitted/${ourTransactionId}`}
               />
@@ -421,7 +439,9 @@ export default function CheckoutPaymentRoute() {
             <DisplayCart
               cart={cart}
               event={event}
-              appliedDiscount={appliedDiscount}
+              discountCode={discountCode}
+              discountValue={discountValue}
+              discountFixed={Boolean(discountFixed)}
               discountCodeError={errors.discountError}
               showDiscountCodeInput={
                 !isPaid && !(submittedPayments && submittedPayments.length > 0)
@@ -452,7 +472,8 @@ type PaymentFormProps = {
   cart: UICartRow[];
   formContext: string;
   redirectUrl: string;
-  appliedDiscount?: string | null;
+  discountValue?: number;
+  discountFixed?: boolean;
 };
 
 function PaymentForm({
@@ -461,7 +482,8 @@ function PaymentForm({
   cart,
   formContext,
   redirectUrl,
-  appliedDiscount
+  discountValue,
+  discountFixed = false
 }: PaymentFormProps) {
   const [theme] = useTheme();
   const style = JSON.stringify(
@@ -470,13 +492,7 @@ function PaymentForm({
   const formScriptSrc = `${script}?id=${gatewayTransactionId}`;
 
   function handleAmount(): number {
-    if (appliedDiscount) {
-      const [, value, fixed] = appliedDiscount.split('|');
-
-      return bookingAmount(cart, Number(value), JSON.parse(fixed));
-    }
-
-    return bookingAmount(cart);
+    return bookingAmount(cart, discountValue, discountFixed);
   }
 
   const formConfig = JSON.stringify({
@@ -675,7 +691,7 @@ function DisplayTransactionError({ event, t }: { event: Event; t: TFunction }) {
       <Button type="button" onClick={onClick}>
         {t('Try Again')}
       </Button>
-    </Main>
+</Main>
   );
 }
 
