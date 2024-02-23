@@ -21,11 +21,9 @@ import * as React from 'react';
 import { useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { useTranslation } from 'react-i18next';
-import type { Race } from '@prisma/client';
+import type { Event, Race } from '@prisma/client';
 
 import { z, ZodError } from 'zod';
-
-import type { Event } from '@prisma/client';
 
 import HourOfDay from '~/components/HourOfDay';
 import Button, { ButtonLink } from '~/components/shared/Button';
@@ -148,7 +146,7 @@ export const action: ActionFunction = async ({ params, request }) => {
   const deletedGPX = form.get('deletedGPX');
   const uploadResult = form.get('track') as string;
   let track: string | null = null;
-  let trackAssignedId: string | null = null;
+  let trackAssignedId: string | undefined;
   const event = await findEvent(eventId);
 
   if (!event) {
@@ -283,7 +281,7 @@ export const action: ActionFunction = async ({ params, request }) => {
 };
 
 export default function RaceRoute() {
-  const { event, race } = useLoaderData() as LoaderData;
+  const { event, race } = useLoaderData() as unknown as LoaderData;
   const actionData = useActionData() as ActionData;
 
   const { t } = useTranslation(RESOURCES_NS);

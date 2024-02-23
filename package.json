@@ -5,7 +5,7 @@
   "license": "",
   "scripts": {
     "build": "npm run build:css && remix build",
-    "dev": "concurrently \"npm run dev:css\" \"node -r dotenv/config node_modules/.bin/remix dev\"",
+    "dev": "concurrently \"npm run dev:css\" \"npx tsc -w --pretty --skipLibCheck --noEmit -p tsconfig.check.json\" \"node -r dotenv/config node_modules/.bin/remix dev\"",
     "build:css": "npm run generate:css && npm run deploy:css",
     "dev:css": "npm run generate:css && npm run deploy:css -- --watch",
     "generate:css": "tailwindcss -o app/styles/tailwind.css",
@@ -17,7 +17,8 @@
     "deploy:staging": "flyctl --app dicistg deploy .",
     "test:open": "npx cypress open",
     "test:run": "npx cypress run --browser chrome",
-    "ci:build": "npm run build:css && npx prisma migrate reset --force && prisma db seed"
+    "ci:build": "npm run build:css && npx prisma migrate reset --force && prisma db seed",
+    "typecheck": "tsc --skipLibCheck --noEmit -p tsconfig.check.json"
   },
   "prisma": {
     "seed": "node --require esbuild-register prisma/seed.ts"
@@ -71,7 +72,7 @@
   "devDependencies": {
     "@cld-apis/types": "0.1.6",
     "@remix-run/dev": "1.12.0",
-    "@remix-run/eslint-config": "1.6.5",
+    "@remix-run/eslint-config": "2.7.2",
     "@tailwindcss/line-clamp": "0.4.2",
     "@tailwindcss/typography": "0.5.2",
     "@types/file-saver": "2.0.5",
@@ -98,7 +99,7 @@
     "prettier": "2.5.1",
     "prisma": "4.10.1",
     "tailwindcss": "3.0.9",
-    "typescript": "4.4.4"
+    "typescript": "5.3.3"
   },
   "engines": {
     "node": ">=14"

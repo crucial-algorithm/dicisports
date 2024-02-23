@@ -313,7 +313,7 @@ export default function Index() {
     mapToken,
     selectedDayParts,
     latestEvents
-  } = useLoaderData<LoaderData>() as LoaderData;
+  } = useLoaderData<LoaderData>() as unknown as LoaderData;
   const [selection, setSelection] = useState<DiciLocation | undefined>();
   const data = searchResult;
   const [searchResults, setSearchResults] = useState<Array<SearchResults>>(

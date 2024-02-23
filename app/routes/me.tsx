@@ -267,7 +267,7 @@ export default function Me() {
     totalBookings,
     searchedName,
     pageNumber
-  } = useLoaderData<LoaderData>() as LoaderData;
+  } = useLoaderData<LoaderData>() as unknown as LoaderData;
   const actionData = useActionData<ActionData>();
   const { t } = useTranslation('me');
 

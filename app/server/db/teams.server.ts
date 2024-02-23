@@ -4,7 +4,7 @@ import { db } from '~/server/db.server';
 import Id from '~/server/utils/Id.server';
 
 async function findEventTeams(eventId: string): Promise<EventTeam[] | null> {
-  return await db.eventTeam.findMany({
+  return db.eventTeam.findMany({
     where: {
       eventId
     },
@@ -21,7 +21,7 @@ async function createTeam(
 ): Promise<EventTeam> {
   const currentDate = new Date();
 
-  return await (tx || db).eventTeam.create({
+  return (tx || db).eventTeam.create({
     data: {
       id: Id(),
       name,
@@ -37,7 +37,7 @@ async function findEventTeamByName(
   eventId: string,
   tx?: Prisma.TransactionClient
 ): Promise<EventTeam | null> {
-  return await (tx || db).eventTeam.findUnique({
+  return (tx || db).eventTeam.findUnique({
     where: {
       name_eventId: { name, eventId }
     }

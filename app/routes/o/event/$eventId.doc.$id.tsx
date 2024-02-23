@@ -4,7 +4,7 @@ import * as React from 'react';
 import { useRef, useState } from 'react';
 
 import { useActionData, useLoaderData } from '@remix-run/react';
-import type { Document } from '@prisma/client';
+import type { Document, Event, Prisma } from '@prisma/client';
 
 import clsx from 'clsx';
 
@@ -21,8 +21,6 @@ import { useDropzone } from 'react-dropzone';
 import { useTranslation } from 'react-i18next';
 
 import { z, ZodError } from 'zod';
-
-import type { Event, Prisma } from '@prisma/client';
 
 import Button, { ButtonLink } from '~/components/shared/Button';
 import ButtonGroup from '~/components/shared/ButtonGroup';
@@ -151,7 +149,7 @@ export const action: ActionFunction = async ({ request, params }) => {
   // Upload handler either returns a string when file is uploaded or has invalid type
   // Or returns a File object with undefined name, meaning user didn't upload a file
   if (typeof file !== 'string') {
-    file = undefined;
+    file = '';
   }
 
   const isFileTypeValid = file && file !== INVALID_FILE_TYPE;
@@ -210,7 +208,7 @@ export const action: ActionFunction = async ({ request, params }) => {
     DocumentSchema.parse(documentData);
     isInsert
       ? await createDocument(documentData)
-      : await updateDocument(documentId, name);
+      : await updateDocument(documentId as string, name);
 
     return redirect(`/o/event/${event.id}#documents`);
   } catch (e) {
@@ -233,12 +231,12 @@ export const action: ActionFunction = async ({ request, params }) => {
 
 
 export default function EventDocumentRoute() {
-  const { event, document } = useLoaderData() as LoaderData;
+  const { event, document } = useLoaderData() as unknown as LoaderData;
   const actionData = useActionData() as ActionData;
 
   const { t } = useTranslation(RESOURCES_NS);
   const [uploadedDocument, setUploadedDocument] = useState<string | null>(null);
-  const name = useRef<HTMLInputElement>(null);
+  const name = useRef<HTMLInputElement | null>(null);
 
 
   function FileListItems(files: File[]) {

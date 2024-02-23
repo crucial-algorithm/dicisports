@@ -77,7 +77,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 };
 
 export default function GroupDisplayRoute() {
-  const { group, genericImage } = useLoaderData<LoaderData>() as LoaderData;
+  const { group, genericImage } = useLoaderData<LoaderData>() as unknown as LoaderData;
   const { t } = useTranslation('m-groups');
   const { t: tc } = useTranslation('common');
   const galleria = useRef(null);

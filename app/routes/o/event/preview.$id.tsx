@@ -29,7 +29,7 @@ export const loader: LoaderFunction = async ({ params, request }) => {
 };
 
 export default function EventPreviewRoute() {
-  const { event } = useLoaderData<{ event: Event }>();
+  const { event } = useLoaderData<typeof loader>();
   const { t } = useTranslation('event');
 
   return (

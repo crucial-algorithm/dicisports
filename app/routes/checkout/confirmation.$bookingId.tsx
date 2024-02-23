@@ -36,7 +36,7 @@ import LoginOrCreateAccountCTA from '~/components/DisplayLoginOrCreateAccountCTA
 type LoaderData = {
   registration: Booking;
   event: Event;
-  cart: UICartRow;
+  cart: UICartRow[];
   isAuth: boolean;
   bookingId: string;
   organizerName: string;
@@ -207,7 +207,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 
 export default function CheckoutConfirmationRoute() {
   const { registration, event, cart, isAuth, bookingId, organizerName, appliedDiscount } =
-    useLoaderData<LoaderData>();
+    useLoaderData<LoaderData>() as unknown as LoaderData;
   const actionData = useActionData<ActionData>() as ActionData;
   const [checkedAddToMailingList, setCheckedAddToMailingList] =
     useState<boolean>(false);
@@ -257,9 +257,9 @@ export default function CheckoutConfirmationRoute() {
           </b>
         </H2>
         <H6>
-          <DisplayDate date={new Date(event.startAt)} />
+          <DisplayDate date={new Date(event.startAt || Date.now())} />
         </H6>
-        <H6>{event.address}</H6>
+        <H6>{event.placeName}</H6>
       </div>
 
       <div className="flex flex-col md:flex-row">

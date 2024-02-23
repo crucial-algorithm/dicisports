@@ -20,7 +20,7 @@ import { updateRaceParticipantsPrice } from '~/server/db/participant.server';
 
 
 async function findSubmittedPayments(bookingId: string) {
-  return await db.payment.findMany({
+  return db.payment.findMany({
     where: {
       bookingId,
       expiresAt: { gte: new Date() },
@@ -30,7 +30,7 @@ async function findSubmittedPayments(bookingId: string) {
 }
 
 async function findUnsuccessfulPayments(bookingId: string) {
-  return await db.payment.findMany({
+  return db.payment.findMany({
     where: {
       bookingId,
       OR: [
@@ -54,13 +54,13 @@ async function findUnsuccessfulPayments(bookingId: string) {
 }
 
 async function findPayment(id: string) {
-  return await db.payment.findUnique({
+  return db.payment.findUnique({
     where: { id }
   });
 }
 
 async function findPaymentByTransactionId(id: string): Promise<Payment | null> {
-  return await db.payment.findUnique({
+  return db.payment.findUnique({
     where: { transactionId: id }
   });
 }
@@ -72,10 +72,10 @@ async function findPaymentByTransactionId(id: string): Promise<Payment | null> {
  * @param amount
  */
 async function createPaymentRequest(bookingId: string, amount: number) {
-  return await db.$transaction(async (tx) => {
+  return db.$transaction(async (tx) => {
     await updateRaceParticipantsPrice(bookingId, tx);
 
-    return await tx.payment.create({
+    return tx.payment.create({
       data: {
         id: Id(),
         bookingId,
@@ -120,7 +120,7 @@ async function addGatewayDetailsToPayment(
     data = { ...data, status: PaymentStatus.pending };
   }
 
-  return await db.payment.update({
+  return db.payment.update({
     where: { id },
     data: data
   });
@@ -161,7 +161,7 @@ async function addPaymentMethodDetails(
   }
 
   // only update if status is still in submitted (if it's already in fail or paid, it's because webhook was faster)
-  return await db.payment.updateMany({
+  return db.payment.updateMany({
     where: { id, status: PaymentStatus.submitted },
     data: {
       method,
@@ -180,7 +180,7 @@ async function updatePaymentStatus(
   const payment = await findPayment(id);
 
   if (onlyFrom) {
-    return await db.payment.updateMany({
+    return db.payment.updateMany({
       where: { id, status: onlyFrom },
       data: {
         status
@@ -188,7 +188,7 @@ async function updatePaymentStatus(
     });
   }
 
-  return await db.payment.update({
+  return db.payment.update({
     where: { id },
     data: {
       status:
@@ -202,7 +202,7 @@ async function addReferenciaMultibancoInfo(
   reference: string,
   entity: string
 ) {
-  return await db.payment.update({
+  return db.payment.update({
     where: { id },
     data: {
       mbReference: reference,
@@ -212,7 +212,7 @@ async function addReferenciaMultibancoInfo(
 }
 
 async function pay(gatewayTransactionId: string, method: PaymentMethod) {
-  return await db.payment.update({
+  return db.payment.update({
     where: { transactionId: gatewayTransactionId },
     data: {
       status: PaymentStatus.paid,
@@ -222,7 +222,7 @@ async function pay(gatewayTransactionId: string, method: PaymentMethod) {
 }
 
 async function decline(gatewayTransactionId: string) {
-  return await db.payment.update({
+  return db.payment.update({
     where: { transactionId: gatewayTransactionId },
     data: {
       status: PaymentStatus.failed
@@ -260,7 +260,7 @@ async function saveNotification(json: SibsWebHookSchema) {
 }
 
 async function resetPaymentStatus(id: string) {
-  return await db.payment.update({
+  return db.payment.update({
     where: { id },
     data: {
       status: PaymentStatus.pending

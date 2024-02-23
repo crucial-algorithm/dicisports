@@ -40,7 +40,7 @@ async function updateOrganizer(
 ): Promise<Organizer | void> {
   const now = new Date();
 
-  return await db.organizer.update({
+  return db.organizer.update({
     where: {
       id: organizer.id as string
     },
@@ -63,7 +63,7 @@ async function updateOrganizer(
 }
 
 async function findOrganizers(): Promise<Organizer[]> {
-  return await db.organizer.findMany({
+  return db.organizer.findMany({
     orderBy: {
       createdAt: 'desc'
     }
@@ -107,7 +107,7 @@ async function approveOrganizer(id: string, commission: number) {
 }
 
 async function rejectOrganizer(id: string) {
-  return await db.organizer.update({
+  return db.organizer.update({
     where: { id },
     data: {
       status: OrganizerStatus.REJECTED
@@ -116,7 +116,7 @@ async function rejectOrganizer(id: string) {
 }
 
 async function updateOrganizerCommission(id: string, commission: number) {
-  return await db.organizer.update({
+  return db.organizer.update({
     where: {
       id
     },
