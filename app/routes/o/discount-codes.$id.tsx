@@ -33,10 +33,6 @@ import { badRequest } from '~/utils/misc';
 
 import { ConfirmationDialog } from '~/components/shared/Dialog';
 
-type LoaderData = {
-  discountCode: DiscountCode | null;
-};
-
 type ActionData = {
   errors?: {
     code?: string;
@@ -130,7 +126,8 @@ export const action: ActionFunction = async ({ request, params }) => {
       await upsertDiscountCode({
         ...data,
         organizerId: organizer?.id as string,
-        createdById: user.id
+        createdById: user.id,
+        id: discountCodeId
       });
     }
 
@@ -182,10 +179,9 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 };
 
 export default function ManageDiscountCodesRoute() {
-  const { discountCode } = useLoaderData<LoaderData>();
-  const actionData = useActionData<ActionData>();
+  const { discountCode } = useLoaderData<typeof loader>();
+  const actionData = useActionData<typeof action>() as unknown as ActionData;
   const toast = useRef<Toast>(null);
-  const feedback = actionData?.feedback;
 
   const [deleteModalOpen, setDeleteModalOpen] = useState<boolean>(false);
 
@@ -206,29 +202,13 @@ export default function ManageDiscountCodesRoute() {
     if (!discountActionForm.current) {
       return;
     }
-    discountActionForm.current.submit();
+    discountActionForm.current?.submit();
   }
 
   function handleConfirmDelete() {
     handleSubmitForm();
     handleResetDeleteDiscount();
   }
-
-  useEffect(() => {
-    const main = window.document.querySelector('#organizer-main-container');
-
-    if (!toast.current || !feedback) {
-      return;
-    }
-
-    toast.current.show({
-      severity: feedback.severity,
-      detail: feedback.message,
-      life: 3000
-    });
-
-    main && main.scrollTo({ top: 0, behavior: 'smooth' });
-  }, [feedback]);
 
   return (
     <Main>

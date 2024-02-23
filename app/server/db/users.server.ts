@@ -177,14 +177,14 @@ async function updateUserPassword({
     .pbkdf2Sync(password, salt, 1000, 64, 'sha512')
     .toString('hex');
 
-  return await db.user.update({
+  return db.user.update({
     where: { id },
     data: { password: hash, salt }
   });
 }
 
 async function updateUser(id: string, name: string): Promise<User> {
-  return await db.user.update({
+  return db.user.update({
     where: { id },
     data: { name }
   });

@@ -134,7 +134,7 @@ type ActionData = {
     name?: string;
     location?: string;
     near?: string;
-    schedules?: string;
+    schedules?: { hour: string | null; minute: string | null; day: string | null; }[];
     submit?: string;
   };
 };
@@ -231,7 +231,8 @@ export const action: ActionFunction = async ({ request, params }) => {
     image1: processImgField(image1, isUpdate),
     image2: processImgField(image2, isUpdate),
     image3: processImgField(image3, isUpdate),
-    description: form.get('description') as string
+    description: form.get('description') as string,
+    createdById: user.id
   };
 
   const scheduleSchema = z.object({
@@ -324,12 +325,11 @@ function emptySchedule() {
 export default function GroupRoute() {
   const { t, i18n } = useTranslation(RESOURCES_NS);
   const language = i18n.language as Language;
-  const loadedData = useLoaderData<LoaderData>();
+  const loadedData = useLoaderData<LoaderData>() as unknown as LoaderData;
   const { mapToken, sports, groupTypes, groupsSpirit, group } = loadedData;
   const isUpdate = group.status !== 'auto';
-  const deleteGroupForm = useRef<HTMLFormElement>(null);
+  const deleteGroupForm = useRef<HTMLFormElement | null>(null);
 
-  // using parse float for 0 min's to work
   const actionData = useActionData<ActionData>();
   const [deleteModalOpen, setDeleteModalOpen] = useState<boolean>(false);
 
@@ -357,8 +357,8 @@ export default function GroupRoute() {
       }
     >
   >(
-    (group.schedules.length ? group.schedules : [emptySchedule()]).map(
-      (gs: GroupSchedule) => {
+    (group.schedules && group.schedules?.length ? group.schedules : [emptySchedule()]).map(
+      (gs) => {
         const [hour, minute] = timeOfDayToHoursMinutes(gs.timeOfDay);
 
         return {
@@ -546,7 +546,7 @@ export default function GroupRoute() {
                   onRemove={handleRemoveSchedule}
                   id={schedule.id}
                   key={schedule.id}
-                  errors={actionData?.errors?.schedules[index]}
+                  errors={actionData?.errors?.schedules?.[index]}
                   position={index}
                 />
               ))}
@@ -685,7 +685,7 @@ function Schedule(props: {
   minute: number;
   onRemove: (id: string) => void;
   id: string;
-  errors: { hour: string | null; minute: string | null; day: string | null };
+  errors: { hour: string | null; minute: string | null; day: string | null } | undefined;
   position: number;
 }) {
   const { t } = useTranslation(RESOURCES_NS);

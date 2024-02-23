@@ -21,10 +21,6 @@ import DisplayImg from '~/components/shared/DisplayImg';
 import { findSports } from '~/server/db/reference.server';
 import { requireUser } from '~/server/auth/session.server';
 
-type LoaderData = {
-  events: Array<Event>;
-};
-
 export const handle = {
   i18n: ['common', 'organizer']
 };
@@ -56,7 +52,7 @@ function target(status: EventStatus, id: string) {
 
 export default function OrganizerIndexRoute() {
   const { t } = useTranslation('organizer');
-  const { events, sports } = useLoaderData<LoaderData>();
+  const { events, sports } = useLoaderData<typeof loader>();
   const unpublished = events.filter((e: Event) => e.status === 'draft' || e.status === 'unpublished');
   const published = events.filter((e: Event) => e.status === 'published');
 

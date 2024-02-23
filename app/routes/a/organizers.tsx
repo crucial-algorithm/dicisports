@@ -33,7 +33,7 @@ export const loader: LoaderFunction = async ({ request }) => {
 };
 
 export default function AdminIndexRoute() {
-  const { organizers } = useLoaderData() as LoaderData;
+  const { organizers } = useLoaderData() as unknown as LoaderData;
   const { t } = useTranslation('admin-organizers');
   const navigate = useNavigate();
 

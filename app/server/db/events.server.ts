@@ -240,6 +240,10 @@ async function updateEvent(
     // We are saving date at 00:00, so add another 12H to "handle" time zone
     const eventAt = new Date(startAt.setHours(startAt.getHours() + 12));
 
+    if (!event.id) {
+      return;
+    }
+
     await prisma.event.update({
       where: { id: event.id },
       data: {
@@ -287,7 +291,7 @@ async function updateEvent(
             name: p,
             isDefault: false,
             isEnabled: true,
-            eventId: event.id
+            eventId: event.id || ''
           };
         }),
       prisma
@@ -297,8 +301,8 @@ async function updateEvent(
     // Only update the latest bib number when there are no registrations
     if (!hasRegistrations) {
       await updateEventLatestBibNumber(
-        event.id,
-        event.bibStartingNumber - 1,
+        event.id || '',
+        event.bibStartingNumber ? event.bibStartingNumber - 1 : 0,
         prisma
       );
     }
@@ -354,7 +358,7 @@ async function assignUniqueSlug(name: string, attempt = 0): Promise<string> {
 async function findEventBySlug(
   slug: string
 ): Promise<EventWithRacesDifficultiesAndDocuments | null> {
-  return await db.event.findUnique({
+  return db.event.findUnique({
     where: { slug },
     include: {
       documents: {
@@ -385,7 +389,7 @@ async function findUserFavoriteEvents(
     return [];
   }
 
-  return await db.event.findMany({
+  return db.event.findMany({
     where: { id: { in: user.favEvents.map((fe) => fe.eventId) } },
     include: {
       documents: {
@@ -426,7 +430,7 @@ async function findUserFavoriteEvent(
   userId: string,
   eventId: string
 ): Promise<FavoriteEvent | null> {
-  return await db.favoriteEvent.findUnique({
+  return db.favoriteEvent.findUnique({
     where: { userId_eventId: { userId, eventId } }
   });
 }
@@ -434,7 +438,7 @@ async function findUserFavoriteEvent(
 async function getEventResultsByName(
   name: string
 ): Promise<Array<SearchEventResults>> {
-  return await db.event.findMany({
+  return db.event.findMany({
     select: {
       name: true,
       slug: true,
@@ -455,7 +459,7 @@ async function getEventResultsByName(
 }
 
 async function deleteEvent(id: string) {
-  return await db.event.update({
+  return db.event.update({
     where: { id },
     data: {
       status: Status.deleted

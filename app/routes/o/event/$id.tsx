@@ -406,7 +406,7 @@ export const action: ActionFunction = async ({ request, params }) => {
                   invalid_type_error: t('Invalid Date Format')
                 })
                 .max(
-                  data.startAt || new Date('2100-12-31'),
+                  data.startAt ? new Date(data.startAt) : new Date('2100-12-31'),
                   t('Date Limit = to event start date')
                 )
             }
@@ -463,7 +463,7 @@ export const action: ActionFunction = async ({ request, params }) => {
       EventSchema.parse({ ...data, races: races.map((r) => r.id) });
 
       if (user.role === Role.ORGANIZER || user.role === Role.ADMIN) {
-        await publishEvent(event.id as string, data.name);
+        await publishEvent(event.id as string, data.name as string);
 
         if (user.role === Role.ADMIN) {
           const org = await findEventOrganizer(event.id);
@@ -548,7 +548,7 @@ export default function OrganizerEventRoute() {
     races: dbRaces,
     difficulties,
     hasRegistrations
-  } = useLoaderData<LoaderData>() as LoaderData;
+  } = useLoaderData<LoaderData>() as unknown as LoaderData;
   const actionData = useActionData<ActionData>() as ActionData;
   const toast = useRef<Toast>(null);
   const fetcher = useFetcher();

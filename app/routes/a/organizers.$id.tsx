@@ -161,7 +161,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 
 export default function ReviewOrganizerRoute() {
   const { organizer, defaultCommission, organizerTypes, events } =
-    useLoaderData() as LoaderData;
+    useLoaderData() as unknown as LoaderData;
   const actionData = useActionData();
   const { t } = useTranslation('admin-organizers');
   const { t: tc } = useTranslation('common');

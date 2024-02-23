@@ -6,13 +6,13 @@ import { db } from '~/server/db.server';
 const prisma = new PrismaClient();
 
 async function findDocument(id: string): Promise<Document | null> {
-  return await db.document.findUnique({
+  return db.document.findUnique({
     where: { id }
   });
 }
 
 async function findDocuments(eventId: string): Promise<Document[] | void> {
-  return await db.document.findMany({
+  return db.document.findMany({
     where: { eventId, status: { not: 'deleted' } },
     orderBy: { position: 'asc' }
   });

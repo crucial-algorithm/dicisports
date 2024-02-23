@@ -127,7 +127,7 @@ function generateSlug(str: string) {
 }
 
 function bookingAmount(
-  cart: UICartRow,
+  cart: UICartRow[],
   discountValue?: number,
   isFixedDiscount: boolean = false
 ) {

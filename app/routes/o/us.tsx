@@ -246,7 +246,7 @@ export const loader: LoaderFunction = async ({ request }) => {
 export default function UsRoute() {
   const { t } = useTranslation('organizer-form');
   const { organizer, organizerTypes } =
-    useLoaderData<LoaderData>() as LoaderData;
+    useLoaderData<LoaderData>() as unknown as LoaderData;
   const actionData = useActionData<ActionData>() as ActionData;
 
   const feedback = actionData?.feedback;

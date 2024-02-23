@@ -13,8 +13,7 @@ import type {
   User as DBUser
 } from '@prisma/client';
 
-import type { findBookingCart } from '~/server/db/booking.server';
-import type { findUserBookingsList } from '~/server/db/booking.server';
+import type { findBookingCart, findUserBookingsList } from '~/server/db/booking.server';
 import type { calculateRaceNMV } from '~/server/financials.server';
 import type { findRaceParticipants } from '~/server/db/participant.server';
 
@@ -109,7 +108,7 @@ type GroupType = {
   name: TranslationObject;
 } & DBGroupType;
 
-type CreateEventInput = Prisma.EventCreateInput;
+type CreateEventInput = Prisma.EventUncheckedCreateInput;
 
 type CreatePerksInput = Prisma.PerkUncheckedCreateInput;
 

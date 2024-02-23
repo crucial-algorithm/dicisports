@@ -6,7 +6,7 @@ import InputError from '~/components/shared/form/InputError';
 
 type Props = {
   label: string;
-  error?: string | null;
+  error?: string | null | undefined;
   description?: React.ReactNode;
   dataCy?: string;
 } & React.ComponentProps<'div'>;

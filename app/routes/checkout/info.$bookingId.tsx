@@ -87,7 +87,7 @@ import { FetcherForm } from '~/components/shared/form/UploadForm';
 
 type LoaderData = {
   event: EventWithRacesDifficultiesAndDocuments;
-  cart: UICartRow;
+  cart: UICartRow[];
   raceParticipants: RaceParticipantWithRaceParticipantAndTeam[];
   userParticipants: Participant[];
   savedParticipants: Participant[] | null;
@@ -194,7 +194,7 @@ export const action: ActionFunction = async ({ request, params }) => {
 
     const birthDate = formHelperReadDate(form, 'birthdate');
 
-    const data: ParticipantInput = {
+    const data = {
       id: form.get('participant-id') as string,
       firstName: form.get('first-name') as string,
       lastName: form.get('last-name') as string,
@@ -350,7 +350,7 @@ export const action: ActionFunction = async ({ request, params }) => {
 
       try {
         await updateToSelectedParticipant(
-          data.id,
+          data.id as string,
           selectedParticipantId,
           raceId,
           bookingId
@@ -381,7 +381,7 @@ export const action: ActionFunction = async ({ request, params }) => {
       const raceId = form.get('raceId') as string;
 
       const raceParticipant = await findRaceParticipant(
-        data.id,
+        data.id as string,
         raceId,
         bookingId
       );
@@ -572,7 +572,7 @@ export default function CheckoutInfoRoute() {
     organizerName,
     eventTeams,
     appliedDiscount
-  } = useLoaderData<LoaderData>() as LoaderData;
+  } = useLoaderData<LoaderData>() as unknown as LoaderData;
   const [raceParticipant, setRaceParticipant] = useState<{
     id: string;
     participant: Participant;
@@ -624,7 +624,7 @@ export default function CheckoutInfoRoute() {
   }, []);
 
   const reset = useCallback(
-    (raceParticipant?: RaceParticipant) => {
+    (raceParticipant?: RaceParticipantWithRaceParticipantAndTeam) => {
       setHash(Date.now());
 
       if (raceParticipant) {

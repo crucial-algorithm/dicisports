@@ -1,10 +1,12 @@
 import type { Group } from '@prisma/client';
 import { Prisma, PrismaClient, Status } from '@prisma/client';
 
-import type { CreateGroupInput, CreateScheduleInput } from '~/types';
+import type { CreateScheduleInput } from '~/types';
 import { db } from '~/server/db.server';
 import Id from '~/server/utils/Id.server';
 import { generateSlug, hoursMinutesToTimeOfDay } from '~/utils/misc';
+
+import GroupUncheckedCreateInput = Prisma.GroupUncheckedCreateInput;
 
 const prisma = new PrismaClient();
 
@@ -61,7 +63,7 @@ async function findGroups(): Promise<Array<Group>> {
 }
 
 async function findUserGroups(userId: string): Promise<Array<GroupWithGroupSpiritOwnerAndSchedules>> {
-  return await db.group.findMany({
+  return db.group.findMany({
     where: { createdById: userId, status: Status.published },
     include: {
       groupSpirit: true,
@@ -140,7 +142,7 @@ async function assignUniqueSlug(name: string, attempt = 0): Promise<string> {
 }
 
 async function updateGroup(
-  group: CreateGroupInput,
+  group: GroupUncheckedCreateInput,
   schedules: { day: number; hour: number; minute: number }[]
 ): Promise<void> {
   return await prisma.$transaction(async (tx) => {
@@ -221,7 +223,7 @@ async function removeGroupFromFavorites(
 }
 
 async function findSchedules(groupId: string) {
-  return await db.groupSchedule.findMany({
+  return db.groupSchedule.findMany({
     where: { groupId }
   });
 }
