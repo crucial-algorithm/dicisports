@@ -48,7 +48,8 @@ type ActionData = {
   };
 };
 
-export const meta: MetaFunction = CanonicalMeta;
+// TODO [MIGRATE TO V2]: reinstate Meta Function
+// export const meta: MetaFunction = CanonicalMeta;
 
 export const loader: LoaderFunction = async ({ request }) => {
   const user = await getUser(request);

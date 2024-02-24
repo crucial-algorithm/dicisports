@@ -1,5 +1,5 @@
 import { Role } from '@prisma/client';
-import { createCookieSessionStorage, redirect } from 'remix';
+import { createCookieSessionStorage, redirect } from '@remix-run/node';
 
 import Config from '~/server/config.server';
 import { decrypt, encrypt } from '~/server/utils/encryption.server';

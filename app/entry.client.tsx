@@ -4,7 +4,7 @@ import { RemixBrowser } from '@remix-run/react';
 import i18next from 'i18next';
 import { I18nextProvider, initReactI18next } from 'react-i18next';
 import Backend from 'i18next-http-backend';
-import { getInitialNamespaces } from 'remix-i18next';
+import { getInitialNamespaces } from 'remix-i18next/client';
 import I18nextBrowserLanguageDetector from 'i18next-browser-languagedetector';
 
 import i18nSettings from './i18n';

@@ -10,10 +10,10 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
-  useCatch,
   useLoaderData,
   useMatches,
-  useTransition
+  useRouteError,
+  useNavigation
 } from '@remix-run/react';
 
 import { useSpinDelay } from 'spin-delay';
@@ -222,7 +222,7 @@ const ACTION_WORDS = [
 let firstRender = true;
 
 function PageLoadingMessage() {
-  const transition = useTransition();
+  const transition = useNavigation();
   const [words, setWords] = React.useState<Array<string>>([]);
   const [pendingPath, setPendingPath] = React.useState('');
   const showLoader = useSpinDelay(Boolean(transition.state !== 'idle'), {
@@ -380,13 +380,13 @@ export function ErrorBoundary({ error }: { error: Error }) {
 }
 
 export function CatchBoundary() {
-  const caught = useCatch();
+  const error = useRouteError();
   const { t } = useTranslation('common');
 
   let message;
   let subMessage;
 
-  switch (caught.status) {
+  switch (error.status) {
     case 401:
       message = (
         <p>
@@ -405,13 +405,13 @@ export function CatchBoundary() {
       break;
 
     default:
-      throw new Error(caught.data || caught.statusText);
+      throw new Error(error.data || error.statusText);
   }
 
   return (
     <html lang="en" className="dark">
       <head>
-        <title>{`${caught.status} ${caught.statusText}`}</title>
+        <title>{`${error.status} ${error.statusText}`}</title>
         <Links />
       </head>
       <body className="dark:bg-gray-900 bg-white transition duration-500">

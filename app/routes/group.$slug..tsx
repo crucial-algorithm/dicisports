@@ -29,34 +29,35 @@ type LoaderData = {
   genericImage: string;
 };
 
-export const meta: MetaFunction = ({ data, params, location, parentsData }) => {
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  const { i18n } = useTranslation();
-  const root: RootLoaderData = parentsData.root as RootLoaderData;
-  const { group } = data as { group: Group };
-
-  if (!group) {
-    return {};
-  }
-
-  const description = group.description?.slice(0, 160);
-  const url = `${root.requestInfo.origin}${root.requestInfo.path}${
-    root.requestInfo.path === '/' ? location.search : ''
-  }`;
-  const name = group.sport
-    ? getI18nText(group.sport.name, i18n.language as Language)
-    : group.name;
-
-  return {
-    viewport: 'width=device-width,initial-scale=1,viewport-fit=cover',
-    ...getOpenGraphMeta({
-      title: `Dicisports - ${group.name}`,
-      url,
-      description,
-      keywords: `grupo ${name}`
-    })
-  };
-};
+// TODO [MIGRATE TO V2]: reinstate Meta Function
+// export const meta: MetaFunction = ({ data, params, location, parentsData }) => {
+//   // eslint-disable-next-line react-hooks/rules-of-hooks
+//   const { i18n } = useTranslation();
+//   const root: RootLoaderData = parentsData.root as RootLoaderData;
+//   const { group } = data as { group: Group };
+//
+//   if (!group) {
+//     return {};
+//   }
+//
+//   const description = group.description?.slice(0, 160);
+//   const url = `${root.requestInfo.origin}${root.requestInfo.path}${
+//     root.requestInfo.path === '/' ? location.search : ''
+//   }`;
+//   const name = group.sport
+//     ? getI18nText(group.sport.name, i18n.language as Language)
+//     : group.name;
+//
+//   return {
+//     viewport: 'width=device-width,initial-scale=1,viewport-fit=cover',
+//     ...getOpenGraphMeta({
+//       title: `Dicisports - ${group.name}`,
+//       url,
+//       description,
+//       keywords: `grupo ${name}`
+//     })
+//   };
+// };
 
 export const loader: LoaderFunction = async ({ request, params }) => {
   const slug = params.slug as string;

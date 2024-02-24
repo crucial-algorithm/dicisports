@@ -17,7 +17,7 @@ function DeleteRaceDialog(props: {
 }) {
   const { t } = useTranslation(RESOURCES_NS);
   const { isOpen, onDismiss, race, eventId } = props;
-  const fetcher = useFetcher();
+  const fetcher = useFetcher<{ ok: boolean }>();
 
   function handleSubmit() {
     fetcher.submit(
