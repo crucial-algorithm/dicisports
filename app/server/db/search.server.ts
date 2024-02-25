@@ -63,6 +63,7 @@ async function searchEventsAndGroups(
                        INNER JOIN users u2 on e.created_by = u2.id
                        INNER JOIN difficulties d on e.difficulty_id = d.id
               WHERE e.status = 'published'
+                AND DATE_TRUNC('DAY', end_at) + INTERVAL '1 DAY' <= CURRENT_TIMESTAMP
                 AND (6357.0 *
                      acos(LEAST(cos(radians(${lat})) * cos(radians(e.lat)) *
                                 cos(radians(e.lng) - radians(${lng})) +
@@ -129,7 +130,7 @@ async function searchEventsAndGroups(
             LIMIT ${chunkSize} OFFSET ${position * chunkSize};
     `;
 
-  const results: Array<DBRawSearchResults> = await db.$queryRawUnsafe(query);
+  const results: Array<DBRawSearchResults> = await db.$queryRawUnsafe<Array<DBRawSearchResults>>(query);
   const mapped = results.map(dbRawSearchResultsToSearchResults);
   const total = results.length === 0 ? 0 : Number(results[0].records);
 
