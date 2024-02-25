@@ -128,7 +128,7 @@ async function findLatestPublishedEvents(): Promise<Event[]> {
     where: {
       status: Status.published,
       hideFromLatestEvents: false,
-      endAt: { gte: new Date(Date.now()) }
+      endAt: { gte: new Date() }
     },
     orderBy: { createdAt: 'desc' },
     take: 12
