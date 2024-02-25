@@ -30,10 +30,12 @@ import Button, { ButtonLink } from '~/components/shared/Button';
 import ButtonGroup from '~/components/shared/ButtonGroup';
 import BasicDatePicker from '~/components/shared/form/DatePicker';
 import FormField from '~/components/shared/form/FormField';
+import InputError from '~/components/shared/form/InputError';
 import TextArea from '~/components/shared/form/TextArea';
 import TextField from '~/components/shared/form/TextField';
 import UploadForm from '~/components/shared/form/UploadForm';
 import Main from '~/components/shared/Main';
+import { H6, Paragraph } from '~/components/shared/typography';
 import { requireUser } from '~/server/auth/session.server';
 import { findEvent } from '~/server/db/events.server';
 import { createRace, findRace, updateRace } from '~/server/db/races.server';
@@ -67,6 +69,9 @@ type FormErrors = {
   price?: string;
   priceEarlyBird?: string;
   validUntil?: string;
+  priceLateBird?: string;
+  applyAfter?: string;
+  inconsistentDates?: string;
 };
 
 const RESOURCES_NS = 'create-event-form';
@@ -143,6 +148,7 @@ export const action: ActionFunction = async ({ params, request }) => {
   const form = await unstable_parseMultipartFormData(request, uploadHandler);
   const eventId = params.eventId as string;
   const earlyBirdValidUntil = form.get('earlyBirdValidUntil') as string;
+  const lateBirdAppliesAfter = form.get('lateBirdApplyAfter') as string;
   const deletedGPX = form.get('deletedGPX');
   const uploadResult = form.get('track') as string;
   let track: string | null = null;
@@ -177,6 +183,9 @@ export const action: ActionFunction = async ({ params, request }) => {
     priceEarlyBird:
       parseFloat(form.get('priceEarlyBird') as string) * 1000 || null,
     validUntil: earlyBirdValidUntil ? new Date(earlyBirdValidUntil) : null,
+    priceLateBird:
+      parseFloat(form.get('priceLateBird') as string) * 1000 || null,
+    applyAfter: lateBirdAppliesAfter ? new Date(lateBirdAppliesAfter) : null,
     raceDescription: (form.get('description') as string) || null,
     track,
     eventId
@@ -225,6 +234,19 @@ export const action: ActionFunction = async ({ params, request }) => {
       validUntil: z
         .date()
         .min(new Date(), { message: t('Future Date') })
+        .nullable(),
+      priceLateBird: z
+        .number({
+          required_error: t('Field Required'),
+          invalid_type_error: t('Must Be Number')
+        })
+        .positive({ message: t('Positive Number') })
+        .optional()
+        .nullable(),
+      applyAfter: z
+        .date()
+        .min(new Date(), { message: t('Future Date') })
+        .optional()
         .nullable()
     })
     .refine(
@@ -242,15 +264,49 @@ export const action: ActionFunction = async ({ params, request }) => {
         ]
       }
     )
-    // if price early bird is null, return true to ignore refine, otherwise it will trigger an error
+    // if early bird price is null, return true to ignore refine, otherwise it will trigger an error
     .refine(
       (s) =>
         !s.priceEarlyBird
           ? true
           : s.priceEarlyBird && s.price > s.priceEarlyBird,
       {
-        message: t('Cheaper Early Bird'),
+        message: t('Cheaper Early Bird', { price: raceData.price / 1000 }),
         path: ['priceEarlyBird']
+      }
+    )
+    .refine(
+      (schema) =>
+        (schema.priceLateBird === null && schema.applyAfter === null) ||
+        (schema.priceLateBird !== null && schema.applyAfter !== null),
+      {
+        message: t(
+          raceData.priceLateBird === null
+            ? 'Insert Valid Price'
+            : 'Insert Valid Date'
+        ),
+        path: [
+          raceData.priceLateBird === null ? 'priceLateBird' : 'lateBirdAfter'
+        ]
+      }
+    )
+    // if later bird price is null, return true to ignore refine, otherwise it will trigger an error
+    .refine(
+      (s) =>
+        !s.priceLateBird ? true : s.priceLateBird && s.price < s.priceLateBird,
+      {
+        message: t('Expensive Late Bird', { price: raceData.price / 1000 }),
+        path: ['priceLateBird']
+      }
+    )
+    .refine(
+      (s) =>
+        !s.validUntil || !s.applyAfter
+          ? true
+          : new Date(s.applyAfter).getTime() > new Date(s.validUntil).getTime(),
+      {
+        message: t('Late Bird Must be after Early Bird'),
+        path: ['inconsistentDates']
       }
     );
 
@@ -432,19 +488,31 @@ export default function RaceRoute() {
           />
         </FormField>
 
-        <div className="flex flex-wrap w-full gap-3.5">
+        <div className="text-primary text-sm mb-4 w-full md:max-w-prose">
+          <H6>{t('Modificações no preço (opcional)')}</H6>
+          <Paragraph className="mb-1">
+            {t('Race Prime Rapel Explanation line 1')}
+          </Paragraph>
+          <p className="text-secondary prose prose-light dark:prose-dark mb-1">
+            {t('Race Prime Rapel Explanation line 2')}
+          </p>
+          <p className="text-secondary prose prose-light dark:prose-dark">
+            {t('Race Prime Rapel Explanation line 3')}
+          </p>
+        </div>
+
+        <div className="flex flex-wrap ml-2 w-full gap-3.5">
           <FormField
             label={t('Price Early Bird')}
             error={actionData?.errors?.priceEarlyBird}
-            className="w-44"
           >
             <TextField
               id="race-early-bird"
               name="priceEarlyBird"
               type="number"
-              className="w-44"
+              className="w-28"
               placeholder={t('Price Early Bird Placeholder')}
-              step=".01"
+              step="1"
               defaultValue={
                 race && race.priceEarlyBird
                   ? race.priceEarlyBird / 1000
@@ -455,24 +523,65 @@ export default function RaceRoute() {
 
           <FormField
             label={t('Valid Until')}
-            className="w-56 w-full"
+            className="w-44"
             error={actionData?.errors?.validUntil}
           >
             <BasicDatePicker
               label=""
               name="earlyBirdValidUntil"
               date={race?.validUntil ? new Date(race.validUntil) : null}
-              className="w-full"
+              maxDate={event.startAt ? new Date(event.startAt) : undefined}
+              className="w-full py-3.5 px-4"
             />
           </FormField>
         </div>
+
+        <div className="flex flex-wrap ml-2 w-full gap-3.5">
+          <FormField
+            label={t('Price Late Bird')}
+            error={actionData?.errors?.priceLateBird}
+          >
+            <TextField
+              id="race-late-bird"
+              name="priceLateBird"
+              type="number"
+              className="w-28"
+              placeholder={t('Price Late Bird Placeholder')}
+              step="1"
+              defaultValue={
+                race && race.priceLateBird
+                  ? race.priceLateBird / 1000
+                  : undefined
+              }
+            />
+          </FormField>
+
+          <FormField
+            label={t('Late Bird After')}
+            className="w-44"
+            error={actionData?.errors?.applyAfter}
+          >
+            <BasicDatePicker
+              label=""
+              name="lateBirdApplyAfter"
+              date={race?.applyAfter ? new Date(race.applyAfter) : null}
+              className="w-full py-3.5 px-4"
+              maxDate={event.startAt ? new Date(event.startAt) : undefined}
+            />
+          </FormField>
+        </div>
+
+        {actionData?.errors?.inconsistentDates && (
+          <InputError className="mt-[-24px] mb-8" id="inconsistent-dates">
+            {actionData?.errors?.inconsistentDates}
+          </InputError>
+        )}
 
         <FormField label={t('Description')}>
           <div className="mt-1 relative rounded-md">
             <TextArea
               name="description"
               className="input-text h-40 p-2 max-w-lg"
-              placeholder={t('Race Description')}
               defaultValue={race?.raceDescription || ''}
             />
           </div>

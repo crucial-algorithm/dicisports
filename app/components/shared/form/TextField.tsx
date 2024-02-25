@@ -52,7 +52,6 @@ const TextField: React.FC<Props> = ({
         defaultValue={defaultValue}
         placeholder={placeholder}
         onChange={handleOnChange}
-        // @ts-ignore
         type={type}
         className={className}
         readOnly={readOnly}

@@ -1,3 +1,4 @@
+import clsx from 'clsx';
 import * as React from 'react';
 import { useContext } from 'react';
 
@@ -13,11 +14,12 @@ type DatePickerOptions = {
   name: string;
   label?: string;
   date: Nullable<Date>;
-  minDate?: Date;
-  maxDate?: Date;
+  minDate?: Date | undefined;
+  maxDate?: Date | undefined;
   viewDate?: Nullable<Date>;
   onChange?: (v: Date | null) => void;
   disabled?: boolean;
+  className?: string;
 } & Omit<React.ComponentProps<'input'>, 'onChange'>;
 
 export default function BasicDatePicker({
@@ -28,9 +30,10 @@ export default function BasicDatePicker({
   maxDate,
   viewDate,
   disabled,
-  onChange
+  onChange,
+  className
 }: DatePickerOptions) {
-  const [value, setValue] = React.useState<Date | null>(date);
+  const [value, setValue] = React.useState<Date | null | undefined>(date);
   const formProps = useContext(FormContext);
 
   if (formProps.readOnly) {
@@ -51,7 +54,7 @@ export default function BasicDatePicker({
     <>
       <Label htmlFor="date-picker">{label}</Label>
       <Calendar
-        className="date-picker input-text"
+        className={clsx('date-picker input-text', className)}
         dateFormat="yy-mm-dd"
         mask="9999-99-99"
         name={name}

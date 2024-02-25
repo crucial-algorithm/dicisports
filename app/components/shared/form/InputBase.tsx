@@ -5,13 +5,12 @@ import clsx from 'clsx';
 type Props = {
   id: string;
   name: string;
-  placeholder?: string;
+  placeholder?: string | undefined;
   defaultValue?: any;
-  type?: 'text' | 'number' | 'email' | 'date' | 'hidden' | 'checkbox';
-  autoComplete?: string;
-  disabled?: boolean;
+  autoComplete?: string | undefined;
+  disabled?: boolean | undefined;
   onChange?: (value: any) => void;
-  input?: React.RefObject<HTMLInputElement>;
+  input?: React.RefObject<HTMLInputElement> | undefined;
 } & React.ComponentProps<'input'>;
 const InputBase: React.FC<Props> = ({
   id,
