@@ -56,10 +56,6 @@ async function findBookingCart(bookingId: string) {
       price = t.priceLateBird;
     }
 
-      t.priceEarlyBird && t.validUntil && new Date(t.validUntil) > new Date()
-        ? t.priceEarlyBird
-        : t.price;
-
     return {
       id: bookingId,
       raceId: t.id,

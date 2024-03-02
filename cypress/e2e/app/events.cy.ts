@@ -194,7 +194,7 @@ describe('Event', () => {
         .contains('15€');
     });
 
-    it.only('Should show event regular price, in race with only late bird', () => {
+    it('Should show event regular price, in race with only late bird', () => {
       cy.visitAndWaitForHydration('/pt/event/event-2-verify-dates')
         .get('[data-cy=race-valid-until-right-sided-regular-price]')
         .should('exist')
