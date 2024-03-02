@@ -101,6 +101,24 @@ async function clear() {
 
 }
 
+function parseDate(date: string | undefined | null) {
+  if (!date) {
+    return null;
+  }
+
+  if (!(date[0] === '+' || date[0] === '-')) {
+    return new Date(date);
+  }
+
+  const direction = date[0] === '+' ? 'forward' : 'backword';
+  const days = Number(date.substring(1)) * 86400 * 1000;
+
+  const x = new Date(Date.now() + (direction === 'forward' ? days : days * -1));
+  console.log(`Date: ${date} converts to ${x}`);
+
+  return x;
+}
+
 clear().then(() => seed().then(disconnect).catch(disconnect));
 
 function sports() {
@@ -125,8 +143,14 @@ function events() {
   const futureDate = new Date(`${new Date().getUTCFullYear() + 1}-10-21`);
 
   return eventsSeed.map((e) => {
-    const startAt = new Date(e.startAt ? e.startAt : futureDate);
-    const bookingStopsAt = new Date(startAt.getTime() - 86400 * 1000 * 7);
+    const assignedStartDate = parseDate(e.startAt);
+    const assignedStopsAt = parseDate(e.bookingStopsAt);
+    const startAt = new Date(
+      assignedStartDate ? assignedStartDate : futureDate
+    );
+    const bookingStopsAt = assignedStopsAt
+      ? assignedStopsAt
+      : new Date(startAt.getTime() - 86400 * 1000 * 7);
 
     return {
       ...e,
@@ -153,11 +177,11 @@ function races() {
   return racesSeed.map((r) => {
     // verify if it exists
     const validUntil: Date | null = r.validUntil
-      ? new Date(r.validUntil)
+      ? parseDate(r.validUntil)
       : null;
 
     const applyAfter: Date | null = r.applyAfter
-      ? new Date(r.applyAfter)
+      ? parseDate(r.applyAfter)
       : null;
 
     return {

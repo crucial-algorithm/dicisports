@@ -200,5 +200,35 @@
     "bibStartingNumber": 1,
     "startAt": "2023-07-30 10:00:00.000",
     "bookingStopsAt": "2023-07-29 23:59:59.000"
+  },
+  {
+    "id": "event_2_verify_dates",
+    "name": "Event to verify dates",
+    "sportId": 3,
+    "placeName": "Parque das caldas",
+    "location": {
+      "place": "Monção",
+      "coords": "42.07984974673485,-8.474487249608813",
+      "region": "Viana do Castelo",
+      "address": "Rua Das Termas, 4950-478 Monção, Viana do Castelo, Portugal",
+      "country": "Portugal",
+      "postcode": "4950-478",
+      "shortAddress": "Rua Das Termas"
+    },
+    "useExternalBooking": false,
+    "status": "published",
+    "directions": "<p>O Paddock será perto do Convento Carvalhiças!</p>",
+    "image1": "seed/45ZqiyygebDrEnjcJK3e/PqKzGvJkejpbvgYTkCsn",
+    "image2": "seed/45ZqiyygebDrEnjcJK3e/wowjrGF229DWjczNPoCg",
+    "createdById": "gZZCGTHBq9SxdpRFoP8b",
+    "slug": "event-2-verify-dates",
+    "difficultyId": 3,
+    "description": "<p>...</p>",
+    "lat": 42.07984974673485,
+    "lng": -8.474487249608813,
+    "regulationContent": "Art. 1",
+    "bibStartingNumber": 1,
+    "startAt": "+183",
+    "bookingStopsAt": "+180"
   }
 ]

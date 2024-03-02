@@ -345,6 +345,64 @@ describe('Checkout', () => {
         .contains('1');
     });
 
+    it('should apply regular price to booking', () => {
+      cy.visitAndWaitForHydration(`/pt/event/event-2-verify-dates`)
+
+      .intercept('GET', '/checkout/create*')
+      .as('CreateBooking')
+  
+      .get(`button[name=race-a-regular-race-price]`)
+      .click()
+  
+      .wait('@CreateBooking')
+  
+      .location()
+      .should((l) => {
+        expect(l.pathname).to.include('/checkout/info');
+      })
+      .get('[data-cy=total-price]')
+      .contains('15€')
+    });
+
+    it('should apply early bird price to booking', () => {
+      cy.visitAndWaitForHydration(`/pt/event/event-2-verify-dates`)
+
+      .intercept('GET', '/checkout/create*')
+      .as('CreateBooking')
+  
+      .get(`button[name=race-a-early-bird-pricexx]`)
+      .click()
+  
+      .wait('@CreateBooking')
+  
+      .location()
+      .should((l) => {
+        expect(l.pathname).to.include('/checkout/info');
+      })
+      .get('[data-cy=total-price]')
+      .contains('10€')
+    });
+
+    it('should apply late bird price to booking', () => {
+      cy.visitAndWaitForHydration(`/pt/event/event-2-verify-dates`)
+
+      .intercept('GET', '/checkout/create*')
+      .as('CreateBooking')
+  
+      .get(`button[name=race-a-penalty-price-to-u]`)
+      .click()
+  
+      .wait('@CreateBooking')
+  
+      .location()
+      .should((l) => {
+        expect(l.pathname).to.include('/checkout/info');
+      })
+      .get('[data-cy=total-price]')
+      .contains('20€')
+    });    
+
+
     it('Should fill form and save participant', () => {
       registerParticipant('trail-do-zezere', 'Rd9SETi59X9ava6CPhkY');
     });

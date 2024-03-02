@@ -35,6 +35,8 @@ async function findBookingCart(bookingId: string) {
       price: true,
       priceEarlyBird: true,
       validUntil: true,
+      priceLateBird: true,
+      applyAfter: true,
       distance: true,
       startTime: true,
       displayOrder: true
@@ -46,8 +48,14 @@ async function findBookingCart(bookingId: string) {
     const raceCount = bookingCart.find((c) => c.raceId === t.id);
     const totalParticipants = raceCount ? raceCount._count.id : 0;
 
-    // This will return early bird price if it's still available
-    const price =
+    let price = t.price;
+
+    if (t.priceEarlyBird && t.validUntil && t.validUntil > new Date()) {
+      price = t.priceEarlyBird;
+    } else if (t.priceLateBird && t.applyAfter && t.applyAfter <= new Date()) {
+      price = t.priceLateBird;
+    }
+
       t.priceEarlyBird && t.validUntil && new Date(t.validUntil) > new Date()
         ? t.priceEarlyBird
         : t.price;
