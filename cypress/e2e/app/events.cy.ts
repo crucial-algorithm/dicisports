@@ -736,7 +736,7 @@ describe('Event', () => {
           }
         })
 
-        .get('[data-cy=race-index-0]') // pick link directly, not parent element 😒
+        .get('[data-cy=race-index-2]') // pick link directly, not parent element 😒
         .should('exist')
         .click()
 
@@ -748,11 +748,6 @@ describe('Event', () => {
         .get('input[name=name]')
         .type(' updated')
 
-        .pickDate(
-          'earlyBirdValidUntil',
-          futureDate(10, 10).toISOString().split('T')[0]
-        )
-
         .intercept('POST', '/o/event/MY4bvgxDbMtGv8rbYe5d/race/*')
         .as('UpdateRace')
 
@@ -761,16 +756,16 @@ describe('Event', () => {
 
         .wait('@UpdateRace')
 
-        .location()
-        .should((l) => {
-          expect(l.pathname).to.eq('/o/event/MY4bvgxDbMtGv8rbYe5d');
-        })
+       .location()
+       .should((l) => {
+         expect(l.pathname).to.eq('/o/event/MY4bvgxDbMtGv8rbYe5d');
+       })
 
-        .visitAndWaitForHydration('/event/love-tiles-douro-granfondo-2023')
+       .visitAndWaitForHydration('/event/love-tiles-douro-granfondo-2023')
 
-        .get('[data-cy=race-name-xaXaCzs2t7D8DpRNnffM]')
-        .should('exist')
-        .and('contain', 'Granfondo updated');
+       .get('[data-cy=race-name-xaXaCzs2t7D8DpRNnffM]')
+       .should('exist')
+       .and('contain', 'Granfondo updated');
     });
 
     it('should be able to upload a regulation pdf', () => {
