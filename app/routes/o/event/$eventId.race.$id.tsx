@@ -233,7 +233,9 @@ export const action: ActionFunction = async ({ params, request }) => {
         .nullable(),
       validUntil: z
         .date()
-        .min(new Date(), { message: t('Future Date') })
+        .max(event.startAt ? event.startAt : new Date('2099-12-31'), {
+          message: t('Date Must Be Before Event Date')
+        })
         .nullable(),
       priceLateBird: z
         .number({
@@ -245,7 +247,9 @@ export const action: ActionFunction = async ({ params, request }) => {
         .nullable(),
       applyAfter: z
         .date()
-        .min(new Date(), { message: t('Future Date') })
+        .max(event.startAt ? event.startAt : new Date('2099-12-31'), {
+          message: t('Date Must Be Before Event Date')
+        })
         .optional()
         .nullable()
     })
