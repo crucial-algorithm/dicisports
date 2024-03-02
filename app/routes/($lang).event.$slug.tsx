@@ -523,7 +523,7 @@ function DisplayRace({
                 data-cy={`gpx-${race.id}`}
                 download
               >
-                <H4 className="my-4 dark:text-blueGray-500">{t('GPX')}</H4>
+                <H4 className="my-4 underline dark:text-blueGray-500">{t('GPX')}</H4>
               </Link>
             )}
           </>
