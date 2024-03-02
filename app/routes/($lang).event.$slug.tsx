@@ -319,30 +319,10 @@ type DisplayRaceProps = {
 
 function calculatePriceStructure(race: Race) {
 
-  console.log(
-    'calculatePriceStructure::1',
-    race.name,
-    race.priceEarlyBird,
-    race.validUntil
-  );
-
   if (race.priceEarlyBird && race.validUntil) {
-    console.log(
-      'calculatePriceStructure::2 HAS EARLY BIRD',
-      race.name,
-      race.priceEarlyBird,
-      race.validUntil
-    );
-
     const daysUntilEnd = Math.floor(
       (new Date(race.validUntil).getTime() - Date.now() + 86400 * 1000) /
         (1000 * 60 * 60 * 24)
-    );
-
-    console.log(
-      'calculatePriceStructure::2.1 days for early bird finish?',
-      race.name,
-      daysUntilEnd
     );
 
     if (daysUntilEnd > 0) {
