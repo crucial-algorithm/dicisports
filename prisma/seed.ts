@@ -113,10 +113,7 @@ function parseDate(date: string | undefined | null) {
   const direction = date[0] === '+' ? 'forward' : 'backword';
   const days = Number(date.substring(1)) * 86400 * 1000;
 
-  const x = new Date(Date.now() + (direction === 'forward' ? days : days * -1));
-  console.log(`Date: ${date} converts to ${x}`);
-
-  return x;
+  return new Date(Date.now() + (direction === 'forward' ? days : days * -1));
 }
 
 clear().then(() => seed().then(disconnect).catch(disconnect));

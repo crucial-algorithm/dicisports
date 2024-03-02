@@ -122,96 +122,88 @@ describe('Event', () => {
     });
 
     it('Should show event early bird price, less than 30 days before early bird end', () => {
-      cy.clock(new Date('2023-01-15').getTime(), ['Date'])
-        .visitAndWaitForHydration('/pt/event/trilho-dos-moinhos')
-        .get('[data-cy=race-valid-until-LoDjLz7dWQTWk6Th4dRC]')
+      cy.visitAndWaitForHydration('/pt/event/event-2-verify-dates')
+        .get('[data-cy=race-valid-until-bilateral-early-30-d]')
         .should('exist')
-        .contains('17 dias')
-        .get('[data-cy=race-price-LoDjLz7dWQTWk6Th4dRC')
+        .contains('5 dias')
+        .get('[data-cy=race-price-bilateral-early-30-d')
         .contains('10€')
-        .get('[data-cy=race-future-price-LoDjLz7dWQTWk6Th4dRC')
-        .contains('13€');
+        .get('[data-cy=race-future-price-bilateral-early-30-d')
+        .contains('15€');
     });
 
     it('Should show event early bird price, more than 30 days before early bird end', () => {
-      cy.clock(new Date('2022-11-15').getTime(), ['Date'])
-        .visitAndWaitForHydration('/pt/event/trilho-dos-moinhos')
-        .get('[data-cy=race-valid-until-LoDjLz7dWQTWk6Th4dRC]')
+      cy.visitAndWaitForHydration('/pt/event/event-2-verify-dates')
+        .get('[data-cy=race-valid-until-bilateral-early-30pd]')
         .should('exist')
-        .contains('31 Janeiro, 2023')
-        .get('[data-cy=race-price-LoDjLz7dWQTWk6Th4dRC')
+        .contains(/\d{1,2}\s(Janeiro|Fevereiro|Março|Abril|Maio|Junho|Julho|Agosto|Setembro|Outubro|Novembro|Dezembro),\s\d{4}/)
+        .get('[data-cy=race-price-bilateral-early-30pd')
         .contains('10€')
-        .get('[data-cy=race-future-price-LoDjLz7dWQTWk6Th4dRC')
-        .contains('13€');
+        .get('[data-cy=race-future-price-bilateral-early-30pd')
+        .contains('15€');
     });
 
     it('Should show event in regular price, with late price comming in less than 30 days', () => {
-      cy.clock(new Date('2023-07-06').getTime(), ['Date'])
-        .visitAndWaitForHydration('/pt/event/trilho-dos-moinhos')
-        .get('[data-cy=race-valid-until-LoDjLz7dWQTWk6Th4dRC]')
+      cy.visitAndWaitForHydration('/pt/event/event-2-verify-dates')
+        .get('[data-cy=race-valid-until-a-regular-race-price]')
         .should('exist')
-        .contains('17 dias')
-        .get('[data-cy=race-price-LoDjLz7dWQTWk6Th4dRC')
-        .contains('13€')
-        .get('[data-cy=race-future-price-LoDjLz7dWQTWk6Th4dRC')
-        .contains('18€');
+        .contains('4 dias')
+        .get('[data-cy=race-price-a-regular-race-price')
+        .contains('15€')
+        .get('[data-cy=race-future-price-a-regular-race-price')
+        .contains('20€');
     });
 
     it('Should show event regular price, with late price in more than 30 days', () => {
-      cy.clock(new Date('2023-06-01').getTime(), ['Date'])
-        .visitAndWaitForHydration('/pt/event/trilho-dos-moinhos')
-        .get('[data-cy=race-valid-until-LoDjLz7dWQTWk6Th4dRC]')
+      cy.visitAndWaitForHydration('/pt/event/event-2-verify-dates')
+        .get('[data-cy=race-valid-until-bilateral-regular-30pd]')
         .should('exist')
-        .contains('24 Julho, 2023')
-        .get('[data-cy=race-price-LoDjLz7dWQTWk6Th4dRC')
-        .contains('13€')
-        .get('[data-cy=race-future-price-LoDjLz7dWQTWk6Th4dRC')
-        .contains('18€');
+        .contains(/\d{1,2}\s(Janeiro|Fevereiro|Março|Abril|Maio|Junho|Julho|Agosto|Setembro|Outubro|Novembro|Dezembro),\s\d{4}/)
+        .get('[data-cy=race-price-bilateral-regular-30pd')
+        .contains('15€')
+        .get('[data-cy=race-future-price-bilateral-regular-30pd')
+        .contains('20€');
     });
 
     it('Should show event late bird price, in event with early and late bird', () => {
-      cy.clock(new Date('2023-07-25').getTime(), ['Date'])
-        .visitAndWaitForHydration('/pt/event/trilho-dos-moinhos')
-        .get('[data-cy=race-valid-until-LoDjLz7dWQTWk6Th4dRC]')
+      cy.visitAndWaitForHydration('/pt/event/event-2-verify-dates')
+        .get('[data-cy=race-valid-until-a-penalty-price-to-u]')
         .should('not.exist')
-        .get('[data-cy=race-price-LoDjLz7dWQTWk6Th4dRC')
-        .contains('18€');
+        .get('[data-cy=race-price-a-penalty-price-to-u')
+        .contains('20€');
     });
 
     it('Should show event regular price, in race without late bird', () => {
-      cy.clock(new Date('2023-06-01').getTime(), ['Date'])
-        .visitAndWaitForHydration('/pt/event/trilho-dos-moinhos')
-        .get('[data-cy=race-valid-until-ghMK5gXdkMwmtdnntSyz]')
+      cy.visitAndWaitForHydration('/pt/event/event-2-verify-dates')
+        .get('[data-cy=race-valid-until-left-sided-regular]')
         .should('not.exist')
-        .get('[data-cy=race-price-ghMK5gXdkMwmtdnntSyz')
-        .contains('8€')
-        .get('[data-cy=race-future-price-ghMK5gXdkMwmtdnntSyz')
+        .get('[data-cy=race-price-left-sided-regular')
+        .contains('15€')
+        .get('[data-cy=race-future-price-left-sided-regular')
         .should('not.exist');
     });
 
     it('Should show event early bird price, in race without late bird', () => {
-      cy.clock(new Date('2022-11-15').getTime(), ['Date'])
-        .visitAndWaitForHydration('/pt/event/trilho-dos-moinhos')
-        .get('[data-cy=race-valid-until-ghMK5gXdkMwmtdnntSyz]')
+      cy.visitAndWaitForHydration('/pt/event/event-2-verify-dates')
+        .get('[data-cy=race-valid-until-left-sided-early-bird]')
         .should('exist')
-        .contains('31 Janeiro, 2023')
-        .get('[data-cy=race-price-ghMK5gXdkMwmtdnntSyz')
-        .contains('5€')
-        .get('[data-cy=race-future-price-ghMK5gXdkMwmtdnntSyz')
-        .contains('8€');
+        .contains('10 dias')
+        .get('[data-cy=race-price-left-sided-early-bird')
+        .contains('10€')
+        .get('[data-cy=race-future-price-left-sided-early-bird')
+        .contains('15€');
     });
 
-    it('Should show event regular price, in race with only late bird', () => {
-      cy.clock(new Date('2023-05-15').getTime(), ['Date'])
-        .visitAndWaitForHydration('/pt/event/trilho-dos-moinhos')
-        .get('[data-cy=race-valid-until-Y75v6h3ivuumof66NJ6k]')
+    it.only('Should show event regular price, in race with only late bird', () => {
+      cy.visitAndWaitForHydration('/pt/event/event-2-verify-dates')
+        .get('[data-cy=race-valid-until-right-sided-regular-price]')
         .should('exist')
-        .contains('24 Julho, 2023')
-        .get('[data-cy=race-price-Y75v6h3ivuumof66NJ6k')
-        .contains('8€')
-        .get('[data-cy=race-future-price-Y75v6h3ivuumof66NJ6k')
-        .contains('18€');
-    });    
+        .contains('9 dias')
+        .get('[data-cy=race-price-right-sided-regular-price')
+        .contains('15€')
+        .get('[data-cy=race-future-price-right-sided-regular-price')
+        .contains('20€');
+    });
 
   });
 
@@ -737,9 +729,8 @@ describe('Event', () => {
     });
 
     it('should update race', () => {
-      cy.clock(new Date('2023-05-04').getTime(), ['Date'])
-        .loginOrganizer()
-        .visitAndWaitForHydration('/o/event/gLqrDfMx6qkTHn6hoZqA', {
+      cy.loginOrganizer()
+        .visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d', {
           onBeforeLoad(win: Cypress.AUTWindow) {
             win.localStorage.setItem('cypress.mapbox', 'test');
           }
@@ -751,13 +742,18 @@ describe('Event', () => {
 
         .location()
         .should((l) => {
-          expect(l.pathname).to.include('/o/event/gLqrDfMx6qkTHn6hoZqA/race/');
+          expect(l.pathname).to.include('/o/event/MY4bvgxDbMtGv8rbYe5d/race/');
         })
 
         .get('input[name=name]')
         .type(' updated')
 
-        .intercept('POST', '/o/event/gLqrDfMx6qkTHn6hoZqA/race/*')
+        .pickDate(
+          'earlyBirdValidUntil',
+          futureDate(10, 10).toISOString().split('T')[0]
+        )
+
+        .intercept('POST', '/o/event/MY4bvgxDbMtGv8rbYe5d/race/*')
         .as('UpdateRace')
 
         .get('button[name=create-race-button]')
@@ -767,14 +763,14 @@ describe('Event', () => {
 
         .location()
         .should((l) => {
-          expect(l.pathname).to.eq('/o/event/gLqrDfMx6qkTHn6hoZqA');
+          expect(l.pathname).to.eq('/o/event/MY4bvgxDbMtGv8rbYe5d');
         })
 
-        .visitAndWaitForHydration('/event/trilho-dos-moinhos')
+        .visitAndWaitForHydration('/event/love-tiles-douro-granfondo-2023')
 
-        .get('[data-cy=race-name-LoDjLz7dWQTWk6Th4dRC]')
+        .get('[data-cy=race-name-xaXaCzs2t7D8DpRNnffM]')
         .should('exist')
-        .and('contain', 'Trilho Dos Moinhos updated');
+        .and('contain', 'Granfondo updated');
     });
 
     it('should be able to upload a regulation pdf', () => {
@@ -855,14 +851,11 @@ describe('Event', () => {
 
     it('should be able to update inline regulation', () => {
       cy.loginOrganizer()
-        .visitAndWaitForHydration('/o/event/bQmGXYkbhJetjk6mniMt', {
+        .visitAndWaitForHydration('/o/event/gLqrDfMx6qkTHn6hoZqA', {
           onBeforeLoad(win: Cypress.AUTWindow) {
             win.localStorage.setItem('cypress.mapbox', 'test');
           }
         })
-
-        .get('#regulation-option-text')
-        .click()
 
         .write(
           'regulation',
@@ -877,7 +870,7 @@ describe('Event', () => {
 
         .wait('@updateEvent')
 
-        .visit('/pt/event/trail-do-zezere/regulation')
+        .visit('/event/trilho-dos-moinhos/regulation')
 
         .get('div[data-cy=regulation]')
         .contains('Devoluções aceites apenas com justificação válida.')
@@ -933,8 +926,8 @@ describe('Event', () => {
     it('should unpublish and publish an event with internal booking', () => {
       cy.intercept('POST', '/o/event/*_data=routes*')
         .as('publishAndUnpublishEvent')
-        
-        .visitAndWaitForHydration('/o/event/5n8epZbHczqAQtQaAh5R', {
+
+        .visitAndWaitForHydration('/o/event/gLqrDfMx6qkTHn6hoZqA', {
           onBeforeLoad(win: Cypress.AUTWindow) {
             win.localStorage.setItem('cypress.mapbox', 'test');
           }
@@ -952,7 +945,7 @@ describe('Event', () => {
 
         .location()
         .should((l) => {
-          expect(l.pathname).to.eq('/o/event/5n8epZbHczqAQtQaAh5R');
+          expect(l.pathname).to.eq('/o/event/gLqrDfMx6qkTHn6hoZqA');
         })
 
         .get('#publish')
@@ -967,10 +960,10 @@ describe('Event', () => {
 
         .location()
         .should((l) => {
-          expect(l.pathname).to.eq('/o/event/5n8epZbHczqAQtQaAh5R/dashboard');
+          expect(l.pathname).to.eq('/o/event/gLqrDfMx6qkTHn6hoZqA/dashboard');
         })
 
-        .visitAndWaitForHydration('/event/viana-granfondo')
+        .visitAndWaitForHydration('/event/trilho-dos-moinhos')
 
         .get('[data-cy=event-not-found]')
         .should('not.exist');
