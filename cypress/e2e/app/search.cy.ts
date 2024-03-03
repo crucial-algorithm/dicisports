@@ -335,7 +335,7 @@ describe('Search', () => {
           .should('include', 'g=hide')
 
           .get('[data-cy=event-entry]')
-          .should('have.length', 5);
+          .should('have.length', 6);
       });
 
       it('should return Morning groups', () => {
@@ -362,7 +362,7 @@ describe('Search', () => {
           })
 
           .get('[data-cy=total-results]')
-          .contains('26');
+          .contains('27');
       });
 
       it('should return Afternoon groups', () => {
@@ -426,7 +426,7 @@ describe('Search', () => {
           })
 
           .get('[data-cy=group-schedule]')
-          .should('have.length', 5);
+          .should('have.length', 4);
       });
 
       it('should return groups from each day of the week', () => {
