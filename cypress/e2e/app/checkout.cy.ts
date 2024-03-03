@@ -345,6 +345,64 @@ describe('Checkout', () => {
         .contains('1');
     });
 
+    it('should apply regular price to booking', () => {
+      cy.visitAndWaitForHydration('/pt/event/event-2-verify-dates')
+
+      .intercept('GET', '/checkout/create*')
+      .as('CreateBooking')
+
+      .get('button[name=race-a-regular-race-price]')
+      .click()
+
+      .wait('@CreateBooking')
+
+      .location()
+      .should((l) => {
+        expect(l.pathname).to.include('/checkout/info');
+      })
+      .get('[data-cy=total-price]')
+      .contains('15€');
+    });
+
+    it('should apply early bird price to booking', () => {
+      cy.visitAndWaitForHydration('/pt/event/event-2-verify-dates')
+
+      .intercept('GET', '/checkout/create*')
+      .as('CreateBooking')
+
+      .get('button[name=race-a-early-bird-pricexx]')
+      .click()
+
+      .wait('@CreateBooking')
+
+      .location()
+      .should((l) => {
+        expect(l.pathname).to.include('/checkout/info');
+      })
+      .get('[data-cy=total-price]')
+      .contains('10€');
+    });
+
+    it('should apply late bird price to booking', () => {
+      cy.visitAndWaitForHydration('/pt/event/event-2-verify-dates')
+
+      .intercept('GET', '/checkout/create*')
+      .as('CreateBooking')
+
+      .get('button[name=race-a-penalty-price-to-u]')
+      .click()
+
+      .wait('@CreateBooking')
+
+      .location()
+      .should((l) => {
+        expect(l.pathname).to.include('/checkout/info');
+      })
+      .get('[data-cy=total-price]')
+      .contains('20€');
+    });
+
+
     it('Should fill form and save participant', () => {
       registerParticipant('trail-do-zezere', 'Rd9SETi59X9ava6CPhkY');
     });
@@ -1279,26 +1337,6 @@ describe('Checkout', () => {
             '/checkout/confirmation/e8pHPLNjnNxKTzoGwtLh'
           );
         });
-    });
-
-    it('should add price early bird to cart if it is still valid', () => {
-      cy.intercept('GET', '/checkout/create*')
-        .as('selectRace')
-
-        .visitAndWaitForHydration('/event/love-tiles-douro-granfondo-2023')
-
-        .get('button[name=race-xaXaCzs2t7D8DpRNnffM]')
-        .click()
-
-        .wait('@selectRace')
-
-        .location()
-        .should((l) => {
-          expect(l.pathname).to.include('/checkout/info/');
-        })
-
-        .get('#xaXaCzs2t7D8DpRNnffM-price')
-        .contains('15€');
     });
 
     context('should not be able to update booking', () => {

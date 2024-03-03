@@ -24,6 +24,8 @@ async function createRace(race: CreateRaceInput): Promise<Race> {
       price: race.price,
       priceEarlyBird: race.priceEarlyBird,
       validUntil: race.validUntil,
+      priceLateBird: race.priceLateBird,
+      applyAfter: race.applyAfter,
       raceDescription: race.raceDescription,
       track: race.track,
       eventId: race.eventId
@@ -60,6 +62,8 @@ async function updateRace(
     price: race.price,
     priceEarlyBird: race.priceEarlyBird,
     validUntil: race.validUntil,
+    priceLateBird: race.priceLateBird,
+    applyAfter: race.applyAfter,
     raceDescription: race.raceDescription,
     displayOrder: race.displayOrder as number
   };
