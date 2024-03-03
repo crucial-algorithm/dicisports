@@ -18,7 +18,7 @@
   "See More": "ver mais",
   "See Less": "ver menos",
   "Description": "Descrição",
-  "GPX": "Ficheiro GPX",
+  "GPX": "Transferir GPX",
   "Elevation Gain": "Ganho de elevação",
   "Elevation Loss": "Perda de elevação",
   "No Races": "Nenhuma corrida encontrada",
@@ -32,10 +32,16 @@
   "Booking Closed": "Inscrições encerradas",
 
   "Undefined": "Não definido",
-  "Valid During": "Desconto termina daqui a",
-  "Valid Until": "Desconto válido até",
+  "Early Bird Valid During": "Desconto termina daqui a",
+  "Early Bird Valid Until": "Desconto válido até",
+
+  "Late Bird Valid During": "Preço aumenta daqui a",
+  "Late Bird Valid Until": "Preço válido até",
+  
   "Valid Days": "{{total}} dias",
   "Valid Day": "{{total}} dia",
+
+
 
   "Click for full size image": "(Clica para aumentar)",
   "Open map": "(ver mapa)",

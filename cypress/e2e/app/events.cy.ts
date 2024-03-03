@@ -116,38 +116,95 @@ describe('Event', () => {
     });
 
     it('Should show error message when accessing an non existing event', () => {
-      cy.visitAndWaitForHydration('/event/non-existing-event').get(
+      cy.visitAndWaitForHydration('/pt/event/non-existing-event').get(
         'p[data-cy=event-not-found'
       );
     });
 
-    it('Should delete event', () => {
-      cy.loginOrganizer()
-        .visitAndWaitForHydration('/o/event/bQmGXYkbhJetjk6mniMt')
-
-        .intercept('POST', '/o/event/bQmGXYkbhJetjk6mniMt*')
-        .as('DeleteEvent')
-
-        .get('button[name=delete-button]')
-        .click()
-
-        .get('.cy-delete-dialog')
+    it('Should show event early bird price, less than 30 days before early bird end', () => {
+      cy.visitAndWaitForHydration('/pt/event/event-2-verify-dates')
+        .get('[data-cy=race-valid-until-bilateral-early-30-d]')
         .should('exist')
+        .contains('5 dias')
+        .get('[data-cy=race-price-bilateral-early-30-d')
+        .contains('10€')
+        .get('[data-cy=race-future-price-bilateral-early-30-d')
+        .contains('15€');
+    });
 
-        .get('button.cy-primary')
+    it('Should show event early bird price, more than 30 days before early bird end', () => {
+      cy.visitAndWaitForHydration('/pt/event/event-2-verify-dates')
+        .get('[data-cy=race-valid-until-bilateral-early-30pd]')
         .should('exist')
-        .click()
+        .contains(/\d{1,2}\s(Janeiro|Fevereiro|Março|Abril|Maio|Junho|Julho|Agosto|Setembro|Outubro|Novembro|Dezembro),\s\d{4}/)
+        .get('[data-cy=race-price-bilateral-early-30pd')
+        .contains('10€')
+        .get('[data-cy=race-future-price-bilateral-early-30pd')
+        .contains('15€');
+    });
 
-        .wait('@DeleteEvent')
+    it('Should show event in regular price, with late price comming in less than 30 days', () => {
+      cy.visitAndWaitForHydration('/pt/event/event-2-verify-dates')
+        .get('[data-cy=race-valid-until-a-regular-race-price]')
+        .should('exist')
+        .contains('4 dias')
+        .get('[data-cy=race-price-a-regular-race-price')
+        .contains('15€')
+        .get('[data-cy=race-future-price-a-regular-race-price')
+        .contains('20€');
+    });
 
-        .location()
-        .should((l) => {
-          expect(l.pathname).to.eq('/o');
-        })
+    it('Should show event regular price, with late price in more than 30 days', () => {
+      cy.visitAndWaitForHydration('/pt/event/event-2-verify-dates')
+        .get('[data-cy=race-valid-until-bilateral-regular-30pd]')
+        .should('exist')
+        .contains(/\d{1,2}\s(Janeiro|Fevereiro|Março|Abril|Maio|Junho|Julho|Agosto|Setembro|Outubro|Novembro|Dezembro),\s\d{4}/)
+        .get('[data-cy=race-price-bilateral-regular-30pd')
+        .contains('15€')
+        .get('[data-cy=race-future-price-bilateral-regular-30pd')
+        .contains('20€');
+    });
 
-        .get('[data-cy=event-bQmGXYkbhJetjk6mniMt]')
+    it('Should show event late bird price, in event with early and late bird', () => {
+      cy.visitAndWaitForHydration('/pt/event/event-2-verify-dates')
+        .get('[data-cy=race-valid-until-a-penalty-price-to-u]')
+        .should('not.exist')
+        .get('[data-cy=race-price-a-penalty-price-to-u')
+        .contains('20€');
+    });
+
+    it('Should show event regular price, in race without late bird', () => {
+      cy.visitAndWaitForHydration('/pt/event/event-2-verify-dates')
+        .get('[data-cy=race-valid-until-left-sided-regular]')
+        .should('not.exist')
+        .get('[data-cy=race-price-left-sided-regular')
+        .contains('15€')
+        .get('[data-cy=race-future-price-left-sided-regular')
         .should('not.exist');
     });
+
+    it('Should show event early bird price, in race without late bird', () => {
+      cy.visitAndWaitForHydration('/pt/event/event-2-verify-dates')
+        .get('[data-cy=race-valid-until-left-sided-early-bird]')
+        .should('exist')
+        .contains('10 dias')
+        .get('[data-cy=race-price-left-sided-early-bird')
+        .contains('10€')
+        .get('[data-cy=race-future-price-left-sided-early-bird')
+        .contains('15€');
+    });
+
+    it('Should show event regular price, in race with only late bird', () => {
+      cy.visitAndWaitForHydration('/pt/event/event-2-verify-dates')
+        .get('[data-cy=race-valid-until-right-sided-regular-price]')
+        .should('exist')
+        .contains('9 dias')
+        .get('[data-cy=race-price-right-sided-regular-price')
+        .contains('15€')
+        .get('[data-cy=race-future-price-right-sided-regular-price')
+        .contains('20€');
+    });
+
   });
 
   context('Security', () => {
@@ -679,7 +736,8 @@ describe('Event', () => {
           }
         })
 
-        .get('[data-cy=race-xaXaCzs2t7D8DpRNnffM]')
+        .get('[data-cy=race-index-2]') // pick link directly, not parent element 😒
+        .should('exist')
         .click()
 
         .location()
@@ -690,11 +748,6 @@ describe('Event', () => {
         .get('input[name=name]')
         .type(' updated')
 
-        .pickDate(
-          'earlyBirdValidUntil',
-          futureDate(10, 10).toISOString().split('T')[0]
-        )
-
         .intercept('POST', '/o/event/MY4bvgxDbMtGv8rbYe5d/race/*')
         .as('UpdateRace')
 
@@ -703,16 +756,16 @@ describe('Event', () => {
 
         .wait('@UpdateRace')
 
-        .location()
-        .should((l) => {
-          expect(l.pathname).to.eq('/o/event/MY4bvgxDbMtGv8rbYe5d');
-        })
+       .location()
+       .should((l) => {
+         expect(l.pathname).to.eq('/o/event/MY4bvgxDbMtGv8rbYe5d');
+       })
 
-        .visitAndWaitForHydration('/event/love-tiles-douro-granfondo-2023')
+       .visitAndWaitForHydration('/event/love-tiles-douro-granfondo-2023')
 
-        .get('[data-cy=race-name-xaXaCzs2t7D8DpRNnffM]')
-        .should('exist')
-        .and('contain', 'Granfondo updated');
+       .get('[data-cy=race-name-xaXaCzs2t7D8DpRNnffM]')
+       .should('exist')
+       .and('contain', 'Granfondo updated');
     });
 
     it('should be able to upload a regulation pdf', () => {
@@ -815,7 +868,8 @@ describe('Event', () => {
         .visit('/event/trilho-dos-moinhos/regulation')
 
         .get('div[data-cy=regulation]')
-        .contains('Devoluções aceites apenas com justificação válida.');
+        .contains('Devoluções aceites apenas com justificação válida.')
+        ;
     });
 
     it('should create race without price early bird', () => {
@@ -1240,6 +1294,34 @@ describe('Event', () => {
         .then((link) => {
           cy.request(link.prop('href')).its('status').should('eq', 200);
         });
+    });
+
+    it('Should delete event', () => {
+      cy.loginOrganizer()
+        .visitAndWaitForHydration('/o/event/bQmGXYkbhJetjk6mniMt')
+
+        .intercept('POST', '/o/event/bQmGXYkbhJetjk6mniMt*')
+        .as('DeleteEvent')
+
+        .get('button[name=delete-button]')
+        .click()
+
+        .get('.cy-delete-dialog')
+        .should('exist')
+
+        .get('button.cy-primary')
+        .should('exist')
+        .click()
+
+        .wait('@DeleteEvent')
+
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.eq('/o');
+        })
+
+        .get('[data-cy=event-bQmGXYkbhJetjk6mniMt]')
+        .should('not.exist');
     });
   });
 });

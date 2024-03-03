@@ -45,11 +45,7 @@ import Button, { ButtonLink } from '~/components/shared/Button';
 import { getUser } from '~/server/auth/session.server';
 import { Notification } from '~/components/shared/NotificationMessage';
 import DisplayImg from '~/components/shared/DisplayImg';
-import type {
-  Language,
-  TranslationObject,
-  User
-} from '~/types';
+import type { Language, TranslationObject, User } from '~/types';
 import { findEventRaces } from '~/server/db/races.server';
 import DisplayDate from '~/components/shared/DIsplayDate';
 import { displayTimeOfDay } from '~/utils/misc';
@@ -321,6 +317,123 @@ type DisplayRaceProps = {
   externalBookingUrl?: string | null;
 };
 
+function calculatePriceStructure(race: Race) {
+
+  if (race.priceEarlyBird && race.validUntil) {
+    const daysUntilEnd = Math.floor(
+      (new Date(race.validUntil).getTime() - Date.now() + 86400 * 1000) /
+        (1000 * 60 * 60 * 24)
+    );
+
+    if (daysUntilEnd > 0) {
+      return {
+        price: race.price,
+        discountPrice: race.priceEarlyBird,
+        daysUntilEnd,
+        discountDateEnd: race.validUntil,
+        earlyBird: true
+      };
+    }
+  }
+
+  if (race.priceLateBird && race.applyAfter) {
+    const daysUntilEnd = Math.floor(
+      (new Date(race.applyAfter).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
+    );
+
+    if (daysUntilEnd > 0) {
+      return {
+        price: race.priceLateBird,
+        discountPrice: race.price,
+        daysUntilEnd: daysUntilEnd,
+        discountDateEnd: race.applyAfter,
+        earlyBird: false
+      };
+    }
+
+    return {
+      price: race.priceLateBird,
+      discountPrice: null,
+      daysUntilEnd: null,
+      discountDateEnd: null,
+      earlyBird: false
+    };
+  }
+
+  return {
+    price: race.price,
+    discountPrice: null,
+    daysUntilEnd: null,
+    discountDateEnd: null,
+    earlyBird: false
+  };
+}
+
+type DisplayPriceProps = {
+  race: Race;
+  t: TFunction;
+};
+
+function DisplayPrice({ race, t }: DisplayPriceProps) {
+  const { discountPrice, price, daysUntilEnd, discountDateEnd, earlyBird } =
+    calculatePriceStructure(race);
+  const inDiscount = discountPrice && daysUntilEnd;
+  const translations = {
+    early: {
+      prefixDate: 'Early Bird Valid Until',
+      prefixDays: 'Early Bird Valid During'
+    },
+    late: {
+      prefixDate: 'Late Bird Valid Until',
+      prefixDays: 'Late Bird Valid During'
+    }
+  }[earlyBird ? 'early' : 'late'];
+
+
+  return (
+    <>
+      {inDiscount ? (
+        <>
+          <div className="flex flex-row gap-x-5 items-end px-28">
+            <H5
+              className="dark:text-blueGray-500 line-through"
+              data-cy={`race-future-price-${race.id}`}
+            >
+              {price / 1000}€
+            </H5>
+            <H3 data-cy={`race-price-${race.id}`}>{discountPrice / 1000}€</H3>
+          </div>
+
+          <div className="border-b h-2 w-48 mb-2" />
+
+          <div>
+            {/*if early bird price deadline is bigger than 30 days, we'll show the date instead of days*/}
+            <p className="text-sm font-medium dark:text-white">
+              {daysUntilEnd < 30 ? t(translations.prefixDays) : t(translations.prefixDate)}
+            </p>
+            <p
+              className="text-sm font-medium dark:text-blueGray-500"
+              data-cy={`race-valid-until-${race.id}`}
+            >
+              {daysUntilEnd < 30 ? (
+                t(daysUntilEnd === 1 ? 'Valid Day' : 'Valid Days', {
+                  total: daysUntilEnd
+                })
+              ) : (
+                <DisplayDate date={new Date(String(discountDateEnd))} />
+              )}
+            </p>
+          </div>
+        </>
+      ) : (
+        <H3 className="items-center" data-cy={`race-price-${race.id}`}>
+          {price / 1000}€
+        </H3>
+      )}
+    </>
+  );
+}
+
 function DisplayRace({
   race,
   index,
@@ -332,18 +445,6 @@ function DisplayRace({
   const { t } = useTranslation('event');
   const raceTime = displayTimeOfDay(race.startTime);
   const [expanded, setExpanded] = useState<boolean>(false);
-  let validDuring: number | null = null;
-  let isEarlyPriceValid = false;
-
-  if (race.priceEarlyBird && race.validUntil) {
-    // calculate the difference in milliseconds (+ 1 day, given the user selects an end date that is part of range)
-    const diffInMs =
-      new Date(race.validUntil).getTime() - Date.now() + 86400 * 1000;
-
-    // convert the difference to days
-    validDuring = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
-    isEarlyPriceValid = validDuring > 0;
-  }
 
   function handleSeeMore() {
     expanded ? setExpanded(false) : setExpanded(true);
@@ -379,52 +480,8 @@ function DisplayRace({
             {raceTime}
           </H5>
         </div>
-        <div
-          className={clsx('flex flex-col items-center justify-center', {
-            'mb-0': expanded && !isEarlyPriceValid,
-            'mb-2': expanded && !isEarlyPriceValid
-          })}
-        >
-          {isEarlyPriceValid && validDuring ? (
-            <>
-              <div className="flex flex-row gap-x-5 items-end px-28">
-                <H5
-                  className="dark:text-blueGray-500 line-through"
-                  data-cy={`race-price-${race.id}`}
-                >
-                  {race.price / 1000}€
-                </H5>
-                <H3 data-cy={`race-price-${race.id}`}>
-                  {(race.priceEarlyBird || 0) / 1000}€
-                </H3>
-              </div>
-
-              <div className="border-b h-2 w-48 mb-2" />
-
-              <div>
-                {/*if early bird price deadline is bigger than 30 days, we'll show the date instead of days*/}
-                <p className="text-sm font-medium dark:text-white">
-                  {validDuring < 30 ? t('Valid During') : t('Valid Until')}
-                </p>
-                <p
-                  className="text-sm font-medium dark:text-blueGray-500"
-                  data-cy={`race-valid-until-${race.id}`}
-                >
-                  {validDuring < 30 ? (
-                    t(validDuring === 1 ? 'Valid Day' : 'Valid Days', {
-                      total: validDuring
-                    })
-                  ) : (
-                    <DisplayDate date={new Date(String(race.validUntil))} />
-                  )}
-                </p>
-              </div>
-            </>
-          ) : (
-            <H3 className="items-center" data-cy={`race-price-${race.id}`}>
-              {race.price / 1000}€
-            </H3>
-          )}
+        <div className={clsx('flex flex-col items-center justify-center')}>
+          <DisplayPrice race={race} t={t} />
         </div>
         {expanded && (
           <>
@@ -466,7 +523,7 @@ function DisplayRace({
                 data-cy={`gpx-${race.id}`}
                 download
               >
-                <H4 className="my-4 dark:text-blueGray-500">{t('GPX')}</H4>
+                <H4 className="my-4 underline dark:text-blueGray-500">{t('GPX')}</H4>
               </Link>
             )}
           </>
@@ -727,9 +784,7 @@ function EventHeader({
           >
             <H6 className="ml-4 mr-2 md:ml-2">
               <span data-cy="location">{event.placeName}</span>
-              {location && location.place && (
-                <>,&nbsp;{location.place}</>
-              )}
+              {location && location.place && <>,&nbsp;{location.place}</>}
               <span className="text-sm link">&nbsp;{t('Open map')}</span>
             </H6>
           </a>
