@@ -98,7 +98,7 @@ import type {
   Sport,
   User
 } from '~/types';
-import { badRequest, formHelperReadDate } from '~/utils/misc';
+import { badRequest, fetcherType, formHelperReadDate } from '~/utils/misc';
 import UploadFile from '~/components/UploadFile';
 import { findConfirmedBookings } from '~/server/db/booking.server';
 
@@ -730,12 +730,14 @@ export default function OrganizerEventRoute() {
   let resetFormToNonDirty: () => void | null;
 
   useEffect(() => {
-    if (fetcher?.data?.ok && fetcher?.type === 'actionReload') {
+    const typeOfFetcher = fetcherType(fetcher);
+
+    if (fetcher?.data?.ok && typeOfFetcher === 'actionReload') {
       fileUploadHandlerEvent?.options?.clear();
       setRegulationError(null);
     }
 
-    if (fetcher?.data?.errors && fetcher?.type === 'actionReload') {
+    if (fetcher?.data?.errors && typeOfFetcher === 'actionReload') {
       fileUploadHandlerEvent?.options?.clear();
       setRegulationError(t('Invalid File Type'));
     }

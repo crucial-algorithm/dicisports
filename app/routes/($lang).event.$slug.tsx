@@ -52,7 +52,7 @@ import type {
 } from '~/types';
 import { findEventRaces } from '~/server/db/races.server';
 import DisplayDate from '~/components/shared/DIsplayDate';
-import { displayTimeOfDay } from '~/utils/misc';
+import { displayTimeOfDay, fetcherType } from '~/utils/misc';
 import { findEventPerks } from '~/server/db/perks.server';
 import WhenListEmpty from '~/components/shared/Empty';
 import { getI18nText } from '~/components/I18nText';
@@ -614,7 +614,9 @@ function EventHeader({
   }
 
   useEffect(() => {
-    if (favorite.type === 'actionReload' && favorite.data.ok) {
+    const typeOfFetcher = fetcherType(favorite);
+
+    if (typeOfFetcher === 'actionReload' && favorite.data.ok) {
       setMessage(
         favorite.data.action === actions.add
           ? favoriteAddedMessage

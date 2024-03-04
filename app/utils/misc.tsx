@@ -1,6 +1,6 @@
 import { fileTypeFromBuffer } from 'file-type';
 
-import { json } from '@remix-run/react';
+import { FetcherWithComponents, json } from '@remix-run/react';
 import type { Booking } from '@prisma/client';
 
 import type {
@@ -319,6 +319,56 @@ function formHelperReadDate(form: FormData, field: string) {
     : undefined;
 }
 
+function fetcherType(fetcher: FetcherWithComponents<any>): string {
+  // fetcher.type === "init"
+  if (fetcher.state === 'idle' && fetcher.data == null) {
+    return 'init';
+  }
+
+  // fetcher.type === "done"
+  if (fetcher.state === 'idle' && fetcher.data != null) {
+    return 'done';
+  }
+
+  // fetcher.type === "actionSubmission"
+  if (fetcher.state === 'submitting') {
+    return 'actionSubmission';
+  }
+
+  // fetcher.type === "actionReload"
+  if (
+    fetcher.state === 'loading' &&
+    fetcher.formMethod != null &&
+    fetcher.formMethod != 'GET' &&
+    fetcher.data != null
+  ) {
+    return 'actionReload';
+  }
+
+  // fetcher.type === "actionRedirect"
+  if (
+    fetcher.state === 'loading' &&
+    fetcher.formMethod != null &&
+    fetcher.formMethod != 'GET' &&
+    fetcher.data == null
+  ) {
+    return 'actionRedirect';
+  }
+
+  // fetcher.type === "loaderSubmission"
+  if (fetcher.state === 'loading' && fetcher.formMethod === 'GET') {
+    return 'loaderSubmission';
+  }
+
+  // fetcher.type === "normalLoad"
+  if (fetcher.state === 'loading' && fetcher.formMethod == null) {
+    return 'normalLoad';
+  }
+
+  // Default case if none of the conditions match
+  return 'unknown';
+}
+
 export {
   getDomainUrl,
   getErrorMessage,
@@ -339,5 +389,6 @@ export {
   bookingRedirectRoute,
   maintainBookingLocalStorageMetaData,
   fileTypeFromUploadHandlerData,
-  formHelperReadDate
+  formHelperReadDate,
+  fetcherType
 };

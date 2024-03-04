@@ -66,7 +66,7 @@ import i18n from '~/server/i18n.server';
 import type { UICartRow } from '~/types';
 import {
   badRequest,
-  displayTimeOfDay,
+  displayTimeOfDay, fetcherType,
   formHelperReadDate,
   validateIdentityCard,
   validatePtVatNumber
@@ -743,23 +743,25 @@ export default function CheckoutInfoRoute() {
   }
 
   useEffect(() => {
+    const typeOfFetcher = fetcherType(fetcher);
+
     if (
-      fetcher.type === 'actionReload' &&
-      fetcher.data.ok &&
-      fetcher.data.action === CheckoutInfoActions.removeParticipant &&
-      fetcher.data.raceParticipant
+      typeOfFetcher === 'actionReload' &&
+      fetcher.data?.ok &&
+      fetcher.data?.action === CheckoutInfoActions.removeParticipant &&
+      fetcher.data?.raceParticipant
     ) {
       setMessage(t('Participant Removed'));
       showNotification();
 
-      return reset(fetcher.data.raceParticipant);
+      return reset(fetcher.data?.raceParticipant);
     }
 
     if (
-      fetcher.type === 'actionReload' &&
-      fetcher.data.ok &&
-      fetcher.data.action === CheckoutInfoActions.update &&
-      fetcher.data.raceParticipant
+      typeOfFetcher === 'actionReload' &&
+      fetcher.data?.ok &&
+      fetcher.data?.action === CheckoutInfoActions.update &&
+      fetcher.data?.raceParticipant
     ) {
       setMessage(t('Participant Saved'));
       showNotification();
@@ -768,9 +770,9 @@ export default function CheckoutInfoRoute() {
     }
 
     if (
-      fetcher.type === 'actionReload' &&
-      fetcher.data.ok &&
-      fetcher.data.action === CheckoutInfoActions.updateAndSave
+      typeOfFetcher === 'actionReload' &&
+      fetcher.data?.ok &&
+      fetcher.data?.action === CheckoutInfoActions.updateAndSave
     ) {
       setMessage(t('Participant Saved and Updated'));
       showNotification();
@@ -779,7 +781,7 @@ export default function CheckoutInfoRoute() {
     }
 
     if (
-      fetcher.type === 'actionReload' &&
+      typeOfFetcher === 'actionReload' &&
       fetcher.data?.errors &&
       fetcher.data?.hash === hash &&
       fetcher.data?.missingParticipants
@@ -790,7 +792,7 @@ export default function CheckoutInfoRoute() {
     }
 
     if (
-      fetcher.type === 'done' &&
+      typeOfFetcher === 'done' &&
       fetcher.data?.errors &&
       fetcher.data?.hash === hash
     ) {
@@ -1115,8 +1117,10 @@ function AddRacesDialog({
   }
 
   useEffect(() => {
+    const typeOfFetcher = fetcherType(fetcher);
+
     if (
-      fetcher.type === 'actionReload' &&
+      typeOfFetcher === 'actionReload' &&
       fetcher.data.ok &&
       fetcher.data?.action === CheckoutInfoActions.addParticipants
     ) {

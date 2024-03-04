@@ -11,6 +11,7 @@ import ButtonGroup from '~/components/shared/ButtonGroup';
 import CopyToClipboard from '~/components/shared/CopyToClipboard';
 import { Notification } from '~/components/shared/NotificationMessage';
 import type { SearchResults } from '~/types';
+import { fetcherType } from '~/utils/misc';
 
 export default function EventResult({
   event,
@@ -51,7 +52,9 @@ export default function EventResult({
   }
 
   useEffect(() => {
-    if (favorite.type === 'actionReload' && favorite.data.ok) {
+    const typeOfFetcher = fetcherType(favorite);
+
+    if (typeOfFetcher === 'actionReload' && favorite.data.ok) {
       setMessage(
         favorite.data.action === 'add'
           ? favoriteAddedMessage

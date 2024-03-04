@@ -11,6 +11,7 @@ import CopyToClipboard from '~/components/shared/CopyToClipboard';
 import WhatsApp from '~/components/shared/icons/WhatsApp';
 import { Notification } from '~/components/shared/NotificationMessage';
 import type { Group, SearchResults } from '~/types';
+import { fetcherType } from '~/utils/misc';
 
 export default function GroupResult({
   group,
@@ -56,7 +57,9 @@ export default function GroupResult({
   }
 
   useEffect(() => {
-    if (favorite.type === 'done' && favorite.data.ok) {
+    const typeOfFetcher = fetcherType(favorite);
+
+    if (typeOfFetcher === 'done' && favorite.data.ok) {
       if (ref.current) {
         (ref.current as HTMLFormElement).reset();
       }

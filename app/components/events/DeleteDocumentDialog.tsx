@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import type { Document } from '@prisma/client';
 
 import { ConfirmationDialog } from '~/components/shared/Dialog';
+import { fetcherType } from '~/utils/misc';
 
 const RESOURCES_NS = 'create-event-form';
 
@@ -30,10 +31,12 @@ export default function DeleteDocumentDialog(props: {
   }
 
   useEffect(() => {
-    if (fetcher.type === 'actionReload' && fetcher.data.ok) {
+    const typeOfFetcher = fetcherType(fetcher);
+
+    if (typeOfFetcher === 'actionReload' && fetcher.data?.ok) {
       return onDismiss();
     }
-  });
+  }, [fetcher, onDismiss]);
 
   return (
     <ConfirmationDialog

@@ -42,7 +42,7 @@ import {
 } from '~/server/db/payments.server';
 import type { KCDHandle, UICartRow } from '~/types';
 import { sendBookingConfirmationEmail } from '~/server/email.server';
-import { badRequest, bookingAmount, getDomainUrl } from '~/utils/misc';
+import { badRequest, bookingAmount, fetcherType, getDomainUrl } from '~/utils/misc';
 import i18n from '~/server/i18n.server';
 import { createPaymentTransaction } from '~/server/utils/payments';
 import { useTheme } from '~/utils/theme-provider';
@@ -372,15 +372,17 @@ export default function CheckoutPaymentRoute() {
     );
 
   useEffect(() => {
+    const typeOfFetcher = fetcherType(displayCartFetcher);
+
     if (
-      displayCartFetcher.type === 'actionReload' &&
+      typeOfFetcher === 'actionReload' &&
       displayCartFetcher.data?.errors
     ) {
       return setErrors(displayCartFetcher.data.errors as FormErrors);
     }
 
     if (
-      displayCartFetcher.type === 'actionReload' &&
+      typeOfFetcher === 'actionReload' &&
       displayCartFetcher.data?.ok
     ) {
       return setErrors({});
