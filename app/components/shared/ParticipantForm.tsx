@@ -15,7 +15,7 @@ import TextField from '~/components/shared/form/TextField';
 import countries from '~/server/db/countries.json';
 import type { Language } from '~/types';
 import { DiciInputMask } from '~/components/shared/form/InputMask';
-import { validateIdentityCard } from '~/utils/misc';
+import { validateIdentityCard, validatePtVatNumber } from '~/utils/misc';
 
 export default function ParticipantForm({
   participant,
@@ -54,6 +54,7 @@ export default function ParticipantForm({
       188
   );
   const [isIdentityCardValid, setIdentityCardValid] = useState<boolean>(true);
+  const [isVatNumberValid, setVatNumberValid] = useState<boolean>(true);
 
   const genderOptions = [
     { value: 'F', label: t('Female') },
@@ -86,9 +87,30 @@ export default function ParticipantForm({
     setIdentityCardValid(validateIdentityCard(v));
   }
 
+  function checkIfVatNumberIsValid(v: unknown) {
+
+    if (country !== 188) {
+      return;
+    }
+
+    if (!v) {
+      return;
+    }
+
+    if (String(v).length < 9) {
+      if(!isVatNumberValid) {
+        setVatNumberValid(true);
+      }
+      return;
+    }
+
+    setVatNumberValid(validatePtVatNumber(String(v)));
+  }
+
   React.useEffect(() => {
     setIdentityCardValid(!errors?.identityCard);
-  }, [errors?.identityCard]);
+    setVatNumberValid(!errors?.vatNumber);
+  }, [errors?.identityCard, errors?.vatNumber]);
 
   return (
     <>
@@ -274,7 +296,7 @@ export default function ParticipantForm({
         <FormField
           label={t('VAT Number')}
           id="vat-number"
-          error={errors?.vatNumber}
+          error={isVatNumberValid ? undefined: t('Invalid VAT')}
           dataCy="vatNumber"
         >
           <TextField
@@ -283,6 +305,7 @@ export default function ParticipantForm({
             defaultValue={String(
               selectedParticipant?.vatNumber || participant?.vatNumber
             )}
+            onChange={checkIfVatNumberIsValid}
           />
         </FormField>
       </div>
