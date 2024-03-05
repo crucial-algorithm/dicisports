@@ -15,6 +15,7 @@ import TextField from '~/components/shared/form/TextField';
 import countries from '~/server/db/countries.json';
 import type { Language } from '~/types';
 import { DiciInputMask } from '~/components/shared/form/InputMask';
+import { validateIdentityCard } from '~/utils/misc';
 
 export default function ParticipantForm({
   participant,
@@ -52,6 +53,7 @@ export default function ParticipantForm({
       (participant?.nationality as number) ||
       188
   );
+  const [isIdentityCardValid, setIdentityCardValid] = useState<boolean>(true);
 
   const genderOptions = [
     { value: 'F', label: t('Female') },
@@ -61,6 +63,32 @@ export default function ParticipantForm({
   function onCountryChange(v: string | number) {
     setCountry(v);
   }
+
+  function checkIfIdentityCardIsValid(v: string) {
+
+    if (country !== 188) {
+      return;
+    }
+
+    if (!v) {
+      return;
+    }
+
+    const identityCard = v.replace(/-/g, '').replace(/_/g, '');
+
+    if (identityCard.length < 12) {
+      if (!isIdentityCardValid) {
+        setIdentityCardValid(true);
+      }
+      return;
+    }
+
+    setIdentityCardValid(validateIdentityCard(v));
+  }
+
+  React.useEffect(() => {
+    setIdentityCardValid(!errors?.identityCard);
+  }, [errors?.identityCard]);
 
   return (
     <>
@@ -214,7 +242,7 @@ export default function ParticipantForm({
         <FormField
           label={t('Identity Card')}
           id="identity-card"
-          error={errors?.identityCard}
+          error={isIdentityCardValid ? undefined : t('Invalid CC')}
           dataCy="identityCard"
         >
           {country === 188 && (
@@ -226,6 +254,7 @@ export default function ParticipantForm({
                 selectedParticipant?.identityCard ||
                 undefined
               }
+              onChange={checkIfIdentityCardIsValid}
             />
           )}
           {country !== 188 && (
