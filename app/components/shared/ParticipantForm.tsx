@@ -53,7 +53,7 @@ export default function ParticipantForm({
       (participant?.nationality as number) ||
       188
   );
-  const [isIdentityCardValid, setIdentityCardValid] = useState<boolean>(!errors?.identityCard);
+  const [isIdentityCardValid, setIdentityCardValid] = useState<boolean>(true);
 
   const genderOptions = [
     { value: 'F', label: t('Female') },
@@ -85,6 +85,10 @@ export default function ParticipantForm({
 
     setIdentityCardValid(validateIdentityCard(v));
   }
+
+  React.useEffect(() => {
+    setIdentityCardValid(!errors?.identityCard);
+  }, [errors?.identityCard]);
 
   return (
     <>
