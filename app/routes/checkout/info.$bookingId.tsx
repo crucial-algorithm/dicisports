@@ -235,6 +235,13 @@ export const action: ActionFunction = async ({ request, params }) => {
                 Boolean(idCard)) ||
               Number(data.nationality) !== PT_NATIONALITY_ID,
             t('Field Required')
+          ).refine(
+            // validate identity card for portuguese citizens
+            (idCard) =>
+              Number(data.nationality) !== PT_NATIONALITY_ID
+                ? true
+                : !idCard || validateIdentityCard(idCard),
+            t('Invalid CC')
           ),
         federationNumber: z.number().nullable(),
         vatNumber: z
@@ -247,6 +254,14 @@ export const action: ActionFunction = async ({ request, params }) => {
                 Boolean(vatNumber)) ||
               Number(data.nationality) !== PT_NATIONALITY_ID,
             t('Field Required')
+          )
+          .refine(
+            // validate VAT number for portuguese citizens
+            (vatNumber) =>
+              Number(data.nationality) !== PT_NATIONALITY_ID
+                ? true
+                : !vatNumber || validatePtVatNumber(vatNumber),
+            t('Invalid VAT')
           ),
         nationality: z.number({
           required_error: t('Field Required'),
@@ -305,28 +320,6 @@ export const action: ActionFunction = async ({ request, params }) => {
           Number(nationality) !== PT_NATIONALITY_ID,
         {
           message: t('Field Required'),
-          path: ['vatNumber']
-        }
-      )
-      .refine(
-        // for portuguese participants, validate identity card format
-        ({ identityCard, nationality }) =>
-          Number(nationality) !== PT_NATIONALITY_ID
-            ? true
-            : !identityCard || validateIdentityCard(identityCard),
-        {
-          message: t('Invalid CC'),
-          path: ['identityCard']
-        }
-      )
-      .refine(
-        // for portuguese participants, validate VAT number format
-        ({ vatNumber, nationality }) =>
-          Number(nationality) !== PT_NATIONALITY_ID
-            ? true
-            : !vatNumber || validatePtVatNumber(vatNumber),
-        {
-          message: t('Invalid VAT'),
           path: ['vatNumber']
         }
       );
