@@ -1,5 +1,6 @@
 import clsx from 'clsx';
 import { useState } from 'react';
+import type { ChangeEvent, FocusEvent } from 'react';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Participant, EventTeam } from '@prisma/client';
@@ -65,7 +66,7 @@ export default function ParticipantForm({
     setCountry(v);
   }
 
-  function checkIfIdentityCardIsValid(v: string) {
+  function handleOnChangeIdentityCard(v: string) {
 
     if (country !== 188) {
       return;
@@ -77,34 +78,71 @@ export default function ParticipantForm({
 
     const identityCard = v.replace(/-/g, '').replace(/_/g, '');
 
-    if (identityCard.length < 12) {
-      if (!isIdentityCardValid) {
-        setIdentityCardValid(true);
-      }
+    if (identityCard.length === 0) {
+      return setIdentityCardValid(true);
+    }
+
+    if (identityCard.length !== 12) {
       return;
     }
 
-    setIdentityCardValid(validateIdentityCard(v));
+    if (validateIdentityCard(v)) {
+      setIdentityCardValid(true);
+    }
   }
 
-  function checkIfVatNumberIsValid(v: unknown) {
-
+  function handleOnBlurIdentityCard(e: FocusEvent<HTMLInputElement>) {
     if (country !== 188) {
       return;
     }
 
-    if (!v) {
+    const value = e.target.value;
+    
+    if (!value) {
+      return setIdentityCardValid(true);
+    }
+
+    setIdentityCardValid(validateIdentityCard(value));
+  }
+
+  function handleOnBlurVatNumber(e: FocusEvent<HTMLInputElement>) {
+    if (country !== 188) {
       return;
     }
 
-    if (String(v).length < 9) {
-      if(!isVatNumberValid) {
-        setVatNumberValid(true);
-      }
+    const value = e.target.value;
+
+
+    // clear if user empties input
+    if (!value) {
+      return setVatNumberValid(true);
+    }
+
+    setVatNumberValid(validatePtVatNumber(value));
+  }
+
+  function handleOnChangeVatNumber(e: ChangeEvent<HTMLInputElement>) {
+    if (country !== 188) {
       return;
     }
 
-    setVatNumberValid(validatePtVatNumber(String(v)));
+    const value = e.target.value;
+
+    // if cleared, clear status
+    if (value.length === 0) {
+      return setVatNumberValid(true);
+    }
+
+    // do nothing, if not in the correct length
+    if (value.length !== 9) {
+      return;
+    }
+
+    // if we have an error messsage and user types
+    // a correct input, clear (requires the input to have the correct length)
+    if (validatePtVatNumber(value)) {
+      setVatNumberValid(true); 
+    }
   }
 
   React.useEffect(() => {
@@ -276,7 +314,8 @@ export default function ParticipantForm({
                 selectedParticipant?.identityCard ||
                 undefined
               }
-              onChange={checkIfIdentityCardIsValid}
+              onChange={handleOnChangeIdentityCard}
+              onBlur={handleOnBlurIdentityCard}
             />
           )}
           {country !== 188 && (
@@ -305,7 +344,8 @@ export default function ParticipantForm({
             defaultValue={String(
               selectedParticipant?.vatNumber || participant?.vatNumber
             )}
-            onChange={checkIfVatNumberIsValid}
+            onChange={handleOnChangeVatNumber}
+            onBlur={handleOnBlurVatNumber}
           />
         </FormField>
       </div>
