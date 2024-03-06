@@ -12,7 +12,8 @@ function DiciInputMask({
   value,
   className,
   mask,
-  onChange
+  onChange,
+  onBlur
 }: Omit<InputMaskProps, 'onChange'> & { onChange?: (v: string) => void }) {
   const formProps = useContext(FormContext);
 
@@ -35,6 +36,7 @@ function DiciInputMask({
       className={clsx('dici-input-mask', className)}
       mask={mask}
       onChange={handleOnChange}
+      onBlur={onBlur}
     />
   );
 }

@@ -9,7 +9,6 @@ type Props = {
   defaultValue?: any;
   size?: 'regular' | 'large';
   adornment?: React.ReactNode;
-  onChange?: (value: any) => void;
   type?: 'text' | 'password' | 'number' | 'tel';
   input?: React.RefObject<HTMLInputElement>;
 } & React.ComponentProps<'input'>;
@@ -28,7 +27,8 @@ const TextField: React.FC<Props> = ({
   input,
   autoComplete,
   onClick,
-  step
+  step,
+  onBlur
 }) => {
   id = id || '';
   const formProps = useContext(FormContext);
@@ -60,6 +60,7 @@ const TextField: React.FC<Props> = ({
         step={step}
         autoComplete={autoComplete}
         onClick={onClick}
+        onBlur={onBlur}
       />
     );
   }
@@ -71,7 +72,7 @@ const TextField: React.FC<Props> = ({
         id={id}
         defaultValue={defaultValue}
         placeholder={placeholder}
-        onChange={onChange}
+        onChange={handleOnChange}
         type="text"
         className={className}
         readOnly={readOnly}
@@ -79,6 +80,7 @@ const TextField: React.FC<Props> = ({
         input={input}
         autoComplete={autoComplete}
         onClick={onClick}
+        onBlur={onBlur}
       />
       <div className="absolute inset-y-0 right-1 flex items-center">
         {adornment}
