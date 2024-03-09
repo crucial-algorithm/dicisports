@@ -1,5 +1,5 @@
 import type { Payment } from '@prisma/client';
-import { PaymentStatus, PaymentMethod } from '@prisma/client';
+import { PaymentStatus, PaymentMethod, CheckoutStatus } from '@prisma/client';
 
 import { db } from '~/server/db.server';
 
@@ -13,7 +13,7 @@ import { updateRaceParticipantsPrice } from '~/server/db/participant.server';
 //                  checkout to SIBS, which is the instruction that starts the payment process
 //                  (SIBS creates a transactionId against our payment id)
 // 2.     pending:  Once the previous call to SIBS is returned, we update the payment record with
-//                  SIBS transactionID and change status to "pending"
+//                  SIBS transactionID and change status to "pending" (pending form submit)
 // 3.   submitted:  When user submits the payment form, SIBS redirects to an action provided by us
 //                  which will update the state to "submitted"
 // 4. paid/failed:  Webhook will update the state accordingly
@@ -222,10 +222,25 @@ async function pay(gatewayTransactionId: string, method: PaymentMethod) {
 }
 
 async function decline(gatewayTransactionId: string) {
-  return db.payment.update({
+  // intentionally not using a transaction here: we want to make sure we update the payment status
+  // Eval: have a recover mechanism for transations that do not fully complete after SIBS notification is received
+  await db.payment.update({
     where: { transactionId: gatewayTransactionId },
     data: {
       status: PaymentStatus.failed
+    }
+  });
+
+  const payment = await findPaymentByTransactionId(gatewayTransactionId);
+
+  if (!payment) {
+    return;
+  }
+
+  return db.booking.update({
+    where: { id: payment.bookingId },
+    data: {
+      status: CheckoutStatus.checkout
     }
   });
 }
