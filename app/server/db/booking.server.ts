@@ -276,6 +276,21 @@ async function findUserOngoingBookingsByEvent(
   });
 }
 
+async function findBookingByPin(bookingId: string, pin: number) {
+  const booking = await db.booking.findUnique({
+    where: {
+      id: bookingId
+    }
+  });
+
+  if (!booking || booking.pin !== pin) {
+    return null;
+  }
+
+  return booking;
+}
+
+
 function checkIfBookingEditionIsLocked(booking: Booking) {
   return (
     booking.status === CheckoutStatus.confirmed ||
@@ -296,5 +311,6 @@ export {
   applyDiscountCode,
   removeBookingDiscount,
   findUserOngoingBookingsByEvent,
-  checkIfBookingEditionIsLocked
+  checkIfBookingEditionIsLocked,
+  findBookingByPin
 };

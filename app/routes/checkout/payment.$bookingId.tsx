@@ -69,22 +69,23 @@ type LoaderData = {
 
 export const loader: LoaderFunction = async ({ request, params }) => {
   const anonymousClient = await getClientSession(request);
-  const authenticatedClient = await getUser(request);
+  const authedUser = await getUser(request);
   const bookingId = params.bookingId as string;
   const booking = await findBooking(bookingId);
   const lng = await i18n.getLocale(request);
 
-  // We check if user is authenticated -> authenticatedClient, if not, we use the client session -> anonymousClient
-  const clientId =
-    authenticatedClient !== null
-      ? authenticatedClient.id
+  if (!booking || booking.status === CheckoutStatus.deleted) {
+    console.log('no booking or deleted booking', bookingId);
+    return redirect('/');
+  }
+
+  const userId =
+    authedUser !== null
+      ? authedUser.id
       : anonymousClient.getClientId();
 
-  if (
-    !booking ||
-    booking.userId !== clientId ||
-    booking.status === CheckoutStatus.deleted
-  ) {
+  if (booking.userId !== userId) {
+    console.log(`User not authorized to access booking with owner = ${booking.userId}; Attempt by ${userId}, with flag guest as = ${isGuest}`);
     return redirect('/');
   }
 
@@ -92,6 +93,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   const event = (await findEvent(eventId)) as Event;
 
   if (!event) {
+    console.log('no event', eventId);
     return redirect('/');
   }
 
@@ -125,16 +127,16 @@ export const loader: LoaderFunction = async ({ request, params }) => {
       await updateBookingStatus(bookingId, CheckoutStatus.confirmed);
     }
 
-    if (authenticatedClient !== null) {
+    if (authedUser !== null) {
       const event = await findEvent(eventId);
       const cart = await findBookingCart(bookingId);
 
       await sendBookingConfirmationEmail({
-        emailAddress: authenticatedClient.email,
+        emailAddress: authedUser.email,
         event,
         booking,
         cart,
-        userName: authenticatedClient.name
+        userName: authedUser.name
       });
     }
 

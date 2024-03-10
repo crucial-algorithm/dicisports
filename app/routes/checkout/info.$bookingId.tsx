@@ -479,9 +479,6 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   const authedUser = await getUser(request);
   const bookingId = params.bookingId as string;
   const lng = await i18n.getLocale(request);
-  const { searchParams } = new URL(request.url);
-
-  const pin = searchParams.get('p');
 
   // We check if user is authenticated -> authenticatedClient, if not, we use the client session -> anonymousClient
   const userId =
@@ -496,11 +493,8 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     return redirect('/');
   }
 
-  // if the user is accessing with PIN, but is authenticated, we ignore the PIN
-  const isGuest = !authedUser && pin && Number(pin) === booking?.pin;
-
-  if (booking.userId !== userId && !isGuest) {
-    console.log(`User not authbrized to access booking with owner = ${booking.userId}; Attempt by ${userId}, with flag guest as = ${isGuest}`);
+  if (booking.userId !== userId) {
+    console.log(`User not authorized to access booking with owner = ${booking.userId}; Attempt by ${userId}, with flag guest as = ${isGuest}`);
     return redirect('/');
   }
 
@@ -541,7 +535,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     isAuth: Boolean(authedUser),
     bookingId,
     isBookingReadOnly: checkIfBookingEditionIsLocked(booking),
-    triggerLogin: Boolean(authedUser) && !isGuest,
+    triggerLogin: !authedUser,
     organizerName: organizer?.name as string,
     eventTeams,
     discountCode: booking.discountCode,
