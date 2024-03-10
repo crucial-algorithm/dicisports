@@ -85,7 +85,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
       : anonymousClient.getClientId();
 
   if (booking.userId !== userId) {
-    console.log(`User not authorized to access booking with owner = ${booking.userId}; Attempt by ${userId}, with flag guest as = ${isGuest}`);
+    console.log(`User not authorized to access booking with owner = ${booking.userId}; Attempt by ${userId}`);
     return redirect('/');
   }
 
