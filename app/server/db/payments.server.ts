@@ -283,11 +283,34 @@ async function resetPaymentStatus(id: string) {
   });
 }
 
+async function findExpiredPayments() {
+  return db.payment.findMany({
+    where: {
+      status: 'submitted',
+      expiresAt: {
+        lt: new Date()
+      },
+      booking: {
+        status: {
+          not: 'confirmed'
+        },
+        event: {
+          status: 'published',
+          startAt: {
+            gt: new Date()
+          }
+        }
+      }
+    }
+  });
+}
+
 export {
   findPayment,
   findPaymentByTransactionId,
   findSubmittedPayments,
   findUnsuccessfulPayments,
+  findExpiredPayments,
   createPaymentRequest,
   addGatewayDetailsToPayment,
   pay,

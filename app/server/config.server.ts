@@ -32,6 +32,7 @@ export type ConfigServer = {
   DEFAULT_COMMISSION: number;
   ORGANIZER_REVIEWERS_EMAILS: string;
   DOMAIN_URL: string;
+  SCHEDULER_SECRET: string;
 }
 
 let config: ConfigServer | null = null;
@@ -75,7 +76,8 @@ export default function Config(): ConfigServer {
     SIBS_CHECK_STATUS_ENDPOINT: extractVar('SIBS_CHECK_STATUS_ENDPOINT'),
     DEFAULT_COMMISSION: Number(extractVar('DEFAULT_COMMISSION')),
     ORGANIZER_REVIEWERS_EMAILS: extractVar('ORGANIZER_REVIEWERS_EMAILS'),
-    DOMAIN_URL: extractVar('DOMAIN_URL')
+    DOMAIN_URL: extractVar('DOMAIN_URL'),
+    SCHEDULER_SECRET: extractVar('SCHEDULER_SECRET')
   };
 
   return config;

@@ -18,7 +18,7 @@ async function createUrl(target: string, expiresAt: Date) {
 
   // loop until we find a unique url in database
   while (true) {
-    const url = pickRandomCharsFromStr(id, 4);
+    const url = pickRandomCharsFromStr(id, 5);
     const exists = await findActiveUrl(url);
 
     if (!exists) {

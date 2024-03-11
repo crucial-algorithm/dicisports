@@ -7,9 +7,7 @@ import {
 } from '@prisma/client';
 import type { Participant, RaceParticipant } from '@prisma/client';
 
-import type {
-  RaceParticipantInput
-} from '~/types';
+import type { RaceParticipantInput } from '~/types';
 import { db } from '~/server/db.server';
 import Id from '~/server/utils/Id.server';
 import { createTeam, findEventTeamByName } from '~/server/db/teams.server';
@@ -232,7 +230,13 @@ async function addRaceParticipants(
   eventId: string
 ): Promise<void> {
   return await prisma.$transaction(async (prisma) => {
-    await addParticipantsToRace(raceIds, userSessionId, bookingId, eventId, prisma);
+    await addParticipantsToRace(
+      raceIds,
+      userSessionId,
+      bookingId,
+      eventId,
+      prisma
+    );
   });
 }
 
@@ -450,6 +454,18 @@ async function findRaceParticipant(
   return participants ? participants[0] : null;
 }
 
+async function findBookingParticipants(bookingId: string) {
+  return db.raceParticipant.findMany({
+    where: {
+      bookingId,
+      status: { not: RaceParticipantStatus.deleted }
+    },
+    include: {
+      participant: true
+    }
+  });
+}
+
 async function updateRaceParticipantTeam(
   teamName: string | null,
   eventId: string,
@@ -484,7 +500,8 @@ async function assignParticipantsBibNumber(
   eventId: string
 ): Promise<void> {
   return await db.$transaction(async (tx) => {
-    const result: { bib_number: number }[] = await tx.$queryRaw`SELECT bib_number
+    const result: { bib_number: number }[] =
+      await tx.$queryRaw`SELECT bib_number
                                                             FROM latest_bib_number
                                                             WHERE event_id = ${eventId} FOR UPDATE;`;
     let bibNumber = result[0].bib_number;
@@ -546,7 +563,8 @@ export {
   updateRaceParticipantTeam,
   assignParticipantsBibNumber,
   updateRaceParticipantsPrice,
-  findConfirmedRaceParticipants
+  findConfirmedRaceParticipants,
+  findBookingParticipants
 };
 
 export type {
