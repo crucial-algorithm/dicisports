@@ -5,9 +5,11 @@ import { getSession, getUser } from '~/server/auth/session.server';
 import { findBookingByPin } from '~/server/db/booking.server';
 import { findUserById } from '~/server/db/users.server';
 
+
 export const loader: LoaderFunction = async ({ request, params }) => {
   const user = await getUser(request);
   const token = params.token;
+  const step = params.step;
 
   if (!token) {
     console.log('Quick access route accessed without token');
@@ -46,10 +48,17 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 
   await session.signIn(userInBooking);
   await session.getHeaders(headers);
-  
 
-  // Fetch data or perform any necessary operations here
-  return redirect(`/checkout/info/${booking.id}`, { headers });
+  if (step === 'info') {
+    return redirect(`/checkout/info/${booking.id}`, { headers });
+  }
+ 
+  if (step === 'pay') {
+    return redirect(`/checkout/payment/${booking.id}`, { headers });
+  }
+
+  // default to go to pay
+  return redirect(`/checkout/payment/${booking.id}`, { headers });
 };
 
 export const meta: MetaFunction = () => {
