@@ -4,7 +4,7 @@ import { json } from '@remix-run/node';
 import type { KCDHandle } from '~/types';
 
 import Config from '~/server/config.server';
-import { db } from '~/server/db.server';
+
 import { findExpiredPayments } from '~/server/db/payments.server';
 import { findBookingParticipants } from '~/server/db/participant.server';
 
@@ -71,8 +71,6 @@ async function runExpiredPaymentsJob() {
 
     console.log('sending SMS for ', participant.lastName, participant.phone);
   });
-
-  console.log('expiredPayments', expiredPayments);
 }
 
 export default function CronJobsRoute() {
