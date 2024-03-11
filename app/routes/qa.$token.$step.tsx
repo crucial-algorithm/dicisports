@@ -5,6 +5,7 @@ import { getSession, getUser } from '~/server/auth/session.server';
 import { findBookingByPin } from '~/server/db/booking.server';
 import { findUserById } from '~/server/db/users.server';
 
+// quick access route, to use in notifications (sms) so users get back to their booking
 
 export const loader: LoaderFunction = async ({ request, params }) => {
   const user = await getUser(request);
@@ -75,4 +76,6 @@ export default async function QARoute() {
         you should never see this... you can close the window if you do
     </div>
   );
+
+
 }
