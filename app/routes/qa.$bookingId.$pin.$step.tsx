@@ -9,15 +9,9 @@ import { findUserById } from '~/server/db/users.server';
 
 export const loader: LoaderFunction = async ({ request, params }) => {
   const user = await getUser(request);
-  const token = params.token;
+  const bookingId = params.bookingId;
+  const pin = params.pin;
   const step = params.step;
-
-  if (!token) {
-    console.log('Quick access route accessed without token');
-    return redirect('/');
-  }
-
-  const [bookingId, pin] = token.split('-');
 
   if (!bookingId || !pin) {
     console.log('Quick access route accessed with invalid token');

@@ -396,19 +396,20 @@ enum PaymentMethod {
 }
 
 model Payment {
-  id             String         @id
-  method         PaymentMethod?
-  status         PaymentStatus  @default(requested)
-  amount         Int
-  transactionId  String?        @unique @map("transaction_id")
-  notificationId String?        @unique @map("notification_id")
-  expiresAt      DateTime?      @map("expires_at")
-  bookingId      String         @map("booking_id")
-  booking        Booking        @relation(fields: [bookingId], references: [id])
-  createdAt      DateTime       @default(now()) @map("created_at")
-  updatedAt      DateTime       @updatedAt @map("updated_at")
-  mbReference    String?        @map("mb_reference")
-  mbEntity       String?        @map("mb_entity")
+  id                   String         @id
+  method               PaymentMethod?
+  status               PaymentStatus  @default(requested)
+  amount               Int
+  transactionId        String?        @unique @map("transaction_id")
+  notificationId       String?        @unique @map("notification_id")
+  expiresAt            DateTime?      @map("expires_at")
+  bookingId            String         @map("booking_id")
+  booking              Booking        @relation(fields: [bookingId], references: [id])
+  createdAt            DateTime       @default(now()) @map("created_at")
+  updatedAt            DateTime       @updatedAt @map("updated_at")
+  mbReference          String?        @map("mb_reference")
+  mbEntity             String?        @map("mb_entity")
+  expiredWarningSentAt DateTime?      @map("expired_warning_sent_at")
 
   @@map("payments")
 }

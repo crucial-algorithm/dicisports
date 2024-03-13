@@ -12,7 +12,7 @@ function pickRandomCharsFromStr(str: string, count: number) {
     return result.join('');
 }
 
-async function createUrl(target: string, expiresAt: Date) {
+async function createShortUrl(target: string, expiresAt: Date) {
 
   const id = Id();
 
@@ -49,6 +49,6 @@ async function findActiveUrl(url: string) {
 
 
 export {
-    createUrl as createShortUrl,
+    createShortUrl,
     findActiveUrl
 };

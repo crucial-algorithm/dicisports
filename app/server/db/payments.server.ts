@@ -283,13 +283,14 @@ async function resetPaymentStatus(id: string) {
   });
 }
 
-async function findExpiredPayments() {
+async function findExpiredPaymentsNotYetNotified() {
   return db.payment.findMany({
     where: {
       status: 'submitted',
       expiresAt: {
         lt: new Date()
       },
+      expiredWarningSentAt: null,
       booking: {
         status: {
           not: 'confirmed'
@@ -305,12 +306,21 @@ async function findExpiredPayments() {
   });
 }
 
+async function updateExpiredWarningSentAt(id: string) {
+  return db.payment.update({
+    where: { id },
+    data: {
+      expiredWarningSentAt: new Date()
+    }
+  });
+}
+
 export {
   findPayment,
   findPaymentByTransactionId,
   findSubmittedPayments,
   findUnsuccessfulPayments,
-  findExpiredPayments,
+  findExpiredPaymentsNotYetNotified,
   createPaymentRequest,
   addGatewayDetailsToPayment,
   pay,
@@ -320,5 +330,6 @@ export {
   updatePaymentStatus,
   addReferenciaMultibancoInfo,
   addPaymentMethodDetails,
-  resetPaymentStatus
+  resetPaymentStatus,
+  updateExpiredWarningSentAt
 };
