@@ -52,7 +52,13 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     await runExpiredPaymentsJob(t);
   }
 
-  return json({ success: true });
+  return new Response(
+    JSON.stringify({ success: true }),
+    {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' }
+    }
+  );
 };
 
 async function runExpiredPaymentsJob(t: TFunction) {
@@ -61,6 +67,7 @@ async function runExpiredPaymentsJob(t: TFunction) {
   const { href } = new URL(DOMAIN_URL);
 
   if (expiredPayments.length === 0) {
+    console.log('no expired payments found. exiting');
     return;
   }
 
@@ -117,18 +124,17 @@ async function runExpiredPaymentsJob(t: TFunction) {
     );
 
     console.log('sending SMS for ', participant.lastName, participant.phone);
-    await sendSms(
-      t('Your Payment As Expired', { link: `${href}/s/${url}` }),
-      participant.phone
-    );
 
-    await updateExpiredWarningSentAt(payment.id);
+    try {
+      const result = await sendSms(
+        t('Your Payment As Expired', { link: `${href}/s/${url}` }),
+        participant.phone
+      );
 
+      console.log('What SMS service returned', result);
+      await updateExpiredWarningSentAt(payment.id);
+    } catch (e) {
+      console.error('Error sending SMS', e);
+    }
   });
-}
-
-export default function CronJobsRoute() {
-  return (
-    <div>you should never see this... you can close the window if you do</div>
-  );
 }
