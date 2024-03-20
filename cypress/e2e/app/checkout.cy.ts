@@ -64,12 +64,33 @@ describe('Checkout', () => {
     });
 
     it('should access booking with PIN', () => {
-      cy.visitAndWaitForHydration('/checkout/info/e8pHPLNjnNxKTzoGwtLh?p=1234')
+      cy.visitAndWaitForHydration('/qa/e8pHPLNjnNxKTzoGwtLh/1234/info')
 
         .location()
         .should((l) => {
           expect(l.pathname).to.eq('/checkout/info/e8pHPLNjnNxKTzoGwtLh');
-          expect(l.search).to.eq('?p=1234');
+        })
+
+        .get('[data-cy=total-price]')
+        .should('exist')
+        .and('contain', '20€');
+    });
+
+    it('should not be able to access booking with invalid PIN', () => {
+      cy.visitAndWaitForHydration('/qa/e8pHPLNjnNxKTzoGwtLh/1235/info')
+
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.eq('/');
+        });
+    });
+
+    it('should be able to access booking from a shortned URL', () => {
+      cy.visitAndWaitForHydration('/s/gqMp7')
+
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.eq('/checkout/info/e8pHPLNjnNxKTzoGwtLh');
         })
 
         .get('[data-cy=total-price]')
