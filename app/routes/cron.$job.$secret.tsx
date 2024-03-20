@@ -1,5 +1,4 @@
 import type { LoaderFunction } from '@remix-run/node';
-import { json } from '@remix-run/node';
 
 import type { TFunction } from 'i18next';
 
