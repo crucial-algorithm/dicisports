@@ -135,13 +135,15 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     return redirect(`/checkout/info/${bookingId}`);
   }
 
+  const submittedPayments = await findSubmittedPayments(bookingId);
+
   if (booking.status == CheckoutStatus.AwaitingPayment) {
     return json({
       state: 'PaymentsPending',
       event,
       cart,
+      submittedPayments,
       isBookingReadOnly: checkIfBookingEditionIsLocked(booking),
-      submittedPayments: await findSubmittedPayments(bookingId),
       domainUrl: getDomainUrl(request),
       discountCode: booking.discountCode,
       discountValue: booking.discountValue,
@@ -181,7 +183,6 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     return redirect(`/checkout/confirmation/${bookingId}`);
   }
 
-  const submittedPayments = await findSubmittedPayments(bookingId);
 
   if (submittedPayments.length > 0) {
     return json({

@@ -6,7 +6,10 @@ describe('Checkout', () => {
 
   context('Maintenance: unauthenticated', () => {
     beforeEach(() => {
+      const url = Cypress.env('HTTP_CATCHER').replace(/\/$/, '');
+
       cy.task('db:reset');
+      cy.request('GET', `${url}/clear`);
     });
 
     it('Should add race to cart and redirect to form route from event page', () => {
@@ -322,8 +325,11 @@ describe('Checkout', () => {
 
   context('Maintenance: authenticated', () => {
     beforeEach(() => {
+      const url = Cypress.env('HTTP_CATCHER').replace(/\/$/, '');
+
       cy.task('db:reset');
       cy.login();
+      cy.request('GET', `${url}/clear`);
     });
 
     it('Should add race to cart and redirect to form route from event page', () => {
@@ -1266,6 +1272,14 @@ describe('Checkout', () => {
   });
 
   context('Security', () => {
+    beforeEach(() => {
+      const url = Cypress.env('HTTP_CATCHER').replace(/\/$/, '');
+
+      cy.task('db:reset');
+      cy.request('GET', `${url}/clear`);
+    });
+
+
     it('should not access info/payment/confirmation route without a booking', () => {
       cy.visitAndWaitForHydration('/checkout/info/MY4bvgxDbMtGv8rbYe5d')
         .location()
@@ -1486,9 +1500,9 @@ describe('Checkout', () => {
 
   context('Payments Gateway', () => {
     beforeEach(() => {
-      cy.task('db:reset');
       const url = Cypress.env('HTTP_CATCHER').replace(/\/$/, '');
 
+      cy.task('db:reset');
       cy.request('GET', `${url}/clear`);
     });
 

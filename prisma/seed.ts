@@ -375,7 +375,7 @@ function payments() {
   return paymentsSeed.map((p) => {
     return {
       ...p,
-      expiresAt: new Date(now.getTime() + 3600000),
+      expiresAt: p.expiresAt ? parseDate(p.expiresAt) : null,
       createdAt: now,
       updatedAt: now
     };
