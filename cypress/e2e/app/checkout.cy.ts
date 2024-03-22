@@ -505,6 +505,16 @@ describe('Checkout', () => {
         });
     });
 
+    it('should fail if users declain to pay booking', () => {
+      cy.visitAndWaitForHydration('/checkout/payment/qR4nqWpTdQy8QZu29ANu')
+
+        .get('button[name=decline]')
+        .should('exist')
+        .then((b) => {
+          b.click();
+        });
+    });
+
     it('should display error when a Portuguese submitts form without identity card filled', () => {
       cy.visitAndWaitForHydration('/checkout/info/iZrqWniNHZba9n4WQTmb')
 
@@ -1487,6 +1497,9 @@ describe('Checkout', () => {
   context('Payments Gateway', () => {
     beforeEach(() => {
       cy.task('db:reset');
+      const url = Cypress.env('HTTP_CATCHER').replace(/\/$/, '');
+
+      cy.request('GET', `${url}/clear`);
     });
 
     it('Should keep booking state if payment fails (MBWay Rejected)', () => {
@@ -1742,6 +1755,9 @@ describe('Checkout', () => {
 
     context('Test error handling to SIBS gateway get status calls', () => {
       it('should show handled error when get-status fails 500', () => {
+        cy.request('POST', Cypress.env('HTTP_CATCHER'), {
+
+        });
         cy.request({
           url: '/checkout/submitted/sGDw53Nv27kbi4SkY500',
           method: 'GET',
@@ -1962,17 +1978,11 @@ describe('Checkout', () => {
 
       it('MB Way', () => {
         cy.visitAndWaitForHydration('/checkout/payment/uj3tsN7auCRx8citYiA2')
-
-          .intercept('/checkout/payment/uj3tsN7auCRx8citYiA2')
-          .as('ConfirmationRoute')
-
           .get('button[name=pay-mbway]')
           .should('exist')
           .click()
 
-          .wait('@ConfirmationRoute')
-
-          .location()
+          .location({ timeout: 10000 })
           .should((l) => {
             expect(l.pathname).to.eq(
               '/checkout/confirmation/uj3tsN7auCRx8citYiA2'
@@ -1983,16 +1993,11 @@ describe('Checkout', () => {
       it('Credit Card', () => {
         cy.visitAndWaitForHydration('/checkout/payment/uj3tsN7auCRx8citYiA2')
 
-          .intercept('/checkout/payment/uj3tsN7auCRx8citYiA2')
-          .as('ConfirmationRoute')
-
           .get('button[name=pay-cc]')
           .should('exist')
           .click()
 
-          .wait('@ConfirmationRoute')
-
-          .location()
+          .location({ timeout: 10000 })
           .should((l) => {
             expect(l.pathname).to.eq(
               '/checkout/confirmation/uj3tsN7auCRx8citYiA2'
@@ -2003,16 +2008,12 @@ describe('Checkout', () => {
       it('MB', () => {
         cy.visitAndWaitForHydration('/checkout/payment/uj3tsN7auCRx8citYiA2')
 
-          .intercept('/checkout/payment/uj3tsN7auCRx8citYiA2')
-          .as('ConfirmationRoute')
-
           .get('button[name=pay-reference]')
           .should('exist')
           .click()
 
-          .wait('@ConfirmationRoute')
 
-          .location()
+          .location({ timeout: 10000 })
           .should((l) => {
             expect(l.pathname).to.eq(
               '/checkout/confirmation/uj3tsN7auCRx8citYiA2'

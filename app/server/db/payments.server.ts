@@ -240,7 +240,7 @@ async function decline(gatewayTransactionId: string) {
   return db.booking.update({
     where: { id: payment.bookingId },
     data: {
-      status: CheckoutStatus.checkout
+      status: CheckoutStatus.pending
     }
   });
 }

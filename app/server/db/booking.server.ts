@@ -190,11 +190,12 @@ async function findUserBookingsList(
 /**
  * Update booking status follows the following flow:
  * 1. When a booking is created, it is in the 'checkout' status
- * 2. When a booking payment was submitted but is waiting payment from user, it is in the 'pending' status
+ * 2. When the user form is properly validated and he moves to the payment screen, status moves to 'pending'
+ * 3. When a payment is submitted, status moves to 'AwaitingPayment'
  * 3. When a booking is paid, it is in the 'confirmed' status
  * 4. When a booking is deleted, it is in the 'deleted' status
  *
- * When a payment fails or experies, booking status is updated to 'checkout' 
+ * When a payment fails or expires, booking status is updated to 'pending' 
  * 
  * @param id 
  * @param status 
@@ -295,7 +296,7 @@ function checkIfBookingEditionIsLocked(booking: Booking) {
   return (
     booking.status === CheckoutStatus.confirmed ||
     booking.status === CheckoutStatus.deleted ||
-    booking.status === CheckoutStatus.pending
+    booking.status === CheckoutStatus.AwaitingPayment
   );
 }
 

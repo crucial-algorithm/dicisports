@@ -42,6 +42,10 @@ export const action: ActionFunction = async ({ request, params }) => {
     throw Unauthorized(t('Not authorized'));
   }
 
+  if (booking.status === CheckoutStatus.AwaitingPayment) {
+    return redirect(`/checkout/payment/${bookingId}`);
+  }
+
   if (booking.status !== CheckoutStatus.checkout) {
     return redirect(
       `/checkout/${

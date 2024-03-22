@@ -1,4 +1,4 @@
-import type { Event, Payment } from '@prisma/client';
+import type { Booking, Event, Payment } from '@prisma/client';
 import {
   CheckoutStatus,
   DiscountCodeStatus,
@@ -27,13 +27,20 @@ import { getUser } from '~/server/auth/session.server';
 import Config from '~/server/config.server';
 import {
   applyDiscountCode,
+  checkIfBookingEditionIsLocked,
   findBooking,
   findBookingCart,
   removeBookingDiscount,
   updateBookingStatus
 } from '~/server/db/booking.server';
 import { findEvent } from '~/server/db/events.server';
-import { assignParticipantsBibNumber, findUserBookingParticipants } from '~/server/db/participant.server';
+import type {
+  RaceParticipantWithRaceParticipantAndTeam
+} from '~/server/db/participant.server';
+import {
+  assignParticipantsBibNumber,
+  findUserBookingParticipants
+} from '~/server/db/participant.server';
 import {
   findSubmittedPayments,
   findUnsuccessfulPayments,
@@ -50,24 +57,45 @@ import { findDiscountCode } from '~/server/db/discounts.server';
 import { findOrganizer } from '~/server/db/organizer.server';
 import ButtonGroup from '~/components/shared/ButtonGroup';
 
-type LoaderData = {
-  event: Event;
-  cart: UICartRow[];
-  regulation: Document;
-  submittedPayments: Payment[];
-  unsuccessfulPayments: Payment[];
-  formContext: string;
-  gatewayTransactionId: string;
-  ourTransactionId: string;
-  CHECKOUT_FORM_SCRIPT: string;
-  domainUrl: string;
-  discountCode?: string;
-  discountValue?: number;
-  discountFixed?: boolean;
-  displayTransactionError: boolean;
-};
+type LoaderData =
+  | {
+      state: 'PaymentsPending';
+      event: Event;
+      cart: UICartRow[];
+      isBookingReadOnly: true;
+      submittedPayments: Payment[];
+      domainUrl: string;
+      discountCode: string;
+      discountValue: number;
+      discountFixed: boolean;
+      displayTransactionError: false;
+    }
+  | {
+      state: 'RequestingPayment';
+      event: Event;
+      cart: UICartRow[];
+      isBookingReadOnly: false;
+      unsuccessfulPayments: Payment[]; 
+      formContext: string;
+      gatewayTransactionId: string;
+      ourTransactionId: string;
+      CHECKOUT_FORM_SCRIPT: string;
+      domainUrl: string;
+      discountCode: string;
+      discountValue: number;
+      discountFixed: boolean;
+      displayTransactionError: false;
+    }
+  | {
+      state: 'Error';
+      event: Event;
+      cart: UICartRow[];
+      submittedPayments: Payment[];
+      displayTransactionError: true;
+    };
 
 export const loader: LoaderFunction = async ({ request, params }) => {
+  console.log('in loader of payment screen');
   const anonymousClient = await getClientSession(request);
   const authedUser = await getUser(request);
   const bookingId = params.bookingId as string;
@@ -108,20 +136,31 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     return redirect(`/checkout/info/${bookingId}`);
   }
 
-  let fullyDiscounted = false;
-
-  if (booking.discountCode) {
-    const amount = bookingAmount(cart, booking.discountValue, booking.discountFixed);
-
-    if (amount === 0) {
-      await assignParticipantsBibNumber(raceParticipants, eventId);
-      fullyDiscounted = true;
-    }
+  if (booking.status == CheckoutStatus.AwaitingPayment) {
+    return json({
+      state: 'PaymentsPending',
+      event,
+      cart,
+      isBookingReadOnly: checkIfBookingEditionIsLocked(booking),
+      submittedPayments: await findSubmittedPayments(bookingId),
+      domainUrl: getDomainUrl(request),
+      discountCode: booking.discountCode,
+      discountValue: booking.discountValue,
+      discountFixed: booking.discountFixed,
+      displayTransactionError: false
+    } as LoaderData);
   }
 
-  const hasASuccessfulPayment = await isBookingPaid(bookingId);
 
-  if (hasASuccessfulPayment || fullyDiscounted) {
+  // function will assign a bib number if booking is fully discounted 
+  const isThereNoPaymentLeft = await handleFullDiscountBookings(
+    booking,
+    cart,
+    raceParticipants,
+    eventId
+  );
+
+  if (isThereNoPaymentLeft) {
     // check if for some reason the booking status is inconsistent
     if (booking.status !== CheckoutStatus.confirmed) {
       await updateBookingStatus(bookingId, CheckoutStatus.confirmed);
@@ -147,14 +186,17 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 
   if (submittedPayments.length > 0) {
     return json({
+      state: 'PaymentsPending',
       event,
       cart,
+      isBookingReadOnly: checkIfBookingEditionIsLocked(booking),
       submittedPayments,
+      domainUrl: getDomainUrl(request),
       discountCode: booking.discountCode,
       discountValue: booking.discountValue,
       discountFixed: booking.discountFixed,
-      domainUrl: getDomainUrl(request)
-    });
+      displayTransactionError: false
+    } as LoaderData);
   }
 
   const unsuccessfulPayments = await findUnsuccessfulPayments(bookingId);
@@ -164,27 +206,31 @@ export const loader: LoaderFunction = async ({ request, params }) => {
       await createPaymentTransaction(booking, event, cart);
 
     return json({
+      state: 'RequestingPayment',
       event,
       cart,
+      isBookingReadOnly: checkIfBookingEditionIsLocked(booking),
+      unsuccessfulPayments,
       formContext: gatewayResponse.formContext,
       gatewayTransactionId: gatewayResponse.transactionID,
       ourTransactionId,
       CHECKOUT_FORM_SCRIPT: Config().SIBS_CHECKOUT_FORM_SCRIPT,
-      unsuccessfulPayments,
       domainUrl: getDomainUrl(request),
       discountCode: booking.discountCode,
       discountValue: booking.discountValue,
       discountFixed: booking.discountFixed,
       displayTransactionError: false
-    });
+    } as LoaderData);
   } catch (e) {
     console.log(e);
 
     return json({
+      state: 'Error',
       event,
+      cart,
       submittedPayments,
       displayTransactionError: true
-    });
+    } as LoaderData);
   }
 };
 
@@ -193,7 +239,7 @@ export const action: ActionFunction = async ({ request, params }) => {
 
   const form = await request.formData();
   const anonymousClient = await getClientSession(request);
-  const authenticatedClient = await getUser(request);
+  const authedUser = await getUser(request);
   const bookingId = params.bookingId as string;
   const booking = await findBooking(bookingId);
 
@@ -212,8 +258,8 @@ export const action: ActionFunction = async ({ request, params }) => {
 
   // We check if user is authenticated -> authenticatedClient, if not, we use the client session -> anonymousClient
   const clientId =
-    authenticatedClient !== null
-      ? authenticatedClient.id
+    authedUser !== null
+      ? authedUser.id
       : anonymousClient.getClientId();
 
   if (booking && booking.status === CheckoutStatus.confirmed) {
@@ -301,6 +347,32 @@ export const action: ActionFunction = async ({ request, params }) => {
   }
 };
 
+async function handleFullDiscountBookings(
+  booking: Booking,
+  cart: UICartRow[],
+  raceParticipants: RaceParticipantWithRaceParticipantAndTeam[],
+  eventId: string
+) {
+  let fullyDiscounted = false;
+
+  if (booking.discountCode) {
+    const amount = bookingAmount(
+      cart,
+      booking.discountValue,
+      booking.discountFixed
+    );
+
+    if (amount === 0) {
+      await assignParticipantsBibNumber(raceParticipants, eventId);
+      fullyDiscounted = true;
+    }
+  }
+
+  const hasASuccessfulPayment = await isBookingPaid(booking.id);
+
+  return hasASuccessfulPayment || fullyDiscounted;
+}
+
 export const handle: KCDHandle & { id: string; i18n: string[] } = {
   id: 'payment',
   i18n: ['checkout']
@@ -345,33 +417,19 @@ const sibsLightTheme = {
 };
 
 export default function CheckoutPaymentRoute() {
-  const {
-    event,
-    cart,
-    unsuccessfulPayments,
-    submittedPayments,
-    formContext,
-    gatewayTransactionId,
-    ourTransactionId,
-    CHECKOUT_FORM_SCRIPT,
-    domainUrl,
-    discountCode,
-    discountValue,
-    discountFixed,
-    displayTransactionError
-  } = useLoaderData() as unknown as LoaderData;
+  const data = useLoaderData() as unknown as LoaderData;
   const { t } = useTranslation('checkout');
   const displayCartFetcher = useFetcher();
   const [errors, setErrors] = useState<FormErrors>({});
-  const isPaid =
-    submittedPayments &&
-    submittedPayments.filter((p) => (p.status = PaymentStatus.paid)).length ===
-      0;
-  const sibsPaymentGatewayError =
-    unsuccessfulPayments &&
-    unsuccessfulPayments.filter(
-      (p) => p.status === PaymentStatus.fetchStatusFailed
-    );
+  const { state, event, cart } = data;
+
+const sibsPaymentGatewayError =
+  state === 'RequestingPayment' &&
+  data.unsuccessfulPayments &&
+  data.unsuccessfulPayments.filter(
+    (p) => p.status === PaymentStatus.fetchStatusFailed
+  );
+
 
   useEffect(() => {
     if (
@@ -389,7 +447,7 @@ export default function CheckoutPaymentRoute() {
     }
   }, [displayCartFetcher]);
 
-  if (displayTransactionError) {
+  if (data.displayTransactionError) {
     return <DisplayTransactionError event={event} t={t} />;
   }
 
@@ -415,41 +473,44 @@ export default function CheckoutPaymentRoute() {
         </H6>
       </div>
       <div className="flex flex-col md:flex-row mt-8">
+
         <div className="flex-col w-full md:w-[calc(100%-(480px))] md:pr-4 sibs">
-          {submittedPayments && submittedPayments.length > 0 && (
-            <DisplayPendingPaymentsInterval payments={submittedPayments} />
+          
+          {state === 'PaymentsPending' && (
+            <DisplayPendingPaymentsInterval payments={data.submittedPayments} />
           )}
-          {!(submittedPayments && submittedPayments.length > 0) && (
+
+          {state === 'RequestingPayment' && (
             <>
-              {unsuccessfulPayments.length > 0 && (
+              {data.unsuccessfulPayments.length > 0 && (
                 <H6 className="mb-8">{t('We Give Up On Past Payments')}</H6>
               )}
               <PaymentForm
-                script={CHECKOUT_FORM_SCRIPT}
-                gatewayTransactionId={gatewayTransactionId}
+                script={data.CHECKOUT_FORM_SCRIPT}
+                gatewayTransactionId={data.gatewayTransactionId}
                 cart={cart}
-                discountValue={discountValue}
-                discountFixed={discountFixed}
-                formContext={formContext}
-                redirectUrl={`${domainUrl}/checkout/submitted/${ourTransactionId}`}
+                discountValue={data.discountValue}
+                discountFixed={data.discountFixed}
+                formContext={data.formContext}
+                redirectUrl={`${data.domainUrl}/checkout/submitted/${data.ourTransactionId}`}
               />
             </>
           )}
+
         </div>
+
         <div className="w-full mt-4 md:mt-0 md:w-[480px]">
           <displayCartFetcher.Form method="post">
             <DisplayCart
               cart={cart}
               event={event}
-              discountCode={discountCode}
-              discountValue={discountValue}
-              discountFixed={Boolean(discountFixed)}
+              discountCode={data.discountCode}
+              discountValue={data.discountValue}
+              discountFixed={data.discountFixed}
               discountCodeError={errors.discountError}
-              showDiscountCodeInput={
-                !isPaid && !(submittedPayments && submittedPayments.length > 0)
-              }
+              showDiscountCodeInput={!data.isBookingReadOnly}
             >
-              {!isPaid && !(submittedPayments && submittedPayments.length > 0) && (
+              {!data.isBookingReadOnly && (
                 <Button
                   id="update-info"
                   name="actionId"

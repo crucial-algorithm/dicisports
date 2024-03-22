@@ -7,6 +7,7 @@ import type { KCDHandle } from '~/types';
 import Config from '~/server/config.server';
 
 import {
+  decline,
   findExpiredPaymentsNotYetNotified,
   updateExpiredWarningSentAt
 } from '~/server/db/payments.server';
@@ -132,6 +133,7 @@ async function runExpiredPaymentsJob(t: TFunction) {
 
       console.log('What SMS service returned', result);
       await updateExpiredWarningSentAt(payment.id);
+      await decline(payment.transactionId as string);
     } catch (e) {
       console.error('Error sending SMS', e);
     }

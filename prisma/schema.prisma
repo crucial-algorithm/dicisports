@@ -321,6 +321,7 @@ enum CheckoutStatus {
   checkout
   pending
   confirmed
+  AwaitingPayment
 }
 
 enum RaceParticipantStatus {
