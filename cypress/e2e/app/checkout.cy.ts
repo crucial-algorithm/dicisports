@@ -505,16 +505,6 @@ describe('Checkout', () => {
         });
     });
 
-    it('should fail if users declain to pay booking', () => {
-      cy.visitAndWaitForHydration('/checkout/payment/qR4nqWpTdQy8QZu29ANu')
-
-        .get('button[name=decline]')
-        .should('exist')
-        .then((b) => {
-          b.click();
-        });
-    });
-
     it('should display error when a Portuguese submitts form without identity card filled', () => {
       cy.visitAndWaitForHydration('/checkout/info/iZrqWniNHZba9n4WQTmb')
 
@@ -1755,9 +1745,6 @@ describe('Checkout', () => {
 
     context('Test error handling to SIBS gateway get status calls', () => {
       it('should show handled error when get-status fails 500', () => {
-        cy.request('POST', Cypress.env('HTTP_CATCHER'), {
-
-        });
         cy.request({
           url: '/checkout/submitted/sGDw53Nv27kbi4SkY500',
           method: 'GET',

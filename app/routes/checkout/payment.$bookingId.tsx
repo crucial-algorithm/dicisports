@@ -95,8 +95,7 @@ type LoaderData =
     };
 
 export const loader: LoaderFunction = async ({ request, params }) => {
-  console.log('in loader of payment screen');
-  const anonymousClient = await getClientSession(request);
+    const anonymousClient = await getClientSession(request);
   const authedUser = await getUser(request);
   const bookingId = params.bookingId as string;
   const booking = await findBooking(bookingId);
