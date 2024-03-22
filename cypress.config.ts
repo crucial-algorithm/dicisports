@@ -9,11 +9,11 @@ dotenv.config();
 
 const {
   CY_BASE_URL,
-  MAILGUN_ENDPOINT,
   CY_REQUEST_TIMEOUT,
   CY_RESPONSE_TIMEOUT,
   CY_DEFAULT_COMMAND_TIMEOUT,
-  SIBS_WEBHOOK_SECRET
+  SIBS_WEBHOOK_SECRET,
+  HTTP_CATCHER: PARAM_HTTP_CATCHER
 } =
   process.env;
 
@@ -27,7 +27,7 @@ const defaultCommandTimeout = CY_DEFAULT_COMMAND_TIMEOUT
   ? Number(CY_DEFAULT_COMMAND_TIMEOUT)
   : undefined;
 const baseUrl = CY_BASE_URL ? CY_BASE_URL : 'http://localhost:3000';
-const HTTP_CATCHER = MAILGUN_ENDPOINT ? MAILGUN_ENDPOINT : 'http://localhost:3001/';
+const HTTP_CATCHER = PARAM_HTTP_CATCHER ||  'http://localhost:3001/';
 
 export default defineConfig({
   viewportWidth: 375,

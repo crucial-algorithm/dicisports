@@ -76,7 +76,7 @@ jobs:
 
           EMAIL_VERIFIER_TOKEN: ${{secrets.E2E_EMAIL_VERIFIER_TOKEN}}
           MAILGUN_SENDING_KEY: ${{secrets.E2E_MAILGUN_SENDING_KEY}}
-          MAILGUN_ENDPOINT: http://127.0.0.1:3001
+          MAILGUN_ENDPOINT: http://127.0.0.1:3001?bucket=email
 
           CONVERT_KIT_FORM: 3280014
           CONVERT_KIT_API_KEY: ${{secrets.E2E_CONVERT_KIT_API_KEY}}
@@ -96,18 +96,20 @@ jobs:
           SIBS_WEBHOOK_SECRET: O0Bur9uhZkS54NkwFhVyeutED6DhLbOQUBDt3i3W/C4=
           SIBS_MULTIBANCO_ENTITIY: 2400
           SIBS_MULTIBANCO_EXPIRATION_DAYS: 3
-          SIBS_CHECK_STATUS_ENDPOINT: http://127.0.0.1:3001/
+          SIBS_CHECK_STATUS_ENDPOINT: http://127.0.0.1:3001/?bucket=payments
 
           DEFAULT_COMMISSION: 25
           ORGANIZER_REVIEWERS_EMAILS: "admin@gmail.com, admin1@gmail.com"
 
-          DOMAIN_URL: "http://localhost:3000"
+          DOMAIN_URL: http://localhost:3000
 
           SCHEDULER_SECRET: "abc"
 
-          SMS_ENDPOINT: "http://127.0.0.1:3001/bulkgate"
+          SMS_ENDPOINT: http://127.0.0.1:3001/bulkgate
           SMS_APPLICATION_ID: 1111
           SMS_APPLICATION_TOKEN: token
+
+          HTTP_CATCHER: http://127.0.0.1:3001
 
       - uses: actions/upload-artifact@v2
         if: failure()

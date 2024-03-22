@@ -25,6 +25,11 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     return redirect('/');
   }
 
+  if (booking.status === CheckoutStatus.confirmed) {
+    console.log('... looks like this booking is already paid... don\'t request status again');
+    return redirect(`/checkout/payment/${payment.bookingId}`);
+  }
+
   await updatePaymentStatus(paymentId, PaymentStatus.submitted, PaymentStatus.pending);
   await updateBookingStatus(payment.bookingId, CheckoutStatus.AwaitingPayment);
 
