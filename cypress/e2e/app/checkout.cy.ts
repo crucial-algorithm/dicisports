@@ -1974,6 +1974,10 @@ describe('Checkout', () => {
 
     context('should pay booking', () => {
       beforeEach(() => {
+        const url = Cypress.env('HTTP_CATCHER').replace(/\/$/, '');
+
+        cy.task('db:reset');
+        cy.request('GET', `${url}/clear`);
         cy.login();
       });
 
