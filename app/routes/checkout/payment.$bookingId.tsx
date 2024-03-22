@@ -138,6 +138,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   const submittedPayments = await findSubmittedPayments(bookingId);
 
   if (booking.status == CheckoutStatus.AwaitingPayment) {
+    console.log('booking is awaiting payment', bookingId, submittedPayments);
     return json({
       state: 'PaymentsPending',
       event,
@@ -185,6 +186,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 
 
   if (submittedPayments.length > 0) {
+    console.log('booking is awaiting payment', bookingId, submittedPayments);
     return json({
       state: 'PaymentsPending',
       event,
@@ -205,6 +207,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     const { gatewayResponse, ourTransactionId } =
       await createPaymentTransaction(booking, event, cart);
 
+    console.log('booking is going to request payment', bookingId, unsuccessfulPayments);
     return json({
       state: 'RequestingPayment',
       event,
