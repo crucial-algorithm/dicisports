@@ -382,7 +382,6 @@ Total: ${total / 1000}€
 
 Obrigado!
 
-P.S. Recebeste este email porque o teu endereço de email foi usado para fazer login em ${hostname}. Se não solicitaste o email, ignora-o.
   `.trim();
 
   const html = `

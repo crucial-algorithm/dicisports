@@ -1,12 +1,8 @@
 describe('Checkout', () => {
-  before(() => {
-    cy.task('db:reset');
-    cy.task('clearDownloadFolder');
-  });
-
   context('Maintenance: unauthenticated', () => {
     beforeEach(() => {
       cy.task('db:reset');
+      cy.task('clearDownloadFolder');
       clearHttpCatcher();
     });
 
@@ -324,8 +320,9 @@ describe('Checkout', () => {
   context('Maintenance: authenticated', () => {
     beforeEach(() => {
       cy.task('db:reset');
-      cy.login();
+      cy.task('clearDownloadFolder');
       clearHttpCatcher();
+      cy.login();
     });
 
     it('Should add race to cart and redirect to form route from event page', () => {
@@ -1270,6 +1267,7 @@ describe('Checkout', () => {
   context('Security', () => {
     beforeEach(() => {
       cy.task('db:reset');
+      cy.task('clearDownloadFolder');
       clearHttpCatcher();
     });
 
@@ -1495,6 +1493,7 @@ describe('Checkout', () => {
   context('Payments Gateway', () => {
     beforeEach(() => {
       cy.task('db:reset');
+      cy.task('clearDownloadFolder');
       clearHttpCatcher();
     });
 
@@ -1962,6 +1961,21 @@ describe('Checkout', () => {
             .should('exist');
         });
       });
+
+      it('should handle a fetch to failed status through the normal flow', () => {
+        cy.login()
+          .visitAndWaitForHydration('/checkout/payment/uj3tsN7auCRx8citYiA2')
+
+          .get('button[name=fail-to-fetch-status]')
+          .should('exist')
+          .click()
+
+          .get('#mock-payment-header')
+          .should('not.exist')
+
+          .get('[data-cy=gateway-error]')
+          .should('exist');
+      });
     });
 
     context('should pay booking', () => {
@@ -2229,6 +2243,5 @@ function arrayBufferToBase64(buffer) {
 function clearHttpCatcher() {
   const url = Cypress.env('HTTP_CATCHER').replace(/\/$/, '');
 
-  cy.request('GET', `${url}/clear?bucket=email`);
-  cy.request('GET', `${url}/clear?bucket=payments`);
+  cy.request('GET', `${url}/clear-all`);
 }

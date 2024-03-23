@@ -169,15 +169,16 @@ export async function getPaymentStatus(payment: Payment) {
       return null;
     }
 
-    const response = (await r.json()) as SibsStatusResponse;
+    const txt = await r.text();
+
+    console.log('[SIBS] ::: DEBUG ::: text response was: ', txt);
+
+    const response = JSON.parse(txt) as SibsStatusResponse;
 
     if (response?.returnStatus?.statusCode === '000') {
       console.log('[SIBS] Successuful get status', response);
       return response;
     } else {
-      console.error(
-        'If you are in DEV and testing CC card, failing with what looks like an e-mail is expected.'
-      );
       console.error('[SIBS] Unsuccessuful get status', response);
       return null;
     }

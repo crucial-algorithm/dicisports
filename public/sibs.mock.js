@@ -10,22 +10,26 @@ function form() {
 
   header.className =
     'leading-tight text-xl mb-2 mt-8 text-black dark:text-white';
-  header.innerHTML = 'Submitting mokc payment form to SIBS...';
+  header.innerHTML = 'Submitting mock payment form to SIBS...';
+  header.id = 'mock-payment-header';
 
   const ccRing = document.createElement('div');
   const referenceRing = document.createElement('div');
   const mbwayRing = document.createElement('div');
   const declineRing = document.createElement('div');
+  const failToFetchStatusRing = document.createElement('div');
 
   ccRing.className = btnRingClasses;
   referenceRing.className = btnRingClasses;
   mbwayRing.className = btnRingClasses;
   declineRing.className = btnRingClasses;
+  failToFetchStatusRing.className = btnRingClasses;
 
   const referenceContent = document.createElement('div');
   const mbwayContent = document.createElement('div');
   const ccContent = document.createElement('div');
   const declineContent = document.createElement('div');
+  const failToFetchStatuContent = document.createElement('div');
 
   referenceContent.className = btnInnerClasses;
   referenceContent.innerHTML = 'Multibanco';
@@ -35,6 +39,8 @@ function form() {
   ccContent.innerHTML = 'Credit Card';
   declineContent.className = btnInnerClasses;
   declineContent.innerHTML = 'Decline';
+  failToFetchStatuContent.className = btnInnerClasses;
+  failToFetchStatuContent.innerHTML = 'Force Fail Status';
 
   const form = document.querySelector('form[spg-context]');
   const context = JSON.parse(form.getAttribute('spg-context'));
@@ -110,7 +116,7 @@ function form() {
 
     const { amount, merchantTransactionId } = gatherTransactionData();
 
-    await generateFormContent('CARD', amount, false);
+    await generateFormContent('MBWAY', amount, false);
     await pushPaymentStatus(
       context.transactionID,
       amount,
@@ -121,6 +127,23 @@ function form() {
     form.action = 'http://127.0.0.1:3001/sibs-mock-form-submit/';
     form.submit();
   };
+
+  const failToFetchStatuButton = document.createElement('button');
+
+  failToFetchStatuButton.className = btnOuterClasses;
+  failToFetchStatuButton.type = 'button';
+  failToFetchStatuButton.name = 'fail-to-fetch-status';
+  failToFetchStatuButton.onclick = async () => {
+
+    const { amount } = gatherTransactionData();
+
+    await generateFormContent('MBWAY', amount);
+    await pushInvalidPaymentStatus();
+
+    form.action = 'http://127.0.0.1:3001/sibs-mock-form-submit/';
+    form.submit();
+  };
+
 
   referenceButton.appendChild(referenceRing);
   referenceButton.appendChild(referenceContent);
@@ -137,6 +160,10 @@ function form() {
   declineButton.appendChild(declineRing);
   declineButton.appendChild(declineContent);
   form.appendChild(declineButton);
+
+  failToFetchStatuButton.appendChild(failToFetchStatusRing);
+  failToFetchStatuButton.appendChild(failToFetchStatuContent);
+  form.appendChild(failToFetchStatuButton);
 
   async function generateFormContent(method, amount, success = true) {
     const payload = {
@@ -324,6 +351,22 @@ async function pushPaymentStatus(
       'Content-Type': 'application/json'
     },
     body: JSON.stringify(body)
+  });
+
+  if (response.ok) {
+    console.log('Payment status pushed successfully');
+  } else {
+    console.error('Failed to push payment status');
+  }
+}
+
+async function pushInvalidPaymentStatus() {
+  const response = await fetch('http://127.0.0.1:3001/?bucket=payments', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/text'
+    },
+    body: '{"a":}'
   });
 
   if (response.ok) {
