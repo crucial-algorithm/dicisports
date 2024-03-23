@@ -6,10 +6,8 @@ describe('Checkout', () => {
 
   context('Maintenance: unauthenticated', () => {
     beforeEach(() => {
-      const url = Cypress.env('HTTP_CATCHER').replace(/\/$/, '');
-
       cy.task('db:reset');
-      cy.request('GET', `${url}/clear`);
+      clearHttpCatcher();
     });
 
     it('Should add race to cart and redirect to form route from event page', () => {
@@ -325,11 +323,9 @@ describe('Checkout', () => {
 
   context('Maintenance: authenticated', () => {
     beforeEach(() => {
-      const url = Cypress.env('HTTP_CATCHER').replace(/\/$/, '');
-
       cy.task('db:reset');
       cy.login();
-      cy.request('GET', `${url}/clear`);
+      clearHttpCatcher();
     });
 
     it('Should add race to cart and redirect to form route from event page', () => {
@@ -1273,10 +1269,8 @@ describe('Checkout', () => {
 
   context('Security', () => {
     beforeEach(() => {
-      const url = Cypress.env('HTTP_CATCHER').replace(/\/$/, '');
-
       cy.task('db:reset');
-      cy.request('GET', `${url}/clear`);
+      clearHttpCatcher();
     });
 
 
@@ -1500,10 +1494,8 @@ describe('Checkout', () => {
 
   context('Payments Gateway', () => {
     beforeEach(() => {
-      const url = Cypress.env('HTTP_CATCHER').replace(/\/$/, '');
-
       cy.task('db:reset');
-      cy.request('GET', `${url}/clear`);
+      clearHttpCatcher();
     });
 
     it('Should keep booking state if payment fails (MBWay Rejected)', () => {
@@ -1972,12 +1964,8 @@ describe('Checkout', () => {
       });
     });
 
-    context('should pay booking', () => {
+    context.only('should pay booking', () => {
       beforeEach(() => {
-        const url = Cypress.env('HTTP_CATCHER').replace(/\/$/, '');
-
-        cy.task('db:reset');
-        cy.request('GET', `${url}/clear`);
         cy.login();
       });
 
@@ -2236,4 +2224,11 @@ function arrayBufferToBase64(buffer) {
     binary += String.fromCharCode(bytes[i]);
   }
   return window.btoa(binary);
+}
+
+function clearHttpCatcher() {
+  const url = Cypress.env('HTTP_CATCHER').replace(/\/$/, '');
+
+  cy.request('GET', `${url}/clear?bucket=email`);
+  cy.request('GET', `${url}/clear?bucket=payments`);
 }
