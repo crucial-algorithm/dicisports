@@ -51,7 +51,7 @@ describe('Checkout', () => {
 
         .wait('@SendEmail')
 
-        .request({ method: 'GET', url: Cypress.env('HTTP_CATCHER') })
+        .request({ method: 'GET', url: Cypress.env('MAILGUN_ENDPOINT') })
         .then(({ body }) => {
           expect(body.to).to.eq('asd@gmail.com');
           expect(body.subject).to.eq(
@@ -496,7 +496,7 @@ describe('Checkout', () => {
           );
         })
 
-        .request({ method: 'GET', url: Cypress.env('HTTP_CATCHER') })
+        .request({ method: 'GET', url: Cypress.env('MAILGUN_ENDPOINT') })
         .then(({ body }) => {
           expect(body.subject).to.eq(
             'Informações da tua inscrição no evento Viana Granfondo.'

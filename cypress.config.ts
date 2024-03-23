@@ -13,7 +13,8 @@ const {
   CY_RESPONSE_TIMEOUT,
   CY_DEFAULT_COMMAND_TIMEOUT,
   SIBS_WEBHOOK_SECRET,
-  HTTP_CATCHER: PARAM_HTTP_CATCHER
+  HTTP_CATCHER: PARAM_HTTP_CATCHER,
+  MAILGUN_ENDPOINT
 } =
   process.env;
 
@@ -42,6 +43,7 @@ export default defineConfig({
     env: {
       HTTP_CATCHER,
       SIBS_WEBHOOK_SECRET,
+      MAILGUN_ENDPOINT,
       browserPermissions: {
         geolocation: 'allow'
       }
