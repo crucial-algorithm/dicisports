@@ -2,17 +2,18 @@ import { createDecipheriv } from 'crypto';
 
 import type { ActionFunction } from '@remix-run/node';
 import { json } from '@remix-run/router';
-import { CheckoutStatus } from '@prisma/client';
+import { CheckoutStatus, PaymentStatus } from '@prisma/client';
 
 import Config from '~/server/config.server';
-import { findBooking, findBookingCart, updateBookingStatus } from '~/server/db/booking.server';
+import { findBooking, findBookingCart } from '~/server/db/booking.server';
 
-import { decline, findPayment, pay, saveNotification } from '~/server/db/payments.server';
+import { decline, findPayment, saveNotification } from '~/server/db/payments.server';
 import type { SibsWebHookSchema } from '~/types';
 import { assignParticipantsBibNumber, findUserBookingParticipants } from '~/server/db/participant.server';
 import { findEvent } from '~/server/db/events.server';
 import { sendBookingConfirmationEmail } from '~/server/email.server';
 import { findUserById } from '~/server/db/users.server';
+import { db } from '~/server/db.server';
 
 export const action: ActionFunction = async ({ request }) => {
   console.log('SIBS webhook called');
@@ -21,7 +22,7 @@ export const action: ActionFunction = async ({ request }) => {
   const authTag = request.headers.get('x-authentication-tag') || '';
   const initVector = request.headers.get('x-initialization-vector') || '';
   const { SIBS_WEBHOOK_SECRET: secret } = Config();
-  let payload: SibsWebHookSchema | null = null;
+  let payload: SibsWebHookSchema;
 
   try {
     payload = decrypt(body, secret, initVector, authTag);
@@ -43,8 +44,25 @@ export const action: ActionFunction = async ({ request }) => {
     }
 
     if (payload.paymentStatus === 'Success') {
-      // update payment status with success
-      await pay(payload.transactionID, payload.paymentMethod);
+      db.$transaction(async (tx) => {
+        await tx.payment.update({
+          where: { transactionId: payload.transactionID },
+          data: {
+            status: PaymentStatus.paid,
+            method: payload.paymentMethod
+          }
+        });
+
+        if (payment) {
+          await tx.booking.update({
+            where: { id: payment.bookingId },
+            data: {
+              status: CheckoutStatus.confirmed
+            }
+          });
+        }
+      });
+      
       if (payment) {
         const raceParticipants = await findUserBookingParticipants(payment.bookingId);
 
@@ -53,7 +71,7 @@ export const action: ActionFunction = async ({ request }) => {
         }
 
         await assignParticipantsBibNumber(raceParticipants, raceParticipants[0].eventId as string);
-        await updateBookingStatus(payment.bookingId, CheckoutStatus.confirmed);
+        // await updateBookingStatus(payment.bookingId, CheckoutStatus.confirmed);
         await sendConfirmationEmail(payment.bookingId, raceParticipants[0].eventId as string);
       }
     }

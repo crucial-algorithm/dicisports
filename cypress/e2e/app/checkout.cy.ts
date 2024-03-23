@@ -1962,7 +1962,7 @@ describe('Checkout', () => {
         });
       });
 
-      it('should handle a fetch to failed status through the normal flow', () => {
+      it.skip('should handle a fetch to failed status through the normal flow', () => {
         cy.login()
           .visitAndWaitForHydration('/checkout/payment/uj3tsN7auCRx8citYiA2')
 

@@ -143,7 +143,7 @@ async function addPaymentMethodDetails(
   reference?: string,
   referenceExpiresAt?: string
 ) {
-  console.log('----> in addPaymentMethodDetails');
+  console.log('[SIBS] Adding payment method details to payment record', id, method);
 
   let expiresAt: Date | null = null;
 
