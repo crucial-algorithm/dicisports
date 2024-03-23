@@ -1964,7 +1964,7 @@ describe('Checkout', () => {
       });
     });
 
-    context.only('should pay booking', () => {
+    context('should pay booking', () => {
       beforeEach(() => {
         cy.login();
       });
