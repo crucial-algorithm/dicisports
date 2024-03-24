@@ -42,7 +42,6 @@ import {
   findUserBookingParticipants
 } from '~/server/db/participant.server';
 import {
-  findAllPaymentsForBooking,
   findSubmittedPayments,
   findUnsuccessfulPayments,
   isBookingPaid,
@@ -138,9 +137,11 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 
   const submittedPayments = await findSubmittedPayments(bookingId);
 
-  if (booking.status === CheckoutStatus.AwaitingPayment) {
-    console.log('Booking status is awaiting payment', bookingId, submittedPayments, booking.status);
-    console.log('All booking payments', await findAllPaymentsForBooking(bookingId));
+  // Use `submittedPayments` instead of booking status because booking status may have changed since
+  // booking was loaded earlier and when we get to this point (async functions allow for webhook requests to be processed in the meantime)
+  // Alernatively we could get booking from the database and check status instead!
+  if (submittedPayments.length > 0) {
+    console.log('booking is awaiting payment', bookingId, submittedPayments);
 
     return json({
       state: 'PaymentsPending',
