@@ -14,7 +14,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   const paymentId = params.transactionId as string;
   const payment = await findPayment(paymentId);
 
-  console.log(`[SIBS] redirected the submitted payment ${paymentId} for booking ${payment?.bookingId}`);
+  console.log(`[SIBS] In submitted: redirected the submitted payment ${paymentId} for booking ${payment?.bookingId}`);
 
   if (!payment) {
     // TODO: we need to log this somehow

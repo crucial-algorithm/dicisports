@@ -42,6 +42,7 @@ import {
   findUserBookingParticipants
 } from '~/server/db/participant.server';
 import {
+  findAllPaymentsForBooking,
   findSubmittedPayments,
   findUnsuccessfulPayments,
   isBookingPaid,
@@ -137,8 +138,10 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 
   const submittedPayments = await findSubmittedPayments(bookingId);
 
-  if (booking.status == CheckoutStatus.AwaitingPayment) {
-    console.log('booking is awaiting payment', bookingId, submittedPayments);
+  if (booking.status === CheckoutStatus.AwaitingPayment) {
+    console.log('Booking status is awaiting payment', bookingId, submittedPayments, booking.status);
+    console.log('All booking payments', await findAllPaymentsForBooking(bookingId));
+
     return json({
       state: 'PaymentsPending',
       event,

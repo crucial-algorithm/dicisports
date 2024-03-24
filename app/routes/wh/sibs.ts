@@ -70,11 +70,15 @@ export const action: ActionFunction = async ({ request }) => {
       }
       
       if (payload.paymentStatus !== 'Success') {
-        console.error(`[SIBS] payment with SIBS transaction ${payload.transactionID} was neither declined nor successful [${payment?.bookingId}]`);
+        console.error(
+          `[SIBS] payment with SIBS transaction ${payload.transactionID} was neither declined nor successful [${payment?.bookingId}]`
+        );
         return;
       }
 
-      console.log(`[SIBS] payment was successful... updating payment and booking status ${payment?.bookingId}`);
+      console.log(
+        `[SIBS] payment was successful... updating payment ${payload.transactionID} and booking status ${payment?.bookingId}`
+      );
 
       // add notification ID to payment
       await tx.payment.update({

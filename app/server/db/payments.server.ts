@@ -53,6 +53,14 @@ async function findUnsuccessfulPayments(bookingId: string) {
   });
 }
 
+async function findAllPaymentsForBooking(bookingId: string) {
+  return db.payment.findMany({
+    where: {
+      bookingId
+    }
+  });
+}
+
 async function findPayment(id: string) {
   return db.payment.findUnique({
     where: { id }
@@ -317,6 +325,7 @@ async function updateExpiredWarningSentAt(id: string) {
 
 export {
   findPayment,
+  findAllPaymentsForBooking,
   findPaymentByTransactionId,
   findSubmittedPayments,
   findUnsuccessfulPayments,

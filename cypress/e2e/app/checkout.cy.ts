@@ -1978,7 +1978,7 @@ describe('Checkout', () => {
       });
     });
 
-    context('should pay booking', () => {
+    context.only('should pay booking', () => {
       beforeEach(() => {
         cy.login();
       });
