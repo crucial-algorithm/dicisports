@@ -203,5 +203,20 @@
         ]
       }
     }
+  },
+  {
+    "method": "post",
+    "endpoint": "/bulkgate",
+    "response": {
+      "data": {
+        "status": "accepted",
+        "part_id": ["sms-5mvvwjradnmi"],
+        "number": "351937744117",
+        "channel": "sms",
+        "sms_id": "sms-5mvvwjradnmi",
+        "price": 0,
+        "credit": 0
+      }
+    }
   }
 ]

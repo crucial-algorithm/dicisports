@@ -151,29 +151,39 @@ export async function createPaymentTransaction(
 }
 
 export async function getPaymentStatus(payment: Payment) {
-  const { SIBS_CHECK_STATUS_ENDPOINT: url } = Config();
+  try {
+    const { SIBS_CHECK_STATUS_ENDPOINT: url } = Config();
 
-  const r = await fetch(
-    url.replace('{{transactionID}}', String(payment.transactionId)),
-    {
-      method: 'get',
-      headers: getAuthHeaders()
+    console.log(`... Requesting payment status to ${url} for booking ${payment.bookingId} ...`);
+
+    const r = await fetch(
+      url.replace('{{transactionID}}', String(payment.transactionId)),
+      {
+        method: 'get',
+        headers: getAuthHeaders()
+      }
+    );
+
+    if (!r.ok) {
+      console.error("[SIBS] Get payment status didn't go well", r);
+      return null;
     }
-  );
 
-  if (!r.ok) {
-    console.error('[SIBS] Get payment status didn\'t go well', r);
+    const txt = await r.text();
+
+    console.log('[SIBS] ::: DEBUG ::: text response was: ', txt);
+
+    const response = JSON.parse(txt) as SibsStatusResponse;
+
+    if (response?.returnStatus?.statusCode === '000') {
+      console.log('[SIBS] Successuful get status', response);
+      return response;
+    } else {
+      console.error('[SIBS] Unsuccessuful get status', response);
+      return null;
+    }
+  } catch (e) {
+    console.error(e);
     return null;
   }
-
-  const response = (await r.json()) as SibsStatusResponse;
-
-  if (response?.returnStatus?.statusCode === '000') {
-    console.log('[SIBS] Successuful get status', response);
-    return response;
-  } else {
-    console.error('[SIBS] Unsuccessuful get status', response);
-  }
-
-  return null;
 }

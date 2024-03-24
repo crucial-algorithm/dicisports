@@ -1,5 +1,5 @@
 import type { Payment } from '@prisma/client';
-import { PaymentStatus, PaymentMethod } from '@prisma/client';
+import { PaymentStatus, PaymentMethod, CheckoutStatus } from '@prisma/client';
 
 import { db } from '~/server/db.server';
 
@@ -13,7 +13,7 @@ import { updateRaceParticipantsPrice } from '~/server/db/participant.server';
 //                  checkout to SIBS, which is the instruction that starts the payment process
 //                  (SIBS creates a transactionId against our payment id)
 // 2.     pending:  Once the previous call to SIBS is returned, we update the payment record with
-//                  SIBS transactionID and change status to "pending"
+//                  SIBS transactionID and change status to "pending" (pending form submit)
 // 3.   submitted:  When user submits the payment form, SIBS redirects to an action provided by us
 //                  which will update the state to "submitted"
 // 4. paid/failed:  Webhook will update the state accordingly
@@ -49,6 +49,14 @@ async function findUnsuccessfulPayments(bookingId: string) {
           }
         }
       ]
+    }
+  });
+}
+
+async function findAllPaymentsForBooking(bookingId: string) {
+  return db.payment.findMany({
+    where: {
+      bookingId
     }
   });
 }
@@ -143,7 +151,7 @@ async function addPaymentMethodDetails(
   reference?: string,
   referenceExpiresAt?: string
 ) {
-  console.log('----> in addPaymentMethodDetails');
+  console.log('[SIBS] Adding payment method details to payment record', id, method);
 
   let expiresAt: Date | null = null;
 
@@ -222,10 +230,25 @@ async function pay(gatewayTransactionId: string, method: PaymentMethod) {
 }
 
 async function decline(gatewayTransactionId: string) {
-  return db.payment.update({
+  // intentionally not using a transaction here: we want to make sure we update the payment status
+  // Eval: have a recover mechanism for transations that do not fully complete after SIBS notification is received
+  await db.payment.update({
     where: { transactionId: gatewayTransactionId },
     data: {
       status: PaymentStatus.failed
+    }
+  });
+
+  const payment = await findPaymentByTransactionId(gatewayTransactionId);
+
+  if (!payment) {
+    return;
+  }
+
+  return db.booking.update({
+    where: { id: payment.bookingId },
+    data: {
+      status: CheckoutStatus.pending
     }
   });
 }
@@ -268,11 +291,45 @@ async function resetPaymentStatus(id: string) {
   });
 }
 
+async function findExpiredPaymentsNotYetNotified() {
+  return db.payment.findMany({
+    where: {
+      status: 'submitted',
+      expiresAt: {
+        lt: new Date()
+      },
+      expiredWarningSentAt: null,
+      booking: {
+        status: {
+          not: 'confirmed'
+        },
+        event: {
+          status: 'published',
+          startAt: {
+            gt: new Date()
+          }
+        }
+      }
+    }
+  });
+}
+
+async function updateExpiredWarningSentAt(id: string) {
+  return db.payment.update({
+    where: { id },
+    data: {
+      expiredWarningSentAt: new Date()
+    }
+  });
+}
+
 export {
   findPayment,
+  findAllPaymentsForBooking,
   findPaymentByTransactionId,
   findSubmittedPayments,
   findUnsuccessfulPayments,
+  findExpiredPaymentsNotYetNotified,
   createPaymentRequest,
   addGatewayDetailsToPayment,
   pay,
@@ -282,5 +339,6 @@ export {
   updatePaymentStatus,
   addReferenciaMultibancoInfo,
   addPaymentMethodDetails,
-  resetPaymentStatus
+  resetPaymentStatus,
+  updateExpiredWarningSentAt
 };

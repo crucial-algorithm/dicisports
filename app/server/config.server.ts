@@ -32,6 +32,10 @@ export type ConfigServer = {
   DEFAULT_COMMISSION: number;
   ORGANIZER_REVIEWERS_EMAILS: string;
   DOMAIN_URL: string;
+  SCHEDULER_SECRET: string;
+  SMS_ENDPOINT: string;
+  SMS_APPLICATION_ID: string;
+  SMS_APPLICATION_TOKEN: string;
 }
 
 let config: ConfigServer | null = null;
@@ -75,7 +79,11 @@ export default function Config(): ConfigServer {
     SIBS_CHECK_STATUS_ENDPOINT: extractVar('SIBS_CHECK_STATUS_ENDPOINT'),
     DEFAULT_COMMISSION: Number(extractVar('DEFAULT_COMMISSION')),
     ORGANIZER_REVIEWERS_EMAILS: extractVar('ORGANIZER_REVIEWERS_EMAILS'),
-    DOMAIN_URL: extractVar('DOMAIN_URL')
+    DOMAIN_URL: extractVar('DOMAIN_URL'),
+    SCHEDULER_SECRET: extractVar('SCHEDULER_SECRET'),
+    SMS_ENDPOINT: extractVar('SMS_ENDPOINT'),
+    SMS_APPLICATION_ID: extractVar('SMS_APPLICATION_ID'),
+    SMS_APPLICATION_TOKEN: extractVar('SMS_APPLICATION_TOKEN')
   };
 
   return config;

@@ -10,15 +10,16 @@ import { addParticipantsToRace } from '~/server/db/participant.server';
 import i18n from '~/server/i18n.server';
 import Id from '~/server/utils/Id.server';
 import { findEvent } from '~/server/db/events.server';
+// import { createAnonymousUser } from '~/server/db/users.server';
 
 export const loader: LoaderFunction = async ({ request }) => {
   const t = await i18n.getFixedT(request, 'checkout');
   const clientSession = await getClientSession(request);
-  const authClient = await getUser(request);
+  const user = await getUser(request);
   const { searchParams } = new URL(request.url);
 
-  const clientId =
-    authClient !== null ? authClient.id : clientSession.getClientId();
+  const userId =
+    user !== null ? user.id : clientSession.getClientId();
   const raceId = searchParams.get('raceId') as string;
   const eventId = searchParams.get('eventId') as string;
   const event = await findEvent(eventId);
@@ -35,7 +36,12 @@ export const loader: LoaderFunction = async ({ request }) => {
   try {
     const bookingId = Id();
 
-    await createInitialBookingFlow(bookingId, clientId, eventId, raceId, t);
+    // if (!user) {
+    //   console.log(`Creating anonymous user for booking ${bookingId}`);
+    //   await createAnonymousUser(userId, `bid-${bookingId}`);
+    // }
+
+    await createInitialBookingFlow(bookingId, userId, eventId, raceId, t);
     return redirect(`/checkout/info/${bookingId}`);
   } catch (e) {
     console.log(e);

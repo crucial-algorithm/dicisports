@@ -61,6 +61,70 @@ export const handle: KCDHandle & { id: string; i18n: string[] } = {
   i18n: ['checkout']
 };
 
+
+export const loader: LoaderFunction = async ({ request, params }) => {
+  const anonymousClient = await getClientSession(request);
+  const authedUser = await getUser(request);
+  const bookingId = params.bookingId as string;
+  const lng = await i18n.getLocale(request);
+
+  // We check if user is authenticated -> authenticatedClient, if not, we use the client session -> anonymousClient
+  const clientId =
+    authedUser !== null
+      ? authedUser.id
+      : anonymousClient.getClientId();
+
+  const booking = await findBooking(bookingId);
+
+  if (
+    !booking ||
+    booking.userId !== clientId ||
+    booking.status === CheckoutStatus.deleted
+  ) {
+    return redirect('/');
+  }
+
+  if (booking.status === CheckoutStatus.AwaitingPayment) {
+    return redirect(`/checkout/payment/${bookingId}`);
+  }
+
+  if (
+    booking.status === CheckoutStatus.checkout ||
+    booking.status === CheckoutStatus.pending
+  ) {
+    return redirect(`/checkout/info/${bookingId}`);
+  }
+
+  const eventId = booking.eventId;
+
+  const event = await findEvent(eventId);
+
+  if (!event) {
+    return redirect('/');
+  }
+
+  const raceParticipants = await findUserBookingParticipants(bookingId);
+
+  if (!raceParticipants || raceParticipants?.length === 0) {
+    return redirect(`/${lng}/event/${event.slug}`);
+  }
+
+  const cart = await findBookingCart(bookingId);
+  const organizer = await findOrganizer(event.createdById);
+
+  return json({
+    registration: booking,
+    event,
+    cart,
+    isAuth: !!authedUser,
+    bookingId,
+    organizerName: organizer?.name as string,
+    discountCode: booking.discountCode,
+    discountValue: booking.discountValue,
+    discountFixed: booking.discountFixed
+  });
+};
+
 export const action: ActionFunction = async ({ request, params }) => {
   const t = await i18n.getFixedT(request, ['checkout']);
   const form = await request.formData();
@@ -154,66 +218,6 @@ export const action: ActionFunction = async ({ request, params }) => {
 
     return badRequest({ errors });
   }
-};
-
-export const loader: LoaderFunction = async ({ request, params }) => {
-  const anonymousClient = await getClientSession(request);
-  const authenticatedClient = await getUser(request);
-  const bookingId = params.bookingId as string;
-  const lng = await i18n.getLocale(request);
-
-  // We check if user is authenticated -> authenticatedClient, if not, we use the client session -> anonymousClient
-  const clientId =
-    authenticatedClient !== null
-      ? authenticatedClient.id
-      : anonymousClient.getClientId();
-
-  const booking = await findBooking(bookingId);
-
-  if (
-    !booking ||
-    booking.userId !== clientId ||
-    booking.status === CheckoutStatus.deleted
-  ) {
-    return redirect('/');
-  }
-
-  if (booking.status !== CheckoutStatus.confirmed) {
-    return redirect(
-      `/checkout/${
-        booking?.status === CheckoutStatus.pending ? 'payment' : 'cart'
-      }/${bookingId}`
-    );
-  }
-
-  const eventId = booking.eventId;
-
-  const event = await findEvent(eventId);
-
-  if (!event) {
-    return redirect('/');
-  }
-
-  const raceParticipants = await findUserBookingParticipants(bookingId);
-
-  if (!raceParticipants || raceParticipants?.length === 0) {
-    return redirect(`/${lng}/event/${event.slug}`);
-  }
-
-  const cart = await findBookingCart(bookingId);
-  const organizer = await findOrganizer(event.createdById);
-
-  return json({
-    registration: booking,
-    event,
-    cart,
-    isAuth: !!authenticatedClient,
-    bookingId,
-    organizerName: organizer?.name as string,
-    discountCode: booking.discountCode,
-    discountValue: booking.discountValue,
-    discountFixed: booking.discountFixed
-  });
 };
 
 export default function CheckoutConfirmationRoute() {

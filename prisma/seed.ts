@@ -23,6 +23,7 @@ import latestBibNumberSeed from './data/latestBibNumber.json';
 import paymentsSeed from './data/payments.json';
 import organizerTypesSeed from './data/organizerTypes.json';
 import mailingListSeed from './data/mailingList.json';
+import urlShortenerSeed from './data/urlShortener.json';
 
 const db = new PrismaClient();
 const now = new Date();
@@ -68,6 +69,7 @@ async function seed() {
   await persist('discount codes', discountCodes(), db.discountCode);
   await persist('favorite groups', favoriteGroup(), db.favoriteGroup);
   await persist('group schedules', groupsSchedules(), db.groupSchedule);
+  await persist('url shortener', urlShortener(), db.urlShortener);
 }
 
 async function clear() {
@@ -97,7 +99,9 @@ async function clear() {
     , groups_type
     , shirt_size
     , sports
-    , difficulties`;
+    , difficulties
+    , url_shortener`
+    ;
 
 }
 
@@ -371,7 +375,7 @@ function payments() {
   return paymentsSeed.map((p) => {
     return {
       ...p,
-      expiresAt: new Date(now.getTime() + 3600000),
+      expiresAt: p.expiresAt ? parseDate(p.expiresAt) : null,
       createdAt: now,
       updatedAt: now
     };
@@ -392,6 +396,16 @@ function mailingList() {
   return mailingListSeed.map((m) => {
     return {
       ...m,
+      createdAt: now
+    };
+  });
+}
+
+function urlShortener() {
+  return urlShortenerSeed.map((r) => {
+    return {
+      ...r,
+      expiresAt: new Date(Date.now() + 24 * 3600 * 1000),
       createdAt: now
     };
   });
