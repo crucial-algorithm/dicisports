@@ -64,11 +64,13 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 async function runExpiredPaymentsJob(t: TFunction) {
   const expiredPayments = await findExpiredPaymentsNotYetNotified();
   const { DOMAIN_URL } = Config();
-  const { href } = new URL(DOMAIN_URL);
+  const { origin } = new URL(DOMAIN_URL);
 
   if (expiredPayments.length === 0) {
     console.log('no expired payments found. exiting');
     return;
+  } else {
+    console.log('found', expiredPayments.length, 'expired payments');
   }
 
   expiredPayments.forEach(async (payment) => {
@@ -113,6 +115,10 @@ async function runExpiredPaymentsJob(t: TFunction) {
     const { participant } = participants[0];
 
     if (!participant.phone) {
+      console.log(
+        "Going to exit because we don't have a phone, which shouldn't happen... a participant phone is required",
+        participant
+      );
       return;
     }
 
@@ -127,7 +133,7 @@ async function runExpiredPaymentsJob(t: TFunction) {
 
     try {
       const result = await sendSms(
-        t('Your Payment As Expired', { link: `${href}/s/${url}` }),
+        t('Your Payment As Expired', { link: `${origin}/s/${url}` }),
         participant.phone
       );
 
