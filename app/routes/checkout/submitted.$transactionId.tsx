@@ -14,7 +14,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   const paymentId = params.transactionId as string;
   const payment = await findPayment(paymentId);
 
-  console.log('----> SIBS redirected the submitted payment:', paymentId);
+  console.log(`[SIBS] redirected the submitted payment ${paymentId} for booking ${payment?.bookingId}`);
 
   if (!payment) {
     // TODO: we need to log this somehow
@@ -29,10 +29,13 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   }
 
   if (booking.status === CheckoutStatus.confirmed) {
-    console.log('... looks like this booking is already paid... don\'t request status again');
+    console.log('[SIBS] looks like this booking is already paid... don\'t request status again');
     return redirect(`/checkout/payment/${payment.bookingId}`);
   }
 
+  console.log(
+    `[SIBS] updating payment (submitted) and booking (AwaitingPayment) on form submit redirect for booking ${booking.id}`
+  );
   await db.$transaction(async (db) => {
     await db.payment.updateMany({
       where: { id: paymentId, status: PaymentStatus.pending },
@@ -62,7 +65,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
       );
     } else {
       // we should add log to this... the reason for the failed attempt may be important for debug
-      console.error('Status was impossible to retrieve so payment details will be missing... may as well just fail attempt');
+      console.error('[SIBS] Status was impossible to retrieve so payment details will be missing... may as well just fail attempt');
       await db.$transaction(async (db) => {
         await db.payment.update({
           where: { id: paymentId },

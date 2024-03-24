@@ -16,7 +16,7 @@ import { findUserById } from '~/server/db/users.server';
 import { db } from '~/server/db.server';
 
 export const action: ActionFunction = async ({ request }) => {
-  console.log('SIBS webhook called');
+  console.log('[SIBS] webhook called');
   const body = await request.text();
 
   const authTag = request.headers.get('x-authentication-tag') || '';
@@ -32,6 +32,7 @@ export const action: ActionFunction = async ({ request }) => {
   }
 
   try {
+    console.log('[SIBS] saving notification', payload);
     await saveNotification(payload);
     // using our transaction ID in case we didn't update the transaction id for the form redirect yet
     // (we are not sure about the order of calls SIBS we will use since their documentation states it's undeterministic)
@@ -44,6 +45,7 @@ export const action: ActionFunction = async ({ request }) => {
     }
 
     if (payload.paymentStatus === 'Success') {
+      console.log('[SIBS] payment was successful... updating payment and booking status');
       db.$transaction(async (tx) => {
         await tx.payment.update({
           where: { transactionId: payload.transactionID },
@@ -54,12 +56,14 @@ export const action: ActionFunction = async ({ request }) => {
         });
 
         if (payment) {
-          await tx.booking.update({
+          const x = await tx.booking.update({
             where: { id: payment.bookingId },
             data: {
               status: CheckoutStatus.confirmed
             }
           });
+
+          console.log('[SIBS] booking(s) updated', x);
         }
       });
       

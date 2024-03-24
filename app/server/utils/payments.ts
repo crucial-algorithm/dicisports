@@ -154,7 +154,7 @@ export async function getPaymentStatus(payment: Payment) {
   try {
     const { SIBS_CHECK_STATUS_ENDPOINT: url } = Config();
 
-    console.log(`... Requesting payment status to ${url}`);
+    console.log(`... Requesting payment status to ${url} for booking ${payment.bookingId} ...`);
 
     const r = await fetch(
       url.replace('{{transactionID}}', String(payment.transactionId)),
