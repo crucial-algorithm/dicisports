@@ -301,7 +301,7 @@ async function findExpiredPaymentsNotYetNotified() {
       expiredWarningSentAt: null,
       booking: {
         status: {
-          not: 'confirmed'
+          not: CheckoutStatus.confirmed
         },
         event: {
           status: 'published',

@@ -10,7 +10,7 @@ import { addParticipantsToRace } from '~/server/db/participant.server';
 import i18n from '~/server/i18n.server';
 import Id from '~/server/utils/Id.server';
 import { findEvent } from '~/server/db/events.server';
-// import { createAnonymousUser } from '~/server/db/users.server';
+import { createAnonymousUser } from '~/server/db/users.server';
 
 export const loader: LoaderFunction = async ({ request }) => {
   const t = await i18n.getFixedT(request, 'checkout');
@@ -36,10 +36,10 @@ export const loader: LoaderFunction = async ({ request }) => {
   try {
     const bookingId = Id();
 
-    // if (!user) {
-    //   console.log(`Creating anonymous user for booking ${bookingId}`);
-    //   await createAnonymousUser(userId, `bid-${bookingId}`);
-    // }
+    if (!user) {
+      console.log(`Creating anonymous user for booking ${bookingId}`);
+      await createAnonymousUser(userId, `bid-${bookingId}`);
+    }
 
     await createInitialBookingFlow(bookingId, userId, eventId, raceId, t);
     return redirect(`/checkout/info/${bookingId}`);
