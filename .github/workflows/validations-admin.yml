@@ -94,6 +94,13 @@ jobs:
 
           DOMAIN_URL: "http://localhost:3000"
 
+          SCHEDULER_SECRET: "abc"
+
+          SMS_ENDPOINT: "http://127.0.0.1:3001/bulkgate"
+          SMS_APPLICATION_ID: 1111
+          SMS_APPLICATION_TOKEN: token
+
+
       - uses: actions/upload-artifact@v2
         if: failure()
         with:

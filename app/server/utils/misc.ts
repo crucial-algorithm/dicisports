@@ -45,6 +45,10 @@ function processImgField(
   return value || null;
 }
 
+function BadRequest(message: string) {
+  return new Response(message, { status: 400 });
+}
+
 function Unauthorized(message: string) {
   return new Response(message, { status: 401 });
 }
@@ -60,6 +64,7 @@ function InternalServerError(message: string) {
 export {
   parseLocation,
   processImgField,
+  BadRequest,
   Unauthorized,
   NotFound,
   InternalServerError,

@@ -61,13 +61,13 @@ export const action: ActionFunction = async ({ request, params }) => {
   const language = await i18n.getLocale(request);
   const form = await request.formData();
   const anonymousClient = await getClientSession(request);
-  const authenticatedClient = await getUser(request);
+  const authedUser = await getUser(request);
   const bookingId = params.bookingId as string;
 
   // We check if user is authenticated -> authenticatedClient, if not, we use the client session -> anonymousClient
   const clientId =
-    authenticatedClient !== null
-      ? authenticatedClient.id
+    authedUser !== null
+      ? authedUser.id
       : anonymousClient.getClientId();
   const actionId = form.get('actionId') as string;
   const raceId = form.get('raceId') as string;
@@ -80,6 +80,10 @@ export const action: ActionFunction = async ({ request, params }) => {
 
   if (booking.status === CheckoutStatus.confirmed) {
     return redirect(`/checkout/confirmation/${booking.id}`);
+  }
+
+  if (booking.status === CheckoutStatus.AwaitingPayment) {
+    return redirect(`/checkout/payment/${booking.id}`);
   }
 
   const eventId = booking.eventId;

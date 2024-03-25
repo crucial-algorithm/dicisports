@@ -187,7 +187,20 @@ async function findUserBookingsList(
     total: total._count._all
   };
 }
-
+/**
+ * Update booking status follows the following flow:
+ * 1. When a booking is created, it is in the 'checkout' status
+ * 2. When the user form is properly validated and he moves to the payment screen, status moves to 'pending'
+ * 3. When a payment is submitted, status moves to 'AwaitingPayment'
+ * 3. When a booking is paid, it is in the 'confirmed' status
+ * 4. When a booking is deleted, it is in the 'deleted' status
+ *
+ * When a payment fails or expires, booking status is updated to 'pending' 
+ * 
+ * @param id 
+ * @param status 
+ * @returns 
+ */
 async function updateBookingStatus(
   id: string,
   status: CheckoutStatus
@@ -264,6 +277,29 @@ async function findUserOngoingBookingsByEvent(
   });
 }
 
+async function findBookingByPin(bookingId: string, pin: number) {
+  const booking = await db.booking.findUnique({
+    where: {
+      id: bookingId
+    }
+  });
+
+  if (!booking || booking.pin !== pin) {
+    return null;
+  }
+
+  return booking;
+}
+
+
+function checkIfBookingEditionIsLocked(booking: Booking) {
+  return (
+    booking.status === CheckoutStatus.confirmed ||
+    booking.status === CheckoutStatus.deleted ||
+    booking.status === CheckoutStatus.AwaitingPayment
+  );
+}
+
 export {
   updateBookingStatus,
   findBooking,
@@ -275,5 +311,7 @@ export {
   findConfirmedBookings,
   applyDiscountCode,
   removeBookingDiscount,
-  findUserOngoingBookingsByEvent
+  findUserOngoingBookingsByEvent,
+  checkIfBookingEditionIsLocked,
+  findBookingByPin
 };

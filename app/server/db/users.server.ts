@@ -146,6 +146,12 @@ async function createUser({
   }));
 }
 
+async function createAnonymousUser(id: string, emailPrefix: string): Promise<User> {
+  return db.user.create({
+    data: { id, email: `${emailPrefix}@fake.dicisports.com`, name: 'Anonymous Athlete' }
+  });
+}
+
 async function loginUser({
   email,
   password
@@ -197,5 +203,6 @@ export {
   updateUser,
   loginUser,
   updateUserPassword,
-  findUserById
+  findUserById,
+  createAnonymousUser
 };

@@ -1,12 +1,9 @@
 describe('Checkout', () => {
-  before(() => {
-    cy.task('db:reset');
-    cy.task('clearDownloadFolder');
-  });
-
   context('Maintenance: unauthenticated', () => {
     beforeEach(() => {
       cy.task('db:reset');
+      cy.task('clearDownloadFolder');
+      clearHttpCatcher();
     });
 
     it('Should add race to cart and redirect to form route from event page', () => {
@@ -54,7 +51,7 @@ describe('Checkout', () => {
 
         .wait('@SendEmail')
 
-        .request({ method: 'GET', url: Cypress.env('HTTP_CATCHER') })
+        .request({ method: 'GET', url: Cypress.env('MAILGUN_ENDPOINT') })
         .then(({ body }) => {
           expect(body.to).to.eq('asd@gmail.com');
           expect(body.subject).to.eq(
@@ -64,12 +61,33 @@ describe('Checkout', () => {
     });
 
     it('should access booking with PIN', () => {
-      cy.visitAndWaitForHydration('/checkout/info/e8pHPLNjnNxKTzoGwtLh?p=1234')
+      cy.visitAndWaitForHydration('/qa/e8pHPLNjnNxKTzoGwtLh/1234/info')
 
         .location()
         .should((l) => {
           expect(l.pathname).to.eq('/checkout/info/e8pHPLNjnNxKTzoGwtLh');
-          expect(l.search).to.eq('?p=1234');
+        })
+
+        .get('[data-cy=total-price]')
+        .should('exist')
+        .and('contain', '20€');
+    });
+
+    it('should not be able to access booking with invalid PIN', () => {
+      cy.visitAndWaitForHydration('/qa/e8pHPLNjnNxKTzoGwtLh/1235/info')
+
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.eq('/');
+        });
+    });
+
+    it('should be able to access booking from a shortned URL', () => {
+      cy.visitAndWaitForHydration('/s/gqMp7')
+
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.eq('/checkout/info/e8pHPLNjnNxKTzoGwtLh');
         })
 
         .get('[data-cy=total-price]')
@@ -302,6 +320,8 @@ describe('Checkout', () => {
   context('Maintenance: authenticated', () => {
     beforeEach(() => {
       cy.task('db:reset');
+      cy.task('clearDownloadFolder');
+      clearHttpCatcher();
       cy.login();
     });
 
@@ -476,7 +496,7 @@ describe('Checkout', () => {
           );
         })
 
-        .request({ method: 'GET', url: Cypress.env('HTTP_CATCHER') })
+        .request({ method: 'GET', url: Cypress.env('MAILGUN_ENDPOINT') })
         .then(({ body }) => {
           expect(body.subject).to.eq(
             'Informações da tua inscrição no evento Viana Granfondo.'
@@ -1245,6 +1265,13 @@ describe('Checkout', () => {
   });
 
   context('Security', () => {
+    beforeEach(() => {
+      cy.task('db:reset');
+      cy.task('clearDownloadFolder');
+      clearHttpCatcher();
+    });
+
+
     it('should not access info/payment/confirmation route without a booking', () => {
       cy.visitAndWaitForHydration('/checkout/info/MY4bvgxDbMtGv8rbYe5d')
         .location()
@@ -1466,6 +1493,8 @@ describe('Checkout', () => {
   context('Payments Gateway', () => {
     beforeEach(() => {
       cy.task('db:reset');
+      cy.task('clearDownloadFolder');
+      clearHttpCatcher();
     });
 
     it('Should keep booking state if payment fails (MBWay Rejected)', () => {
@@ -1932,6 +1961,21 @@ describe('Checkout', () => {
             .should('exist');
         });
       });
+
+      it.skip('should handle a fetch to failed status through the normal flow', () => {
+        cy.login()
+          .visitAndWaitForHydration('/checkout/payment/uj3tsN7auCRx8citYiA2')
+
+          .get('button[name=fail-to-fetch-status]')
+          .should('exist')
+          .click()
+
+          .get('#mock-payment-header')
+          .should('not.exist')
+
+          .get('[data-cy=gateway-error]')
+          .should('exist');
+      });
     });
 
     context('should pay booking', () => {
@@ -1941,17 +1985,11 @@ describe('Checkout', () => {
 
       it('MB Way', () => {
         cy.visitAndWaitForHydration('/checkout/payment/uj3tsN7auCRx8citYiA2')
-
-          .intercept('/checkout/payment/uj3tsN7auCRx8citYiA2')
-          .as('ConfirmationRoute')
-
           .get('button[name=pay-mbway]')
           .should('exist')
           .click()
 
-          .wait('@ConfirmationRoute')
-
-          .location()
+          .location({ timeout: 10000 })
           .should((l) => {
             expect(l.pathname).to.eq(
               '/checkout/confirmation/uj3tsN7auCRx8citYiA2'
@@ -1962,16 +2000,11 @@ describe('Checkout', () => {
       it('Credit Card', () => {
         cy.visitAndWaitForHydration('/checkout/payment/uj3tsN7auCRx8citYiA2')
 
-          .intercept('/checkout/payment/uj3tsN7auCRx8citYiA2')
-          .as('ConfirmationRoute')
-
           .get('button[name=pay-cc]')
           .should('exist')
           .click()
 
-          .wait('@ConfirmationRoute')
-
-          .location()
+          .location({ timeout: 10000 })
           .should((l) => {
             expect(l.pathname).to.eq(
               '/checkout/confirmation/uj3tsN7auCRx8citYiA2'
@@ -1982,16 +2015,12 @@ describe('Checkout', () => {
       it('MB', () => {
         cy.visitAndWaitForHydration('/checkout/payment/uj3tsN7auCRx8citYiA2')
 
-          .intercept('/checkout/payment/uj3tsN7auCRx8citYiA2')
-          .as('ConfirmationRoute')
-
           .get('button[name=pay-reference]')
           .should('exist')
           .click()
 
-          .wait('@ConfirmationRoute')
 
-          .location()
+          .location({ timeout: 10000 })
           .should((l) => {
             expect(l.pathname).to.eq(
               '/checkout/confirmation/uj3tsN7auCRx8citYiA2'
@@ -2209,4 +2238,10 @@ function arrayBufferToBase64(buffer) {
     binary += String.fromCharCode(bytes[i]);
   }
   return window.btoa(binary);
+}
+
+function clearHttpCatcher() {
+  const url = Cypress.env('HTTP_CATCHER').replace(/\/$/, '');
+
+  cy.request('GET', `${url}/clear-all`);
 }
