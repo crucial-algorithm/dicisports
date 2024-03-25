@@ -17,7 +17,9 @@ import type { Event } from '@prisma/client';
 
 import {
   AdjustmentsVerticalIcon,
-  ChevronDownIcon
+  CalendarDaysIcon,
+  ChevronDownIcon,
+  MapPinIcon
 } from '@heroicons/react/24/solid';
 
 import clsx from 'clsx';
@@ -61,9 +63,11 @@ import { useUserLocation } from '~/utils/LocationProvider';
 import { CanonicalMeta } from '~/utils/seo';
 
 import {
+  findFeaturedEvents,
   findLatestPublishedEvents,
   findUserFavoriteEvents
 } from '~/server/db/events.server';
+import DisplayDate from '~/components/shared/DIsplayDate';
 
 export type FilterParams = {
   actionId: keyof typeof actions | null;
@@ -87,6 +91,7 @@ type LoaderData = {
   mapToken: string;
   selectedDayParts: string[] | null;
   latestEvents: Event[];
+  featuredEvents: Event[];
 };
 
 type ActionData = {
@@ -129,6 +134,7 @@ export const loader: LoaderFunction = async ({ request }) => {
   const favoriteGroups = user ? await findUserFavoriteGroups(user.id) : [];
   const favoriteEvents = user ? await findUserFavoriteEvents(user.id) : [];
   let latestEvents: Event[] = [];
+  let featuredEvents: Event[] = [];
 
   let result: ActionData | null = null;
   const page = data.actionId === actions.search ? 0 : data.page || 0;
@@ -157,6 +163,7 @@ export const loader: LoaderFunction = async ({ request }) => {
     );
   } else {
     latestEvents = await findLatestPublishedEvents();
+    featuredEvents = await findFeaturedEvents();
   }
 
   const { MAPBOX_TOKEN } = Config();
@@ -169,7 +176,8 @@ export const loader: LoaderFunction = async ({ request }) => {
     searchResult: result,
     mapToken: MAPBOX_TOKEN,
     selectedDayParts: data.dayParts,
-    latestEvents
+    latestEvents,
+    featuredEvents
   });
 };
 
@@ -312,7 +320,8 @@ export default function Index() {
     favoriteEvents,
     mapToken,
     selectedDayParts,
-    latestEvents
+    latestEvents,
+    featuredEvents
   } = useLoaderData<LoaderData>() as unknown as LoaderData;
   const [selection, setSelection] = useState<DiciLocation | undefined>();
   const data = searchResult;
@@ -655,9 +664,19 @@ export default function Index() {
 
       {!searchPerformed && (
         <>
+          {featuredEvents.length > 0 && (
+            <>
+              <FeaturedEvents events={featuredEvents} />
+            </>
+          )}
+
           {latestEvents.length > 0 && (
             <>
-              <LatestEvents events={latestEvents} />
+              <HomePageEvents
+                events={latestEvents}
+                title={t('Latest Events')}
+                showViewAll={true}
+              />
               <div className="w-full md:max-w-5xl m-auto mb-4 mt-12 text-xl dark:text-white font-bold">
                 {t('Sports Grid Header')}
               </div>
@@ -699,8 +718,7 @@ function LatestEvents({ events }: { events: Event[] }) {
         {t('Latest Events')}
       </div>
       <div
-        className={`w-full mb-12 m-auto gap-2 md:max-w-5xl grid-cols-1 md:grid-cols-4
-        grid grid-flow-row md:grid-flow-row md:grid-rows-${Math.ceil(
+        className={`w-full mb-12 m-auto gap-2 md:max-w-5xl grid-cols-1 md:grid-cols-4 grid grid-flow-row md:grid-flow-row md:grid-rows-${Math.ceil(
           events.length / 4
         )}`}
       >
@@ -741,6 +759,176 @@ function LatestEvents({ events }: { events: Event[] }) {
         </ButtonLink>
       </div>
     </>
+  );
+}
+
+function HomePageEvents({
+  events,
+  title,
+  showViewAll
+}: {
+  events: Event[];
+  title: String;
+  showViewAll: boolean;
+}) {
+  const { t, i18n } = useTranslation('home');
+
+  const mobileClasses = '' 
+
+  return (
+    <>
+      <div className="w-full md:max-w-5xl m-auto mb-4 mt-12 text-xl dark:text-white font-bold capitalize">
+        {title}
+      </div>
+      <div className="flex overflow-x-scroll hide-scroll-bar w-full md:max-w-5xl">
+        <div className="relative flex flex-nowrap ml-6 md:ml-0">
+          {events.map(
+            ({ id, image1, image2, image3, image4, image5, slug, name }) => (
+              <Link
+                key={id}
+                className="relative min-w-[220px] mx-3 border-b-2 border-transparent hover:rounded-lg hover:border-orange"
+                to={`/${i18n.language}/event/${slug}`}
+              >
+                <DisplayImg
+                  className="w-full md:w-56 hover:resize"
+                  dontMessWithImgSize={true}
+                  imageId={image1 || image2 || image3 || image4 || image5 || ''}
+                  alt={name || ''}
+                  transformations={{
+                    resize: {
+                      type: 'fill',
+                      width: 400,
+                      height: 400
+                    }
+                  }}
+                />
+                <span
+                  className={`w-full md:w-56 absolute top-0 left-0 p-2 rounded-t-lg align-middle
+                text-ellipsis overflow-hidden truncate
+                bg-gray-800 bg-opacity-80 text-white text-bold text-blueGray-300`}
+                >
+                  {name}
+                </span>
+              </Link>
+            )
+          )}
+        </div>
+      </div>
+      {showViewAll && (
+        <div className="flex justify-center mt-6">
+          <ButtonLink to="/?coords=&search=&order=recent&actionId=search&sport=&dow=&value=&g=hide">
+            {t('View all events')}
+          </ButtonLink>
+        </div>
+      )}
+    </>
+  );
+}
+
+function FeaturedEvents({ events }: { events: Event[] }) {
+  const { t, i18n } = useTranslation('home');
+  const validEvents = events.filter(
+    ({ image1, image2, image3, image4, image5 }) =>
+      [image1, image2, image3, image4, image5].filter(Boolean).length >= 3
+  );
+  
+  if (validEvents.length === 0) {
+    return null;
+  }
+
+  const event = events[Math.floor(Math.random() * events.length)];
+  const {
+    image1,
+    image2,
+    image3,
+    image4,
+    image5,
+    slug,
+    name,
+    description,
+    startAt
+  } = event;
+
+  // @ts-ignore
+  const location: undefined | { place: string } = event.location;
+  const [img1, img2, img3] = [image1, image2, image3, image4, image5].filter(
+    Boolean
+  );
+  
+
+  return (
+    <main className="py-6 px-4 sm:p-6 md:py-10 md:px-8 rounded-lg mt-8 dark:bg-gray-700">
+      <div className="max-w-4xl mx-auto grid grid-cols-1 lg:max-w-5xl lg:gap-x-20 lg:grid-cols-2">
+        <div className="relative p-3 col-start-1 row-start-1 flex flex-col-reverse rounded-lg bg-gradient-to-t from-black/75 via-black/0 md:bg-none md:row-start-2 md:p-0 lg:row-start-1">
+          <h1 className="mt-1 text-lg font-semibold text- dark:text-white lg:text-2xl dark:sm:text-white">
+            {name}
+          </h1>
+        </div>
+        <div className="grid gap-4 col-start-1 col-end-3 row-start-1 md:mb-6 md:grid-cols-4 lg:gap-6 lg:col-start-2 lg:row-end-6 lg:row-span-6 lg:mb-0">
+          <DisplayImg
+            className="w-full h-60 object-cover rounded-lg md:h-52 md:col-span-2 lg:col-span-full"
+            dontMessWithImgSize={true}
+            imageId={img1}
+            alt={name || ''}
+            transformations={{
+              resize: {
+                type: 'fill',
+                width: 400,
+                height: 400
+              }
+            }}
+          />
+          <DisplayImg
+            className="hidden w-full h-52 object-cover rounded-lg md:block md:col-span-2 lg:row-start-2 lg:col-span-2 lg:h-32"
+            dontMessWithImgSize={true}
+            imageId={img2}
+            alt={name || ''}
+            transformations={{
+              resize: {
+                type: 'fill',
+                width: 400,
+                height: 400
+              }
+            }}
+          />
+          <DisplayImg
+            className="hidden w-full h-52 object-cover rounded-lg lg:block lg:row-start-2 lg:col-span-2 lg:h-32"
+            dontMessWithImgSize={true}
+            imageId={img3}
+            alt={name || ''}
+            transformations={{
+              resize: {
+                type: 'fill',
+                width: 400,
+                height: 400
+              }
+            }}
+          />          
+        </div>
+        <dl className="mt-4 text-xs font-medium text-slate-400 flex items-center row-start-2 sm:mt-1 sm:row-start-3 md:mt-2.5 lg:row-start-2">
+          <dt className="sr-only">When</dt>
+          <dd className="flex items-center mr-2">
+            <MapPinIcon className="h-6 w-6 m-0 inline-block" />
+            <span>{location && location.place && <>{location.place}</>}</span>
+          </dd>
+          <dt className="sr-only">Location</dt>
+          <dd className="flex items-center">
+            <CalendarDaysIcon className="h-6 w-6 mr-1 inline-block" />
+            <DisplayDate date={new Date(startAt || 0)} />
+          </dd>
+        </dl>
+        <div className="mt-4 col-start-1 row-start-3 self-center sm:mt-0 sm:col-start-2 sm:row-start-2 sm:row-span-2 lg:mt-6 lg:col-start-1 lg:row-start-3 lg:row-end-4">
+          <ButtonLink to={`/${i18n.language}/event/${slug}`}>
+            {t('View full event')}
+          </ButtonLink>
+        </div>
+        <Paragraph className="text-balance max-h-64 mt-4 text-sm leading-6 col-start-1 sm:col-span-2 lg:mt-6 lg:row-start-4 lg:col-span-1 dark:text-slate-400">
+          {description && description?.length > 300
+            ? description.slice(0, 300) + ' ...'
+            : description}
+        </Paragraph>
+      </div>
+    </main>
   );
 }
 

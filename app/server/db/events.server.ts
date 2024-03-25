@@ -135,6 +135,22 @@ async function findLatestPublishedEvents(): Promise<Event[]> {
   });
 }
 
+/**
+ * Used to get the events that have bookings with us
+ */
+async function findFeaturedEvents(): Promise<Event[]> {
+  return db.event.findMany({
+    where: {
+      status: Status.published,
+      hideFromLatestEvents: false,
+      endAt: { gte: new Date() },
+      useExternalBooking: false
+    },
+    orderBy: { createdAt: 'desc' },
+    take: 12
+  });
+}
+
 async function findUserEvents(
   userId: string
 ): Promise<Array<EventWithDocuments>> {
@@ -502,11 +518,15 @@ export {
   findEventOrganizer,
   findUserEvents,
   findEvent,
+  findEventWithRacesAndDocuments,
+  findPublishedEvents,
+  findLatestPublishedEvents,
+  findFeaturedEvents,
+  findEventBySlug,
   createDraftEvent,
   updateEvent,
   publishEvent,
   unpublishEvent,
-  findEventBySlug,
   addEventToFavorites,
   removeEventFromFavorites,
   findUserFavoriteEvents,
@@ -514,8 +534,5 @@ export {
   getEventResultsByName,
   deleteEvent,
   updateEventRegulation,
-  findEventWithRacesAndDocuments,
-  findPublishedEvents,
-  findLatestPublishedEvents,
   areThereTracesOfUserEventHandling
 };

@@ -314,3 +314,12 @@ body[data-path=preview-event] #organizer-side-bar {
 body[data-path=preview-event] #organizer-main-container {
     padding: 0;
 }
+
+.hide-scroll-bar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.hide-scroll-bar::-webkit-scrollbar {
+    display: none;
+  }
