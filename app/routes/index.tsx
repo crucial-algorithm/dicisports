@@ -794,13 +794,13 @@ function FeaturedEvent({ event }: { event: Event }) {
     <div className="w-full lg:w-9/12 m-auto py-6 px-4 sm:p-6 md:py-10 md:px-8 rounded-lg mt-8 bg-gray-100 dark:bg-gray-700">
       <div className="max-w-4xl mx-auto grid grid-cols-4 col-span-full">
         
-        <div className="[Título] col-start-1 col-span-full row-start-1 md:row-start-2 md:p-0 lg:row-start-2 relative p-3 flex flex-col-reverse rounded-lg bg-gradient-to-t from-black/75 via-black/0 md:bg-none">
+        <div className="col-start-1 col-span-full row-start-1 md:row-start-2 md:p-0 lg:row-start-2 relative p-3 flex flex-col-reverse rounded-lg bg-gradient-to-t from-black/75 via-black/0 md:bg-none">
           <h1 className="mt-1 text-lg font-semibold text-white md:text-gray-700">
             {name}
           </h1>
         </div>
         
-        <div className="[Images] col-start-1 col-span-full row-start-1 grid gap-4 grid-cols-4 md:gap-2">
+        <div className="col-start-1 col-span-full row-start-1 grid gap-4 grid-cols-4 md:gap-2">
           <DisplayImg
             className="w-full h-60 object-cover rounded-lg col-start-1 col-span-full md:col-span-2"
             dontMessWithImgSize={true}
@@ -842,7 +842,7 @@ function FeaturedEvent({ event }: { event: Event }) {
           />          
         </div>
         
-        <dl className="[Data] col-start-1 col-span-full row-start-2 mt-4 md:mt-0 text-xs font-medium text-slate-400 flex items-center md:row-start-3">
+        <dl className="col-start-1 col-span-full row-start-2 mt-4 md:mt-0 text-xs font-medium text-slate-400 flex items-center md:row-start-3">
           <dt className="sr-only">When</dt>
           <dd className="flex items-center mr-2">
             <MapPinIcon className="h-6 w-6 m-0 inline-block" />
@@ -855,7 +855,7 @@ function FeaturedEvent({ event }: { event: Event }) {
           </dd>
         </dl>
 
-        <div className="[button] row-start-3 col-start-1 md:row-start-2 md:col-start-4 md:row-span-2 mt-4 self-center">
+        <div className="row-start-3 col-start-1 md:row-start-2 md:col-start-4 md:row-span-2 mt-4 self-center">
           <ButtonLink to={`/${i18n.language}/event/${slug}`}>
             {t('View full event')}
           </ButtonLink>
