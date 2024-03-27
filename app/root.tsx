@@ -3,6 +3,7 @@ import * as React from 'react';
 import type { LinksFunction, LoaderFunction } from '@remix-run/node';
 import { json } from '@remix-run/node';
 import {
+  isRouteErrorResponse,
   Link,
   Links,
   LiveReload,
@@ -11,9 +12,10 @@ import {
   Scripts,
   ScrollRestoration,
   useLoaderData,
+  useLocation,
   useMatches,
-  useRouteError,
-  useNavigation, isRouteErrorResponse
+  useNavigation,
+  useRouteError
 } from '@remix-run/react';
 
 import { useSpinDelay } from 'spin-delay';
@@ -281,8 +283,11 @@ function Html({ lang }: { lang: string }) {
   const data = useLoaderData<typeof loader>();
   const analyticsUrl = 'https://plausible.io/js/plausible.js';
   const matches = useMatches();
-  const [, { pathname }] = matches;
   const { handle } = matches.pop() || { handle: { id: '' } };
+
+  const location = useLocation();
+  const regex = /\/o(?:\/|$)/;
+  const isOrganizerRoute = regex.test(location.pathname);
 
   // useChangeLanguage(lang);
   // script bellow setting window.ENV is not actually being used; Just keeping
@@ -331,10 +336,10 @@ function Html({ lang }: { lang: string }) {
         </ButtonLink>
       </header>
     )}
-    {pathname !== '/o' && <Navbar />}
+    {!isOrganizerRoute && <Navbar />}
     <Outlet />
     <ScrollRestoration />
-    {pathname !== '/o' && <Footer />}
+    {!isOrganizerRoute && <Footer />}
     <script
       dangerouslySetInnerHTML={{
         __html: `window.ENV = ${JSON.stringify(data.ENV)}`
@@ -422,7 +427,7 @@ export function ErrorBoundary() {
   }
 
   //TODO: Check how to handle error message
-  console.log(error);
+  console.error(error);
 
   return (
     <div>

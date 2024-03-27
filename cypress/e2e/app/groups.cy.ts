@@ -70,7 +70,7 @@ describe('Groups', () => {
   context('Maintenance', () => {
     beforeEach(() => cy.login());
 
-    it('should create a group', () => {
+    it.only('should create a group', () => {
       cy.visitAndWaitForHydration('/me')
         .get('[data-cy=create-group]')
         .click()

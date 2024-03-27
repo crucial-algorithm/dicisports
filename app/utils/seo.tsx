@@ -47,10 +47,11 @@ function getOpenGraphMeta({
 const DEFAULT_DESCRIPTION = 'Dicisports.com é o ponto de encontro de todos os desportistas. Encontra grupos com quem praticar as tuas actividades favoritas. Um só lugar, todos os desportos.';
 
 // TODO [MIGRATE TO V2]: reinstate Meta Function
-const CanonicalMeta: MetaFunction<RootLoaderData> = ({ location }) => {
+const CanonicalMeta: MetaFunction<RootLoaderData> = ({ location, matches }) => {
+  const [{ data: { user, ancestorUser, ENV, requestInfo, sports } }] = matches;
   //eslint-disable-next-line react-hooks/rules-of-hooks
  const { i18n } = useTranslation();
- const root: RootLoaderData = parentsData.root as RootLoaderData;
+ const root: RootLoaderData = { user, ancestorUser, ENV, requestInfo, sports };
  const { searchParams } = new URL(`https://a.com/${location.search}`);
  const sportId = searchParams.get('sport');
  const sport = root.sports.find((s) => s.id === Number(sportId));

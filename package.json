@@ -75,6 +75,7 @@
     "@prisma/client": "5.10.2",
     "@remix-run/dev": "2.7.2",
     "@remix-run/eslint-config": "2.7.2",
+    "@remix-run/v1-route-convention": "0.1.4",
     "@tailwindcss/line-clamp": "0.4.2",
     "@tailwindcss/typography": "0.5.2",
     "@types/file-saver": "2.0.5",

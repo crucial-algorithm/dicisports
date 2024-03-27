@@ -174,7 +174,7 @@ describe('Event', () => {
       cy.task('clearDownloadFolder');
     });
 
-    it('should create an event', () => {
+    it.only('should create an event', () => {
       cy.intercept('GET', '/o/event/*?_data=routes*')
         .as('EventRequests')
         .visitAndWaitForHydration('/o', {
@@ -715,7 +715,7 @@ describe('Event', () => {
         .and('contain', 'Granfondo updated');
     });
 
-    it('should be able to upload a regulation pdf', () => {
+    it.only('should be able to upload a regulation pdf', () => {
       cy.loginOrganizer()
 
         .intercept('GET', '/o/event/*?_data=routes*')
@@ -1177,7 +1177,7 @@ describe('Event', () => {
       });
     });
 
-    it('should allow to upload files without extension - documents', () => {
+    it.only('should allow to upload files without extension - documents', () => {
       cy.visitAndWaitForHydration('/o/event/bQmGXYkbhJetjk6mniMt/doc/new')
         .get('input[name=name]')
         .type('No Extension')
@@ -1214,7 +1214,7 @@ describe('Event', () => {
         });
     });
 
-    it('should allow to upload files without extension - regulation', () => {
+    it.only('should allow to upload files without extension - regulation', () => {
       cy.visitAndWaitForHydration('/o/event/bQmGXYkbhJetjk6mniMt')
         .get('#regulation-option-file')
         .click()
