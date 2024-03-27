@@ -681,7 +681,7 @@ export default function Index() {
                 title={t('Latest Events')}
                 showViewAll={true}
               />
-              <div className="w-full md:max-w-5xl m-auto mb-4 mt-12 text-xl dark:text-white font-bold">
+              <div className="w-full md:max-w-5xl lg:w-9/12 m-auto mb-4 mt-12 text-xl dark:text-white font-bold">
                 {t('Sports Grid Header')}
               </div>
             </>
