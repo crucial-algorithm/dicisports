@@ -120,7 +120,7 @@ export enum SortMethod {
   proximity = 'proximity'
 }
 
-export const meta: MetaFunction = CanonicalMeta;
+export const meta: MetaFunction = CanonicalMeta as MetaFunction;
 
 export const loader: LoaderFunction = async ({ request }) => {
   const data = parseQueryString(request.url);

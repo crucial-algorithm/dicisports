@@ -19,7 +19,8 @@
     "test:open": "npx cypress open",
     "test:run": "npx cypress run --browser chrome",
     "ci:build": "npm run build:css && npx prisma migrate reset --force && prisma db seed",
-    "typecheck": "tsc --skipLibCheck --noEmit -p tsconfig.check.json"
+    "typecheck": "tsc --skipLibCheck --noEmit -p tsconfig.check.json",
+    "dev:test": "remix dev --manual"
   },
   "prisma": {
     "seed": "node --require esbuild-register prisma/seed.ts"
@@ -31,7 +32,6 @@
     "@headlessui/react": "1.7.11",
     "@heroicons/react": "2.0.12",
     "@mapbox/mapbox-gl-geocoder": "5.0.1",
-    "@prisma/client": "4.10.1",
     "@radix-ui/react-dialog": "1.0.2",
     "@remix-run/node": "2.7.2",
     "@remix-run/react": "2.7.2",
@@ -72,6 +72,7 @@
   },
   "devDependencies": {
     "@cld-apis/types": "0.1.6",
+    "@prisma/client": "5.10.2",
     "@remix-run/dev": "2.7.2",
     "@remix-run/eslint-config": "2.7.2",
     "@tailwindcss/line-clamp": "0.4.2",
@@ -87,6 +88,7 @@
     "cypress": "13.2.0",
     "cypress-browser-permissions": "1.1.0",
     "dotenv": "10.0.0",
+    "esbuild-plugins-node-modules-polyfill": "1.6.3",
     "esbuild-register": "3.2.1",
     "eslint": "8.5.0",
     "eslint-config-prettier": "8.3.0",
@@ -95,15 +97,16 @@
     "eslint-plugin-import": "2.26.0",
     "eslint-plugin-no-only-tests": "3.1.0",
     "eslint-plugin-prettier": "4.0.0",
+    "isbot": "5.1.1",
     "postcss": "^8.4.5",
     "postcss-cli": "^9.1.0",
-    "prettier": "2.5.1",
-    "prisma": "4.10.1",
+    "prettier": "3.2.5",
+    "prisma": "5.10.2",
     "tailwindcss": "3.0.9",
     "typescript": "5.3.3"
   },
   "engines": {
-    "node": ">=14"
+    "node": ">=18.0.0"
   },
   "sideEffects": false
 }

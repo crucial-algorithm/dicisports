@@ -1,17 +1,17 @@
-import { resolve } from 'node:path';
-
 import { PassThrough } from 'stream';
-
-import * as React from 'react';
-import { renderToPipeableStream } from 'react-dom/server';
+import {
+  createReadableStreamFromReadable,
+  type EntryContext
+} from '@remix-run/node';
 import { RemixServer } from '@remix-run/react';
-import type { EntryContext } from '@remix-run/node';
+import { isbot } from 'isbot';
+import { renderToPipeableStream } from 'react-dom/server';
 import { createInstance } from 'i18next';
-import { initReactI18next, I18nextProvider } from 'react-i18next';
-
+import i18next from './server/i18n.server';
+import { I18nextProvider, initReactI18next } from 'react-i18next';
 import Backend from 'i18next-fs-backend';
-
-import i18n from '~/server/i18n.server';
+import i18n from './i18n'; // your i18n configuration file
+import { resolve } from 'node:path';
 
 const ABORT_DELAY = 5000;
 
@@ -21,28 +21,22 @@ export default async function handleRequest(
   responseHeaders: Headers,
   remixContext: EntryContext
 ) {
-  // First, we create a new instance of i18next so every request will have a
-  // completely unique instance and not share any state
+  const callbackName = isbot(request.headers.get('user-agent'))
+    ? 'onAllReady'
+    : 'onShellReady';
+
   const instance = createInstance();
-  const lng = await i18n.getLocale(request);
-  // @ts-ignore
-  const ns = i18n.getRouteNamespaces(remixContext);
+  const lng = await i18next.getLocale(request);
+  const ns = i18next.getRouteNamespaces(remixContext);
 
   await instance
     .use(initReactI18next) // Tell our instance to use react-i18next
     .use(Backend) // Setup our backend
     .init({
-      // And configure i18next as usual
-      supportedLngs: [ 'pt' ],
-      defaultNS: 'common',
-      fallbackLng: 'pt',
-      // Disable suspense again here
-      react: { useSuspense: false },
+      ...i18n, // spread the configuration
       lng, // The locale we detected above
-      ns, // The namespaces the routes about to render want to use
-      backend: {
-        loadPath: resolve('./public/locales/{{lng}}/{{ns}}.json')
-      }
+      ns, // The namespaces the routes about to render wants to use
+      backend: { loadPath: resolve('./public/locales/{{lng}}/{{ns}}.json') }
     });
 
   return new Promise((resolve, reject) => {
@@ -53,14 +47,13 @@ export default async function handleRequest(
         <RemixServer context={remixContext} url={request.url} />
       </I18nextProvider>,
       {
-        onShellReady: () => {
+        [callbackName]: () => {
           const body = new PassThrough();
-
+          const stream = createReadableStreamFromReadable(body);
           responseHeaders.set('Content-Type', 'text/html');
 
           resolve(
-            // @ts-ignore
-            new Response(body, {
+            new Response(stream, {
               headers: responseHeaders,
               status: didError ? 500 : responseStatusCode
             })

@@ -32,8 +32,9 @@ export default function DeleteDocumentDialog(props: {
 
   useEffect(() => {
     const typeOfFetcher = fetcherType(fetcher);
+    const fetcherData = fetcher.data as { ok: boolean } | undefined;
 
-    if (typeOfFetcher === 'actionReload' && fetcher.data?.ok) {
+    if (typeOfFetcher === 'actionReload' && fetcherData && fetcherData.ok) {
       return onDismiss();
     }
   }, [fetcher, onDismiss]);

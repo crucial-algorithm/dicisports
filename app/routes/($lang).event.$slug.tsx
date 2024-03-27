@@ -78,12 +78,10 @@ export const handle: { id: string; i18n: string[] } = {
   i18n: ['event']
 };
 
-export const meta: MetaFunction = ({ data }) => {
-  const { event } = data;
+export const meta: MetaFunction<LoaderData> = ({ data }) => {
+  const loaderData = data as LoaderData;
 
-  return {
-    title: event ? event.name : 'DiciSports - This Is Sports'
-  };
+  return [{ title: loaderData.event ? loaderData.event.name : 'DiciSports - This Is Sports' }];
 };
 
 export async function loadDisplayEventData(

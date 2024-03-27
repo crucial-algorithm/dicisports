@@ -373,17 +373,23 @@ export default function CheckoutPaymentRoute() {
 
   useEffect(() => {
     const typeOfFetcher = fetcherType(displayCartFetcher);
+    const fetcherData = displayCartFetcher.data as {
+      errors?: FormErrors;
+      ok?: boolean
+    };
 
     if (
       typeOfFetcher === 'actionReload' &&
-      displayCartFetcher.data?.errors
+      fetcherData &&
+      fetcherData.errors
     ) {
-      return setErrors(displayCartFetcher.data.errors as FormErrors);
+      return setErrors(fetcherData.errors as FormErrors);
     }
 
     if (
       typeOfFetcher === 'actionReload' &&
-      displayCartFetcher.data?.ok
+      fetcherData &&
+      fetcherData.ok
     ) {
       return setErrors({});
     }

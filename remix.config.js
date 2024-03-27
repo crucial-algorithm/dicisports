@@ -1,12 +1,25 @@
 /**
- * @type {import('@remix-run/dev/config').AppConfig}
+ * @type {import('@remix-run/dev').AppConfig}
  */
 module.exports = {
   appDirectory: "app",
   assetsBuildDirectory: "public/build",
   publicPath: "/build/",
-  serverBuildDirectory: "build",
-  devServerPort: 8002,
+  serverBuildPath: "build/index.js",
+  dev: { port: 4004 },
   ignoredRouteFiles: [".*"],
-  serverModuleFormat: "esm"
+  serverModuleFormat: "cjs",
+  serverNodeBuiltinsPolyfill: {
+    modules: {
+      buffer: true
+    },
+    globals: {
+      Buffer: true,
+    },
+  },
+
+  serverDependenciesToBundle: [/.*/],
+
+  tailwind: false,
+  postcss: false
 };

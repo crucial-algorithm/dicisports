@@ -744,35 +744,46 @@ export default function CheckoutInfoRoute() {
 
   useEffect(() => {
     const typeOfFetcher = fetcherType(fetcher);
+    const fetcherData = fetcher.data as {
+      ok?: boolean;
+      action?: string;
+      raceParticipant?: RaceParticipantWithRaceParticipantAndTeam,
+      errors?: FormErrors,
+      hash?: number,
+      missingParticipants?: string
+    } | undefined;
 
     if (
       typeOfFetcher === 'actionReload' &&
-      fetcher.data?.ok &&
-      fetcher.data?.action === CheckoutInfoActions.removeParticipant &&
-      fetcher.data?.raceParticipant
+      fetcherData &&
+      fetcherData.ok &&
+      fetcherData.action === CheckoutInfoActions.removeParticipant &&
+      fetcherData.raceParticipant
     ) {
       setMessage(t('Participant Removed'));
       showNotification();
 
-      return reset(fetcher.data?.raceParticipant);
+      return reset(fetcherData.raceParticipant);
     }
 
     if (
       typeOfFetcher === 'actionReload' &&
-      fetcher.data?.ok &&
-      fetcher.data?.action === CheckoutInfoActions.update &&
-      fetcher.data?.raceParticipant
+      fetcherData &&
+      fetcherData.ok &&
+      fetcherData.action === CheckoutInfoActions.update &&
+      fetcherData.raceParticipant
     ) {
       setMessage(t('Participant Saved'));
       showNotification();
 
-      return reset(fetcher.data.raceParticipant);
+      return reset(fetcherData.raceParticipant);
     }
 
     if (
       typeOfFetcher === 'actionReload' &&
-      fetcher.data?.ok &&
-      fetcher.data?.action === CheckoutInfoActions.updateAndSave
+      fetcherData &&
+      fetcherData.ok &&
+      fetcherData.action === CheckoutInfoActions.updateAndSave
     ) {
       setMessage(t('Participant Saved and Updated'));
       showNotification();
@@ -782,21 +793,23 @@ export default function CheckoutInfoRoute() {
 
     if (
       typeOfFetcher === 'actionReload' &&
-      fetcher.data?.errors &&
-      fetcher.data?.hash === hash &&
-      fetcher.data?.missingParticipants
+      fetcherData &&
+      fetcherData.errors &&
+      fetcherData.hash === hash &&
+      fetcherData.missingParticipants
     ) {
-      setMissingParticipants(JSON.parse(fetcher.data.missingParticipants));
+      setMissingParticipants(JSON.parse(fetcherData.missingParticipants));
 
-      return setErrors(fetcher.data.errors as FormErrors);
+      return setErrors(fetcherData.errors as FormErrors);
     }
 
     if (
       typeOfFetcher === 'done' &&
-      fetcher.data?.errors &&
-      fetcher.data?.hash === hash
+      fetcherData &&
+      fetcherData.errors &&
+      fetcherData.hash === hash
     ) {
-      return setErrors(fetcher.data.errors as FormErrors);
+      return setErrors(fetcherData.errors as FormErrors);
     }
   }, [reset, resetForm, fetcher, t, showNotification, hash, errors, setErrors]);
 
@@ -1118,11 +1131,16 @@ function AddRacesDialog({
 
   useEffect(() => {
     const typeOfFetcher = fetcherType(fetcher);
+    const fetcherData = fetcher.data as {
+      ok?: boolean;
+      action?: string
+    }
 
     if (
       typeOfFetcher === 'actionReload' &&
-      fetcher.data.ok &&
-      fetcher.data?.action === CheckoutInfoActions.addParticipants
+      fetcherData &&
+      fetcherData.ok &&
+      fetcherData.action === CheckoutInfoActions.addParticipants
     ) {
       return close;
     }

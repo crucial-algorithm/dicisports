@@ -1,6 +1,6 @@
 import { HeartIcon } from '@heroicons/react/24/outline';
 import { HeartIcon as Favorite } from '@heroicons/react/24/solid';
-import { useFetcher } from '@remix-run/react';
+import { FetcherWithComponents, useFetcher } from '@remix-run/react';
 import * as React from 'react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -53,15 +53,18 @@ export default function EventResult({
 
   useEffect(() => {
     const typeOfFetcher = fetcherType(favorite);
+    const favoriteData = favorite.data as { ok: boolean; action: string } | undefined;
 
-    if (typeOfFetcher === 'actionReload' && favorite.data.ok) {
-      setMessage(
-        favorite.data.action === 'add'
-          ? favoriteAddedMessage
-          : favoriteRemovedMessage
-      );
-      setIsFavorite(favorite.data.action === 'add');
-      showFavoriteAddedNotification();
+    if (typeOfFetcher === 'actionReload' && favoriteData) {
+      if (favoriteData.ok && favoriteData.action) {
+        setMessage(
+          favoriteData.action === 'add'
+            ? favoriteAddedMessage
+            : favoriteRemovedMessage
+        );
+        setIsFavorite(favoriteData.action === 'add');
+        showFavoriteAddedNotification();
+      }
     }
 
     const url = new URL(window.location.href);

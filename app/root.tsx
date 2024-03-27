@@ -13,7 +13,7 @@ import {
   useLoaderData,
   useMatches,
   useRouteError,
-  useNavigation
+  useNavigation, isRouteErrorResponse
 } from '@remix-run/react';
 
 import { useSpinDelay } from 'spin-delay';
@@ -302,47 +302,47 @@ function Html({ lang }: { lang: string }) {
     <html
       lang={lang}
       className={clsx(theme, 'set-color-team-current-red')}
-      dir="ltr"
+      dir='ltr'
     >
-      <head>
-        {process.env.NODE_ENV === 'production' && (
-          <>
-            <script defer data-domain="dicisports.com" src={analyticsUrl} />
-            <link rel="canonical" href={data.requestInfo.canonicalUrl} />
-          </>
-        )}
+    <head>
+      {process.env.NODE_ENV === 'production' && (
+        <>
+          <script defer data-domain='dicisports.com' src={analyticsUrl} />
+          <link rel='canonical' href={data.requestInfo.canonicalUrl} />
+        </>
+      )}
 
-        <meta charSet="utf-8" />
-        <meta name="viewport" content="width=device-width,initial-scale=1" />
-        <Meta />
-        <Links />
-      </head>
-      <body
-        className="dark:bg-gray-900 bg-white transition duration-500 w-full"
-        data-path={handle ? handle.id : ''}
-      >
+      <meta charSet='utf-8' />
+      <meta name='viewport' content='width=device-width,initial-scale=1' />
+      <Meta />
+      <Links />
+    </head>
+    <body
+      className='dark:bg-gray-900 bg-white transition duration-500 w-full'
+      data-path={handle ? handle.id : ''}
+    >
 
-        <PageLoadingMessage />
-        <NotificationMessage queryStringKey="message" delay={0.3} />
-        {data.ancestorUser && (
-          <header className="sticky top-0 z-10 bg-red-500 text-white w-full h-20 flex items-center justify-end py-4 px-6">
-            <ButtonLink to="/action/be-myself" variant="secondary">
-              {data.ancestorUser.name}
-            </ButtonLink>
-          </header>
-        )}
-        {pathname !== '/o' && <Navbar />}
-        <Outlet />
-        <ScrollRestoration />
-        {pathname !== '/o' && <Footer />}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `window.ENV = ${JSON.stringify(data.ENV)}`
-          }}
-        />
-        <Scripts />
-        {process.env.NODE_ENV === 'development' && <LiveReload />}
-      </body>
+    <PageLoadingMessage />
+    <NotificationMessage queryStringKey='message' delay={0.3} />
+    {data.ancestorUser && (
+      <header className='sticky top-0 z-10 bg-red-500 text-white w-full h-20 flex items-center justify-end py-4 px-6'>
+        <ButtonLink to='/action/be-myself' variant='secondary'>
+          {data.ancestorUser.name}
+        </ButtonLink>
+      </header>
+    )}
+    {pathname !== '/o' && <Navbar />}
+    <Outlet />
+    <ScrollRestoration />
+    {pathname !== '/o' && <Footer />}
+    <script
+      dangerouslySetInnerHTML={{
+        __html: `window.ENV = ${JSON.stringify(data.ENV)}`
+      }}
+    />
+    <Scripts />
+    {process.env.NODE_ENV === 'development' && <LiveReload />}
+    </body>
     </html>
   );
 }
@@ -365,71 +365,71 @@ export default function App() {
   );
 }
 
-export function ErrorBoundary({ error }: { error: Error }) {
-  return (
-    <div>
-      <h1 className="font-extrabold">There was an error</h1>
-      <p>{error.message}</p>
-      <hr />
-      <p>
-        Hey, developer, you should replace this with what you want your users to
-        see.
-      </p>
-    </div>
-  );
-}
-
-export function CatchBoundary() {
+export function ErrorBoundary() {
   const error = useRouteError();
-  const { t } = useTranslation('common');
 
-  let message;
-  let subMessage;
+  if (isRouteErrorResponse(error)) {
+    const { t } = useTranslation('common');
 
-  switch (error.status) {
-    case 401:
-      message = (
-        <p>
-          Oops! Looks like you tried to visit a page that you do not have access
-          to.
-        </p>
-      );
-      break;
-    case 404:
-      message = <p>{t('404 - Message')}</p>;
-      subMessage = <p>{t('404 - Sub Message')}</p>;
-      break;
+    let message;
+    let subMessage;
 
-    case 500:
-      message = <p>{t('500 error message')}</p>;
-      break;
+    switch (error.status) {
+      case 401:
+        message = (
+          <p>
+            Oops! Looks like you tried to visit a page that you do not have access
+            to.
+          </p>
+        );
+        break;
+      case 404:
+        message = <p>{t('404 - Message')}</p>;
+        subMessage = <p>{t('404 - Sub Message')}</p>;
+        break;
 
-    default:
-      throw new Error(error.data || error.statusText);
-  }
+      case 500:
+        message = <p>{t('500 error message')}</p>;
+        break;
 
-  return (
-    <html lang="en" className="dark">
+      default:
+        throw new Error(error.data || error.statusText);
+    }
+
+    return (
+      <html lang='en' className='dark'>
       <head>
         <title>{`${error.status} ${error.statusText}`}</title>
         <Links />
       </head>
-      <body className="dark:bg-gray-900 bg-white transition duration-500">
-        <div className="flex justify-center items-center gap-y-2 flex-col h-screen">
-          <Link to="/">
-            <HomeLogo className="w-80 h-16 md:w-96 lg:w-144" />
-          </Link>
-          <div className="flex flex-col items-center">
-            <H3>{message}</H3>
-            {subMessage && <H6 variant="secondary">{subMessage}</H6>}
-          </div>
-          <ButtonLink variant="primary" to={'/'} className="mt-8">
-            {t('Return home')}
-          </ButtonLink>
+      <body className='dark:bg-gray-900 bg-white transition duration-500'>
+      <div className='flex justify-center items-center gap-y-2 flex-col h-screen'>
+        <Link to='/'>
+          <HomeLogo className='w-80 h-16 md:w-96 lg:w-144' />
+        </Link>
+        <div className='flex flex-col items-center'>
+          <H3>{message}</H3>
+          {subMessage && <H6 variant='secondary'>{subMessage}</H6>}
         </div>
-        <Scripts />
+        <ButtonLink variant='primary' to={'/'} className='mt-8'>
+          {t('Return home')}
+        </ButtonLink>
+      </div>
+      <Scripts />
       </body>
-    </html>
+      </html>
+    );
+  }
+
+  //TODO: Check how to handle error message
+  console.log(error);
+
+  return (
+    <div>
+      <h1>Uh oh ...</h1>
+      <p>Something went wrong.</p>
+      <pre>Unknown error</pre>
+    </div>
   );
 }
 
@@ -438,35 +438,35 @@ function Footer() {
   const year = (new Date()).getUTCFullYear();
 
   return (
-    <footer className="mt-32">
-      <div className="px-4">
-        <div className="mx-auto max-w-7xl lg:px-8">
-          <div className="border-t border-zinc-100 pb-16 pt-10 dark:border-zinc-700/40">
-            <div className="relative px-2 md:px-4">
-              <div className="mx-auto max-w-2xl md:max-w-5xl">
-                <div className="flex md:flex-row items-center justify-between gap-6 dark:text-cadet-blue-700 text-xs">
-                  <div className="flex flex-col md:flex-row gap-6 items-start md:items-center">
+    <footer className='mt-32'>
+      <div className='px-4'>
+        <div className='mx-auto max-w-7xl lg:px-8'>
+          <div className='border-t border-zinc-100 pb-16 pt-10 dark:border-zinc-700/40'>
+            <div className='relative px-2 md:px-4'>
+              <div className='mx-auto max-w-2xl md:max-w-5xl'>
+                <div className='flex md:flex-row items-center justify-between gap-6 dark:text-cadet-blue-700 text-xs'>
+                  <div className='flex flex-col md:flex-row gap-6 items-start md:items-center'>
                     <Link
-                      to="/privacy"
-                      className="dark:text-cadet-blue-700 dark:hover:text-cadet-blue-500"
+                      to='/privacy'
+                      className='dark:text-cadet-blue-700 dark:hover:text-cadet-blue-500'
                     >
                       {t('Privacy Policy')}
                     </Link>
                     <Link
-                      to="/terms"
-                      className="dark:text-cadet-blue-700 dark:hover:text-cadet-blue-500"
+                      to='/terms'
+                      className='dark:text-cadet-blue-700 dark:hover:text-cadet-blue-500'
                     >
                       {t('Terms and Conditions')}
                     </Link>
                     <a
-                      href="https://www.livroreclamacoes.pt/inicio"
-                      className="dark:text-cadet-blue-700 dark:hover:text-cadet-blue-500"
+                      href='https://www.livroreclamacoes.pt/inicio'
+                      className='dark:text-cadet-blue-700 dark:hover:text-cadet-blue-500'
                     >
-                      <img src={buildImageUrl('product/complaints-logo', {})} alt="" />
+                      <img src={buildImageUrl('product/complaints-logo', {})} alt='' />
                     </a>
                   </div>
 
-                  <p className="hidden md:block">
+                  <p className='hidden md:block'>
                     {t('Dicisports Watermark', { year })}
                   </p>
                 </div>

@@ -10,6 +10,10 @@ import { findEventBySlug } from '~/server/db/events.server';
 import { NotFound } from '~/server/utils/misc';
 import i18n from '~/server/i18n.server';
 
+type LoaderData = {
+  regulation: string
+}
+
 export const meta: MetaFunction = CanonicalMeta as MetaFunction;
 
 export const loader: LoaderFunction = async ({ request, params }) => {
@@ -28,7 +32,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 };
 
 export default function Privacy() {
-  const { regulation } = useLoaderData();
+  const { regulation } = useLoaderData<LoaderData>();
 
   return (
     <Main>

@@ -14,18 +14,18 @@ import type { Group, SearchResults } from '~/types';
 import { fetcherType } from '~/utils/misc';
 
 export default function GroupResult({
-  group,
-  img,
-  isUserFavorite,
-  favAddedMessage,
-  favRemovedMessage,
-  copiedToClipMessage,
-  address,
-  location,
-  isLoggedIn,
-  userLocation,
-  showLocation
-}: {
+                                      group,
+                                      img,
+                                      isUserFavorite,
+                                      favAddedMessage,
+                                      favRemovedMessage,
+                                      copiedToClipMessage,
+                                      address,
+                                      location,
+                                      isLoggedIn,
+                                      userLocation,
+                                      showLocation
+                                    }: {
   group: SearchResults;
   img?: string;
   isUserFavorite: boolean;
@@ -58,15 +58,18 @@ export default function GroupResult({
 
   useEffect(() => {
     const typeOfFetcher = fetcherType(favorite);
+    const favoriteData = favorite.data as { ok: boolean; action: string } | undefined;
 
-    if (typeOfFetcher === 'done' && favorite.data.ok) {
-      if (ref.current) {
-        (ref.current as HTMLFormElement).reset();
+    if (typeOfFetcher === 'done' && favoriteData) {
+      if (favoriteData.ok && favoriteData.action) {
+        if (ref.current) {
+          (ref.current as HTMLFormElement).reset();
+        }
+        setMessage(
+          favoriteData.action === 'add' ? favAddedMessage : favRemovedMessage
+        );
+        showFavoriteAddedNotification();
       }
-      setMessage(
-        favorite.data.action === 'add' ? favAddedMessage : favRemovedMessage
-      );
-      showFavoriteAddedNotification();
     }
   }, [
     favorite,
@@ -90,16 +93,16 @@ export default function GroupResult({
         key={group.id}
         img={img}
         actions={
-          <ButtonGroup density="compact">
+          <ButtonGroup density='compact'>
             {group.whatsapp && (
               <ButtonLink
-                size="tiny"
-                type="button"
+                size='tiny'
+                type='button'
                 to={whatsAppLink}
                 id={`whatsapp-${group.id}`}
                 onClick={stopPropagation}
               >
-                <WhatsApp className="h-6 w-6 m-0 inline-block fill-white dark:fill-black" />
+                <WhatsApp className='h-6 w-6 m-0 inline-block fill-white dark:fill-black' />
               </ButtonLink>
             )}
             <CopyToClipboard
@@ -110,28 +113,28 @@ export default function GroupResult({
             <favorite.Form
               // @ts-ignore
               ref={ref}
-              method="post"
+              method='post'
               action={`/g/group/fav/${group.id}`}
             >
               {isUserFavorite ? (
                 <Button
-                  size="tiny"
-                  name="action"
-                  value="remove"
-                  id="remove-favorite"
+                  size='tiny'
+                  name='action'
+                  value='remove'
+                  id='remove-favorite'
                   onClick={stopPropagation}
                 >
-                  <Favorite className="h-6 w-6 m-0 inline-block" />
+                  <Favorite className='h-6 w-6 m-0 inline-block' />
                 </Button>
               ) : (
                 <Button
-                  size="tiny"
-                  name="action"
-                  value="add"
+                  size='tiny'
+                  name='action'
+                  value='add'
                   id={`add-favorite-${group.id}`}
                   onClick={stopPropagation}
                 >
-                  <HeartIcon className="h-6 w-6 m-0 inline-block" />
+                  <HeartIcon className='h-6 w-6 m-0 inline-block' />
                 </Button>
               )}
             </favorite.Form>
@@ -145,8 +148,8 @@ export default function GroupResult({
         }
         footer={
           <div
-            className="font-medium text-gray-500 dark:text-white flex items-center justify-center"
-            data-cy="distance"
+            className='font-medium text-gray-500 dark:text-white flex items-center justify-center'
+            data-cy='distance'
           >
             {userLocation && showLocation && (
               <span>{Math.ceil(group.distance || 0)} km</span>
