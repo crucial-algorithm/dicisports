@@ -710,7 +710,7 @@ export default function OrganizerEventRoute() {
     const formData = new FormData();
 
     if (file) {
-      formData.append('file', file)
+      formData.append('file', file);
     }
 
     setFileUploadHandlerEvent(f);
@@ -733,13 +733,14 @@ export default function OrganizerEventRoute() {
 
   useEffect(() => {
     const typeOfFetcher = fetcherType(fetcher);
+    const fetcherData = fetcher?.data as { ok?: boolean; errors?: string[] };
 
-    if (fetcher?.data?.ok && typeOfFetcher === 'actionReload') {
+    if (fetcherData?.ok && typeOfFetcher === 'actionReload') {
       fileUploadHandlerEvent?.options?.clear();
       setRegulationError(null);
     }
 
-    if (fetcher?.data?.errors && typeOfFetcher === 'actionReload') {
+    if (fetcherData?.errors && typeOfFetcher === 'actionReload') {
       fileUploadHandlerEvent?.options?.clear();
       setRegulationError(t('Invalid File Type'));
     }

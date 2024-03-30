@@ -6,7 +6,7 @@ import Main from '~/components/shared/Main';
 import { CanonicalMeta } from '~/utils/seo';
 
 // TODO [MIGRATE TO V2]: reinstate Meta Function
-// export const meta: MetaFunction = CanonicalMeta;
+export const meta: MetaFunction = CanonicalMeta as MetaFunction;
 
 export default function Privacy() {
   return (

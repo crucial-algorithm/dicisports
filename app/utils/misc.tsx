@@ -1,6 +1,7 @@
 import { fileTypeFromBuffer } from 'file-type';
 
-import { FetcherWithComponents, json } from '@remix-run/react';
+import type { FetcherWithComponents } from '@remix-run/react';
+import { json } from '@remix-run/react';
 import type { Booking } from '@prisma/client';
 
 import type {

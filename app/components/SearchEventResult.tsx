@@ -1,6 +1,6 @@
 import { HeartIcon } from '@heroicons/react/24/outline';
 import { HeartIcon as Favorite } from '@heroicons/react/24/solid';
-import { FetcherWithComponents, useFetcher } from '@remix-run/react';
+import { useFetcher } from '@remix-run/react';
 import * as React from 'react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -53,7 +53,9 @@ export default function EventResult({
 
   useEffect(() => {
     const typeOfFetcher = fetcherType(favorite);
-    const favoriteData = favorite.data as { ok: boolean; action: string } | undefined;
+    const favoriteData = favorite.data as
+      | { ok: boolean; action: string }
+      | undefined;
 
     if (typeOfFetcher === 'actionReload' && favoriteData) {
       if (favoriteData.ok && favoriteData.action) {

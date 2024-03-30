@@ -4,6 +4,7 @@ import {
   PlusIcon,
   XMarkIcon
 } from '@heroicons/react/24/outline';
+import type { EventTeam, Participant, Race, ShirtSize } from '@prisma/client';
 import {
   CheckoutStatus,
   DiscountCodeStatus,
@@ -19,7 +20,6 @@ import * as React from 'react';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { z, ZodError } from 'zod';
-import type { Race, Participant, ShirtSize, EventTeam } from '@prisma/client';
 
 import { CheckoutInfoActions } from '~/action.keys';
 import BookingLoginCTADialog from '~/components/BookingLoginCTADialog';
@@ -66,7 +66,8 @@ import i18n from '~/server/i18n.server';
 import type { UICartRow } from '~/types';
 import {
   badRequest,
-  displayTimeOfDay, fetcherType,
+  displayTimeOfDay,
+  fetcherType,
   formHelperReadDate,
   validateIdentityCard,
   validatePtVatNumber
@@ -744,14 +745,16 @@ export default function CheckoutInfoRoute() {
 
   useEffect(() => {
     const typeOfFetcher = fetcherType(fetcher);
-    const fetcherData = fetcher.data as {
-      ok?: boolean;
-      action?: string;
-      raceParticipant?: RaceParticipantWithRaceParticipantAndTeam,
-      errors?: FormErrors,
-      hash?: number,
-      missingParticipants?: string
-    } | undefined;
+    const fetcherData = fetcher.data as
+      | {
+          ok?: boolean;
+          action?: string;
+          raceParticipant?: RaceParticipantWithRaceParticipantAndTeam;
+          errors?: FormErrors;
+          hash?: number;
+          missingParticipants?: string;
+        }
+      | undefined;
 
     if (
       typeOfFetcher === 'actionReload' &&
@@ -1133,8 +1136,8 @@ function AddRacesDialog({
     const typeOfFetcher = fetcherType(fetcher);
     const fetcherData = fetcher.data as {
       ok?: boolean;
-      action?: string
-    }
+      action?: string;
+    };
 
     if (
       typeOfFetcher === 'actionReload' &&
