@@ -70,7 +70,7 @@ describe('Groups', () => {
   context('Maintenance', () => {
     beforeEach(() => cy.login());
 
-    it.only('should create a group', () => {
+    it('should create a group', () => {
       cy.visitAndWaitForHydration('/me')
         .get('[data-cy=create-group]')
         .click()
@@ -83,7 +83,7 @@ describe('Groups', () => {
         })
 
         // fill the form
-        .get('input[name=name]')
+        .get('input[name=name][id=group-sport]')
         .type('a new group')
         .should('have.value', 'a new group')
 

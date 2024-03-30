@@ -61,7 +61,7 @@ export const action: ActionFunction = async ({ request, params }) => {
 
       const prefix = `events/${event.createdAt.getFullYear()}${String(event.createdAt.getMonth() + 1).padStart(2, '0')}/${eventId}`;
       const key = await uploadToS3(
-        Readable.from(file.buffer),
+        Readable.from([file.buffer]),
         prefix,
         `regulation.${file.type}`
       );

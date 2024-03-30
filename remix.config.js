@@ -21,7 +21,7 @@ module.exports = {
       Buffer: true,
     },
   },
-  browserNodeBuiltinsPolyfill: { modules: { events: true } },
+  browserNodeBuiltinsPolyfill: { modules: { events: true, stream: true } },
 
   serverDependenciesToBundle: [/.*/],
 

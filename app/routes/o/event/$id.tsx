@@ -707,13 +707,15 @@ export default function OrganizerEventRoute() {
 
   function uploadHandler(f: FileUploadHandlerEvent) {
     const file = f.files[0];
+    const formData = new FormData();
+
+    if (file) {
+      formData.append('file', file)
+    }
 
     setFileUploadHandlerEvent(f);
     fetcher.submit(
-      {
-        //@ts-ignore
-        file: file
-      },
+      formData,
       {
         encType: 'multipart/form-data',
         // submitting to another route, because of a conflict uploading a file and images
