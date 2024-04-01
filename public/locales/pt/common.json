@@ -63,5 +63,7 @@
 
   "Default Dirty Alert Message": "Todas as alterações feitas serão perdidas. Quer continuar?",
 
-  "Image size too large": "Imagem excede limite máximo de 5MB"
+  "Image size too large": "Imagem excede limite máximo de 5MB",
+
+  "Clean <something>": "Limpar {{something}}"
 }

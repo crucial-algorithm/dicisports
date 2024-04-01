@@ -101,19 +101,20 @@ function ButtonInner({
   variant,
   size = 'medium'
 }: Pick<ButtonProps, 'children' | 'variant' | 'size'>) {
+
+  const outerClass = clsx(
+    'focus-ring absolute inset-0 rounded-full opacity-100 disabled:opacity-50 transform transition',
+    {
+      'border-2 border-secondary bg-primary group-hover:border-transparent group-focus:border-transparent':
+        variant === 'secondary' || variant === 'danger',
+      danger: variant === 'danger',
+      'bg-inverse': variant === 'primary'
+    }
+  );
+
   return (
     <>
-      <div
-        className={clsx(
-          'focus-ring absolute inset-0 rounded-full opacity-100 disabled:opacity-50 transform transition',
-          {
-            'border-2 border-secondary bg-primary group-hover:border-transparent group-focus:border-transparent':
-              variant === 'secondary' || variant === 'danger',
-            danger: variant === 'danger',
-            'bg-inverse': variant === 'primary'
-          }
-        )}
-      />
+      <div className={outerClass} />
 
       <div
         className={clsx(

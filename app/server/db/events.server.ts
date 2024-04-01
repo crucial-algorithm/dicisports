@@ -229,6 +229,18 @@ async function findEventWithRacesAndDocuments(
   });
 }
 
+async function findRegionsWithEvents(): Promise<
+  { region: string; events: number }[]
+> {
+  return (
+    await db.$queryRawUnsafe<{ region: string; events: number }[]>(`
+    SELECT location->>'region' as region, count(1) as events 
+    FROM events
+      WHERE location->>'region' IS NOT NULL AND status = 'published'
+    GROUP BY 1`)
+  ).map(({ region, events }) => ({ region, events: Number(events) }));
+}
+
 async function createDraftEvent(
   createdById: string,
   language: Language,
@@ -541,6 +553,7 @@ export {
   findLatestPublishedEvents,
   findFeaturedEvents,
   findEventBySlug,
+  findRegionsWithEvents,
   createDraftEvent,
   updateEvent,
   publishEvent,

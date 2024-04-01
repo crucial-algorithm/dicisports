@@ -214,6 +214,12 @@ type GroupFilters = {
   timeOfDay: [number, number] | null;
 };
 
+type EventFilters = {
+  sport: number | null;
+  region: string | null;
+  timedEvents: 'included' | 'excluded' | null
+};
+
 type LoginAction = null | 'login' | 'ws' | 'favorite';
 
 type Difficulty = {
@@ -310,6 +316,7 @@ export {
   DiciLocation,
   UploadImageMeta,
   GroupFilters,
+  EventFilters,
   // entities
   User,
   Group,
