@@ -5,6 +5,7 @@ import clsx from 'clsx';
 import * as React from 'react';
 import { Fragment, useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { ArrowLeftIcon } from '@heroicons/react/24/solid';
 
 import { Combobox, Transition } from '@headlessui/react';
 
@@ -13,7 +14,6 @@ import type { SearchEventResults } from '~/server/db/events.server';
 import type { Language } from '~/types';
 
 import { useTheme } from '~/utils/theme-provider';
-
 
 export default function SearchLocations({
   className,
@@ -106,7 +106,6 @@ function EventsAutoComplete({
   id,
   className,
   options = [],
-  lang,
   placeholder,
   onChange,
   completeMethod,
@@ -121,9 +120,9 @@ function EventsAutoComplete({
     },
     { wait: 500 }
   );
+  const [focused, setFocused] = useState<boolean>(false);
 
   function handleSelectChange(value: string) {
-    console.log('changed...', value);
     onChange && onChange(value);
   }
 
@@ -147,22 +146,48 @@ function EventsAutoComplete({
       return;
     }
     dropdownButton.current?.click();
+    setFocused(true);
+  }
+
+  function handleBlur() {
+    setFocused(false);
   }
 
   return (
-    <div className={clsx('top-16', className)}>
+    <div
+      className={clsx(className, {
+        'top-16': !focused,
+        'h-screen w-screen fixed top-0 left-0 bg-primary z-10': focused
+      })}
+    >
       <Combobox onChange={handleSelectChange}>
-        <div className="relative mt-1">
+        <div
+          className={clsx({
+            'relative mt-1': !focused,
+            'relative mt-0': focused
+          })}
+        >
           <div className="z-100">
             <Combobox.Input
               id={id}
-              className="input-text px-4 lg:px-11 rounded-full"
+              className={clsx({
+                'input-text px-4 lg:px-11 rounded-full': !focused,
+                'input-text px-12 rounded-none': focused
+              })}
               displayValue={display}
               placeholder={placeholder}
               onChange={handleInputChange}
               // @ts-ignore
               onFocus={handleOpenOnFocus}
             />
+            {focused && (
+              <div
+                className="absolute top-3 left-2 rounded-full h-8 w-8 flex items-center justify-center active:bg-black active:bg-opacity-30 dark:active:bg-opacity-50"
+                onClick={handleBlur}
+              >
+                <ArrowLeftIcon className="h-6 w-6 text-gray-400 active:text-white" />
+              </div>
+            )}
           </div>
           <Transition
             as={Fragment}
