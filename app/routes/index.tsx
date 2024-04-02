@@ -12,8 +12,10 @@ import { useTranslation } from 'react-i18next';
 import type { Event } from '@prisma/client';
 import {
   CalendarDaysIcon,
+  CheckIcon,
   ChevronDownIcon,
-  MapPinIcon
+  MapPinIcon,
+  XMarkIcon
 } from '@heroicons/react/24/solid';
 import { ClockIcon } from '@heroicons/react/24/outline';
 import { ToggleButton } from 'primereact/togglebutton';
@@ -27,11 +29,7 @@ import Main from '~/components/shared/Main';
 import { Spacer } from '~/components/shared/Spacer';
 import type { SearchEventResult } from '~/server/db/search.server';
 import { searchEvents } from '~/server/db/search.server';
-import type {
-  EventFilters,
-  Language,
-  Sport
-} from '~/types';
+import type { EventFilters, Language, Sport } from '~/types';
 
 import HomeLogo from '~/components/shared/HomeLogo';
 import { getUser } from '~/server/auth/session.server';
@@ -40,7 +38,10 @@ import { CanonicalMeta } from '~/utils/seo';
 
 import { getI18nText } from '~/components/I18nText';
 import type { LocationInPicker } from '~/components/LocationPickerDialog';
-import LocationPickerDialog, { mapValueToLocationInPicker } from '~/components/LocationPickerDialog';
+import LocationPickerDialog, {
+  PT_REGIONS,
+  mapValueToLocationInPicker
+} from '~/components/LocationPickerDialog';
 import SearchEvents from '~/components/SearchEvents';
 import SportsPickerDialog from '~/components/SportsPickerDialog';
 import ButtonTriState from '~/components/shared/ButtonTriState';
@@ -53,7 +54,7 @@ import {
   findUserFavoriteEvents
 } from '~/server/db/events.server';
 import { H5 } from '~/components/shared/typography';
-
+import ComboBox from '~/components/shared/form/ComboBox';
 
 type TimedEventFilter = null | 'included' | 'excluded';
 
@@ -106,11 +107,7 @@ export const loader: LoaderFunction = async ({ request }) => {
   let result: ActionData | null = null;
   const page = data.actionId === actions.search ? 0 : data.page || 0;
 
-  if (
-    data.actionId === actions.search ||
-    data.actionId === actions.more
-  ) {
-
+  if (data.actionId === actions.search || data.actionId === actions.more) {
     result = await search(
       data.region?.value || null,
       data.timedEvents,
@@ -123,7 +120,8 @@ export const loader: LoaderFunction = async ({ request }) => {
     const featuredEvents = await findFeaturedEvents();
 
     if (featuredEvents.length > 0) {
-      featuredEvent = featuredEvents[Math.floor(Math.random() * featuredEvents.length)];
+      featuredEvent =
+        featuredEvents[Math.floor(Math.random() * featuredEvents.length)];
     }
   }
 
@@ -149,9 +147,13 @@ export default function Index() {
   );
 
   const filters = useQueryString();
-  const [timedEventFilter, setTimedEventFilter] = useState<TimedEventFilter>(filters.timedEvents);
+  const [timedEventFilter, setTimedEventFilter] = useState<TimedEventFilter>(
+    filters.timedEvents
+  );
   const [selectinglocation, setSelectingLocation] = useState<boolean>(false);
-  const [location, setLocation] = useState<LocationInPicker | null>(filters.region);
+  const [location, setLocation] = useState<LocationInPicker | null>(
+    filters.region
+  );
   const [selectingSport, setSelectingSport] = useState<boolean>(false);
   const [sport, setSport] = useState<Sport | null>(
     filters.sport ? sports.find((s) => s.id === filters.sport) || null : null
@@ -160,7 +162,6 @@ export default function Index() {
   const handleOnSubmit = useCallback(() => {
     setSearchPerformed(true);
   }, []);
-
 
   useEffect(() => {
     if (!searchResult) {
@@ -199,14 +200,14 @@ export default function Index() {
     }
   }, [searchResult, searchResults.length]);
 
-  const showMoreResults = !!searchResult && searchResults.length < searchResult.total;
+  const showMoreResults =
+    !!searchResult && searchResults.length < searchResult.total;
 
   const submit = useSubmit();
 
   function handleResetSearchPerformed() {
     setSearchPerformed(false);
   }
-
 
   function handleOpenLocationDialog() {
     setSelectingLocation(true);
@@ -216,6 +217,10 @@ export default function Index() {
     setLocation(loc);
     setSelectingLocation(false);
     submit(gatherFormData('region', loc?.value || ''));
+  }
+
+  function handleApplyLocationDesktop(loc: string | number) {
+    handleApplyLocation(PT_REGIONS.find((r) => r.value === loc) || null);
   }
 
   function handleCloseLocationDialog() {
@@ -230,6 +235,10 @@ export default function Index() {
     setSport(sport);
     setSelectingSport(false);
     submit(gatherFormData('sport', String(sport?.id || '')));
+  }
+
+  function handleApplySportDesktop(sport: number | string | null) {
+    handleApplySport(sports.find((s) => s.id === Number(sport)) || null);
   }
 
   function handleCloseSportsDialog() {
@@ -296,58 +305,6 @@ export default function Index() {
           </div>
         </div>
 
-        {searchPerformed && (
-          <>
-            <div className="w-full m-auto my-4 lg:w-9/12 flex flex-nowrap overflow-x-scroll hide-scroll-bar">
-              <div className="relative gap-2 flex flex-nowrap ml-6 md:ml-0">
-                <ToggleButton
-                  onLabel={
-                    sport === null
-                      ? t('Event Filters: All Sports')
-                      : getI18nText(sport?.name, i18n.language as Language)
-                  }
-                  offLabel={t('Event Filters: All Sports')}
-                  onIcon="pi pi-times"
-                  offIcon="pi pi-angle-down"
-                  checked={sport !== null}
-                  onChange={handleOpenSportsDialog}
-                  className="ds min-w-32"
-                />
-
-                <ToggleButton
-                  onLabel={
-                    location === null
-                      ? t('Event Filters: Location')
-                      : location?.label
-                  }
-                  offLabel={t('Event Filters: Location')}
-                  onIcon="pi pi-times"
-                  offIcon="pi pi-angle-down"
-                  checked={location !== null}
-                  onChange={handleOpenLocationDialog}
-                  className="ds min-w-32"
-                />
-
-                <ButtonTriState
-                  labels={{
-                    checked: t('Event Filters: Classification'),
-                    unchecked: t('Event Filters: No Classification'),
-                    indeterminate: t('Event Filters: Results')
-                  }}
-                  icons={{
-                    checked: <ClockIcon className="h-6" />,
-                    unchecked: <ClockIcon className="h-6" />,
-                    indeterminate: <ClockIcon className="h-6" />
-                  }}
-                  selectionState={mapTimedTo3State(timedEventFilter)}
-                  onChange={handleTimedEventsFilter}
-                  className="ds min-w-32"
-                />
-              </div>
-            </div>
-          </>
-        )}
-
         {showMoreResults && (
           <>
             <div className="inset-x-0 mb-8 flex align-middle justify-center absolute bottom-0 w-full">
@@ -364,8 +321,106 @@ export default function Index() {
         )}
       </Form>
 
+      {searchPerformed && (
+        <>
+          <div className="w-full m-auto my-4 flex flex-nowrap overflow-x-scroll hide-scroll-bar lg:hidden">
+            <div className="relative gap-2 flex flex-nowrap ml-6 md:ml-0">
+              <ToggleButton
+                onLabel={
+                  sport === null
+                    ? t('Event Filters: All Sports')
+                    : getI18nText(sport?.name, i18n.language as Language)
+                }
+                offLabel={t('Event Filters: All Sports')}
+                onIcon="pi pi-times"
+                offIcon="pi pi-angle-down"
+                checked={sport !== null}
+                onChange={handleOpenSportsDialog}
+                className="ds min-w-32"
+              />
+
+              <ToggleButton
+                onLabel={
+                  location === null
+                    ? t('Event Filters: Location')
+                    : location?.label
+                }
+                offLabel={t('Event Filters: Location')}
+                onIcon="pi pi-times"
+                offIcon="pi pi-angle-down"
+                checked={location !== null}
+                onChange={handleOpenLocationDialog}
+                className="ds min-w-32"
+              />
+
+              <ButtonTriState
+                labels={{
+                  checked: t('Event Filters: Classification'),
+                  unchecked: t('Event Filters: No Classification'),
+                  indeterminate: t('Event Filters: Results')
+                }}
+                icons={{
+                  checked: <ClockIcon className="h-6" />,
+                  unchecked: <ClockIcon className="h-6" />,
+                  indeterminate: <ClockIcon className="h-6" />
+                }}
+                selectionState={mapTimedTo3State(timedEventFilter)}
+                onChange={handleTimedEventsFilter}
+                className="ds min-w-44"
+              />
+            </div>
+          </div>
+
+          <div className="hidden lg:flex px-4 my-4 flex flex-nowrap items-center gap-4">
+            <ComboBox
+              name="sport-ignored"
+              placeholder={t('Event Filters: All Sports')}
+              value={sport?.id}
+              options={sports.map(({ id, name }) => ({
+                value: id,
+                label: getI18nText(name, i18n.language as Language) || ''
+              }))}
+              onChange={handleApplySportDesktop}
+              className="min-w-52 w-fit-content"
+              defaultValue={sport?.id}
+              clearOption={true}
+            />
+            <ComboBox
+              name="region-ignored"
+              placeholder={t('Event Filters: Location')}
+              value={location?.value}
+              options={PT_REGIONS.map(({ label, value }) => ({
+                value,
+                label,
+                disabled: !regions.find((r) => r.region === value)
+              }))}
+              onChange={handleApplyLocationDesktop}
+              className="min-w-52 w-fit-content"
+              defaultValue={location?.value}
+              clearOption={true}
+            />
+
+            <ButtonTriState
+                labels={{
+                  checked: t('Event Filters: Classification'),
+                  unchecked: t('Event Filters: No Classification'),
+                  indeterminate: t('Event Filters: Results')
+                }}
+                icons={{
+                  checked: <CheckIcon className="h-6" />,
+                  unchecked: <XMarkIcon className="h-6" />,
+                  indeterminate: <ClockIcon className="h-6" />
+                }}
+                selectionState={mapTimedTo3State(timedEventFilter)}
+                onChange={handleTimedEventsFilter}
+                className="ds min-w-32 min-h-[60px] mt-1"
+              />
+          </div>
+        </>
+      )}
+
       {searchPerformed && searchResults.length === 0 && (
-        <H5 className="text-center mt-8">{t('No events found')}</H5>
+        <H5 className="text-center mt-8 lg:max-w-lg lg:m-auto lg:mt-8">{t('No events found')}</H5>
       )}
 
       {searchPerformed && (
@@ -497,7 +552,6 @@ function FeaturedEvent({ event }: { event: Event }) {
     event.image4,
     event.image5
   ].filter(Boolean);
-  
 
   return (
     <div className="w-full lg:w-9/12 m-auto py-6 px-4 sm:p-6 md:py-10 md:px-8 rounded-lg mt-8 bg-gray-100 dark:bg-gray-700">
@@ -592,14 +646,15 @@ function map3StateToTimed(
   return o === null ? null : o ? 'included' : 'excluded';
 }
 
-function mapTimedTo3State(o: TimedEventFilter): true | false | null | undefined {
-  return o === null ? null : o  === 'included';
+function mapTimedTo3State(
+  o: TimedEventFilter
+): true | false | null | undefined {
+  return o === null ? null : o === 'included';
 }
 
 function mapUrlParamToTimed(v: string | null): TimedEventFilter {
   return v === 'included' ? 'included' : v === 'excluded' ? 'excluded' : null;
 }
-
 
 function parseQueryString(url: string): FilterParams {
   const { searchParams } = new URL(url);
@@ -637,14 +692,13 @@ async function search(
   page: number,
   reset: boolean = true
 ): Promise<ActionData> {
-
   const filters: EventFilters = {
     sport: !sport || sport === -1 ? null : sport,
     region,
     timedEvents
   };
 
-  const { total, results } = await searchEvents(filters, 2, page);
+  const { total, results } = await searchEvents(filters, 10, page);
 
   return {
     results,

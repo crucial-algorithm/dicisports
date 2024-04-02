@@ -1,6 +1,7 @@
 import { Combobox, Listbox, Transition } from '@headlessui/react';
 import { CheckIcon, ChevronUpDownIcon } from '@heroicons/react/20/solid';
 import { XMarkIcon } from '@heroicons/react/24/outline';
+import { use } from 'chai';
 import clsx from 'clsx';
 import type { TFunction } from 'i18next';
 import * as React from 'react';
@@ -18,6 +19,7 @@ import { useTheme } from '~/utils/theme-provider';
 export type Option = {
   value: string | number;
   label: string | TranslationObject;
+  disabled?: boolean;
   image?: string;
 };
 
@@ -25,8 +27,10 @@ type SelectProps = {
   name: string;
   options: Array<Option>;
   lang?: Language;
-  defaultValue?: string | number;
+  defaultValue?: string | number | null;
   placeholder: string;
+  clearOption?: boolean;
+  clearLabel?: string;
   onChange?: (value: string | number) => void;
 } & Omit<React.ComponentProps<'select'>, 'onChange' | 'defaultValue'>;
 
@@ -36,10 +40,15 @@ export default function ComboBox({
   options: paramOptions,
   defaultValue,
   lang,
-  onChange
+  onChange,
+  placeholder,
+  clearOption,
+  clearLabel
 }: SelectProps) {
+  const [t] = useTranslation('common');
   const options = paramOptions.map((o) => {
     return {
+      disabled: o.disabled,
       value: o.value,
       label:
         typeof o.label === 'string'
@@ -48,7 +57,7 @@ export default function ComboBox({
     };
   });
 
-  defaultValue = defaultValue === null ? undefined : defaultValue;
+  defaultValue = defaultValue === undefined ? null : defaultValue;
 
   const [selected, setSelected] = useState(defaultValue);
   const formProps = useContext(FormContext);
@@ -61,9 +70,10 @@ export default function ComboBox({
     );
   }
 
-  function StyleOption({ active }: { active: boolean }) {
+  function StyleOption({ active, disabled }: { active: boolean, disabled: boolean}) {
+    console.log(disabled);
     return clsx('relative cursor-default select-none py-2 pl-10 pr-4', {
-      'bg-gray-100 text-gray-800': active,
+      'bg-gray-100 text-gray-800 dark:bg-gray-600 dark:text-gray-100': active,
       'bg-white text-base dark:bg-gray-800 dark:text-gray-100': !active
     });
   }
@@ -76,7 +86,7 @@ export default function ComboBox({
 
   return (
     <Listbox value={selected} onChange={onChangedInternal}>
-      <div className={clsx('relative mt-1', className)}>
+      <div className={clsx('ds-combo relative mt-1', className)}>
         <Listbox.Button
           className="input-text text-left min-h-[60px]"
           name={`select-${name}`}
@@ -90,6 +100,9 @@ export default function ComboBox({
               aria-hidden="true"
             />
           </span>
+          {!selected && placeholder && (
+            <span className="text-gray-400">{placeholder}</span>
+          )}
         </Listbox.Button>
         <Transition
           as={Fragment}
@@ -106,11 +119,22 @@ export default function ComboBox({
               'focus:outline-none'
             )}
           >
+            {clearOption && (
+              <Listbox.Option
+                key="empty"
+                value={null}
+                className={StyleOption}
+                disabled={selected === null}
+              >
+                {clearLabel || t('Clear Combo')}
+              </Listbox.Option>
+            )}
             {options.map((option, idx) => (
               <Listbox.Option
                 key={idx}
                 className={StyleOption}
                 value={option.value}
+                disabled={option.disabled === true}
               >
                 {({ selected, active }) => (
                   <>

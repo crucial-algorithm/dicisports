@@ -123,6 +123,6 @@ function mapValueToLocationInPicker(location: string | null): LocationInPicker |
   return region ? { value: region.value, label: region.label } : null;
 }
 
-export { mapValueToLocationInPicker };
+export { mapValueToLocationInPicker, regions as PT_REGIONS };
 
 export type { LocationInPicker };

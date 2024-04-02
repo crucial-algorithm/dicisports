@@ -65,5 +65,6 @@
 
   "Image size too large": "Imagem excede limite máximo de 5MB",
 
-  "Clean <something>": "Limpar {{something}}"
+  "Clean <something>": "Limpar {{something}}",
+  "Clear Combo": "Limpar seleção"
 }

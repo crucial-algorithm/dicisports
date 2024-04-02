@@ -120,9 +120,12 @@
         flex-direction: row-reverse;
         align-items: center;
         justify-content: space-between;
-        padding: .75rem .75rem;
-        gap: .25rem;
         text-wrap: nowrap;
+        gap: .25rem;
+    }
+
+    .ds.ds-button-tristate.p-button .p-button-label {
+        @apply lg:text-gray-400;
     }
 
     .ds.p-button .p-button-icon-left {
@@ -135,11 +138,11 @@
     }
 
     .ds.p-togglebutton.p-button.p-highlight:hover, .ds.ds-button-tristate.p-button:hover {
-        @apply bg-transparent border-secondary dark:border-transparent dark:bg-white;
+        @apply lg:focus-ring bg-gray-100 dark:border-transparent dark:bg-transparent;
     }
 
     .ds.p-togglebutton.p-button, .ds.ds-button-tristate.p-button {
-        @apply opacity-100 transform transition border-2 border-secondary bg-primary dark:border-gray-200 dark:bg-gray-200 dark:text-blueGray-600;
+        @apply antialiased font-sans px-8 py-4 opacity-100 border-0 bg-gray-100 text-gray-700 dark:text-blueGray-600;
     }
 
     .ds.p-togglebutton.p-button.p-highlight,
@@ -148,6 +151,6 @@
     .ds.ds-button-tristate.p-button.exclude,
     .ds.ds-button-tristate.p-button.p-highlight:hover {
         background: unset;
-        @apply border-2 border-secondary bg-gray-800 text-inverse dark:border-orange-300 dark:bg-orange-300 dark:text-blueGray-800 dark:font-bold;
+        @apply border-0 bg-gray-800 text-inverse dark:border-orange-300 dark:bg-orange-300 dark:text-blueGray-800 dark:font-bold lg:bg-gray-100 lg:text-gray-500 lg:border-0;
     }
 }

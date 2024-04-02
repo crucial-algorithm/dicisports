@@ -84,6 +84,7 @@ export default function EventResult({
             <CopyToClipboard
               text={`${address}/${i18n.language}/event/${event.slug}`}
               id={event.id}
+              className="w-12"
               successMessage={handlerClickToCopy}
             />
             <favorite.Form method="post" action={`/fav/${event.id}`}>
