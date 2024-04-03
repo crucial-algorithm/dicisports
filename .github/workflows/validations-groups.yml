@@ -50,6 +50,7 @@ jobs:
           build: npm run ci:build
           start: npm run dev
           spec: cypress/e2e/app/groups.cy.ts
+          wait-on: 'http://localhost:3000'
         env:
           CY_REQUEST_TIMEOUT: 15000
           CY_RESPONSE_TIMEOUT: 90000
