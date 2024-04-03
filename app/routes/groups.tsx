@@ -17,22 +17,18 @@ import type { Event } from '@prisma/client';
 
 import {
   AdjustmentsVerticalIcon,
-  CalendarDaysIcon,
-  ChevronDownIcon,
-  MapPinIcon
+  ChevronDownIcon
 } from '@heroicons/react/24/solid';
 
 import clsx from 'clsx';
 
-import EventResult from '~/components/SearchEventResult';
 import SportsGrid from '~/components/HomeSportsGrid';
-import GroupResult from '~/components/SearchGroupResult';
-import { FiltersDialog, DisplayFilters } from '~/components/SearchFilters';
-import DisplayImg from '~/components/shared/DisplayImg';
+import GroupResult from '~/components/GroupSearchResult';
+import { FiltersDialog, DisplayFilters } from '~/components/GroupSearchFilters';
 
 import Main from '~/components/shared/Main';
 import { Spacer } from '~/components/shared/Spacer';
-import Button, { ButtonLink } from '~/components/shared/Button';
+import Button from '~/components/shared/Button';
 import type {
   DaysOfWeek,
   DiciLocation,
@@ -40,10 +36,10 @@ import type {
   GroupFilters,
   GroupSpirit,
   Language,
-  SearchResults,
+  GroupSearchResult as SearchResult,
   Sport
 } from '~/types';
-import { searchEventsAndGroups } from '~/server/db/search.server';
+import { searchGroups } from '~/server/db/search.server';
 
 import SearchLocations from '~/components/SearchLocations';
 
@@ -67,7 +63,6 @@ import {
   findLatestPublishedEvents,
   findUserFavoriteEvents
 } from '~/server/db/events.server';
-import DisplayDate from '~/components/shared/DIsplayDate';
 
 export type FilterParams = {
   actionId: keyof typeof actions | null;
@@ -87,15 +82,12 @@ type LoaderData = {
   groupsSpirit: GroupSpirit[];
   searchResult: ActionData;
   favoriteGroups: Group[];
-  favoriteEvents: Event[];
   mapToken: string;
   selectedDayParts: string[] | null;
-  latestEvents: Event[];
-  featuredEvent: Event | null;
 };
 
 type ActionData = {
-  results: SearchResults[];
+  results: SearchResult[];
   filters: null | GroupFilters;
   total: number;
   page?: number;
@@ -158,8 +150,7 @@ export const loader: LoaderFunction = async ({ request }) => {
       data.actionId === actions.more ? page + 1 : page,
       data.actionId !== actions.more,
       !isNaN(Number(lat)) ? [Number(lat), Number(lng)] : null,
-      data.orderBy === SortMethod.proximity,
-      data.groupsAction !== 'hide'
+      data.orderBy === SortMethod.proximity
     );
   } else {
     latestEvents = await findLatestPublishedEvents();
@@ -261,8 +252,7 @@ async function search(
   page: number,
   reset: boolean = true,
   userLocation: [number, number] | null,
-  orderByProximity: boolean,
-  showGroups: boolean
+  orderByProximity: boolean
 ): Promise<ActionData> {
   const [lat, lng] = searchedLocation ? searchedLocation : [null, null];
   const filters = {
@@ -275,15 +265,14 @@ async function search(
         : reduceDayParts(dayParts.map(dayPartToTimeInterval))
   };
 
-  const { total, results } = await searchEventsAndGroups(
+  const { total, results } = await searchGroups(
     lat,
     lng,
     filters,
     10,
     page,
     userLocation,
-    orderByProximity,
-    showGroups
+    orderByProximity
   );
 
   return {
@@ -321,15 +310,12 @@ export default function Groups() {
     groupsSpirit,
     searchResult,
     favoriteGroups,
-    favoriteEvents,
     mapToken,
-    selectedDayParts,
-    latestEvents,
-    featuredEvent
+    selectedDayParts
   } = useLoaderData<LoaderData>() as unknown as LoaderData;
   const [selection, setSelection] = useState<DiciLocation | undefined>();
   const data = searchResult;
-  const [searchResults, setSearchResults] = useState<Array<SearchResults>>(
+  const [searchResults, setSearchResults] = useState<Array<SearchResult>>(
     data?.results || []
   );
   const [filtersModalOpen, setFiltersModalOpen] = useState<boolean>(false);
@@ -467,8 +453,6 @@ export default function Groups() {
     );
   }
 
-  console.log('---> data', data);
-
   return (
     <Main className="dark:text-blueGray-500 relative mb-8">
       <TransitionIndicator
@@ -511,9 +495,16 @@ export default function Groups() {
             <input key={v} type="hidden" name="spirit" value={v} />
           ))}
         <input type="hidden" name="g" value={filters?.groupsAction || ''} />
-        <div className="flex align-middle justify-center">
-          <Link to="/" onClick={handleResetSearchPerformed}>
+        <div className="flex justify-center items-end">
+          <Link
+            to="/groups"
+            onClick={handleResetSearchPerformed}
+            className="relative"
+          >
             <HomeLogo className="w-80 h-16 md:w-96 lg:w-144" />
+            <div className="absolute -top-11 -right-4 text-sm bg-dicisports text-white uppercase p-2 font-black rotate-12 rounded-full shadow-md shadow-dicisports-700">
+              {t('Groups callout')}
+            </div>
           </Link>
         </div>
         <Spacer size="2xs" />
@@ -634,64 +625,28 @@ export default function Groups() {
 
       {searchPerformed && (
         <>
-          {searchResults.map((r, index) =>
-            r.entity === 'event' ? (
-              <EventResult
-                key={r.id}
-                event={r}
-                img={sports.find((s) => s.id === r.sportId)?.picture}
-                userLocation={userLocation}
-                showLocation={orderBy === SortMethod.proximity}
-                isUserFavorite={
-                  favoriteEvents.find((e) => e.id === r.id) !== undefined
-                }
-              />
-            ) : (
-              <GroupResult
-                group={r}
-                key={`${r.id}-${index}`}
-                isUserFavorite={
-                  favoriteGroups.find((g: Group) => g.id === r.id) !== undefined
-                }
-                img={sports.find((s: Sport) => s.id === r.sportId)?.picture}
-                favAddedMessage={t('Favorite Added')}
-                favRemovedMessage={t('Favorite Removed')}
-                copiedToClipMessage={t('Copied to Clipboard')}
-                address={address}
-                location={`${location.pathname}${location.search}`}
-                isLoggedIn={user !== null}
-                userLocation={userLocation}
-                showLocation={orderBy === SortMethod.proximity}
-              />
-            )
-          )}
+          {searchResults.map((r, index) => (
+            <GroupResult
+              group={r}
+              key={`${r.id}-${index}`}
+              isUserFavorite={
+                favoriteGroups.find((g: Group) => g.id === r.id) !== undefined
+              }
+              img={sports.find((s: Sport) => s.id === r.sportId)?.picture}
+              favAddedMessage={t('Favorite Added')}
+              favRemovedMessage={t('Favorite Removed')}
+              copiedToClipMessage={t('Copied to Clipboard')}
+              address={address}
+              location={`${location.pathname}${location.search}`}
+              isLoggedIn={user !== null}
+              userLocation={userLocation}
+              showLocation={orderBy === SortMethod.proximity}
+            />
+          ))}
         </>
       )}
 
-      {!searchPerformed && (
-        <>
-          {featuredEvent && (
-            <>
-              <FeaturedEvent event={featuredEvent} />
-            </>
-          )}
-
-          {latestEvents.length > 0 && (
-            <>
-              <LatestEvents
-                events={latestEvents}
-                title={t('Latest Events')}
-                showViewAll={true}
-              />
-              <div className="w-full md:max-w-5xl lg:w-9/12 m-auto mb-4 mt-12 text-xl dark:text-white font-bold">
-                {t('Sports Grid Header')}
-              </div>
-            </>
-          )}
-          {latestEvents.length === 0 && <Spacer size="3xs" />}
-          <SportsGrid sports={sports} lang={lang} />
-        </>
-      )}
+      {!searchPerformed && <SportsGrid sports={sports} lang={lang} />}
 
       <Dialog
         onClose={handleCloseLocationFailedWarning}
@@ -712,167 +667,6 @@ export default function Groups() {
         <Spacer size="2xs" />
       </Dialog>
     </Main>
-  );
-}
-
-
-function LatestEvents({
-  events,
-  title,
-  showViewAll
-}: {
-  events: Event[];
-  title: String;
-  showViewAll: boolean;
-}) {
-  const { t, i18n } = useTranslation('home');
-
-  return (
-    <>
-      <div className="w-full lg:w-9/12 m-auto mb-4 mt-12 text-xl dark:text-white font-bold capitalize">
-        {title}
-      </div>
-      <div className="w-full m-auto lg:w-9/12 flex overflow-x-scroll hide-scroll-bar">
-        <div className="relative flex flex-nowrap ml-6 md:ml-0">
-          {events.map(
-            ({ id, image1, image2, image3, image4, image5, slug, name }) => (
-              <Link
-                key={id}
-                className="relative min-w-[220px] mx-1 border border-transparent hover:brightness-110"
-                to={`/${i18n.language}/event/${slug}`}
-              >
-                <DisplayImg
-                  className="w-full md:w-56 hover:resize"
-                  dontMessWithImgSize={true}
-                  imageId={image1 || image2 || image3 || image4 || image5 || ''}
-                  alt={name || ''}
-                  transformations={{
-                    resize: {
-                      type: 'fill',
-                      width: 400,
-                      height: 400
-                    }
-                  }}
-                />
-                <span
-                  className={`w-full absolute top-0 left-0 p-2 rounded-t-lg align-middle border-x-2 mx-0 border-transparent
-                text-ellipsis overflow-hidden truncate
-                bg-gray-800 bg-opacity-80 text-white text-bold text-blueGray-300`}
-                >
-                  {name}
-                </span>
-              </Link>
-            )
-          )}
-        </div>
-      </div>
-      {showViewAll && (
-        <div className="flex justify-center mt-6">
-          <ButtonLink to="/?coords=&search=&order=recent&actionId=search&sport=&dow=&value=&g=hide">
-            {t('View all events')}
-          </ButtonLink>
-        </div>
-      )}
-    </>
-  );
-}
-
-function FeaturedEvent({ event }: { event: Event }) {
-  const { t, i18n } = useTranslation('home');
-  const { slug, name, description, startAt } = event;
-
-  // @ts-ignore
-  const location: undefined | { place: string } = event.location;
-  const [img1, img2, img3] = [
-    event.image1,
-    event.image2,
-    event.image3,
-    event.image4,
-    event.image5
-  ].filter(Boolean);
-  
-
-  return (
-    <div className="w-full lg:w-9/12 m-auto py-6 px-4 sm:p-6 md:py-10 md:px-8 rounded-lg mt-8 bg-gray-100 dark:bg-gray-700">
-      <div className="max-w-4xl mx-auto grid grid-cols-4 col-span-full">
-        <div className="col-start-1 col-span-full row-start-1 md:row-start-2 md:p-0 lg:row-start-2 relative p-3 flex flex-col-reverse rounded-lg bg-gradient-to-t from-black/75 via-black/0 md:bg-none">
-          <h1 className="mt-1 text-lg font-semibold text-white md:text-gray-700">
-            {name}
-          </h1>
-        </div>
-
-        <div className="col-start-1 col-span-full row-start-1 grid gap-4 grid-cols-4 md:gap-2">
-          <DisplayImg
-            className="w-full h-60 object-cover rounded-lg col-start-1 col-span-full md:col-span-2"
-            dontMessWithImgSize={true}
-            imageId={img1}
-            alt={name || ''}
-            transformations={{
-              resize: {
-                type: 'fill',
-                width: 400,
-                height: 400
-              }
-            }}
-          />
-          <DisplayImg
-            className="hidden w-full h-60 object-cover rounded-lg md:block md:col-start-3 md:col-span-2 lg:col-span-1"
-            dontMessWithImgSize={true}
-            imageId={img2}
-            alt={name || ''}
-            transformations={{
-              resize: {
-                type: 'fill',
-                width: 400,
-                height: 400
-              }
-            }}
-          />
-          <DisplayImg
-            className="hidden w-full h-52 object-cover rounded-lg lg:block lg:col-start-4"
-            dontMessWithImgSize={true}
-            imageId={img3}
-            alt={name || ''}
-            transformations={{
-              resize: {
-                type: 'fill',
-                width: 400,
-                height: 400
-              }
-            }}
-          />
-        </div>
-
-        <dl className="col-start-1 col-span-full row-start-2 mt-4 md:mt-0 text-xs font-medium text-slate-400 flex items-center md:row-start-3">
-          <dt className="sr-only">When</dt>
-          <dd className="flex items-center mr-2">
-            <MapPinIcon className="h-6 w-6 m-0 inline-block" />
-            <span>{location && location.place && <>{location.place}</>}</span>
-          </dd>
-          <dt className="sr-only">Location</dt>
-          <dd className="flex items-center">
-            <CalendarDaysIcon className="h-6 w-6 mr-1 inline-block" />
-            <DisplayDate date={new Date(startAt || 0)} />
-          </dd>
-        </dl>
-
-        <div className="row-start-3 col-start-1 md:row-start-2 md:col-start-4 md:row-span-2 mt-4 self-center">
-          <ButtonLink to={`/${i18n.language}/event/${slug}`}>
-            {t('View full event')}
-          </ButtonLink>
-        </div>
-
-        <div
-          className="col-start-1 col-span-full max-h-64 mt-4 text-sm leading-6 dark:text-slate-400"
-          dangerouslySetInnerHTML={{
-            __html:
-              description && description?.length > 300
-                ? description.slice(0, 300) + ' ...'
-                : description || '...'
-          }}
-        />
-      </div>
-    </div>
   );
 }
 

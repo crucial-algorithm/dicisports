@@ -18,7 +18,7 @@ export default function SportsGrid({
   const width = 'w-full md:w-56 lg:w-56 xl:w-56';
 
   return (
-    <div className="w-full m-auto grid grid-flow-row gap-2 md:w-full md:grid-flow-col md:grid-rows-2 md:max-w-5xl lg:w-9/12">
+    <div className="w-full mt-12 m-auto grid grid-flow-row gap-2 md:w-full md:grid-flow-col md:grid-rows-2 md:max-w-5xl lg:w-9/12">
       {sports
         .sort((a, b) => a.id - b.id)
         .map((s) => (

@@ -367,7 +367,7 @@ function Navbar() {
   const { t } = useTranslation('common');
   const { user } = useRootData();
   const location = useLocation();
-  const isRoot = location.pathname === '/';
+  const isRoot = location.pathname === '/' || location.pathname === '/groups';
 
   return (
     <>

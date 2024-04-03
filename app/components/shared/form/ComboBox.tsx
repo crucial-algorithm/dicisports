@@ -1,7 +1,6 @@
 import { Combobox, Listbox, Transition } from '@headlessui/react';
 import { CheckIcon, ChevronUpDownIcon } from '@heroicons/react/20/solid';
 import { XMarkIcon } from '@heroicons/react/24/outline';
-import { use } from 'chai';
 import clsx from 'clsx';
 import type { TFunction } from 'i18next';
 import * as React from 'react';
@@ -166,7 +165,7 @@ export default function ComboBox({
           </Listbox.Options>
         </Transition>
       </div>
-      <input type="hidden" name={name} value={selected} />
+      <input type="hidden" name={name} value={selected || ''} />
     </Listbox>
   );
 }

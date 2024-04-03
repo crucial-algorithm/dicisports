@@ -1,5 +1,5 @@
 {
-  "Search Placeholder": "Nome do evento ou para onde queres ir?",
+  "Search Placeholder": "Onde (ex.: Porto)",
   "Search Event Placeholder": "Nome do evento",
   "Search": "Pesquisar",
   "No Cities": "Hmmm... onde? 🤷‍♂️",
@@ -59,7 +59,8 @@
 
   "Select location": "Selecionar localização",
   "Select sport": "Selecionar Modalidade",
-  "No events found": "Nenhum evento encontrado. Experimenta outra pesquisa ou volta mais tarde (novos eventos são adicionados regularmente)."
+  "No events found": "Nenhum evento encontrado. Experimenta outra pesquisa ou volta mais tarde (novos eventos são adicionados regularmente).",
+  "Groups callout": "grupos"
 
 
 }

@@ -16,7 +16,7 @@ import type {
   GroupSpirit,
   GroupType,
   OrganizerType,
-  SearchResults,
+  GroupSearchResult,
   Sport,
   TranslationObject,
   User
@@ -103,9 +103,8 @@ function dbGroupTypeToGroupType(group: DBGroupType): GroupType {
   };
 }
 
-function dbRawSearchResultsToSearchResults(results: DBRawSearchResults): SearchResults {
+function dbRawSearchResultsToSearchResults(results: DBRawSearchResults): GroupSearchResult {
   return {
-    entity: results.entity,
     distance: results.distance,
     id: results.id,
     name: results.name,

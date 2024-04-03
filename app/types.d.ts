@@ -119,7 +119,6 @@ type GroupSpirit = {
 } & DBGroupSpirit;
 
 type DBRawSearchResults = {
-  entity: string;
   distance: number;
   id: string;
   name: string;
@@ -153,8 +152,7 @@ type DBRawSearchResults = {
   schedules: string[];
 };
 
-type SearchResults = {
-  entity: string;
+type GroupSearchResult = {
   distance: number;
   id: string;
   name: string;
@@ -338,7 +336,7 @@ export {
   ParticipantInput,
   RaceRevenueRegistrations,
   DBRawSearchResults,
-  SearchResults,
+  GroupSearchResult,
   OrganizerInput,
   EventStatus,
   DiscountCodeInput,
