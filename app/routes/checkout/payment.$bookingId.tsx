@@ -34,9 +34,7 @@ import {
   updateBookingStatus
 } from '~/server/db/booking.server';
 import { findEvent } from '~/server/db/events.server';
-import type {
-  RaceParticipantWithRaceParticipantAndTeam
-} from '~/server/db/participant.server';
+import type { RaceParticipantWithRaceParticipantAndTeam } from '~/server/db/participant.server';
 import {
   assignParticipantsBibNumber,
   findUserBookingParticipants
@@ -49,7 +47,12 @@ import {
 } from '~/server/db/payments.server';
 import type { KCDHandle, UICartRow } from '~/types';
 import { sendBookingConfirmationEmail } from '~/server/email.server';
-import { badRequest, bookingAmount, fetcherType, getDomainUrl } from '~/utils/misc';
+import {
+  badRequest,
+  bookingAmount,
+  fetcherType,
+  getDomainUrl
+} from '~/utils/misc';
 import i18n from '~/server/i18n.server';
 import { createPaymentTransaction } from '~/server/utils/payments';
 import { useTheme } from '~/utils/theme-provider';
@@ -75,7 +78,7 @@ type LoaderData =
       event: Event;
       cart: UICartRow[];
       isBookingReadOnly: false;
-      unsuccessfulPayments: Payment[]; 
+      unsuccessfulPayments: Payment[];
       formContext: string;
       gatewayTransactionId: string;
       ourTransactionId: string;
@@ -95,7 +98,7 @@ type LoaderData =
     };
 
 export const loader: LoaderFunction = async ({ request, params }) => {
-    const anonymousClient = await getClientSession(request);
+  const anonymousClient = await getClientSession(request);
   const authedUser = await getUser(request);
   const bookingId = params.bookingId as string;
   const booking = await findBooking(bookingId);
@@ -107,12 +110,12 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   }
 
   const userId =
-    authedUser !== null
-      ? authedUser.id
-      : anonymousClient.getClientId();
+    authedUser !== null ? authedUser.id : anonymousClient.getClientId();
 
   if (booking.userId !== userId) {
-    console.log(`User not authorized to access booking with owner = ${booking.userId}; Attempt by ${userId}`);
+    console.log(
+      `User not authorized to access booking with owner = ${booking.userId}; Attempt by ${userId}`
+    );
     return redirect('/');
   }
 
@@ -157,8 +160,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     } as LoaderData);
   }
 
-
-  // function will assign a bib number if booking is fully discounted 
+  // function will assign a bib number if booking is fully discounted
   const isThereNoPaymentLeft = await handleFullDiscountBookings(
     booking,
     cart,
@@ -188,7 +190,6 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     return redirect(`/checkout/confirmation/${bookingId}`);
   }
 
-
   if (submittedPayments.length > 0) {
     console.log('booking is awaiting payment', bookingId, submittedPayments);
     return json({
@@ -211,7 +212,11 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     const { gatewayResponse, ourTransactionId } =
       await createPaymentTransaction(booking, event, cart);
 
-    console.log('booking is going to request payment', bookingId, unsuccessfulPayments);
+    console.log(
+      'booking is going to request payment',
+      bookingId,
+      unsuccessfulPayments
+    );
     return json({
       state: 'RequestingPayment',
       event,
@@ -265,9 +270,7 @@ export const action: ActionFunction = async ({ request, params }) => {
 
   // We check if user is authenticated -> authenticatedClient, if not, we use the client session -> anonymousClient
   const clientId =
-    authedUser !== null
-      ? authedUser.id
-      : anonymousClient.getClientId();
+    authedUser !== null ? authedUser.id : anonymousClient.getClientId();
 
   if (booking && booking.status === CheckoutStatus.confirmed) {
     if (booking.userId === clientId) {
@@ -430,34 +433,25 @@ export default function CheckoutPaymentRoute() {
   const [errors, setErrors] = useState<FormErrors>({});
   const { state, event, cart } = data;
 
-const sibsPaymentGatewayError =
-  state === 'RequestingPayment' &&
-  data.unsuccessfulPayments &&
-  data.unsuccessfulPayments.filter(
-    (p) => p.status === PaymentStatus.fetchStatusFailed
-  );
-
+  const sibsPaymentGatewayError =
+    state === 'RequestingPayment' &&
+    data.unsuccessfulPayments &&
+    data.unsuccessfulPayments.filter(
+      (p) => p.status === PaymentStatus.fetchStatusFailed
+    );
 
   useEffect(() => {
     const typeOfFetcher = fetcherType(displayCartFetcher);
     const fetcherData = displayCartFetcher.data as {
       errors?: FormErrors;
-      ok?: boolean
+      ok?: boolean;
     };
 
-    if (
-      typeOfFetcher === 'actionReload' &&
-      fetcherData &&
-      fetcherData.errors
-    ) {
+    if (typeOfFetcher === 'actionReload' && fetcherData && fetcherData.errors) {
       return setErrors(fetcherData.errors as FormErrors);
     }
 
-    if (
-      typeOfFetcher === 'actionReload' &&
-      fetcherData &&
-      fetcherData.ok
-    ) {
+    if (typeOfFetcher === 'actionReload' && fetcherData && fetcherData.ok) {
       return setErrors({});
     }
   }, [displayCartFetcher]);
@@ -488,9 +482,7 @@ const sibsPaymentGatewayError =
         </H6>
       </div>
       <div className="flex flex-col md:flex-row mt-8">
-
         <div className="flex-col w-full md:w-[calc(100%-(480px))] md:pr-4 sibs">
-          
           {state === 'PaymentsPending' && (
             <DisplayPendingPaymentsInterval payments={data.submittedPayments} />
           )}
@@ -511,7 +503,6 @@ const sibsPaymentGatewayError =
               />
             </>
           )}
-
         </div>
 
         <div className="w-full mt-4 md:mt-0 md:w-[480px]">
@@ -608,6 +599,9 @@ function DisplayPendingPaymentsInterval({
   payments
 }: DisplayPendingPaymentProps) {
   const checkPaymentstatus = useFetcher();
+  const checkoutPaymentStatusData = checkPaymentstatus?.data
+    ? (checkPaymentstatus.data as { payment: Payment; success: boolean })
+    : null;
   const payment = payments.sort(
     ({ createdAt: a }, { createdAt: b }) =>
       new Date(a).getTime() - new Date(b).getTime()
@@ -619,22 +613,25 @@ function DisplayPendingPaymentsInterval({
       // we should add a "give up" strategy here
       if (
         checkPaymentstatus.state === 'idle' &&
-        (checkPaymentstatus.data == null ||
-          checkPaymentstatus.data.payment?.status === PaymentStatus.submitted ||
-          checkPaymentstatus.data.success === false)
+        (checkoutPaymentStatusData == null ||
+          checkoutPaymentStatusData.payment?.status ===
+            PaymentStatus.submitted ||
+          checkoutPaymentStatusData.success === false)
       ) {
         checkPaymentstatus.load(url);
       }
     }, 5 * 1000);
 
     return () => clearInterval(interval);
-  }, [checkPaymentstatus, url]);
+  }, [checkPaymentstatus, checkoutPaymentStatusData, url]);
 
   if (!checkPaymentstatus?.data) {
     return <DisplayPendingPayments payment={payment} />;
   }
 
-  const upToDatePaymentData = checkPaymentstatus.data.payment as Payment;
+  const upToDatePaymentData = checkoutPaymentStatusData
+    ? checkoutPaymentStatusData.payment
+    : null;
 
   if (!upToDatePaymentData) {
     // we got a response from server, but likely the request to payment gateway failed
@@ -769,7 +766,7 @@ function DisplayTransactionError({ event, t }: { event: Event; t: TFunction }) {
       <Button type="button" onClick={onClick}>
         {t('Try Again')}
       </Button>
-</Main>
+    </Main>
   );
 }
 

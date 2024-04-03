@@ -330,7 +330,7 @@ function Html({ lang }: { lang: string }) {
       </head>
       <body
         className="dark:bg-gray-900 bg-white transition duration-500 w-full"
-        data-path={handle ? handle.id : ''}
+        data-path={handle ? (handle as { id: string }).id : ''}
       >
         <PageLoadingMessage />
         <NotificationMessage queryStringKey="message" delay={0.3} />

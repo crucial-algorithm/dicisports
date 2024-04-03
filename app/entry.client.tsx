@@ -4,6 +4,7 @@ import { RemixBrowser } from '@remix-run/react';
 import i18next from 'i18next';
 import { I18nextProvider, initReactI18next } from 'react-i18next';
 import Backend from 'i18next-http-backend';
+// @ts-ignore
 import { getInitialNamespaces } from 'remix-i18next/client';
 import LanguageDetector from 'i18next-browser-languagedetector';
 
@@ -15,7 +16,7 @@ async function hydrate() {
     .use(LanguageDetector) // Setup a client-side language detector
     .use(Backend) // Setup your backend
     .init({
-      ... i18nSettings, // spread the configuration
+      ...i18nSettings, // spread the configuration
       // This function detects the namespaces your routes rendered while SSR use
       ns: getInitialNamespaces(),
       backend: {
@@ -27,7 +28,7 @@ async function hydrate() {
         // Here only enable htmlTag detection, we'll detect the language only
         // server-side with remix-i18next, by using the `<html lang>` attribute
         // we can communicate to the client the language detected server-side
-        order: [ 'htmlTag' ],
+        order: ['htmlTag'],
         // Because we only use htmlTag, there's no reason to cache the language
         // on the browser, so we disable it
         caches: []

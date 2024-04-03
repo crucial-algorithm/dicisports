@@ -30,12 +30,11 @@ type LoaderData = {
 };
 
 // TODO [MIGRATE TO V2]: reinstate Meta Function
-export const meta: MetaFunction = ({ data, params, location, matches }) => {
-  const [{ data: { user, ancestorUser, ENV, requestInfo, sports } }] = matches;
+export const meta: MetaFunction<typeof loader> = ({ data, location, matches }) => {
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const { i18n } = useTranslation();
-  const root: RootLoaderData = { user, ancestorUser, ENV, requestInfo, sports };
-  const { group } = data as { group: Group };
+  const { group } = data;
+  const root = matches[0].data as RootLoaderData;
 
   if (!group) {
     return [];

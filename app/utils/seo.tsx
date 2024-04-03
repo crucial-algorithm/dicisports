@@ -48,10 +48,9 @@ const DEFAULT_DESCRIPTION = 'Dicisports.com é o ponto de encontro de todos os d
 
 // TODO [MIGRATE TO V2]: reinstate Meta Function
 const CanonicalMeta: MetaFunction<RootLoaderData> = ({ location, matches }) => {
-  const [{ data: { user, ancestorUser, ENV, requestInfo, sports } }] = matches;
   //eslint-disable-next-line react-hooks/rules-of-hooks
  const { i18n } = useTranslation();
- const root: RootLoaderData = { user, ancestorUser, ENV, requestInfo, sports };
+ const root = matches[0].data as RootLoaderData;
  const { searchParams } = new URL(`https://a.com/${location.search}`);
  const sportId = searchParams.get('sport');
  const sport = root.sports.find((s) => s.id === Number(sportId));
