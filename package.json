@@ -19,8 +19,7 @@
     "test:open": "npx cypress open",
     "test:run": "npx cypress run --browser chrome",
     "ci:build": "npm run build:css && npx prisma migrate reset --force && prisma db seed",
-    "typecheck": "tsc --skipLibCheck --noEmit -p tsconfig.check.json",
-    "dev:test": "remix dev --manual"
+    "typecheck": "tsc --skipLibCheck --noEmit -p tsconfig.check.json"
   },
   "prisma": {
     "seed": "node --require esbuild-register prisma/seed.ts"
@@ -32,6 +31,7 @@
     "@headlessui/react": "1.7.11",
     "@heroicons/react": "2.0.12",
     "@mapbox/mapbox-gl-geocoder": "5.0.1",
+    "@prisma/client": "5.10.2",
     "@radix-ui/react-dialog": "1.0.2",
     "@remix-run/node": "2.7.2",
     "@remix-run/react": "2.7.2",
@@ -103,7 +103,7 @@
     "postcss-cli": "^9.1.0",
     "prettier": "3.2.5",
     "prisma": "5.10.2",
-    "tailwindcss": "3.0.9",
+    "tailwindcss": "3.4.1",
     "typescript": "5.3.3"
   },
   "engines": {

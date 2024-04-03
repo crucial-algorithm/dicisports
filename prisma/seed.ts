@@ -23,6 +23,7 @@ import latestBibNumberSeed from './data/latestBibNumber.json';
 import paymentsSeed from './data/payments.json';
 import organizerTypesSeed from './data/organizerTypes.json';
 import mailingListSeed from './data/mailingList.json';
+import urlShortenerSeed from './data/urlShortener.json';
 
 const db = new PrismaClient();
 const now = new Date();
@@ -68,6 +69,7 @@ async function seed() {
   await persist('discount codes', discountCodes(), db.discountCode);
   await persist('favorite groups', favoriteGroup(), db.favoriteGroup);
   await persist('group schedules', groupsSchedules(), db.groupSchedule);
+  await persist('url shortener', urlShortener(), db.urlShortener);
 }
 
 async function clear() {
@@ -97,8 +99,25 @@ async function clear() {
     , groups_type
     , shirt_size
     , sports
-    , difficulties`;
+    , difficulties
+    , url_shortener`
+    ;
 
+}
+
+function parseDate(date: string | undefined | null) {
+  if (!date) {
+    return null;
+  }
+
+  if (!(date[0] === '+' || date[0] === '-')) {
+    return new Date(date);
+  }
+
+  const direction = date[0] === '+' ? 'forward' : 'backword';
+  const days = Number(date.substring(1)) * 86400 * 1000;
+
+  return new Date(Date.now() + (direction === 'forward' ? days : days * -1));
 }
 
 clear().then(() => seed().then(disconnect).catch(disconnect));
@@ -125,8 +144,14 @@ function events() {
   const futureDate = new Date(`${new Date().getUTCFullYear() + 1}-10-21`);
 
   return eventsSeed.map((e) => {
-    const startAt = new Date(e.startAt ? e.startAt : futureDate);
-    const bookingStopsAt = new Date(startAt.getTime() - 86400 * 1000 * 7);
+    const assignedStartDate = parseDate(e.startAt);
+    const assignedStopsAt = parseDate(e.bookingStopsAt);
+    const startAt = new Date(
+      assignedStartDate ? assignedStartDate : futureDate
+    );
+    const bookingStopsAt = assignedStopsAt
+      ? assignedStopsAt
+      : new Date(startAt.getTime() - 86400 * 1000 * 7);
 
     return {
       ...e,
@@ -153,15 +178,19 @@ function races() {
   return racesSeed.map((r) => {
     // verify if it exists
     const validUntil: Date | null = r.validUntil
-      ? new Date(r.validUntil)
+      ? parseDate(r.validUntil)
+      : null;
+
+    const applyAfter: Date | null = r.applyAfter
+      ? parseDate(r.applyAfter)
       : null;
 
     return {
       ...r,
       createdAt: now,
       updatedAt: now,
-      // then add a week so that tests don't break because of an expired date
-      validUntil: validUntil ? new Date(Date.now() + 604800 * 1000) : null
+      validUntil,
+      applyAfter
     };
   });
 }
@@ -346,7 +375,7 @@ function payments() {
   return paymentsSeed.map((p) => {
     return {
       ...p,
-      expiresAt: new Date(now.getTime() + 3600000),
+      expiresAt: p.expiresAt ? parseDate(p.expiresAt) : null,
       createdAt: now,
       updatedAt: now
     };
@@ -367,6 +396,16 @@ function mailingList() {
   return mailingListSeed.map((m) => {
     return {
       ...m,
+      createdAt: now
+    };
+  });
+}
+
+function urlShortener() {
+  return urlShortenerSeed.map((r) => {
+    return {
+      ...r,
+      expiresAt: new Date(Date.now() + 24 * 3600 * 1000),
       createdAt: now
     };
   });

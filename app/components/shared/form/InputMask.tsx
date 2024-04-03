@@ -1,5 +1,5 @@
 import * as React from 'react';
-import type { InputMaskProps } from 'primereact/inputmask';
+import type { InputMaskChangeEvent, InputMaskProps } from 'primereact/inputmask';
 import { InputMask } from 'primereact/inputmask';
 import { useContext } from 'react';
 import clsx from 'clsx';
@@ -12,8 +12,9 @@ function DiciInputMask({
   value,
   className,
   mask,
-  onChange
-}: InputMaskProps) {
+  onChange,
+  onBlur
+}: Omit<InputMaskProps, 'onChange'> & { onChange?: (v: string) => void }) {
   const formProps = useContext(FormContext);
 
   if (formProps.readOnly) {
@@ -22,9 +23,9 @@ function DiciInputMask({
     );
   }
 
-  function handleOnChange(e: any) {
+  function handleOnChange(e: InputMaskChangeEvent) {
     formProps.setDirty && formProps.setDirty();
-    onChange && onChange(e);
+    onChange && onChange(e.value || '');
   }
 
   return (
@@ -35,6 +36,7 @@ function DiciInputMask({
       className={clsx('dici-input-mask', className)}
       mask={mask}
       onChange={handleOnChange}
+      onBlur={onBlur}
     />
   );
 }

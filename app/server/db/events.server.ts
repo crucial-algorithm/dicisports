@@ -128,11 +128,45 @@ async function findLatestPublishedEvents(): Promise<Event[]> {
     where: {
       status: Status.published,
       hideFromLatestEvents: false,
-      endAt: { gte: new Date(Date.now()) }
+      endAt: { gte: new Date() }
     },
     orderBy: { createdAt: 'desc' },
     take: 12
   });
+}
+
+/**
+ * Used to get the events that have bookings with us, and have at least 3 images
+ */
+async function findFeaturedEvents(): Promise<Event[]> {
+  const events = await db.event.findMany({
+    where: {
+      status: Status.published,
+      hideFromLatestEvents: false,
+      endAt: { gte: new Date() },
+      useExternalBooking: false
+    },
+    orderBy: { createdAt: 'desc' }
+  });
+
+  console.log('Number of potential featured events count', events.length);
+
+  const eventsWith3Images = events.filter(
+    ({ image1, image2, image3, image4, image5 }) => {
+      const filledCount = [image1, image2, image3, image4, image5].filter(
+        Boolean
+      ).length;
+
+      return filledCount >= 3;
+    }
+  );
+
+  console.log(
+    'Number of events elegible for featured',
+    eventsWith3Images.length
+  );
+
+  return eventsWith3Images;
 }
 
 async function findUserEvents(
@@ -502,11 +536,15 @@ export {
   findEventOrganizer,
   findUserEvents,
   findEvent,
+  findEventWithRacesAndDocuments,
+  findPublishedEvents,
+  findLatestPublishedEvents,
+  findFeaturedEvents,
+  findEventBySlug,
   createDraftEvent,
   updateEvent,
   publishEvent,
   unpublishEvent,
-  findEventBySlug,
   addEventToFavorites,
   removeEventFromFavorites,
   findUserFavoriteEvents,
@@ -514,8 +552,5 @@ export {
   getEventResultsByName,
   deleteEvent,
   updateEventRegulation,
-  findEventWithRacesAndDocuments,
-  findPublishedEvents,
-  findLatestPublishedEvents,
   areThereTracesOfUserEventHandling
 };

@@ -149,7 +149,7 @@ type LoaderData = {
 };
 
 export const handle = {
-  i18n: ['common', 'create-event-form']
+  i18n: ['common', RESOURCES_NS]
 };
 
 export const loader: LoaderFunction = async ({ request, params }) => {

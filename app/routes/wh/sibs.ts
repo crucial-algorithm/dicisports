@@ -2,26 +2,28 @@ import { createDecipheriv } from 'crypto';
 
 import type { ActionFunction } from '@remix-run/node';
 import { json } from '@remix-run/router';
-import { CheckoutStatus } from '@prisma/client';
+import { CheckoutStatus, PaymentStatus } from '@prisma/client';
 
 import Config from '~/server/config.server';
-import { findBooking, findBookingCart, updateBookingStatus } from '~/server/db/booking.server';
+import { findBooking, findBookingCart } from '~/server/db/booking.server';
 
-import { decline, findPayment, pay, saveNotification } from '~/server/db/payments.server';
+import { findPayment } from '~/server/db/payments.server';
 import type { SibsWebHookSchema } from '~/types';
 import { assignParticipantsBibNumber, findUserBookingParticipants } from '~/server/db/participant.server';
 import { findEvent } from '~/server/db/events.server';
 import { sendBookingConfirmationEmail } from '~/server/email.server';
 import { findUserById } from '~/server/db/users.server';
+import { db } from '~/server/db.server';
+import Id from '~/server/utils/Id.server';
 
 export const action: ActionFunction = async ({ request }) => {
-  console.log('SIBS webhook called');
+  console.log('[SIBS] webhook called');
   const body = await request.text();
 
   const authTag = request.headers.get('x-authentication-tag') || '';
   const initVector = request.headers.get('x-initialization-vector') || '';
   const { SIBS_WEBHOOK_SECRET: secret } = Config();
-  let payload: SibsWebHookSchema | null = null;
+  let payload: SibsWebHookSchema;
 
   try {
     payload = decrypt(body, secret, initVector, authTag);
@@ -31,40 +33,112 @@ export const action: ActionFunction = async ({ request }) => {
   }
 
   try {
-    await saveNotification(payload);
-    // using our transaction ID in case we didn't update the transaction id for the form redirect yet
-    // (we are not sure about the order of calls SIBS we will use since their documentation states it's undeterministic)
-    const payment = await findPayment(payload.merchant.transactionId);
 
-    if (!payment) {
+    db.$transaction(async (tx) => {
+
+      const payment = await tx.payment.findUnique({
+        where: { id: payload.merchant.transactionId }
+      });
+
+      if (!payment) {
+        console.log(
+          `[SIBS] weird, we got a notification for an unknown payment: ${payload.notificationID}`
+        );
+      }
+
+      if (payload.paymentStatus === 'Declined') {
+        console.log(`payment with SIBS transaction ${payload.transactionID} was declined [${payment?.bookingId}]`);
+
+        await tx.payment.update({
+          where: { transactionId: payload.transactionID },
+          data: {
+            status: PaymentStatus.failed
+          }
+        });
+
+        if (payment) {
+          const x = await tx.booking.update({
+            where: { id: payment.bookingId },
+            data: {
+              status: CheckoutStatus.pending
+            }
+          });
+          
+          console.log('booking(s) updated to pending due to payment decline', x);
+        }
+        return;
+      }
+      
+      if (payload.paymentStatus !== 'Success') {
+        console.error(
+          `[SIBS] payment with SIBS transaction ${payload.transactionID} was neither declined nor successful [${payment?.bookingId}]`
+        );
+        return;
+      }
+
       console.log(
-        `weird, we got a notification for an unknown payment: ${payload.notificationID}`
+        `[SIBS] payment was successful... updating payment ${payload.transactionID} and booking status ${payment?.bookingId}`
       );
-    }
 
+      // add notification ID to payment
+      await tx.payment.update({
+        where: { transactionId: payload.transactionID },
+        data: {
+          notificationId: payload.notificationID
+        }
+      });
+
+      // store notification for debbuging
+      await tx.paymentNotification.create({
+        data: {
+          id: Id(),
+          transactionId: payload.transactionID,
+          payload
+        }
+      });
+
+      // mark payment as paid
+      await tx.payment.update({
+        where: { transactionId: payload.transactionID },
+        data: {
+          status: PaymentStatus.paid,
+          method: payload.paymentMethod
+        }
+      });
+
+      // mark booking as confirmed
+      if (payment) {
+        const x = await tx.booking.update({
+          where: { id: payment.bookingId },
+          data: {
+            status: CheckoutStatus.confirmed
+          }
+        });
+
+        console.log('[SIBS] booking(s) updated', x);
+      }
+
+    });
+
+
+    // this block can run in an race condition with form submit callback... 
+    // careful with updates to booking or payment status 
     if (payload.paymentStatus === 'Success') {
-      // update payment status with success
-      await pay(payload.transactionID, payload.paymentMethod);
+      const payment = await findPayment(payload.merchant.transactionId);
+      
       if (payment) {
         const raceParticipants = await findUserBookingParticipants(payment.bookingId);
 
-        if (!raceParticipants) {
-          return new Response('No race participants', { status: 500 });
+        if (raceParticipants) {
+          await assignParticipantsBibNumber(raceParticipants, raceParticipants[0].eventId as string);
+          await sendConfirmationEmail(payment.bookingId, raceParticipants[0].eventId as string);
         }
-
-        await assignParticipantsBibNumber(raceParticipants, raceParticipants[0].eventId as string);
-        await updateBookingStatus(payment.bookingId, CheckoutStatus.confirmed);
-        await sendConfirmationEmail(payment.bookingId, raceParticipants[0].eventId as string);
       }
-    }
-
-    if (payload.paymentStatus === 'Declined') {
-      await decline(payload.transactionID);
-      console.log(`payment with SIBS transaction ${payload.transactionID} was declined`);
     }
 
   } catch(err: unknown) {
     console.error(err);
+    return new Response(String(err), { status: 500 });
   }
 
   return json({

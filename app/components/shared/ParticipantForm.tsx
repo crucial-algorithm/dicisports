@@ -1,5 +1,6 @@
 import clsx from 'clsx';
 import { useState } from 'react';
+import type { ChangeEvent, FocusEvent } from 'react';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Participant, EventTeam } from '@prisma/client';
@@ -15,6 +16,7 @@ import TextField from '~/components/shared/form/TextField';
 import countries from '~/server/db/countries.json';
 import type { Language } from '~/types';
 import { DiciInputMask } from '~/components/shared/form/InputMask';
+import { validateIdentityCard, validatePtVatNumber } from '~/utils/misc';
 
 export default function ParticipantForm({
   participant,
@@ -52,6 +54,8 @@ export default function ParticipantForm({
       (participant?.nationality as number) ||
       188
   );
+  const [isIdentityCardValid, setIdentityCardValid] = useState<boolean>(true);
+  const [isVatNumberValid, setVatNumberValid] = useState<boolean>(true);
 
   const genderOptions = [
     { value: 'F', label: t('Female') },
@@ -61,6 +65,90 @@ export default function ParticipantForm({
   function onCountryChange(v: string | number) {
     setCountry(v);
   }
+
+  function handleOnChangeIdentityCard(v: string) {
+
+    if (country !== 188) {
+      return;
+    }
+
+    if (!v) {
+      return;
+    }
+
+    const identityCard = v.replace(/-/g, '').replace(/_/g, '');
+
+    if (identityCard.length === 0) {
+      return setIdentityCardValid(true);
+    }
+
+    if (identityCard.length !== 12) {
+      return;
+    }
+
+    if (validateIdentityCard(v)) {
+      setIdentityCardValid(true);
+    }
+  }
+
+  function handleOnBlurIdentityCard(e: FocusEvent<HTMLInputElement>) {
+    if (country !== 188) {
+      return;
+    }
+
+    const value = e.target.value;
+    
+    if (!value) {
+      return setIdentityCardValid(true);
+    }
+
+    setIdentityCardValid(validateIdentityCard(value));
+  }
+
+  function handleOnBlurVatNumber(e: FocusEvent<HTMLInputElement>) {
+    if (country !== 188) {
+      return;
+    }
+
+    const value = e.target.value;
+
+
+    // clear if user empties input
+    if (!value) {
+      return setVatNumberValid(true);
+    }
+
+    setVatNumberValid(validatePtVatNumber(value));
+  }
+
+  function handleOnChangeVatNumber(e: ChangeEvent<HTMLInputElement>) {
+    if (country !== 188) {
+      return;
+    }
+
+    const value = e.target.value;
+
+    // if cleared, clear status
+    if (value.length === 0) {
+      return setVatNumberValid(true);
+    }
+
+    // do nothing, if not in the correct length
+    if (value.length !== 9) {
+      return;
+    }
+
+    // if we have an error messsage and user types
+    // a correct input, clear (requires the input to have the correct length)
+    if (validatePtVatNumber(value)) {
+      setVatNumberValid(true); 
+    }
+  }
+
+  React.useEffect(() => {
+    setIdentityCardValid(!errors?.identityCard);
+    setVatNumberValid(!errors?.vatNumber);
+  }, [errors?.identityCard, errors?.vatNumber]);
 
   return (
     <>
@@ -214,7 +302,7 @@ export default function ParticipantForm({
         <FormField
           label={t('Identity Card')}
           id="identity-card"
-          error={errors?.identityCard}
+          error={isIdentityCardValid ? undefined : t('Invalid CC')}
           dataCy="identityCard"
         >
           {country === 188 && (
@@ -226,6 +314,8 @@ export default function ParticipantForm({
                 selectedParticipant?.identityCard ||
                 undefined
               }
+              onChange={handleOnChangeIdentityCard}
+              onBlur={handleOnBlurIdentityCard}
             />
           )}
           {country !== 188 && (
@@ -245,7 +335,7 @@ export default function ParticipantForm({
         <FormField
           label={t('VAT Number')}
           id="vat-number"
-          error={errors?.vatNumber}
+          error={isVatNumberValid ? undefined: t('Invalid VAT')}
           dataCy="vatNumber"
         >
           <TextField
@@ -254,6 +344,8 @@ export default function ParticipantForm({
             defaultValue={String(
               selectedParticipant?.vatNumber || participant?.vatNumber
             )}
+            onChange={handleOnChangeVatNumber}
+            onBlur={handleOnBlurVatNumber}
           />
         </FormField>
       </div>

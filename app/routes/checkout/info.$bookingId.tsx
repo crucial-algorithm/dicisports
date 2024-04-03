@@ -41,6 +41,7 @@ import {
   applyDiscountCode,
   findBooking,
   findBookingCart,
+  checkIfBookingEditionIsLocked,
   removeBooking,
   removeBookingDiscount,
   updateBookingStatus
@@ -88,8 +89,9 @@ type LoaderData = {
   savedParticipants: Participant[] | null;
   shirtSizes: ShirtSize[];
   isAuth: boolean;
-  isGuest: boolean;
   bookingId: string;
+  isBookingReadOnly: boolean;
+  triggerLogin: boolean;
   organizerName: string;
   eventTeams: EventTeam[];
   discountCode?: string;
@@ -116,14 +118,13 @@ export const action: ActionFunction = async ({ request, params }) => {
   const t = await i18n.getFixedT(request, 'checkout');
   const form = await request.formData();
   const anonymousClient = await getClientSession(request);
-  const authenticatedClient = await getUser(request);
+  const authedUser = await getUser(request);
   const bookingId = params.bookingId as string;
   const booking = await findBooking(bookingId);
 
   if (!booking || booking.status === CheckoutStatus.deleted) {
     return redirect('/');
   }
-
   const eventId = booking.eventId;
   const event = await findEventWithRacesAndDocuments(eventId);
 
@@ -131,18 +132,17 @@ export const action: ActionFunction = async ({ request, params }) => {
     return redirect('/');
   }
 
-  // We check if user is authenticated -> authenticatedClient, if not, we use the client session -> anonymousClient
-  const clientId =
-    authenticatedClient !== null
-      ? authenticatedClient.id
+  const userId =
+    authedUser !== null
+      ? authedUser.id
       : anonymousClient.getClientId();
 
-  if (booking.userId !== clientId) {
+  if (booking.userId !== userId) {
     throw Unauthorized(t('Not authorized'));
   }
 
   if (booking && booking.status === CheckoutStatus.confirmed) {
-    if (booking.userId === clientId) {
+    if (booking.userId === userId) {
       return redirect(`/checkout/confirmation/${booking.id}`);
     }
 
@@ -236,6 +236,13 @@ export const action: ActionFunction = async ({ request, params }) => {
                 Boolean(idCard)) ||
               Number(data.nationality) !== PT_NATIONALITY_ID,
             t('Field Required')
+          ).refine(
+            // validate identity card for portuguese citizens
+            (idCard) =>
+              Number(data.nationality) !== PT_NATIONALITY_ID
+                ? true
+                : !idCard || validateIdentityCard(idCard),
+            t('Invalid CC')
           ),
         federationNumber: z.number().nullable(),
         vatNumber: z
@@ -248,6 +255,14 @@ export const action: ActionFunction = async ({ request, params }) => {
                 Boolean(vatNumber)) ||
               Number(data.nationality) !== PT_NATIONALITY_ID,
             t('Field Required')
+          )
+          .refine(
+            // validate VAT number for portuguese citizens
+            (vatNumber) =>
+              Number(data.nationality) !== PT_NATIONALITY_ID
+                ? true
+                : !vatNumber || validatePtVatNumber(vatNumber),
+            t('Invalid VAT')
           ),
         nationality: z.number({
           required_error: t('Field Required'),
@@ -306,28 +321,6 @@ export const action: ActionFunction = async ({ request, params }) => {
           Number(nationality) !== PT_NATIONALITY_ID,
         {
           message: t('Field Required'),
-          path: ['vatNumber']
-        }
-      )
-      .refine(
-        // for portuguese participants, validate identity card format
-        ({ identityCard, nationality }) =>
-          Number(nationality) !== PT_NATIONALITY_ID
-            ? true
-            : !identityCard || validateIdentityCard(identityCard),
-        {
-          message: t('Invalid CC'),
-          path: ['identityCard']
-        }
-      )
-      .refine(
-        // for portuguese participants, validate VAT number format
-        ({ vatNumber, nationality }) =>
-          Number(nationality) !== PT_NATIONALITY_ID
-            ? true
-            : !vatNumber || validatePtVatNumber(vatNumber),
-        {
-          message: t('Invalid VAT'),
           path: ['vatNumber']
         }
       );
@@ -440,18 +433,18 @@ export const action: ActionFunction = async ({ request, params }) => {
         });
       }
 
-      if (enrollInMailingList && authenticatedClient) {
+      if (enrollInMailingList && authedUser) {
         const organizer = await findOrganizer(event.createdById);
 
         if (organizer) {
           try {
             await addEmailToMailingList(
-              authenticatedClient.email,
+              authedUser.email,
               organizer.id
             );
           } catch (e) {
             console.log(
-              `failed to add ${authenticatedClient.email} to mailing list of ${organizer.name}`,
+              `failed to add ${authedUser.email} to mailing list of ${organizer.name}`,
               e
             );
           }
@@ -484,27 +477,25 @@ export const action: ActionFunction = async ({ request, params }) => {
 
 export const loader: LoaderFunction = async ({ request, params }) => {
   const anonymousClient = await getClientSession(request);
-  const authenticatedClient = await getUser(request);
+  const authedUser = await getUser(request);
   const bookingId = params.bookingId as string;
   const lng = await i18n.getLocale(request);
-  const { searchParams } = new URL(request.url);
-
-  const pin = searchParams.get('p');
 
   // We check if user is authenticated -> authenticatedClient, if not, we use the client session -> anonymousClient
-  const clientId =
-    authenticatedClient !== null
-      ? authenticatedClient.id
+  const userId =
+    authedUser !== null
+      ? authedUser.id
       : anonymousClient.getClientId();
 
   const booking = await findBooking(bookingId);
-  const isGuest = pin && Number(pin) === booking?.pin;
 
-  if (
-    !booking ||
-    (booking.userId !== clientId && !isGuest) ||
-    booking.status === CheckoutStatus.deleted
-  ) {
+  if (!booking || booking?.status === CheckoutStatus.deleted) {
+    console.log('no booking or deleted booking', bookingId);
+    return redirect('/');
+  }
+
+  if (booking.userId !== userId) {
+    console.log(`User not authorized to access booking with owner = ${booking.userId}; Attempt by ${userId}`);
     return redirect('/');
   }
 
@@ -512,6 +503,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   const event = await findEventWithRacesAndDocuments(eventId);
 
   if (!event) {
+    console.log('no event', eventId);
     return redirect('/');
   }
 
@@ -526,14 +518,9 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     return redirect(`/${lng}/event/${event.slug}`);
   }
 
-  // cant use clientId when user is a guest - accesses this route with booking PIN
-  // TODO: refactor these functions to use bookingId when we decide to have multiple bookings
-  const userParticipants = await findUserParticipants(
-    isGuest ? booking.userId : clientId
-  );
-  const savedParticipants = await findUserSavedParticipants(
-    isGuest ? booking.userId : clientId
-  );
+  //EVAL: implicitely giving visibility over user stored data to visitor which may have accessed with a PIN - very weak security 
+  const userParticipants = await findUserParticipants(booking.userId);
+  const savedParticipants = await findUserSavedParticipants(booking.userId);
   const shirtSizes = await findShirtSizes();
 
   const eventTeams = await findEventTeams(eventId);
@@ -546,9 +533,10 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     savedParticipants:
       savedParticipants?.length !== 0 ? savedParticipants : null,
     shirtSizes,
-    isAuth: !!authenticatedClient,
-    isGuest,
+    isAuth: Boolean(authedUser),
     bookingId,
+    isBookingReadOnly: checkIfBookingEditionIsLocked(booking),
+    triggerLogin: !authedUser,
     organizerName: organizer?.name as string,
     eventTeams,
     discountCode: booking.discountCode,
@@ -567,8 +555,9 @@ export default function CheckoutInfoRoute() {
     userParticipants,
     savedParticipants,
     isAuth,
-    isGuest,
     bookingId,
+    isBookingReadOnly,
+    triggerLogin,
     organizerName,
     eventTeams,
     discountCode,
@@ -816,12 +805,11 @@ export default function CheckoutInfoRoute() {
     }
   }, [reset, resetForm, fetcher, t, showNotification, hash, errors, setErrors]);
 
-  const showLoginDialog = !isAuth && !isGuest;
 
   return (
     <Main>
-      <div data-cy="login" data-show-login={showLoginDialog}>
-        {showLoginDialog && (
+      <div data-cy="login" data-show-login={triggerLogin}>
+        {triggerLogin && (
           <BookingLoginCTADialog bookingId={bookingId} t={t} />
         )}
       </div>
@@ -876,7 +864,7 @@ export default function CheckoutInfoRoute() {
                     </span>
                   )}
 
-                  {!isGuest &&
+                  {!isBookingReadOnly &&
                     p.participantId === raceParticipant.participant.id &&
                     p.race.id === raceParticipant.raceId && (
                       <button
@@ -901,7 +889,7 @@ export default function CheckoutInfoRoute() {
                 </div>
               </div>
             ))}
-          {!isGuest && (
+          {!isBookingReadOnly && (
             <div className="flex flex-col items-center snap-center mt-4">
               <div
                 className="flex flex-col gap-y-2 border-2 border-b border-gray-500 p-2 mx-2 items-center w-[200px]"
@@ -923,7 +911,7 @@ export default function CheckoutInfoRoute() {
           'opacity-50': !raceParticipant
         })}
         key={hash}
-        readOnly={isGuest}
+        readOnly={isBookingReadOnly}
       >
         <div className="flex flex-col lg:flex-row">
           <div className="flex-col w-full lg:pr-8 xl:w-[calc(100%-(480px))] xl:pr-48">
@@ -937,11 +925,11 @@ export default function CheckoutInfoRoute() {
               setSelectedParticipant={handleSetSelectedParticipant}
               resetForm={resetForm}
               isUserBookingOnlyForHimself={raceParticipants.length === 1}
-              isReadOnly={isGuest}
+              isReadOnly={isBookingReadOnly}
               eventTeams={eventTeams}
               participantTeam={raceParticipant.team}
             >
-              {!isGuest && (
+              {!isBookingReadOnly && (
                 <>
                   <div className="flex items-center mb-2">
                     <input
@@ -1035,12 +1023,12 @@ export default function CheckoutInfoRoute() {
               cart={cart}
               event={event}
               error={errors.missingFilledParticipants}
-              showDiscountCodeInput={!isGuest}
+              showDiscountCodeInput={!isBookingReadOnly}
               discountCode={discountCode}
               discountValue={discountValue}
               discountFixed={discountFixed}
             >
-              {!isGuest && (
+              {!isBookingReadOnly && (
                 <>
                   <div className="flex flex-col items-center w-full">
                     <Button

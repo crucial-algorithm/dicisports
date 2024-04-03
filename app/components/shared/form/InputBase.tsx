@@ -5,13 +5,11 @@ import clsx from 'clsx';
 type Props = {
   id: string;
   name: string;
-  placeholder?: string;
+  placeholder?: string | undefined;
   defaultValue?: any;
-  type?: 'text' | 'number' | 'email' | 'date' | 'hidden' | 'checkbox';
-  autoComplete?: string;
-  disabled?: boolean;
-  onChange?: (value: any) => void;
-  input?: React.RefObject<HTMLInputElement>;
+  autoComplete?: string | undefined;
+  disabled?: boolean | undefined;
+  input?: React.RefObject<HTMLInputElement> | undefined;
 } & React.ComponentProps<'input'>;
 const InputBase: React.FC<Props> = ({
   id,
@@ -26,13 +24,14 @@ const InputBase: React.FC<Props> = ({
   readOnly = false,
   input,
   onClick,
-  step
+  step,
+  onBlur
 }) => {
   const [value, setValue] = useState<string>(defaultValue);
 
   function handleOnChange(e: ChangeEvent<HTMLInputElement>) {
     setValue(e.target.value);
-    onChange && onChange(e.target.value);
+    onChange && onChange(e);
   }
 
   // hack: when using outside ref, use a controlled component throughout the control lifecycle
@@ -52,6 +51,7 @@ const InputBase: React.FC<Props> = ({
         step={step}
         ref={input}
         onClick={onClick}
+        onBlur={onBlur}
       />
     );
   }
@@ -70,6 +70,7 @@ const InputBase: React.FC<Props> = ({
       readOnly={readOnly}
       step={step}
       onClick={onClick}
+      onBlur={onBlur}
     />
   );
 };

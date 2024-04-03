@@ -116,7 +116,6 @@ class Random extends RandomGenerator {
     try {
       bytes = crypto.randomBytes(numBytes);
     } catch (e) {
-      // XXX should re-throw any error except insufficient entropy
       bytes = crypto.pseudoRandomBytes(numBytes);
     }
     const result = bytes.toString('hex');

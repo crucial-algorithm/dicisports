@@ -1,78 +1,149 @@
 function form() {
+  const btnRingClasses =
+    'focus-ring absolute inset-0 rounded-full opacity-100 disabled:opacity-50 transform transition bg-inverse';
+  const btnOuterClasses =
+    'group relative inline-flex transition opacity-100 text-lg font-medium focus:outline-none disabled:opacity-50 mt-4 mr-2 w-48';
+  const btnInnerClasses =
+    'relative flex items-center justify-center w-full h-full whitespace-nowrap text-inverse px-8 py-4 space-x-3';
+
   const header = document.createElement('h4');
-  header.className = 'leading-tight text-xl mb-2 text-black dark:text-white';
-  header.innerHTML = 'Payment method development mock';
 
-  const subHeader = document.createElement('h6');
-  subHeader.className = 'leading-tight text-l text-black dark:text-white';
-  subHeader.innerHTML = 'Click to simulate payment';
+  header.className =
+    'leading-tight text-xl mb-2 mt-8 text-black dark:text-white';
+  header.innerHTML = 'Submitting mock payment form to SIBS...';
+  header.id = 'mock-payment-header';
 
-  const ring = document.createElement('div');
-  ring.className =
-    'focus-ring absolute inset-0 rounded-full opacity-100 disabled:opacity-50 transform transition bg-inverse';
-
+  const ccRing = document.createElement('div');
   const referenceRing = document.createElement('div');
-  referenceRing.className =
-    'focus-ring absolute inset-0 rounded-full opacity-100 disabled:opacity-50 transform transition bg-inverse';
-
   const mbwayRing = document.createElement('div');
-  mbwayRing.className =
-    'focus-ring absolute inset-0 rounded-full opacity-100 disabled:opacity-50 transform transition bg-inverse';
+  const declineRing = document.createElement('div');
+  const failToFetchStatusRing = document.createElement('div');
+
+  ccRing.className = btnRingClasses;
+  referenceRing.className = btnRingClasses;
+  mbwayRing.className = btnRingClasses;
+  declineRing.className = btnRingClasses;
+  failToFetchStatusRing.className = btnRingClasses;
 
   const referenceContent = document.createElement('div');
-  referenceContent.className =
-    'relative flex items-center justify-center w-full h-full whitespace-nowrap text-inverse px-8 py-4 space-x-3';
-  referenceContent.innerHTML = 'Multibanco';
-
   const mbwayContent = document.createElement('div');
-  mbwayContent.className =
-    'relative flex items-center justify-center w-full h-full whitespace-nowrap text-inverse px-8 py-4 space-x-3';
-  mbwayContent.innerHTML = 'MB Way';
-
   const ccContent = document.createElement('div');
-  ccContent.className =
-    'relative flex items-center justify-center w-full h-full whitespace-nowrap text-inverse px-8 py-4 space-x-3';
+  const declineContent = document.createElement('div');
+  const failToFetchStatuContent = document.createElement('div');
+
+  referenceContent.className = btnInnerClasses;
+  referenceContent.innerHTML = 'Multibanco';
+  mbwayContent.className = btnInnerClasses;
+  mbwayContent.innerHTML = 'MB Way';
+  ccContent.className = btnInnerClasses;
   ccContent.innerHTML = 'Credit Card';
+  declineContent.className = btnInnerClasses;
+  declineContent.innerHTML = 'Decline';
+  failToFetchStatuContent.className = btnInnerClasses;
+  failToFetchStatuContent.innerHTML = 'Force Fail Status';
 
   const form = document.querySelector('form[spg-context]');
-  form.innerHTML = '';
   const context = JSON.parse(form.getAttribute('spg-context'));
 
+  form.innerHTML = '';
+
   const referenceButton = document.createElement('button');
-  referenceButton.className =
-    'group relative inline-flex transition opacity-100 text-lg font-medium focus:outline-none disabled:opacity-50 mt-4 mr-2 w-48';
+
+  referenceButton.className = btnOuterClasses;
   referenceButton.type = 'button';
   referenceButton.name = 'pay-reference';
   referenceButton.onclick = async () => {
-    await generateFormContent('REFERENCE', 40);
+    const { amount, merchantTransactionId } = gatherTransactionData();
+
+    await generateFormContent('REFERENCE', amount);
+    await pushPaymentStatus(
+      context.transactionID,
+      amount,
+      merchantTransactionId,
+      'REFERENCE'
+    );
 
     form.action = 'http://127.0.0.1:3001/sibs-mock-form-submit';
     form.submit();
   };
 
   const mbwayButton = document.createElement('button');
-  mbwayButton.className =
-    'group relative inline-flex transition opacity-100 text-lg font-medium focus:outline-none disabled:opacity-50 mt-4 mr-2 w-48';
+
+  mbwayButton.className = btnOuterClasses;
   mbwayButton.type = 'button';
   mbwayButton.name = 'pay-mbway';
   mbwayButton.onclick = async () => {
-    await generateFormContent('MBWAY', 40);
+    const { amount, merchantTransactionId } = gatherTransactionData();
+
+    await generateFormContent('MBWAY', amount);
+    await pushPaymentStatus(
+      context.transactionID,
+      amount,
+      merchantTransactionId,
+      'MBWAY'
+    );
 
     form.action = 'http://127.0.0.1:3001/sibs-mock-form-submit';
     form.submit();
   };
 
   const ccButton = document.createElement('button');
-  ccButton.className =
-    'group relative inline-flex transition opacity-100 text-lg font-medium focus:outline-none disabled:opacity-50 mt-4 w-48';
+
+  ccButton.className = btnOuterClasses;
   ccButton.type = 'button';
   ccButton.name = 'pay-cc';
   ccButton.onclick = async () => {
-    await generateFormContent('CARD', 45);
+    const { amount, merchantTransactionId } = gatherTransactionData();
+
+    await generateFormContent('CARD', amount, true);
+    await pushPaymentStatus(
+      context.transactionID,
+      amount,
+      merchantTransactionId,
+      'CARD'
+    );
 
     form.action = 'http://127.0.0.1:3001/sibs-mock-form-submit/cc';
     form.submit();
   };
+
+  const declineButton = document.createElement('button');
+
+  declineButton.className = btnOuterClasses;
+  declineButton.type = 'button';
+  declineButton.name = 'decline';
+  declineButton.onclick = async () => {
+
+    const { amount, merchantTransactionId } = gatherTransactionData();
+
+    await generateFormContent('MBWAY', amount, false);
+    await pushPaymentStatus(
+      context.transactionID,
+      amount,
+      merchantTransactionId,
+      'CARD'
+    );
+
+    form.action = 'http://127.0.0.1:3001/sibs-mock-form-submit/';
+    form.submit();
+  };
+
+  const failToFetchStatuButton = document.createElement('button');
+
+  failToFetchStatuButton.className = btnOuterClasses;
+  failToFetchStatuButton.type = 'button';
+  failToFetchStatuButton.name = 'fail-to-fetch-status';
+  failToFetchStatuButton.onclick = async () => {
+
+    const { amount } = gatherTransactionData();
+
+    await generateFormContent('MBWAY', amount);
+    await pushInvalidPaymentStatus();
+
+    form.action = 'http://127.0.0.1:3001/sibs-mock-form-submit/';
+    form.submit();
+  };
+
 
   referenceButton.appendChild(referenceRing);
   referenceButton.appendChild(referenceContent);
@@ -82,14 +153,29 @@ function form() {
   mbwayButton.appendChild(mbwayContent);
   form.appendChild(mbwayButton);
 
-  ccButton.appendChild(ring);
+  ccButton.appendChild(ccRing);
   ccButton.appendChild(ccContent);
   form.appendChild(ccButton);
 
-  async function generateFormContent(method, amount) {
+  declineButton.appendChild(declineRing);
+  declineButton.appendChild(declineContent);
+  form.appendChild(declineButton);
+
+  failToFetchStatuButton.appendChild(failToFetchStatusRing);
+  failToFetchStatuButton.appendChild(failToFetchStatuContent);
+  form.appendChild(failToFetchStatuButton);
+
+  async function generateFormContent(method, amount, success = true) {
     const payload = {
-      returnStatus: { statusMsg: 'Success', statusCode: '000' },
-      paymentStatus: 'Success',
+      returnStatus: success
+        ? { statusMsg: 'Success', statusCode: '000' }
+        : {
+            statusMsg: 'Declined',
+            statusCode: '01.106.0004',
+            statusDescription:
+              'Card holder abandoned the transaction (push notification not accepted nor refused)'
+          },
+      paymentStatus: success ? 'Success' : 'Declined',
       paymentMethod: method,
       transactionID: context.transactionId,
       amount: { currency: 'EUR', value: amount },
@@ -97,8 +183,10 @@ function form() {
       paymentType: 'PURS',
       notificationID: UUIDGenerator()
     };
+
     // for local dev, we will use this secret which needs to be setup in .env file
     const secret = 'O0Bur9uhZkS54NkwFhVyeutED6DhLbOQUBDt3i3W/C4=';
+
     await encryptMessage(secret, JSON.stringify(payload)).then(
       ({ iv, at, message }) => {
         // add hidden fields with values for to be used to call our webhook:
@@ -109,21 +197,25 @@ function form() {
         // Look at the ENDPOINTS passed to our docker service http-catcher to see the settings that glue this thing together
 
         const input = document.createElement('input');
+
         input.type = 'hidden';
         input.name = 'transactionId';
         input.value = context.transactionId;
 
         const initializationVector = document.createElement('input');
+
         initializationVector.type = 'hidden';
         initializationVector.name = 'iv';
         initializationVector.value = iv;
 
         const authTag = document.createElement('input');
+
         authTag.type = 'hidden';
         authTag.name = 'at';
         authTag.value = at;
 
         const body = document.createElement('input');
+
         body.type = 'hidden';
         body.name = 'message';
         body.value = message;
@@ -131,7 +223,6 @@ function form() {
         form.method = 'post';
         //form.action = 'http://127.0.0.1:5001/sibs-mock-form-submit';
         form.appendChild(header);
-        form.appendChild(subHeader);
         form.appendChild(input);
 
         // fields for the side effect that will call our webhook
@@ -152,7 +243,7 @@ async function encryptMessage(secret, value) {
     ['encrypt', 'decrypt']
   );
 
-  let encoded = new TextEncoder().encode(value);
+  const encoded = new TextEncoder().encode(value);
   // The iv must never be reused with a given key.
   const iv = window.crypto.getRandomValues(new Uint8Array(6));
   const additionalData = new TextEncoder().encode(
@@ -182,6 +273,7 @@ function base64ToArrayBuffer(base64) {
   const binary_string = window.atob(base64);
   const len = binary_string.length;
   const bytes = new Uint8Array(len);
+
   for (let i = 0; i < len; i++) {
     bytes[i] = binary_string.charCodeAt(i);
   }
@@ -190,8 +282,9 @@ function base64ToArrayBuffer(base64) {
 
 function arrayBufferToBase64(buffer) {
   let binary = '';
-  let bytes = new Uint8Array(buffer);
-  let len = bytes.byteLength;
+  const bytes = new Uint8Array(buffer);
+  const len = bytes.byteLength;
+
   for (let i = 0; i < len; i++) {
     binary += String.fromCharCode(bytes[i]);
   }
@@ -205,6 +298,95 @@ function UUIDGenerator() {
       (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (c / 4)))
     ).toString(16)
   );
+}
+
+async function pushPaymentStatus(
+  transactionID,
+  amount,
+  merchantTransactionId,
+  paymentMethod
+) {
+
+  const body = {
+    merchant: {
+      terminalId: '57677',
+      merchantTransactionId
+    },
+    transactionID,
+    amount: {
+      currency: 'EUR',
+      value: amount
+    },
+    paymentType: 'PREF',
+    paymentStatus: 'Pending',
+    paymentMethod,
+    execution: {
+      endTime: new Date().toISOString(),
+      startTime: new Date().toISOString()
+    },
+    returnStatus: {
+      statusCode: '000',
+      statusMsg: 'Success',
+      statusDescription: 'Success'
+    }
+  };
+
+  if (paymentMethod === 'REFERENCE') {
+    body.paymentReference = {
+      entity: '24000',
+      reference: '883960846',
+      paymentEntity: '24000',
+      amount: {
+        value: '46.0',
+        currency: 'EUR'
+      },
+      status: 'PARTPAIDCLS',
+      expireDate: '2070-01-01T00:00:00.000+01:00'
+    };
+  }
+
+  const response = await fetch('http://127.0.0.1:3001/?bucket=payments', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(body)
+  });
+
+  if (response.ok) {
+    console.log('Payment status pushed successfully');
+  } else {
+    console.error('Failed to push payment status');
+  }
+}
+
+async function pushInvalidPaymentStatus() {
+  const response = await fetch('http://127.0.0.1:3001/?bucket=payments', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/text'
+    },
+    body: '{"a":}'
+  });
+
+  if (response.ok) {
+    console.log('Payment status pushed successfully');
+  } else {
+    console.error('Failed to push payment status');
+  }
+}
+
+function gatherTransactionData() {
+  const amount = Number(
+    document.querySelector('[data-cy="total-price"]').textContent.replace('€', '')
+  );
+
+  const url = new URL(window.location.href);
+  const merchantTransactionId = url.pathname.split('/').pop();
+
+  console.log({ amount, merchantTransactionId });
+
+  return { amount, merchantTransactionId };
 }
 
 form();

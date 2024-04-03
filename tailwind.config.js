@@ -1,5 +1,5 @@
-const defaultTheme = require('tailwindcss/defaultTheme')
-const colors = require('tailwindcss/colors')
+const defaultTheme = require('tailwindcss/defaultTheme');
+const colors = require('tailwindcss/colors');
 
 module.exports = {
   content: ['./app/**/*.{ts,tsx}'],
@@ -8,7 +8,7 @@ module.exports = {
     screens: {
       md: '640px',
       lg: '1024px',
-      xl: '1500px' // this is the "design resolution"
+      xl: '1280px' // this is the "design resolution"
     },
     colors: {
       ...colors,
