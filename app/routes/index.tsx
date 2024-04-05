@@ -7,7 +7,7 @@ import {
   useLocation,
   useSubmit
 } from '@remix-run/react';
-import { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Event } from '@prisma/client';
 import {
@@ -55,6 +55,7 @@ import {
 } from '~/server/db/events.server';
 import { H5 } from '~/components/shared/typography';
 import ComboBox from '~/components/shared/form/ComboBox';
+import { getLocalizedText } from '~/utils/misc';
 
 type TimedEventFilter = null | 'included' | 'excluded';
 
@@ -401,26 +402,28 @@ export default function Index() {
             />
 
             <ButtonTriState
-                labels={{
-                  checked: t('Event Filters: Classification'),
-                  unchecked: t('Event Filters: No Classification'),
-                  indeterminate: t('Event Filters: Results')
-                }}
-                icons={{
-                  checked: <CheckIcon className="h-6" />,
-                  unchecked: <XMarkIcon className="h-6" />,
-                  indeterminate: <ClockIcon className="h-6" />
-                }}
-                selectionState={mapTimedTo3State(timedEventFilter)}
-                onChange={handleTimedEventsFilter}
-                className="ds min-w-32 min-h-[60px] mt-1"
-              />
+              labels={{
+                checked: t('Event Filters: Classification'),
+                unchecked: t('Event Filters: No Classification'),
+                indeterminate: t('Event Filters: Results')
+              }}
+              icons={{
+                checked: <CheckIcon className="h-6" />,
+                unchecked: <XMarkIcon className="h-6" />,
+                indeterminate: <ClockIcon className="h-6" />
+              }}
+              selectionState={mapTimedTo3State(timedEventFilter)}
+              onChange={handleTimedEventsFilter}
+              className="ds min-w-32 min-h-[60px] mt-1"
+            />
           </div>
         </>
       )}
 
       {searchPerformed && searchResults.length === 0 && (
-        <H5 className="text-center mt-8 lg:max-w-lg lg:m-auto lg:mt-8">{t('No events found')}</H5>
+        <H5 className="text-center mt-8 lg:max-w-lg lg:m-auto lg:mt-8">
+          {t('No events found')}
+        </H5>
       )}
 
       {searchPerformed && (
@@ -458,6 +461,8 @@ export default function Index() {
         </>
       )}
 
+      {!searchPerformed && <Categories sports={sports} />}
+
       <LocationPickerDialog
         isOpen={selectinglocation}
         triggerClose={handleCloseLocationDialog}
@@ -476,6 +481,46 @@ export default function Index() {
       />
     </Main>
   );
+
+  function Categories({ sports }: { sports: Sport[] }) {
+    const { t, i18n } = useTranslation('home');
+  
+    function handleFilterSport(e: React.MouseEvent<HTMLSpanElement>) {
+      handleApplySport(sports.find((s) => s.id === Number(e.currentTarget.id)) || null);
+    }
+  
+    return (
+      <>
+        <div className="w-full lg:w-9/12 m-auto mb-4 mt-12 text-xl dark:text-white font-bold capitalize">
+          {t('Categories')}
+        </div>
+  
+        <div className="w-full m-auto lg:w-9/12 flex overflow-x-scroll hide-scroll-bar">
+          <div className="relative flex flex-nowrap ml-6 md:ml-0">
+          {sports
+            .sort((a, b) => a.id - b.id)
+            .map((s) => (
+              <span
+                onClick={handleFilterSport}
+                key={s.id}
+                id={String(s.id)}
+                className="relative min-w-[160px] mx-1 border border-transparent hover:brightness-110"
+              >
+                <DisplayImg
+                  imageId={`product/sports/${s.picture}`}
+                  key={s.id}
+                  alt={getLocalizedText(i18n.language as Language, s.name)}
+                  dontMessWithImgSize={true}
+                  className="w-full md:w-56 hover:resize"
+                  variant="Grid"
+                />
+              </span>
+            ))}
+          </div>
+        </div>
+      </>
+    );
+  }
 }
 
 function LatestEvents({

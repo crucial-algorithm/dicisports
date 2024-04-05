@@ -60,7 +60,9 @@
   "Select location": "Selecionar localização",
   "Select sport": "Selecionar Modalidade",
   "No events found": "Nenhum evento encontrado. Experimenta outra pesquisa ou volta mais tarde (novos eventos são adicionados regularmente).",
-  "Groups callout": "grupos"
+  "Groups callout": "grupos",
+
+  "Categories": "Modalidades"
 
 
 }

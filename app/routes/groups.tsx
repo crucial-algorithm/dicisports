@@ -497,12 +497,12 @@ export default function Groups() {
         <input type="hidden" name="g" value={filters?.groupsAction || ''} />
         <div className="flex justify-center items-end">
           <Link
-            to="/groups"
+            to={searchPerformed ? '/groups' : '/'}
             onClick={handleResetSearchPerformed}
             className="relative"
           >
             <HomeLogo className="w-80 h-16 md:w-96 lg:w-144" />
-            <div className="absolute -top-11 -right-4 text-sm bg-dicisports text-white uppercase p-2 font-black rotate-12 rounded-full shadow-md shadow-dicisports-700">
+            <div className="absolute -top-11 -right-4 text-sm bg-gray-400 text-white uppercase p-2 font-black rotate-12 rounded-full shadow-md shadow-gray-700">
               {t('Groups callout')}
             </div>
           </Link>
