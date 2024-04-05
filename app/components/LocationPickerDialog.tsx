@@ -62,7 +62,6 @@ export default function LocationPickerDialog({
   }
 
   function handleSelect(e: MouseEvent<HTMLDivElement>) {
-    console.log(e.currentTarget.id);
     if (!stats[e.currentTarget.id]) {
       return;
     }

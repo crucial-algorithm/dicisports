@@ -61,8 +61,6 @@ export default function ComboBox({
   const [selected, setSelected] = useState(defaultValue);
   const formProps = useContext(FormContext);
 
-  console.log(name, selected);
-
   if (formProps.readOnly) {
     return (
       <div className="font-medium dark:text-white">
