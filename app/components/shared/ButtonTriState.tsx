@@ -87,7 +87,7 @@ function stateToLabel(
   } else if (selectionState === false) {
     label = unchecked;
   } else {
-    label = indeterminate
+    label = indeterminate;
   }
 
   return label;

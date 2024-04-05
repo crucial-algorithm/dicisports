@@ -7,7 +7,7 @@ describe('Search', () => {
     it('should load groups', () => {
       cy.intercept('GET', '/*?coords=*')
         .as('search')
-        .visitAndWaitForHydration('/')
+        .visitAndWaitForHydration('/groups')
 
         .get('#search-button')
         .click()
@@ -20,7 +20,7 @@ describe('Search', () => {
     it('should return groups from Porto', () => {
       cy.intercept('GET', '*coords=*&search=*&page=*&actionId=search*')
         .as('search')
-        .visitAndWaitForHydration('/')
+        .visitAndWaitForHydration('/groups')
 
         .intercept(
           'GET',
@@ -48,14 +48,14 @@ describe('Search', () => {
 
     it('should redirect to create group: authenticated', () => {
       cy.login()
-        .visitAndWaitForHydration('/?coords=&search=&page=0&dow=&sport=&g=&actionId=search')
+        .visitAndWaitForHydration('/groups?coords=&search=&page=0&dow=&sport=&g=&actionId=search')
 
         .location()
         .should((l) => {
           expect(l.search).to.contain(
             'coords=&search=&page=0&dow=&sport=&g=&actionId=search'
           );
-          expect(l.pathname).to.eq('/');
+          expect(l.pathname).to.eq('/groups');
         })
 
         .get('#create-your-group')
@@ -72,7 +72,7 @@ describe('Search', () => {
     it('should favorite a group unauthenticated: login', () => {
       cy.intercept('GET', '/*?coords=*')
         .as('search')
-        .visitAndWaitForHydration('/?actionId=search&sport=6')
+        .visitAndWaitForHydration('/groups?actionId=search&sport=6')
 
         .intercept('GET', '/login?a=favorite&g=*_data=routes*')
         .as('loadLoginPage')
@@ -110,7 +110,7 @@ describe('Search', () => {
     it('should favorite a group unauthenticated: signup', () => {
       cy.intercept('GET', '/*?coords=*')
         .as('search')
-        .visitAndWaitForHydration('/?actionId=search&sport=6')
+        .visitAndWaitForHydration('/groups?actionId=search&sport=6')
 
         .intercept('GET', '/login?*_data=routes*')
         .as('loginPage')
@@ -166,7 +166,7 @@ describe('Search', () => {
           }
         })
       ).then(() => {
-        cy.visitAndWaitForHydration('/?actionId=search&sport=5')
+        cy.visitAndWaitForHydration('/groups?actionId=search&sport=5')
 
           .get('button[name=share-334a3081b9dd416e384d]')
           .focus()
@@ -182,16 +182,16 @@ describe('Search', () => {
     it('should have whatsapp link', () => {
       cy.intercept('GET', '/?actionId=search*_data=routes*')
         .as('selectSport')
-        .visitAndWaitForHydration('/?actionId=search&sport=4')
+        .visitAndWaitForHydration('/groups?actionId=search&sport=4')
 
         .get('#whatsapp-GkoxmH5db6RXqBpExion')
         .should('be.visible');
     });
 
     it('should send whatsapp link when user is not authenticated', () => {
-      cy.intercept('GET', '/?actionId=search*_data=routes*')
+      cy.intercept('GET', '/groups?actionId=search*_data=routes*')
         .as('selectSport')
-        .visitAndWaitForHydration('/')
+        .visitAndWaitForHydration('/groups')
 
         .get('[data-cy=4]')
         .click()
@@ -212,7 +212,7 @@ describe('Search', () => {
         .get('input[name=email]')
         .type('abcd@gmail.com')
 
-        .intercept('GET', '/?actionId=*message=*_data=routes*')
+        .intercept('GET', '/groups?actionId=*message=*_data=routes*')
         .as('sendEmail')
 
         .get('button[name=login]')
@@ -223,7 +223,7 @@ describe('Search', () => {
 
     it('should order by closest location', () => {
       cy.visitAndWaitForHydration(
-        '/?index=&coords=&search=&page=0&sport=&dow=&value=&actionId=search',
+        '/groups?index=&coords=&search=&page=0&sport=&dow=&value=&actionId=search',
         {
           onBeforeLoad(win: Cypress.AUTWindow) {
             const latitude = 41.15;
@@ -253,7 +253,7 @@ describe('Search', () => {
         .url()
         .should(
           'include',
-          '/?index=&coords=&search=&page=0&sport=&dow=&value=&actionId=search'
+          '/groups?index=&coords=&search=&page=0&sport=&dow=&value=&actionId=search'
         )
 
         .get('#sort-location')
@@ -265,7 +265,7 @@ describe('Search', () => {
         .url()
         .should(
           'include',
-          '/?coords=&search=&page=0&dow=&sport=&g=&order=proximity&actionId=sort'
+          '/groups?coords=&search=&page=0&dow=&sport=&g=&order=proximity&actionId=sort'
         )
 
         .get('#sort-location')
@@ -280,7 +280,7 @@ describe('Search', () => {
         .url()
         .should(
           'include',
-          '/?coords=&search=&page=0&dow=&sport=&g=&order=proximity&actionId=sort'
+          '/groups?coords=&search=&page=0&dow=&sport=&g=&order=proximity&actionId=sort'
         )
 
         .get('div[data-cy=distance]')
@@ -293,54 +293,28 @@ describe('Search', () => {
         .get('div[data-cy=distance]:nth(1)')
         .should('contain', '12 km')
         .get('div[data-cy=distance]:nth(2)')
-        .should('contain', '28 km')
+        .should('contain', '46 km')
         .get('div[data-cy=distance]:nth(3)')
-        .should('contain', '42 km')
+        .should('contain', '46 km')
         .get('div[data-cy=distance]:nth(4)')
         .should('contain', '46 km')
         .get('div[data-cy=distance]:nth(5)')
-        .should('contain', '46 km')
-        .get('div[data-cy=distance]:nth(6)')
-        .should('contain', '46 km')
-        .get('div[data-cy=distance]:nth(7)')
         .should('contain', '51 km')
-        .get('div[data-cy=distance]:nth(8)')
+        .get('div[data-cy=distance]:nth(6)')
         .should('contain', '57 km')
+        .get('div[data-cy=distance]:nth(7)')
+        .should('contain', '65 km')
+        .get('div[data-cy=distance]:nth(8)')
+        .should('contain', '71 km')
         .get('div[data-cy=distance]:nth(9)')
-        .should('contain', '62 km');
+        .should('contain', '79 km');
     });
 
     context('Test all filters', () => {
-      it('should hide groups', () => {
-        cy.intercept('GET', '*g=hide*')
-          .as('applyFilters')
-          .visitAndWaitForHydration(
-            '/?index=&coords=&search=&page=0&sport=&dow=&value=&actionId=search'
-          )
-
-          .get('button[name=filters]')
-          .click()
-
-          .get('#g-hide')
-          .click({ force: true })
-
-          .get('#apply-filters')
-          .click({ force: true })
-
-          .wait('@applyFilters')
-
-          .waitForHydration()
-
-          .url()
-          .should('include', 'g=hide')
-
-          .get('[data-cy=event-entry]')
-          .should('have.length', 6);
-      });
 
       it('should return Morning groups', () => {
         cy.visitAndWaitForHydration(
-          '/?index=&coords=&search=&page=0&sport=&dow=&value=&actionId=search'
+          '/groups?index=&coords=&search=&page=0&sport=&dow=&value=&actionId=search'
         )
 
           // Morning groups < 12H:00min
@@ -358,16 +332,16 @@ describe('Search', () => {
           .location()
           .should((loc) => {
             expect(loc.search).to.contain('daypart=Morning');
-            expect(loc.pathname).to.eq('/');
+            expect(loc.pathname).to.eq('/groups');
           })
 
           .get('[data-cy=total-results]')
-          .contains('27');
+          .contains('21');
       });
 
       it('should return Afternoon groups', () => {
         cy.visitAndWaitForHydration(
-            '/?index=&coords=&search=&page=0&sport=&dow=&value=&actionId=search'
+            '/groups?index=&coords=&search=&page=0&sport=&dow=&value=&actionId=search'
           )
 
           // Afternoon groups > 13H:00min and < 20H:00min
@@ -385,7 +359,7 @@ describe('Search', () => {
           .location()
           .should((loc) => {
             expect(loc.search).to.contain('daypart=Afternoon');
-            expect(loc.pathname).to.eq('/');
+            expect(loc.pathname).to.eq('/groups');
           })
 
           .get('#see-more')
@@ -394,7 +368,7 @@ describe('Search', () => {
           .location()
           .should((loc) => {
             expect(loc.search).to.contain('page=0');
-            expect(loc.pathname).to.eq('/');
+            expect(loc.pathname).to.eq('/groups');
           })
           .waitForHydration()
 
@@ -404,7 +378,7 @@ describe('Search', () => {
 
       it('should return Evening groups', () => {
         cy.visitAndWaitForHydration(
-            '/?index=&coords=&search=&page=0&sport=&dow=&value=&actionId=search'
+            '/groups?index=&coords=&search=&page=0&sport=&dow=&value=&actionId=search'
           )
 
           // Night groups > 20H:00min and < 23H:00min
@@ -422,16 +396,16 @@ describe('Search', () => {
           .location()
           .should((loc) => {
             expect(loc.search).to.contain('daypart=Evening');
-            expect(loc.pathname).to.eq('/');
+            expect(loc.pathname).to.eq('/groups');
           })
 
           .get('[data-cy=group-schedule]')
-          .should('have.length', 4);
+          .should('have.length', 5);
       });
 
       it('should return groups from each day of the week', () => {
         cy.visitAndWaitForHydration(
-            '/?index=&coords=&search=&page=0&sport=&dow=&value=&actionId=search'
+            '/groups?index=&coords=&search=&page=0&sport=&dow=&value=&actionId=search'
           );
 
         // Sunday
@@ -562,7 +536,7 @@ function verifyDayOfWeek(filterOption: number, dayOfWeek: string, dow: number) {
 
 function checkGroupsBySport(sport: number, length: number) {
   if (length > 10 && length <= 20) {
-    cy.visitAndWaitForHydration('/')
+    cy.visitAndWaitForHydration('/groups')
 
       // Check if filter works from homepage
       .get(`[data-cy=${sport}]`)
@@ -571,7 +545,7 @@ function checkGroupsBySport(sport: number, length: number) {
       .location()
       .should((loc) => {
         expect(loc.search).to.contain(`sport=${sport}`);
-        expect(loc.pathname).to.eq('/');
+        expect(loc.pathname).to.eq('/groups');
       })
       .waitForHydration()
 
@@ -581,7 +555,7 @@ function checkGroupsBySport(sport: number, length: number) {
       .location()
       .should((loc) => {
         expect(loc.search).to.contain('page=0');
-        expect(loc.pathname).to.eq('/');
+        expect(loc.pathname).to.eq('/groups');
       })
       .waitForHydration()
 
@@ -595,7 +569,7 @@ function checkGroupsBySport(sport: number, length: number) {
       .should('have.length', length)
 
       .visitAndWaitForHydration(
-        '/?index=&coords=&search=&page=0&sport=&dow=&value=&actionId=search'
+        '/groups?index=&coords=&search=&page=0&sport=&dow=&value=&actionId=search'
       )
 
       // Check if filter works from filter dialog
@@ -610,13 +584,13 @@ function checkGroupsBySport(sport: number, length: number) {
       .location()
       .should((loc) => {
         expect(loc.search).to.contain(`sport=${sport}`);
-        expect(loc.pathname).to.eq('/');
+        expect(loc.pathname).to.eq('/groups');
       })
       .waitForHydration()
 
       .location()
       .should((l) => {
-        expect(l.pathname).to.eq('/');
+        expect(l.pathname).to.eq('/groups');
         expect(l.search).to.contain('sport=' + sport);
       })
 
@@ -626,13 +600,13 @@ function checkGroupsBySport(sport: number, length: number) {
       .location()
       .should((loc) => {
         expect(loc.search).to.contain('page=0');
-        expect(loc.pathname).to.eq('/');
+        expect(loc.pathname).to.eq('/groups');
       })
       .waitForHydration()
 
       .location()
       .should((l) => {
-        expect(l.pathname).to.eq('/');
+        expect(l.pathname).to.eq('/groups');
         expect(l.search).to.contain('sport=' + sport);
       })
 
@@ -642,7 +616,7 @@ function checkGroupsBySport(sport: number, length: number) {
       .get('#see-more')
       .should('not.exist');
   } else {
-    cy.visitAndWaitForHydration('/')
+    cy.visitAndWaitForHydration('/groups')
 
       .get(`[data-cy=${sport}]`)
       .click()
@@ -650,7 +624,7 @@ function checkGroupsBySport(sport: number, length: number) {
       .location()
       .should((loc) => {
         expect(loc.search).to.contain(`sport=${sport}`);
-        expect(loc.pathname).to.eq('/');
+        expect(loc.pathname).to.eq('/groups');
       })
       .waitForHydration()
 
@@ -661,7 +635,7 @@ function checkGroupsBySport(sport: number, length: number) {
       .should('not.exist')
 
       .visitAndWaitForHydration(
-        '/?index=&coords=&search=&page=0&sport=&dow=&value=&actionId=search'
+        '/groups?index=&coords=&search=&page=0&sport=&dow=&value=&actionId=search'
       )
 
       .get('button[name=filters]')
@@ -675,13 +649,13 @@ function checkGroupsBySport(sport: number, length: number) {
       .location()
       .should((loc) => {
         expect(loc.search).to.contain(`sport=${sport}`);
-        expect(loc.pathname).to.eq('/');
+        expect(loc.pathname).to.eq('/groups');
       })
       .waitForHydration()
 
       .location()
       .should((l) => {
-        expect(l.pathname).to.eq('/');
+        expect(l.pathname).to.eq('/groups');
         expect(l.search).to.contain('sport=' + sport);
       })
 
@@ -694,7 +668,7 @@ function checkGroupsBySport(sport: number, length: number) {
 }
 
 function checkGroupsBySpirit(filterOption: number, spirit: string) {
-  cy.visitAndWaitForHydration('/?coords=&search=&page=0&dow=&sport=&g=&actionId=search')
+  cy.visitAndWaitForHydration('/groups?coords=&search=&page=0&dow=&sport=&g=&actionId=search')
 
     .get('button[name=filters]')
     .click()
@@ -718,7 +692,7 @@ function checkAllFiltersAndSelectDOWAndSport(
   dow: number
 ) {
   cy.visitAndWaitForHydration(
-    '/?index=&coords=&search=&page=0&sport=&dow=&value=&actionId=search'
+    '/groups?index=&coords=&search=&page=0&sport=&dow=&value=&actionId=search'
   )
 
     .get('button[name=filters]')

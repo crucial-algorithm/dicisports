@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
 
 import ComboBox from '~/components/shared/form/ComboBox';
@@ -13,8 +13,7 @@ export default function PeekDayOfWeek(props: {
   onChange?: (value: string | number) => void;
 }) {
   const { t, i18n } = useTranslation('common');
-  const { id, name, defaultValue, addAll, input, onChange } = props;
-  const [day, setDay] = useState<string>('');
+  const { id, name, defaultValue, addAll, onChange } = props;
   const options = [
     { value: 6, label: t('Sunday') },
     { value: 0, label: t('Monday') },
@@ -26,11 +25,8 @@ export default function PeekDayOfWeek(props: {
   ];
 
   function handleChangeDay(value: string | number) {
-    setDay(String(value));
 
-    if (onChange) {
-      onChange(value);
-    }
+    onChange && onChange(value);
   }
 
   return (
@@ -44,7 +40,6 @@ export default function PeekDayOfWeek(props: {
         defaultValue={defaultValue === null ? '' : defaultValue}
         options={options}
       />
-      <input type="hidden" name="value" value={day} ref={input} />
     </>
   );
 }

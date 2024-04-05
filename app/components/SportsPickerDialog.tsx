@@ -1,10 +1,11 @@
 import type { MouseEvent } from 'react';
+import { useTranslation } from 'react-i18next';
 
+import { useRootData } from '~/hooks';
 import Dialog from '~/components/shared/Dialog';
 import I18nText, { getI18nText } from '~/components/I18nText';
-import type { TranslationObject, Sport, Language } from '~/types';
-import { useRootData } from '~/hooks';
-import { useTranslation } from 'react-i18next';
+import type { Sport, Language } from '~/types';
+
 
 type SportsPickerProps = {
   title: string;

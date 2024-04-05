@@ -41,7 +41,7 @@ export default function ComboBox({
   lang,
   onChange,
   placeholder,
-  clearOption,
+  clearOption = false,
   clearLabel
 }: SelectProps) {
   const [t] = useTranslation('common');
@@ -61,6 +61,8 @@ export default function ComboBox({
   const [selected, setSelected] = useState(defaultValue);
   const formProps = useContext(FormContext);
 
+  console.log(name, selected);
+
   if (formProps.readOnly) {
     return (
       <div className="font-medium dark:text-white">
@@ -70,7 +72,6 @@ export default function ComboBox({
   }
 
   function StyleOption({ active, disabled }: { active: boolean, disabled: boolean}) {
-    console.log(disabled);
     return clsx('relative cursor-default select-none py-2 pl-10 pr-4', {
       'bg-gray-100 text-gray-800 dark:bg-gray-600 dark:text-gray-100': active,
       'bg-white text-base dark:bg-gray-800 dark:text-gray-100': !active
@@ -99,7 +100,7 @@ export default function ComboBox({
               aria-hidden="true"
             />
           </span>
-          {!selected && placeholder && (
+          {!selected && selected !== 0 && placeholder && (
             <span className="text-gray-400">{placeholder}</span>
           )}
         </Listbox.Button>
@@ -165,7 +166,11 @@ export default function ComboBox({
           </Listbox.Options>
         </Transition>
       </div>
-      <input type="hidden" name={name} value={selected || ''} />
+      <input
+        type="hidden"
+        name={name}
+        value={selected === 0 ? '0' : selected || ''}
+      />
     </Listbox>
   );
 }
