@@ -14,10 +14,10 @@ describe('Groups', () => {
     });
 
     it('should favorite group', () => {
-      cy.intercept('GET', '/?actionId=search*')
+      cy.intercept('GET', '/groups?actionId=search*')
         .as('search')
         .login()
-        .visitAndWaitForHydration('/?actionId=search&sport=6')
+        .visitAndWaitForHydration('/groups?actionId=search&sport=6')
 
         .get('#add-favorite-05b72760f9674a2abdcc')
         .click()

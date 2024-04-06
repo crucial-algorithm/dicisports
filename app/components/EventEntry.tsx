@@ -4,30 +4,13 @@ import React from 'react';
 
 import { useTranslation } from 'react-i18next';
 
-import type { TranslationObject, User } from '~/types';
+import type { TranslationObject } from '~/types';
 import Carousel from '~/components/Carousel';
 import DisplayImg from '~/components/shared/DisplayImg';
 import DisplayDate from '~/components/shared/DIsplayDate';
 import I18nText from '~/components/I18nText';
 import ResultEntryDescription from '~/components/shared/ResultEntryDescription';
-
-export type DisplayEvent = {
-  id: string;
-  name: string;
-  slug: string;
-  startAt: Date | null;
-  location: string;
-  lat: number;
-  lng: number;
-  description: string | null;
-  image1: string | null;
-  image2: string | null;
-  image3: string | null;
-  image4: string | null;
-  image5: string | null;
-  createdBy: User;
-  difficulty: TranslationObject | null;
-};
+import type { SearchEventResult } from '~/server/db/search.server';
 
 type FeatureProps = {
   value: string | TranslationObject;
@@ -40,7 +23,7 @@ export default function EventEntry({
   footer,
   actions
 }: {
-  event: DisplayEvent;
+  event: SearchEventResult;
   img?: string;
   footer?: ReactNode;
   actions?: React.ReactNode;
@@ -75,7 +58,7 @@ export default function EventEntry({
           >
             <DisplayDate date={new Date(event.startAt || 0)} />
           </span>
-          <Feature label={t('Who')} value={event.createdBy?.name || ''} />
+          <Feature label={t('Who')} value={event.user || ''} />
           <Feature label={t('Where')} value={event.location || ''}>
             &nbsp;
             <a
@@ -112,7 +95,7 @@ export default function EventEntry({
   );
 }
 
-function EventImage({ event, img }: { event: DisplayEvent; img?: string }) {
+function EventImage({ event, img }: { event: SearchEventResult; img?: string }) {
   function Wrapper({ children }: {} & React.ComponentProps<'div'>) {
     return <div className="w-full lg:w-144 lg:max-h-144">{children}</div>;
   }

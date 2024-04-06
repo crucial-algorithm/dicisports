@@ -10,7 +10,7 @@ import ButtonGroup from '~/components/shared/ButtonGroup';
 import CopyToClipboard from '~/components/shared/CopyToClipboard';
 import WhatsApp from '~/components/shared/icons/WhatsApp';
 import { Notification } from '~/components/shared/NotificationMessage';
-import type { Group, SearchResults } from '~/types';
+import type { Group, GroupSearchResult } from '~/types';
 import { fetcherType } from '~/utils/misc';
 
 export default function GroupResult({
@@ -26,7 +26,7 @@ export default function GroupResult({
   userLocation,
   showLocation
 }: {
-  group: SearchResults;
+  group: GroupSearchResult;
   img?: string;
   isUserFavorite: boolean;
   favAddedMessage: string;
