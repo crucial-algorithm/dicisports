@@ -142,7 +142,8 @@ async function findPublishedEventsSlim() {
       location: true
     },
     where: {
-      status: Status.published
+      status: Status.published,
+      startAt: { gte: new Date() }
     },
     orderBy: { startAt: 'asc' }
   });
