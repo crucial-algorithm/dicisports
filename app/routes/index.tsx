@@ -1,4 +1,4 @@
-import type { LoaderFunction, MetaFunction } from '@remix-run/node';
+import type { LoaderFunction, MetaFunction, SerializeFrom } from '@remix-run/node';
 import { json } from '@remix-run/node';
 import {
   Form,
@@ -29,7 +29,7 @@ import Main from '~/components/shared/Main';
 import { Spacer } from '~/components/shared/Spacer';
 import type { SearchEventResult } from '~/server/db/search.server';
 import { searchEvents } from '~/server/db/search.server';
-import type { EventFilters, Language, Sport } from '~/types';
+import type { DiciLocation, EventFilters, Language, Sport } from '~/types';
 
 import HomeLogo from '~/components/shared/HomeLogo';
 import { getUser } from '~/server/auth/session.server';
@@ -45,13 +45,15 @@ import LocationPickerDialog, {
 import SearchEvents from '~/components/SearchEvents';
 import SportsPickerDialog from '~/components/SportsPickerDialog';
 import ButtonTriState from '~/components/shared/ButtonTriState';
-import DisplayDate from '~/components/shared/DIsplayDate';
+import DisplayDate, { displayYearAndMonth } from '~/components/shared/DIsplayDate';
 import { useRootData } from '~/hooks';
+import type { EventSlim } from '~/server/db/events.server';
 import {
   findFeaturedEvents,
   findLatestPublishedEvents,
   findRegionsWithEvents,
-  findUserFavoriteEvents
+  findUserFavoriteEvents,
+  findPublishedEventsSlim
 } from '~/server/db/events.server';
 import { H5 } from '~/components/shared/typography';
 import ComboBox from '~/components/shared/form/ComboBox';
@@ -68,14 +70,15 @@ type FilterParams = {
 };
 
 type LoaderData = {
-  searchResult: ActionData;
+  searchResult: SearchResult;
   favoriteEvents: Event[];
   latestEvents: Event[];
   featuredEvent: Event | null;
   regions: { region: string; events: number }[];
+  calendar: EventSlim[];
 };
 
-type ActionData = {
+type SearchResult = {
   results: SearchEventResult[];
   filters: EventFilters | null;
   total: number;
@@ -105,7 +108,7 @@ export const loader: LoaderFunction = async ({ request }) => {
   let latestEvents: Event[] = [];
   let featuredEvent: Event | null = null;
 
-  let result: ActionData | null = null;
+  let result: SearchResult | null = null;
   const page = data.actionId === actions.search ? 0 : data.page || 0;
 
   if (data.actionId === actions.search || data.actionId === actions.more) {
@@ -131,15 +134,22 @@ export const loader: LoaderFunction = async ({ request }) => {
     favoriteEvents,
     latestEvents,
     featuredEvent: featuredEvent || null,
-    regions: await findRegionsWithEvents()
+    regions: await findRegionsWithEvents(),
+    calendar: await findPublishedEventsSlim()
   } as LoaderData);
 };
 
 export default function Index() {
   const { sports } = useRootData();
   const { t, i18n } = useTranslation('home');
-  const { searchResult, favoriteEvents, latestEvents, featuredEvent, regions } =
-    useLoaderData<LoaderData>() as unknown as LoaderData;
+  const {
+    searchResult,
+    favoriteEvents,
+    latestEvents,
+    featuredEvent,
+    regions,
+    calendar
+  } = reviver(useLoaderData<LoaderData>());
   const [searchResults, setSearchResults] = useState<SearchEventResult[]>(
     searchResult?.results || []
   );
@@ -461,6 +471,10 @@ export default function Index() {
         </>
       )}
 
+      {!searchPerformed && (
+        <Calendar calendar={calendar} title={t('Events Calendar')} />
+      )}
+
       {!searchPerformed && <Categories sports={sports} />}
 
       <LocationPickerDialog
@@ -635,7 +649,7 @@ function FeaturedEvent({ event }: { event: Event }) {
             }}
           />
           <DisplayImg
-            className="hidden w-full h-52 object-cover rounded-lg lg:block lg:col-start-4"
+            className="hidden w-full h-60 object-cover rounded-lg lg:block lg:col-start-4"
             dontMessWithImgSize={true}
             imageId={img3}
             alt={name || ''}
@@ -680,6 +694,123 @@ function FeaturedEvent({ event }: { event: Event }) {
       </div>
     </div>
   );
+}
+
+function Calendar({ calendar, title }: { calendar: EventSlim[], title: string }) {
+  const [t] = useTranslation('common');
+  const distinctPeriods: { [key: number]: { [key: number]: EventSlim[] } } = {};
+
+  // calculate distinct periods
+  calendar.forEach((event) => {
+    if (!event.startAt) {
+      return;
+    }
+
+    const year = event.startAt.getFullYear();
+    const month = String(event.startAt.getMonth()).padStart(2, '0');
+    const day = String(event.startAt.getDate()).padStart(2, '0');
+    const periodKey = Number(`${year}${month}`);
+    const dayKey = Number(`${year}${month}${day}`);
+
+    if (!distinctPeriods[periodKey]) {
+      distinctPeriods[periodKey] = {};
+    }
+
+    if (!distinctPeriods[periodKey][dayKey]) {
+      distinctPeriods[periodKey][dayKey] = [];
+    }
+
+    distinctPeriods[periodKey][dayKey].push(event);
+  });
+
+  const periods = Object.keys(distinctPeriods)
+    .map(Number)
+    .sort((a, b) => a - b);
+
+  function displayPeriod(period: number) {
+    const p = String(period);
+    const year = Number(p.slice(0, 4));
+    const month = Number(p.slice(4, 6));
+
+    return displayYearAndMonth(year, month, t);
+  }
+
+  return (
+    <>
+      <div className="w-full lg:w-9/12 m-auto mb-4 mt-12 text-xl dark:text-white font-bold capitalize">
+        {title}
+      </div>
+
+      <div className="w-full lg:w-9/12 m-auto mt-8 ds-home-events-calendar-view">
+        {periods.map((period) => (
+          <div key={period}>
+            <h2 className="text-xl font-bold mb-4">{displayPeriod(period)}</h2>
+            {Object.keys(distinctPeriods[period]).map((date) => (
+              <CalendarDay
+                key={date}
+                date={date}
+                events={distinctPeriods[period][Number(date)]}
+              />
+            ))}
+          </div>
+        ))}
+      </div>
+    </>
+  );
+}
+
+function CalendarDay({ events, date }: { events: EventSlim[]; date: string }) {
+  const { i18n } = useTranslation('common');
+
+  return (
+    <div className="flex gap-4 shadow mb-4">
+      <div className="flex justify-center items-center w-24 text-4xl">
+        {date.substring(6)}
+      </div>
+      <div>
+        {events.map(({ id, name, slug, location }) => (
+          <div key={id} className="border-b-2 last:border-b-0 pt-4 pb-2">
+            <Link to={`/${i18n.language}/event/${slug}`}>
+              <div className="text-lg">{name}</div>
+              <div className="text-sm text-blueGray-500">{(location as DiciLocation)?.place}</div>
+            </Link>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function reviveEvent(
+  event: SerializeFrom<Event>
+): Omit<Event, 'location'> & { location: DiciLocation | null } {
+  const location = event.location as DiciLocation;
+
+  return {
+    ...event,
+    startAt: event.startAt ? new Date(event.startAt) : null,
+    endAt: event.endAt ? new Date(event.endAt) : null,
+    bookingStopsAt: event.bookingStopsAt
+      ? new Date(event.bookingStopsAt)
+      : null,
+    createdAt: new Date(event.createdAt),
+    updatedAt: new Date(event.updatedAt),
+    location: location ? location : null
+  };
+}
+
+function reviver(data: SerializeFrom<LoaderData>): LoaderData {
+  return {
+    searchResult: data.searchResult,
+    favoriteEvents: data.favoriteEvents.map(reviveEvent),
+    latestEvents: data.latestEvents.map(reviveEvent),
+    featuredEvent: data.featuredEvent ? reviveEvent(data.featuredEvent) : null,
+    regions: data.regions,
+    calendar: data.calendar.map((event) => ({
+      ...event,
+      startAt: event.startAt ? new Date(event.startAt) : null
+    }))
+  };
 }
 
 function map3StateToTimed(
@@ -736,7 +867,7 @@ async function search(
   sport: number | null,
   page: number,
   reset: boolean = true
-): Promise<ActionData> {
+): Promise<SearchResult> {
   const filters: EventFilters = {
     sport: !sport || sport === -1 ? null : sport,
     region,
