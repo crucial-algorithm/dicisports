@@ -28,26 +28,32 @@ import { SunIcon } from './shared/icons/SunIcon';
 import { MoonIcon } from './shared/icons/MoonIcon';
 import { TeamCircle } from './shared/icons/TeamCircle';
 
-const LINKS = [
-  {
-    name: 'Events Menu',
-    to: '/o',
-    public: false,
-    roles: ['ADMIN'],
-    id: 'events'
-  },
-  {
-    name: 'Groups Menu',
-    to: '/g/groups',
-    public: false,
-    roles: [],
-    id: 'groups'
-  }
-];
+ const LINKS = [
+   {
+     name: 'Events Menu',
+     to: '/o',
+     public: false,
+     roles: ['ADMIN'],
+     id: 'events'
+   },
+   {
+     name: 'Groups Menu',
+     to: '/groups',
+     public: true,
+     roles: [],
+     id: 'groups'
+   }
+ ];
 
 const MOBILE_LINKS = [
   { name: 'Home', to: '/', public: true, roles: [], id: 'home' },
-  { name: 'CTA Publish Your Event', to: '/organizers-promo', public: true, roles: [], id: 'org-promo' },
+  {
+    name: 'CTA Publish Your Event',
+    to: '/organizers-promo',
+    public: true,
+    roles: [],
+    id: 'org-promo'
+  },
   ...LINKS
 ];
 
@@ -367,17 +373,19 @@ function Navbar() {
   const { t } = useTranslation('common');
   const { user } = useRootData();
   const location = useLocation();
-  const isRoot = location.pathname === '/';
+  const isRoot = location.pathname === '/' || location.pathname === '/groups';
 
   return (
     <>
-      <nav data-role="mobile"
-           className={clsx('flex lg:hidden px-5vw py-9 lg:py-12 mx-auto max-w-8xl text-primary',
-             {
-               'items-center justify-between': !isRoot,
-               'justify-end': isRoot
-             }
-           )}
+      <nav
+        data-role="mobile"
+        className={clsx(
+          'flex lg:hidden px-5vw py-9 lg:py-12 mx-auto max-w-8xl text-primary',
+          {
+            'items-center justify-between': !isRoot,
+            'justify-end': isRoot
+          }
+        )}
       >
         {!isRoot && (
           <Link
@@ -425,6 +433,24 @@ function Navbar() {
         )}
 
         <div className="flex items-center justify-center gap-2.5">
+          {location.pathname !== '/groups' && (
+            <Link
+              to="/groups"
+              className="text-xs font-semibold bg-gray-400 rounded-full p-2 text-white capitalize"
+            >
+              {t('Groups Menu')}
+            </Link>
+          )}
+
+          {location.pathname === '/groups' && (
+            <Link
+              to="/"
+              className="text-xs font-bold bg-dicisports rounded-full p-2 text-white capitalize"
+            >
+              {t('Events Menu')}
+            </Link>
+          )}
+
           <IsNotAnOrganizer>
             {location.pathname !== '/organizers-promo' && (
               <CTALandingPublishYourEvent
@@ -442,7 +468,13 @@ function Navbar() {
   );
 }
 
-function CTALandingPublishYourEvent({ cta, className }: { cta: string, className?: string }) {
+function CTALandingPublishYourEvent({
+  cta,
+  className
+}: {
+  cta: string;
+  className?: string;
+}) {
   return (
     <ButtonLink to="/organizers-promo" size="x-small" className={className}>
       {cta}

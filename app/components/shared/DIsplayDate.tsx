@@ -37,3 +37,11 @@ export function dateFormatter(date: Date, tcommon: TFunction) {
 
   return `${day} ${tcommon(months[month])}, ${year}`;
 }
+
+export function displayYearAndMonth(
+  year: number,
+  month: number,
+  tcommon: TFunction
+) {
+  return `${tcommon(months[month])}, ${year}`;
+}

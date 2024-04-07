@@ -8,17 +8,7 @@
 
 @layer components {
     .dialog-content {
-        @apply flex flex-col fixed top-0 left-0
-        bg-white text-gray-500 font-medium
-        dark:bg-gray-900 dark:border-white dark:text-white
-        z-20
-
-        w-screen ds-h-screen md:h-fit px-8
-
-        md:top-[50%] md:left-[50%] md:-translate-x-1/2 md:-translate-y-1/2
-        md:w-fit md:max-w-[90%] md:min-h-[200px] md:max-h-[90vh] md:h-fit
-        md:m-auto md:px-4
-        md:rounded-lg md:border-2 md:border-black;
+        @apply flex flex-col fixed top-0 left-0 bg-white text-gray-500 font-medium dark:bg-gray-900 dark:border-white dark:text-white z-20 w-screen ds-h-screen md:h-fit px-8 md:top-[50%] md:left-[50%] md:-translate-x-1/2 md:-translate-y-1/2 md:w-fit md:max-w-[90%] md:min-h-[200px] md:max-h-[90vh] md:h-fit md:m-auto md:px-4 md:rounded-lg md:border-2 md:border-black;
     }
 
     .dialog-title {
@@ -34,10 +24,7 @@
     }
 
     .dialog-footer {
-        @apply flex items-baseline w-full justify-end gap-4 mb-2
-        md:static md:py-2 md:px-1 md:mb-0
-        md:flex-wrap md:justify-end md:items-center
-        ;
+        @apply flex items-baseline w-full justify-end gap-4 mb-2 md:static md:py-2 md:px-1 md:mb-0 md:flex-wrap md:justify-end md:items-center;
     }
 
     .search-filters .dialog-footer {
@@ -52,11 +39,7 @@
 
 @layer base {
     .input-text {
-        @apply w-full px-8 py-4 rounded-lg placeholder-gray-500 dark:text-blueGray-600 font-medium border-0
-        bg-gray-100 text-base md:text-lg
-        dark:text-white dark:bg-gray-800
-        disabled:text-gray-400 dark:disabled:text-blueGray-500
-        focus-ring;
+        @apply w-full px-8 py-4 rounded-lg placeholder-gray-500 dark:text-blueGray-600 font-medium border-0 bg-gray-100 text-base md:text-lg dark:text-white dark:bg-gray-800 disabled:text-gray-400 dark:disabled:text-blueGray-500 focus-ring;
     }
 
     .input-text::placeholder {
@@ -126,5 +109,48 @@
     /*Since focus-ring is a custom class, we need to declare this one here - inside a @layer - in order to work/not throw an error*/
     .p-dropdown.p-component {
         @apply focus-ring
+    }
+
+    .ds.p-button:focus {
+        box-shadow: none;
+    }
+
+    .ds.p-button.p-togglebutton, .ds.ds-button-tristate.p-button {
+        display: flex;
+        flex-direction: row-reverse;
+        align-items: center;
+        justify-content: space-between;
+        text-wrap: nowrap;
+        gap: .25rem;
+    }
+
+    .ds.ds-button-tristate.p-button .p-button-label {
+        @apply lg:text-gray-400;
+    }
+
+    .ds.p-button .p-button-icon-left {
+        margin-right: 0;
+    }
+
+    .ds.p-togglebutton.p-button.p-highlight .p-button-icon-left,
+    .p-togglebutton.p-button.p-highlight .p-button-icon-right {
+        @apply text-inverse dark:text-blueGray-800 dark:font-bold;
+    }
+
+    .ds.p-togglebutton.p-button.p-highlight:hover, .ds.ds-button-tristate.p-button:hover {
+        @apply lg:focus-ring bg-gray-100 dark:border-transparent dark:bg-transparent;
+    }
+
+    .ds.p-togglebutton.p-button, .ds.ds-button-tristate.p-button {
+        @apply antialiased font-sans px-8 py-4 opacity-100 border-0 bg-gray-100 text-gray-700 dark:text-blueGray-600;
+    }
+
+    .ds.p-togglebutton.p-button.p-highlight,
+    .ds.p-togglebutton.p-button.p-highlight:hover,
+    .ds.ds-button-tristate.p-button.include,
+    .ds.ds-button-tristate.p-button.exclude,
+    .ds.ds-button-tristate.p-button.p-highlight:hover {
+        background: unset;
+        @apply border-0 bg-gray-800 text-inverse dark:border-orange-300 dark:bg-orange-300 dark:text-blueGray-800 dark:font-bold lg:bg-gray-100 lg:text-gray-500 lg:border-0;
     }
 }

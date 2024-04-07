@@ -82,7 +82,7 @@ export default function SearchLocations({
 
     // If option doesn't have extra, it means that it's an event and not a location
     if (option && !(option.extra)) {
-      navigate(`${i18n.language}/event/${option.value}`);
+      navigate(`/${i18n.language}/event/${option.value}`);
     }
 
     if (option && option.extra) {

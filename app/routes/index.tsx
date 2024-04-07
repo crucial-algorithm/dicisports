@@ -1,102 +1,86 @@
-import { useCreation } from 'ahooks';
-import type { SyntheticEvent } from 'react';
-import * as React from 'react';
-import { useCallback, useEffect, useRef, useState } from 'react';
-import type { LoaderFunction, MetaFunction } from '@remix-run/node';
+import type { LoaderFunction, MetaFunction, SerializeFrom } from '@remix-run/node';
 import { json } from '@remix-run/node';
 import {
   Form,
   Link,
-  useFetcher,
   useLoaderData,
-  useLocation
+  useLocation,
+  useSubmit
 } from '@remix-run/react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-
 import type { Event } from '@prisma/client';
-
 import {
-  AdjustmentsVerticalIcon,
   CalendarDaysIcon,
+  CheckIcon,
   ChevronDownIcon,
-  MapPinIcon
+  MapPinIcon,
+  XMarkIcon
 } from '@heroicons/react/24/solid';
-
-import clsx from 'clsx';
+import { ClockIcon } from '@heroicons/react/24/outline';
+import { ToggleButton } from 'primereact/togglebutton';
+import { useCreation } from 'ahooks';
 
 import EventResult from '~/components/SearchEventResult';
-import SportsGrid from '~/components/HomeSportsGrid';
-import GroupResult from '~/components/SearchGroupResult';
-import { FiltersDialog, DisplayFilters } from '~/components/SearchFilters';
 import DisplayImg from '~/components/shared/DisplayImg';
 
+import Button, { ButtonLink } from '~/components/shared/Button';
 import Main from '~/components/shared/Main';
 import { Spacer } from '~/components/shared/Spacer';
-import Button, { ButtonLink } from '~/components/shared/Button';
-import type {
-  DaysOfWeek,
-  DiciLocation,
-  Group,
-  GroupFilters,
-  GroupSpirit,
-  Language,
-  SearchResults,
-  Sport
-} from '~/types';
-import { searchEventsAndGroups } from '~/server/db/search.server';
+import type { SearchEventResult } from '~/server/db/search.server';
+import { searchEvents } from '~/server/db/search.server';
+import type { DiciLocation, EventFilters, Language, Sport } from '~/types';
 
-import SearchLocations from '~/components/SearchLocations';
-
-import { H5, Paragraph } from '~/components/shared/typography';
-import { findGroupsSpirit, findSports } from '~/server/db/reference.server';
-
-import Dialog from '~/components/shared/Dialog';
 import HomeLogo from '~/components/shared/HomeLogo';
-import { findUserFavoriteGroups } from '~/server/db/groups.server';
 import { getUser } from '~/server/auth/session.server';
 
-import Config from '~/server/config.server';
-import TransitionIndicator from '~/components/shared/TransitionIndicator';
-import { useRootData } from '~/hooks';
-import { getLocationSession } from '~/routes/action/set-my-location';
-import { useUserLocation } from '~/utils/LocationProvider';
 import { CanonicalMeta } from '~/utils/seo';
 
+import { getI18nText } from '~/components/I18nText';
+import type { LocationInPicker } from '~/components/LocationPickerDialog';
+import LocationPickerDialog, {
+  PT_REGIONS,
+  mapValueToLocationInPicker
+} from '~/components/LocationPickerDialog';
+import SearchEvents from '~/components/SearchEvents';
+import SportsPickerDialog from '~/components/SportsPickerDialog';
+import ButtonTriState from '~/components/shared/ButtonTriState';
+import DisplayDate, { displayYearAndMonth } from '~/components/shared/DIsplayDate';
+import { useRootData } from '~/hooks';
+import type { EventSlim } from '~/server/db/events.server';
 import {
   findFeaturedEvents,
   findLatestPublishedEvents,
-  findUserFavoriteEvents
+  findRegionsWithEvents,
+  findUserFavoriteEvents,
+  findPublishedEventsSlim
 } from '~/server/db/events.server';
-import DisplayDate from '~/components/shared/DIsplayDate';
+import { H5 } from '~/components/shared/typography';
+import ComboBox from '~/components/shared/form/ComboBox';
+import { getLocalizedText } from '~/utils/misc';
 
-export type FilterParams = {
+type TimedEventFilter = null | 'included' | 'excluded';
+
+type FilterParams = {
   actionId: keyof typeof actions | null;
-  coords: string | null;
-  search: string | null;
-  spirit: number[] | null;
-  dayParts: string[] | null;
+  region: LocationInPicker | null;
+  timedEvents: TimedEventFilter;
   page: number | null;
   sport: number | null;
-  dayOfWeek: number | null;
-  orderBy: SortMethod;
-  groupsAction: string | null;
 };
 
 type LoaderData = {
-  sports: Sport[];
-  groupsSpirit: GroupSpirit[];
-  searchResult: ActionData;
-  favoriteGroups: Group[];
+  searchResult: SearchResult;
   favoriteEvents: Event[];
-  mapToken: string;
-  selectedDayParts: string[] | null;
   latestEvents: Event[];
   featuredEvent: Event | null;
+  regions: { region: string; events: number }[];
+  calendar: EventSlim[];
 };
 
-type ActionData = {
-  results: SearchResults[];
-  filters: null | GroupFilters;
+type SearchResult = {
+  results: SearchEventResult[];
+  filters: EventFilters | null;
   total: number;
   page?: number;
   reset: boolean;
@@ -110,20 +94,9 @@ const actions = {
   sort: 'sort'
 };
 
-const dayParts = {
-  morning: 'Morning',
-  afternoon: 'Afternoon',
-  evening: 'Evening'
-};
-
 export const handle = {
   i18n: ['common', 'home', 'm-groups', 'organizer']
 };
-
-export enum SortMethod {
-  recency = 'recent',
-  proximity = 'proximity'
-}
 
 export const meta: MetaFunction = CanonicalMeta;
 
@@ -131,259 +104,81 @@ export const loader: LoaderFunction = async ({ request }) => {
   const data = parseQueryString(request.url);
   // Initial load
   const user = await getUser(request);
-  const favoriteGroups = user ? await findUserFavoriteGroups(user.id) : [];
   const favoriteEvents = user ? await findUserFavoriteEvents(user.id) : [];
   let latestEvents: Event[] = [];
   let featuredEvent: Event | null = null;
 
-  let result: ActionData | null = null;
+  let result: SearchResult | null = null;
   const page = data.actionId === actions.search ? 0 : data.page || 0;
 
-  if (
-    data.actionId === actions.search ||
-    data.actionId === actions.more ||
-    data.actionId === actions.sort
-  ) {
-    const locationSession = await getLocationSession(request);
-    const [lat, lng] = locationSession.getLocation() || [];
-
+  if (data.actionId === actions.search || data.actionId === actions.more) {
     result = await search(
-      data.dayParts,
-      data.spirit,
+      data.region?.value || null,
+      data.timedEvents,
       data.sport,
-      data.coords
-        ? (data.coords.split(',').map(Number) as [number, number])
-        : null,
-      data.dayOfWeek,
-      data.actionId === actions.more ? page + 1 : page,
-      data.actionId !== actions.more,
-      !isNaN(Number(lat)) ? [Number(lat), Number(lng)] : null,
-      data.orderBy === SortMethod.proximity,
-      data.groupsAction !== 'hide'
+      actions.more === data.actionId ? page + 1 : page,
+      data.actionId !== actions.more
     );
   } else {
     latestEvents = await findLatestPublishedEvents();
     const featuredEvents = await findFeaturedEvents();
 
     if (featuredEvents.length > 0) {
-      featuredEvent = featuredEvents[Math.floor(Math.random() * featuredEvents.length)];
+      featuredEvent =
+        featuredEvents[Math.floor(Math.random() * featuredEvents.length)];
     }
   }
 
-  const { MAPBOX_TOKEN } = Config();
-
   return json({
-    sports: await findSports(),
-    groupsSpirit: await findGroupsSpirit(),
     searchResult: result,
-    favoriteGroups,
     favoriteEvents,
-    mapToken: MAPBOX_TOKEN,
-    selectedDayParts: data.dayParts,
     latestEvents,
-    featuredEvent: featuredEvent || null
-  });
+    featuredEvent: featuredEvent || null,
+    regions: await findRegionsWithEvents(),
+    calendar: await findPublishedEventsSlim()
+  } as LoaderData);
 };
-
-function parseQueryString(url: string): FilterParams {
-  const { searchParams } = new URL(url);
-  const actionId = searchParams.get('actionId') as keyof typeof actions;
-  const coords = searchParams.get('coords');
-  const search = searchParams.get('search');
-  const page = numberOrNull(searchParams.get('page'));
-  const sport = numberOrNull(searchParams.get('sport'));
-  const dayOfWeek = numberOrNull(searchParams.get('dow'));
-  const dayParts = searchParams.getAll('daypart');
-  const spirit = searchParams.getAll('spirit');
-  const orderBy = searchParams.get('order');
-  const groupsAction = searchParams.get('g');
-
-  return {
-    actionId,
-    coords,
-    search,
-    page,
-    sport,
-    dayOfWeek: dayOfWeek === null || dayOfWeek < 0 ? null : dayOfWeek,
-    dayParts: dayParts,
-    orderBy: (orderBy as SortMethod) || SortMethod.recency,
-    spirit: spirit.map((v) => parseInt(v)),
-    groupsAction
-  };
-}
-
-function numberOrNull(value: string | null) {
-  if (value === null) {
-    return null;
-  }
-  const n = parseInt(value, 10);
-
-  if (isNaN(n)) {
-    return null;
-  }
-  return n;
-}
-
-const dayPartToTimeInterval = (dayPart: string): [number, number] => {
-  switch (dayPart) {
-    case dayParts.morning:
-      return [0, 1159];
-    case dayParts.afternoon:
-      return [1200, 1959];
-    case dayParts.evening:
-      return [2000, 2359];
-    default:
-      return [0, 2400];
-  }
-};
-
-const reduceDayParts = (parts: [number, number][]): [number, number] => {
-  const flattened: number[] = [];
-
-  parts.map((p) => flattened.push(...p));
-  let min = 2500;
-  let max = 0;
-
-  flattened.map((value) => {
-    min = Math.min(value, min);
-    max = Math.max(value, max);
-    return value;
-  });
-  return [min, max];
-};
-
-async function search(
-  dayParts: string[] | null,
-  spirit: number[] | null,
-  sport: number | null,
-  searchedLocation: [number, number] | null,
-  dayOfWeek: number | null,
-  page: number,
-  reset: boolean = true,
-  userLocation: [number, number] | null,
-  orderByProximity: boolean,
-  showGroups: boolean
-): Promise<ActionData> {
-  const [lat, lng] = searchedLocation ? searchedLocation : [null, null];
-  const filters = {
-    spirit: spirit || null,
-    sport: !sport || sport === -1 ? null : sport,
-    dayOfWeek: dayOfWeek,
-    timeOfDay:
-      dayParts === null || dayParts.length === 0
-        ? null
-        : reduceDayParts(dayParts.map(dayPartToTimeInterval))
-  };
-
-  const { total, results } = await searchEventsAndGroups(
-    lat,
-    lng,
-    filters,
-    10,
-    page,
-    userLocation,
-    orderByProximity,
-    showGroups
-  );
-
-  return {
-    results: results.map((g) => {
-      return {
-        ...g,
-        distance: Math.floor(g.distance || 0) // save some bandwidth
-      };
-    }),
-    total,
-    filters,
-    reset,
-    page
-  };
-}
-
-function useQueryString() {
-  const searchString = useLocation()?.search;
-
-  // parse the string in a useCreation so that the searchParse
-  // object is not recreated on every render if the searchString doesn't change
-  return useCreation(
-    () => parseQueryString(`https://a.com/?${searchString}`),
-    [searchString]
-  );
-}
 
 export default function Index() {
+  const { sports } = useRootData();
   const { t, i18n } = useTranslation('home');
-  const { user } = useRootData();
-  const lang = i18n.language as Language;
-  const tc = useTranslation('common').t;
   const {
-    sports,
-    groupsSpirit,
     searchResult,
-    favoriteGroups,
     favoriteEvents,
-    mapToken,
-    selectedDayParts,
     latestEvents,
-    featuredEvent
-  } = useLoaderData<LoaderData>() as unknown as LoaderData;
-  const [selection, setSelection] = useState<DiciLocation | undefined>();
-  const data = searchResult;
-  const [searchResults, setSearchResults] = useState<Array<SearchResults>>(
-    data?.results || []
+    featuredEvent,
+    regions,
+    calendar
+  } = reviver(useLoaderData<LoaderData>());
+  const [searchResults, setSearchResults] = useState<SearchEventResult[]>(
+    searchResult?.results || []
   );
-  const [filtersModalOpen, setFiltersModalOpen] = useState<boolean>(false);
   const [searchPerformed, setSearchPerformed] = useState<boolean>(
     searchResults.length > 0
   );
-  const [address, setAddress] = useState<string>('');
-  const location = useLocation();
-  const filters = useQueryString();
-  const [userLocation, setUserLocation] = useUserLocation();
-  const locationFetcher = useFetcher();
-  const [searchingLocation, setSearchingLocation] = useState<boolean>(false);
-  const [isLocationFailedWarningOpened, setLocationFailedWarningOpen] =
-    useState<boolean>(false);
-  const [orderBy, setOrderBy] = useState<SortMethod>(
-    filters.orderBy
-      ? filters.orderBy
-      : userLocation
-      ? SortMethod.proximity
-      : SortMethod.recency
-  );
-  const searchForm = useRef<HTMLFormElement | null>(null);
-  const [filtersCacheBurst, setFiltersCacheBurst] = useState<number>(
-    Date.now()
-  );
 
-  const handleSearchLocations = useCallback(
-    (o: DiciLocation | SyntheticEvent<HTMLSelectElement>) => {
-      setSelection(o as DiciLocation);
-    },
-    []
+  const filters = useQueryString();
+  const [timedEventFilter, setTimedEventFilter] = useState<TimedEventFilter>(
+    filters.timedEvents
+  );
+  const [selectinglocation, setSelectingLocation] = useState<boolean>(false);
+  const [location, setLocation] = useState<LocationInPicker | null>(
+    filters.region
+  );
+  const [selectingSport, setSelectingSport] = useState<boolean>(false);
+  const [sport, setSport] = useState<Sport | null>(
+    filters.sport ? sports.find((s) => s.id === filters.sport) || null : null
   );
 
   const handleOnSubmit = useCallback(() => {
     setSearchPerformed(true);
-    setFiltersModalOpen(false);
-    setFiltersCacheBurst(Date.now());
-  }, []);
-
-  const handleCloseFilters = useCallback(() => {
-    setFiltersModalOpen(false);
   }, []);
 
   useEffect(() => {
     if (!searchResult) {
-      if (searchResults.length > 0) {
-        // we get here when a user navigates back to the home page (by clicking dicisports, for instance)
-        // after having performed a query with results
-        setSearchResults([]);
-        setSearchPerformed(false);
-        setFiltersModalOpen(false);
-      }
       return;
     }
+
     setSearchPerformed(true);
 
     const { reset, results } = searchResult;
@@ -392,14 +187,11 @@ export default function Index() {
       return;
     }
 
-    // reset is used to keep previous groups when "load more results" is used
+    // reset is used to signal if we should clear or keep previous events (for when "load more results" is used)
     const list = reset ? [] : [...searchResults];
 
     results.map((r) => list.push(r));
     setSearchResults(list);
-    const url = new URL(window.location.href);
-
-    setAddress(url.origin);
 
     // when people go back, remove search performed, to make sure the
     // grid of sports appears again
@@ -409,119 +201,109 @@ export default function Index() {
     };
   }, [searchResult]);
 
-  const showMoreResults = !!data && searchResults.length < data.total;
+  useEffect(() => {
+    if (!searchResult && searchResults.length > 0) {
+      // we get here when a user navigates back to the home page (by clicking dicisports, for instance)
+      // after having performed a query with results
+      setSearchResults([]);
+      setSearchPerformed(false);
+      return;
+    }
+  }, [searchResult, searchResults.length]);
 
-  function handleOpenFilters() {
-    setFiltersModalOpen(true);
-  }
+  const showMoreResults =
+    !!searchResult && searchResults.length < searchResult.total;
+
+  const submit = useSubmit();
 
   function handleResetSearchPerformed() {
     setSearchPerformed(false);
   }
 
-  function handleCloseLocationFailedWarning() {
-    setLocationFailedWarningOpen(false);
+  function handleOpenLocationDialog() {
+    setSelectingLocation(true);
   }
 
-  function handleSetUsersLocation() {
-    setSearchingLocation(true);
-
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        setSearchingLocation(false);
-        const { latitude, longitude } = position.coords;
-
-        locationFetcher.submit(
-          { latitude: String(latitude), longitude: String(longitude) },
-          {
-            method: 'post',
-            action: '/action/set-my-location'
-          }
-        );
-
-        setUserLocation([latitude, longitude]);
-
-        // this is likely to cause issues... submitting the form can potentially
-        // cancel the previous request before successfully completing, thus
-        // causing the location not to be set
-        searchForm.current?.submit();
-      },
-      (err) => {
-        setSearchingLocation(false);
-        setLocationFailedWarningOpen(true);
-        console.log(err);
-      }
-    );
+  function handleApplyLocation(loc: LocationInPicker | null) {
+    setLocation(loc);
+    setSelectingLocation(false);
+    submit(gatherFormData('region', loc?.value || ''));
   }
 
-  function handleOrderBy(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
-    if (!userLocation) {
-      e.preventDefault();
-      e.stopPropagation();
-      handleSetUsersLocation();
-    }
-    setOrderBy(
-      orderBy === SortMethod.proximity
-        ? SortMethod.recency
-        : SortMethod.proximity
-    );
+  function handleApplyLocationDesktop(loc: string | number) {
+    handleApplyLocation(PT_REGIONS.find((r) => r.value === loc) || null);
+  }
+
+  function handleCloseLocationDialog() {
+    setSelectingLocation(false);
+  }
+
+  function handleOpenSportsDialog() {
+    setSelectingSport(true);
+  }
+
+  function handleApplySport(sport: Sport | null) {
+    setSport(sport);
+    setSelectingSport(false);
+    submit(gatherFormData('sport', String(sport?.id || '')));
+  }
+
+  function handleApplySportDesktop(sport: number | string | null) {
+    handleApplySport(sports.find((s) => s.id === Number(sport)) || null);
+  }
+
+  function handleCloseSportsDialog() {
+    setSelectingSport(false);
+  }
+
+  function handleTimedEventsFilter(o: true | false | null | undefined) {
+    const v = map3StateToTimed(o);
+
+    setTimedEventFilter(v);
+    submit(gatherFormData('timed', v || ''));
+  }
+
+  function gatherFormData(property: string, value: string) {
+    const formData = new FormData();
+    const values: { [key: string]: string } = {
+      region: location?.value || '',
+      page: String(searchResult?.page || 0),
+      sport: String(sport?.id || ''),
+      timed: String(timedEventFilter || ''),
+      actionId: 'search'
+    };
+
+    values[property] = value;
+
+    Object.entries(values).map(([k, v]) => formData.append(k, v));
+    return formData;
   }
 
   return (
     <Main className="dark:text-blueGray-500 relative mb-8">
-      <TransitionIndicator
-        visible={searchingLocation}
-        action={t('Searching Location')}
-      />
       <Form
         method="get"
         onSubmit={handleOnSubmit}
         autoComplete="off"
         preventScrollReset={true}
       >
-        <input
-          type="hidden"
-          value={selection ? selection.coords : ''}
-          name="coords"
-        />
-        <input
-          type="hidden"
-          value={selection ? `${selection.address}` : ''}
-          name="search"
-        />
+        <input type="hidden" name="region" value={location?.value || ''} />
         <input type="hidden" name="page" value={searchResult?.page || 0} />
-        <input
-          type="hidden"
-          name="dow"
-          value={
-            filters?.dayOfWeek === null
-              ? ''
-              : (filters?.dayOfWeek as DaysOfWeek)
-          }
-        />
-        <input type="hidden" name="sport" value={filters?.sport || ''} />
-        {selectedDayParts &&
-          selectedDayParts.map((p: string) => (
-            <input key={p} type="hidden" name="daypart" value={p} />
-          ))}
-        {filters?.spirit &&
-          filters.spirit.map((v) => (
-            <input key={v} type="hidden" name="spirit" value={v} />
-          ))}
-        <input type="hidden" name="g" value={filters?.groupsAction || ''} />
+        <input type="hidden" name="sport" value={sport?.id || ''} />
+        <input type="hidden" name="timed" value={timedEventFilter || ''} />
+
         <div className="flex align-middle justify-center">
           <Link to="/" onClick={handleResetSearchPerformed}>
             <HomeLogo className="w-80 h-16 md:w-96 lg:w-144" />
           </Link>
         </div>
+
         <Spacer size="2xs" />
         <div className="flex align-middle justify-center items-center">
           <div className="flex flex-col w-full md:w-160 lg:flex-row">
-            <SearchLocations
-              onSelect={handleSearchLocations}
-              placeholder={t('Search Placeholder')}
+            <SearchEvents
+              placeholder={t('Search Event Placeholder')}
               className="px-0 mr-4 w-full search-select"
-              mapToken={mapToken}
             />
             <Button
               name="actionId"
@@ -533,51 +315,6 @@ export default function Index() {
             </Button>
           </div>
         </div>
-        <FiltersDialog
-          key={filtersCacheBurst}
-          isOpen={filtersModalOpen}
-          sports={sports}
-          groupsSpirit={groupsSpirit}
-          triggerModalClose={handleCloseFilters}
-          onSubmit={handleOnSubmit}
-          // we need to pass all the filters because filters dialog will submit its own form
-          filters={filters}
-          coords={selection ? selection.coords : ''}
-          search={selection ? selection.address : ''}
-          order={orderBy}
-          lang={lang}
-        />
-
-        {searchPerformed && (
-          <>
-            <Spacer size="xs" />
-            <div className="pl-6 flex align-middle">
-              <Button
-                size="small"
-                onClick={handleOpenFilters}
-                type="button"
-                name="filters"
-              >
-                <AdjustmentsVerticalIcon className="h-6" />
-              </Button>
-              <div
-                className="flex mx-2 items-center dark:text-white text-blueGray-500 text-sm"
-                data-cy="total-results"
-              >
-                {data?.total
-                  ? t('Number of Results Found', { total: data?.total })
-                  : null}
-              </div>
-              <DisplayFilters
-                filters={filters}
-                sports={sports}
-                spirits={groupsSpirit}
-                t={t}
-                tc={tc}
-              />
-            </div>
-          </>
-        )}
 
         {showMoreResults && (
           <>
@@ -593,76 +330,126 @@ export default function Index() {
             </div>
           </>
         )}
-
-        {searchPerformed && (
-          <div className="flex flex-col justify-center">
-            {searchResults.length === 0 ? (
-              <div className="w-full flex justify-center mt-8">
-                <CallToActionToCreateGroup
-                  className="text-xl"
-                  label={t('No Groups Found - Create yours')}
-                />
-              </div>
-            ) : (
-              <>
-                <Spacer size="3xs" />
-                <div className="flex align-middle justify-center">
-                  <CallToActionToCreateGroup label={t('Create your group')} />
-                </div>
-                <Spacer size="2xs" />
-                <div className="flex justify-end">
-                  <input type="hidden" name="order" value={orderBy} />
-                  <button
-                    className="background-transparent text-orange-600 dark:text-blueGray-500 font-medium"
-                    name="actionId"
-                    value={actions.sort}
-                    onClick={handleOrderBy}
-                    id="sort-location"
-                  >
-                    {orderBy === SortMethod.proximity
-                      ? t('Order by recency')
-                      : t('Order by proximity')}
-                  </button>
-                </div>
-              </>
-            )}
-          </div>
-        )}
       </Form>
 
       {searchPerformed && (
         <>
-          {searchResults.map((r, index) =>
-            r.entity === 'event' ? (
-              <EventResult
-                key={r.id}
-                event={r}
-                img={sports.find((s) => s.id === r.sportId)?.picture}
-                userLocation={userLocation}
-                showLocation={orderBy === SortMethod.proximity}
-                isUserFavorite={
-                  favoriteEvents.find((e) => e.id === r.id) !== undefined
+          <div className="w-full m-auto my-4 flex flex-nowrap overflow-x-scroll hide-scroll-bar lg:hidden">
+            <div className="relative gap-2 flex flex-nowrap ml-6 md:ml-0">
+              <ToggleButton
+                onLabel={
+                  sport === null
+                    ? t('Event Filters: All Sports')
+                    : getI18nText(sport?.name, i18n.language as Language)
                 }
+                offLabel={t('Event Filters: All Sports')}
+                onIcon="pi pi-times"
+                offIcon="pi pi-angle-down"
+                checked={sport !== null}
+                onChange={handleOpenSportsDialog}
+                className="ds min-w-52"
               />
-            ) : (
-              <GroupResult
-                group={r}
-                key={`${r.id}-${index}`}
-                isUserFavorite={
-                  favoriteGroups.find((g: Group) => g.id === r.id) !== undefined
+
+              <ToggleButton
+                onLabel={
+                  location === null
+                    ? t('Event Filters: Location')
+                    : location?.label
                 }
-                img={sports.find((s: Sport) => s.id === r.sportId)?.picture}
-                favAddedMessage={t('Favorite Added')}
-                favRemovedMessage={t('Favorite Removed')}
-                copiedToClipMessage={t('Copied to Clipboard')}
-                address={address}
-                location={`${location.pathname}${location.search}`}
-                isLoggedIn={user !== null}
-                userLocation={userLocation}
-                showLocation={orderBy === SortMethod.proximity}
+                offLabel={t('Event Filters: Location')}
+                onIcon="pi pi-times"
+                offIcon="pi pi-angle-down"
+                checked={location !== null}
+                onChange={handleOpenLocationDialog}
+                className="ds min-w-52"
               />
-            )
-          )}
+
+              <ButtonTriState
+                labels={{
+                  checked: t('Event Filters: Classification'),
+                  unchecked: t('Event Filters: No Classification'),
+                  indeterminate: t('Event Filters: Results')
+                }}
+                icons={{
+                  checked: <ClockIcon className="h-6" />,
+                  unchecked: <ClockIcon className="h-6" />,
+                  indeterminate: <ClockIcon className="h-6" />
+                }}
+                selectionState={mapTimedTo3State(timedEventFilter)}
+                onChange={handleTimedEventsFilter}
+                className="ds min-w-44"
+              />
+            </div>
+          </div>
+
+          <div className="hidden lg:flex px-4 my-4 flex flex-nowrap items-center gap-4">
+            <ComboBox
+              name="sport-ignored"
+              placeholder={t('Event Filters: All Sports')}
+              value={sport?.id}
+              options={sports.map(({ id, name }) => ({
+                value: id,
+                label: getI18nText(name, i18n.language as Language) || ''
+              }))}
+              onChange={handleApplySportDesktop}
+              className="min-w-52 w-fit-content"
+              defaultValue={sport?.id}
+              clearOption={true}
+            />
+            <ComboBox
+              name="region-ignored"
+              placeholder={t('Event Filters: Location')}
+              value={location?.value}
+              options={PT_REGIONS.map(({ label, value }) => ({
+                value,
+                label,
+                disabled: !regions.find((r) => r.region === value)
+              }))}
+              onChange={handleApplyLocationDesktop}
+              className="min-w-52 w-fit-content"
+              defaultValue={location?.value}
+              clearOption={true}
+            />
+
+            <ButtonTriState
+              labels={{
+                checked: t('Event Filters: Classification'),
+                unchecked: t('Event Filters: No Classification'),
+                indeterminate: t('Event Filters: Results')
+              }}
+              icons={{
+                checked: <CheckIcon className="h-6" />,
+                unchecked: <XMarkIcon className="h-6" />,
+                indeterminate: <ClockIcon className="h-6" />
+              }}
+              selectionState={mapTimedTo3State(timedEventFilter)}
+              onChange={handleTimedEventsFilter}
+              className="ds min-w-32 min-h-[60px] mt-1"
+            />
+          </div>
+        </>
+      )}
+
+      {searchPerformed && searchResults.length === 0 && (
+        <H5 className="text-center mt-8 lg:max-w-lg lg:m-auto lg:mt-8">
+          {t('No events found')}
+        </H5>
+      )}
+
+      {searchPerformed && (
+        <>
+          {searchResults.map((r, index) => (
+            <EventResult
+              key={r.id}
+              event={r}
+              img={sports.find((s) => s.id === r.sportId)?.picture}
+              userLocation={null}
+              showLocation={false}
+              isUserFavorite={
+                favoriteEvents.find((e) => e.id === r.id) !== undefined
+              }
+            />
+          ))}
         </>
       )}
 
@@ -675,44 +462,80 @@ export default function Index() {
           )}
 
           {latestEvents.length > 0 && (
-            <>
-              <LatestEvents
-                events={latestEvents}
-                title={t('Latest Events')}
-                showViewAll={true}
-              />
-              <div className="w-full md:max-w-5xl lg:w-9/12 m-auto mb-4 mt-12 text-xl dark:text-white font-bold">
-                {t('Sports Grid Header')}
-              </div>
-            </>
+            <LatestEvents
+              events={latestEvents}
+              title={t('Latest Events')}
+              showViewAll={true}
+            />
           )}
-          {latestEvents.length === 0 && <Spacer size="3xs" />}
-          <SportsGrid sports={sports} lang={lang} />
         </>
       )}
 
-      <Dialog
-        onClose={handleCloseLocationFailedWarning}
-        isOpen={isLocationFailedWarningOpened}
-        aria-label="Location Failed"
-        SecondaryAction={
-          <Button
-            size="medium"
-            type="button"
-            onClick={handleCloseLocationFailedWarning}
-          >
-            {t('Failed to find Your Location Close')}
-          </Button>
-        }
-      >
-        <H5 className="mb-4">{t('Failed to find Your Location Title')}</H5>
-        <Paragraph>{t('Failed to find Your Location Hint')}</Paragraph>
-        <Spacer size="2xs" />
-      </Dialog>
+      {!searchPerformed && (
+        <Calendar calendar={calendar} title={t('Events Calendar')} />
+      )}
+
+      {!searchPerformed && <Categories sports={sports} />}
+
+      <LocationPickerDialog
+        isOpen={selectinglocation}
+        triggerClose={handleCloseLocationDialog}
+        onLocationPicked={handleApplyLocation}
+        title={t('Select location')}
+        location={location?.label || null}
+        locations={regions}
+      />
+
+      <SportsPickerDialog
+        isOpen={selectingSport}
+        triggerClose={handleCloseSportsDialog}
+        onSportPicked={handleApplySport}
+        title={t('Select sport')}
+        sport={sport}
+      />
     </Main>
   );
-}
 
+  function Categories({ sports }: { sports: Sport[] }) {
+    const { t, i18n } = useTranslation('home');
+  
+    function handleFilterSport(e: React.MouseEvent<HTMLSpanElement>) {
+      handleApplySport(sports.find((s) => s.id === Number(e.currentTarget.id)) || null);
+    }
+  
+    return (
+      <>
+        <div className="w-full lg:w-9/12 m-auto mb-4 mt-12 text-xl dark:text-white font-bold capitalize">
+          {t('Categories')}
+        </div>
+  
+        <div className="w-full m-auto lg:w-9/12 flex overflow-x-scroll hide-scroll-bar">
+          <div className="relative flex flex-nowrap ml-6 md:ml-0">
+          {sports
+            .sort((a, b) => a.id - b.id)
+            .map((s) => (
+              <span
+                onClick={handleFilterSport}
+                key={s.id}
+                id={String(s.id)}
+                className="relative min-w-[160px] mx-1 border border-transparent hover:brightness-110"
+              >
+                <DisplayImg
+                  imageId={`product/sports/${s.picture}`}
+                  key={s.id}
+                  alt={getLocalizedText(i18n.language as Language, s.name)}
+                  dontMessWithImgSize={true}
+                  className="w-full md:w-56 hover:resize"
+                  variant="Grid"
+                />
+              </span>
+            ))}
+          </div>
+        </div>
+      </>
+    );
+  }
+}
 
 function LatestEvents({
   events,
@@ -788,7 +611,6 @@ function FeaturedEvent({ event }: { event: Event }) {
     event.image4,
     event.image5
   ].filter(Boolean);
-  
 
   return (
     <div className="w-full lg:w-9/12 m-auto py-6 px-4 sm:p-6 md:py-10 md:px-8 rounded-lg mt-8 bg-gray-100 dark:bg-gray-700">
@@ -827,7 +649,7 @@ function FeaturedEvent({ event }: { event: Event }) {
             }}
           />
           <DisplayImg
-            className="hidden w-full h-52 object-cover rounded-lg lg:block lg:col-start-4"
+            className="hidden w-full h-60 object-cover rounded-lg lg:block lg:col-start-4"
             dontMessWithImgSize={true}
             imageId={img3}
             alt={name || ''}
@@ -874,23 +696,202 @@ function FeaturedEvent({ event }: { event: Event }) {
   );
 }
 
-function CallToActionToCreateGroup({
-  label,
-  className
-}: {
-  label: string;
-  className?: string;
-}) {
+function Calendar({ calendar, title }: { calendar: EventSlim[], title: string }) {
+  const [t] = useTranslation('common');
+  const distinctPeriods: { [key: number]: { [key: number]: EventSlim[] } } = {};
+
+  // calculate distinct periods
+  calendar.forEach((event) => {
+    if (!event.startAt) {
+      return;
+    }
+
+    const year = event.startAt.getFullYear();
+    const month = String(event.startAt.getMonth()).padStart(2, '0');
+    const day = String(event.startAt.getDate()).padStart(2, '0');
+    const periodKey = Number(`${year}${month}`);
+    const dayKey = Number(`${year}${month}${day}`);
+
+    if (!distinctPeriods[periodKey]) {
+      distinctPeriods[periodKey] = {};
+    }
+
+    if (!distinctPeriods[periodKey][dayKey]) {
+      distinctPeriods[periodKey][dayKey] = [];
+    }
+
+    distinctPeriods[periodKey][dayKey].push(event);
+  });
+
+  const periods = Object.keys(distinctPeriods)
+    .map(Number)
+    .sort((a, b) => a - b);
+
+  function displayPeriod(period: number) {
+    const p = String(period);
+    const year = Number(p.slice(0, 4));
+    const month = Number(p.slice(4, 6));
+
+    return displayYearAndMonth(year, month, t);
+  }
+
   return (
-    <Link
-      to="/g/group/add"
-      className={clsx(
-        'background-transparent text-orange-600 dark:text-blueGray-500 font-medium',
-        className
-      )}
-      id="create-your-group"
-    >
-      {label}
-    </Link>
+    <>
+      <div className="w-full lg:w-9/12 m-auto mb-4 mt-12 text-xl dark:text-white font-bold capitalize">
+        {title}
+      </div>
+
+      <div className="w-full lg:w-9/12 m-auto mt-8 ds-home-events-calendar-view">
+        {periods.map((period) => (
+          <div key={period}>
+            <h2 className="text-lg font-bold mb-4 text-blueGray-500">{displayPeriod(period)}</h2>
+            {Object.keys(distinctPeriods[period]).map((date) => (
+              <CalendarDay
+                key={date}
+                date={date}
+                events={distinctPeriods[period][Number(date)]}
+              />
+            ))}
+          </div>
+        ))}
+      </div>
+    </>
+  );
+}
+
+function CalendarDay({ events, date }: { events: EventSlim[]; date: string }) {
+  const { i18n } = useTranslation('common');
+
+  return (
+    <div className="flex gap-4 shadow mb-4">
+      <div className="flex justify-center items-center w-24 text-4xl">
+        {date.substring(6)}
+      </div>
+      <div>
+        {events.map(({ id, name, slug, location }) => (
+          <div key={id} className="border-b-2 last:border-b-0 pt-4 pb-2">
+            <Link to={`/${i18n.language}/event/${slug}`}>
+              <div className="text-lg">{name}</div>
+              <div className="text-sm text-blueGray-500">{(location as DiciLocation)?.place}</div>
+            </Link>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function reviveEvent(
+  event: SerializeFrom<Event>
+): Omit<Event, 'location'> & { location: DiciLocation | null } {
+  const location = event.location as DiciLocation;
+
+  return {
+    ...event,
+    startAt: event.startAt ? new Date(event.startAt) : null,
+    endAt: event.endAt ? new Date(event.endAt) : null,
+    bookingStopsAt: event.bookingStopsAt
+      ? new Date(event.bookingStopsAt)
+      : null,
+    createdAt: new Date(event.createdAt),
+    updatedAt: new Date(event.updatedAt),
+    location: location ? location : null
+  };
+}
+
+function reviver(data: SerializeFrom<LoaderData>): LoaderData {
+  return {
+    searchResult: data.searchResult,
+    favoriteEvents: data.favoriteEvents.map(reviveEvent),
+    latestEvents: data.latestEvents.map(reviveEvent),
+    featuredEvent: data.featuredEvent ? reviveEvent(data.featuredEvent) : null,
+    regions: data.regions,
+    calendar: data.calendar.map((event) => ({
+      ...event,
+      startAt: event.startAt ? new Date(event.startAt) : null
+    }))
+  };
+}
+
+function map3StateToTimed(
+  o: true | false | null | undefined
+): TimedEventFilter {
+  // true: include only events with results
+  // false: exclude events with results
+  // null: whatever (default)
+  return o === null ? null : o ? 'included' : 'excluded';
+}
+
+function mapTimedTo3State(
+  o: TimedEventFilter
+): true | false | null | undefined {
+  return o === null ? null : o === 'included';
+}
+
+function mapUrlParamToTimed(v: string | null): TimedEventFilter {
+  return v === 'included' ? 'included' : v === 'excluded' ? 'excluded' : null;
+}
+
+function parseQueryString(url: string): FilterParams {
+  const { searchParams } = new URL(url);
+  const actionId = searchParams.get('actionId') as keyof typeof actions;
+  const page = numberOrNull(searchParams.get('page'));
+  const sport = numberOrNull(searchParams.get('sport'));
+  const timedEvents = mapUrlParamToTimed(searchParams.get('timed'));
+  const region = mapValueToLocationInPicker(searchParams.get('region'));
+
+  return {
+    region,
+    timedEvents,
+    actionId,
+    page,
+    sport
+  };
+}
+
+function numberOrNull(value: string | null) {
+  if (value === null) {
+    return null;
+  }
+  const n = parseInt(value, 10);
+
+  if (isNaN(n)) {
+    return null;
+  }
+  return n;
+}
+
+async function search(
+  region: string | null,
+  timedEvents: TimedEventFilter,
+  sport: number | null,
+  page: number,
+  reset: boolean = true
+): Promise<SearchResult> {
+  const filters: EventFilters = {
+    sport: !sport || sport === -1 ? null : sport,
+    region,
+    timedEvents
+  };
+
+  const { total, results } = await searchEvents(filters, 10, page);
+
+  return {
+    results,
+    total,
+    filters,
+    reset,
+    page
+  };
+}
+
+function useQueryString() {
+  const searchString = useLocation()?.search;
+
+  // parse the string in a useCreation so that the searchParse
+  // object is not recreated on every render if the searchString doesn't change
+  return useCreation(
+    () => parseQueryString(`https://a.com/${searchString}`),
+    [searchString]
   );
 }
