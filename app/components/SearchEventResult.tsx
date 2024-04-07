@@ -10,16 +10,15 @@ import Button from '~/components/shared/Button';
 import ButtonGroup from '~/components/shared/ButtonGroup';
 import CopyToClipboard from '~/components/shared/CopyToClipboard';
 import { Notification } from '~/components/shared/NotificationMessage';
-import type { SearchResults } from '~/types';
+import type { SearchEventResult } from '~/server/db/search.server';
+
 
 export default function EventResult({
   event,
   img,
-  userLocation,
-  showLocation,
   isUserFavorite
 }: {
-  event: SearchResults;
+  event: SearchEventResult;
   img?: string;
   userLocation: [number, number] | null;
   showLocation: boolean;
@@ -80,21 +79,12 @@ export default function EventResult({
       <EventEntry
         event={event}
         img={img}
-        footer={
-          <div
-            className="font-medium text-gray-500 dark:text-white flex items-center justify-center"
-            data-cy="distance"
-          >
-            {userLocation && showLocation && (
-              <span>{Math.ceil(event.distance || 0)} km</span>
-            )}
-          </div>
-        }
         actions={
           <ButtonGroup density="compact">
             <CopyToClipboard
               text={`${address}/${i18n.language}/event/${event.slug}`}
               id={event.id}
+              className="w-12"
               successMessage={handlerClickToCopy}
             />
             <favorite.Form method="post" action={`/fav/${event.id}`}>
@@ -104,6 +94,7 @@ export default function EventResult({
                   name="action"
                   value="remove"
                   id="remove-favorite"
+                  className="w-12"
                   onClick={stopPropagation}
                 >
                   <Favorite className="h-6 w-6 m-0 inline-block" />
@@ -113,6 +104,7 @@ export default function EventResult({
                   size="tiny"
                   name="action"
                   value="add"
+                  className="w-12"
                   onClick={stopPropagation}
                 >
                   <HeartIcon className="h-6 w-6 m-0 inline-block" />

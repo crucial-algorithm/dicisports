@@ -39,9 +39,21 @@ const searchEventResults = Prisma.validator<Prisma.EventArgs>()({
   }
 });
 
+
+const findEventSlimResult = Prisma.validator<Prisma.EventArgs>()({
+  select: {
+    id: true,
+    startAt: true,
+    name: true,
+    slug: true,
+    location: true
+  }
+});
+
 type EventWithRacesDifficultiesAndDocuments = Prisma.EventGetPayload<typeof eventWithRacesDifficultiesAndDocuments>;
 type EventWithDocuments = Prisma.EventGetPayload<typeof eventWithDocuments>;
 type SearchEventResults = Prisma.EventGetPayload<typeof searchEventResults>;
+type EventSlim = Prisma.EventGetPayload<typeof findEventSlimResult>;
 
 async function findEvents(): Promise<
   Array<EventWithRacesDifficultiesAndDocuments>
@@ -117,6 +129,23 @@ async function findPublishedEvents(): Promise<Event[]> {
     where: {
       status: Status.published
     }
+  });
+}
+
+async function findPublishedEventsSlim() {
+  return db.event.findMany({
+    select: {
+      id: true,
+      name: true,
+      slug: true,
+      startAt: true,
+      location: true
+    },
+    where: {
+      status: Status.published,
+      startAt: { gte: new Date() }
+    },
+    orderBy: { startAt: 'asc' }
   });
 }
 
@@ -227,6 +256,18 @@ async function findEventWithRacesAndDocuments(
       }
     }
   });
+}
+
+async function findRegionsWithEvents(): Promise<
+  { region: string; events: number }[]
+> {
+  return (
+    await db.$queryRawUnsafe<{ region: string; events: number }[]>(`
+    SELECT location->>'region' as region, count(1) as events 
+    FROM events
+      WHERE location->>'region' IS NOT NULL AND status = 'published'
+    GROUP BY 1`)
+  ).map(({ region, events }) => ({ region, events: Number(events) }));
 }
 
 async function createDraftEvent(
@@ -527,7 +568,8 @@ async function updateEventRegulation({
 export type {
   EventWithRacesDifficultiesAndDocuments,
   EventWithDocuments,
-  SearchEventResults
+  SearchEventResults,
+  EventSlim
 };
 
 export {
@@ -538,9 +580,11 @@ export {
   findEvent,
   findEventWithRacesAndDocuments,
   findPublishedEvents,
+  findPublishedEventsSlim,
   findLatestPublishedEvents,
   findFeaturedEvents,
   findEventBySlug,
+  findRegionsWithEvents,
   createDraftEvent,
   updateEvent,
   publishEvent,

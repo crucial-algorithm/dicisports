@@ -13,24 +13,36 @@ type DialogProps = {
   description?: string;
   PrimaryAction?: ReactElement;
   SecondaryAction?: ReactElement;
-  onClose: (open: boolean) => void
+  onClose: (open: boolean) => void;
+  nextGen?: boolean;
+  triggerClose?: () => void;
 } & React.ComponentProps<'div'>
 
-
-export default function DiciDialog(
-  { isOpen, title, description, PrimaryAction, SecondaryAction, className, onClose, children }: DialogProps) {
-
+export default function DiciDialog({
+  isOpen,
+  title,
+  description,
+  PrimaryAction,
+  SecondaryAction,
+  onClose,
+  children,
+  className,
+  nextGen,
+  triggerClose = () => {}
+}: DialogProps) {
   return (
     <Dialog.Root open={isOpen} onOpenChange={onClose}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 bg-gray-500 opacity-50" />
-        <Dialog.Content
-          className={clsx('dialog-content', className)}
-        >
+        <Dialog.Content className={clsx('dialog-content', className)}>
           <div className="dialog-title">
             <Dialog.Title className="text-lg">{title || ' '}</Dialog.Title>
             <Dialog.Close asChild>
-              <button aria-label="Close" className="hidden md:block">
+              <button
+                aria-label="Close"
+                className={clsx({ 'hidden md:block': !nextGen })}
+                onClick={triggerClose}
+              >
                 <XCircleIcon className="w-8" />
               </button>
             </Dialog.Close>
@@ -62,10 +74,9 @@ type ConfirmationDialogProps = {
   primaryLabel: string;
   primaryVariant?: 'primary' | 'danger';
   secondaryLabel: string;
-  onDismiss: () => void
-  onConfirm: () => void
-} & React.ComponentProps<'div'>
-
+  onDismiss: () => void;
+  onConfirm: () => void;
+} & React.ComponentProps<'div'>;
 
 export function ConfirmationDialog({
   title,

@@ -126,3 +126,8 @@
 .custom-file-upload.p-button.p-fileupload-choose.p-component:focus {
     box-shadow: none;
 }
+
+/* combobox property for disabled options */
+.ds-combo li[aria-disabled="true"] {
+    @apply text-gray-400 dark:text-gray-600;
+}

@@ -119,7 +119,6 @@ type GroupSpirit = {
 } & DBGroupSpirit;
 
 type DBRawSearchResults = {
-  entity: string;
   distance: number;
   id: string;
   name: string;
@@ -153,8 +152,7 @@ type DBRawSearchResults = {
   schedules: string[];
 };
 
-type SearchResults = {
-  entity: string;
+type GroupSearchResult = {
   distance: number;
   id: string;
   name: string;
@@ -212,6 +210,12 @@ type GroupFilters = {
   sport: number | null;
   dayOfWeek: number | null;
   timeOfDay: [number, number] | null;
+};
+
+type EventFilters = {
+  sport: number | null;
+  region: string | null;
+  timedEvents: 'included' | 'excluded' | null
 };
 
 type LoginAction = null | 'login' | 'ws' | 'favorite';
@@ -310,6 +314,7 @@ export {
   DiciLocation,
   UploadImageMeta,
   GroupFilters,
+  EventFilters,
   // entities
   User,
   Group,
@@ -331,7 +336,7 @@ export {
   ParticipantInput,
   RaceRevenueRegistrations,
   DBRawSearchResults,
-  SearchResults,
+  GroupSearchResult,
   OrganizerInput,
   EventStatus,
   DiscountCodeInput,

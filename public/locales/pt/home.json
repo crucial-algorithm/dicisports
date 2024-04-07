@@ -1,7 +1,9 @@
 {
-  "Search Placeholder": "Nome do evento ou para onde queres ir?",
+  "Search Placeholder": "Onde (ex.: Porto)",
+  "Search Event Placeholder": "Nome do evento",
   "Search": "Pesquisar",
   "No Cities": "Hmmm... onde? 🤷‍♂️",
+  "No Events": "Nada por aqui... 🤷‍♂️",
   "Keep Typing": "Começa a escrever... 👨‍💻",
   "Load More": "Carregar mais resultados",
   "Add Sport": "Novo desporto",
@@ -47,5 +49,21 @@
   "Sports Grid Header":  "Todos os desportos",
 
   "View all events": "Ver todos os eventos",
-  "View full event": "Ver evento"
+  "View full event": "Ver evento",
+
+  "Event Filters: All Sports": "Modalidade",
+  "Event Filters: Location": "Localização",
+  "Event Filters: Results": "Resultados",
+  "Event Filters: Classification": "Cronometrados",
+  "Event Filters: No Classification": "Não cronometrados",
+
+  "Select location": "Selecionar localização",
+  "Select sport": "Selecionar Modalidade",
+  "No events found": "Nenhum evento encontrado. Experimenta outra pesquisa ou volta mais tarde (novos eventos são adicionados regularmente).",
+  "Groups callout": "grupos",
+
+  "Events Calendar": "Calendário de eventos",
+  "Categories": "Modalidades"
+
+
 }

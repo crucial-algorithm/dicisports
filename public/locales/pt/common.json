@@ -1,6 +1,6 @@
 {
   "500 error message": "Aconteceu um problema e não sabemos o que foi... iremos avaliar. Tente mais tarde.",
-  "Groups Menu": "Os meus grupos",
+  "Groups Menu": "Grupos",
   "Events Menu": "Eventos",
   "Campaigns Menu": "Campanhas",
   "Promo Codes Menu": "Códigos Desconto",
@@ -63,5 +63,8 @@
 
   "Default Dirty Alert Message": "Todas as alterações feitas serão perdidas. Quer continuar?",
 
-  "Image size too large": "Imagem excede limite máximo de 5MB"
+  "Image size too large": "Imagem excede limite máximo de 5MB",
+
+  "Clean <something>": "Limpar {{something}}",
+  "Clear Combo": "Limpar seleção"
 }
