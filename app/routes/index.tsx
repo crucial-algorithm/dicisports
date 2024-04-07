@@ -763,13 +763,13 @@ function CalendarDay({ events, date }: { events: EventSlim[]; date: string }) {
   const { i18n } = useTranslation('common');
 
   return (
-    <div className="flex gap-4 shadow mb-4">
-      <div className="flex justify-center items-center w-24 text-4xl">
+    <div className="flex shadow mb-4">
+      <div className="flex justify-center items-center w-14 max-w-14 min-w-14 text-4xl">
         {date.substring(6)}
       </div>
-      <div>
+      <div className="p-2 w-full">
         {events.map(({ id, name, slug, location }) => (
-          <div key={id} className="border-b-2 last:border-b-0 pt-4 pb-2">
+          <div key={id} className="border-b last:border-b-0 mb-2 w-full">
             <Link to={`/${i18n.language}/event/${slug}`}>
               <div className="text-lg">{name}</div>
               <div className="text-sm text-blueGray-500">{(location as DiciLocation)?.place}</div>
