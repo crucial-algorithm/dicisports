@@ -28,22 +28,22 @@ import { SunIcon } from './shared/icons/SunIcon';
 import { MoonIcon } from './shared/icons/MoonIcon';
 import { TeamCircle } from './shared/icons/TeamCircle';
 
-const LINKS = [
-  {
-    name: 'Events Menu',
-    to: '/o',
-    public: false,
-    roles: ['ADMIN'],
-    id: 'events'
-  },
-  {
-    name: 'Groups Menu',
-    to: '/groups',
-    public: false,
-    roles: [],
-    id: 'groups'
-  }
-];
+ const LINKS = [
+   {
+     name: 'Events Menu',
+     to: '/o',
+     public: false,
+     roles: ['ADMIN'],
+     id: 'events'
+   },
+   {
+     name: 'Groups Menu',
+     to: '/groups',
+     public: true,
+     roles: [],
+     id: 'groups'
+   }
+ ];
 
 const MOBILE_LINKS = [
   { name: 'Home', to: '/', public: true, roles: [], id: 'home' },
