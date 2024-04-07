@@ -347,7 +347,7 @@ export default function Index() {
                 offIcon="pi pi-angle-down"
                 checked={sport !== null}
                 onChange={handleOpenSportsDialog}
-                className="ds min-w-32"
+                className="ds min-w-52"
               />
 
               <ToggleButton
@@ -361,7 +361,7 @@ export default function Index() {
                 offIcon="pi pi-angle-down"
                 checked={location !== null}
                 onChange={handleOpenLocationDialog}
-                className="ds min-w-32"
+                className="ds min-w-52"
               />
 
               <ButtonTriState
@@ -744,7 +744,7 @@ function Calendar({ calendar, title }: { calendar: EventSlim[], title: string })
       <div className="w-full lg:w-9/12 m-auto mt-8 ds-home-events-calendar-view">
         {periods.map((period) => (
           <div key={period}>
-            <h2 className="text-xl font-bold mb-4">{displayPeriod(period)}</h2>
+            <h2 className="text-lg font-bold mb-4 text-blueGray-500">{displayPeriod(period)}</h2>
             {Object.keys(distinctPeriods[period]).map((date) => (
               <CalendarDay
                 key={date}
