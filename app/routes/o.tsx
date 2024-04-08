@@ -8,7 +8,7 @@ import {
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import type { Organizer } from '@prisma/client';
 
-import type { LoaderFunction } from '@remix-run/node';
+import type { LoaderFunction, MetaFunction } from '@remix-run/node';
 import { json } from '@remix-run/node';
 import { Link, Outlet, useLocation } from '@remix-run/react';
 import { buildImageUrl } from 'cloudinary-build-url';
@@ -32,12 +32,21 @@ import { findOrganizer } from '~/server/db/organizer.server';
 import type { KCDHandle } from '~/types';
 
 export const handle: KCDHandle & { id: string; i18n: string[] } = {
-  id: 'organizer',
+  id: 'organizer-layout',
   i18n: []
 };
 
 export type OrganizerLoaderData = {
   organizer: Organizer
+};
+
+export const meta: MetaFunction = ({ data }) => {
+  const { event } = data;
+
+  return {
+    title: event ? event.name : 'DiciSports - This Is Sports',
+    robots: 'noindex, nofollow'
+  };
 };
 
 export const loader: LoaderFunction = async ({ request }) => {

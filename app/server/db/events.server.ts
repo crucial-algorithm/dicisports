@@ -46,7 +46,8 @@ const findEventSlimResult = Prisma.validator<Prisma.EventArgs>()({
     startAt: true,
     name: true,
     slug: true,
-    location: true
+    location: true,
+    placeName: true
   }
 });
 
@@ -132,14 +133,15 @@ async function findPublishedEvents(): Promise<Event[]> {
   });
 }
 
-async function findPublishedEventsSlim() {
+async function findPublishedEventsSlim(): Promise<EventSlim[]> {
   return db.event.findMany({
     select: {
       id: true,
       name: true,
       slug: true,
       startAt: true,
-      location: true
+      location: true,
+      placeName: true
     },
     where: {
       status: Status.published,
