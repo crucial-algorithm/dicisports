@@ -32,7 +32,7 @@ import { findOrganizer } from '~/server/db/organizer.server';
 import type { KCDHandle } from '~/types';
 
 export const handle: KCDHandle & { id: string; i18n: string[] } = {
-  id: 'organizer-layout',
+  id: 'organizer',
   i18n: []
 };
 
