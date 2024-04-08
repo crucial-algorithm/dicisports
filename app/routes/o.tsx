@@ -40,11 +40,9 @@ export type OrganizerLoaderData = {
   organizer: Organizer
 };
 
-export const meta: MetaFunction<typeof loader> = ({ data }) => {
-  const { event } = data;
-
+export const meta: MetaFunction = () => {
   return [{
-    title: event ? event.name : 'DiciSports - This Is Sports',
+    title: 'DiciSports - This Is Sports',
     robots: 'noindex, nofollow'
   }];
 };

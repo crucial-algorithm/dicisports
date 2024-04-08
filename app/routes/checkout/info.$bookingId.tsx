@@ -616,8 +616,6 @@ export default function CheckoutInfoRoute() {
 
   const reset = useCallback(
     (raceParticipant?: RaceParticipantWithRaceParticipantAndTeam) => {
-      setHash(Date.now());
-
       if (raceParticipant) {
         setRaceParticipant({
           id: raceParticipant.id,
@@ -632,6 +630,7 @@ export default function CheckoutInfoRoute() {
         savedParticipants?.length === 1 ? savedParticipants[0] : null
       );
       setMissingParticipants([]);
+      setHash(Date.now());
     },
     [savedParticipants]
   );
