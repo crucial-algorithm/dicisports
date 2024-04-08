@@ -762,17 +762,29 @@ function Calendar({ calendar, title }: { calendar: EventSlim[], title: string })
 function CalendarDay({ events, date }: { events: EventSlim[]; date: string }) {
   const { i18n } = useTranslation('common');
 
+  //TODO: find a better way to handle localization in location names
+  function hackLocationI18n(region: string | null | undefined) {
+    if (!region) {
+      return null;
+    }
+
+    return region === 'Lisbon' ? 'Lisboa' : region;
+  }
+
   return (
     <div className="flex shadow mb-4">
       <div className="flex justify-center items-center w-14 max-w-14 min-w-14 text-4xl">
         {date.substring(6)}
       </div>
       <div className="p-2 w-full">
-        {events.map(({ id, name, slug, location }) => (
+        {events.map(({ id, name, slug, location, placeName }) => (
           <div key={id} className="border-b last:border-b-0 mb-2 w-full">
             <Link to={`/${i18n.language}/event/${slug}`}>
               <div className="text-lg">{name}</div>
-              <div className="text-sm text-blueGray-500">{(location as DiciLocation)?.place}</div>
+              <div className="text-sm text-blueGray-500">
+                {placeName},&nbsp;{(location as DiciLocation)?.place},&nbsp;
+                {hackLocationI18n((location as DiciLocation)?.region)}
+              </div>
             </Link>
           </div>
         ))}
