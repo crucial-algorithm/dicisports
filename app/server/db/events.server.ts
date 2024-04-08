@@ -39,9 +39,22 @@ const searchEventResults = Prisma.validator<Prisma.EventArgs>()({
   }
 });
 
+
+const findEventSlimResult = Prisma.validator<Prisma.EventArgs>()({
+  select: {
+    id: true,
+    startAt: true,
+    name: true,
+    slug: true,
+    location: true,
+    placeName: true
+  }
+});
+
 type EventWithRacesDifficultiesAndDocuments = Prisma.EventGetPayload<typeof eventWithRacesDifficultiesAndDocuments>;
 type EventWithDocuments = Prisma.EventGetPayload<typeof eventWithDocuments>;
 type SearchEventResults = Prisma.EventGetPayload<typeof searchEventResults>;
+type EventSlim = Prisma.EventGetPayload<typeof findEventSlimResult>;
 
 async function findEvents(): Promise<
   Array<EventWithRacesDifficultiesAndDocuments>
@@ -117,6 +130,24 @@ async function findPublishedEvents(): Promise<Event[]> {
     where: {
       status: Status.published
     }
+  });
+}
+
+async function findPublishedEventsSlim(): Promise<EventSlim[]> {
+  return db.event.findMany({
+    select: {
+      id: true,
+      name: true,
+      slug: true,
+      startAt: true,
+      location: true,
+      placeName: true
+    },
+    where: {
+      status: Status.published,
+      startAt: { gte: new Date() }
+    },
+    orderBy: { startAt: 'asc' }
   });
 }
 
@@ -539,7 +570,8 @@ async function updateEventRegulation({
 export type {
   EventWithRacesDifficultiesAndDocuments,
   EventWithDocuments,
-  SearchEventResults
+  SearchEventResults,
+  EventSlim
 };
 
 export {
@@ -550,6 +582,7 @@ export {
   findEvent,
   findEventWithRacesAndDocuments,
   findPublishedEvents,
+  findPublishedEventsSlim,
   findLatestPublishedEvents,
   findFeaturedEvents,
   findEventBySlug,

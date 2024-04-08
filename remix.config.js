@@ -1,26 +1,25 @@
-const {
-  createRoutesFromFolders,
-} = require("@remix-run/v1-route-convention");
+const { createRoutesFromFolders } = require('@remix-run/v1-route-convention');
 
 /**
  * @type {import('@remix-run/dev').AppConfig}
  */
 module.exports = {
-  appDirectory: "app",
-  assetsBuildDirectory: "public/build",
-  publicPath: "/build/",
-  serverBuildPath: "build/index.js",
+  appDirectory: 'app',
+  assetsBuildDirectory: 'public/build',
+  publicPath: '/build/',
+  serverBuildPath: 'build/index.js',
   dev: { port: 4004 },
-  ignoredRouteFiles: [".*"],
-  serverModuleFormat: "cjs",
+  ignoredRouteFiles: ['.*'],
+  serverModuleFormat: 'cjs',
   serverNodeBuiltinsPolyfill: {
     modules: {
       buffer: true
     },
     globals: {
-      Buffer: true,
-    },
+      Buffer: true
+    }
   },
+
   browserNodeBuiltinsPolyfill: { modules: { events: true, stream: true } },
 
   serverDependenciesToBundle: [/.*/],

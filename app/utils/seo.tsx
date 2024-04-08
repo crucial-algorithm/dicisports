@@ -44,7 +44,7 @@ function getOpenGraphMeta({
 }
 
 // TODO: using useTranslation hook was failing - find other way to access resources and add description to translation
-const DEFAULT_DESCRIPTION = 'Dicisports.com é o ponto de encontro de todos os desportistas. Encontra grupos com quem praticar as tuas actividades favoritas. Um só lugar, todos os desportos.';
+const DEFAULT_DESCRIPTION = 'Dicisports.com é o ponto de encontro de todos os desportistas. Encontra grupos com quem praticar as tuas actividades favoritas e eventos onde participar. Um só lugar, todos os desportos.';
 
 // TODO [MIGRATE TO V2]: reinstate Meta Function
 const CanonicalMeta: MetaFunction<RootLoaderData> = ({ location, matches }) => {
@@ -65,16 +65,15 @@ const CanonicalMeta: MetaFunction<RootLoaderData> = ({ location, matches }) => {
    : DEFAULT_DESCRIPTION;
 
   return [{
-    viewport: 'width=device-width,initial-scale=1,viewport-fit=cover'
-   , ...getOpenGraphMeta({
-     title: name ? `Dicisports - ${name}` : 'DiciSports - This Is Sports',
-     url,
-     description,
-     keywords:
-       'grupos btt, grupos ciclismo, grupos bicicleta, grupos ebike, grupos atletismo, grupos corrida, grupos trail, grupos gravel, grupos enduro, grupos e-bike, grupos ebike'
-   })
+    viewport: 'width=device-width,initial-scale=1,viewport-fit=cover',
+    ...getOpenGraphMeta({
+      title: name ? `Dicisports - ${name}` : 'DiciSports - This Is Sports',
+      url,
+      description,
+      keywords:
+        'grupos btt, grupos ciclismo, grupos bicicleta, grupos ebike, grupos atletismo, grupos corrida, grupos trail, grupos gravel, grupos enduro, grupos e-bike, grupos ebike, eventos btt, eventos ciclismo, eventos bicicleta, eventos ebike, eventos atletismo, eventos corrida, eventos trail, eventos gravel, eventos enduro, eventos e-bike, eventos ebike'
+    })
   }];
 };
-
 
 export { getOpenGraphMeta, CanonicalMeta };
