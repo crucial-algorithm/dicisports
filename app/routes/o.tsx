@@ -41,10 +41,12 @@ export type OrganizerLoaderData = {
 };
 
 export const meta: MetaFunction = () => {
-  return [{
-    title: 'DiciSports - This Is Sports',
-    robots: 'noindex, nofollow'
-  }];
+  return [
+    {
+      title: 'DiciSports - This Is Sports',
+      robots: 'noindex, nofollow'
+    }
+  ];
 };
 
 export const loader: LoaderFunction = async ({ request }) => {
