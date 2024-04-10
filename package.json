@@ -14,7 +14,7 @@
     "deploy:staging": "flyctl --app dicistg deploy .",
     "test:open": "npx cypress open",
     "test:run": "npx cypress run --browser chrome",
-    "ci:build": "npm run build:css && npx prisma migrate reset --force && prisma db seed",
+    "ci:build": "npx prisma migrate reset --force && prisma db seed",
     "typecheck": "tsc --skipLibCheck --noEmit -p tsconfig.check.json"
   },
   "prisma": {
