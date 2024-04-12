@@ -1,0 +1,325 @@
+body {
+    @apply antialiased font-sans
+}
+
+:root {
+    --color-black: #000;
+    --color-white: #fff;
+    --color-blue-100: #e8f2ff;
+    --color-blue-500: #4b96ff;
+    --color-blueGray-500: #a9adc1;
+    --color-gray-100: #f7f7f7;
+    --color-gray-200: #e6e9ee;
+    --color-gray-300: #dde0e4;
+    --color-gray-400: #818890;
+    --color-gray-500: #535661;
+    --color-gray-600: #4b4c53;
+    --color-gray-700: #3a3d4a;
+    --color-gray-800: #2e3039;
+    --color-gray-900: #1f2028;
+    --color-green-100: #e7f9ed;
+    --color-green-500: #30c85e;
+    --color-green-600: #68d94a;
+    --color-red-500: #FF5C00;
+
+    --color-team-unknown: #818890;
+    --color-team-blue: #36a3ff;
+    --color-team-red: #FF5C00;
+    /* yellow in light mode is... hard */
+    --color-team-yellow: #a08600;
+    --color-yellow-500: #a08600;
+
+    --doc-height: 100%;
+}
+
+.light {
+    --color-team-unknown: var(--color-black);
+    --bg-primary: var(--color-white);
+    --bg-secondary: var(--color-gray-100);
+    --bg-alt: var(--color-gray-200);
+    --border-secondary: var(--color-gray-200);
+    --text-primary: var(--color-black);
+    --text-secondary: var(--color-gray-500);
+}
+
+.dark {
+    --color-team-yellow: #ffd644;
+    --color-yellow-500: #ffd644;
+    --color-team-unknown: var(--color-white);
+    --bg-primary: var(--color-gray-900);
+    --bg-secondary: var(--color-gray-800);
+    --bg-alt: var(--color-gray-700);
+    --border-secondary: var(--color-gray-600);
+    --text-primary: var(--color-white);
+    --text-secondary: var(--color-blueGray-500);
+}
+
+.set-color-team-current-red {
+    --color-team-current: var(--color-team-red);
+}
+
+.border-primary {
+    @apply border-gray-900 dark:border-white;
+}
+
+.border-secondary {
+    @apply border-gray-200 dark:border-gray-600;
+}
+
+/* I kinda feel like this should be the default... 🤷‍♂️ */
+[hidden] {
+    pointer-events: none;
+}
+
+/* These elements get removed before hydration but they can look funny before hydrating */
+dark-mode,
+light-mode {
+    display: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    :focus {
+        transition: outline-offset 0.1s ease;
+        outline-offset: 4px;
+    }
+}
+
+a, .link {
+    color: var(--color-team-current);
+    font-weight: 600;
+}
+
+.underlined {
+    position: relative;
+    text-decoration: none !important;
+    white-space: nowrap;
+}
+
+.underlined:focus {
+    outline: none;
+    text-decoration: none !important;
+}
+
+.underlined:after {
+    content: '';
+    height: 2px;
+    transform: scaleX(0);
+    transition: transform 0.25s ease;
+    transform-origin: left;
+    left: 0;
+    bottom: -4px;
+    width: 100%;
+    display: block;
+    position: absolute;
+}
+
+.underlined:hover:after,
+.underlined:focus:after,
+.active.underlined:after {
+    background-color: currentColor;
+    transform: scaleX(1);
+}
+
+@media (prefers-reduced-motion) {
+    .underlined:after {
+        opacity: 0;
+        transition: opacity 0.25s ease;
+    }
+
+    .underlined:hover:after,
+    .underlined:focus:after,
+    .active.underlined:after {
+        opacity: 1;
+    }
+}
+
+/* transistor embed has rounded edges with white background 😬 */
+.dark iframe[src*='transistor'] {
+    border-radius: 8px;
+}
+
+.list-entry-actions {
+    position: absolute;
+    top: 0;
+    right: 0;
+}
+.list-entry-footer {
+    position: absolute;
+    bottom: 20px;
+    right: 0;
+}
+
+.images-container {
+    width: 100%;
+    height: 300px;
+    overflow: hidden;
+    padding: 10px 4px;
+    text-align: center;
+}
+
+.dropzone {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.images-container img {
+    width: 292px;
+}
+
+.images-container::-webkit-scrollbar {
+    height: 15px;
+    border-radius: 4px;
+    background-color: #fff;
+}
+
+.images-container::-webkit-scrollbar-track {
+    border-radius: 10px;
+}
+
+.images-container::-webkit-scrollbar-thumb {
+    border-radius: 4px;
+    height: 10px;
+    background-color: #525f7f;
+    height: 80%;
+}
+
+.images-container::-webkit-scrollbar:vertical {
+    display: none;
+}
+
+.images-container .image {
+    height: 150px;
+    width: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 10px;
+}
+
+.images-container .image img {
+    width: 100%;
+    height: 100%;
+    -o-object-fit: contain;
+    object-fit: contain;
+    border-radius: 2px;
+}
+
+/* Remove blue outline added by @tailwindcss/forms */
+[type='text']:focus,
+[type='email']:focus,
+[type='url']:focus,
+[type='password']:focus,
+[type='number']:focus,
+[type='date']:focus,
+[type='datetime-local']:focus,
+[type='month']:focus,
+[type='search']:focus,
+[type='tel']:focus,
+[type='time']:focus,
+[type='week']:focus,
+[multiple]:focus,
+textarea:focus,
+select:focus {
+    outline: none;
+    outline-offset: 0;
+    box-shadow: none;
+}
+
+
+/* hide placeholder for react-select */
+.react-select__control--is-focused.react-select__control--menu-is-open .react-select__single-value {
+    display: none;
+}
+
+table.privacy-policy tr {
+    margin-bottom: 20px;
+}
+
+table.privacy-policy td {
+    width: 20%;
+    border-bottom-width: thin;
+}
+
+.events-list > a:last-child > div {
+    border: none;
+}
+
+.z-100 {
+    z-index: 100;
+}
+
+.z-150 {
+    z-index: 150;
+}
+
+[data-reach-dialog-overlay] {
+    background: hsla(0, 0%, 0%, 0.33);
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    overflow: auto;
+}
+
+
+@keyframes overlayShow {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes contentShow {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -48%) scale(0.96);
+    }
+    to {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
+}
+
+.prose :where(strong):not(:where([class~="not-prose"] *)),
+.prose :where(h1):not(:where([class~="not-prose"] *)),
+.prose :where(h2):not(:where([class~="not-prose"] *)),
+.prose :where(h3):not(:where([class~="not-prose"] *)) {
+    color: inherit;
+}
+.prose :where(strong):not(:where([class~="not-prose"] *)) {
+    font-weight: 700;
+}
+.dark .prose :where(strong):not(:where([class~="not-prose"] *)) {
+    font-weight: 900;
+}
+.prose :where(p):not(:where([class~="not-prose"] *)) {
+    margin-top: 0.325em;
+    margin-bottom: 0.325em;
+}
+
+.prose {
+    max-width: 100ch;
+}
+
+body[data-path=preview-event] #organizer-side-bar {
+    display: none;
+}
+
+body[data-path=preview-event] #organizer-main-container {
+    padding: 0;
+}
+
+.hide-scroll-bar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.hide-scroll-bar::-webkit-scrollbar {
+    display: none;
+}

@@ -5,7 +5,6 @@ node_modules
 /public/build
 .env
 .idea
-/app/styles/**/*.css
 
 /cypress/downloads
 /cypress/videos
