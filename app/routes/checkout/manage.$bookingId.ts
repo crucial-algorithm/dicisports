@@ -66,7 +66,7 @@ export const action: ActionFunction = async ({ request, params }) => {
       if (!raceParticipants || raceParticipants?.length === 0) {
         await removeBooking(bookingId);
       } else {
-        const raceParticipant = raceParticipants[raceParticipants.length - 1];
+        const raceParticipant = raceParticipants[0];
 
         return json({ ok: true, action: actionId, raceParticipant });
       }
