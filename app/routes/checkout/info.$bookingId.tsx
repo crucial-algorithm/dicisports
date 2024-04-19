@@ -13,7 +13,8 @@ import {
 } from '@prisma/client';
 import type { ActionFunction, LoaderFunction } from '@remix-run/node';
 import { json, redirect } from '@remix-run/node';
-
+import type { TFunction } from 'i18next';
+import type { FetcherWithComponents} from '@remix-run/react';
 import { Link, useFetcher, useLoaderData } from '@remix-run/react';
 import clsx from 'clsx';
 import * as React from 'react';
@@ -575,12 +576,6 @@ export default function CheckoutInfoRoute() {
     team: raceParticipants[0].team?.name ? raceParticipants[0].team.name : null,
     raceId: raceParticipants[0].raceId
   });
-  const [errors, setErrors] = useState<FormErrors>({});
-  const [hash, setHash] = useState<number>(Date.now());
-  const [message, setMessage] = useState<string>('');
-  let showNotification: any = null;
-  const [showAddRacesDialog, setShowAddRacesDialog] = useState<boolean>(false);
-  const [isReset, setIsReset] = useState<boolean>(false);
   const [selectedParticipant, setSelectedParticipant] =
     useState<Participant | null>(
       savedParticipants?.length === 1 ? savedParticipants[0] : null
@@ -588,26 +583,18 @@ export default function CheckoutInfoRoute() {
   const [missingParticipants, setMissingParticipants] = useState<
     RaceParticipantWithRaceAndParticipant[]
   >([]);
+
+  const [errors, setErrors] = useState<FormErrors>({});
+  const [hash, setHash] = useState<number>(Date.now());
+  const [message, setMessage] = useState<string>('');
+  let showNotification: any = null;
+
   const [checkedTermsAndRegulation, setCheckedTermsAndRegulation] = useState<{
     terms: boolean;
     regulation: boolean;
   }>({ terms: false, regulation: false });
   const [checkedAddToMailingList, setCheckedAddToMailingList] = useState(false);
-  const initialVisitedParticipants = raceParticipants
-    .filter((p) => p.participant.status === 'saved')
-    .map((p) => p.participant);
-  const isFirstParticipantVisited = initialVisitedParticipants.some(
-    (p) => p.id === raceParticipants[0].participantId
-  );
   const isInlineRegulation = event.regulationContent && true;
-
-  if (!isFirstParticipantVisited) {
-    initialVisitedParticipants.push(raceParticipants[0].participant);
-  }
-
-  const [visitedParticipants, setVisitedParticipants] = useState<Participant[]>(
-    initialVisitedParticipants
-  );
 
   const resetForm = useCallback(() => {
     setErrors({});
@@ -635,30 +622,17 @@ export default function CheckoutInfoRoute() {
     [savedParticipants]
   );
 
-  function handleSetParticipant(e: React.MouseEvent) {
-    const [, raceId, raceParticipantId] = e.currentTarget.id.split('|');
-    const index = raceParticipants.findIndex(
-      (rp) => rp.id === raceParticipantId
-    );
-    const newRaceParticipant = raceParticipants[index];
-    const isVisited = visitedParticipants.some(
-      (v) => v.id === newRaceParticipant.participantId
-    );
-
-    setRaceParticipant({
-      id: raceParticipantId,
-      participant: newRaceParticipant.participant,
-      raceId,
-      team: null
-    });
-    handleSetParticipantTeam(raceParticipantId);
-    setErrors({});
+  function handleSetParticipant(rp: {
+    id: string;
+    participant: Participant;
+    team: string | null;
+    raceId: string;
+  }) {
     setHash(Date.now());
+    setRaceParticipant(rp);
+    handleSetParticipantTeam(rp.id);
+    setErrors({});
     setSelectedParticipant(null);
-
-    if (!isVisited) {
-      setVisitedParticipants((p) => [...p, newRaceParticipant.participant]);
-    }
   }
 
   function handleSetParticipantTeam(raceParticipantId: string) {
@@ -677,30 +651,6 @@ export default function CheckoutInfoRoute() {
 
   function handlerSetShowNotificationFunction(callback: () => void) {
     showNotification = callback;
-  }
-
-  function handleRemoveRaceParticipant() {
-    fetcher.submit(
-      {
-        actionId: CheckoutInfoActions.removeParticipant,
-        participantId: raceParticipant.participant.id,
-        raceId: raceParticipant.raceId
-      },
-      {
-        method: 'post',
-        action: `/checkout/manage/${bookingId}`
-      }
-    );
-  }
-
-  function handleOpenAddRaces() {
-    setShowAddRacesDialog(true);
-    setIsReset(false);
-  }
-
-  function handleCloseAddRaces() {
-    setShowAddRacesDialog(false);
-    setIsReset(true);
   }
 
   function handleSetSelectedParticipant(v: string | number) {
@@ -808,9 +758,7 @@ export default function CheckoutInfoRoute() {
   return (
     <Main>
       <div data-cy="login" data-show-login={triggerLogin}>
-        {triggerLogin && (
-          <BookingLoginCTADialog bookingId={bookingId} t={t} />
-        )}
+        {triggerLogin && <BookingLoginCTADialog bookingId={bookingId} t={t} />}
       </div>
       <div className="flex flex-col justify-start space-y-1 mb-8">
         <H2>
@@ -824,83 +772,17 @@ export default function CheckoutInfoRoute() {
         <H6>{event.placeName}</H6>
       </div>
 
-      {raceParticipants.length > 1 && (
-        <div className="w-full mb-8 flex flex-row scroll-mx-2 items-center items-start flex-nowrap overflow-x-auto snap-x">
-          {raceParticipants
-            .sort((a, b) => a.displayOrder - b.displayOrder)
-            .map((p, index) => (
-              <div className="flex flex-col items-center mt-4" key={p.id}>
-                <div
-                  className={clsx(
-                    'flex flex-col gap-y-2 border-2 border-b p-2 mx-2 items-center w-[200px] snap-center cursor-pointer relative',
-
-                    {
-                      'opacity-100':
-                        p.participantId === raceParticipant.participant.id &&
-                        p.race.id === raceParticipant.raceId,
-                      'opacity-50': !(
-                        p.participantId === raceParticipant.participant.id &&
-                        p.race.id === raceParticipant.raceId
-                      ),
-                      'border-blaze-orange-500': missingParticipants.some(
-                        (v) => v.participantId === p.participantId
-                      ),
-                      'border-gray-500': !missingParticipants.some(
-                        (v) => v.participantId === p.participantId
-                      )
-                    }
-                  )}
-                  id={`${p.participantId}|${p.race.id}|${p.id}`}
-                  onClick={handleSetParticipant}
-                  data-cy={`participant-${index + 1}`}
-                >
-                  {!visitedParticipants.some(
-                    (v) => v.id === p.participantId
-                  ) && (
-                    <span className="flex absolute h-4 w-4 top-0 right-0 -mt-[0.3rem] -mr-[0.7rem]">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blaze-orange-500 opacity-75"></span>
-                      <span className="relative inline-flex rounded-full h-3 w-3 bg-blaze-orange-500"></span>
-                    </span>
-                  )}
-
-                  {!isBookingReadOnly &&
-                    p.participantId === raceParticipant.participant.id &&
-                    p.race.id === raceParticipant.raceId && (
-                      <button
-                        type="button"
-                        onClick={handleRemoveRaceParticipant}
-                        name="remove"
-                        className="absolute top-[6px] right-[6px]"
-                        data-cy={`remove-participant-${index + 1}`}
-                      >
-                        <XMarkIcon className="dark:text-blueGray-500 md:h-6 w-6 m-0 inline-block" />
-                      </button>
-                    )}
-                  <H5 data-cy="participant">{p.race.name}</H5>
-                  <H6
-                    className="dark:text-blueGray-500"
-                    data-cy={`participant-name-${index + 1}`}
-                  >
-                    {p.participant.firstName
-                      ? p.participant.firstName
-                      : t('Participant') + ' ' + (index + 1)}
-                  </H6>
-                </div>
-              </div>
-            ))}
-          {!isBookingReadOnly && (
-            <div className="flex flex-col items-center snap-center mt-4">
-              <div
-                className="flex flex-col gap-y-2 border-2 border-b border-gray-500 p-2 mx-2 items-center w-[200px]"
-                onClick={handleOpenAddRaces}
-              >
-                <PlusIcon className="h-7 w-7 dark:text-blueGray-500" />
-                <H6 className="dark:text-blueGray-500">{t('Add Race')}</H6>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
+      <RaceParticipantsList
+        raceParticipants={raceParticipants}
+        missingParticipants={missingParticipants}
+        raceParticipant={raceParticipant}
+        setParticipant={handleSetParticipant}
+        isBookingReadOnly={isBookingReadOnly}
+        bookingId={bookingId}
+        races={event.races}
+        fetcher={fetcher}
+        t={t}
+      />
 
       <FetcherForm
         form={fetcher.Form}
@@ -1072,13 +954,6 @@ export default function CheckoutInfoRoute() {
         />
         <input type="hidden" name="hash" value={hash} />
       </FetcherForm>
-      <AddRacesDialog
-        isOpen={showAddRacesDialog}
-        triggerModalClose={handleCloseAddRaces}
-        eventRaces={event.races}
-        reset={isReset}
-        bookingId={bookingId}
-      />
     </Main>
   );
 }
@@ -1261,5 +1136,186 @@ function DisplayRace({
         </div>
       </div>
     </div>
+  );
+}
+
+function RaceParticipantsList({
+  raceParticipants,
+  missingParticipants,
+  raceParticipant,
+  setParticipant,
+  isBookingReadOnly,
+  bookingId,
+  races,
+  fetcher,
+  t
+}: {
+  raceParticipants: RaceParticipantWithRaceParticipantAndTeam[];
+  missingParticipants: RaceParticipantWithRaceAndParticipant[];
+  raceParticipant: {
+    id: string;
+    participant: Participant;
+    team: string | null;
+    raceId: string;
+  };
+  setParticipant: (rp: {
+    id: string;
+    participant: Participant;
+    team: string | null;
+    raceId: string;
+  }) => void;
+  isBookingReadOnly: boolean;
+  bookingId: string;
+  races: Race[];
+  fetcher: FetcherWithComponents<any>;
+  t: TFunction;
+}) {
+  const [showAddRacesDialog, setShowAddRacesDialog] = useState<boolean>(false);
+  const [isReset, setIsReset] = useState<boolean>(false);
+
+  const initialVisitedParticipants = raceParticipants
+    .filter((p) => p.participant.status === 'saved')
+    .map((p) => p.participant);
+  const isFirstParticipantVisited = initialVisitedParticipants.some(
+    (p) => p.id === raceParticipants[0].participantId
+  );
+
+  if (!isFirstParticipantVisited) {
+    initialVisitedParticipants.push(raceParticipants[0].participant);
+  }
+
+  const [visitedParticipants, setVisitedParticipants] = useState<Participant[]>(
+    initialVisitedParticipants
+  );
+
+  function handleSetParticipant(e: React.MouseEvent) {
+    const [, raceId, raceParticipantId] = e.currentTarget.id.split('|');
+    const index = raceParticipants.findIndex(
+      (rp) => rp.id === raceParticipantId
+    );
+    const newRaceParticipant = raceParticipants[index];
+
+    const isVisited = visitedParticipants.some(
+      (v) => v.id === newRaceParticipant.participantId
+    );
+
+    if (!isVisited) {
+      setVisitedParticipants((p) => [...p, newRaceParticipant.participant]);
+    }
+
+    setParticipant({
+      id: raceParticipantId,
+      participant: newRaceParticipant.participant,
+      raceId,
+      team: null
+    });
+  }
+
+  function handleRemoveRaceParticipant() {
+    fetcher.submit(
+      {
+        actionId: CheckoutInfoActions.removeParticipant,
+        participantId: raceParticipant.participant.id,
+        raceId: raceParticipant.raceId
+      },
+      {
+        method: 'post',
+        action: `/checkout/manage/${bookingId}`
+      }
+    );
+  }
+
+  function handleOpenAddRaces() {
+    setShowAddRacesDialog(true);
+    setIsReset(false);
+  }
+
+  function handleCloseAddRaces() {
+    setShowAddRacesDialog(false);
+    setIsReset(true);
+  }
+
+  return (
+    <>
+      {raceParticipants.length > 1 && (
+        <div className="w-full mb-8 flex flex-row scroll-mx-2 items-center items-start flex-nowrap overflow-x-auto snap-x">
+          {raceParticipants.map((p, index) => (
+            <div className="flex flex-col items-center mt-4" key={p.id}>
+              <div
+                className={clsx(
+                  'flex flex-col gap-y-2 border-2 border-b p-2 mx-2 items-center w-[200px] snap-center cursor-pointer relative',
+                  {
+                    'opacity-100':
+                      p.participantId === raceParticipant.participant.id &&
+                      p.race.id === raceParticipant.raceId,
+                    'opacity-50': !(
+                      p.participantId === raceParticipant.participant.id &&
+                      p.race.id === raceParticipant.raceId
+                    ),
+                    'border-blaze-orange-500': missingParticipants.some(
+                      (v) => v.participantId === p.participantId
+                    ),
+                    'border-gray-500': !missingParticipants.some(
+                      (v) => v.participantId === p.participantId
+                    )
+                  }
+                )}
+                id={`${p.participantId}|${p.race.id}|${p.id}`}
+                onClick={handleSetParticipant}
+                data-cy={`participant-${index + 1}`}
+              >
+                {!visitedParticipants.some((v) => v.id === p.participantId) && (
+                  <span className="flex absolute h-4 w-4 top-0 right-0 -mt-[0.3rem] -mr-[0.7rem]">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blaze-orange-500 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-3 w-3 bg-blaze-orange-500"></span>
+                  </span>
+                )}
+
+                {!isBookingReadOnly &&
+                  p.participantId === raceParticipant.participant.id &&
+                  p.race.id === raceParticipant.raceId && (
+                    <button
+                      type="button"
+                      onClick={handleRemoveRaceParticipant}
+                      name="remove"
+                      className="absolute top-[6px] right-[6px]"
+                      data-cy={`remove-participant-${index + 1}`}
+                    >
+                      <XMarkIcon className="dark:text-blueGray-500 md:h-6 w-6 m-0 inline-block" />
+                    </button>
+                  )}
+                <H5 data-cy="participant">{p.race.name}</H5>
+                <H6
+                  className="dark:text-blueGray-500"
+                  data-cy={`participant-name-${index + 1}`}
+                >
+                  {p.participant.firstName
+                    ? p.participant.firstName
+                    : t('Participant') + ' ' + (index + 1)}
+                </H6>
+              </div>
+            </div>
+          ))}
+          {!isBookingReadOnly && (
+            <div className="flex flex-col items-center snap-center mt-4">
+              <div
+                className="flex flex-col gap-y-2 border-2 border-b border-gray-500 p-2 mx-2 items-center w-[200px]"
+                onClick={handleOpenAddRaces}
+              >
+                <PlusIcon className="h-7 w-7 dark:text-blueGray-500" />
+                <H6 className="dark:text-blueGray-500">{t('Add Race')}</H6>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+      <AddRacesDialog
+        isOpen={showAddRacesDialog}
+        triggerModalClose={handleCloseAddRaces}
+        eventRaces={races}
+        reset={isReset}
+        bookingId={bookingId}
+      />
+    </>
   );
 }
