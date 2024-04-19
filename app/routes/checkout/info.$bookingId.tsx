@@ -14,7 +14,7 @@ import {
 import type { ActionFunction, LoaderFunction } from '@remix-run/node';
 import { json, redirect } from '@remix-run/node';
 import type { TFunction } from 'i18next';
-import type { FetcherWithComponents} from '@remix-run/react';
+import type { FetcherWithComponents } from '@remix-run/react';
 import { Link, useFetcher, useLoaderData } from '@remix-run/react';
 import clsx from 'clsx';
 import * as React from 'react';
