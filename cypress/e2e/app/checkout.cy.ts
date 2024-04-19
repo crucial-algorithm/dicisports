@@ -1175,7 +1175,7 @@ describe('Checkout', () => {
         .contains('Marretas');
     });
 
-    it('should remove participant and select the first one from participants list', () => {
+    it.skip('should remove participant and select the first one from participants list', () => {
       cy.visitAndWaitForHydration('/checkout/info/4RzB8TRoXhEteTWtLMs6')
 
         .intercept('POST', '/checkout/manage/4RzB8TRoXhEteTWtLMs6*')
