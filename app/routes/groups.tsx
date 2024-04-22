@@ -54,7 +54,7 @@ import { getUser } from '~/server/auth/session.server';
 import Config from '~/server/config.server';
 import TransitionIndicator from '~/components/shared/TransitionIndicator';
 import { useRootData } from '~/hooks';
-import { getLocationSession } from '~/routes/action/set-my-location';
+import { getLocationSession } from '~/routes/action/server/set-my-location';
 import { useUserLocation } from '~/utils/LocationProvider';
 import { CanonicalMeta } from '~/utils/seo';
 

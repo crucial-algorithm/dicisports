@@ -6,7 +6,6 @@ import {
   isRouteErrorResponse,
   Link,
   Links,
-  LiveReload,
   Meta,
   Outlet,
   Scripts,
@@ -52,7 +51,7 @@ import TransitionIndicator from '~/components/shared/TransitionIndicator';
 import Config from '~/server/config.server';
 
 import { LocationProvider } from '~/utils/LocationProvider';
-import { getLocationSession } from '~/routes/action/set-my-location';
+import { getLocationSession } from '~/routes/action/server/set-my-location';
 
 import { findSports } from '~/server/db/reference.server';
 
@@ -351,7 +350,6 @@ function Html({ lang }: { lang: string }) {
           }}
         />
         <Scripts />
-        {process.env.NODE_ENV === 'development' && <LiveReload />}
       </body>
     </html>
   );
