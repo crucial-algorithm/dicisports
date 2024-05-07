@@ -102,6 +102,8 @@ jobs:
           SMS_APPLICATION_ID: 1111
           SMS_APPLICATION_TOKEN: token
 
+          SLACK_ERRORS_WEBHOOK_URL: http://127.0.0.1:3001?bucket=errors
+
 
       - uses: actions/upload-artifact@v2
         if: failure()

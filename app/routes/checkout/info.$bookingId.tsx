@@ -80,6 +80,8 @@ import { findEventTeams } from '~/server/db/teams.server';
 import { findDiscountCode } from '~/server/db/discounts.server';
 import { FetcherForm } from '~/components/shared/form/UploadForm';
 
+import Config from '~/server/config.server';
+
 type LoaderData = {
   event: EventWithRacesDifficultiesAndDocuments;
   cart: UICartRow[];
@@ -470,6 +472,14 @@ export const action: ActionFunction = async ({ request, params }) => {
       errors[error.path[0]] = error.message;
     }
 
+    await fetch(Config().SLACK_ERRORS_WEBHOOK_URL, {
+      method: 'POST',
+      body: JSON.stringify({
+        text: `Participant form validation (\`booking = ${bookingId}\`): \`\`\`${JSON.stringify(
+          errors
+        )}\`\`\``
+      })
+    });
     return badRequest({ errors, hash: parseInt(hash) });
   }
 };
@@ -791,9 +801,7 @@ export default function CheckoutInfoRoute() {
   return (
     <Main>
       <div data-cy="login" data-show-login={triggerLogin}>
-        {triggerLogin && (
-          <BookingLoginCTADialog bookingId={bookingId} t={t} />
-        )}
+        {triggerLogin && <BookingLoginCTADialog bookingId={bookingId} t={t} />}
       </div>
       <div className="flex flex-col justify-start space-y-1 mb-8">
         <H2>
@@ -989,7 +997,8 @@ export default function CheckoutInfoRoute() {
 
                   <InputError
                     id="form-submission-error"
-                    className="mb-8 text-lg"
+                    className="mb-8"
+                    size="lg"
                   >
                     {errors?.submit || errors?.terms || errors?.regulation}
                   </InputError>
@@ -1004,7 +1013,12 @@ export default function CheckoutInfoRoute() {
             <DisplayCart
               cart={cart}
               event={event}
-              error={errors.missingFilledParticipants}
+              error={
+                errors.missingFilledParticipants ||
+                errors?.submit ||
+                errors?.terms ||
+                errors?.regulation
+              }
               showDiscountCodeInput={!isBookingReadOnly}
               discountCode={discountCode}
               discountValue={discountValue}
@@ -1028,7 +1042,7 @@ export default function CheckoutInfoRoute() {
                     <a
                       href={`/checkout/cart/${bookingId}`}
                       data-cy="update-cart"
-                      className="text-lg font-medium"
+                      className="font-medium underline text-gray-900 dark:text-gray-300 hover:text-gray-700 dark:hover:text-gray-200"
                     >
                       {t('Update Cart')}
                     </a>
