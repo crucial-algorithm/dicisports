@@ -36,6 +36,7 @@ export type ConfigServer = {
   SMS_ENDPOINT: string;
   SMS_APPLICATION_ID: string;
   SMS_APPLICATION_TOKEN: string;
+  SLACK_ERRORS_WEBHOOK_URL: string;
 }
 
 let config: ConfigServer | null = null;
@@ -83,7 +84,8 @@ export default function Config(): ConfigServer {
     SCHEDULER_SECRET: extractVar('SCHEDULER_SECRET'),
     SMS_ENDPOINT: extractVar('SMS_ENDPOINT'),
     SMS_APPLICATION_ID: extractVar('SMS_APPLICATION_ID'),
-    SMS_APPLICATION_TOKEN: extractVar('SMS_APPLICATION_TOKEN')
+    SMS_APPLICATION_TOKEN: extractVar('SMS_APPLICATION_TOKEN'),
+    SLACK_ERRORS_WEBHOOK_URL: extractVar('SLACK_ERRORS_WEBHOOK_URL')
   };
 
   return config;
