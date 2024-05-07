@@ -146,7 +146,7 @@ export default function DisplayCart({
       {children}
 
       {error && (
-        <InputError id="checkout-error" className="mt-2">
+        <InputError id="checkout-error" className="mt-4" size="lg">
           {error}
         </InputError>
       )}

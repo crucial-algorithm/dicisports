@@ -110,6 +110,7 @@ jobs:
           SMS_APPLICATION_TOKEN: token
 
           HTTP_CATCHER: http://127.0.0.1:3001
+          SLACK_ERRORS_WEBHOOK_URL: http://127.0.0.1:3001?bucket=errors
 
       - uses: actions/upload-artifact@v2
         if: failure()
