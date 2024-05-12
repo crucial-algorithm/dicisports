@@ -450,6 +450,12 @@ function DisplayRace({
     expanded ? setExpanded(false) : setExpanded(true);
   }
 
+  const externalUrl = externalBookingUrl ? new URL(externalBookingUrl) : null;
+  
+  if (externalUrl) {
+    externalUrl.searchParams.append('utm_source', 'dicisports');
+  }
+
   return (
     <div
       className="flex flex-col w-[340px] gap-y-4 justify-between mb-4 mr-2 md:mr-4 text-center items-center border border-black dark:border-white rounded-2xl outline-offset-1 md:overflow-hidden"
@@ -537,7 +543,7 @@ function DisplayRace({
           t={t}
         />
 
-        {!externalBookingUrl && (
+        {!externalUrl && (
           <Form
             method="get"
             action="/checkout/create"
@@ -559,8 +565,8 @@ function DisplayRace({
           </Form>
         )}
 
-        {externalBookingUrl && (
-          <ButtonLink id={`book-race-${race.id}`} to={externalBookingUrl}>
+        {externalUrl && (
+          <ButtonLink id={`book-race-${race.id}`} to={externalUrl.toJSON()}>
             {t('Book')}
           </ButtonLink>
         )}
