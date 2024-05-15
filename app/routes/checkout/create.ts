@@ -38,7 +38,13 @@ export const loader: LoaderFunction = async ({ request }) => {
 
     if (!user) {
       console.log(`Creating anonymous user for booking ${bookingId}`);
-      await createAnonymousUser(userId, `bid-${bookingId}`);
+      try {
+        await createAnonymousUser(userId, `bid-${bookingId}`);
+      } catch (e) {
+        // If we fail to create an anonymous user, we should still continue
+        console.log(`Failed to create anonymous user ${userId}, exception caught ${bookingId}, error below:`);
+        console.error(e);
+      }
     }
 
     await createInitialBookingFlow(bookingId, userId, eventId, raceId, t);
