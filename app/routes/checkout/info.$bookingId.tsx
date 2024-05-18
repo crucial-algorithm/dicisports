@@ -763,7 +763,7 @@ export default function CheckoutInfoRoute() {
       <div className="flex flex-col justify-start space-y-1 mb-8">
         <H2>
           <b data-cy="name" className="break-words w-full">
-            {event.name} asd
+            {event.name}
           </b>
         </H2>
         <H6>

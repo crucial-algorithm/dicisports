@@ -33,6 +33,10 @@ import CopyToClipboard from '~/components/shared/CopyToClipboard';
 
 import useLang from '~/hooks/useLang';
 import type { EventWithRacesDifficultiesAndDocuments } from '~/server/db/events.server';
+import {
+  findEventBySlug,
+  findUserFavoriteEvent
+} from '~/server/db/events.server';
 import Main from '~/components/shared/Main';
 import { H2, H3, H4, H5, H6, Paragraph } from '~/components/shared/typography';
 import Button, { ButtonLink } from '~/components/shared/Button';
@@ -50,12 +54,6 @@ import { findOrganizer } from '~/server/db/organizer.server';
 
 import EventGalleria from '~/components/EventGalleria';
 
-function findEventBySlug() {
-
-}
- function findUserFavoriteEvent() {
-
- }
 type LoaderData = {
   event: EventWithRacesDifficultiesAndDocuments;
   isUserFavorite: boolean;
