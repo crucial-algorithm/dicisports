@@ -51,7 +51,7 @@ import TransitionIndicator from '~/components/shared/TransitionIndicator';
 import Config from '~/server/config.server';
 
 import { LocationProvider } from '~/utils/LocationProvider';
-import { getLocationSession } from '~/routes/action/server/set-my-location';
+import { getLocationSession } from '~/routes/action/set-my-location';
 
 import { findSports } from '~/server/db/reference.server';
 
@@ -61,10 +61,10 @@ import { ButtonLink } from '~/components/shared/Button';
 
 import setupPrimeReact from '~/PrimeReact';
 
-import vendorsCss from './styles/vendors.css';
-import mainCss from './styles/main.css';
-import primeReactThemeCss from './styles/primereact-theme.css';
-import tailwind from './styles/tailwind.css';
+import vendorsCss from './styles/vendors.css?url';
+import mainCss from './styles/main.css?url';
+import primeReactThemeCss from './styles/primereact-theme.css?url';
+import tailwind from './styles/tailwind.css?url';
 
 export const links: LinksFunction = () => {
   return [
