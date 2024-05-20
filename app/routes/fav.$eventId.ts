@@ -1,12 +1,24 @@
-import type { ActionFunction } from '@remix-run/node';
+import type { ActionFunction, LoaderFunction } from '@remix-run/node';
 import { json } from '@remix-run/node';
+import { redirect } from 'react-router';
 
-import { requireUser } from '~/server/auth/session.server';
+import { getUser, requireUser } from '~/server/auth/session.server';
 import {
   addEventToFavorites,
   findEvent,
   removeEventFromFavorites
 } from '~/server/db/events.server';
+import { getClientSession } from '~/server/auth/client.server';
+
+export const loader: LoaderFunction = async ({ request }) => {
+  const clientSession = await getClientSession(request);
+  const user = await getUser(request);
+
+  const userId = user !== null ? user.id : clientSession.getClientId();
+
+  console.log('Favorite Event GET from: ', userId);
+  return redirect('/');
+};
 
 export const action: ActionFunction = async ({ request, params }) => {
   const user = await requireUser(request);
