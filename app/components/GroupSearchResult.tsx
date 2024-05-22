@@ -95,6 +95,7 @@ export default function GroupResult({
                 to={whatsAppLink}
                 id={`whatsapp-${group.id}`}
                 onClick={stopPropagation}
+                className="w-12"
               >
                 <WhatsApp className="h-6 w-6 m-0 inline-block fill-white dark:fill-black" />
               </ButtonLink>
@@ -103,6 +104,7 @@ export default function GroupResult({
               text={`${address}/group/${group.slug}`}
               id={group.id}
               successMessage={handlerShowURLCopiedMessage}
+              className="w-12"
             />
             <favorite.Form
               // @ts-ignore
@@ -117,6 +119,7 @@ export default function GroupResult({
                   value="remove"
                   id="remove-favorite"
                   onClick={stopPropagation}
+                  className="w-12"
                 >
                   <Favorite className="h-6 w-6 m-0 inline-block" />
                 </Button>
@@ -127,6 +130,7 @@ export default function GroupResult({
                   value="add"
                   id={`add-favorite-${group.id}`}
                   onClick={stopPropagation}
+                  className="w-12"
                 >
                   <HeartIcon className="h-6 w-6 m-0 inline-block" />
                 </Button>
