@@ -9,7 +9,7 @@ import {
   removeEventFromFavorites
 } from '~/server/db/events.server';
 
-export const loader: LoaderFunction = async ({ request }) => {
+export const loader: LoaderFunction = async () => {
   return redirect('/');
 };
 

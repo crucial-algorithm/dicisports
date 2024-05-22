@@ -9,7 +9,7 @@ import {
   removeGroupFromFavorites
 } from '~/server/db/groups.server';
 
-export const loader: LoaderFunction = async ({ request }) => {
+export const loader: LoaderFunction = async () => {
   return redirect('/');
 };
 
