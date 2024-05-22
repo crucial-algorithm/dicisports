@@ -230,7 +230,7 @@ function Menu({
                 {!organizer?.logo && <BuildingStorefrontIcon className="w-6" />}
               </>
             }
-            title={t('Organizer Settings')}
+            title={t('Organizer menu')}
             to="/o/us"
             sideBarCollapsed={sideBarCollapsed}
             onClick={onClick}
