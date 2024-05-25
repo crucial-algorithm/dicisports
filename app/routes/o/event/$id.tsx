@@ -26,7 +26,7 @@ import clsx from 'clsx';
 import { Toast } from 'primereact/toast';
 import type { FileUploadHandlerEvent } from 'primereact/fileupload';
 
-import mapBoxGlCss from 'mapbox-gl/dist/mapbox-gl.css';
+import mapBoxGlCss from 'mapbox-gl/dist/mapbox-gl.css?url';
 
 import type { ChangeEvent } from 'react';
 import * as React from 'react';
@@ -86,8 +86,8 @@ import {
   Unauthorized
 } from '~/server/utils/misc';
 import { ConfirmationDialog } from '~/components/shared/Dialog';
-import mapCss from '~/styles/map.css';
-import organizerCss from '~/styles/organizer.css';
+import mapCss from '~/styles/map.css?url';
+import organizerCss from '~/styles/organizer.css?url';
 
 import type {
   CreateEventInput,

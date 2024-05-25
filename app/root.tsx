@@ -26,8 +26,8 @@ import { useTranslation } from 'react-i18next';
 
 import { locale } from 'primereact/api';
 
-import primeIcons from 'primeicons/primeicons.css';
-import primeReactCoreCss from 'primereact/resources/primereact.min.css';
+import primeIcons from 'primeicons/primeicons.css?url';
+import primeReactCoreCss from 'primereact/resources/primereact.min.css?url';
 
 import { areThereTracesOfUserEventHandling } from '~/server/db/events.server';
 

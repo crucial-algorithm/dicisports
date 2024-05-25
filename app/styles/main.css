@@ -1,5 +1,5 @@
 body {
-    @apply antialiased font-sans bg-amber-800
+    @apply antialiased font-sans;
 }
 
 :root {

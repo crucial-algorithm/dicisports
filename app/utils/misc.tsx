@@ -1,4 +1,4 @@
-import { fileTypeFromBuffer } from 'file-type';
+// import { fileTypeFromBuffer } from 'file-type';
 
 import type { FetcherWithComponents } from '@remix-run/react';
 import { json } from '@remix-run/react';
@@ -307,9 +307,10 @@ async function fileTypeFromUploadHandlerData(
 
   // Concatenate the chunks into a single buffer
   const buffer = Buffer.concat(chunks);
-  const fileType = await fileTypeFromBuffer(buffer);
+  // const fileType = await fileTypeFromBuffer(buffer);
 
-  return fileType ? { type: fileType.ext, buffer } : null;
+  // return fileType ? { type: fileType.ext, buffer } : null;
+  return null;
 }
 
 function formHelperReadDate(form: FormData, field: string) {

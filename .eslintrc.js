@@ -17,6 +17,11 @@ module.exports = {
       version: 27
     }
   },
+  parserOptions: {
+    tsconfigRootDir: __dirname,
+    project: './tsconfig.json',
+    ecmaVersion: 2022,
+  },
   rules: {
     quotes: [2, 'single', { avoidEscape: true }],
     semi: 1,
