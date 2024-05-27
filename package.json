@@ -22,7 +22,7 @@
     "typecheck": "tsc --skipLibCheck --noEmit -p tsconfig.check.json"
   },
   "prisma": {
-    "seed": "node --require esbuild-register prisma/seed.ts"
+    "seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "3.178.0",
@@ -90,7 +90,7 @@
     "cypress-browser-permissions": "1.1.0",
     "dotenv": "10.0.0",
     "esbuild-plugins-node-modules-polyfill": "1.6.3",
-    "esbuild-register": "3.2.1",
+    "tsx": "3.12.7",
     "eslint": "8.5.0",
     "eslint-config-prettier": "8.3.0",
     "eslint-import-resolver-typescript": "3.3.0",
