@@ -48,7 +48,7 @@ jobs:
           browser: chrome
           record: false
           build: npm run ci:build
-          start: npm run dev
+          start: npm run dev-vite
           spec: cypress/e2e/app/search.cy.ts
           wait-on: 'http://localhost:3000'
         env:
