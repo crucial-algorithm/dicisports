@@ -16,19 +16,35 @@ This starts your app in development mode, rebuilding assets on file changes.
 
 ## Deployment
 
-First, build your app for production:   
+1. Create a **namespace** for the **container registry** [here](https://console.scaleway.com/registry/namespaces) and follow the fist step - ***Sign in to namespace***.
+2. **Build your image**, **tag it** and **push it** to the namespace by doing so:
+```bash
+# Build image
+docker build . -t app-name --no-cache
+# Example
+docker build . -t dici-stg --no-cache
 
-```sh
-npm run build
+# Tag image
+docker tag dici-stg:tag rg.fr-par.scw.cloud/mynamspace/app-name:tag
+# Example
+docker tag dici-stg:latest rg.fr-par.scw.cloud/dici-stg/dici-stg:latest
+
+# Push image to Scaleway
+docker push rg.fr-par.scw.cloud/mynamespace/app-name:tag
+# Example
+docker push rg.fr-par.scw.cloud/dici-stg/dici-stg:latest
 ```
 
-Then run the app in production mode:
+***If something doesn't work, try it with `sudo`.***
 
-```sh
-npm start
-```
+3. Go into the **namespace you just created**, click on the "..." of the **image you just pushed** and click "Deploy".
+4. In the ***Deployment*** tab, make sure you add all ***Secrets/Environment variables***.
 
-Now you'll need to pick a host to deploy it to.
+### Setup repository for GitHub Actions
+Go into your **repository - Settings - Security/Secrets and variables - Actions - New repository secret** and add the following secrets:
+- **SCALEWAY_API_KEY**: If you followed this step by step, when you signed in to the namespace, you already created an API Key. Just get the ***SCW_SECRET_KEY*** value and paste it here.
+- **CONTAINER_REGISTRY_ENDPOINT**: Go into your namespace, "Namespace settings" and copy "***Registry endpoint***" value.
+- **CONTAINER_ID**: Go into your deployed serverless container. Your url should look something like this: ***console.scaleway.com/containers/namespaces/fr-par/namespace_id/containers/container_id/overview***. Get the ***container_id*** value and paste it into the GHA secret.
 
 ### Deploying changes to the database
 
