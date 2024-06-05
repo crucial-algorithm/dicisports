@@ -34,9 +34,7 @@ import {
   updateBookingStatus
 } from '~/server/db/booking.server';
 import { findEvent } from '~/server/db/events.server';
-import type {
-  RaceParticipantWithRaceParticipantAndTeam
-} from '~/server/db/participant.server';
+import type { RaceParticipantWithRaceParticipantAndTeam } from '~/server/db/participant.server';
 import {
   assignParticipantsBibNumber,
   findUserBookingParticipants
@@ -48,7 +46,6 @@ import {
   resetPaymentStatus
 } from '~/server/db/payments.server';
 import type { KCDHandle, UICartRow } from '~/types';
-import { sendBookingConfirmationEmail } from '~/server/email.server';
 import { badRequest, bookingAmount, getDomainUrl } from '~/utils/misc';
 import i18n from '~/server/i18n.server';
 import { createPaymentTransaction } from '~/server/utils/payments';
@@ -75,7 +72,7 @@ type LoaderData =
       event: Event;
       cart: UICartRow[];
       isBookingReadOnly: false;
-      unsuccessfulPayments: Payment[]; 
+      unsuccessfulPayments: Payment[];
       formContext: string;
       gatewayTransactionId: string;
       ourTransactionId: string;
@@ -170,19 +167,6 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     // check if for some reason the booking status is inconsistent
     if (booking.status !== CheckoutStatus.confirmed) {
       await updateBookingStatus(bookingId, CheckoutStatus.confirmed);
-    }
-
-    if (authedUser !== null) {
-      const event = await findEvent(eventId);
-      const cart = await findBookingCart(bookingId);
-
-      await sendBookingConfirmationEmail({
-        emailAddress: authedUser.email,
-        event,
-        booking,
-        cart,
-        userName: authedUser.name
-      });
     }
 
     return redirect(`/checkout/confirmation/${bookingId}`);
