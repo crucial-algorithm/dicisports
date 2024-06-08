@@ -51,7 +51,7 @@ import TransitionIndicator from '~/components/shared/TransitionIndicator';
 import Config from '~/server/config.server';
 
 import { LocationProvider } from '~/utils/LocationProvider';
-import { getLocationSession } from '~/routes/action/set-my-location';
+import { getLocationSession } from '~/server/location.server';
 
 import { findSports } from '~/server/db/reference.server';
 

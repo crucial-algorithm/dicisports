@@ -6,6 +6,9 @@ node_modules
 .env
 .idea
 
+prisma/seed.js
+prisma/seed.cjs
+
 /cypress/downloads
 /cypress/videos
 /cypress/screenshots

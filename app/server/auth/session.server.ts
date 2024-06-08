@@ -66,9 +66,9 @@ const sessionStorage = createCookieSessionStorage({
 });
 
 async function sendRecoverPasswordToken({
-                                          emailAddress,
-                                          domainUrl
-                                        }: {
+  emailAddress,
+  domainUrl
+}: {
   emailAddress: string;
   domainUrl: string;
 }) {
@@ -98,7 +98,7 @@ async function sendRecoverPasswordToken({
 async function getSession(request: Request) {
   const session = await sessionStorage.getSession(
     request.headers.get('Cookie')
-  );
+  ); 
   const initialValue = await sessionStorage.commitSession(session);
   const getSessionId = () => session.get(sessionIdKey) as string | undefined;
   const unsetSessionId = () => session.unset(sessionIdKey);
