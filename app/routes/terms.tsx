@@ -1,18 +1,16 @@
 // import type { MetaFunction } from '@remix-run/node';
 
-import TermsAndConditionsPT from '~/markdown/terms.md';
+import TermsAndConditionsPT from '~/markdown/terms.mdx';
 import Main from '~/components/shared/Main';
 
-// import { CanonicalMeta } from '~/utils/seo';
+import { CanonicalMeta } from '~/utils/seo';
 
-// TODO [MIGRATE TO V2]: reinstate Meta Function
-// export const meta: MetaFunction = CanonicalMeta;
+export const meta = CanonicalMeta;
 
 export default function Privacy() {
   return (
     <Main>
       <article className="prose dark:prose-invert">
-        {/* @ts-ignore */}
         <TermsAndConditionsPT />
       </article>
     </Main>

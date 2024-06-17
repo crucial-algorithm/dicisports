@@ -84,7 +84,7 @@ describe('Admin', () => {
         .get('#status-uyFgbFPB67YEnzZj82wA')
         .contains('Aprovado')
 
-        .request({ method: 'GET', url: Cypress.env('HTTP_CATCHER') })
+        .request({ method: 'GET', url: Cypress.env('MAILGUN_ENDPOINT') })
         .then(({ body }) => {
           expect(body.to).to.eq('geral@bikeservice.pt');
           expect(body.subject).to.eq(

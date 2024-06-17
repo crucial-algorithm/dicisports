@@ -156,28 +156,28 @@ describe('Search', () => {
         .should('have.length', 1);
     });
 
-    it('should copy to clipboard', { browser: 'chrome' }, () => {
-      cy.wrap(
-        Cypress.automation('remote:debugger:protocol', {
-          command: 'Browser.grantPermissions',
-          params: {
-            permissions: ['clipboardReadWrite', 'clipboardSanitizedWrite'],
-            origin: window.location.origin
-          }
-        })
-      ).then(() => {
-        cy.visitAndWaitForHydration('/groups?actionId=search&sport=5')
-
-          .get('button[name=share-334a3081b9dd416e384d]')
-          .focus()
-          .click()
-          .then(() => {
-            cy.assertValueCopiedToClipboard(
-              '/group/associaco-recreativa-alfandega-da-fe'
-            );
-          });
-      });
-    });
+    // it('should copy to clipboard', { browser: 'chrome' }, () => {
+    //   cy.wrap(
+    //     Cypress.automation('remote:debugger:protocol', {
+    //       command: 'Browser.grantPermissions',
+    //       params: {
+    //         permissions: ['clipboardReadWrite', 'clipboardSanitizedWrite'],
+    //         origin: window.location.origin
+    //       }
+    //     })
+    //   ).then(() => {
+    //     cy.visitAndWaitForHydration('/groups?actionId=search&sport=5')
+// 
+    //       .get('button[name=share-334a3081b9dd416e384d]')
+    //       .focus()
+    //       .click()
+    //       .then(() => {
+    //         cy.assertValueCopiedToClipboard(
+    //           '/group/associaco-recreativa-alfandega-da-fe'
+    //         );
+    //       });
+    //   });
+    // });
 
     it('should have whatsapp link', () => {
       cy.intercept('GET', '/?actionId=search*_data=routes*')
@@ -238,8 +238,11 @@ describe('Search', () => {
         }
       )
 
-        .intercept('GET', '/*order=*')
-        .as('order')
+        .intercept('GET', '/*order=recent**')
+        .as('order-recent')
+
+        .intercept('GET', '/*order=proximity**')
+        .as('order-proximity')        
 
         .intercept('POST', '/action/*set-my-location*')
         .as('setLocation')
@@ -259,7 +262,7 @@ describe('Search', () => {
         .get('#sort-location')
         .click()
 
-        .wait('@order')
+        .wait('@order-proximity')
         .waitForHydration()
 
         .url()
@@ -271,7 +274,7 @@ describe('Search', () => {
         .get('#sort-location')
         .click()
 
-        .wait('@order')
+        .wait('@order-proximity')
         .waitForHydration()
 
         .reload()

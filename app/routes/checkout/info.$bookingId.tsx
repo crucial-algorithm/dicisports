@@ -496,7 +496,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   }
 
   if (booking.userId !== userId) {
-    console.log(`User not authorized to access booking with owner = ${booking.userId}; Attempt by ${userId}`);
+    console.log(`User not authorized to access booking [${booking.id}] with owner = ${booking.userId}; Attempt by ${userId}`);
     return redirect('/');
   }
 

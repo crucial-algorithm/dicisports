@@ -1,11 +1,10 @@
 import type { MetaFunction } from '@remix-run/node';
 
-import OrganizerTermsPT from '~/markdown/organizers-terms.md';
+import OrganizerTermsPT from '~/markdown/organizers-terms.mdx';
 import Main from '~/components/shared/Main';
 
 import { CanonicalMeta } from '~/utils/seo';
 
-// TODO [MIGRATE TO V2]: reinstate Meta Function
 export const meta: MetaFunction = CanonicalMeta as MetaFunction;
 
 export default function Privacy() {

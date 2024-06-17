@@ -301,12 +301,13 @@ function Html({ lang }: { lang: string }) {
 
   // Support for cypress command that waits for HTML to be hydrated
   React.useEffect(
-    () =>
-      (
-        document.getElementsByTagName('body').item(0) as HTMLBodyElement
-      ).setAttribute('data-cy', 'ready'),
+    () => {
+      const body = document.getElementsByTagName('body').item(0) as HTMLBodyElement;
+      body.setAttribute('data-cy', 'ready');
+      body.setAttribute('data-cy-user', data.user ? 'logged-in' : 'logged-out');
+      
     [lang]
-  );
+});
 
   return (
     <html

@@ -3,7 +3,7 @@ import { Prisma, PrismaClient, Status } from '@prisma/client';
 
 import { db } from '~/server/db.server';
 import Id from '~/server/utils/Id.server';
-import type { CreateEventInput, Language } from '~/types';
+import type { CreateEventInput, EventWithRacesDifficultiesAndDocuments, Language } from '~/types';
 import {
   createDefaultPerks,
   createPerks,
@@ -18,10 +18,7 @@ import {
 
 const prisma = new PrismaClient();
 
-const eventWithRacesDifficultiesAndDocuments =
-  Prisma.validator<Prisma.EventArgs>()({
-    include: { races: true, difficulty: true, documents: true }
-  });
+
 
 const eventWithDocuments = Prisma.validator<Prisma.EventArgs>()({
   include: { documents: true }
@@ -51,7 +48,7 @@ const findEventSlimResult = Prisma.validator<Prisma.EventArgs>()({
   }
 });
 
-type EventWithRacesDifficultiesAndDocuments = Prisma.EventGetPayload<typeof eventWithRacesDifficultiesAndDocuments>;
+
 type EventWithDocuments = Prisma.EventGetPayload<typeof eventWithDocuments>;
 type SearchEventResults = Prisma.EventGetPayload<typeof searchEventResults>;
 type EventSlim = Prisma.EventGetPayload<typeof findEventSlimResult>;

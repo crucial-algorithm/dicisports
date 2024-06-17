@@ -302,6 +302,14 @@ type LocalStorageBookingMetaData = {
   confirmationEmailSent: boolean;
 };
 
+const eventWithRacesDifficultiesAndDocuments =
+  Prisma.validator<Prisma.EventArgs>()({
+    include: { races: true, difficulty: true, documents: true }
+  });
+
+type EventWithRacesDifficultiesAndDocuments = Prisma.EventGetPayload<typeof eventWithRacesDifficultiesAndDocuments>;
+
+
 export {
   NonNullProperties,
   MemberProfile,
@@ -345,7 +353,8 @@ export {
   OrganizerType,
   ResponseFeedback,
   LocalStorageBookingMetaData,
-  BookingList
+  BookingList,
+  EventWithRacesDifficultiesAndDocuments
 };
 
 // https://www.i18next.com/overview/typescript#argument-of-type-defaulttfuncreturn-is-not-assignable-to-parameter-of-type-xyz

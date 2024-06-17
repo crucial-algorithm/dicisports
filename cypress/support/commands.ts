@@ -6,6 +6,8 @@ declare global {
     interface Chainable {
       login(): Chainable<void>;
 
+      logout(): Chainable<void>;
+
       loginAdmin(): Chainable<void>;
 
       loginOrganizer(): Chainable<void>;
@@ -18,7 +20,9 @@ declare global {
 
       pickLocationInMap(triggerOpenMapButtonName: string): Chainable<void>;
 
-      pickLocationInInlinedMap(triggerOpenMapButtonName: string): Chainable<void>;
+      pickLocationInInlinedMap(
+        triggerOpenMapButtonName: string
+      ): Chainable<void>;
 
       wasImageLoaded(selector: string): Chainable<void>;
 
@@ -38,25 +42,44 @@ declare global {
   }
 }
 
+function loginHelper(user: string, password: string) {
+  cy.visitAndWaitForHydration('/login')
+    .get('input[name=email]')
+    .type(user)
+
+    .get('input[name=password]')
+    .type(password)
+
+    .get('form[action="/login"]')
+    .submit()
+
+    .get('body[data-cy-user=logged-in]');
+}
+
 function login() {
-  cy.setCookie(
-    'ds_root_session',
-    'eyJfX3Nlc3Npb25faWRfXyI6ImM0ZTFiNTY4LTBlMzAtNDY2ZC04ZmYwLWUxMGYyMTJlM2M1ZiJ9.JjNS%2B5DEc7mf3OkCnGLesD5pPb0NFMVYMU0imAzvxKU'
-  );
+  loginHelper('regular@gmail.com', 'Password1');
+}
+
+function logout() {
+  cy.request({
+    method: 'POST',
+    url: '/me',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'charset': 'UTF-8'
+    },
+    body: {
+      actionId: 'logout'
+    }
+  });
 }
 
 function loginAdmin() {
-  cy.setCookie(
-    'ds_root_session',
-    'eyJfX3Nlc3Npb25faWRfXyI6IjI5N2VmZWI4LTM5Y2YtNGI3NC05MzExLWMwODIzMzlkZTU1YSJ9.37yKylNYa4IFtwx6tM6dqYMU9wNPnlG28uvBeB18V60'
-  );
+  loginHelper('admin@gmail.com', 'Password1');
 }
 
 function loginOrganizer() {
-  cy.setCookie(
-    'ds_root_session',
-    'eyJfX3Nlc3Npb25faWRfXyI6ImE2ZDg5ZjNiLTFjZWUtNDYzMi1hNzU0LWY4NTc2M2ExOWJmOCJ9.ZB1rREpWNeNPCLgqJs58RGzDa1OrFao%2FGetqg3HBDe4'
-  );
+  loginHelper('organizer@gmail.com', 'Password1');
 }
 
 function pickOptionFromSelect(name: string, position: number) {
@@ -71,7 +94,11 @@ function pickOptionFromSelect(name: string, position: number) {
 
 function convertDateInput(value: string) {
   if (value.split('-').length === 1) {
-    return [value.substring(0, 4), value.substring(4, 6), value.substring(6)].map(Number);
+    return [
+      value.substring(0, 4),
+      value.substring(4, 6),
+      value.substring(6)
+    ].map(Number);
   }
 
   return value.split('-').map(Number);
@@ -217,12 +244,13 @@ function getRecoverPasswordUrl() {
   }
 
   return cy
-    .request({ method: 'GET', url: Cypress.env('HTTP_CATCHER') })
+    .request({ method: 'GET', url: Cypress.env('MAILGUN_ENDPOINT') })
     .then(({ body }) => {
+      console.log('body:', body)
       const url = extractUrl(body.text);
       const start = url.search('/magic');
 
-      return url.substr(start);
+      return url.substring(start);
     });
 }
 
@@ -235,6 +263,7 @@ function assertValueCopiedToClipboard(value: string) {
 }
 
 Cypress.Commands.add('login', login);
+Cypress.Commands.add('logout', logout);
 Cypress.Commands.add('loginAdmin', loginAdmin);
 Cypress.Commands.add('loginOrganizer', loginOrganizer);
 Cypress.Commands.add('pickOptionFromSelect', pickOptionFromSelect);
