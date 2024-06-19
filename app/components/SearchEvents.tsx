@@ -15,7 +15,7 @@ import type { Language } from '~/types';
 
 import { useTheme } from '~/utils/theme-provider';
 
-export default function SearchLocations({
+export default function SearchEvents({
   className,
   placeholder
 }: {} & Exclude<React.ComponentProps<'select'>, 'onSelect'>) {
@@ -90,7 +90,7 @@ type EventAutoCompleteOption = {
   value: string;
   label: string;
   image?: string;
-}
+};
 
 type EventsAutoCompleteProps = {
   id: string;
@@ -121,6 +121,9 @@ function EventsAutoComplete({
     { wait: 500 }
   );
   const [focused, setFocused] = useState<boolean>(false);
+  const [width, setWidth] = useState<number>(1024);
+  // 640 should align with tailwind config (check tailwind.config.js)
+  const tailwindBreakpoint = 640;
 
   function handleSelectChange(value: string) {
     onChange && onChange(value);
@@ -153,13 +156,14 @@ function EventsAutoComplete({
     setFocused(false);
   }
 
+  useEffect(() => {
+    setWidth(window.innerWidth);
+  }, []);
+
+  const isMobile = width <= tailwindBreakpoint;
+  
   return (
-    <div
-      className={clsx(className, {
-        'top-16': !focused,
-        'h-screen w-screen fixed top-0 left-0 bg-primary z-10': focused
-      })}
-    >
+    <PatchForMobileKeyboard focused={focused} isMobile={isMobile}>
       <Combobox onChange={handleSelectChange}>
         <div
           className={clsx({
@@ -170,9 +174,11 @@ function EventsAutoComplete({
           <div className="z-100">
             <Combobox.Input
               id={id}
-              className={clsx({
-                'input-text px-4 lg:px-11 rounded-full': !focused,
-                'input-text px-12 rounded-none': focused
+              className={clsx('input-text', {
+                'px-4 lg:px-11 rounded-full': !focused,
+                'px-12': focused,
+                'rounded-full': focused && !isMobile,
+                'rounded-none': focused && isMobile
               })}
               displayValue={display}
               placeholder={placeholder}
@@ -180,7 +186,7 @@ function EventsAutoComplete({
               // @ts-ignore
               onFocus={handleOpenOnFocus}
             />
-            {focused && (
+            {focused && isMobile && (
               <div
                 className="absolute top-3 left-2 rounded-full h-8 w-8 flex items-center justify-center active:bg-black active:bg-opacity-30 dark:active:bg-opacity-50"
                 onClick={handleBlur}
@@ -250,6 +256,24 @@ function EventsAutoComplete({
           </Transition>
         </div>
       </Combobox>
-    </div>
+    </PatchForMobileKeyboard>
   );
+}
+
+function PatchForMobileKeyboard({
+  focused,
+  isMobile,
+  children
+}: React.ComponentProps<'div'> & { focused: boolean; isMobile?: boolean}) {
+  if (focused && isMobile) {
+    return (
+      <div className="inset-0 absolute" aria-hidden="true">
+        <div className="h-screen w-screen fixed top-0 left-0 bg-primary z-10">
+          {children}
+        </div>
+      </div>
+    );
+  }
+
+  return <div className="px-0 mr-4 w-full search-select top-16">{children}</div>;
 }

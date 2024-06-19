@@ -31,6 +31,7 @@
 
   "confirmed": "Confirmado",
   "pending": "Pendente",
+  "AwaitingPayment": "Pendente",
   "canceled": "Cancelado",
   "checkout": "Carrinho",
   "Search": "Procurar",

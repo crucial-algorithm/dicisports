@@ -174,19 +174,6 @@ export const loader: LoaderFunction = async ({ request, params }) => {
       await updateBookingStatus(bookingId, CheckoutStatus.confirmed);
     }
 
-    if (authedUser !== null) {
-      const event = await findEvent(eventId);
-      const cart = await findBookingCart(bookingId);
-
-      await sendBookingConfirmationEmail({
-        emailAddress: authedUser.email,
-        event,
-        booking,
-        cart,
-        userName: authedUser.name
-      });
-    }
-
     return redirect(`/checkout/confirmation/${bookingId}`);
   }
 

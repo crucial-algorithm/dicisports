@@ -232,7 +232,9 @@ export default function Index() {
   function handleApplyLocation(loc: LocationInPicker | null) {
     setLocation(loc);
     setSelectingLocation(false);
-    submit(gatherFormData('region', loc?.value || ''));
+    submit(gatherFormData('region', loc?.value || ''), {
+      preventScrollReset: true
+    });
   }
 
   function handleApplyLocationDesktop(loc: string | number) {
@@ -250,7 +252,9 @@ export default function Index() {
   function handleApplySport(sport: Sport | null) {
     setSport(sport);
     setSelectingSport(false);
-    submit(gatherFormData('sport', String(sport?.id || '')));
+    submit(gatherFormData('sport', String(sport?.id || '')), {
+      preventScrollReset: true
+    });
   }
 
   function handleApplySportDesktop(sport: number | string | null) {
@@ -265,7 +269,7 @@ export default function Index() {
     const v = map3StateToTimed(o);
 
     setTimedEventFilter(v);
-    submit(gatherFormData('timed', v || ''));
+    submit(gatherFormData('timed', v || ''), { preventScrollReset: true });
   }
 
   function gatherFormData(property: string, value: string) {

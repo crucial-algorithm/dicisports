@@ -1,5 +1,6 @@
-import type { ActionFunction } from '@remix-run/node';
+import type { ActionFunction, LoaderFunction } from '@remix-run/node';
 import { json } from '@remix-run/node';
+import { redirect } from 'react-router';
 
 import { requireUser } from '~/server/auth/session.server';
 import {
@@ -7,6 +8,10 @@ import {
   findGroup,
   removeGroupFromFavorites
 } from '~/server/db/groups.server';
+
+export const loader: LoaderFunction = async () => {
+  return redirect('/');
+};
 
 export const action: ActionFunction = async ({ request, params }) => {
   const user = await requireUser(

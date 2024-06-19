@@ -1157,7 +1157,7 @@ describe('Event', () => {
         .get('#book-race-2Q8dMm4gz7b2GeuGRocj')
         .should('have.prop', 'href')
         .and((l) => {
-          expect(l).to.eq('https://registerandgo.net/?evento=1019');
+          expect(l).to.eq('https://registerandgo.net/?evento=1019&utm_source=dicisports');
         });
     });
 
