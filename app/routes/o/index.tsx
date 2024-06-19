@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 
 import type { Event } from '@prisma/client';
 
-import React from 'react';
+import type React from 'react';
 import clsx from 'clsx';
 
 import { H4, H5 } from '~/components/shared/typography';
