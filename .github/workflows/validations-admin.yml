@@ -40,6 +40,10 @@ jobs:
       - name: Reset permissions
         run: chmod -R 777 .
 
+      - name: Transpile seed files
+        run: npx tsc --resolveJsonModule --esModuleInterop prisma/seed.ts
+        run: mv prisma/seed.js prisma/seed.cjs
+
       - name: Cypress e2e tests
         uses: cypress-io/github-action@v4.2.0
         with:
