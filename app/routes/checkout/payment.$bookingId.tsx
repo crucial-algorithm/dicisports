@@ -46,7 +46,6 @@ import {
   resetPaymentStatus
 } from '~/server/db/payments.server';
 import type { KCDHandle, UICartRow } from '~/types';
-import { sendBookingConfirmationEmail } from '~/server/email.server';
 import {
   badRequest,
   bookingAmount,

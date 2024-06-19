@@ -310,7 +310,7 @@ const eventWithRacesDifficultiesAndDocuments =
 type EventWithRacesDifficultiesAndDocuments = Prisma.EventGetPayload<typeof eventWithRacesDifficultiesAndDocuments>;
 
 
-export {
+export type {
   NonNullProperties,
   MemberProfile,
   Await,
