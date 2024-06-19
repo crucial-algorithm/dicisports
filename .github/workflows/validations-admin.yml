@@ -3,7 +3,7 @@ on: pull_request
 
 jobs:
   e2e:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     name: E2E on Chrome
 
     services:
@@ -55,7 +55,7 @@ jobs:
         with:
           browser: chrome
           record: false
-          build: npm run build
+          build: npm run ci:build
           start: npm run start
           spec: cypress/e2e/app/admin.cy.ts
           wait-on: 'http://localhost:3000'
