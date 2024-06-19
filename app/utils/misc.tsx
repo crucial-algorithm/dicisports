@@ -1,5 +1,3 @@
-// import { fileTypeFromBuffer } from 'file-type';
-
 import type { FetcherWithComponents } from '@remix-run/react';
 import { json } from '@remix-run/react';
 import type { Booking } from '@prisma/client';
@@ -295,24 +293,6 @@ function maintainBookingLocalStorageMetaData(bookingId: string): {
   };
 }
 
-//TODO [MIGRATE TO V2]: re-enable this function behavior (was causing a polifill error message)
-async function fileTypeFromUploadHandlerData(
-  data: AsyncIterable<Uint8Array>
-): Promise<{ type: string; buffer: Buffer } | null> {
-  const chunks = [];
-
-  for await (const chunk of data) {
-    chunks.push(chunk);
-  }
-
-  // Concatenate the chunks into a single buffer
-  const buffer = Buffer.concat(chunks);
-  // const fileType = await fileTypeFromBuffer(buffer);
-
-  // return fileType ? { type: fileType.ext, buffer } : null;
-  return null;
-}
-
 function formHelperReadDate(form: FormData, field: string) {
   const rawDate = (form.get(field) as string) || undefined;
 
@@ -390,7 +370,6 @@ export {
   validatePtVatNumber,
   bookingRedirectRoute,
   maintainBookingLocalStorageMetaData,
-  fileTypeFromUploadHandlerData,
   formHelperReadDate,
   fetcherType
 };

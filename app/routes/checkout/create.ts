@@ -44,7 +44,13 @@ export const loader: LoaderFunction = async ({ request }) => {
       //   the generated client id in this page, it actually assigns a different client id to the user on redirect.
       // This causes an access restriction in `/checkout/info/` because a different user is trying to access the booking. 
       // TODO: We need to find a way to handle this.
-      await createAnonymousUser(userId, `bid-${bookingId}`);
+      try {
+        await createAnonymousUser(userId, `bid-${bookingId}`);
+      } catch (e) {
+        // If we fail to create an anonymous user, we should still continue
+        console.log(`Failed to create anonymous user ${userId}, exception caught ${bookingId}, error below:`);
+        console.error(e);
+      }
     }
 
     await createInitialBookingFlow(bookingId, userId, eventId, raceId, t);

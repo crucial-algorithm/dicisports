@@ -12,7 +12,8 @@ import { z, ZodError } from 'zod';
 
 import { requireUser } from '~/server/auth/session.server';
 import i18n from '~/server/i18n.server';
-import { badRequest, fileTypeFromUploadHandlerData } from '~/utils/misc';
+import { badRequest } from '~/utils/misc';
+import { fileTypeFromUploadHandlerData } from '~/utils/misc.server';
 import { uploadToS3 } from '~/server/utils/s3';
 import { findEvent, updateEventRegulation } from '~/server/db/events.server';
 import { NotFound, Unauthorized } from '~/server/utils/misc';
