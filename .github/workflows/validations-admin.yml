@@ -45,11 +45,6 @@ jobs:
           npx tsc --resolveJsonModule --esModuleInterop prisma/seed.ts
           mv prisma/seed.js prisma/seed.cjs
 
-      - name: Prepare database
-        run: | 
-          npx prisma migrate reset
-          npx prisma db seed
-
       - name: Cypress e2e tests
         uses: cypress-io/github-action@v4.2.0
         with:
