@@ -45,16 +45,23 @@ jobs:
           npx tsc --resolveJsonModule --esModuleInterop prisma/seed.ts
           mv prisma/seed.js prisma/seed.cjs
 
+      - name: Prepare database
+        run: | 
+          npx prisma migrate reset
+          npx prisma db seed
+
       - name: Cypress e2e tests
         uses: cypress-io/github-action@v4.2.0
         with:
           browser: chrome
           record: false
-          build: npm run ci:build
-          start: npm run dev
+          build: npm run build
+          start: npm run start
           spec: cypress/e2e/app/admin.cy.ts
           wait-on: 'http://localhost:3000'
         env:
+          REMIX_DEV_ORIGIN: http://localhost:3000
+
           CY_REQUEST_TIMEOUT: 15000
           CY_RESPONSE_TIMEOUT: 90000
           CY_DEFAULT_COMMAND_TIMEOUT: 30000
