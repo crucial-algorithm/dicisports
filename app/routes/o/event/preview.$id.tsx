@@ -22,7 +22,7 @@ export const handle: { id: string; i18n: string[] } = {
 };
 
 export const loader: LoaderFunction = async ({ params, request }) => {
-  const user = await getUser(request);
+  const user: Omit<User, 'password' | 'salt'> | null = await getUser(request);
   const id = params.id as string;
   const event = await findEventWithRacesAndDocuments(id);
 
@@ -34,7 +34,7 @@ export const loader: LoaderFunction = async ({ params, request }) => {
 
 
 async function loadDisplayEventData(
-  user: User | null,
+  user: Omit<User, 'password' | 'salt'> | null,
   event: Event | null
 ) {
   let organizer: Organizer | null = null;

@@ -168,7 +168,7 @@ async function getSession(request: Request) {
   };
 }
 
-async function getUser(request: Request) {
+async function getUser(request: Request): Promise<User | null> {
   const { session } = await getSession(request);
 
   const token = session.get(sessionIdKey) as string | undefined;
