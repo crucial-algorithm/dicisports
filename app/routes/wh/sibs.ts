@@ -73,7 +73,7 @@ export const action: ActionFunction = async ({ request }) => {
           data: {
             status: CheckoutStatus.pending
           }
-        })
+        });
 
         console.log('booking(s) updated to pending due to payment decline', payment.bookingId);
 

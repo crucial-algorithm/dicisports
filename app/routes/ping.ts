@@ -1,3 +1,5 @@
+// Required locally to run `npm run start` after `npm run build`;
+// This is also the method used in GHA
 import type { ActionFunction, LoaderFunction } from '@remix-run/node';
 import { json } from '@remix-run/node';
 

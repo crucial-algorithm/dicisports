@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 
 import type { Event } from '@prisma/client';
 
-import type React from 'react';
+import type { ComponentProps } from 'react';
 import clsx from 'clsx';
 
 import { H4, H5 } from '~/components/shared/typography';
@@ -107,7 +107,7 @@ export default function OrganizerIndexRoute() {
 type EventEntryProps = {
   event: Event;
   sports: Sport[];
-} & React.ComponentProps<'div'>;
+} & ComponentProps<'div'>;
 
 function EventEntry({ event, sports, className }: EventEntryProps) {
   const { t } = useTranslation('organizer');
@@ -160,7 +160,7 @@ function PlaceholderImg({ event, img }: PlaceholderImgProps) {
 }
 
 function RaceImage({ event, img }: { event: Event; img?: string }) {
-  function Wrapper({ children }: {} & React.ComponentProps<'div'>) {
+  function Wrapper({ children }: {} & ComponentProps<'div'>) {
     return <div className="w-[50px] h-[50px]">{children}</div>;
   }
 

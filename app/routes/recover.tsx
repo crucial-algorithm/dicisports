@@ -35,7 +35,7 @@ type ActionData = {
   },
   successMessage: string | null
 }
-// TODO [MIGRATE TO V2]: reinstate Meta Function
+
 export const meta: MetaFunction = CanonicalMeta as MetaFunction;
 
 export const loader: LoaderFunction = async ({ request }) => {

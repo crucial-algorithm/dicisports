@@ -29,7 +29,6 @@ type LoaderData = {
   genericImage: string;
 };
 
-// TODO [MIGRATE TO V2]: reinstate Meta Function
 export const meta: MetaFunction<typeof loader> = ({ data, location, matches }) => {
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const { i18n } = useTranslation();

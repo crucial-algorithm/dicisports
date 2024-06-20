@@ -28,6 +28,8 @@ export default defineConfig({
   },
   resolve: {
     alias: {
+      // Issue: https://github.com/prisma/prisma/discussions/10767
+      // Workaround from: https://github.com/prisma/prisma/issues/12504#issuecomment-2119346157
       '.prisma/client/index-browser': './node_modules/.prisma/client/index-browser.js'
     }
   },

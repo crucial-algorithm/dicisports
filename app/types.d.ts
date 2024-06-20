@@ -7,11 +7,12 @@ import type {
   Organizer,
   OrganizerType as DBOrganizerType,
   PaymentMethod,
-  Prisma,
   Sport as DBSport,
   Status as EventStatus,
   User as DBUser
 } from '@prisma/client';
+
+import { Prisma } from '@prisma/client';
 
 import type { findBookingCart, findUserBookingsList } from '~/server/db/booking.server';
 import type { calculateRaceNMV } from '~/server/financials.server';

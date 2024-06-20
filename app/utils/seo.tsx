@@ -46,7 +46,6 @@ function getOpenGraphMeta({
 // TODO: using useTranslation hook was failing - find other way to access resources and add description to translation
 const DEFAULT_DESCRIPTION = 'Dicisports.com é o ponto de encontro de todos os desportistas. Encontra grupos com quem praticar as tuas actividades favoritas e eventos onde participar. Um só lugar, todos os desportos.';
 
-// TODO [MIGRATE TO V2]: reinstate Meta Function
 const CanonicalMeta: MetaFunction<RootLoaderData> = ({ location, matches }) => {
   //eslint-disable-next-line react-hooks/rules-of-hooks
  const { i18n } = useTranslation();

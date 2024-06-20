@@ -246,7 +246,7 @@ function getRecoverPasswordUrl() {
   return cy
     .request({ method: 'GET', url: Cypress.env('MAILGUN_ENDPOINT') })
     .then(({ body }) => {
-      console.log('body:', body)
+      console.log('body:', body);
       const url = extractUrl(body.text);
       const start = url.search('/magic');
 
