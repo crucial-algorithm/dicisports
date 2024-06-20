@@ -300,14 +300,14 @@ function Html({ lang }: { lang: string }) {
   });
 
   // Support for cypress command that waits for HTML to be hydrated
-  React.useEffect(
-    () => {
-      const body = document.getElementsByTagName('body').item(0) as HTMLBodyElement;
-      body.setAttribute('data-cy', 'ready');
-      body.setAttribute('data-cy-user', data.user ? 'logged-in' : 'logged-out');
-      
-    [lang]
-});
+  React.useEffect(() => {
+    const body = document
+      .getElementsByTagName('body')
+      .item(0) as HTMLBodyElement;
+
+    body.setAttribute('data-cy', 'ready');
+    body.setAttribute('data-cy-user', data.user ? 'logged-in' : 'logged-out');
+  }, [data.user]);
 
   return (
     <html

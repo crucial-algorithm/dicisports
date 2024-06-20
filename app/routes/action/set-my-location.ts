@@ -1,5 +1,7 @@
 import type { ActionFunction } from '@remix-run/node';
+
 import { json, redirect } from '@remix-run/node';
+
 import { getLocationSession } from '~/server/location.server';
 
 
@@ -9,7 +11,7 @@ export const action: ActionFunction = async ({ request }) => {
   const latitude = form.get('latitude');
   const longitude = form.get('longitude');
 
-  if (isNaN(Number(latitude)) || isNaN(Number(longitude)) ) {
+  if (Number.isNaN(Number(latitude)) || Number.isNaN(Number(longitude)) ) {
     return json({
       success: false,
       message: `coordinates are invalid (${latitude},${longitude})`

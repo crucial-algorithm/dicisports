@@ -28,9 +28,15 @@ import type { FileUploadHandlerEvent } from 'primereact/fileupload';
 
 import mapBoxGlCss from 'mapbox-gl/dist/mapbox-gl.css?url';
 
-import type { ChangeEvent } from 'react';
-import type * as React from 'react';
-import { useEffect, useRef, useState } from 'react';
+import {
+  useEffect,
+  useRef,
+  useState,
+  type ChangeEvent,
+  type MouseEvent,
+  type FocusEvent,
+  type KeyboardEvent
+} from 'react';
 
 import { useTranslation } from 'react-i18next';
 
@@ -614,7 +620,7 @@ export default function OrganizerEventRoute() {
     }
   }
 
-  function handleDeletePerk(e: React.MouseEvent) {
+  function handleDeletePerk(e: MouseEvent) {
     const perkId = e.currentTarget.id;
 
     if (!perkId) {
@@ -626,7 +632,7 @@ export default function OrganizerEventRoute() {
     setPerks(newPerks);
   }
 
-  function handleOnCreatePerk(e: React.FocusEvent<HTMLInputElement>) {
+  function handleOnCreatePerk(e: FocusEvent<HTMLInputElement>) {
     if (!e.target.value) {
       return null;
     }
@@ -634,7 +640,7 @@ export default function OrganizerEventRoute() {
     addPerk(e?.target.value);
   }
 
-  function handlerAddPerkOnEnter(e: React.KeyboardEvent) {
+  function handlerAddPerkOnEnter(e: KeyboardEvent) {
     if (e.key !== 'Enter') {
       return;
     }
@@ -643,7 +649,7 @@ export default function OrganizerEventRoute() {
     e.preventDefault();
   }
 
-  function handlerCancelEnter(e: React.KeyboardEvent) {
+  function handlerCancelEnter(e: KeyboardEvent) {
     if (e.key !== 'Enter') {
       return;
     }

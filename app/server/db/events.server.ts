@@ -18,8 +18,6 @@ import {
 
 const prisma = new PrismaClient();
 
-
-
 const eventWithDocuments = Prisma.validator<Prisma.EventArgs>()({
   include: { documents: true }
 });

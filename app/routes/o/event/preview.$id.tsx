@@ -4,6 +4,8 @@ import { useLoaderData } from '@remix-run/react';
 
 import { useTranslation } from 'react-i18next';
 
+import type { Organizer, User, Event } from '@prisma/client';
+
 import { ButtonLink } from '~/components/shared/Button';
 import { H6 } from '~/components/shared/typography';
 
@@ -11,7 +13,6 @@ import { getUser } from '~/server/auth/session.server';
 import { findEventWithRacesAndDocuments, findUserFavoriteEvent } from '~/server/db/events.server';
 import EventDisplayRoute from '~/routes/($lang).event.$slug';
 import { findOrganizer } from '~/server/db/organizer.server';
-import { Organizer, User, Event } from '@prisma/client';
 import { findEventRaces } from '~/server/db/races.server';
 import { findEventPerks } from '~/server/db/perks.server';
 

@@ -1,11 +1,15 @@
+import { execSync } from 'node:child_process';
+
 import { defineConfig } from 'vite';
 import { vitePlugin as remix } from '@remix-run/dev';
 import { installGlobals } from '@remix-run/node';
 import tsconfigPaths from 'vite-tsconfig-paths';
 import envOnly from 'vite-env-only';
 import { cjsInterop } from 'vite-plugin-cjs-interop';
+
 import { createRoutesFromFolders } from '@remix-run/v1-route-convention';
-import { execSync } from 'child_process';
+
+
 import mdx from '@mdx-js/rollup';
 
 
@@ -24,7 +28,7 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      ".prisma/client/index-browser": "./node_modules/.prisma/client/index-browser.js"
+      '.prisma/client/index-browser': './node_modules/.prisma/client/index-browser.js'
     }
   },
   plugins: [
