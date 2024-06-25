@@ -7,11 +7,12 @@ import type {
   Organizer,
   OrganizerType as DBOrganizerType,
   PaymentMethod,
-  Prisma,
   Sport as DBSport,
   Status as EventStatus,
   User as DBUser
 } from '@prisma/client';
+
+import { Prisma } from '@prisma/client';
 
 import type { findBookingCart, findUserBookingsList } from '~/server/db/booking.server';
 import type { calculateRaceNMV } from '~/server/financials.server';
@@ -302,7 +303,15 @@ type LocalStorageBookingMetaData = {
   confirmationEmailSent: boolean;
 };
 
-export {
+const eventWithRacesDifficultiesAndDocuments =
+  Prisma.validator<Prisma.EventArgs>()({
+    include: { races: true, difficulty: true, documents: true }
+  });
+
+type EventWithRacesDifficultiesAndDocuments = Prisma.EventGetPayload<typeof eventWithRacesDifficultiesAndDocuments>;
+
+
+export type {
   NonNullProperties,
   MemberProfile,
   Await,
@@ -345,7 +354,8 @@ export {
   OrganizerType,
   ResponseFeedback,
   LocalStorageBookingMetaData,
-  BookingList
+  BookingList,
+  EventWithRacesDifficultiesAndDocuments
 };
 
 // https://www.i18next.com/overview/typescript#argument-of-type-defaulttfuncreturn-is-not-assignable-to-parameter-of-type-xyz

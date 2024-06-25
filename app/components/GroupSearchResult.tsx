@@ -11,6 +11,7 @@ import CopyToClipboard from '~/components/shared/CopyToClipboard';
 import WhatsApp from '~/components/shared/icons/WhatsApp';
 import { Notification } from '~/components/shared/NotificationMessage';
 import type { Group, GroupSearchResult } from '~/types';
+import { fetcherType } from '~/utils/misc';
 
 export default function GroupResult({
   group,
@@ -56,14 +57,21 @@ export default function GroupResult({
   }
 
   useEffect(() => {
-    if (favorite.type === 'done' && favorite.data.ok) {
-      if (ref.current) {
-        (ref.current as HTMLFormElement).reset();
+    const typeOfFetcher = fetcherType(favorite);
+    const favoriteData = favorite.data as
+      | { ok: boolean; action: string }
+      | undefined;
+
+    if (typeOfFetcher === 'done' && favoriteData) {
+      if (favoriteData.ok && favoriteData.action) {
+        if (ref.current) {
+          (ref.current as HTMLFormElement).reset();
+        }
+        setMessage(
+          favoriteData.action === 'add' ? favAddedMessage : favRemovedMessage
+        );
+        showFavoriteAddedNotification();
       }
-      setMessage(
-        favorite.data.action === 'add' ? favAddedMessage : favRemovedMessage
-      );
-      showFavoriteAddedNotification();
     }
   }, [
     favorite,

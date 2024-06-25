@@ -226,8 +226,8 @@ describe('Event', () => {
 
   context('Maintenance', () => {
     beforeEach(() => {
-      cy.loginOrganizer();
       cy.task('db:reset');
+      cy.loginOrganizer();
       cy.task('clearDownloadFolder');
     });
 
@@ -627,7 +627,8 @@ describe('Event', () => {
     });
 
     it('should not access a preview if user did not create such event', () => {
-      cy.login()
+      cy.logout()
+        .login()
         .visitAndWaitForHydration('/o/event/preview/MY4bvgxDbMtGv8rbYe5d')
 
         .get('p[data-cy=event-not-found]')
@@ -671,8 +672,7 @@ describe('Event', () => {
     });
 
     it('should create race', () => {
-      cy.loginOrganizer()
-        .visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d/race/new')
+      cy.visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d/race/new')
 
         .get('input[name=name]')
         .type('a new race')
@@ -729,8 +729,7 @@ describe('Event', () => {
     });
 
     it('should update race', () => {
-      cy.loginOrganizer()
-        .visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d', {
+      cy.visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d', {
           onBeforeLoad(win: Cypress.AUTWindow) {
             win.localStorage.setItem('cypress.mapbox', 'test');
           }
@@ -769,9 +768,7 @@ describe('Event', () => {
     });
 
     it('should be able to upload a regulation pdf', () => {
-      cy.loginOrganizer()
-
-        .intercept('GET', '/o/event/*?_data=routes*')
+      cy.intercept('GET', '/o/event/*?_data=routes*')
         .as('EventRequests')
         .visitAndWaitForHydration('/o')
 
@@ -799,9 +796,7 @@ describe('Event', () => {
     });
 
     it('should be able to upload a regulation inline', () => {
-      cy.loginOrganizer()
-
-        .intercept('GET', '/o/event/*?_data=routes*')
+      cy.intercept('GET', '/o/event/*?_data=routes*')
         .as('EventRequests')
         .visitAndWaitForHydration('/o')
 
@@ -845,8 +840,7 @@ describe('Event', () => {
     });
 
     it('should be able to update inline regulation', () => {
-      cy.loginOrganizer()
-        .visitAndWaitForHydration('/o/event/gLqrDfMx6qkTHn6hoZqA', {
+      cy.visitAndWaitForHydration('/o/event/gLqrDfMx6qkTHn6hoZqA', {
           onBeforeLoad(win: Cypress.AUTWindow) {
             win.localStorage.setItem('cypress.mapbox', 'test');
           }
@@ -873,8 +867,7 @@ describe('Event', () => {
     });
 
     it('should create race without price early bird', () => {
-      cy.loginOrganizer()
-        .visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d/race/new')
+      cy.visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d/race/new')
 
         .get('input[name=name]')
         .type('a new race')
@@ -1297,8 +1290,7 @@ describe('Event', () => {
     });
 
     it('Should delete event', () => {
-      cy.loginOrganizer()
-        .visitAndWaitForHydration('/o/event/bQmGXYkbhJetjk6mniMt')
+      cy.visitAndWaitForHydration('/o/event/bQmGXYkbhJetjk6mniMt')
 
         .intercept('POST', '/o/event/bQmGXYkbhJetjk6mniMt*')
         .as('DeleteEvent')

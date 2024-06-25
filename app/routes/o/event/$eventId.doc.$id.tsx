@@ -1,6 +1,5 @@
-import { Readable } from 'stream';
+import { Readable } from 'node:stream';
 
-import * as React from 'react';
 import { useRef, useState } from 'react';
 
 import { useActionData, useLoaderData } from '@remix-run/react';
@@ -33,7 +32,8 @@ import Main from '~/components/shared/Main';
 import { requireUser } from '~/server/auth/session.server';
 import { createDocument, findDocument, updateDocument } from '~/server/documents.server';
 import i18n from '~/server/i18n.server';
-import { badRequest, fileTypeFromUploadHandlerData } from '~/utils/misc';
+import { badRequest } from '~/utils/misc';
+import { fileTypeFromUploadHandlerData } from '~/utils/misc.server';
 import { uploadToS3 } from '~/server/utils/s3';
 import Id from '~/server/utils/Id.server';
 import { findEvent } from '~/server/db/events.server';
@@ -128,7 +128,7 @@ export const action: ActionFunction = async ({ request, params }) => {
 
       const prefix = `events/${event.createdAt.getFullYear()}${String(event.createdAt.getMonth() + 1).padStart(2, '0')}/${eventId}`;
       const key = await uploadToS3(
-        Readable.from(file.buffer),
+        Readable.from([file.buffer]),
         prefix,
         `${Id()}.${file.type}`
       );

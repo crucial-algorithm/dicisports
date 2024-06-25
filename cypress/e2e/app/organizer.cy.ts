@@ -126,8 +126,8 @@ describe('Organizer', () => {
         .should('exist')
 
         // Making two requests to clear out the last one on HTTP_CATCHER
-        .request({ method: 'GET', url: Cypress.env('HTTP_CATCHER') })
-        .request({ method: 'GET', url: Cypress.env('HTTP_CATCHER') })
+        .request({ method: 'GET', url: Cypress.env('MAILGUN_ENDPOINT') })
+        .request({ method: 'GET', url: Cypress.env('MAILGUN_ENDPOINT') })
         .then(({ body }) => {
           expect(body.to).to.eq('info@montanhadosamigos.com');
           expect(body.subject).to.eq(
@@ -322,7 +322,7 @@ describe('Organizer', () => {
         .get('[data-cy=pending-validation]')
         .should('exist')
 
-        .request({ method: 'GET', url: Cypress.env('HTTP_CATCHER') })
+        .request({ method: 'GET', url: Cypress.env('MAILGUN_ENDPOINT') })
         .then(({ body }) => {
           expect(body.to).to.eq('admin@gmail.com, admin1@gmail.com');
           expect(body.subject).to.eq('Organizador Montanha dos Amigos à espera de revisão');

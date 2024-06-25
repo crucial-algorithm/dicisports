@@ -1,11 +1,11 @@
 describe('Checkout', () => {
-  context('Maintenance: unauthenticated', () => {
-    beforeEach(() => {
-      cy.task('db:reset');
-      cy.task('clearDownloadFolder');
-      clearHttpCatcher();
-    });
+  beforeEach(() => {
+    cy.task('db:reset');
+    cy.task('clearDownloadFolder');
+    clearHttpCatcher();
+  });
 
+  context('Maintenance: unauthenticated', () => {
     it('Should add race to cart and redirect to form route from event page', () => {
       cy.intercept('GET', '/checkout/create*')
         .as('selectRace')
@@ -24,15 +24,24 @@ describe('Checkout', () => {
     });
 
     it('Should fill form and save participant', () => {
-      registerParticipant('love-tiles-douro-granfondo-2023', 'AhowRdNWCBQWSuivSt7h');
+      registerParticipant(
+        'love-tiles-douro-granfondo-2023',
+        'AhowRdNWCBQWSuivSt7h'
+      );
     });
 
     it('should book a race', () => {
-      bookParticipant('love-tiles-douro-granfondo-2023', 'AhowRdNWCBQWSuivSt7h');
+      bookParticipant(
+        'love-tiles-douro-granfondo-2023',
+        'AhowRdNWCBQWSuivSt7h'
+      );
     });
 
     it('should send automated email after completing booking', () => {
-      bookParticipant('love-tiles-douro-granfondo-2023', 'AhowRdNWCBQWSuivSt7h');
+      bookParticipant(
+        'love-tiles-douro-granfondo-2023',
+        'AhowRdNWCBQWSuivSt7h'
+      );
       cy.waitForHydration()
 
         .location()
@@ -96,7 +105,10 @@ describe('Checkout', () => {
     });
 
     it('should display checkbox for organizer campaign and corresponding validations', () => {
-      bookParticipant('love-tiles-douro-granfondo-2023', 'AhowRdNWCBQWSuivSt7h');
+      bookParticipant(
+        'love-tiles-douro-granfondo-2023',
+        'AhowRdNWCBQWSuivSt7h'
+      );
 
       cy.location()
         .should((l) => {
@@ -318,16 +330,11 @@ describe('Checkout', () => {
   });
 
   context('Maintenance: authenticated', () => {
-    beforeEach(() => {
-      cy.task('db:reset');
-      cy.task('clearDownloadFolder');
-      clearHttpCatcher();
-      cy.login();
-    });
-
     it('Should add race to cart and redirect to form route from event page', () => {
       cy.intercept('GET', '/checkout/create*')
         .as('selectRace')
+
+        .login()
 
         .visitAndWaitForHydration('/event/trail-do-zezere')
 
@@ -345,6 +352,8 @@ describe('Checkout', () => {
     it('Should add/remove race', () => {
       cy.intercept('POST', '/checkout/cart/iZrqWniNHZba9n4WQTmb*')
         .as('ManageRace')
+
+        .login()
 
         .visitAndWaitForHydration('/checkout/cart/iZrqWniNHZba9n4WQTmb')
 
@@ -366,69 +375,76 @@ describe('Checkout', () => {
     });
 
     it('should apply regular price to booking', () => {
-      cy.visitAndWaitForHydration('/pt/event/event-2-verify-dates')
+      cy.login()
 
-      .intercept('GET', '/checkout/create*')
-      .as('CreateBooking')
+        .visitAndWaitForHydration('/pt/event/event-2-verify-dates')
 
-      .get('button[name=race-a-regular-race-price]')
-      .click()
+        .intercept('GET', '/checkout/create*')
+        .as('CreateBooking')
 
-      .wait('@CreateBooking')
+        .get('button[name=race-a-regular-race-price]')
+        .click()
 
-      .location()
-      .should((l) => {
-        expect(l.pathname).to.include('/checkout/info');
-      })
-      .get('[data-cy=total-price]')
-      .contains('15€');
+        .wait('@CreateBooking')
+
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.include('/checkout/info');
+        })
+        .get('[data-cy=total-price]')
+        .contains('15€');
     });
 
     it('should apply early bird price to booking', () => {
-      cy.visitAndWaitForHydration('/pt/event/event-2-verify-dates')
+      cy.login()
 
-      .intercept('GET', '/checkout/create*')
-      .as('CreateBooking')
+        .visitAndWaitForHydration('/pt/event/event-2-verify-dates')
 
-      .get('button[name=race-a-early-bird-pricexx]')
-      .click()
+        .intercept('GET', '/checkout/create*')
+        .as('CreateBooking')
 
-      .wait('@CreateBooking')
+        .get('button[name=race-a-early-bird-pricexx]')
+        .click()
 
-      .location()
-      .should((l) => {
-        expect(l.pathname).to.include('/checkout/info');
-      })
-      .get('[data-cy=total-price]')
-      .contains('10€');
+        .wait('@CreateBooking')
+
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.include('/checkout/info');
+        })
+        .get('[data-cy=total-price]')
+        .contains('10€');
     });
 
     it('should apply late bird price to booking', () => {
-      cy.visitAndWaitForHydration('/pt/event/event-2-verify-dates')
+      cy.login()
 
-      .intercept('GET', '/checkout/create*')
-      .as('CreateBooking')
+        .visitAndWaitForHydration('/pt/event/event-2-verify-dates')
 
-      .get('button[name=race-a-penalty-price-to-u]')
-      .click()
+        .intercept('GET', '/checkout/create*')
+        .as('CreateBooking')
 
-      .wait('@CreateBooking')
+        .get('button[name=race-a-penalty-price-to-u]')
+        .click()
 
-      .location()
-      .should((l) => {
-        expect(l.pathname).to.include('/checkout/info');
-      })
-      .get('[data-cy=total-price]')
-      .contains('20€');
+        .wait('@CreateBooking')
+
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.include('/checkout/info');
+        })
+        .get('[data-cy=total-price]')
+        .contains('20€');
     });
-
 
     it('Should fill form and save participant', () => {
       registerParticipant('trail-do-zezere', 'Rd9SETi59X9ava6CPhkY');
     });
 
     it('should contain right amount of races', () => {
-      cy.visitAndWaitForHydration('/checkout/cart/iZrqWniNHZba9n4WQTmb')
+      cy.login()
+
+        .visitAndWaitForHydration('/checkout/cart/iZrqWniNHZba9n4WQTmb')
 
         .intercept('POST', '/checkout/cart/iZrqWniNHZba9n4WQTmb*')
         .as('ManageRace')
@@ -462,7 +478,9 @@ describe('Checkout', () => {
     });
 
     it('should fill form with saved participant info', () => {
-      cy.visitAndWaitForHydration('/checkout/info/TYFurhEhNFSRZAj5DewZ')
+      cy.login()
+
+        .visitAndWaitForHydration('/checkout/info/TYFurhEhNFSRZAj5DewZ')
         .get('button[name=select-userSavedParticipants]')
         .should('exist')
         .and('be.visible')
@@ -481,7 +499,9 @@ describe('Checkout', () => {
     });
 
     it('should send automated email after completing booking', () => {
-      cy.visitAndWaitForHydration('/checkout/payment/qR4nqWpTdQy8QZu29ANu')
+      cy.login()
+
+        .visitAndWaitForHydration('/checkout/payment/qR4nqWpTdQy8QZu29ANu')
 
         .get('button[name=pay-cc]')
         .should('exist')
@@ -505,7 +525,9 @@ describe('Checkout', () => {
     });
 
     it('should display error when a Portuguese submitts form without identity card filled', () => {
-      cy.visitAndWaitForHydration('/checkout/info/iZrqWniNHZba9n4WQTmb')
+      cy.login()
+
+        .visitAndWaitForHydration('/checkout/info/iZrqWniNHZba9n4WQTmb')
 
         .intercept('POST', '/checkout/info/*')
         .as('saveParticipant')
@@ -538,7 +560,9 @@ describe('Checkout', () => {
     });
 
     it('should display error when a Portuguese submitts form without vat number filled', () => {
-      cy.visitAndWaitForHydration('/checkout/info/iZrqWniNHZba9n4WQTmb')
+      cy.login()
+
+        .visitAndWaitForHydration('/checkout/info/iZrqWniNHZba9n4WQTmb')
 
         .intercept('POST', '/checkout/info/*')
         .as('saveParticipant')
@@ -571,7 +595,9 @@ describe('Checkout', () => {
     });
 
     it('should not display error when missing a identity card if user is not Portuguese, but should require VAT number', () => {
-      cy.visitAndWaitForHydration('/checkout/info/iZrqWniNHZba9n4WQTmb')
+      cy.login()
+
+        .visitAndWaitForHydration('/checkout/info/iZrqWniNHZba9n4WQTmb')
 
         .intercept('POST', '/checkout/info/*')
         .as('saveParticipant')
@@ -612,7 +638,9 @@ describe('Checkout', () => {
     });
 
     it('should have correct bib numbers', () => {
-      cy.visitAndWaitForHydration('/checkout/payment/qR4nqWpTdQy8QZu29ANu')
+      cy.login()
+
+        .visitAndWaitForHydration('/checkout/payment/qR4nqWpTdQy8QZu29ANu')
 
         .get('button[name=pay-cc]')
         .should('exist')
@@ -627,6 +655,8 @@ describe('Checkout', () => {
           );
         })
 
+        .logout()
+
         // Logging in as Organiser to check if bib numbers where assigned
         .loginOrganizer()
 
@@ -635,7 +665,7 @@ describe('Checkout', () => {
 
         .location()
         .should((l) => {
-          expect(l.pathname).to.eq('/');
+          expect(l.pathname).to.eq('/o');
         })
 
         .visitAndWaitForHydration('/o/event/5n8epZbHczqAQtQaAh5R/dashboard')
@@ -672,6 +702,8 @@ describe('Checkout', () => {
           expect(loc.pathname).to.contain('/o/event/5n8epZbHczqAQtQaAh5R');
         })
 
+        .logout()
+
         // login as regular to finish booking process
         .login()
         .reload()
@@ -697,6 +729,8 @@ describe('Checkout', () => {
           );
         })
 
+        .logout()
+
         // Logging in as Organiser to check if bib numbers where assigned
         .loginOrganizer()
 
@@ -705,7 +739,7 @@ describe('Checkout', () => {
 
         .location()
         .should((l) => {
-          expect(l.pathname).to.eq('/');
+          expect(l.pathname).to.eq('/o');
         })
 
         .visitAndWaitForHydration('/o/event/5n8epZbHczqAQtQaAh5R/dashboard')
@@ -720,7 +754,9 @@ describe('Checkout', () => {
     });
 
     it('should display checkbox to enroll in organizer mailing list', () => {
-      cy.visitAndWaitForHydration('/checkout/info/iZrqWniNHZba9n4WQTmb')
+      cy.login()
+
+      .visitAndWaitForHydration('/checkout/info/iZrqWniNHZba9n4WQTmb')
         .get('input[name=add-to-mail-list]')
         .first()
         .should('exist')
@@ -732,7 +768,9 @@ describe('Checkout', () => {
     });
 
     it('should apply discount', () => {
-      cy.intercept('POST', '/checkout/payment/qR4nqWpTdQy8QZu29ANu*')
+      cy.login()
+
+      .intercept('POST', '/checkout/payment/qR4nqWpTdQy8QZu29ANu*')
         .as('ApplyDiscount')
 
         .visitAndWaitForHydration('/checkout/payment/qR4nqWpTdQy8QZu29ANu')
@@ -753,6 +791,8 @@ describe('Checkout', () => {
     it('should show applied discount information', () => {
       cy.intercept('POST', '/checkout/payment/qR4nqWpTdQy8QZu29ANu*')
         .as('ApplyDiscount')
+
+        .login()
 
         .visitAndWaitForHydration('/checkout/payment/qR4nqWpTdQy8QZu29ANu')
 
@@ -775,6 +815,8 @@ describe('Checkout', () => {
     it('should show 0€ when applying 100% discount', () => {
       cy.intercept('POST', '/checkout/payment/qR4nqWpTdQy8QZu29ANu*')
         .as('ApplyDiscount')
+
+        .login()
 
         .visitAndWaitForHydration('/checkout/payment/qR4nqWpTdQy8QZu29ANu')
 
@@ -808,7 +850,9 @@ describe('Checkout', () => {
 
       formData.append('actionId', 'update-info');
 
-      cy.visitAndWaitForHydration('/checkout/payment/HJtAk2sSktodKez744mt')
+      cy.login()
+      
+      .visitAndWaitForHydration('/checkout/payment/HJtAk2sSktodKez744mt')
         .get('#update-info')
         .should('not.exist')
 
@@ -827,7 +871,9 @@ describe('Checkout', () => {
     });
 
     it('should skip payment step if booking is free - applied 100% discount', () => {
-      cy.visitAndWaitForHydration('/checkout/info/iZrqWniNHZba9n4WQTmb')
+      cy.login()
+
+      .visitAndWaitForHydration('/checkout/info/iZrqWniNHZba9n4WQTmb')
 
         .intercept('POST', '/checkout/info/*')
         .as('ApplyDiscount')
@@ -896,10 +942,13 @@ describe('Checkout', () => {
     });
 
     it('should be able to book same race multiple times', () => {
+      cy.login();
+
       bookParticipant(
         'love-tiles-douro-granfondo-2023',
         'xaXaCzs2t7D8DpRNnffM'
       );
+
       bookParticipant(
         'love-tiles-douro-granfondo-2023',
         'xaXaCzs2t7D8DpRNnffM'
@@ -907,7 +956,8 @@ describe('Checkout', () => {
     });
 
     it('Should remove race', () => {
-      cy.visitAndWaitForHydration('/checkout/cart/iZrqWniNHZba9n4WQTmb')
+      cy.login()
+      .visitAndWaitForHydration('/checkout/cart/iZrqWniNHZba9n4WQTmb')
 
         .intercept('POST', '/checkout/cart/*')
         .as('removeParticipant')
@@ -925,13 +975,17 @@ describe('Checkout', () => {
     });
 
     it('should not exist list of participants if there is only one', () => {
-      cy.visitAndWaitForHydration('/checkout/info/iZrqWniNHZba9n4WQTmb')
+      cy.login()
+
+      .visitAndWaitForHydration('/checkout/info/iZrqWniNHZba9n4WQTmb')
         .get('[data-cy=participant]')
         .should('not.exist');
     });
 
     it('should be able to update cart', () => {
-      cy.visitAndWaitForHydration('/checkout/cart/iZrqWniNHZba9n4WQTmb')
+      cy.login()
+
+        .visitAndWaitForHydration('/checkout/cart/iZrqWniNHZba9n4WQTmb')
 
         .intercept('POST', '/checkout/cart/iZrqWniNHZba9n4WQTmb*')
         .as('addParticipant')
@@ -959,7 +1013,9 @@ describe('Checkout', () => {
     });
 
     it('should remove race participant', () => {
-      cy.visitAndWaitForHydration('/checkout/info/TYFurhEhNFSRZAj5DewZ')
+      cy.login()
+
+      .visitAndWaitForHydration('/checkout/info/TYFurhEhNFSRZAj5DewZ')
         .intercept('POST', '/checkout/manage/*')
         .as('removeParticipant')
 
@@ -977,7 +1033,9 @@ describe('Checkout', () => {
     });
 
     it('should redirect to event if last race participant is removed', () => {
-      cy.visitAndWaitForHydration('/checkout/cart/iZrqWniNHZba9n4WQTmb')
+      cy.login()
+
+      .visitAndWaitForHydration('/checkout/cart/iZrqWniNHZba9n4WQTmb')
         .intercept('POST', '/checkout/cart/iZrqWniNHZba9n4WQTmb*')
         .as('removeParticipant')
 
@@ -1000,7 +1058,9 @@ describe('Checkout', () => {
     });
 
     it('should show validation error if there are registrations with empty participant info', () => {
-      cy.visitAndWaitForHydration('/checkout/info/TYFurhEhNFSRZAj5DewZ')
+      cy.login()
+
+      .visitAndWaitForHydration('/checkout/info/TYFurhEhNFSRZAj5DewZ')
 
         .get('input[name=first-name]')
         .type('Nuno')
@@ -1049,7 +1109,9 @@ describe('Checkout', () => {
     });
 
     it('should show validation terms and conditions error', () => {
-      cy.visitAndWaitForHydration('/checkout/info/iZrqWniNHZba9n4WQTmb')
+      cy.login()
+
+      .visitAndWaitForHydration('/checkout/info/iZrqWniNHZba9n4WQTmb')
         .get('input[name=first-name]')
         .type('Nuno')
 
@@ -1091,7 +1153,9 @@ describe('Checkout', () => {
     });
 
     it('should display current booked teams', () => {
-      cy.visitAndWaitForHydration('/checkout/info/iZrqWniNHZba9n4WQTmb')
+      cy.login()
+
+      .visitAndWaitForHydration('/checkout/info/iZrqWniNHZba9n4WQTmb')
         .get('button[name=creatable-button]')
         .should('exist')
         .click()
@@ -1105,7 +1169,9 @@ describe('Checkout', () => {
     });
 
     it('should display cta to add team if it does not exist', () => {
-      cy.visitAndWaitForHydration('/checkout/info/iZrqWniNHZba9n4WQTmb')
+      cy.login()
+
+      .visitAndWaitForHydration('/checkout/info/iZrqWniNHZba9n4WQTmb')
         .get('#creatable-team')
         .clear()
         .type('Marretas')
@@ -1115,7 +1181,9 @@ describe('Checkout', () => {
     });
 
     it('should save team', () => {
-      cy.visitAndWaitForHydration('/checkout/info/TYFurhEhNFSRZAj5DewZ')
+      cy.login()
+
+      .visitAndWaitForHydration('/checkout/info/TYFurhEhNFSRZAj5DewZ')
         .get('div[data-cy=participant-1]')
         .click()
 
@@ -1176,7 +1244,9 @@ describe('Checkout', () => {
     });
 
     it('should remove participant and select the first one from participants list', () => {
-      cy.visitAndWaitForHydration('/checkout/info/4RzB8TRoXhEteTWtLMs6')
+      cy.login()
+
+      .visitAndWaitForHydration('/checkout/info/4RzB8TRoXhEteTWtLMs6')
 
         .intercept('POST', '/checkout/manage/4RzB8TRoXhEteTWtLMs6*')
         .as('RemoveParticipant')
@@ -1214,7 +1284,9 @@ describe('Checkout', () => {
     });
 
     it('should keep same participant selected after submitting form', () => {
-      cy.visitAndWaitForHydration('/checkout/info/4RzB8TRoXhEteTWtLMs6')
+      cy.login()
+
+      .visitAndWaitForHydration('/checkout/info/4RzB8TRoXhEteTWtLMs6')
 
         .intercept('POST', '/checkout/manage/4RzB8TRoXhEteTWtLMs6*')
         .as('RemoveParticipant')
@@ -1265,13 +1337,6 @@ describe('Checkout', () => {
   });
 
   context('Security', () => {
-    beforeEach(() => {
-      cy.task('db:reset');
-      cy.task('clearDownloadFolder');
-      clearHttpCatcher();
-    });
-
-
     it('should not access info/payment/confirmation route without a booking', () => {
       cy.visitAndWaitForHydration('/checkout/info/MY4bvgxDbMtGv8rbYe5d')
         .location()
@@ -1311,7 +1376,8 @@ describe('Checkout', () => {
         .should('have.attr', 'data-show-login')
         .then((isSupposedToShow) => {
           // @ts-ignore (WS thinks this is a JQuery element, not a string)
-          isSupposedToShow === 'true' && cy.get('#checkout-anonymously').click();
+          isSupposedToShow === 'true' &&
+            cy.get('#checkout-anonymously').click();
         })
 
         .get('[data-cy=terms-link]')
@@ -1401,7 +1467,9 @@ describe('Checkout', () => {
     });
 
     it('should not be able to book a race if event is outdated', () => {
-      cy.visitAndWaitForHydration('/pt/event/monco-e-melgaco-granfondo-by-trek-2023')
+      cy.visitAndWaitForHydration(
+        '/pt/event/monco-e-melgaco-granfondo-by-trek-2023'
+      )
 
         .get('button[name=race-Q7SpSTn9oszeSPhG9CaQ]')
         .should('be.disabled')
@@ -1491,11 +1559,6 @@ describe('Checkout', () => {
   });
 
   context('Payments Gateway', () => {
-    beforeEach(() => {
-      cy.task('db:reset');
-      cy.task('clearDownloadFolder');
-      clearHttpCatcher();
-    });
 
     it('Should keep booking state if payment fails (MBWay Rejected)', () => {
       const secret = Cypress.env('SIBS_WEBHOOK_SECRET');
@@ -1747,294 +1810,291 @@ describe('Checkout', () => {
           });
         });
     });
+  });
 
-    context('Test error handling to SIBS gateway get status calls', () => {
-      it('should show handled error when get-status fails 500', () => {
-        cy.request({
-          url: '/checkout/submitted/sGDw53Nv27kbi4SkY500',
-          method: 'GET',
-          failOnStatusCode: false
-        }).then(() => {
-          cy.login()
-            .visitAndWaitForHydration('/checkout/payment/MNT9Keq82E3Tbag5tPjw')
-
-            .get('[data-cy=gateway-error]')
-            .should('exist')
-            .and('be.visible');
-        });
-      });
-
-      it('should show handled error when get-status fails 502', () => {
-        cy.request({
-          url: '/checkout/submitted/sGDw53Nv27kbi4SkY502',
-          method: 'GET'
-        }).then(() => {
-          cy.login()
-            .visitAndWaitForHydration('/checkout/payment/MNT9Keq82E3Tbag5tPjw')
-
-            .get('[data-cy=gateway-error]')
-            .should('exist')
-            .and('be.visible');
-        });
-      });
-
-      it('should show handled error when get-status fails 503', () => {
-        cy.request({
-          url: '/checkout/submitted/sGDw53Nv27kbi4SkY503',
-          method: 'GET'
-        }).then(() => {
-          cy.login()
-            .visitAndWaitForHydration('/checkout/payment/MNT9Keq82E3Tbag5tPjw')
-
-            .get('[data-cy=gateway-error]')
-            .should('exist')
-            .and('be.visible');
-        });
-      });
-
-      it('should pay booking after getting a success call', () => {
-        const secret = Cypress.env('SIBS_WEBHOOK_SECRET');
-
-        cy.request({
-          url: '/checkout/submitted/sGDw53Nv27kbi4SkY500',
-          method: 'GET'
-        }).then(() => {
-          cy.login()
-            .visitAndWaitForHydration('/checkout/payment/MNT9Keq82E3Tbag5tPjw')
-
-            .get('[data-cy=gateway-error]')
-            .should('exist')
-            .and('be.visible');
-        });
-
-        cy.wrap(null)
-          .then(() =>
-            encryptMessage(
-              secret,
-              JSON.stringify({
-                token: {
-                  value: '351#931111111',
-                  tokenType: 'MobilePhone'
-                },
-                amount: {
-                  value: 40,
-                  currency: 'EUR'
-                },
-                merchant: {
-                  terminalId: 1111111,
-                  merchantName: 'CRUCIAL ALGORITHM - UNIPESSOAL LDA',
-                  transactionId: 'sGDw53Nv27kbi4SkY500'
-                },
-                paymentType: 'PURS',
-                returnStatus: {
-                  statusMsg: 'Success',
-                  statusCode: '000'
-                },
-                paymentMethod: 'MBWAY',
-                paymentStatus: 'Success',
-                transactionID: 'sGDw53Nv27kbi4SkY500',
-                notificationID: '70293d16-c4ed-4da2-924a-f19c6c4e3f81',
-                transactionDateTime: new Date().toISOString()
-              })
-            )
-          )
-          .then((payload) => {
-            cy.request({
-              url: '/wh/sibs/',
-              method: 'POST',
-              body: payload.message,
-              headers: {
-                'x-authentication-tag': payload.at,
-                'x-initialization-vector': payload.iv
-              }
-            }).then(() => {
-              cy.get('button[name=get-payment-status]')
-                .should('exist')
-                .click()
-
-                .location()
-                .should((l) => {
-                  expect(l.pathname).to.eq(
-                    '/checkout/confirmation/MNT9Keq82E3Tbag5tPjw'
-                  );
-                });
-            });
-          });
-      });
-
-      it('should show sibs form after getting a fail call', () => {
-        const secret = Cypress.env('SIBS_WEBHOOK_SECRET');
-
-        cy.request({
-          url: '/checkout/submitted/sGDw53Nv27kbi4SkY500',
-          method: 'GET'
-        }).then(() => {
-          cy.login()
-            .visitAndWaitForHydration('/checkout/payment/MNT9Keq82E3Tbag5tPjw')
-
-            .get('[data-cy=gateway-error]')
-            .should('exist')
-            .and('be.visible');
-        });
-
-        cy.wrap(null)
-          .then(() =>
-            encryptMessage(
-              secret,
-              JSON.stringify({
-                token: {
-                  value: '351#931111111',
-                  tokenType: 'MobilePhone'
-                },
-                amount: {
-                  value: 1,
-                  currency: 'EUR'
-                },
-                merchant: {
-                  terminalId: 1111111,
-                  merchantName: 'CRUCIAL ALGORITHM - UNIPESSOAL LDA',
-                  transactionId: 'sGDw53Nv27kbi4SkY500'
-                },
-                paymentType: 'PURS',
-                returnStatus: {
-                  statusMsg: 'Declined',
-                  statusCode: '01.106.0001',
-                  statusDescription:
-                    'After the operation was successful, was refused by the cardholder.'
-                },
-                paymentMethod: 'MBWAY',
-                paymentStatus: 'Declined',
-                transactionID: 'sGDw53Nv27kbi4SkY500',
-                notificationID: 'd787b6bc-09c1-4e9c-a9ed-3353e51d7b81',
-                transactionDateTime: new Date().toISOString()
-              })
-            )
-          )
-          .then((payload) => {
-            cy.request({
-              url: '/wh/sibs/',
-              method: 'POST',
-              body: payload.message,
-              headers: {
-                'x-authentication-tag': payload.at,
-                'x-initialization-vector': payload.iv
-              }
-            }).then(() => {
-              cy.get('button[name=get-payment-status]')
-                .should('exist')
-                .click()
-
-                .location()
-                .should((l) => {
-                  expect(l.pathname).to.eq(
-                    '/checkout/payment/MNT9Keq82E3Tbag5tPjw'
-                  );
-                });
-            });
-          });
-      });
-
-      it('should start new payment process', () => {
-        cy.request({
-          url: '/checkout/submitted/sGDw53Nv27kbi4SkY500',
-          method: 'GET'
-        }).then(() => {
-          cy.login()
-            .visitAndWaitForHydration('/checkout/payment/MNT9Keq82E3Tbag5tPjw')
-
-            .get('[data-cy=gateway-error]')
-            .should('exist')
-            .and('be.visible')
-
-            .get('button[name=actionId]')
-            .should('exist')
-            .click()
-
-            .location()
-            .should((l) => {
-              expect(l.pathname).to.eq(
-                '/checkout/payment/MNT9Keq82E3Tbag5tPjw'
-              );
-            })
-
-            .get('button[name=pay-reference]')
-            .should('exist');
-        });
-      });
-
-      it.skip('should handle a fetch to failed status through the normal flow', () => {
+  context('Test error handling to SIBS gateway get status calls', () => {
+    it('should show handled error when get-status fails 500', () => {
+      cy.request({
+        url: '/checkout/submitted/sGDw53Nv27kbi4SkY500',
+        method: 'GET',
+        failOnStatusCode: false
+      }).then(() => {
         cy.login()
-          .visitAndWaitForHydration('/checkout/payment/uj3tsN7auCRx8citYiA2')
+          .visitAndWaitForHydration('/checkout/payment/MNT9Keq82E3Tbag5tPjw')
 
-          .get('button[name=fail-to-fetch-status]')
+          .get('[data-cy=gateway-error]')
+          .should('exist')
+          .and('be.visible');
+      });
+    });
+
+    it('should show handled error when get-status fails 502', () => {
+      cy.request({
+        url: '/checkout/submitted/sGDw53Nv27kbi4SkY502',
+        method: 'GET'
+      }).then(() => {
+        cy.login()
+          .visitAndWaitForHydration('/checkout/payment/MNT9Keq82E3Tbag5tPjw')
+
+          .get('[data-cy=gateway-error]')
+          .should('exist')
+          .and('be.visible');
+      });
+    });
+
+    it('should show handled error when get-status fails 503', () => {
+      cy.request({
+        url: '/checkout/submitted/sGDw53Nv27kbi4SkY503',
+        method: 'GET'
+      }).then(() => {
+        cy.login()
+          .visitAndWaitForHydration('/checkout/payment/MNT9Keq82E3Tbag5tPjw')
+
+          .get('[data-cy=gateway-error]')
+          .should('exist')
+          .and('be.visible');
+      });
+    });
+
+    it('should pay booking after getting a success call', () => {
+      const secret = Cypress.env('SIBS_WEBHOOK_SECRET');
+
+      cy.request({
+        url: '/checkout/submitted/sGDw53Nv27kbi4SkY500',
+        method: 'GET'
+      }).then(() => {
+        cy.login()
+          .visitAndWaitForHydration('/checkout/payment/MNT9Keq82E3Tbag5tPjw')
+
+          .get('[data-cy=gateway-error]')
+          .should('exist')
+          .and('be.visible');
+      });
+
+      cy.wrap(null)
+        .then(() =>
+          encryptMessage(
+            secret,
+            JSON.stringify({
+              token: {
+                value: '351#931111111',
+                tokenType: 'MobilePhone'
+              },
+              amount: {
+                value: 40,
+                currency: 'EUR'
+              },
+              merchant: {
+                terminalId: 1111111,
+                merchantName: 'CRUCIAL ALGORITHM - UNIPESSOAL LDA',
+                transactionId: 'sGDw53Nv27kbi4SkY500'
+              },
+              paymentType: 'PURS',
+              returnStatus: {
+                statusMsg: 'Success',
+                statusCode: '000'
+              },
+              paymentMethod: 'MBWAY',
+              paymentStatus: 'Success',
+              transactionID: 'sGDw53Nv27kbi4SkY500',
+              notificationID: '70293d16-c4ed-4da2-924a-f19c6c4e3f81',
+              transactionDateTime: new Date().toISOString()
+            })
+          )
+        )
+        .then((payload) => {
+          cy.request({
+            url: '/wh/sibs/',
+            method: 'POST',
+            body: payload.message,
+            headers: {
+              'x-authentication-tag': payload.at,
+              'x-initialization-vector': payload.iv
+            }
+          }).then(() => {
+            cy.get('button[name=get-payment-status]')
+              .should('exist')
+              .click()
+
+              .location()
+              .should((l) => {
+                expect(l.pathname).to.eq(
+                  '/checkout/confirmation/MNT9Keq82E3Tbag5tPjw'
+                );
+              });
+          });
+        });
+    });
+
+    it('should show sibs form after getting a fail call', () => {
+      const secret = Cypress.env('SIBS_WEBHOOK_SECRET');
+
+      cy.request({
+        url: '/checkout/submitted/sGDw53Nv27kbi4SkY500',
+        method: 'GET'
+      }).then(() => {
+        cy.login()
+          .visitAndWaitForHydration('/checkout/payment/MNT9Keq82E3Tbag5tPjw')
+
+          .get('[data-cy=gateway-error]')
+          .should('exist')
+          .and('be.visible');
+      });
+
+      cy.wrap(null)
+        .then(() =>
+          encryptMessage(
+            secret,
+            JSON.stringify({
+              token: {
+                value: '351#931111111',
+                tokenType: 'MobilePhone'
+              },
+              amount: {
+                value: 1,
+                currency: 'EUR'
+              },
+              merchant: {
+                terminalId: 1111111,
+                merchantName: 'CRUCIAL ALGORITHM - UNIPESSOAL LDA',
+                transactionId: 'sGDw53Nv27kbi4SkY500'
+              },
+              paymentType: 'PURS',
+              returnStatus: {
+                statusMsg: 'Declined',
+                statusCode: '01.106.0001',
+                statusDescription:
+                  'After the operation was successful, was refused by the cardholder.'
+              },
+              paymentMethod: 'MBWAY',
+              paymentStatus: 'Declined',
+              transactionID: 'sGDw53Nv27kbi4SkY500',
+              notificationID: 'd787b6bc-09c1-4e9c-a9ed-3353e51d7b81',
+              transactionDateTime: new Date().toISOString()
+            })
+          )
+        )
+        .then((payload) => {
+          cy.request({
+            url: '/wh/sibs/',
+            method: 'POST',
+            body: payload.message,
+            headers: {
+              'x-authentication-tag': payload.at,
+              'x-initialization-vector': payload.iv
+            }
+          }).then(() => {
+            cy.get('button[name=get-payment-status]')
+              .should('exist')
+              .click()
+
+              .location()
+              .should((l) => {
+                expect(l.pathname).to.eq(
+                  '/checkout/payment/MNT9Keq82E3Tbag5tPjw'
+                );
+              });
+          });
+        });
+    });
+
+    it('should start new payment process', () => {
+      cy.request({
+        url: '/checkout/submitted/sGDw53Nv27kbi4SkY500',
+        method: 'GET'
+      }).then(() => {
+        cy.login()
+          .visitAndWaitForHydration('/checkout/payment/MNT9Keq82E3Tbag5tPjw')
+
+          .get('[data-cy=gateway-error]')
+          .should('exist')
+          .and('be.visible')
+
+          .get('button[name=actionId]')
           .should('exist')
           .click()
 
-          .get('#mock-payment-header')
-          .should('not.exist')
+          .location()
+          .should((l) => {
+            expect(l.pathname).to.eq('/checkout/payment/MNT9Keq82E3Tbag5tPjw');
+          })
 
-          .get('[data-cy=gateway-error]')
+          .get('button[name=pay-reference]')
           .should('exist');
       });
     });
 
-    context('should pay booking', () => {
-      beforeEach(() => {
-        cy.login();
-      });
+    it('should handle a fetch to failed status through the normal flow', () => {
+      cy.login()
+        .visitAndWaitForHydration('/checkout/payment/uj3tsN7auCRx8citYiA2')
 
-      it('MB Way', () => {
-        cy.visitAndWaitForHydration('/checkout/payment/uj3tsN7auCRx8citYiA2')
-          .get('button[name=pay-mbway]')
-          .should('exist')
-          .click()
+        .get('button[name=fail-to-fetch-status]')
+        .should('exist')
+        .click()
 
-          .location({ timeout: 10000 })
-          .should((l) => {
-            expect(l.pathname).to.eq(
-              '/checkout/confirmation/uj3tsN7auCRx8citYiA2'
-            );
-          });
-      });
+        .get('#mock-payment-header')
+        .should('not.exist')
 
-      it('Credit Card', () => {
-        cy.visitAndWaitForHydration('/checkout/payment/uj3tsN7auCRx8citYiA2')
+        .get('[data-cy=gateway-error]')
+        .should('exist');
+    });
+  });
 
-          .get('button[name=pay-cc]')
-          .should('exist')
-          .click()
+  context('should pay booking', () => {
 
-          .location({ timeout: 10000 })
-          .should((l) => {
-            expect(l.pathname).to.eq(
-              '/checkout/confirmation/uj3tsN7auCRx8citYiA2'
-            );
-          });
-      });
+    it('MB Way', () => {
+      cy.login()
 
-      it('MB', () => {
-        cy.visitAndWaitForHydration('/checkout/payment/uj3tsN7auCRx8citYiA2')
+      .visitAndWaitForHydration('/checkout/payment/uj3tsN7auCRx8citYiA2')
+        .get('button[name=pay-mbway]')
+        .should('exist')
+        .click()
 
-          .get('button[name=pay-reference]')
-          .should('exist')
-          .click()
+        .location({ timeout: 10000 })
+        .should((l) => {
+          expect(l.pathname).to.eq(
+            '/checkout/confirmation/uj3tsN7auCRx8citYiA2'
+          );
+        });
+    });
 
+    it('Credit Card', () => {
+      cy.login()
 
-          .location({ timeout: 10000 })
-          .should((l) => {
-            expect(l.pathname).to.eq(
-              '/checkout/confirmation/uj3tsN7auCRx8citYiA2'
-            );
-          });
-      });
+      .visitAndWaitForHydration('/checkout/payment/uj3tsN7auCRx8citYiA2')
+
+        .get('button[name=pay-cc]')
+        .should('exist')
+        .click()
+
+        .location({ timeout: 10000 })
+        .should((l) => {
+          expect(l.pathname).to.eq(
+            '/checkout/confirmation/uj3tsN7auCRx8citYiA2'
+          );
+        });
+    });
+
+    it('MB', () => {
+      cy.login()
+
+      .visitAndWaitForHydration('/checkout/payment/uj3tsN7auCRx8citYiA2')
+
+        .get('button[name=pay-reference]')
+        .should('exist')
+        .click()
+
+        .location({ timeout: 10000 })
+        .should((l) => {
+          expect(l.pathname).to.eq(
+            '/checkout/confirmation/uj3tsN7auCRx8citYiA2'
+          );
+        });
     });
   });
 });
 
-function registerParticipant(
-  slug: string,
-  raceId: string
-) {
+function registerParticipant(slug: string, raceId: string) {
   cy.visitAndWaitForHydration(`/pt/event/${slug}`)
 
     .intercept('GET', '/checkout/create*')
@@ -2104,11 +2164,11 @@ function bookParticipant(slug: string, raceId: string) {
     .intercept('GET', '/checkout/create*')
     .as('selectRace')
 
-    .visitAndWaitForHydration(`/event/${slug}`)
+    .visitAndWaitForHydration(`/pt/event/${slug}`)
 
     .location()
     .should((loc) => {
-      expect(loc.pathname).to.eq(`/event/${slug}`);
+      expect(loc.pathname).to.eq(`/pt/event/${slug}`);
     })
 
     .get(`button[name=race-${raceId}]`)
@@ -2181,7 +2241,12 @@ function bookParticipant(slug: string, raceId: string) {
         })
 
         .get('button[name=pay-cc]')
-        .click();
+        .click()
+        
+        .location()
+        .should((l) => {
+          expect(l.pathname).to.include('/checkout/confirmation/');
+        });
     });
 }
 

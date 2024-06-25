@@ -25,11 +25,13 @@ export const loader: LoaderFunction = async ({ request }) => {
   const event = await findEvent(eventId);
 
   if (!event) {
+    console.log('non existing event... redirecting home');
     return redirect('/');
   }
 
   // This shouldn't happen, but in case it does, check if event is outdated
   if (event.startAt && new Date(event?.startAt) < new Date()) {
+    console.log('Event is outdated... redirecting home');
     return redirect('/');
   }
 
@@ -37,7 +39,11 @@ export const loader: LoaderFunction = async ({ request }) => {
     const bookingId = Id();
 
     if (!user) {
-      console.log(`Creating anonymous user for booking ${bookingId}`);
+      console.log(`Creating anonymous ${userId} user for booking ${bookingId}`);
+      // Found an issue in safari due to their tracking prevention mechanism - when we create a use with 
+      //   the generated client id in this page, it actually assigns a different client id to the user on redirect.
+      // This causes an access restriction in `/checkout/info/` because a different user is trying to access the booking. 
+      // TODO: We need to find a way to handle this.
       try {
         await createAnonymousUser(userId, `bid-${bookingId}`);
       } catch (e) {
@@ -50,13 +56,13 @@ export const loader: LoaderFunction = async ({ request }) => {
     await createInitialBookingFlow(bookingId, userId, eventId, raceId, t);
     return redirect(`/checkout/info/${bookingId}`);
   } catch (e) {
-    console.log(e);
-
+    console.error(e);
+    console.log('Error creating booking... redirecting home');
     return redirect('/');
   }
 };
 
-export async function createInitialBookingFlow(
+async function createInitialBookingFlow(
   bookingId: string,
   clientId: string,
   eventId: string,

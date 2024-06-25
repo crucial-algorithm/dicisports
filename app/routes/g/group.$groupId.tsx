@@ -63,8 +63,8 @@ import {
   timeOfDayToHoursMinutes
 } from '~/utils/misc';
 import UploadForm from '~/components/shared/form/UploadForm';
-import mapCss from '~/styles/map.css';
-import vendorsCss from '~/styles/vendors.css';
+import mapCss from '~/styles/map.css?url';
+import vendorsCss from '~/styles/vendors.css?url';
 
 import i18n from '~/server/i18n.server';
 import InputError from '~/components/shared/form/InputError';
@@ -88,18 +88,13 @@ const actionIds = {
   delete: 'delete'
 };
 
-export const links: LinksFunction = () => {
-  return [
-    {
-      rel: 'stylesheet',
-      href: mapCss
-    },
-    {
-      rel: 'stylesheet',
-      href: vendorsCss
-    }
-  ];
-};
+export const links: LinksFunction = () => [
+  { rel: 'stylesheet', href: mapCss },
+  {
+    rel: 'stylesheet',
+    href: vendorsCss
+  }
+];
 
 export const handle = {
   i18n: RESOURCES_NS

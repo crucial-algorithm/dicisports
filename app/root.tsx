@@ -3,17 +3,18 @@ import * as React from 'react';
 import type { LinksFunction, LoaderFunction } from '@remix-run/node';
 import { json } from '@remix-run/node';
 import {
+  isRouteErrorResponse,
   Link,
   Links,
-  LiveReload,
   Meta,
   Outlet,
   Scripts,
   ScrollRestoration,
-  useCatch,
   useLoaderData,
+  useLocation,
   useMatches,
-  useTransition
+  useNavigation,
+  useRouteError
 } from '@remix-run/react';
 
 import { useSpinDelay } from 'spin-delay';
@@ -25,8 +26,8 @@ import { useTranslation } from 'react-i18next';
 
 import { locale } from 'primereact/api';
 
-import primeIcons from 'primeicons/primeicons.css';
-import primeReactCoreCss from 'primereact/resources/primereact.min.css';
+import primeIcons from 'primeicons/primeicons.css?url';
+import primeReactCoreCss from 'primereact/resources/primereact.min.css?url';
 
 import { areThereTracesOfUserEventHandling } from '~/server/db/events.server';
 
@@ -50,7 +51,7 @@ import TransitionIndicator from '~/components/shared/TransitionIndicator';
 import Config from '~/server/config.server';
 
 import { LocationProvider } from '~/utils/LocationProvider';
-import { getLocationSession } from '~/routes/action/set-my-location';
+import { getLocationSession } from '~/server/location.server';
 
 import { findSports } from '~/server/db/reference.server';
 
@@ -60,11 +61,10 @@ import { ButtonLink } from '~/components/shared/Button';
 
 import setupPrimeReact from '~/PrimeReact';
 
-import vendorsCss from './styles/vendors.css';
-import mainCss from './styles/main.css';
-import primeReactThemeCss from './styles/primereact-theme.css';
-import tailwind from './styles/tailwind.css';
-
+import vendorsCss from './styles/vendors.css?url';
+import mainCss from './styles/main.css?url';
+import primeReactThemeCss from './styles/primereact-theme.css?url';
+import tailwind from './styles/tailwind.css?url';
 
 export const links: LinksFunction = () => {
   return [
@@ -117,7 +117,7 @@ export const handle: KCDHandle & { id: string; i18n: string[] } = {
 export type RootLoaderData = {
   user: User | null;
   ancestorUser: User | null;
-  ENV: { CLOUDINARY_CLOUD_NAME: string, RELEASE: string };
+  ENV: { CLOUDINARY_CLOUD_NAME: string; RELEASE: string };
   requestInfo: {
     canonicalUrl: string;
     origin: string;
@@ -132,7 +132,10 @@ export type RootLoaderData = {
 };
 
 export const loader: LoaderFunction = async ({ request }) => {
-  function getUser(): Promise<{ user: User | null; impersonatedUser: User | null }> {
+  function getUser(): Promise<{
+    user: User | null;
+    impersonatedUser: User | null;
+  }> {
     return session.getUser();
   }
 
@@ -156,7 +159,9 @@ export const loader: LoaderFunction = async ({ request }) => {
   // After meeting with an organizer, we found that if he doesn't submit the event immediatly and
   // navigates out of the event page, it's hard for him to get back to edit the event
   if (refUser && !(refUser.role === Role.ORGANIZER)) {
-    const isItAOrganizerWannabe = await areThereTracesOfUserEventHandling(refUser.id);
+    const isItAOrganizerWannabe = await areThereTracesOfUserEventHandling(
+      refUser.id
+    );
 
     if (isItAOrganizerWannabe) {
       refUser.role = Role.ORGANIZER_WANNABE;
@@ -222,7 +227,7 @@ const ACTION_WORDS = [
 let firstRender = true;
 
 function PageLoadingMessage() {
-  const transition = useTransition();
+  const transition = useNavigation();
   const [words, setWords] = React.useState<Array<string>>([]);
   const [pendingPath, setPendingPath] = React.useState('');
   const showLoader = useSpinDelay(Boolean(transition.state !== 'idle'), {
@@ -281,8 +286,11 @@ function Html({ lang }: { lang: string }) {
   const data = useLoaderData<typeof loader>();
   const analyticsUrl = 'https://plausible.io/js/plausible.js';
   const matches = useMatches();
-  const [, { pathname }] = matches;
   const { handle } = matches.pop() || { handle: { id: '' } };
+
+  const location = useLocation();
+  const regex = /\/o(?:\/|$)/;
+  const isOrganizerRoute = regex.test(location.pathname);
 
   // useChangeLanguage(lang);
   // script bellow setting window.ENV is not actually being used; Just keeping
@@ -292,11 +300,14 @@ function Html({ lang }: { lang: string }) {
   });
 
   // Support for cypress command that waits for HTML to be hydrated
-  React.useEffect(() => (
-      document.getElementsByTagName('body').item(0) as HTMLBodyElement
-    ).setAttribute('data-cy', 'ready'),
-    [lang]
-  );
+  React.useEffect(() => {
+    const body = document
+      .getElementsByTagName('body')
+      .item(0) as HTMLBodyElement;
+
+    body.setAttribute('data-cy', 'ready');
+    body.setAttribute('data-cy-user', data.user ? 'logged-in' : 'logged-out');
+  }, [data.user]);
 
   return (
     <html
@@ -319,9 +330,8 @@ function Html({ lang }: { lang: string }) {
       </head>
       <body
         className="dark:bg-gray-900 bg-white transition duration-500 w-full"
-        data-path={handle ? handle.id : ''}
+        data-path={handle ? (handle as { id: string }).id : ''}
       >
-
         <PageLoadingMessage />
         <NotificationMessage queryStringKey="message" delay={0.3} />
         {data.ancestorUser && (
@@ -331,17 +341,16 @@ function Html({ lang }: { lang: string }) {
             </ButtonLink>
           </header>
         )}
-        {pathname !== '/o' && <Navbar />}
+        {!isOrganizerRoute && <Navbar />}
         <Outlet />
         <ScrollRestoration />
-        {pathname !== '/o' && <Footer />}
+        {!isOrganizerRoute && <Footer />}
         <script
           dangerouslySetInnerHTML={{
             __html: `window.ENV = ${JSON.stringify(data.ENV)}`
           }}
         />
         <Scripts />
-        {process.env.NODE_ENV === 'development' && <LiveReload />}
       </body>
     </html>
   );
@@ -365,77 +374,76 @@ export default function App() {
   );
 }
 
-export function ErrorBoundary({ error }: { error: Error }) {
-  return (
-    <div>
-      <h1 className="font-extrabold">There was an error</h1>
-      <p>{error.message}</p>
-      <hr />
-      <p>
-        Hey, developer, you should replace this with what you want your users to
-        see.
-      </p>
-    </div>
-  );
-}
-
-export function CatchBoundary() {
-  const caught = useCatch();
+export function ErrorBoundary() {
+  const error = useRouteError();
   const { t } = useTranslation('common');
 
-  let message;
-  let subMessage;
+  if (isRouteErrorResponse(error)) {
+    let message;
+    let subMessage;
 
-  switch (caught.status) {
-    case 401:
-      message = (
-        <p>
-          Oops! Looks like you tried to visit a page that you do not have access
-          to.
-        </p>
-      );
-      break;
-    case 404:
-      message = <p>{t('404 - Message')}</p>;
-      subMessage = <p>{t('404 - Sub Message')}</p>;
-      break;
+    switch (error.status) {
+      case 401:
+        message = (
+          <p>
+            Oops! Looks like you tried to visit a page that you do not have
+            access to.
+          </p>
+        );
+        break;
+      case 404:
+        message = <p>{t('404 - Message')}</p>;
+        subMessage = <p>{t('404 - Sub Message')}</p>;
+        break;
 
-    case 500:
-      message = <p>{t('500 error message')}</p>;
-      break;
+      case 500:
+        message = <p>{t('500 error message')}</p>;
+        break;
 
-    default:
-      throw new Error(caught.data || caught.statusText);
+      default:
+        throw new Error(error.data || error.statusText);
+    }
+
+    return (
+      <html lang="en" className="dark">
+        <head>
+          <title>{`${error.status} ${error.statusText}`}</title>
+          <Links />
+        </head>
+        <body className="dark:bg-gray-900 bg-white transition duration-500">
+          <div className="flex justify-center items-center gap-y-2 flex-col h-screen">
+            <Link to="/">
+              <HomeLogo className="w-80 h-16 md:w-96 lg:w-144" />
+            </Link>
+            <div className="flex flex-col items-center">
+              <H3>{message}</H3>
+              {subMessage && <H6 variant="secondary">{subMessage}</H6>}
+            </div>
+            <ButtonLink variant="primary" to={'/'} className="mt-8">
+              {t('Return home')}
+            </ButtonLink>
+          </div>
+          <Scripts />
+        </body>
+      </html>
+    );
   }
 
+  //TODO: Check how to handle error message
+  console.error(error);
+
   return (
-    <html lang="en" className="dark">
-      <head>
-        <title>{`${caught.status} ${caught.statusText}`}</title>
-        <Links />
-      </head>
-      <body className="dark:bg-gray-900 bg-white transition duration-500">
-        <div className="flex justify-center items-center gap-y-2 flex-col h-screen">
-          <Link to="/">
-            <HomeLogo className="w-80 h-16 md:w-96 lg:w-144" />
-          </Link>
-          <div className="flex flex-col items-center">
-            <H3>{message}</H3>
-            {subMessage && <H6 variant="secondary">{subMessage}</H6>}
-          </div>
-          <ButtonLink variant="primary" to={'/'} className="mt-8">
-            {t('Return home')}
-          </ButtonLink>
-        </div>
-        <Scripts />
-      </body>
-    </html>
+    <div>
+      <h1>Uh oh ...</h1>
+      <p>Something went wrong.</p>
+      <pre>Unknown error</pre>
+    </div>
   );
 }
 
 function Footer() {
   const { t } = useTranslation('common');
-  const year = (new Date()).getUTCFullYear();
+  const year = new Date().getUTCFullYear();
 
   return (
     <footer className="mt-32">
@@ -462,7 +470,10 @@ function Footer() {
                       href="https://www.livroreclamacoes.pt/inicio"
                       className="dark:text-cadet-blue-700 dark:hover:text-cadet-blue-500"
                     >
-                      <img src={buildImageUrl('product/complaints-logo', {})} alt="" />
+                      <img
+                        src={buildImageUrl('product/complaints-logo', {})}
+                        alt=""
+                      />
                     </a>
                   </div>
 

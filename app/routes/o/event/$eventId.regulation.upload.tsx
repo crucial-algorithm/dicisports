@@ -12,7 +12,8 @@ import { z, ZodError } from 'zod';
 
 import { requireUser } from '~/server/auth/session.server';
 import i18n from '~/server/i18n.server';
-import { badRequest, fileTypeFromUploadHandlerData } from '~/utils/misc';
+import { badRequest } from '~/utils/misc';
+import { fileTypeFromUploadHandlerData } from '~/utils/misc.server';
 import { uploadToS3 } from '~/server/utils/s3';
 import { findEvent, updateEventRegulation } from '~/server/db/events.server';
 import { NotFound, Unauthorized } from '~/server/utils/misc';
@@ -61,7 +62,7 @@ export const action: ActionFunction = async ({ request, params }) => {
 
       const prefix = `events/${event.createdAt.getFullYear()}${String(event.createdAt.getMonth() + 1).padStart(2, '0')}/${eventId}`;
       const key = await uploadToS3(
-        Readable.from(file.buffer),
+        Readable.from([file.buffer]),
         prefix,
         `regulation.${file.type}`
       );

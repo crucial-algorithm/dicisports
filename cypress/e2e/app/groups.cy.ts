@@ -83,7 +83,7 @@ describe('Groups', () => {
         })
 
         // fill the form
-        .get('input[name=name]')
+        .get('input[name=name][id=group-sport]')
         .type('a new group')
         .should('have.value', 'a new group')
 

@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import type { Race } from '@prisma/client';
 
 import { ConfirmationDialog } from '~/components/shared/Dialog';
+import { fetcherType } from '~/utils/misc';
 
 const RESOURCES_NS = 'create-event-form';
 
@@ -17,7 +18,7 @@ function DeleteRaceDialog(props: {
 }) {
   const { t } = useTranslation(RESOURCES_NS);
   const { isOpen, onDismiss, race, eventId } = props;
-  const fetcher = useFetcher();
+  const fetcher = useFetcher<{ ok: boolean }>();
 
   function handleSubmit() {
     fetcher.submit(
@@ -30,7 +31,9 @@ function DeleteRaceDialog(props: {
   }
 
   useEffect(() => {
-    if (fetcher.type === 'actionReload' && fetcher.data.ok) {
+    const typeOfFetcher = fetcherType(fetcher);
+
+    if (typeOfFetcher === 'actionReload' && fetcher.data?.ok) {
       onDismiss();
     }
   }, [fetcher, onDismiss]);

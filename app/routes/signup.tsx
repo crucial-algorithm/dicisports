@@ -48,7 +48,7 @@ type ActionData = {
   };
 };
 
-export const meta: MetaFunction = CanonicalMeta;
+export const meta: MetaFunction = CanonicalMeta as MetaFunction;
 
 export const loader: LoaderFunction = async ({ request }) => {
   const user = await getUser(request);

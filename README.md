@@ -42,7 +42,9 @@ This will generate a new migration in `prisma/migrations/<date>_<name given in c
 ### Upgrading to latest Remix packages
 ```sh
 npm i remix@latest @remix-run/node@latest @remix-run/react@latest @remix-run/serve@latest
-npm i -D @remix-run/dev @remix-run/eslint-config
+npm i -D @remix-run/dev@latest @remix-run/eslint-config@latest
+# IF PREVIOUS FAILS do to i18next dependencies
+npm i remix-i18next@latest i18next@latest react-i18next@latest i18next-browser-languagedetector@latest @remix-run/dev@latest @remix-run/eslint-config@latest
 ```
 
 ### Upgrading to latest Prisma package

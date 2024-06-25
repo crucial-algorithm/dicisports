@@ -5,7 +5,9 @@ node_modules
 /public/build
 .env
 .idea
-/app/styles/**/*.css
+
+prisma/seed.js
+prisma/seed.cjs
 
 /cypress/downloads
 /cypress/videos

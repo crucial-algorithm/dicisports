@@ -36,14 +36,26 @@ export const action: ActionFunction = async ({ request }) => {
 
     db.$transaction(async (tx) => {
 
-      const payment = await tx.payment.findUnique({
+      let payment = await tx.payment.findUnique({
         where: { id: payload.merchant.transactionId }
       });
 
+      // lets check if we can find this payment in any way possible
       if (!payment) {
         console.log(
           `[SIBS] weird, we got a notification for an unknown payment: ${payload.notificationID}`
         );
+
+        payment = await tx.payment.findUnique({
+          where: { transactionId: payload.transactionID }
+        });
+
+        if (!payment) {
+          return new Response(
+            `Unknown payment: tx: ${payload.notificationID}, id: ${payload.merchant.transactionId}`,
+            { status: 500 }
+          );
+        }
       }
 
       if (payload.paymentStatus === 'Declined') {
@@ -56,28 +68,27 @@ export const action: ActionFunction = async ({ request }) => {
           }
         });
 
-        if (payment) {
-          const x = await tx.booking.update({
-            where: { id: payment.bookingId },
-            data: {
-              status: CheckoutStatus.pending
-            }
-          });
-          
-          console.log('booking(s) updated to pending due to payment decline', x);
-        }
+        await tx.booking.update({
+          where: { id: payment.bookingId },
+          data: {
+            status: CheckoutStatus.pending
+          }
+        });
+
+        console.log('booking(s) updated to pending due to payment decline', payment.bookingId);
+
         return;
       }
       
       if (payload.paymentStatus !== 'Success') {
         console.error(
-          `[SIBS] payment with SIBS transaction ${payload.transactionID} was neither declined nor successful [${payment?.bookingId}]`
+          `[SIBS] payment with SIBS transaction ${payload.transactionID} was neither declined nor successful [${payment.bookingId}]`
         );
         return;
       }
 
       console.log(
-        `[SIBS] payment was successful... updating payment ${payload.transactionID} and booking status ${payment?.bookingId}`
+        `[SIBS] payment was successful... updating payment ${payload.transactionID} and booking status ${payment.bookingId}`
       );
 
       // add notification ID to payment
@@ -107,7 +118,7 @@ export const action: ActionFunction = async ({ request }) => {
       });
 
       // mark booking as confirmed
-      if (payment) {
+      if (payment.bookingId) {
         const x = await tx.booking.update({
           where: { id: payment.bookingId },
           data: {
@@ -116,6 +127,8 @@ export const action: ActionFunction = async ({ request }) => {
         });
 
         console.log('[SIBS] booking(s) updated', x);
+      } else {
+        console.error('[SIBS] no booking found for payment', payment);
       }
 
     });
