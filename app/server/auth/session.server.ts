@@ -1,5 +1,5 @@
 import { Role } from '@prisma/client';
-import { createCookieSessionStorage, redirect } from 'remix';
+import { createCookieSessionStorage, redirect } from '@remix-run/node';
 
 import Config from '~/server/config.server';
 import { decrypt, encrypt } from '~/server/utils/encryption.server';
@@ -66,9 +66,9 @@ const sessionStorage = createCookieSessionStorage({
 });
 
 async function sendRecoverPasswordToken({
-                                          emailAddress,
-                                          domainUrl
-                                        }: {
+  emailAddress,
+  domainUrl
+}: {
   emailAddress: string;
   domainUrl: string;
 }) {
@@ -98,7 +98,7 @@ async function sendRecoverPasswordToken({
 async function getSession(request: Request) {
   const session = await sessionStorage.getSession(
     request.headers.get('Cookie')
-  );
+  ); 
   const initialValue = await sessionStorage.commitSession(session);
   const getSessionId = () => session.get(sessionIdKey) as string | undefined;
   const unsetSessionId = () => session.unset(sessionIdKey);
@@ -168,7 +168,7 @@ async function getSession(request: Request) {
   };
 }
 
-async function getUser(request: Request) {
+async function getUser(request: Request): Promise<User | null> {
   const { session } = await getSession(request);
 
   const token = session.get(sessionIdKey) as string | undefined;

@@ -57,10 +57,12 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 };
 
 export const meta: MetaFunction = () => {
-  return {
-    title: 'quick access route',
-    description: 'This is a quick access route'
-  };
+  return [
+    {
+      title: 'quick access route',
+      description: 'This is a quick access route'
+    }
+  ];
 };
 
 // Define your component

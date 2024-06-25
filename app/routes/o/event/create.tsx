@@ -28,6 +28,5 @@ async function create(request: Request) {
     console.error(err);
     // TODO: redirect somewhere
   }
-
   return redirect(`/o/event/${eventId}`);
 }

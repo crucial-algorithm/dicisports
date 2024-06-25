@@ -1,6 +1,6 @@
 import React, { forwardRef, useState } from 'react';
 import type { FormProps } from '@remix-run/react';
-import { Form, unstable_useBlocker, useBeforeUnload } from '@remix-run/react';
+import { Form, useBlocker, useBeforeUnload } from '@remix-run/react';
 import { useTranslation } from 'react-i18next';
 
 type Props = FormProps &
@@ -25,25 +25,28 @@ const UploadForm: React.FC<Props> = forwardRef((props: Props, ref) => {
 
   reset && reset(() => setDirty(false));
 
-  if (props.blockNavigationWhenDirty) {
-    unstable_useBlocker((args) => {
-      const currentPath = args.currentLocation.pathname;
-      const nextPath = args.nextLocation.pathname;
+  useBlocker((args) => {
 
-      // Don't block if posting to the same URL
-      if (!dirty || nextPath === (action ? action : currentPath)) {
-        return false;
-      }
+    if (!props.blockNavigationWhenDirty) {
+      return false;
+    }
 
-      const confirmation = window.confirm(
-        alertMessage
-          ? alertMessage
-          : t('Default Dirty Alert Message')
-      );
+    const currentPath = args.currentLocation.pathname;
+    const nextPath = args.nextLocation.pathname;
 
-      return !confirmation;
-    });
-  }
+    // Don't block if posting to the same URL
+    if (!dirty || nextPath === (action ? action : currentPath)) {
+      return false;
+    }
+
+    const confirmation = window.confirm(
+      alertMessage
+        ? alertMessage
+        : t('Default Dirty Alert Message')
+    );
+
+    return !confirmation;
+  });
 
   // This will prevent user from leaving the page when closing the tab/browser or reloading page
   useBeforeUnload((e) => {

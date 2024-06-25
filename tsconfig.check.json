@@ -1,6 +1,7 @@
 {
   "comment": "Same tsconfig, but limited to the app folder",
-  "include": ["remix.env.d.ts", "app/**/*.ts", "app/**/*.tsx"],
+  "include": [
+    "env.d.ts", "app/**/*.ts", "app/**/*.tsx"],
   "compilerOptions": {
     "lib": ["DOM", "DOM.Iterable", "ES2019"],
     "isolatedModules": true,

@@ -218,7 +218,7 @@ export default function ParticipantForm({
         label={t('Gender')}
         error={errors?.gender}
         dataCy="gender"
-        className="w-full md:w-48"
+        className="w-full md:w-72"
       >
         <ComboBox
           name="gender"

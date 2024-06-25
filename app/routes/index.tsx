@@ -39,8 +39,8 @@ import { CanonicalMeta } from '~/utils/seo';
 import { getI18nText } from '~/components/I18nText';
 import type { LocationInPicker } from '~/components/LocationPickerDialog';
 import LocationPickerDialog, {
-  PT_REGIONS,
-  mapValueToLocationInPicker
+  mapValueToLocationInPicker,
+  PT_REGIONS
 } from '~/components/LocationPickerDialog';
 import SearchEvents from '~/components/SearchEvents';
 import SportsPickerDialog from '~/components/SportsPickerDialog';
@@ -98,7 +98,12 @@ export const handle = {
   i18n: ['common', 'home', 'm-groups', 'organizer']
 };
 
-export const meta: MetaFunction = CanonicalMeta;
+export enum SortMethod {
+  recency = 'recent',
+  proximity = 'proximity'
+}
+
+export const meta: MetaFunction = CanonicalMeta as MetaFunction;
 
 export const loader: LoaderFunction = async ({ request }) => {
   const data = parseQueryString(request.url);
@@ -502,17 +507,17 @@ export default function Index() {
 
   function Categories({ sports }: { sports: Sport[] }) {
     const { t, i18n } = useTranslation('home');
-  
+
     function handleFilterSport(e: React.MouseEvent<HTMLSpanElement>) {
       handleApplySport(sports.find((s) => s.id === Number(e.currentTarget.id)) || null);
     }
-  
+
     return (
       <>
         <div className="w-full lg:w-9/12 m-auto mb-4 mt-12 text-xl dark:text-white font-bold capitalize">
           {t('Categories')}
         </div>
-  
+
         <div className="w-full m-auto lg:w-9/12 flex overflow-x-scroll hide-scroll-bar">
           <div className="relative flex flex-nowrap ml-6 md:ml-0">
           {sports

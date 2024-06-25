@@ -26,11 +26,17 @@ import clsx from 'clsx';
 import { Toast } from 'primereact/toast';
 import type { FileUploadHandlerEvent } from 'primereact/fileupload';
 
-import mapBoxGlCss from 'mapbox-gl/dist/mapbox-gl.css';
+import mapBoxGlCss from 'mapbox-gl/dist/mapbox-gl.css?url';
 
-import type { ChangeEvent } from 'react';
-import * as React from 'react';
-import { useEffect, useRef, useState } from 'react';
+import {
+  useEffect,
+  useRef,
+  useState,
+  type ChangeEvent,
+  type MouseEvent,
+  type FocusEvent,
+  type KeyboardEvent
+} from 'react';
 
 import { useTranslation } from 'react-i18next';
 
@@ -86,8 +92,8 @@ import {
   Unauthorized
 } from '~/server/utils/misc';
 import { ConfirmationDialog } from '~/components/shared/Dialog';
-import mapCss from '~/styles/map.css';
-import organizerCss from '~/styles/organizer.css';
+import mapCss from '~/styles/map.css?url';
+import organizerCss from '~/styles/organizer.css?url';
 
 import type {
   CreateEventInput,
@@ -98,7 +104,7 @@ import type {
   Sport,
   User
 } from '~/types';
-import { badRequest, formHelperReadDate } from '~/utils/misc';
+import { badRequest, fetcherType, formHelperReadDate } from '~/utils/misc';
 import UploadFile from '~/components/UploadFile';
 import { findConfirmedBookings } from '~/server/db/booking.server';
 
@@ -163,10 +169,12 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   const { MAPBOX_TOKEN, CLOUDINARY_UPLOAD_PRESET } = Config();
 
   if (!event) {
+    console.log('Organizer accessing unexisting event');
     return redirect('/');
   }
 
   if (event.createdById !== user.id && user.role !== Role.ADMIN) {
+    console.log("Organizer accessing event that doesn't belong to him");
     return redirect('/');
   }
 
@@ -474,11 +482,11 @@ export const action: ActionFunction = async ({ request, params }) => {
         return redirect(
           `/o/event/${event.id}/dashboard?message=${t('Event Published')}`
         );
-      } else {
-        // User is not yet an organizer, so let's redirect him to create his organizer profile.
-        // We may need to check if he has a profile already and if so, redirect him elsewhere.
-        return redirect('/o/us');
       }
+
+      // User is not yet an organizer, so let's redirect him to create his organizer profile.
+      // We may need to check if he has a profile already and if so, redirect him elsewhere.
+      return redirect('/o/us');
     }
 
     if (actionId === actionIds.unpublish) {
@@ -612,7 +620,7 @@ export default function OrganizerEventRoute() {
     }
   }
 
-  function handleDeletePerk(e: React.MouseEvent) {
+  function handleDeletePerk(e: MouseEvent) {
     const perkId = e.currentTarget.id;
 
     if (!perkId) {
@@ -624,7 +632,7 @@ export default function OrganizerEventRoute() {
     setPerks(newPerks);
   }
 
-  function handleOnCreatePerk(e: React.FocusEvent<HTMLInputElement>) {
+  function handleOnCreatePerk(e: FocusEvent<HTMLInputElement>) {
     if (!e.target.value) {
       return null;
     }
@@ -632,7 +640,7 @@ export default function OrganizerEventRoute() {
     addPerk(e?.target.value);
   }
 
-  function handlerAddPerkOnEnter(e: React.KeyboardEvent) {
+  function handlerAddPerkOnEnter(e: KeyboardEvent) {
     if (e.key !== 'Enter') {
       return;
     }
@@ -641,7 +649,7 @@ export default function OrganizerEventRoute() {
     e.preventDefault();
   }
 
-  function handlerCancelEnter(e: React.KeyboardEvent) {
+  function handlerCancelEnter(e: KeyboardEvent) {
     if (e.key !== 'Enter') {
       return;
     }
@@ -707,13 +715,15 @@ export default function OrganizerEventRoute() {
 
   function uploadHandler(f: FileUploadHandlerEvent) {
     const file = f.files[0];
+    const formData = new FormData();
+
+    if (file) {
+      formData.append('file', file);
+    }
 
     setFileUploadHandlerEvent(f);
     fetcher.submit(
-      {
-        //@ts-ignore
-        file: file
-      },
+      formData,
       {
         encType: 'multipart/form-data',
         // submitting to another route, because of a conflict uploading a file and images
@@ -730,18 +740,21 @@ export default function OrganizerEventRoute() {
   let resetFormToNonDirty: () => void | null;
 
   useEffect(() => {
-    if (fetcher?.data?.ok && fetcher?.type === 'actionReload') {
+    const typeOfFetcher = fetcherType(fetcher);
+    const fetcherData = fetcher?.data as { ok?: boolean; errors?: string[] };
+
+    if (fetcherData?.ok && typeOfFetcher === 'actionReload') {
       fileUploadHandlerEvent?.options?.clear();
       setRegulationError(null);
     }
 
-    if (fetcher?.data?.errors && fetcher?.type === 'actionReload') {
+    if (fetcherData?.errors && typeOfFetcher === 'actionReload') {
       fileUploadHandlerEvent?.options?.clear();
       setRegulationError(t('Invalid File Type'));
     }
 
     setRaces(dbRaces);
-  }, [fileUploadHandlerEvent, fetcher, dbRaces, toast, event, t]);
+  }, [fileUploadHandlerEvent, fetcher, dbRaces, t]);
 
   useEffect(() => {
     const main = window.document.querySelector('#organizer-main-container');
@@ -757,7 +770,7 @@ export default function OrganizerEventRoute() {
         life: 3000
       });
 
-      main && main.scrollTo({ top: 0, behavior: 'smooth' });
+      main?.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     if (!feedback) {
@@ -770,7 +783,7 @@ export default function OrganizerEventRoute() {
       life: 3000
     });
 
-    main && main.scrollTo({ top: 0, behavior: 'smooth' });
+    main?.scrollTo({ top: 0, behavior: 'smooth' });
 
     if (actionData?.ok && resetFormToNonDirty) {
       resetFormToNonDirty();

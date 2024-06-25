@@ -40,13 +40,13 @@ export type OrganizerLoaderData = {
   organizer: Organizer
 };
 
-export const meta: MetaFunction = ({ data }) => {
-  const { event } = data;
-
-  return {
-    title: event ? event.name : 'DiciSports - This Is Sports',
-    robots: 'noindex, nofollow'
-  };
+export const meta: MetaFunction = () => {
+  return [
+    {
+      title: 'DiciSports - This Is Sports',
+      robots: 'noindex, nofollow'
+    }
+  ];
 };
 
 export const loader: LoaderFunction = async ({ request }) => {

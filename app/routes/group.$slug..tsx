@@ -29,14 +29,14 @@ type LoaderData = {
   genericImage: string;
 };
 
-export const meta: MetaFunction = ({ data, params, location, parentsData }) => {
+export const meta: MetaFunction<typeof loader> = ({ data, location, matches }) => {
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const { i18n } = useTranslation();
-  const root: RootLoaderData = parentsData.root as RootLoaderData;
-  const { group } = data as { group: Group };
+  const { group } = data;
+  const root = matches[0].data as RootLoaderData;
 
   if (!group) {
-    return {};
+    return [];
   }
 
   const description = group.description?.slice(0, 160);
@@ -47,7 +47,7 @@ export const meta: MetaFunction = ({ data, params, location, parentsData }) => {
     ? getI18nText(group.sport.name, i18n.language as Language)
     : group.name;
 
-  return {
+  return [{
     viewport: 'width=device-width,initial-scale=1,viewport-fit=cover',
     ...getOpenGraphMeta({
       title: `Dicisports - ${group.name}`,
@@ -55,7 +55,7 @@ export const meta: MetaFunction = ({ data, params, location, parentsData }) => {
       description,
       keywords: `grupo ${name}`
     })
-  };
+  }];
 };
 
 export const loader: LoaderFunction = async ({ request, params }) => {

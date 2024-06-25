@@ -10,8 +10,8 @@ import Button from '~/components/shared/Button';
 import ButtonGroup from '~/components/shared/ButtonGroup';
 import CopyToClipboard from '~/components/shared/CopyToClipboard';
 import { Notification } from '~/components/shared/NotificationMessage';
+import { fetcherType } from '~/utils/misc';
 import type { SearchEventResult } from '~/server/db/search.server';
-
 
 export default function EventResult({
   event,
@@ -50,14 +50,21 @@ export default function EventResult({
   }
 
   useEffect(() => {
-    if (favorite.type === 'actionReload' && favorite.data.ok) {
-      setMessage(
-        favorite.data.action === 'add'
-          ? favoriteAddedMessage
-          : favoriteRemovedMessage
-      );
-      setIsFavorite(favorite.data.action === 'add');
-      showFavoriteAddedNotification();
+    const typeOfFetcher = fetcherType(favorite);
+    const favoriteData = favorite.data as
+      | { ok: boolean; action: string }
+      | undefined;
+
+    if (typeOfFetcher === 'actionReload' && favoriteData) {
+      if (favoriteData.ok && favoriteData.action) {
+        setMessage(
+          favoriteData.action === 'add'
+            ? favoriteAddedMessage
+            : favoriteRemovedMessage
+        );
+        setIsFavorite(favoriteData.action === 'add');
+        showFavoriteAddedNotification();
+      }
     }
 
     const url = new URL(window.location.href);

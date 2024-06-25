@@ -1,6 +1,6 @@
-import path from 'path';
+import path from 'node:path';
 
-import { Readable } from 'stream';
+import { Readable } from 'node:stream';
 
 import { ArrowDownTrayIcon, TrashIcon } from '@heroicons/react/24/outline';
 import type {
@@ -17,7 +17,6 @@ import {
 } from '@remix-run/node';
 import { Link, useActionData, useLoaderData } from '@remix-run/react';
 import clsx from 'clsx';
-import * as React from 'react';
 import { useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { useTranslation } from 'react-i18next';
@@ -172,19 +171,19 @@ export const action: ActionFunction = async ({ params, request }) => {
   const raceData: CreateRaceInput = {
     id: !raceId ? trackAssignedId : raceId,
     name: form.get('name') as string,
-    distance: parseFloat(form.get('distance') as string),
+    distance: Number.parseFloat(form.get('distance') as string),
     startTime: hoursMinutesToTimeOfDay(
-      parseInt(form.get('hour') as string, 10),
-      parseInt(form.get('minute') as string, 10)
+      Number.parseInt(form.get('hour') as string, 10),
+      Number.parseInt(form.get('minute') as string, 10)
     ),
-    elevationGain: parseInt(form.get('elevationGain') as string),
-    elevationLoss: parseInt(form.get('elevationLoss') as string) || null,
-    price: parseFloat(form.get('price') as string) * 1000,
+    elevationGain: Number.parseInt(form.get('elevationGain') as string),
+    elevationLoss: Number.parseInt(form.get('elevationLoss') as string) || null,
+    price: Number.parseFloat(form.get('price') as string) * 1000,
     priceEarlyBird:
-      parseFloat(form.get('priceEarlyBird') as string) * 1000 || null,
+      Number.parseFloat(form.get('priceEarlyBird') as string) * 1000 || null,
     validUntil: earlyBirdValidUntil ? new Date(earlyBirdValidUntil) : null,
     priceLateBird:
-      parseFloat(form.get('priceLateBird') as string) * 1000 || null,
+      Number.parseFloat(form.get('priceLateBird') as string) * 1000 || null,
     applyAfter: lateBirdAppliesAfter ? new Date(lateBirdAppliesAfter) : null,
     raceDescription: (form.get('description') as string) || null,
     track,
@@ -644,7 +643,7 @@ export default function RaceRoute() {
                 type="button"
                 onClick={handleDeleteGPX}
               >
-                <TrashIcon className="md:h-6 w-6 m-0 inline-block"></TrashIcon>
+                <TrashIcon className="md:h-6 w-6 m-0 inline-block" />
               </button>
             </div>
           </div>

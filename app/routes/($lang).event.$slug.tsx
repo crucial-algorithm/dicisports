@@ -32,23 +32,25 @@ import { Tooltip } from 'primereact/tooltip';
 import CopyToClipboard from '~/components/shared/CopyToClipboard';
 
 import useLang from '~/hooks/useLang';
-
-import type { EventWithRacesDifficultiesAndDocuments } from '~/server/db/events.server';
 import {
   findEventBySlug,
   findUserFavoriteEvent
 } from '~/server/db/events.server';
-
 import Main from '~/components/shared/Main';
 import { H2, H3, H4, H5, H6, Paragraph } from '~/components/shared/typography';
 import Button, { ButtonLink } from '~/components/shared/Button';
 import { getUser } from '~/server/auth/session.server';
 import { Notification } from '~/components/shared/NotificationMessage';
 import DisplayImg from '~/components/shared/DisplayImg';
-import type { Language, TranslationObject, User } from '~/types';
+import type {
+  EventWithRacesDifficultiesAndDocuments,
+  Language,
+  TranslationObject,
+  User
+} from '~/types';
 import { findEventRaces } from '~/server/db/races.server';
 import DisplayDate from '~/components/shared/DIsplayDate';
-import { displayTimeOfDay } from '~/utils/misc';
+import { displayTimeOfDay, fetcherType } from '~/utils/misc';
 import { findEventPerks } from '~/server/db/perks.server';
 import WhenListEmpty from '~/components/shared/Empty';
 import { getI18nText } from '~/components/I18nText';
@@ -74,15 +76,19 @@ export const handle: { id: string; i18n: string[] } = {
   i18n: ['event']
 };
 
-export const meta: MetaFunction = ({ data }) => {
-  const { event } = data;
+export const meta: MetaFunction<LoaderData> = ({ data }) => {
+  const loaderData = data as LoaderData;
 
-  return {
-    title: event ? event.name : 'DiciSports - This Is Sports'
-  };
+  return [
+    {
+      title: loaderData.event
+        ? loaderData.event.name
+        : 'DiciSports - This Is Sports'
+    }
+  ];
 };
 
-export async function loadDisplayEventData(
+async function loadDisplayEventData(
   user: User | null,
   event: Event | null
 ) {
@@ -318,7 +324,6 @@ type DisplayRaceProps = {
 };
 
 function calculatePriceStructure(race: Race) {
-
   if (race.priceEarlyBird && race.validUntil) {
     const daysUntilEnd = Math.floor(
       (new Date(race.validUntil).getTime() - Date.now() + 86400 * 1000) /
@@ -389,7 +394,6 @@ function DisplayPrice({ race, t }: DisplayPriceProps) {
     }
   }[earlyBird ? 'early' : 'late'];
 
-
   return (
     <>
       {inDiscount ? (
@@ -409,7 +413,9 @@ function DisplayPrice({ race, t }: DisplayPriceProps) {
           <div>
             {/*if early bird price deadline is bigger than 30 days, we'll show the date instead of days*/}
             <p className="text-sm font-medium dark:text-white">
-              {daysUntilEnd < 30 ? t(translations.prefixDays) : t(translations.prefixDate)}
+              {daysUntilEnd < 30
+                ? t(translations.prefixDays)
+                : t(translations.prefixDate)}
             </p>
             <p
               className="text-sm font-medium dark:text-blueGray-500"
@@ -529,7 +535,9 @@ function DisplayRace({
                 data-cy={`gpx-${race.id}`}
                 download
               >
-                <H4 className="my-4 underline dark:text-blueGray-500">{t('GPX')}</H4>
+                <H4 className="my-4 underline dark:text-blueGray-500">
+                  {t('GPX')}
+                </H4>
               </Link>
             )}
           </>
@@ -677,7 +685,9 @@ function EventHeader({
   }
 
   useEffect(() => {
-    if (favorite.type === 'actionReload' && favorite.data.ok) {
+    const typeOfFetcher = fetcherType(favorite);
+
+    if (typeOfFetcher === 'actionReload' && favorite.data.ok) {
       setMessage(
         favorite.data.action === actions.add
           ? favoriteAddedMessage

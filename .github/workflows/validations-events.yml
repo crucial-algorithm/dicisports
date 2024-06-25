@@ -3,7 +3,7 @@ on: pull_request
 
 jobs:
   e2e:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     name: E2E on Chrome
 
     services:
@@ -42,15 +42,23 @@ jobs:
       - name: Reset permissions
         run: chmod -R 777 .
 
+      - name: Transpile seed file
+        run: | 
+          npx tsc --resolveJsonModule --esModuleInterop prisma/seed.ts
+          mv prisma/seed.js prisma/seed.cjs
+
       - name: Cypress e2e tests
         uses: cypress-io/github-action@v4.2.0
         with:
           browser: chrome
           record: false
           build: npm run ci:build
-          start: npm run dev
+          start: npm run start
           spec: cypress/e2e/app/events.cy.ts
+          wait-on: 'http://localhost:3000'
         env:
+          REMIX_DEV_ORIGIN: http://localhost:3000
+
           CY_REQUEST_TIMEOUT: 15000
           CY_RESPONSE_TIMEOUT: 90000
           CY_DEFAULT_COMMAND_TIMEOUT: 30000
