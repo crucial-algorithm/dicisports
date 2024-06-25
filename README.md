@@ -78,10 +78,28 @@ flyctl secrets -a diciprd set ORGANIZER_REVIEWERS_EMAILS="xxx@dicisports.com,yyy
 ```shell
 docker build . --no-cache
 
-## get the hash from the output
+## get image hash sha256 from the output
+docker run -p 127.0.0.1:3000:3000/tcp --env-file .env <image sha256>
 
-docker run -p 127.0.0.1:3000:3000/tcp --env-file .env 049365fd3657f495354f35a13cc2096652222eedaa162b9197d0744d2cf980e6
+# make sure that database connection is set to:
+# DATABASE_URL=postgresql://dici:sports@host.docker.internal:6432/dicisports?schema=public&charset=utf8
 ```
+
+
+## Developing with a docker container
+```bash
+docker-compose up
+# 1st time it runs, in another terminal
+docker-compose run dicisports npx prisma migrate reset
+```
+
+Database connection should be:
+`DATABASE_URL=postgresql://dici:sports@database:5432/dicisports?schema=public&charset=utf8`
+
+### Limitations
+1. Likely, evertyime `prisma` is updated, container will have to be rebuilt.
+This is because `npx prisma generate` is executed when container is built.
+
 
 ## Troubleshooting fly.io
 ### Restarting database (after finding out it was down)

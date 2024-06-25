@@ -1,7 +1,7 @@
 version: '3'
 services:
   database:
-#    command: ["postgres", "-c", "log_statement=all"]
+    #    command: ["postgres", "-c", "log_statement=all"]
     image: 'postgres:13'
     environment:
       - POSTGRES_USER=dici
@@ -17,4 +17,18 @@ services:
     ports:
       - '3001:3001'
     extra_hosts:
-      - "host.docker.internal:host-gateway"
+      - 'host.docker.internal:host-gateway'
+
+  dicisports:
+    build:
+      context: .
+      target: dev
+    env_file:
+      - .env
+    environment:
+      - DATABASE_URL=postgresql://dici:sports@database:5432/dicisports?schema=public&charset=utf8  
+    volumes:
+      - ./:/app
+      - /app/node_modules
+    ports:
+      - '3000:3000'
