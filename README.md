@@ -1,4 +1,4 @@
-# DiciSports 
+# DiciSports
 
 Hosted at [dicisports](https://dicisports.com), but tested @ [dicistg.fly.dev](https://dicistg.fly.dev/).
 
@@ -16,7 +16,7 @@ This starts your app in development mode, rebuilding assets on file changes.
 
 ## Deployment
 
-First, build your app for production:   
+First, build your app for production:
 
 ```sh
 npm run build
@@ -73,6 +73,16 @@ flyctl secrets -a diciprd set ORGANIZER_REVIEWERS_EMAILS="xxx@dicisports.com,yyy
 
 **Multibanco:** has to be validated manually, so we can test e2e
 
+
+## Testing docker image locally
+```shell
+docker build . --no-cache
+
+## get the hash from the output
+
+docker run -p 127.0.0.1:3000:3000/tcp --env-file .env 049365fd3657f495354f35a13cc2096652222eedaa162b9197d0744d2cf980e6
+```
+
 ## Troubleshooting fly.io
 ### Restarting database (after finding out it was down)
 ```shell
@@ -85,10 +95,10 @@ flyctl machine restart 178150df4202d8 -a dicistg-db
 # Expected output
 Restarting machine 178150df4202d8
   Waiting for 178150df4202d8 to become healthy (started, 3/3)
-Machine 178150df4202d8 restarted successfully! 
+Machine 178150df4202d8 restarted successfully!
 ```
 
-### List env variables 
+### List env variables
 fly ssh console -C "printenv" --app diciprd
 
 ### Connect to staging/production DB
@@ -105,7 +115,7 @@ flyctl proxy 5432 -a dicistg-bd
 fly logs -a <app-name>
 
 # Example
-fly logs -a dicistg 
+fly logs -a dicistg
 ```
 
 ### Scaling Memory
