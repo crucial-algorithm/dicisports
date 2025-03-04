@@ -9,6 +9,11 @@ Built with [Remix](https://remix.run) running on [fly.io](https://fly.io).
 From your terminal:
 
 ```sh
+npm install
+npx tsc --resolveJsonModule --esModuleInterop prisma/seed.ts
+mv prisma/seed.js prisma/seed.cjs
+npx prisma migrate reset
+npx prisma db seed
 npm run dev
 ```
 

@@ -111,6 +111,8 @@ type GroupType = {
 
 type CreateEventInput = Prisma.EventUncheckedCreateInput;
 
+type UpdateEventInput = Prisma.EventUncheckedUpdateInput;
+
 type CreatePerksInput = Prisma.PerkUncheckedCreateInput;
 
 type CreateRaceInput = Prisma.RaceUncheckedCreateInput;
@@ -334,6 +336,7 @@ export type {
   CreateScheduleInput,
   Sport,
   CreateEventInput,
+  UpdateEventInput,
   CreatePerksInput,
   CreateRaceInput,
   LoginAction,

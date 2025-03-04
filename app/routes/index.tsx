@@ -791,8 +791,7 @@ function CalendarDay({ events, date }: { events: EventSlim[]; date: string }) {
             <Link to={`/${i18n.language}/event/${slug}`}>
               <div className="text-lg">{name}</div>
               <div className="text-sm text-blueGray-500">
-                {placeName},&nbsp;{(location as DiciLocation)?.place},&nbsp;
-                {hackLocationI18n((location as DiciLocation)?.region)}
+                {[placeName, (location as DiciLocation)?.place, hackLocationI18n((location as DiciLocation)?.region)].filter(Boolean).join(', ')}
               </div>
             </Link>
           </div>

@@ -7,11 +7,11 @@ import type { CreateRaceInput } from '~/types';
 
 const prisma = new PrismaClient();
 
-async function createRace(race: CreateRaceInput): Promise<Race> {
+async function createRace(race: CreateRaceInput, tx: PrismaClient = null): Promise<Race> {
   const raceId = race.id || Id();
   const raceAt = new Date();
 
-  return db.race.create({
+  return (tx || db).race.create({
     data: {
       id: raceId,
       name: race.name,
@@ -32,6 +32,16 @@ async function createRace(race: CreateRaceInput): Promise<Race> {
     }
   });
 }
+
+async function createRaces(races: CreateRaceInput[]) {
+  return await prisma.$transaction(async (tx) => {
+    for (const race of races) {
+      await createRace(race, tx);
+    }
+  });
+}
+
+
 
 async function findEventRaces(eventId: string): Promise<Race[] | null> {
   return db.race.findMany({
@@ -152,6 +162,7 @@ async function findRegistrationsAddedToCart(
 
 export {
   createRace,
+  createRaces,
   findEventRaces,
   findRace,
   updateRace,
