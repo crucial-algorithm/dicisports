@@ -174,8 +174,10 @@ export const action: ActionFunction = async ({ request }) => {
   } catch (err) {
     // console.error(err);
     return BadRequest(
+      // @ts-ignore
       err.errors
         .map(
+          // @ts-ignore
           ({ message, code, path }) =>
             `[${path.join(',')}]: ${code}, ${message}`
         )
@@ -268,7 +270,7 @@ async function handlePerks(
   const names: string[] = [];
 
   for (const perkKey of Object.keys(perks)) {
-    const isEnabled = perks[perkKey];
+    const isEnabled = perks[perkKey as keyof typeof perks];
 
     if (!isEnabled) {
       continue;

@@ -7,7 +7,7 @@ import type { CreateRaceInput } from '~/types';
 
 const prisma = new PrismaClient();
 
-async function createRace(race: CreateRaceInput, tx = null): Promise<Race> {
+async function createRace(race: CreateRaceInput, tx: any = null): Promise<Race> {
   const raceId = race.id || Id();
   const raceAt = new Date();
 

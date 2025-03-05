@@ -940,7 +940,7 @@ function OrganizerFooter({ organizer }: { organizer: Organizer }) {
   );
 }
 
-function ScrapedEventFooter({ organizer}: { organizer: string }) {
+function ScrapedEventFooter({ organizer }: { organizer: string | null }) {
   const { t } = useTranslation('event');
   
   return (
