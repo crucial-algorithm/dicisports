@@ -45,5 +45,9 @@
 
   "Click for full size image": "(Clica para aumentar)",
   "Open map": "(ver mapa)",
-  "External website": "Sítio web do evento"
+  "External website": "Sítio web do evento",
+  
+  "Approximate Location": "Localização aproximada",
+  "Non Binding Information": "Evento criado por rotina informática. A informação apresentada não é vinculativa. Consulte o sítio do evento.",
+  "Organizer On Behalf": ", inserido por DiciSports (informação não vinculativa)"
 }

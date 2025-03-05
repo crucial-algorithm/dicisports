@@ -184,6 +184,10 @@ export default function EventDisplayRoute() {
     minPrice = prices[0];
   }
 
+  if (minPrice >= 0) {
+    minPrice = minPrice / 1000;
+  }
+
   const isBookingClosed =
     new Date(
       event.bookingStopsAt ? event.bookingStopsAt : (event.startAt as Date)
@@ -200,6 +204,11 @@ export default function EventDisplayRoute() {
       />
 
       <Main>
+      {event.isScraped && (
+          <div className="my-4 text-right">
+            <p className="text-sm text-gray-500 italic">{t('Non Binding Information')}</p>
+          </div>
+        )}
         <InView as="div" onChange={setEventHeaderVisible} threshold={0.2}>
           <EventHeader
             event={event}
@@ -210,6 +219,7 @@ export default function EventDisplayRoute() {
             language={i18n.language}
           />
         </InView>
+
         <div className="my-8">
           <H3>{t('About')}</H3>
           <div
@@ -308,7 +318,11 @@ export default function EventDisplayRoute() {
               />
             ))}
         </div>
-        {organizer && <OrganizerFooter organizer={organizer} />}
+
+        {organizer && !event.isScraped && <OrganizerFooter organizer={organizer} />}
+
+        {event.isScraped && <ScrapedEventFooter organizer={event.scrapedOrganizer} />}
+
       </Main>
     </>
   );
@@ -802,6 +816,7 @@ function EventHeader({
               <span data-cy="location">{event.placeName}</span>
               {location && location.place && <>,&nbsp;{location.place}</>}
               <span className="text-sm link">&nbsp;{t('Open map')}</span>
+              {event.isScraped && <span className="text-xs text-gray-500 block">{t('Approximate Location')}</span>}
             </H6>
           </a>
         </div>
@@ -836,7 +851,7 @@ function EventHeader({
               className="text-sp-light-blue-900 w-full md:ml-2"
             >
               <b className="break-words">{`${
-                minPrice ? minPrice / 1000 : t('Undefined')
+                minPrice >= 0 ? minPrice : t('Undefined')
               }€`}</b>
             </H2>
           </div>
@@ -881,7 +896,7 @@ function StickyPriceTag({
               data-cy="sticky-price"
               className="text-sp-light-blue-900 w-full md:ml-2"
             >
-              <b className="break-words">{`${minPrice / 1000}€`}</b>
+              <b className="break-words">{`${minPrice}€`}</b>
             </H2>
           </div>
           <ButtonLink className="md:ml-16" to="#races-list">
@@ -917,6 +932,36 @@ function OrganizerFooter({ organizer }: { organizer: Organizer }) {
 
             <div className="mt-4 whitespace-pre-wrap max-w-[90ch] dark:text-blueGray-500 text-gray-500 text-base break-words">
               {organizer.description}
+            </div>
+          </div>
+        </div>
+      </div>
+    </footer>
+  );
+}
+
+function ScrapedEventFooter({ organizer}: { organizer: string }) {
+  const { t } = useTranslation('event');
+  
+  return (
+    <footer data-cy="organizer-profile">
+      <div className="container px-4 mx-auto">
+        <div className="-mx-4 flex flex-wrap">
+          <div className="px-4 my-4 w-full">
+            <div className="flex flex-row gap-x-2 items-center">
+              <div className="w-14 h-14">
+                <DisplayImg
+                  transformations={{
+                    resize: {
+                      type: 'fill',
+                      width: 56,
+                      height: 56
+                    }
+                  }}
+                  imageId="product/logo"
+                />
+              </div>
+              <H4>{organizer}<span className="text-sm italic">{t('Organizer On Behalf')}</span></H4>
             </div>
           </div>
         </div>
