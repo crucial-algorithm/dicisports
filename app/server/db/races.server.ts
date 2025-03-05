@@ -7,7 +7,7 @@ import type { CreateRaceInput } from '~/types';
 
 const prisma = new PrismaClient();
 
-async function createRace(race: CreateRaceInput, tx: PrismaClient = null): Promise<Race> {
+async function createRace(race: CreateRaceInput, tx = null): Promise<Race> {
   const raceId = race.id || Id();
   const raceAt = new Date();
 
@@ -40,8 +40,6 @@ async function createRaces(races: CreateRaceInput[]) {
     }
   });
 }
-
-
 
 async function findEventRaces(eventId: string): Promise<Race[] | null> {
   return db.race.findMany({
