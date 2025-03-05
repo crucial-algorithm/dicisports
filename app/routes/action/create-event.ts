@@ -65,7 +65,7 @@ export const action: ActionFunction = async ({ request }) => {
   }
 
   if (!user) {
-    return BadRequest('Ivalid user');
+    return BadRequest('Invalid user');
   }
 
   const EventSchema = z
