@@ -491,6 +491,44 @@ describe('Event', () => {
         .contains('Mediofondo');
     });
 
+    it('should not allow deletion of a race with participants', () => {
+      // Navigate to the event
+      cy.visitAndWaitForHydration('/o/event/MY4bvgxDbMtGv8rbYe5d')
+  
+        // Find the minifondo race and click the delete button
+        .get('div[data-cy="race-AhowRdNWCBQWSuivSt7h"]')
+        .within(() => {
+          cy.get('button[type="button"]')
+            .last() // The delete button is the last button in the race row
+            .click();
+        })
+  
+        // Confirm deletion in the dialog
+        .get('.dialog-content')
+        .should('be.visible')
+        .as('confirmDialog');
+        
+        cy.get('@confirmDialog')
+        .contains('Tem a certeza que quer apagar a corrida? Não há como voltar atrás!');
+        
+        cy.get('button.cy-primary')
+        .click();
+  
+        // Verify that an error message is shown
+        cy.get('.dialog-content')
+        .contains('Não é possível apagar uma corrida com participantes associados!');
+        
+  
+        // Close the error dialog
+        cy
+        .get('.dialog-footer button')
+        .click()
+  
+        // Verify that the race still exists
+        .get('div[data-cy="race-AhowRdNWCBQWSuivSt7h"]')
+        .should('exist');
+    });    
+
     it('should change document order', () => {
       cy.intercept(
         'POST',

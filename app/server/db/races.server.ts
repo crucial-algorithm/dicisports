@@ -134,13 +134,32 @@ async function updateDisplayOrderDown(
   });
 }
 
-async function deleteRace(id: string) {
+async function deleteRace(id: string): Promise<{ success: boolean; error?: string }> {
+  // Check if there are any participants for this race
+  const participants = await db.raceParticipant.findFirst({
+    where: { 
+      raceId: id,
+      status: { not: RaceParticipantStatus.deleted }
+    }
+  });
+
+  // If there are participants, prevent deletion
+  if (participants) {
+    return {
+      success: false,
+      error: 'Cannot delete race with participants'
+    };
+  }
+
+  // If no paid participants, proceed with deletion
   await db.race.update({
     where: { id },
     data: {
       status: 'deleted'
     }
   });
+
+  return { success: true };
 }
 
 async function findRegistrationsAddedToCart(
