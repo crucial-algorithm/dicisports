@@ -323,7 +323,7 @@ async function updateEvent(
     }
 
     await prisma.event.update({
-      where: { id: event.id as string},
+      where: { id: event.id as string },
       data: {
         name: event.name,
         sportId: event.sportId,
@@ -349,7 +349,8 @@ async function updateEvent(
         description: event.description,
         directions: event.directions,
         bibStartingNumber: event.bibStartingNumber,
-        status: event.status
+        status: event.status,
+        isScraped: event.isScraped
       }
     });
     console.debug('event updated...');
@@ -448,7 +449,8 @@ async function findEventBySlug(
         orderBy: { position: 'asc' }
       },
       difficulty: true,
-      races: true
+      races: true,
+      sport: true
     }
   });
 }
@@ -528,7 +530,7 @@ async function getEventResultsByName(
     },
     where: {
       name: {
-        contains: name && name.length ? name : '',
+        contains: name?.length ? name : '',
         mode: 'insensitive'
       },
       status: Status.published

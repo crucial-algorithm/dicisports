@@ -307,7 +307,7 @@ type LocalStorageBookingMetaData = {
 
 const eventWithRacesDifficultiesAndDocuments =
   Prisma.validator<Prisma.EventArgs>()({
-    include: { races: true, difficulty: true, documents: true }
+    include: { races: true, difficulty: true, documents: true, sport: true }
   });
 
 type EventWithRacesDifficultiesAndDocuments = Prisma.EventGetPayload<typeof eventWithRacesDifficultiesAndDocuments>;

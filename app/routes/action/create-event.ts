@@ -29,8 +29,6 @@ import { createAnonymousUser } from '~/server/db/users.server';
 
 import { createOrganizer, findOrganizerByName } from '~/server/db/organizer.server';
 
-
-
 const PerksSchema = z.object({
   photos: z.boolean(),
   prizes: z.boolean(),

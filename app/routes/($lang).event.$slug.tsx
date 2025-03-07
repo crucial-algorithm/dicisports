@@ -14,7 +14,8 @@ import {
   GlobeAltIcon,
   HeartIcon,
   MapPinIcon,
-  QuestionMarkCircleIcon
+  QuestionMarkCircleIcon,
+  TrophyIcon
 } from '@heroicons/react/24/outline';
 import {
   CheckIcon,
@@ -796,6 +797,15 @@ function EventHeader({
             {copiedToClipMessage}
           </Notification>
         </div>
+        <div className="flex flex-row items-center mb-2">
+          <TrophyIcon className="h-6 w-6 m-0 inline-block text-primary" />
+          <H6 data-cy="sport" className="ml-4 md:ml-2">
+            {getI18nText(
+              event.sport?.name as TranslationObject,
+              language as Language
+            )}
+          </H6>
+        </div>        
         <div className="flex flex-row items-center mb-2">
           <CalendarDaysIcon className="h-6 w-6 m-0 inline-block text-primary" />
           <H6 data-cy="date" className="ml-4 md:ml-2">

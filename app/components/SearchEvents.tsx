@@ -47,7 +47,7 @@ export default function SearchEvents({
 
     const mapped: EventAutoCompleteOption[] = [];
 
-    if (events && events.length) {
+    if (events?.length) {
       events.map((e: SearchEventResults) =>
         mapped.push({
           value: e.slug as string,
