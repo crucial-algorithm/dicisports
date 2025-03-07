@@ -71,7 +71,8 @@ async function findEvents(): Promise<
         }
       },
       difficulty: true,
-      races: true
+      races: true,
+      sport: true
     }
   });
 }
@@ -248,6 +249,7 @@ async function findEventWithRacesAndDocuments(
         }
       },
       difficulty: true,
+      sport: true,
       races: {
         where: {
           status: {
@@ -480,7 +482,8 @@ async function findUserFavoriteEvents(
         }
       },
       difficulty: true,
-      races: true
+      races: true,
+      sport: true
     }
   });
 }

@@ -699,13 +699,13 @@ function EventHeader({
   useEffect(() => {
     const typeOfFetcher = fetcherType(favorite);
 
-    if (typeOfFetcher === 'actionReload' && favorite.data.ok) {
+    if (typeOfFetcher === 'actionReload' && favorite?.data?.ok) {
       setMessage(
-        favorite.data.action === actions.add
+        favorite?.data?.action === actions.add
           ? favoriteAddedMessage
           : favoriteRemovedMessage
       );
-      setIsFavorite(favorite.data.action === actions.add);
+      setIsFavorite(favorite?.data?.action === actions.add);
       showFavoriteAddedNotification();
     }
 

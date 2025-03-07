@@ -154,7 +154,7 @@ export const action: ActionFunction = async ({ request }) => {
       image5: z.optional(z.string().nullable()),
       directions: z.optional(z.string().nullable()),
       location: LocationSchema,
-      organizer: z.string().nullable()
+      organizer: z.string()
     })
     .and(
       z.object(
