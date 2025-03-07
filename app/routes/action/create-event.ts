@@ -228,7 +228,7 @@ export const action: ActionFunction = async ({ request }) => {
     regulationFileName: null,
     status: $Enums.Status.draft,
     isScraped: true,
-    organizer: checkedData.organizer
+    scrapedOrganizer: checkedData.organizer
   };
 
   try {

@@ -347,7 +347,8 @@ async function updateEvent(
         description: event.description,
         directions: event.directions,
         bibStartingNumber: event.bibStartingNumber,
-        status: event.status
+        status: event.status,
+        scrapedOrganizer: event.scrapedOrganizer
       }
     });
     console.debug('event updated...');
