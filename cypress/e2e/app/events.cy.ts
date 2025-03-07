@@ -1379,7 +1379,7 @@ function verifyRace(
     .get(`[data-cy=race-price-${raceId}]`)
     .contains(`${price}€`)
 
-    .get(`label[data-cy=see-more-${raceId}]`)
+    .get(`span[data-cy=see-more-${raceId}]`)
     .first()
     .click()
 
