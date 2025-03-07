@@ -275,12 +275,12 @@ async function createDraftEvent(
   createdById: string,
   language: Language,
   id?: string
-): Promise<Event | void> {
+): Promise<Event | null> {
   const eventId = id ? id : Id();
   const eventAt = new Date();
 
   return await prisma.$transaction(async (tx) => {
-    await tx.event.create({
+    const event = await tx.event.create({
       data: {
         id: eventId,
         name: null,
@@ -301,6 +301,8 @@ async function createDraftEvent(
 
     await createDefaultPerks(eventId, language, tx);
     await createEventLatestBibNumber(eventId, tx);
+
+    return event;
   });
 }
 
@@ -347,8 +349,7 @@ async function updateEvent(
         description: event.description,
         directions: event.directions,
         bibStartingNumber: event.bibStartingNumber,
-        status: event.status,
-        scrapedOrganizer: event.scrapedOrganizer
+        status: event.status
       }
     });
     console.debug('event updated...');

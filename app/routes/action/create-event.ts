@@ -1,7 +1,9 @@
 import type { ActionFunction } from '@remix-run/node';
-import { $Enums } from '@prisma/client';
+import { $Enums, OrganizerStatus } from '@prisma/client';
 
 import { z } from 'zod';
+
+import type { TFunction } from 'i18next';
 
 import type { Language } from '~/types';
 
@@ -14,6 +16,8 @@ import {
 import { BadRequest, InternalServerError } from '~/server/utils/misc';
 import Config from '~/server/config.server';
 
+import i18n from '~/server/i18n.server';
+
 import defaultPerks from '~/server/db/perks.json';
 import {
   enableEventPerks,
@@ -21,6 +25,11 @@ import {
   findEventPerksByPerksName
 } from '~/server/db/perks.server';
 import { createRaces } from '~/server/db/races.server';
+import { createAnonymousUser } from '~/server/db/users.server';
+
+import { createOrganizer, findOrganizerByName } from '~/server/db/organizer.server';
+
+
 
 const PerksSchema = z.object({
   photos: z.boolean(),
@@ -55,17 +64,45 @@ const LocationSchema = z.object({
   zipcode: z.optional(z.string().nullable())
 });
 
+// Function to create an anonymous user and organizer with sensible defaults
+async function createAnonymousUserAndOrganizer(organizerName: string, t: TFunction) {
+  // Create a unique ID for the user
+  const userId = Id();
+  
+  // Create an anonymous user
+  const emailPrefix = `organizer-${userId.substring(0, 8)}`;
+
+  await createAnonymousUser(userId, emailPrefix);
+  
+  // Create an organizer with sensible defaults
+  await createOrganizer({
+    id: Id(),
+    name: organizerName,
+    email: `${emailPrefix}@fake.dicisports.com`,
+    phoneNumber: 100000000 + Math.floor(Math.random() * 10000000), // Phone number as integer
+    address: 'Default Address',
+    postalCode: '0000-000',
+    city: 'Default City',
+    taxNumber: 123456789, // Tax number as integer
+    contactName: 'Default Contact',
+    typeId: 1, // Default organizer type ID (number)
+    description: t('Organizer Description When Created Automatically'),
+    logo: 'product/logo',
+    userId: userId,
+    status: OrganizerStatus.SCRAPED
+  });
+  
+  return userId;
+}
+
 export const action: ActionFunction = async ({ request }) => {
   const json = await request.json();
-  const { token, user, language, data: uncheckedData } = json;
+  const { token, language, data: uncheckedData } = json;
+  const t = await i18n.getFixedT(request, 'organizer');
 
   // Check token against environment variable
   if (!token || token !== Config().CREATE_EVENT_TOKEN) {
     return BadRequest('Invalid token');
-  }
-
-  if (!user) {
-    return BadRequest('Invalid user');
   }
 
   const EventSchema = z
@@ -119,7 +156,7 @@ export const action: ActionFunction = async ({ request }) => {
       image5: z.optional(z.string().nullable()),
       directions: z.optional(z.string().nullable()),
       location: LocationSchema,
-      organizer: z.optional(z.string().nullable())
+      organizer: z.string().nullable()
     })
     .and(
       z.object(
@@ -166,7 +203,6 @@ export const action: ActionFunction = async ({ request }) => {
     );
 
   try {
-    console.log('----> Event: ', uncheckedData.races);
     EventSchema.parse({
       ...uncheckedData,
       startAt: uncheckedData.startAt ? new Date(uncheckedData.startAt) : null
@@ -227,12 +263,24 @@ export const action: ActionFunction = async ({ request }) => {
     regulationContent: checkedData.regulationContent,
     regulationFileName: null,
     status: $Enums.Status.draft,
-    isScraped: true,
-    scrapedOrganizer: checkedData.organizer
+    isScraped: true
   };
 
   try {
-    await createDraftEvent(user, lang, eventId);
+    // Variable to hold the user ID to use for the event
+    let eventUserId = null;
+
+    const existingOrganizer = await findOrganizerByName(checkedData.organizer);
+      
+    // If no organizer with this name exists, create a new anonymous user and organizer
+    if (!existingOrganizer) {
+      // Create anonymous user and organizer, and get the user ID
+      eventUserId = await createAnonymousUserAndOrganizer(checkedData.organizer, t);
+    } else {
+      eventUserId = existingOrganizer.userId;
+    }
+    
+    await createDraftEvent(eventUserId, lang, eventId);
     const perks = await findEventPerks(eventId);
 
     await updateEvent(

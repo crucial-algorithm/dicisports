@@ -133,7 +133,6 @@ model Event {
   externalWebsite      String?           @map("external_website")
   bookingStopsAt       DateTime?         @map("booking_stops_at")
   isScraped            Boolean           @default(false) @map("is_scraped")
-  scrapedOrganizer     String?           @map("scraped_organizer")
   documents            Document[]
   perks                Perk[]
   races                Race[]
@@ -441,6 +440,7 @@ enum OrganizerStatus {
   PENDING
   APPROVED
   REJECTED
+  SCRAPED
 }
 
 model Organizer {
