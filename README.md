@@ -9,6 +9,11 @@ Built with [Remix](https://remix.run) running on [fly.io](https://fly.io).
 From your terminal:
 
 ```sh
+npm install
+npx tsc --resolveJsonModule --esModuleInterop prisma/seed.ts
+mv prisma/seed.js prisma/seed.cjs
+npx prisma migrate reset
+npx prisma db seed
 npm run dev
 ```
 
@@ -131,3 +136,5 @@ Once all the necessary packages are installed, follow these steps:
 2. Locate the `.prisma` folder within the `node_modules` directory.
 3. Right-click on the `.prisma` folder and choose the option "**_Mark Directory as_**".
 4. Select "**_Not Excluded_**".
+
+

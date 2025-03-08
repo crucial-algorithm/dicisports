@@ -111,6 +111,8 @@ type GroupType = {
 
 type CreateEventInput = Prisma.EventUncheckedCreateInput;
 
+type UpdateEventInput = Prisma.EventUncheckedUpdateInput;
+
 type CreatePerksInput = Prisma.PerkUncheckedCreateInput;
 
 type CreateRaceInput = Prisma.RaceUncheckedCreateInput;
@@ -305,7 +307,7 @@ type LocalStorageBookingMetaData = {
 
 const eventWithRacesDifficultiesAndDocuments =
   Prisma.validator<Prisma.EventArgs>()({
-    include: { races: true, difficulty: true, documents: true }
+    include: { races: true, difficulty: true, documents: true, sport: true }
   });
 
 type EventWithRacesDifficultiesAndDocuments = Prisma.EventGetPayload<typeof eventWithRacesDifficultiesAndDocuments>;
@@ -334,6 +336,7 @@ export type {
   CreateScheduleInput,
   Sport,
   CreateEventInput,
+  UpdateEventInput,
   CreatePerksInput,
   CreateRaceInput,
   LoginAction,

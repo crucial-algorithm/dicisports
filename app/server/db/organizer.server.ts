@@ -24,7 +24,8 @@ async function createOrganizer(organizer: OrganizerInput): Promise<Organizer> {
       logo: organizer.logo,
       userId: organizer.userId,
       createdAt: now,
-      updatedAt: now
+      updatedAt: now,
+      status: organizer.status || OrganizerStatus.PENDING
     }
   });
 }
@@ -35,30 +36,9 @@ async function findOrganizer(userId: string): Promise<Organizer | null> {
   });
 }
 
-async function updateOrganizer(
-  organizer: OrganizerInput
-): Promise<Organizer | void> {
-  const now = new Date();
-
-  return db.organizer.update({
-    where: {
-      id: organizer.id as string
-    },
-    data: {
-      name: organizer.name,
-      email: organizer.email,
-      phoneNumber: organizer.phoneNumber,
-      address: organizer.address,
-      postalCode: organizer.postalCode,
-      city: organizer.city,
-      taxNumber: organizer.taxNumber,
-      contactName: organizer.contactName,
-      typeId: organizer.typeId,
-      description: organizer.description,
-      logo: organizer.logo,
-      userId: organizer.userId,
-      updatedAt: now
-    }
+async function findOrganizerByName(name: string) {
+  return db.organizer.findFirst({
+    where: { name }
   });
 }
 
@@ -83,6 +63,34 @@ async function findOrganizerById(id: string): Promise<Organizer | null> {
     ...organizer,
     commission: organizer.commission ? organizer.commission / 1000 : null
   };
+}
+
+
+async function updateOrganizer(
+  organizer: OrganizerInput
+): Promise<Organizer | undefined> {
+  const now = new Date();
+
+  return db.organizer.update({
+    where: {
+      id: organizer.id as string
+    },
+    data: {
+      name: organizer.name,
+      email: organizer.email,
+      phoneNumber: organizer.phoneNumber,
+      address: organizer.address,
+      postalCode: organizer.postalCode,
+      city: organizer.city,
+      taxNumber: organizer.taxNumber,
+      contactName: organizer.contactName,
+      typeId: organizer.typeId,
+      description: organizer.description,
+      logo: organizer.logo,
+      userId: organizer.userId,
+      updatedAt: now
+    }
+  });
 }
 
 async function approveOrganizer(id: string, commission: number) {
@@ -129,6 +137,7 @@ async function updateOrganizerCommission(id: string, commission: number) {
 export {
   createOrganizer,
   findOrganizer,
+  findOrganizerByName,
   updateOrganizer,
   findOrganizers,
   findOrganizerById,

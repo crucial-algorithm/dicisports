@@ -132,6 +132,7 @@ model Event {
   hideFromLatestEvents Boolean           @default(false) @map("hide_from_latest_events")
   externalWebsite      String?           @map("external_website")
   bookingStopsAt       DateTime?         @map("booking_stops_at")
+  isScraped            Boolean           @default(false) @map("is_scraped")
   documents            Document[]
   perks                Perk[]
   races                Race[]
@@ -439,6 +440,7 @@ enum OrganizerStatus {
   PENDING
   APPROVED
   REJECTED
+  SCRAPED
 }
 
 model Organizer {

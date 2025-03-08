@@ -1,3 +1,5 @@
+// import * as React from 'react';
+import type { MouseEvent } from 'react';
 import type { LoaderFunction, MetaFunction } from '@remix-run/node';
 import { json, redirect } from '@remix-run/node';
 import type { FetcherWithComponents } from '@remix-run/react';
@@ -12,7 +14,8 @@ import {
   GlobeAltIcon,
   HeartIcon,
   MapPinIcon,
-  QuestionMarkCircleIcon
+  QuestionMarkCircleIcon,
+  TrophyIcon
 } from '@heroicons/react/24/outline';
 import {
   CheckIcon,
@@ -22,8 +25,7 @@ import {
   XMarkIcon
 } from '@heroicons/react/24/solid';
 
-import * as React from 'react';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import clsx from 'clsx';
 import { InView } from 'react-intersection-observer';
@@ -184,6 +186,10 @@ export default function EventDisplayRoute() {
     minPrice = prices[0];
   }
 
+  if (minPrice >= 0) {
+    minPrice = minPrice / 1000;
+  }
+
   const isBookingClosed =
     new Date(
       event.bookingStopsAt ? event.bookingStopsAt : (event.startAt as Date)
@@ -200,21 +206,28 @@ export default function EventDisplayRoute() {
       />
 
       <Main>
+      {event.isScraped && (
+          <div className="my-4 text-right">
+            <p className="text-sm text-gray-500 italic">{t('Non Binding Information')}</p>
+          </div>
+        )}
         <InView as="div" onChange={setEventHeaderVisible} threshold={0.2}>
           <EventHeader
             event={event}
-            favorite={favorite}
+            favorite={favorite as FetcherWithComponents<{ action: string; ok: boolean }>}
             minPrice={minPrice}
             t={t}
             isUserFavorite={isUserFavorite}
             language={i18n.language}
           />
         </InView>
+
         <div className="my-8">
           <H3>{t('About')}</H3>
           <div
             className="dark:text-blueGray-500 text-base font-medium mr-2 mt-2 whitespace-pre-line prose"
             data-cy="description"
+            // biome-ignore lint/security/noDangerouslySetInnerHtml: <explanation>
             dangerouslySetInnerHTML={{ __html: event.description || '...' }}
           />
         </div>
@@ -287,6 +300,7 @@ export default function EventDisplayRoute() {
             <div
               data-cy="directions"
               className="dark:text-blueGray-500 text-base font-medium mr-2 mt-2 whitespace-pre-line prose"
+              // biome-ignore lint/security/noDangerouslySetInnerHtml: <explanation>
               dangerouslySetInnerHTML={{ __html: event.directions || '...' }}
             />
           </div>
@@ -308,7 +322,9 @@ export default function EventDisplayRoute() {
               />
             ))}
         </div>
+
         {organizer && <OrganizerFooter organizer={organizer} />}
+
       </Main>
     </>
   );
@@ -503,6 +519,7 @@ function DisplayRace({
                 <div
                   className="dark:text-blueGray-500 text-base font-medium mr-2 mt-2 whitespace-pre-line px-4"
                   data-cy={`race-description-${race.id}`}
+                  // biome-ignore lint/security/noDangerouslySetInnerHtml: <explanation>
                   dangerouslySetInnerHTML={{ __html: race.raceDescription }}
                 />
               </div>
@@ -563,12 +580,7 @@ function DisplayRace({
               {t('Book')}
             </Button>
             {isBookingClosed && (
-              <label
-                className="dark:text-blueGray-500"
-                data-cy="booking-closed"
-              >
-                {t('Booking Closed')}
-              </label>
+              <span className="dark:text-blueGray-500" data-cy="booking-closed">{t('Booking Closed')} </span>
             )}
           </Form>
         )}
@@ -647,7 +659,7 @@ function EventHeader({
   isUserFavorite
 }: {
   event: EventWithRacesDifficultiesAndDocuments;
-  favorite: FetcherWithComponents<any>;
+  favorite: FetcherWithComponents<{ action: string; ok: boolean }>;
   minPrice: number;
   t: TFunction;
   language: string;
@@ -661,8 +673,8 @@ function EventHeader({
   const [message, setMessage] = useState<string>(favoriteAddedMessage);
   const [address, setAddress] = useState<string>('');
   const galleria = useRef(null);
-  let showFavoriteAddedNotification: any = null;
-  let showCopiedToClipboardNotification: any = null;
+  let showFavoriteAddedNotification: () => void = useCallback(() => {}, []);
+  let showCopiedToClipboardNotification: () => void = useCallback(() => {}, []);
 
   const images: string[] = [
     event.image1,
@@ -687,13 +699,13 @@ function EventHeader({
   useEffect(() => {
     const typeOfFetcher = fetcherType(favorite);
 
-    if (typeOfFetcher === 'actionReload' && favorite.data.ok) {
+    if (typeOfFetcher === 'actionReload' && favorite?.data?.ok) {
       setMessage(
-        favorite.data.action === actions.add
+        favorite?.data?.action === actions.add
           ? favoriteAddedMessage
           : favoriteRemovedMessage
       );
-      setIsFavorite(favorite.data.action === actions.add);
+      setIsFavorite(favorite?.data?.action === actions.add);
       showFavoriteAddedNotification();
     }
 
@@ -707,7 +719,7 @@ function EventHeader({
     favoriteRemovedMessage
   ]);
 
-  function handleOpenGallery(e: React.MouseEvent) {
+  function handleOpenGallery(e: MouseEvent) {
     // @ts-ignore
     galleria.current?.show();
 
@@ -719,6 +731,7 @@ function EventHeader({
 
   return (
     <div className="flex flex-col md:flex-row mt-4">
+      {/* biome-ignore lint/a11y/useKeyWithClickEvents: TODO: look later into this rule */}
       <div
         className="relative w-full md:w-[22rem] cursor-pointer"
         onClick={handleOpenGallery}
@@ -785,6 +798,15 @@ function EventHeader({
           </Notification>
         </div>
         <div className="flex flex-row items-center mb-2">
+          <TrophyIcon className="h-6 w-6 m-0 inline-block text-primary" />
+          <H6 data-cy="sport" className="ml-4 md:ml-2">
+            {getI18nText(
+              event.sport?.name as TranslationObject,
+              language as Language
+            )}
+          </H6>
+        </div>        
+        <div className="flex flex-row items-center mb-2">
           <CalendarDaysIcon className="h-6 w-6 m-0 inline-block text-primary" />
           <H6 data-cy="date" className="ml-4 md:ml-2">
             <DisplayDate date={new Date(event.startAt || 0)} />
@@ -800,8 +822,13 @@ function EventHeader({
           >
             <H6 className="ml-4 mr-2 md:ml-2">
               <span data-cy="location">{event.placeName}</span>
-              {location && location.place && <>,&nbsp;{location.place}</>}
+              {location?.place && <>,&nbsp;{location.place}</>}
               <span className="text-sm link">&nbsp;{t('Open map')}</span>
+              {event.isScraped && (
+                <span className="text-xs text-gray-500 block">
+                  {t('Approximate Location')}
+                </span>
+              )}
             </H6>
           </a>
         </div>
@@ -836,7 +863,7 @@ function EventHeader({
               className="text-sp-light-blue-900 w-full md:ml-2"
             >
               <b className="break-words">{`${
-                minPrice ? minPrice / 1000 : t('Undefined')
+                minPrice >= 0 ? minPrice : t('Undefined')
               }€`}</b>
             </H2>
           </div>
@@ -881,7 +908,7 @@ function StickyPriceTag({
               data-cy="sticky-price"
               className="text-sp-light-blue-900 w-full md:ml-2"
             >
-              <b className="break-words">{`${minPrice / 1000}€`}</b>
+              <b className="break-words">{`${minPrice}€`}</b>
             </H2>
           </div>
           <ButtonLink className="md:ml-16" to="#races-list">
@@ -982,11 +1009,12 @@ function SeeMoreOrLessButton({
     'absolute inline-block h-4 w-4 m-0 text-white bg-black dark:bg-blueGray-500 rounded-full cursor-pointer';
 
   return (
+    // biome-ignore lint/a11y/useKeyWithClickEvents: <explanation>
     <div
       className="flex flex-col items-center relative py-2 mb-4"
       onClick={onClick}
     >
-      <label
+      <span
         data-cy={name}
         className={clsx(
           'dark:text-white text-sm font-medium border-black dark:border-blueGray-500 py-1 px-2 cursor-pointer',
@@ -998,7 +1026,7 @@ function SeeMoreOrLessButton({
         )}
       >
         {expanded ? t('See Less') : t('See More')}
-      </label>
+      </span>
       {expanded ? (
         <ChevronUpIcon className={clsx('top-0', iconClassName)} />
       ) : (

@@ -139,6 +139,7 @@
   "Delete Race X": "Apagar a corrida \"{{name}}\"",
   "Delete Document X": "Apagar a documento \"{{name}}\"",
   "Are you sure you want to delete race?": "Tem a certeza que quer apagar a corrida? Não há como voltar atrás!",
+  "Cannot delete race with participants": "Não é possível apagar uma corrida com participantes associados!",
   "Are you sure you want to delete document?": "Tem a certeza que quer apagar o documento? Não há como voltar atrás!",
   "Are you sure you want to delete event?": "Tem a certeza que quer apagar o evento? Não há como voltar atrás",
   "Are you sure you want to delete regulation?": "Tem a certeza que quer apagar o regulamento? Não há como voltar atrás",
