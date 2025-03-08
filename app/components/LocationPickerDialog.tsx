@@ -1,5 +1,5 @@
 import clsx from 'clsx';
-import type { MouseEvent } from 'react';
+import type { MouseEvent, KeyboardEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import Dialog from '~/components/shared/Dialog';
@@ -22,6 +22,7 @@ type LocationInPicker = {
 // Once we have multiple countries, we will handle specific regions for each country
 // with translations. For now, we only have Portugal, so lets make it static code
 const regions = [
+  { value: 'Açores', label: 'Açores' },
   { value: 'Aveiro', label: 'Aveiro' },
   { value: 'Beja', label: 'Beja' },
   { value: 'Braga', label: 'Braga' },
@@ -33,6 +34,7 @@ const regions = [
   { value: 'Guarda', label: 'Guarda' },
   { value: 'Leiria', label: 'Leiria' },
   { value: 'Lisbon', label: 'Lisboa' },
+  { value: 'Madeira', label: 'Madeira' },
   { value: 'Portalegre', label: 'Portalegre' },
   { value: 'Porto', label: 'Porto' },
   { value: 'Santarém', label: 'Santarém' },
@@ -54,14 +56,22 @@ export default function LocationPickerDialog({
   const { t } = useTranslation('common');
   const stats: Record<string, number> = {};
 
-  locations.map(({ region, events }) => (stats[region] = events));
+  locations.map(({ region, events }) => {
+    stats[region] = events;
+  });
 
   function handleReset() {
     onLocationPicked(null);
     triggerClose();
   }
 
-  function handleSelect(e: MouseEvent<HTMLDivElement>) {
+  function handleKeyDown(e: KeyboardEvent) {
+    if (e.key === 'Enter' || e.key === ' ') {
+      handleReset();
+    }
+  }
+
+  function handleSelect(e: MouseEvent<HTMLButtonElement>) {
     if (!stats[e.currentTarget.id]) {
       return;
     }
@@ -70,6 +80,21 @@ export default function LocationPickerDialog({
       label: regions.find((r) => r.value === e.currentTarget.id)?.label || ''
     });
     triggerClose();
+  }
+
+  function handleSelectKeyDown(e: KeyboardEvent<HTMLButtonElement>) {
+    if (e.key === 'Enter' || e.key === ' ') {
+      const target = e.currentTarget;
+      
+      if (!stats[target.id]) {
+        return;
+      }
+      onLocationPicked({
+        value: target.id,
+        label: regions.find((r) => r.value === target.id)?.label || ''
+      });
+      triggerClose();
+    }
   }
 
   function handleClose() {
@@ -88,25 +113,30 @@ export default function LocationPickerDialog({
     >
       <div className="h-screen">
         {location && (
-          <p
+          <button
+            type="button"
             onClick={handleReset}
+            onKeyDown={handleKeyDown}
             className="w-full text-orange-600 dark:text-blueGray-500 font-medium text-center underline bold"
           >
             {t('Clean <something>', { something: location })}
-          </p>
+          </button>
         )}
         {regions.map(({ value, label }) => (
-          <div
+          <button
+            type="button"
             id={value}
             key={value.replace(' ', '-')}
             className={clsx(
-              'min-h-14 flex items-center px-2 border-b-2 border-gray-300',
+              'min-h-14 flex items-center px-2 border-b-2 border-gray-300 w-full text-left',
               { 'opacity-50': !stats[value] }
             )}
             onClick={handleSelect}
+            onKeyDown={handleSelectKeyDown}
+            disabled={!stats[value]}
           >
             {label}
-          </div>
+          </button>
         ))}
       </div>
     </Dialog>
