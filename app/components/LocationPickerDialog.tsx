@@ -33,7 +33,7 @@ const regions = [
   { value: 'Faro', label: 'Faro' },
   { value: 'Guarda', label: 'Guarda' },
   { value: 'Leiria', label: 'Leiria' },
-  { value: 'Lisbon', label: 'Lisboa' },
+  { value: 'Lisboa', label: 'Lisboa' },
   { value: 'Madeira', label: 'Madeira' },
   { value: 'Portalegre', label: 'Portalegre' },
   { value: 'Porto', label: 'Porto' },
@@ -58,6 +58,7 @@ export default function LocationPickerDialog({
 
   locations.map(({ region, events }) => {
     stats[region] = events;
+    return { region, events };
   });
 
   function handleReset() {
