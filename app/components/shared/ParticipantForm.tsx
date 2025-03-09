@@ -168,7 +168,7 @@ export default function ParticipantForm({
                 name="userSavedParticipants"
                 placeholder=""
                 options={userSavedParticipants.map((u) => {
-                  return { value: u.id, label: u.firstName + ' ' + u.lastName };
+                  return { value: u.id, label: `${u.firstName} ${u.lastName}` };
                 })}
                 onChange={setSelectedParticipant}
                 className="w-[50%] mr-2"

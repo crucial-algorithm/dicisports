@@ -37,6 +37,7 @@ export type ConfigServer = {
   SMS_APPLICATION_ID: string;
   SMS_APPLICATION_TOKEN: string;
   SLACK_ERRORS_WEBHOOK_URL: string;
+  CREATE_EVENT_TOKEN: string;
 }
 
 let config: ConfigServer | null = null;
@@ -85,7 +86,8 @@ export default function Config(): ConfigServer {
     SMS_ENDPOINT: extractVar('SMS_ENDPOINT'),
     SMS_APPLICATION_ID: extractVar('SMS_APPLICATION_ID'),
     SMS_APPLICATION_TOKEN: extractVar('SMS_APPLICATION_TOKEN'),
-    SLACK_ERRORS_WEBHOOK_URL: extractVar('SLACK_ERRORS_WEBHOOK_URL')
+    SLACK_ERRORS_WEBHOOK_URL: extractVar('SLACK_ERRORS_WEBHOOK_URL'),
+    CREATE_EVENT_TOKEN: extractVar('CREATE_EVENT_TOKEN')
   };
 
   return config;

@@ -3,7 +3,11 @@ import { Prisma, PrismaClient, Status } from '@prisma/client';
 
 import { db } from '~/server/db.server';
 import Id from '~/server/utils/Id.server';
-import type { CreateEventInput, EventWithRacesDifficultiesAndDocuments, Language } from '~/types';
+import type {
+  EventWithRacesDifficultiesAndDocuments,
+  Language,
+  UpdateEventInput
+} from '~/types';
 import {
   createDefaultPerks,
   createPerks,
@@ -67,7 +71,8 @@ async function findEvents(): Promise<
         }
       },
       difficulty: true,
-      races: true
+      races: true,
+      sport: true
     }
   });
 }
@@ -244,6 +249,7 @@ async function findEventWithRacesAndDocuments(
         }
       },
       difficulty: true,
+      sport: true,
       races: {
         where: {
           status: {
@@ -271,12 +277,12 @@ async function createDraftEvent(
   createdById: string,
   language: Language,
   id?: string
-): Promise<Event | void> {
+): Promise<Event | null> {
   const eventId = id ? id : Id();
   const eventAt = new Date();
 
   return await prisma.$transaction(async (tx) => {
-    await tx.event.create({
+    const event = await tx.event.create({
       data: {
         id: eventId,
         name: null,
@@ -297,14 +303,16 @@ async function createDraftEvent(
 
     await createDefaultPerks(eventId, language, tx);
     await createEventLatestBibNumber(eventId, tx);
+
+    return event;
   });
 }
 
 async function updateEvent(
-  event: CreateEventInput,
+  event: UpdateEventInput,
   perks: string[],
   newPerks: string[],
-  hasRegistrations: boolean = false
+  hasRegistrations = false
 ): Promise<void> {
   return await prisma.$transaction(async (prisma) => {
     console.debug('updating event...');
@@ -317,7 +325,7 @@ async function updateEvent(
     }
 
     await prisma.event.update({
-      where: { id: event.id },
+      where: { id: event.id as string },
       data: {
         name: event.name,
         sportId: event.sportId,
@@ -343,12 +351,13 @@ async function updateEvent(
         description: event.description,
         directions: event.directions,
         bibStartingNumber: event.bibStartingNumber,
-        status: event.status
+        status: event.status,
+        isScraped: event.isScraped
       }
     });
     console.debug('event updated...');
 
-    await resetEventPerks(event.id, perks, prisma);
+    await resetEventPerks(event.id as string, perks, prisma);
     console.debug('perks reset...');
 
     await enableEventPerks(perks, prisma);
@@ -363,7 +372,7 @@ async function updateEvent(
             name: p,
             isDefault: false,
             isEnabled: true,
-            eventId: event.id || ''
+            eventId: event.id as string
           };
         }),
       prisma
@@ -373,8 +382,8 @@ async function updateEvent(
     // Only update the latest bib number when there are no registrations
     if (!hasRegistrations) {
       await updateEventLatestBibNumber(
-        event.id || '',
-        event.bibStartingNumber ? event.bibStartingNumber - 1 : 0,
+        event.id as string,
+        event.bibStartingNumber ? Number(event.bibStartingNumber) - 1 : 0,
         prisma
       );
     }
@@ -442,7 +451,8 @@ async function findEventBySlug(
         orderBy: { position: 'asc' }
       },
       difficulty: true,
-      races: true
+      races: true,
+      sport: true
     }
   });
 }
@@ -472,7 +482,8 @@ async function findUserFavoriteEvents(
         }
       },
       difficulty: true,
-      races: true
+      races: true,
+      sport: true
     }
   });
 }
@@ -522,7 +533,7 @@ async function getEventResultsByName(
     },
     where: {
       name: {
-        contains: name && name.length ? name : '',
+        contains: name?.length ? name : '',
         mode: 'insensitive'
       },
       status: Status.published

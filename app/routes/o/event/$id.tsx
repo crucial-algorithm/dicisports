@@ -305,8 +305,8 @@ export const action: ActionFunction = async ({ request, params }) => {
   const data: CreateEventInput = {
     id: params.id as string,
     name: form.get('event-name') as string,
-    sportId: parseInt(form.get('sport') as string),
-    difficultyId: parseInt(form.get('difficulty') as string),
+    sportId: Number.parseInt(form.get('sport') as string),
+    difficultyId: Number.parseInt(form.get('difficulty') as string),
     startAt: date,
     lat: location.lat,
     lng: location.lng,

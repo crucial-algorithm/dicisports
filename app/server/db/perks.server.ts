@@ -6,11 +6,20 @@ import Id from '~/server/utils/Id.server';
 
 import type { CreatePerksInput, Language } from '~/types';
 
-import json from './perks.json';
+import defaultPerks from './perks.json';
 
 async function findEventPerks(eventId: string): Promise<Array<Perk>> {
   return db.perk.findMany({
     where: { eventId: eventId }
+  });
+}
+
+async function findEventPerksByPerksName(
+  eventId: string,
+  perks: string[]
+): Promise<Array<Perk>> {
+  return db.perk.findMany({
+    where: { eventId: eventId, name: { in: perks } }
   });
 }
 
@@ -50,7 +59,7 @@ async function createDefaultPerks(
 ): Promise<Perk | void> {
   const perks: CreatePerksInput[] = [];
 
-  for (const perk of json) {
+  for (const perk of defaultPerks) {
     const perksId = Id();
     const perksAt = new Date();
 
@@ -111,6 +120,7 @@ export {
   enableEventPerks,
   findEventPerks,
   findPerk,
+  findEventPerksByPerksName,
   createPerk,
   createPerks,
   resetEventPerks

@@ -112,6 +112,7 @@ jobs:
           DOMAIN_URL: http://localhost:3000
 
           SCHEDULER_SECRET: "abc"
+          CREATE_EVENT_TOKEN: "123"
 
           SMS_ENDPOINT: http://127.0.0.1:3001/bulkgate
           SMS_APPLICATION_ID: 1111
@@ -120,13 +121,13 @@ jobs:
           HTTP_CATCHER: http://127.0.0.1:3001
           SLACK_ERRORS_WEBHOOK_URL: http://127.0.0.1:3001?bucket=errors
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: cypress-screenshots
           path: cypress/screenshots
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: cypress-videos

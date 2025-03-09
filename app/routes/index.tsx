@@ -326,18 +326,16 @@ export default function Index() {
         </div>
 
         {showMoreResults && (
-          <>
-            <div className="inset-x-0 mb-8 flex align-middle justify-center absolute bottom-0 w-full">
-              <Button
-                id="see-more"
-                name="actionId"
-                value={actions.more}
-                formMethod="get"
-              >
-                <ChevronDownIcon width="22" /> {t('Load More')}
-              </Button>
-            </div>
-          </>
+          <div className="inset-x-0 mb-8 flex align-middle justify-center absolute bottom-0 w-full">
+            <Button
+              id="see-more"
+              name="actionId"
+              value={actions.more}
+              formMethod="get"
+            >
+              <ChevronDownIcon width="22" /> {t('Load More')}
+            </Button>
+          </div>
         )}
       </Form>
 
@@ -791,8 +789,7 @@ function CalendarDay({ events, date }: { events: EventSlim[]; date: string }) {
             <Link to={`/${i18n.language}/event/${slug}`}>
               <div className="text-lg">{name}</div>
               <div className="text-sm text-blueGray-500">
-                {placeName},&nbsp;{(location as DiciLocation)?.place},&nbsp;
-                {hackLocationI18n((location as DiciLocation)?.region)}
+                {[placeName, (location as DiciLocation)?.place, hackLocationI18n((location as DiciLocation)?.region)].filter(Boolean).join(', ')}
               </div>
             </Link>
           </div>

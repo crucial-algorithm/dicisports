@@ -46,7 +46,14 @@ export const action: ActionFunction = async ({ request, params }) => {
   }
 
 
-  await deleteRace(raceId);
+  const result = await deleteRace(raceId);
+
+  if (!result.success) {
+    return json({ 
+      ok: false, 
+      error: result.error || t('Could not delete race') 
+    }, { status: 400 });
+  }
 
   return json({ ok: true });
 };

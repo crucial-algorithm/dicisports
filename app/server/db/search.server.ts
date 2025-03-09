@@ -124,10 +124,10 @@ async function searchEvents(
                      e.created_by                                                          AS "createdBy",
                      e.updated_at                                                          AS "updatedAt",
                      e.description                                                         AS "description",
-                     u2.name                                                               AS "user"
+                     o.name                                                                AS "user"
               FROM events e
                        INNER JOIN races r on e.id = r.event_id
-                       INNER JOIN users u2 on e.created_by = u2.id
+                       INNER JOIN organizers o on e.created_by = o.user_id
                        INNER JOIN difficulties d on e.difficulty_id = d.id
               WHERE e.status = 'published'
                 AND DATE_TRUNC('DAY', end_at) + INTERVAL '1 DAY' >= CURRENT_TIMESTAMP
@@ -141,7 +141,7 @@ async function searchEvents(
                   'AND NOT EXISTS (SELECT 1 FROM perks WHERE event_id = e.id AND name = \'Resultados cronometrados\' AND is_enabled IS TRUE)'
                 )}
                 ${n(filters.region, `AND e.location ->> 'region' = '${filters.region}'`)}
-              GROUP BY e.id, u2.name, d.name) as r 
+              GROUP BY e.id, o.name, d.name) as r 
               ORDER BY "createdAt" DESC
             LIMIT ${chunkSize} OFFSET ${position * chunkSize};
     `;

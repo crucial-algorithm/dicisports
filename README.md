@@ -1,4 +1,4 @@
-# DiciSports 
+# DiciSports
 
 Hosted at [dicisports](https://dicisports.com), but tested @ [dicistg.fly.dev](https://dicistg.fly.dev/).
 
@@ -9,6 +9,11 @@ Built with [Remix](https://remix.run) running on [fly.io](https://fly.io).
 From your terminal:
 
 ```sh
+npm install
+npx tsc --resolveJsonModule --esModuleInterop prisma/seed.ts
+mv prisma/seed.js prisma/seed.cjs
+npx prisma migrate reset
+npx prisma db seed
 npm run dev
 ```
 
@@ -16,7 +21,7 @@ This starts your app in development mode, rebuilding assets on file changes.
 
 ## Deployment
 
-First, build your app for production:   
+First, build your app for production:
 
 ```sh
 npm run build
@@ -73,6 +78,16 @@ flyctl secrets -a diciprd set ORGANIZER_REVIEWERS_EMAILS="xxx@dicisports.com,yyy
 
 **Multibanco:** has to be validated manually, so we can test e2e
 
+
+## Testing docker image locally
+```shell
+docker build . --no-cache
+
+## get the hash from the output
+
+docker run -p 127.0.0.1:3000:3000/tcp --env-file .env 049365fd3657f495354f35a13cc2096652222eedaa162b9197d0744d2cf980e6
+```
+
 ## Troubleshooting fly.io
 ### Restarting database (after finding out it was down)
 ```shell
@@ -85,10 +100,10 @@ flyctl machine restart 178150df4202d8 -a dicistg-db
 # Expected output
 Restarting machine 178150df4202d8
   Waiting for 178150df4202d8 to become healthy (started, 3/3)
-Machine 178150df4202d8 restarted successfully! 
+Machine 178150df4202d8 restarted successfully!
 ```
 
-### List env variables 
+### List env variables
 fly ssh console -C "printenv" --app diciprd
 
 ### Connect to staging/production DB
@@ -97,7 +112,7 @@ fly ssh console -C "printenv" --app diciprd
 flyctl proxy <port> -a <app-name>
 
 # Example
-flyctl proxy 5432 -a dicistg-bd
+flyctl proxy 5432 -a dicistg-db
 ```
 
 ### Check app logs
@@ -105,7 +120,7 @@ flyctl proxy 5432 -a dicistg-bd
 fly logs -a <app-name>
 
 # Example
-fly logs -a dicistg 
+fly logs -a dicistg
 ```
 
 ### Scaling Memory
@@ -121,3 +136,5 @@ Once all the necessary packages are installed, follow these steps:
 2. Locate the `.prisma` folder within the `node_modules` directory.
 3. Right-click on the `.prisma` folder and choose the option "**_Mark Directory as_**".
 4. Select "**_Not Excluded_**".
+
+

@@ -17,14 +17,14 @@ jobs:
         uses: styfle/cancel-workflow-action@0.9.1
 
       - name: ⬇️ Checkout repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: 🐳 Set up Docker Build
         uses: docker/setup-buildx-action@v1
 
       # Setup cache
       - name: ⚡️ Cache Docker layers
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: /tmp/.buildx-cache
           key: ${{ runner.os }}-buildx-${{ github.sha }}
@@ -40,7 +40,7 @@ jobs:
 
       - name: 🐳 Docker build production
         if: ${{ github.ref == 'refs/heads/master' && github.event_name == 'push' }}
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v4
         with:
           context: .
           push: true
@@ -52,7 +52,7 @@ jobs:
 
       - name: 🐳 Docker build staging
         if: ${{ github.ref == 'refs/heads/staging' && github.event_name == 'push' }}
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v4
         with:
           context: .
           push: true
@@ -82,7 +82,7 @@ jobs:
         uses: styfle/cancel-workflow-action@0.9.1
 
       - name: ⬇️ Checkout repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: 🚀 Deploy Production
         if: ${{ github.ref == 'refs/heads/master' && github.event_name == 'push' }}

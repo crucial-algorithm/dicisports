@@ -1,11 +1,27 @@
 [
   {
-    "name": {"pt":  "Abastecimentos", "en":  "Supplies"}
+    "name": {"pt":  "Abastecimentos", "en":  "Supplies"}, "key": "food_stations"
   },
   {
-    "name": {"pt": "Chuveiros", "en":  "Showers"}
+    "name": {"pt": "Chuveiros", "en":  "Showers"}, "key": "shower"
   },
   {
-    "name": {"pt":  "Resultados cronometrados", "en":  "Chip-timed results"}
+    "name": {"pt":  "Resultados cronometrados", "en":  "Chip-timed results"}, "key": "timed_event"
+  },
+  {
+    "name": {"pt":  "Fotógrafos", "en":  "Photos"}, "key": "photos"
+  },
+  {
+    "name": {"pt":  "Prémios/Troféus/Medalhas", "en":  "Prizes"}, "key": "prizes"
+  },
+  {
+    "name": {"pt":  "Assistência/Apoio ao longo da prova", "en":  "Support"}, "key": "support"
+  },
+  {
+    "name": {"pt":  "Kit de participante", "en":  "Participant Kit"}, "key": "participant_kit"
+  },
+  {
+    "name": {"pt":  "Seguro", "en":  "Insurance"}, "key": "insurance"
   }
+
 ]

@@ -7,11 +7,11 @@ import type { CreateRaceInput } from '~/types';
 
 const prisma = new PrismaClient();
 
-async function createRace(race: CreateRaceInput): Promise<Race> {
+async function createRace(race: CreateRaceInput, tx: any = null): Promise<Race> {
   const raceId = race.id || Id();
   const raceAt = new Date();
 
-  return db.race.create({
+  return (tx || db).race.create({
     data: {
       id: raceId,
       name: race.name,
@@ -29,6 +29,14 @@ async function createRace(race: CreateRaceInput): Promise<Race> {
       raceDescription: race.raceDescription,
       track: race.track,
       eventId: race.eventId
+    }
+  });
+}
+
+async function createRaces(races: CreateRaceInput[]) {
+  return await prisma.$transaction(async (tx) => {
+    for (const race of races) {
+      await createRace(race, tx);
     }
   });
 }
@@ -126,13 +134,32 @@ async function updateDisplayOrderDown(
   });
 }
 
-async function deleteRace(id: string) {
+async function deleteRace(id: string): Promise<{ success: boolean; error?: string }> {
+  // Check if there are any participants for this race
+  const participants = await db.raceParticipant.findFirst({
+    where: { 
+      raceId: id,
+      status: { not: RaceParticipantStatus.deleted }
+    }
+  });
+
+  // If there are participants, prevent deletion
+  if (participants) {
+    return {
+      success: false,
+      error: 'Cannot delete race with participants'
+    };
+  }
+
+  // If no paid participants, proceed with deletion
   await db.race.update({
     where: { id },
     data: {
       status: 'deleted'
     }
   });
+
+  return { success: true };
 }
 
 async function findRegistrationsAddedToCart(
@@ -152,6 +179,7 @@ async function findRegistrationsAddedToCart(
 
 export {
   createRace,
+  createRaces,
   findEventRaces,
   findRace,
   updateRace,
