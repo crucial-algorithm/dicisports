@@ -113,6 +113,7 @@ flyctl proxy <port> -a <app-name>
 
 # Example
 flyctl proxy 5432 -a dicistg-db
+flyctl proxy 5432 -a ds-db-prd
 ```
 
 ### Check app logs
