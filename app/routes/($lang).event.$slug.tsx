@@ -603,7 +603,7 @@ function DisplayDocument(props: { document: Document; index: number }) {
     <Link
       to={`/${lang}/event/${document.eventId}/doc/${document.id}/view`}
       target="_blank"
-      rel="noreferrer"
+      rel="nofollow"
       className="text-black dark:text-white"
       data-cy="document-label"
     >
@@ -639,7 +639,7 @@ function DisplayRegulation({ event }: { event: Event }) {
     <Link
       to={path}
       target="_blank"
-      rel="noreferrer"
+      rel="nofollow"
       className="text-black dark:text-white"
       data-cy="regulation"
     >

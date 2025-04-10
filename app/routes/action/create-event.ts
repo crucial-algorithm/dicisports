@@ -77,6 +77,7 @@ async function createAnonymousUserAndOrganizer(organizerName: string, t: TFuncti
     id: Id(),
     name: organizerName,
     email: `${emailPrefix}@fake.dicisports.com`,
+    commission: 10000,
     phoneNumber: 100000000 + Math.floor(Math.random() * 10000000), // Phone number as integer
     address: 'Default Address',
     postalCode: '0000-000',

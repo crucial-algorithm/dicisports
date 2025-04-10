@@ -7,7 +7,7 @@ import {
   useLocation,
   useSubmit
 } from '@remix-run/react';
-import React, { useCallback, useEffect, useState } from 'react';
+import { type MouseEvent, useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Event } from '@prisma/client';
 import {
@@ -443,30 +443,23 @@ export default function Index() {
         </H5>
       )}
 
-      {searchPerformed && (
-        <>
-          {searchResults.map((r, index) => (
-            <EventResult
-              key={r.id}
-              event={r}
-              img={sports.find((s) => s.id === r.sportId)?.picture}
-              userLocation={null}
-              showLocation={false}
-              isUserFavorite={
-                favoriteEvents.find((e) => e.id === r.id) !== undefined
-              }
-            />
-          ))}
-        </>
-      )}
+      {searchPerformed &&
+        searchResults.map((r, index) => (
+          <EventResult
+            key={r.id}
+            event={r}
+            img={sports.find((s) => s.id === r.sportId)?.picture}
+            userLocation={null}
+            showLocation={false}
+            isUserFavorite={
+              favoriteEvents.find((e) => e.id === r.id) !== undefined
+            }
+          />
+        ))}
 
       {!searchPerformed && (
         <>
-          {featuredEvent && (
-            <>
-              <FeaturedEvent event={featuredEvent} />
-            </>
-          )}
+          {featuredEvent && <FeaturedEvent event={featuredEvent} />}
 
           {latestEvents.length > 0 && (
             <LatestEvents
@@ -506,7 +499,7 @@ export default function Index() {
   function Categories({ sports }: { sports: Sport[] }) {
     const { t, i18n } = useTranslation('home');
 
-    function handleFilterSport(e: React.MouseEvent<HTMLSpanElement>) {
+    function handleFilterSport(e: MouseEvent<HTMLSpanElement>) {
       handleApplySport(sports.find((s) => s.id === Number(e.currentTarget.id)) || null);
     }
 

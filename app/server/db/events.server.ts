@@ -175,7 +175,7 @@ async function findFeaturedEvents(): Promise<Event[]> {
       status: Status.published,
       hideFromLatestEvents: false,
       endAt: { gte: new Date() },
-      useExternalBooking: false
+      isScraped: false
     },
     orderBy: { createdAt: 'desc' }
   });
