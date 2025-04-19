@@ -115,20 +115,20 @@ export const loader: LoaderFunction = async ({ request }) => {
     : 0;
 
   favoriteEvents?.map((f) =>
-      favorites.push({
-        type: 'e',
-        id: f.id,
-        name: f.name as string,
-        slug: f.slug as string,
-        image1: f.image1,
-        image2: f.image2,
-        image3: f.image3,
-        image4: f.image4,
-        image5: f.image5,
-        sportId: f.sportId as number,
-        eventDate: f.startAt as Date
-      })
-    );
+    favorites.push({
+      type: 'e',
+      id: f.id,
+      name: f.name as string,
+      slug: f.slug as string,
+      image1: f.image1,
+      image2: f.image2,
+      image3: f.image3,
+      image4: f.image4,
+      image5: f.image5,
+      sportId: f.sportId as number,
+      eventDate: f.startAt as Date
+    })
+  );
 
   const searchedName = searchParams.get('searched-name');
 
@@ -255,16 +255,16 @@ export default function Me() {
       <H2>{t('Your Favorites')}</H2>
       <div className="flex flex-col w-[calc(100%-(50px))] p-4">
         {favorites?.map((f) => (
-            <div className="w-full border-b p-4 last:border-none" key={f.id}>
-              <a
-                href={`/event/${f.slug}`}
-                className="cursor-pointer"
-                data-cy="favorite-entry"
-              >
-                <DisplayFavorites favorite={f} sports={sports} t={t} />
-              </a>
-            </div>
-          ))}
+          <div className="w-full border-b p-4 last:border-none" key={f.id}>
+            <a
+              href={`/event/${f.slug}`}
+              className="cursor-pointer"
+              data-cy="favorite-entry"
+            >
+              <DisplayFavorites favorite={f} sports={sports} t={t} />
+            </a>
+          </div>
+        ))}
       </div>
 
       <WhenListEmpty list={favorites}>
@@ -339,14 +339,6 @@ function DisplayFavorites({
     );
   }
 
-  const schedule = favorite?.schedules
-    ?.sort((a, b) => a.dayOfWeek - b.dayOfWeek)
-    .map(
-      ({ dayOfWeek, timeOfDay }) =>
-        `${translateDay(dayOfWeek)}, ${displayTimeOfDay(timeOfDay)}`
-    )
-    .join(' | ');
-
   const entry = {
     id: favorite.id,
     name: favorite?.name || '',
@@ -367,19 +359,12 @@ function DisplayFavorites({
         <div className="flex flex-col gap-y-2 ml-4">
           <H4>{favorite.name}</H4>
           <div className="flex flex-col">
-            {favorite.type === 'g' ? (
-              <>
-                <H6 className="dark:text-blueGray-500">{t('Schedules')}</H6>
-                <H6>{schedule}</H6>
-              </>
-            ) : (
-              <>
-                <H6 className="dark:text-blueGray-500">{t('Event Date')}</H6>
-                <H6>
-                  <DisplayDate date={new Date(favorite.eventDate || 0)} />
-                </H6>
-              </>
-            )}
+            <>
+              <H6 className="dark:text-blueGray-500">{t('Event Date')}</H6>
+              <H6>
+                <DisplayDate date={new Date(favorite.eventDate || 0)} />
+              </H6>
+            </>
           </div>
         </div>
       </div>
@@ -534,7 +519,9 @@ function BookingsList({
                 </table>
                 <WhenListEmpty list={bookings}>
                   <H6 className="text-center p-12" variant="secondary" as="p">
-                    {searchedName?.length > 0 ? t('No Bookings Found') : t('No Bookings')}
+                    {searchedName?.length > 0
+                      ? t('No Bookings Found')
+                      : t('No Bookings')}
                   </H6>
                 </WhenListEmpty>
 
@@ -606,9 +593,12 @@ function TH({ name }: { name: string }) {
   );
 }
 
-function TD({ value, dataCy }: { value: string | null, dataCy?: string }) {
+function TD({ value, dataCy }: { value: string | null; dataCy?: string }) {
   return (
-    <td className="text-sm text-black dark:text-white font-light px-6 py-4 whitespace-nowrap" data-cy={dataCy || '-'}>
+    <td
+      className="text-sm text-black dark:text-white font-light px-6 py-4 whitespace-nowrap"
+      data-cy={dataCy || '-'}
+    >
       {value}
     </td>
   );
@@ -649,7 +639,10 @@ function BookingListEntry({
       data-cy="participant-row"
       onClick={handleRedirectToBooking}
     >
-      <TD value={`${booking.event.name}`} dataCy={`event-${generateSlug(booking.event.name as string)}`} />
+      <TD
+        value={`${booking.event.name}`}
+        dataCy={`event-${generateSlug(booking.event.name as string)}`}
+      />
       <TD value={`${date} ${hour}`} />
       <TD value={t(booking.status)} dataCy={`status-${booking.id}`} />
       <TD value={`${booking.totalParticipants}`} />
