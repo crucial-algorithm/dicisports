@@ -45,7 +45,7 @@ import DisplayImg from '~/components/shared/DisplayImg';
 import { findSports } from '~/server/db/reference.server';
 import WhenListEmpty from '~/components/shared/Empty';
 
-import { displayTimeOfDay, generateSlug } from '~/utils/misc';
+import { generateSlug } from '~/utils/misc';
 import {
   findUserFavoriteEvents,
   removeEventFromFavorites
@@ -80,7 +80,7 @@ type LoaderData = {
 };
 
 export const handle = {
-  i18n: ['common', 'me']
+  i18n: ['me']
 };
 
 type Favorite = {
@@ -322,22 +322,7 @@ function DisplayFavorites({
   sports: Sport[];
   t: TFunction;
 }) {
-  const tc = useTranslation('common').t;
   const fetcher = useFetcher();
-
-  function translateDay(day: number) {
-    return tc(
-      [
-        'Monday',
-        'Tuesday',
-        'Wednesday',
-        'Thursday',
-        'Friday',
-        'Saturday',
-        'Sunday'
-      ][day]
-    );
-  }
 
   const entry = {
     id: favorite.id,
