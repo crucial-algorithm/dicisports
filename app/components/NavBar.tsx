@@ -35,13 +35,6 @@ import { TeamCircle } from './shared/icons/TeamCircle';
      public: false,
      roles: ['ADMIN'],
      id: 'events'
-   },
-   {
-     name: 'Groups Menu',
-     to: '/groups',
-     public: true,
-     roles: [],
-     id: 'groups'
    }
  ];
 
@@ -89,7 +82,7 @@ function DarkModeToggle({
   const { t } = useTranslation('common');
 
   function handleOnClick() {
-    onToggle && onToggle();
+    onToggle?.();
     setTheme((previousTheme) =>
       previousTheme === Theme.DARK ? Theme.LIGHT : Theme.DARK
     );
@@ -328,7 +321,7 @@ function ProfileButton({ user }: { user: User | null }) {
             rotate: [rotate, target],
             transition: {
               duration: durations[state],
-              repeat: Infinity,
+              repeat: Number.POSITIVE_INFINITY,
               ease: 'linear'
             }
           };
@@ -373,7 +366,7 @@ function Navbar() {
   const { t } = useTranslation('common');
   const { user } = useRootData();
   const location = useLocation();
-  const isRoot = location.pathname === '/' || location.pathname === '/groups';
+  const isRoot = location.pathname === '/';
 
   return (
     <>
@@ -433,23 +426,6 @@ function Navbar() {
         )}
 
         <div className="flex items-center justify-center gap-2.5">
-          {location.pathname !== '/groups' && (
-            <Link
-              to="/groups"
-              className="text-xs font-semibold bg-gray-400 rounded-full p-2 text-white capitalize"
-            >
-              {t('Groups Menu')}
-            </Link>
-          )}
-
-          {location.pathname === '/groups' && (
-            <Link
-              to="/"
-              className="text-xs font-bold bg-dicisports rounded-full p-2 text-white capitalize"
-            >
-              {t('Events Menu')}
-            </Link>
-          )}
 
           <IsNotAnOrganizer>
             {location.pathname !== '/organizers-promo' && (

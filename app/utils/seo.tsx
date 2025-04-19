@@ -60,7 +60,7 @@ const CanonicalMeta: MetaFunction<RootLoaderData> = ({ location, matches }) => {
    root.requestInfo.path === '/' ? location.search : ''
  }`;
  const description = sport
-   ? `Procuras companhia na tua zona para treinar? Encontra no Dicisports.com groups de ${name?.toLowerCase()} com objetivos parecidos com os teus.`
+   ? `Procuras companhia na tua zona para treinar? Encontra no Dicisports.com grupos de ${name?.toLowerCase()} com objetivos parecidos com os teus.`
    : DEFAULT_DESCRIPTION;
 
   return [{

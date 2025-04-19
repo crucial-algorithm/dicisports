@@ -1,9 +1,5 @@
 import type {
   Difficulty as DBDifficulty,
-  Group as DBGroup,
-  GroupSchedule as DBGroupSchedule,
-  GroupSpirit as DBGroupSpirit,
-  GroupType as DBGroupType,
   Organizer,
   OrganizerType as DBOrganizerType,
   PaymentMethod,
@@ -105,10 +101,6 @@ type Sport = {
   name: TranslationObject;
 } & DBSport;
 
-type GroupType = {
-  name: TranslationObject;
-} & DBGroupType;
-
 type CreateEventInput = Prisma.EventUncheckedCreateInput;
 
 type UpdateEventInput = Prisma.EventUncheckedUpdateInput;
@@ -116,10 +108,6 @@ type UpdateEventInput = Prisma.EventUncheckedUpdateInput;
 type CreatePerksInput = Prisma.PerkUncheckedCreateInput;
 
 type CreateRaceInput = Prisma.RaceUncheckedCreateInput;
-
-type GroupSpirit = {
-  name: TranslationObject;
-} & DBGroupSpirit;
 
 type DBRawSearchResults = {
   distance: number;
@@ -131,8 +119,6 @@ type DBRawSearchResults = {
   description: string;
   slug: string;
   sport_id: number;
-  group_type_id: number;
-  group_spirit_id: number;
   lat: number;
   lng: number;
   location: string;
@@ -150,69 +136,8 @@ type DBRawSearchResults = {
   created_by: string;
   updated_at: string;
   user_name: string;
-  group_spirit: TranslationObject;
   records: number;
   schedules: string[];
-};
-
-type GroupSearchResult = {
-  distance: number;
-  id: string;
-  name: string;
-  minPrice: number | null;
-  difficulty: TranslationObject | null;
-  startAt: Date | null;
-  description: string | null;
-  slug: string;
-  sportId: number;
-  groupTypeId: number | null;
-  groupSpiritId: number | null;
-  lat: number;
-  lng: number;
-  location: string;
-  near: string | null;
-  dayOfWeek: DaysOfWeek | null;
-  timeOfDay: number | null;
-  whatsapp: string | null;
-  image1: string | null;
-  image2: string | null;
-  image3: string | null;
-  image4: string | null;
-  image5: string | null;
-  status: string | null;
-  createdAt: Date;
-  createdById: string;
-  updatedAt: Date;
-  groupSpirit?: GroupSpirit | null;
-  createdBy: User;
-  schedules: GroupSchedule[] | null;
-};
-
-type Group = {
-  dayOfWeek: DaysOfWeek;
-  createdBy?: User;
-  groupSpirit?: GroupSpirit;
-  groupType?: GroupType;
-  sport?: Sport;
-  distance?: number;
-  description: string | null;
-  schedules?: GroupSchedule[];
-} & DBGroup;
-
-type GroupSchedule = {
-  hour?: number;
-  minute?: number;
-} & DBGroupSchedule;
-
-type CreateScheduleInput = Prisma.GroupScheduleUncheckedCreateInput;
-
-type CreateGroupInput = Prisma.GroupCreateInput;
-
-type GroupFilters = {
-  spirit: number[] | null;
-  sport: number | null;
-  dayOfWeek: number | null;
-  timeOfDay: [number, number] | null;
 };
 
 type EventFilters = {
@@ -324,16 +249,9 @@ export type {
   DaysOfWeek,
   DiciLocation,
   UploadImageMeta,
-  GroupFilters,
   EventFilters,
   // entities
   User,
-  Group,
-  CreateGroupInput,
-  GroupType,
-  GroupSpirit,
-  GroupSchedule,
-  CreateScheduleInput,
   Sport,
   CreateEventInput,
   UpdateEventInput,
@@ -348,7 +266,6 @@ export type {
   ParticipantInput,
   RaceRevenueRegistrations,
   DBRawSearchResults,
-  GroupSearchResult,
   OrganizerInput,
   EventStatus,
   DiscountCodeInput,

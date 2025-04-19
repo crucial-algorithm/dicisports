@@ -1,22 +1,13 @@
 import type {
   Difficulty as DBDifficulty,
-  GroupSpirit as DBGroupSpirit,
-  GroupType as DBGroupType,
   OrganizerType as DBOrganizerType,
   Sport as DBSport,
-  Status,
   User as DBUser
 } from '@prisma/client';
-import { Role } from '@prisma/client';
 
 import type {
-  DaysOfWeek,
-  DBRawSearchResults,
   Difficulty,
-  GroupSpirit,
-  GroupType,
   OrganizerType,
-  GroupSearchResult,
   Sport,
   TranslationObject,
   User
@@ -81,87 +72,6 @@ function dbDifficultyToDifficulty(difficulty: DBDifficulty): Difficulty {
   };
 }
 
-function dbGroupSpiritToGroupSpirit(group: DBGroupSpirit): GroupSpirit {
-  const { id, name, createdAt, updatedAt } = group;
-
-  return {
-    id,
-    createdAt,
-    updatedAt,
-    name: name as TranslationObject
-  };
-}
-
-function dbGroupTypeToGroupType(group: DBGroupType): GroupType {
-  const { id, name, createdAt, updatedAt } = group;
-
-  return {
-    id,
-    createdAt,
-    updatedAt,
-    name: name as TranslationObject
-  };
-}
-
-function dbRawSearchResultsToSearchResults(results: DBRawSearchResults): GroupSearchResult {
-  return {
-    distance: results.distance,
-    id: results.id,
-    name: results.name,
-    minPrice: results.min_price,
-    difficulty: results.difficulty,
-    startAt: new Date(results.start_at),
-    description: results.description,
-    slug: results.slug,
-    sportId: results.sport_id,
-    groupTypeId: results.group_type_id,
-    groupSpiritId: results.group_spirit_id,
-    lat: results.lat,
-    lng: results.lng,
-    location: results.location,
-    near: results.near,
-    dayOfWeek: results.day_of_week as DaysOfWeek,
-    timeOfDay: results.time_of_day,
-    whatsapp: results.whatsapp,
-    image1: results.image1,
-    image2: results.image2,
-    image3: results.image3,
-    image4: results.image4,
-    image5: results.image5,
-    status: results.status as Status,
-    createdAt: new Date(results.created_at),
-    createdById: results.created_by,
-    updatedAt: new Date(results.updated_at),
-    groupSpirit: {
-      id: 0,
-      name: results.group_spirit,
-      createdAt: new Date(),
-      updatedAt: new Date()
-    },
-    createdBy: {
-      id: results.created_by,
-      name: results.user_name,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      lat: 0,
-      lng: 0,
-      location: '',
-      email: '',
-      role: Role.MEMBER
-    },
-    schedules: results.schedules !== null && results.schedules.length ? results.schedules.map((s) => {
-      const [id, day, hour] = s.split(':').map(String);
-
-      return {
-        timeOfDay: Number(hour),
-        dayOfWeek: Number(day),
-        groupId: results.id,
-        id
-      };
-    }) : null
-  };
-}
-
 function dbOrganizerTypeToOrganizerType(
   organizerType: DBOrganizerType
 ): OrganizerType {
@@ -178,9 +88,6 @@ function dbOrganizerTypeToOrganizerType(
 export {
   dbUserToUser,
   dbSportToSport,
-  dbGroupSpiritToGroupSpirit,
-  dbGroupTypeToGroupType,
   dbDifficultyToDifficulty,
-  dbRawSearchResultsToSearchResults,
   dbOrganizerTypeToOrganizerType
 };

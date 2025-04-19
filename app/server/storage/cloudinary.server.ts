@@ -31,7 +31,7 @@ cloudinary.config(config);
 /**
  *
  * @param data
- * @param folder   eventId or groupId
+ * @param folder   eventId
  */
 async function uploadImageToCloudinary(
   data: AsyncIterable<Uint8Array>,

@@ -69,10 +69,7 @@ export default function EventEntry({
               ({t('View in Map')})
             </a>
           </Feature>
-          <div
-            className="flex justify-between align-middle"
-            data-cy="group-spirit"
-          >
+          <div className="flex justify-between align-middle">
             <Feature label={t('Difficulty')} value={event.difficulty || ''} />
           </div>
           <ResultEntryDescription

@@ -33,8 +33,6 @@ import InputError from '~/components/shared/form/InputError';
 
 import { H2, H6 } from '~/components/shared/typography';
 
-import { sendWhatsAppGroupLink, subscribeUser } from '~/server/email.server';
-import { addGroupToFavorites, findGroup } from '~/server/db/groups.server';
 import type { LoginAction } from '~/types';
 
 import { loginUser } from '~/server/db/users.server';
@@ -53,15 +51,12 @@ type LoaderData = {
 
 const actions = {
   login: 'login',
-  joinWhatsAppGroup: 'ws',
-  addToFavorites: 'favorite',
   checkout: 'checkout',
   createEvent: 'create-event',
   reviewOrganizer: 'review'
 };
 
 type QueryStringArgs = {
-  group: null | string;
   redirectTo: null | string;
   user: null | string;
   action: LoginAction;
@@ -76,7 +71,6 @@ function queryStringArgs(searchParams: URLSearchParams): QueryStringArgs {
       : Object.values(actions).find((v) => v === a) || actions.login;
 
   return {
-    group: searchParams.get('g'),
     redirectTo: searchParams.get('l'),
     user: searchParams.get('u'),
     action
@@ -124,68 +118,14 @@ type ActionData = {
   };
 };
 
-async function sendWhatsAppLinkFlow(request: Request, params: URLSearchParams) {
-  const t = await i18n.getFixedT(request, 'login');
-  const email = params.get('email') as string;
-  const redirectTo = params.get('location');
-  const groupId = params.get('group');
-
-  function submitError(error: string, email: string) {
-    return {
-      fields: { email },
-      errors: {
-        email: '',
-        password: '',
-        submit: error
-      }
-    };
-  }
-
-  if (!groupId) {
-    return json(submitError(t('Join WhatsApp: Missing group'), email));
-  }
-  const group = await findGroup(groupId);
-
-  if (!group || !group.whatsapp) {
-    return json({
-      fields: { email },
-      errors: {
-        email: '',
-        password: '',
-        submit: !group
-          ? t('Join WhatsApp: Group not found')
-          : t('Join WhatsApp: Group does not have whatsapp')
-      }
-    });
-  }
-
-  await sendWhatsAppGroupLink({
-    emailAddress: email,
-    groupName: group.name || '',
-    whatsAppLink: group.whatsapp
-  });
-
-  await subscribeUser(email);
-
-  return redirect(
-    redirectTo ? `${redirectTo}&message=${t('WhatsApp Email Sent')}` : '/login'
-  );
-}
-
 export const action: ActionFunction = async ({ request }) => {
   const loginInfoSession = await getLoginInfoSession(request);
   const t = await i18n.getFixedT(request, 'login');
   const params = new URLSearchParams(await request.text());
   const email = params.get('email') as string;
   const password = params.get('password') as string;
-  const action = params.get('action') as LoginAction;
   const { searchParams } = new URL(request.url);
   const postLoginAction = searchParams.get('a');
-
-  // Is this not to login but to share whatsapp group link?
-  if (action === actions.joinWhatsAppGroup) {
-    return sendWhatsAppLinkFlow(request, params);
-  }
 
   const Schema = z.object({
     email: z.string().email(t('Invalid Email')),
@@ -213,15 +153,6 @@ export const action: ActionFunction = async ({ request }) => {
     await session.getHeaders(headers);
     loginInfoSession.clean();
     await loginInfoSession.getHeaders(headers);
-
-    if (postLoginAction === actions.addToFavorites) {
-      try {
-        await addGroupToFavorites(user.id, searchParams.get('g') as string);
-      } catch (err) {
-        console.error(err);
-        // do nothing
-      }
-    }
 
     if (postLoginAction === actions.checkout) {
       try {
@@ -258,7 +189,10 @@ export const action: ActionFunction = async ({ request }) => {
       return redirect('/o/event/create', { headers });
     }
 
-    if (postLoginAction === actions.reviewOrganizer && user.role === Role.ADMIN) {
+    if (
+      postLoginAction === actions.reviewOrganizer &&
+      user.role === Role.ADMIN
+    ) {
       const organizerId = searchParams.get('o') as string;
 
       return redirect(`/a/organizers/${organizerId}`, { headers });
@@ -268,7 +202,9 @@ export const action: ActionFunction = async ({ request }) => {
       return redirect('/o', { headers });
     }
 
-    const didUserTriedEventsRecently = await areThereTracesOfUserEventHandling(user.id);
+    const didUserTriedEventsRecently = await areThereTracesOfUserEventHandling(
+      user.id
+    );
 
     if (didUserTriedEventsRecently) {
       const userEvents = await findUserEvents(user.id);
@@ -314,7 +250,7 @@ export default function Login() {
     (useActionData<ActionData>() as ActionData) || defaultData();
   const { t } = useTranslation('login');
   const [searchParams] = useSearchParams();
-  const { action, group, redirectTo } = queryStringArgs(searchParams);
+  const { action, redirectTo } = queryStringArgs(searchParams);
   const password = useRef<HTMLInputElement | null>(null);
 
   function handleOnSubmit() {
@@ -325,9 +261,7 @@ export default function Login() {
 
   return (
     <div className="w-5/6 m-auto md:w-144 max-w-8xl m-auto px-3">
-      {action === 'ws' ? (
-        <WhatsAppHeader t={t} />
-      ) : action === 'favorite' ? (
+      {action === 'favorite' ? (
         <AddToFavoritesHeader t={t} />
       ) : (
         <LoginHeader t={t} />
@@ -342,7 +276,6 @@ export default function Login() {
         onSubmit={handleOnSubmit}
       >
         <input type="hidden" value={action || ''} name="action" />
-        <input type="hidden" value={group || ''} name="group" />
         <input type="hidden" value={redirectTo || ''} name="location" />
         <FormField label={t('Email')} error={errors.email} id="email">
           <input
@@ -354,19 +287,18 @@ export default function Login() {
             autoComplete="off"
           />
         </FormField>
-        {action !== actions.joinWhatsAppGroup && (
-          <FormField label={t('Password')} error={errors.password} id="password">
-            <input
-              id="password"
-              type="password"
-              name="password"
-              className="input-text px-4 lg:px-11 w-full h-14 md:text-2xl md:h-20"
-              autoComplete="current-password"
-            />
-          </FormField>
-        )}
+
+        <FormField label={t('Password')} error={errors.password} id="password">
+          <input
+            id="password"
+            type="password"
+            name="password"
+            className="input-text px-4 lg:px-11 w-full h-14 md:text-2xl md:h-20"
+            autoComplete="current-password"
+          />
+        </FormField>
         <Button name="login">
-          {t(action === 'ws' ? 'Email WhatsApp Link' : 'Login')}
+          {t('Login')}
         </Button>
         {errors.submit && (
           <InputError className="mt-4" id="error-message">
@@ -375,19 +307,12 @@ export default function Login() {
         )}
       </Form>
 
-      {action !== actions.joinWhatsAppGroup && (
-        <>
-          <CreateAccount
-            text={t('Create Account')}
-            cta={t('Create Account CTA')}
-            queryString={searchParams.toString()}
-          />
-          <RecoverPassword
-            text={t('Recover Password')}
-            cta={t('Recover CTA')}
-          />
-        </>
-      )}
+      <CreateAccount
+        text={t('Create Account')}
+        cta={t('Create Account CTA')}
+        queryString={searchParams.toString()}
+      />
+      <RecoverPassword text={t('Recover Password')} cta={t('Recover CTA')} />
     </div>
   );
 }
@@ -434,17 +359,6 @@ function LoginHeader({ t }: { t: TFunction }) {
   );
 }
 
-function WhatsAppHeader({ t }: { t: TFunction }) {
-  return (
-    <>
-      <H2 className="mb-2 text-secondary">{t('WhatsApp Header')}</H2>
-      <H6 variant="secondary" as="p" className="text-white mb-8">
-        {t('WhatsApp Link Instructions')}
-      </H6>
-    </>
-  );
-}
-
 function AddToFavoritesHeader({ t }: { t: TFunction }) {
   return (
     <>
@@ -464,7 +378,9 @@ function filterExistingBooking(bookings: Booking[]): Booking | null {
   }
 
   // Check if there is any booking with an ongoing/pending payment
-  const pendingBookings = bookings.filter((b) => b.status === CheckoutStatus.pending);
+  const pendingBookings = bookings.filter(
+    (b) => b.status === CheckoutStatus.pending
+  );
 
   if (pendingBookings && pendingBookings.length > 0) {
     return pendingBookings[0];

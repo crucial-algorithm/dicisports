@@ -8,10 +8,7 @@
   "Load More": "Carregar mais resultados",
   "Add Sport": "Novo desporto",
   "Add Sport Mail Subject": "Gostava muito de ver o meu desporto favorito no vosso portal",
-  "Create your group": "Não encontraste o que procuras? Cria o teu grupo e reúne pessoas na tua área com o mesmo interesse.",
-  "No Groups Found - Create yours": "Ainda não há nenhum grupo, podes ser tu o pioneiro, toma a iniciativa",
   "Searching Location": "À tua procura...",
-  "Calculate Your Distance To Group": "Calcula a distância de ti",
   "Failed to find Your Location Title": "Não foi possível determinar a tua localização.",
   "Failed to find Your Location Hint": "Verifica as definições de partilha de localização com o DiciSports e tenta de novo.",
   "Failed to find Your Location Close": "Ok",
@@ -60,10 +57,8 @@
   "Select location": "Selecionar localização",
   "Select sport": "Selecionar Modalidade",
   "No events found": "Nenhum evento encontrado. Experimenta outra pesquisa ou volta mais tarde (novos eventos são adicionados regularmente).",
-  "Groups callout": "grupos",
 
   "Events Calendar": "Calendário de eventos",
   "Categories": "Modalidades"
-
 
 }

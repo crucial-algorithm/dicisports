@@ -95,7 +95,7 @@ const actions = {
 };
 
 export const handle = {
-  i18n: ['common', 'home', 'm-groups', 'organizer']
+  i18n: ['common', 'home', 'organizer']
 };
 
 export enum SortMethod {

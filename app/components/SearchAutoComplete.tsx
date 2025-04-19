@@ -10,7 +10,7 @@ import type { DiciLocation, Language, TranslationObject } from '~/types';
 import { getLocalizedText } from '~/utils/misc';
 import { useTheme } from '~/utils/theme-provider';
 
-export type SearchResultType = 'Event' | 'Group' | 'Location' | 'Header';
+export type SearchResultType = 'Event' | 'Location' | 'Header';
 
 export type SearchResult = {
   value: string;
@@ -87,7 +87,6 @@ export function SearchAutoComplete({
         'bg-gray-300 text-gray-700': active && !inDarkMode,
         'bg-gray-600 text-gray-100': active && inDarkMode,
         'mb-1 h-20': option.type === 'Event',
-        'search-result-group': option.type === 'Group',
         'py-2': option.type === 'Location',
         'text-sm italic py-1 bg-gray-100 border-b-2 border-gray-200 text-gray-500 dark:bg-gray-500 dark:border-gray-600 dark:text-blueGray-400':
           option.type === 'Header'
