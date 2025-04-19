@@ -19,6 +19,10 @@ npm run dev
 
 This starts your app in development mode, rebuilding assets on file changes.
 
+### Users available
+regular|organizer|admin@gmail.com / Password1
+
+
 ## Deployment
 
 First, build your app for production:

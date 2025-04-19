@@ -26,15 +26,10 @@ import DisplayDate from '~/components/shared/DIsplayDate';
 import ProfileFragment from '~/components/ProfileFragment';
 import SearchField from '~/components/shared/SearchField';
 import { useRootData } from '~/hooks';
-import {
-  findUserFavoriteGroups,
-  findUserGroups,
-  removeGroupFromFavorites
-} from '~/server/db/groups.server';
 
 import i18n from '~/server/i18n.server';
 
-import Button, { ButtonLink } from '~/components/shared/Button';
+import Button from '~/components/shared/Button';
 
 import InputError from '~/components/shared/form/InputError';
 import { H2, H4, H6 } from '~/components/shared/typography';
@@ -44,13 +39,13 @@ import { updateUser } from '~/server/db/users.server';
 
 import Main from '~/components/shared/Main';
 import { Spacer } from '~/components/shared/Spacer';
-import type { Group, GroupSchedule, Sport, BookingList } from '~/types';
+import type { Sport, BookingList } from '~/types';
 
 import DisplayImg from '~/components/shared/DisplayImg';
 import { findSports } from '~/server/db/reference.server';
 import WhenListEmpty from '~/components/shared/Empty';
 
-import { displayTimeOfDay, generateSlug } from '~/utils/misc';
+import { generateSlug } from '~/utils/misc';
 import {
   findUserFavoriteEvents,
   removeEventFromFavorites
@@ -76,7 +71,6 @@ type ActionData = {
 };
 
 type LoaderData = {
-  groups: Group[] | [];
   sports: Sport[];
   favorites: Favorite[] | [];
   bookings: BookingList[] | [];
@@ -86,7 +80,7 @@ type LoaderData = {
 };
 
 export const handle = {
-  i18n: ['common', 'me']
+  i18n: ['me']
 };
 
 type Favorite = {
@@ -100,7 +94,6 @@ type Favorite = {
   image4: string | null;
   image5: string | null;
   sportId: number;
-  schedules?: GroupSchedule[];
   eventDate?: Date;
 };
 
@@ -113,49 +106,29 @@ export const loader: LoaderFunction = async ({ request }) => {
   const user = await requireUser(request);
   const favorites: Favorite[] = [];
 
-  const groups = await findUserGroups(user.id as string);
   const sports = await findSports();
   const favoriteEvents = await findUserFavoriteEvents(user.id as string);
-  const favoriteGroups = await findUserFavoriteGroups(user.id as string);
 
   const { searchParams } = new URL(request.url);
   let page = searchParams.get('page')?.length
     ? Number(searchParams.get('page'))
     : 0;
 
-  favoriteGroups &&
-    favoriteGroups.map((f) =>
-      favorites.push({
-        type: 'g',
-        id: f.id,
-        name: f.name as string,
-        slug: f.slug as string,
-        image1: f.image1,
-        image2: f.image2,
-        image3: f.image3,
-        image4: null,
-        image5: null,
-        sportId: f.sportId as number,
-        schedules: f.schedules
-      })
-    );
-
-  favoriteEvents &&
-    favoriteEvents.map((f) =>
-      favorites.push({
-        type: 'e',
-        id: f.id,
-        name: f.name as string,
-        slug: f.slug as string,
-        image1: f.image1,
-        image2: f.image2,
-        image3: f.image3,
-        image4: f.image4,
-        image5: f.image5,
-        sportId: f.sportId as number,
-        eventDate: f.startAt as Date
-      })
-    );
+  favoriteEvents?.map((f) =>
+    favorites.push({
+      type: 'e',
+      id: f.id,
+      name: f.name as string,
+      slug: f.slug as string,
+      image1: f.image1,
+      image2: f.image2,
+      image3: f.image3,
+      image4: f.image4,
+      image5: f.image5,
+      sportId: f.sportId as number,
+      eventDate: f.startAt as Date
+    })
+  );
 
   const searchedName = searchParams.get('searched-name');
 
@@ -186,7 +159,6 @@ export const loader: LoaderFunction = async ({ request }) => {
   );
 
   return json({
-    groups,
     sports,
     favorites,
     bookings: results,
@@ -217,15 +189,10 @@ export const action: ActionFunction = async ({ request }) => {
 
   if (actionId === actionIds.remove) {
     const favoriteTypeAndId = form.get('f-type-id') as string;
-    const type = favoriteTypeAndId.split('|')[0];
     const favoriteId = favoriteTypeAndId.split('|')[1];
 
     try {
-      if (type === 'g') {
-        await removeGroupFromFavorites(user.id, favoriteId);
-      } else {
-        await removeEventFromFavorites(user.id, favoriteId);
-      }
+      await removeEventFromFavorites(user.id, favoriteId);
 
       return json({});
     } catch (e) {
@@ -260,7 +227,6 @@ export const action: ActionFunction = async ({ request }) => {
 export default function Me() {
   const { user } = useRootData();
   const {
-    groups,
     sports,
     favorites,
     bookings,
@@ -285,52 +251,20 @@ export default function Me() {
       />
 
       <Spacer size="xs" className="border-b mb-8" />
-      <div className="flex flex-row justify-between items-center">
-        <H2>{t('Your Groups')}</H2>
-        <ButtonLink to="/g/group/add" data-cy="create-group">{t('Create Group')}</ButtonLink>
-      </div>
-      <div className="flex flex-col w-[calc(100%-(50px))] p-4">
-        {groups &&
-          groups.map((g) => (
-            <div className="w-full border-b p-4 last:border-none" key={g.id}>
-              <a
-                href={`/g/group/${g.id}`}
-                className="cursor-pointer"
-                data-cy="group-entry"
-              >
-                <DisplayGroups group={g} sports={sports} key={g.id} t={t} />
-              </a>
-            </div>
-          ))}
-      </div>
-
-      <WhenListEmpty list={groups}>
-        <H6
-          className="text-center p-12"
-          variant="secondary"
-          as="p"
-          data-cy="no-groups"
-        >
-          {t('No Groups')}
-        </H6>
-      </WhenListEmpty>
-
-      <Spacer size="xs" className="border-b mb-8" />
 
       <H2>{t('Your Favorites')}</H2>
       <div className="flex flex-col w-[calc(100%-(50px))] p-4">
-        {favorites &&
-          favorites.map((f) => (
-            <div className="w-full border-b p-4 last:border-none" key={f.id}>
-              <a
-                href={f.type === 'g' ? `/group/${f.slug}` : `/event/${f.slug}`}
-                className="cursor-pointer"
-                data-cy="favorite-entry"
-              >
-                <DisplayFavorites favorite={f} sports={sports} t={t} />
-              </a>
-            </div>
-          ))}
+        {favorites?.map((f) => (
+          <div className="w-full border-b p-4 last:border-none" key={f.id}>
+            <a
+              href={`/event/${f.slug}`}
+              className="cursor-pointer"
+              data-cy="favorite-entry"
+            >
+              <DisplayFavorites favorite={f} sports={sports} t={t} />
+            </a>
+          </div>
+        ))}
       </div>
 
       <WhenListEmpty list={favorites}>
@@ -379,66 +313,6 @@ export default function Me() {
   );
 }
 
-function DisplayGroups({
-  group,
-  sports,
-  t
-}: {
-  group: Group;
-  sports: Sport[];
-  t: TFunction;
-}) {
-  const tc = useTranslation('common').t;
-
-  function translateDay(day: number) {
-    return tc(
-      [
-        'Monday',
-        'Tuesday',
-        'Wednesday',
-        'Thursday',
-        'Friday',
-        'Saturday',
-        'Sunday'
-      ][day]
-    );
-  }
-
-  const schedule = group?.schedules
-    ?.sort((a, b) => a.dayOfWeek - b.dayOfWeek)
-    .map(
-      ({ dayOfWeek, timeOfDay }) =>
-        `${translateDay(dayOfWeek)}, ${displayTimeOfDay(timeOfDay)}`
-    )
-    .join(' | ');
-
-  const entry = {
-    id: group.id,
-    name: group?.name || '',
-    image1: group.image1,
-    image2: group.image2,
-    image3: group.image3,
-    image4: null,
-    image5: null
-  };
-
-  return (
-    <div className="flex flex-row">
-      <EntryImage
-        entry={entry}
-        img={sports.find((s) => s.id === group.sportId)?.picture}
-      />
-      <div className="flex flex-col gap-y-2 ml-4">
-        <H4>{group.name}</H4>
-        <div className="flex flex-col">
-          <H6 className="dark:text-blueGray-500">{t('Schedules')}</H6>
-          <H6>{schedule}</H6>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 function DisplayFavorites({
   favorite,
   sports,
@@ -448,30 +322,7 @@ function DisplayFavorites({
   sports: Sport[];
   t: TFunction;
 }) {
-  const tc = useTranslation('common').t;
   const fetcher = useFetcher();
-
-  function translateDay(day: number) {
-    return tc(
-      [
-        'Monday',
-        'Tuesday',
-        'Wednesday',
-        'Thursday',
-        'Friday',
-        'Saturday',
-        'Sunday'
-      ][day]
-    );
-  }
-
-  const schedule = favorite?.schedules
-    ?.sort((a, b) => a.dayOfWeek - b.dayOfWeek)
-    .map(
-      ({ dayOfWeek, timeOfDay }) =>
-        `${translateDay(dayOfWeek)}, ${displayTimeOfDay(timeOfDay)}`
-    )
-    .join(' | ');
 
   const entry = {
     id: favorite.id,
@@ -493,19 +344,12 @@ function DisplayFavorites({
         <div className="flex flex-col gap-y-2 ml-4">
           <H4>{favorite.name}</H4>
           <div className="flex flex-col">
-            {favorite.type === 'g' ? (
-              <>
-                <H6 className="dark:text-blueGray-500">{t('Schedules')}</H6>
-                <H6>{schedule}</H6>
-              </>
-            ) : (
-              <>
-                <H6 className="dark:text-blueGray-500">{t('Event Date')}</H6>
-                <H6>
-                  <DisplayDate date={new Date(favorite.eventDate || 0)} />
-                </H6>
-              </>
-            )}
+            <>
+              <H6 className="dark:text-blueGray-500">{t('Event Date')}</H6>
+              <H6>
+                <DisplayDate date={new Date(favorite.eventDate || 0)} />
+              </H6>
+            </>
           </div>
         </div>
       </div>
@@ -599,7 +443,7 @@ function BookingsList({
   pageNumber,
   numberOfPages
 }: {
-  bookings: any[];
+  bookings: BookingList[];
   t: TFunction;
   searchedName: string;
   pageNumber: number;
@@ -660,7 +504,9 @@ function BookingsList({
                 </table>
                 <WhenListEmpty list={bookings}>
                   <H6 className="text-center p-12" variant="secondary" as="p">
-                    {searchedName?.length > 0 ? t('No Bookings Found') : t('No Bookings')}
+                    {searchedName?.length > 0
+                      ? t('No Bookings Found')
+                      : t('No Bookings')}
                   </H6>
                 </WhenListEmpty>
 
@@ -732,9 +578,12 @@ function TH({ name }: { name: string }) {
   );
 }
 
-function TD({ value, dataCy }: { value: string | null, dataCy?: string }) {
+function TD({ value, dataCy }: { value: string | null; dataCy?: string }) {
   return (
-    <td className="text-sm text-black dark:text-white font-light px-6 py-4 whitespace-nowrap" data-cy={dataCy || '-'}>
+    <td
+      className="text-sm text-black dark:text-white font-light px-6 py-4 whitespace-nowrap"
+      data-cy={dataCy || '-'}
+    >
       {value}
     </td>
   );
@@ -775,7 +624,10 @@ function BookingListEntry({
       data-cy="participant-row"
       onClick={handleRedirectToBooking}
     >
-      <TD value={`${booking.event.name}`} dataCy={`event-${generateSlug(booking.event.name as string)}`} />
+      <TD
+        value={`${booking.event.name}`}
+        dataCy={`event-${generateSlug(booking.event.name as string)}`}
+      />
       <TD value={`${date} ${hour}`} />
       <TD value={t(booking.status)} dataCy={`status-${booking.id}`} />
       <TD value={`${booking.totalParticipants}`} />

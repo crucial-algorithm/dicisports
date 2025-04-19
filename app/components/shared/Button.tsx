@@ -184,13 +184,13 @@ const AnchorOrLink = React.forwardRef<
         {children}
       </a>
     );
-  } else {
-    return (
-      <Link prefetch={prefetch} to={to ?? href ?? ''} {...rest} ref={ref}>
-        {children}
-      </Link>
-    );
   }
+  
+  return (
+    <Link prefetch={prefetch} to={to ?? href ?? ''} {...rest} ref={ref}>
+      {children}
+    </Link>
+  );
 });
 
 const ButtonLink = React.forwardRef<
