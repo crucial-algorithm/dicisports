@@ -69,11 +69,11 @@ async function runExpiredPaymentsJob(t: TFunction) {
   if (expiredPayments.length === 0) {
     console.log('no expired payments found. exiting');
     return;
-  } else {
-    console.log('found', expiredPayments.length, 'expired payments');
   }
 
-  expiredPayments.forEach(async (payment) => {
+  console.log('found', expiredPayments.length, 'expired payments');
+
+  for (const payment of expiredPayments) {
     const booking = await findBooking(payment.bookingId);
 
     if (!booking) {
@@ -81,7 +81,7 @@ async function runExpiredPaymentsJob(t: TFunction) {
         'CRON expired-payments: Booking not found',
         payment.bookingId
       );
-      return;
+      continue;
     }
 
     const event = await findEvent(booking.eventId);
@@ -97,7 +97,7 @@ async function runExpiredPaymentsJob(t: TFunction) {
         'CRON expired-payments: Not sending message for event whose booking is no longer active',
         booking.id
       );
-      return;
+      continue;
     }
 
     const participants = await findBookingParticipants(payment.bookingId);
@@ -107,7 +107,7 @@ async function runExpiredPaymentsJob(t: TFunction) {
         'CRON expired-payments: No participants found for booking',
         payment.bookingId
       );
-      return;
+      continue;
     }
 
     //TODO: set a primary contact for a booking, when it has multiple participants
@@ -119,7 +119,7 @@ async function runExpiredPaymentsJob(t: TFunction) {
         "Going to exit because we don't have a phone, which shouldn't happen... a participant phone is required",
         participant
       );
-      return;
+      continue;
     }
 
     // send SMS to participant
@@ -143,5 +143,5 @@ async function runExpiredPaymentsJob(t: TFunction) {
     } catch (e) {
       console.error('Error sending SMS', e);
     }
-  });
+  }
 }

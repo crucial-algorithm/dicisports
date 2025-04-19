@@ -24,7 +24,6 @@ import FormField from '~/components/shared/form/FormField';
 import TextField from '~/components/shared/form/TextField';
 import { H2, H6 } from '~/components/shared/typography';
 import { verifyEmailAddress } from '~/server/auth/verifier.server';
-import { addGroupToFavorites } from '~/server/db/groups.server';
 import InputError from '~/components/shared/form/InputError';
 import { CanonicalMeta } from '~/utils/seo';
 import {
@@ -132,15 +131,6 @@ export const action: ActionFunction = async ({ request }) => {
     await session.getHeaders(headers);
     loginInfoSession.clean();
     await loginInfoSession.getHeaders(headers);
-
-    if (postSignUpAction === 'favorite') {
-      try {
-        await addGroupToFavorites(user.id, searchParams.get('g') as string);
-      } catch (err) {
-        console.error(err);
-        // do nothing
-      }
-    }
 
     if (postSignUpAction === 'checkout') {
       try {

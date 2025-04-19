@@ -29,7 +29,6 @@ type MagicLinkPayload = {
   creationDate: string;
   validateSessionMagicLink: boolean;
   action?: LoginAction;
-  group?: string | null;
 };
 
 function getRecoverPasswordLink({
@@ -299,8 +298,7 @@ async function validateMagicLink(
   let emailAddress,
     linkCreationDateString,
     validateSessionMagicLink,
-    action,
-    group;
+    action;
   const invalidLinkError = new Error(
     '>>Error<<: Sign in link invalid. Please request a new one'
   );
@@ -313,7 +311,6 @@ async function validateMagicLink(
     linkCreationDateString = payload.creationDate;
     validateSessionMagicLink = payload.validateSessionMagicLink;
     action = payload.action;
-    group = payload.group;
   } catch (error: unknown) {
     console.error(error);
     throw invalidLinkError;
@@ -351,7 +348,7 @@ async function validateMagicLink(
   if (Date.now() > expirationTime) {
     throw new Error('>>Error<<: Magic link expired');
   }
-  return { email: emailAddress, action, group };
+  return { email: emailAddress, action };
 }
 
 export {
