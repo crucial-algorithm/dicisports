@@ -443,7 +443,7 @@ function BookingsList({
   pageNumber,
   numberOfPages
 }: {
-  bookings: any[];
+  bookings: BookingList[];
   t: TFunction;
   searchedName: string;
   pageNumber: number;
