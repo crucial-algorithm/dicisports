@@ -1,0 +1,33 @@
+#!/bin/sh
+
+# Post-deploy hook to run Prisma migrations
+#
+# These environment variables are available:
+# KAMAL_RECORDED_AT
+# KAMAL_PERFORMER
+# KAMAL_VERSION
+# KAMAL_HOSTS
+# KAMAL_ROLES (if set)
+# KAMAL_DESTINATION (if set)
+# KAMAL_RUNTIME
+
+echo "🚀 Starting post-deploy tasks..."
+echo "Running Prisma migrations after deployment..."
+
+# Run Prisma migrate deploy in the container
+# This uses kamal app exec to run the command inside the deployed container
+echo "Executing: npx prisma migrate deploy"
+kamal app exec "npx prisma migrate deploy"
+
+MIGRATION_EXIT_CODE=$?
+
+if [ $MIGRATION_EXIT_CODE -eq 0 ]; then
+    echo "✅ Prisma migrations completed successfully"
+else
+    echo "❌ Prisma migrations failed with exit code: $MIGRATION_EXIT_CODE"
+    echo "Please check the database connection and migration files"
+    exit 1
+fi
+
+echo "✅ Post-deploy tasks completed"
+echo "$KAMAL_PERFORMER deployed $KAMAL_VERSION to $KAMAL_DESTINATION in $KAMAL_RUNTIME seconds"
