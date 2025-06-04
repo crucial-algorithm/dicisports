@@ -1,0 +1,74 @@
+name: Deploy to Hetzener
+
+on:
+  push:
+    branches:
+      - main
+      - staging
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      NODE_ENV: production
+      KAMAL_REGISTRY_PASSWORD: ${{ secrets.KAMAL_REGISTRY_PASSWORD }}
+      RELEASE: ${{ github.sha }}
+
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_REGION: ${{ vars.AWS_REGION }}
+      AWS_S3_BUCKET: ${{ vars.AWS_S3_BUCKET }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY }}
+      CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET }}
+      CLOUDINARY_CLOUD_NAME: ${{ vars.CLOUDINARY_CLOUD_NAME }}
+      CLOUDINARY_UPLOAD_FOLDER_TARGET: ${{ vars.CLOUDINARY_UPLOAD_FOLDER_TARGET }}
+      CLOUDINARY_UPLOAD_PRESET: ${{ vars.CLOUDINARY_UPLOAD_PRESET }}
+      CONVERT_KIT_API_KEY: ${{ secrets.CONVERT_KIT_API_KEY }}
+      CONVERT_KIT_FORM: ${{ vars.CONVERT_KIT_FORM }}
+      CREATE_EVENT_TOKEN: ${{ secrets.CREATE_EVENT_TOKEN }}
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      DEFAULT_COMMISSION: ${{ vars.DEFAULT_COMMISSION }}
+      DOMAIN_URL: ${{ vars.DOMAIN_URL }}
+      EMAIL_VERIFIER_TOKEN: ${{ secrets.EMAIL_VERIFIER_TOKEN }}
+      IMAGE_DISPLAY_ENDPOINT: ${{ vars.IMAGE_DISPLAY_ENDPOINT }}
+      IMAGE_UPLOAD_ENDPOINT: ${{ vars.IMAGE_UPLOAD_ENDPOINT }}
+      MAGIC_LINK_SECRET: ${{ secrets.MAGIC_LINK_SECRET }}
+      MAILGUN_DOMAIN: ${{ vars.MAILGUN_DOMAIN }}
+      MAILGUN_ENDPOINT: ${{ vars.MAILGUN_ENDPOINT }}
+      MAILGUN_SENDING_KEY: ${{ secrets.MAILGUN_SENDING_KEY }}
+      MAPBOX_TOKEN: ${{ secrets.MAPBOX_TOKEN }}
+      ORGANIZER_REVIEWERS_EMAILS: ${{ vars.ORGANIZER_REVIEWERS_EMAILS }}
+      SCHEDULER_SECRET: ${{ secrets.SCHEDULER_SECRET }}
+      SESSION_SECRET: ${{ secrets.SESSION_SECRET }}
+      SIBS_API_TOKEN: ${{ secrets.SIBS_API_TOKEN }}
+      SIBS_CHECK_STATUS_ENDPOINT: ${{ vars.SIBS_CHECK_STATUS_ENDPOINT }}
+      SIBS_CHECKOUT_FORM_SCRIPT: ${{ vars.SIBS_CHECKOUT_FORM_SCRIPT }}
+      SIBS_CLIENT_ID: ${{ vars.SIBS_CLIENT_ID }}
+      SIBS_MULTIBANCO_ENTITIY: ${{ vars.SIBS_MULTIBANCO_ENTITIY }}
+      SIBS_MULTIBANCO_EXPIRATION_DAYS: ${{ vars.SIBS_MULTIBANCO_EXPIRATION_DAYS }}
+      SIBS_TERMINAL_ID: ${{ vars.SIBS_TERMINAL_ID }}
+      SIBS_URL_ENDPOINT: ${{ vars.SIBS_URL_ENDPOINT }}
+      SIBS_WEBHOOK_SECRET: ${{ secrets.SIBS_WEBHOOK_SECRET }}
+      SLACK_ERRORS_WEBHOOK_URL: ${{ vars.SLACK_ERRORS_WEBHOOK_URL }}
+      SMS_APPLICATION_ID: ${{ vars.SMS_APPLICATION_ID }}
+      SMS_APPLICATION_TOKEN: ${{ secrets.SMS_APPLICATION_TOKEN }}
+      SMS_ENDPOINT: ${{ vars.SMS_ENDPOINT }}
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 3.3.4
+          bundler-cache: true
+      - run: gem install kamal
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Setup SSH key
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          # this is from kamal private key  
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+          
+      - name: Deploy
+        run: |
+          kamal deploy
