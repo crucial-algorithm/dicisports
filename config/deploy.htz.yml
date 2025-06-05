@@ -22,7 +22,16 @@ registry:
 # Configure builder setup.
 builder:
   arch: amd64
-  dockerfile: Dockerfile.htz
+  dockerfile: Dockerfile
+
+
+proxy:
+  hosts: 
+    - dicisports.com
+    - www.dicisports.com
+  app_port: 3000
+
+deploy_timeout: 90
 
 # Environment variables (pulled from .kamal/secrets.htz)
 env:
@@ -69,10 +78,3 @@ env:
     - SIBS_API_TOKEN
     - SIBS_WEBHOOK_SECRET
     - SMS_APPLICATION_TOKEN
-
-
-proxy:
-  hosts: 
-    - dicisports.com
-    - www.dicisports.com
-  app_port: 3000
