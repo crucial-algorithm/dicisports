@@ -1,33 +1,78 @@
-#!/bin/sh
+#!/bin/bash
+set -e
 
-# Post-deploy hook to run Prisma migrations
-#
-# These environment variables are available:
-# KAMAL_RECORDED_AT
-# KAMAL_PERFORMER
-# KAMAL_VERSION
-# KAMAL_HOSTS
-# KAMAL_ROLES (if set)
-# KAMAL_DESTINATION (if set)
-# KAMAL_RUNTIME
+echo "🔍 Post-deploy verification starting..."
 
-echo "🚀 Starting post-deploy tasks..."
-echo "Running Prisma migrations after deployment..."
+# Function to verify database schema is up to date
+verify_migrations() {
+    echo "🔄 Verifying database schema is up to date..."
+    local max_attempts=3
+    local attempt=1
+    
+    while [ $attempt -le $max_attempts ]; do
+        echo "Verification attempt $attempt/$max_attempts"
+        
+        # Check if database schema matches migrations
+        if kamal app exec -d htz --reuse "npx prisma migrate status" | grep -q "Database schema is up to date"; then
+            echo "✅ Database schema verification successful"
+            return 0
+        fi
+        
+        echo "⚠️ Schema verification attempt $attempt failed, retrying in 3 seconds..."
+        sleep 3
+        attempt=$((attempt + 1))
+    done
+    
+    echo "❌ Database schema verification failed after $max_attempts attempts"
+    echo "🔧 Attempting to fix by running migrations..."
+    
+    # Try to fix by running migrations
+    if kamal app exec -d htz --reuse "npx prisma migrate deploy"; then
+        echo "✅ Recovery migration completed successfully"
+        return 0
+    else
+        echo "❌ Recovery migration failed"
+        return 1
+    fi
+}
 
-# Run Prisma migrate deploy in the container
-# This uses kamal app exec to run the command inside the deployed container
-echo "Executing: npx prisma migrate deploy"
-kamal app exec "npx prisma migrate deploy"
+# Function to verify application health
+verify_app_health() {
+    echo "🏥 Checking application health..."
+    local max_attempts=10
+    local attempt=1
+    
+    while [ $attempt -le $max_attempts ]; do
+        echo "Health check attempt $attempt/$max_attempts"
+        
+        # Check if the app responds to health check
+        if kamal app exec -d htz --reuse "curl -f http://localhost:3000/ping" 2>/dev/null; then
+            echo "✅ Application health check passed"
+            return 0
+        fi
+        
+        echo "⚠️ Health check attempt $attempt failed, waiting 5 seconds..."
+        sleep 5
+        attempt=$((attempt + 1))
+    done
+    
+    echo "❌ Application health check failed after $max_attempts attempts"
+    return 1
+}
 
-MIGRATION_EXIT_CODE=$?
+echo "📍 Running post-deploy verification on: $KAMAL_DESTINATION"
 
-if [ $MIGRATION_EXIT_CODE -eq 0 ]; then
-    echo "✅ Prisma migrations completed successfully"
-else
-    echo "❌ Prisma migrations failed with exit code: $MIGRATION_EXIT_CODE"
-    echo "Please check the database connection and migration files"
+# Verify migrations
+if ! verify_migrations; then
+    echo "❌ Migration verification failed"
     exit 1
 fi
 
-echo "✅ Post-deploy tasks completed"
-echo "$KAMAL_PERFORMER deployed $KAMAL_VERSION to $KAMAL_DESTINATION in $KAMAL_RUNTIME seconds"
+# Verify app health
+if ! verify_app_health; then
+    echo "❌ Application health verification failed"
+    exit 1
+fi
+
+echo "✅ Post-deploy verification completed successfully"
+echo "🎉 Deployment to $KAMAL_DESTINATION is healthy and ready"

@@ -69,3 +69,10 @@ env:
     - SIBS_API_TOKEN
     - SIBS_WEBHOOK_SECRET
     - SMS_APPLICATION_TOKEN
+
+
+proxy:
+  hosts: 
+    - dicisports.com
+    - www.dicisports.com
+  app_port: 3000

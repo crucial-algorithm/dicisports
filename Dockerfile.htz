@@ -55,8 +55,4 @@ COPY --from=build /app/build/server /app/build/server
 COPY --from=build /app/build/client /app/build/client
 ADD . .
 
-EXPOSE 80
-
-ENV PORT=80
-
-CMD ["npm", "run", "start"]
+CMD ["./start_with_migrations.sh"]
