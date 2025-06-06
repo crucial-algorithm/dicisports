@@ -1,5 +1,5 @@
 # Name of your application. Used to uniquely configure containers.
-service: Dicisports
+service: dicisports
 
 # Name of the container image.
 image: kimile/dicisports
@@ -22,14 +22,13 @@ registry:
 # Configure builder setup.
 builder:
   arch: amd64
-  dockerfile: Dockerfile
 
 
 proxy:
+  app_port: 3000
   hosts: 
     - dicisports.com
     - www.dicisports.com
-  app_port: 3000
 
 deploy_timeout: 90
 
