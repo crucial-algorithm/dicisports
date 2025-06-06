@@ -55,4 +55,8 @@ COPY --from=build /app/build/server /app/build/server
 COPY --from=build /app/build/client /app/build/client
 ADD . .
 
+
+ENV PORT=3000
+EXPOSE 3000
+
 CMD ["npm", "run", "start"]
