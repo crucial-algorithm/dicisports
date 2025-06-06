@@ -70,6 +70,8 @@ jobs:
           # this is from kamal private key  
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
           
-      - name: Deploy
+      - name: Deploy 
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: |
           kamal deploy -d htz
