@@ -62,6 +62,26 @@ npm i --save-dev prisma@latest
 npm i @prisma/client@latest
 ```
 
+### Exporting and importing database
+```sh
+
+# exporting
+docker run --rm \
+  postgres:latest \
+  pg_dump "postgres://username:password@host:port/dbname?sslmode=require" \
+  --exclude-table-data=_prisma_migrations \
+  --exclude-table-data=spatial_ref_sys \
+  --data-only > 20250606.sql
+
+
+ # importing 
+docker run --rm \
+  -v /path/to/file/20250606.sql:/tmp/20250606.sql \
+  postgres:latest \
+  psql "postgres://username:password@host:port/dbname?sslmode=require" \
+  -f /tmp/20250606.sql
+```
+
 
 ### When adding new configs to .env
 Options need to be added to [github actions](https://github.com/crucial-algorithm/dicisports/settings/secrets/actions) and referenced in the e2e test workflows.
@@ -82,56 +102,6 @@ flyctl secrets -a diciprd set ORGANIZER_REVIEWERS_EMAILS="xxx@dicisports.com,yyy
 
 **Multibanco:** has to be validated manually, so we can test e2e
 
-
-## Testing docker image locally
-```shell
-docker build . --no-cache
-
-## get the hash from the output
-
-docker run -p 127.0.0.1:3000:3000/tcp --env-file .env 049365fd3657f495354f35a13cc2096652222eedaa162b9197d0744d2cf980e6
-```
-
-## Troubleshooting fly.io
-### Restarting database (after finding out it was down)
-```shell
-#get database id to be used next
-fly machine list -a dicistg-db
-
-# Restart
-flyctl machine restart 178150df4202d8 -a dicistg-db
-
-# Expected output
-Restarting machine 178150df4202d8
-  Waiting for 178150df4202d8 to become healthy (started, 3/3)
-Machine 178150df4202d8 restarted successfully!
-```
-
-### List env variables
-fly ssh console -C "printenv" --app diciprd
-
-### Connect to staging/production DB
-
-```shell
-flyctl proxy <port> -a <app-name>
-
-# Example
-flyctl proxy 5432 -a dicistg-db
-flyctl proxy 5432 -a ds-db-prd
-```
-
-### Check app logs
-```shell
-fly logs -a <app-name>
-
-# Example
-fly logs -a dicistg
-```
-
-### Scaling Memory
-```shell
-fly scale memory 1024 -a diciprd
-```
 
 ## Project Setup in WebStorm
 
