@@ -1,10 +1,9 @@
-name: Deploy to Hetzener
+name: Build and Deploy to Production (Hetzener)
 
 on:
   push:
     branches:
       - main
-      - staging
       - deploy-hz
 jobs:
   deploy:
