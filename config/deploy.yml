@@ -9,23 +9,13 @@ servers:
   web:
     - 5.161.176.161
     - 178.156.166.134
-  # job:
-  #   hosts:
-  #     - 192.168.0.1
-  #   cmd: bin/jobs
 
-# Enable SSL auto certification via Let's Encrypt and allow for multiple apps on a single web server.
-# Remove this section when using multiple web servers and ensure you terminate SSL at your load balancer.
-#
-# Note: If using Cloudflare, set encryption mode in SSL/TLS setting to "Full" to enable CF-to-app encryption.
 proxy:
   app_port: 3000
   ssl: false
   hosts: 
     - dicisports.com
     - www.dicisports.com
-  # Proxy connects to your container on port 80 by default.
-  # app_port: 3000
 
 # Credentials for your image host.
 registry:
@@ -44,62 +34,48 @@ builder:
   # args:
   #   RUBY_VERSION: <%= ENV["RBENV_VERSION"] || ENV["rvm_ruby_string"] || "#{RUBY_ENGINE}-#{RUBY_ENGINE_VERSION}" %>
 
-# Inject ENV variables into containers (secrets come from .kamal/secrets).
-#
-# env:
-#   clear:
-#     DB_HOST: 192.168.0.2
-#   secret:
-#     - RAILS_MASTER_KEY
-
-# Aliases are triggered with "bin/kamal <alias>". You can overwrite arguments on invocation:
-# "bin/kamal app logs -r job" will tail logs from the first server in the job section.
-#
-# aliases:
-#   shell: app exec --interactive --reuse "bash"
-
-# Use a different ssh user than root
-#
-# ssh:
-#   user: app
-
-# Use a persistent storage volume.
-#
-# volumes:
-#   - "app_storage:/app/storage"
-
-# Bridge fingerprinted assets, like JS and CSS, between versions to avoid
-# hitting 404 on in-flight requests. Combines all files from new and old
-# version inside the asset_path.
-#
-# asset_path: /app/public/assets
-
-# Configure rolling deploys by setting a wait time between batches of restarts.
-#
-# boot:
-#   limit: 10 # Can also specify as a percentage of total hosts, such as "25%"
-#   wait: 2
-
-# Use accessory services (secrets come from .kamal/secrets).
-#
-# accessories:
-#   db:
-#     image: mysql:8.0
-#     host: 192.168.0.2
-#     port: 3306
-#     env:
-#       clear:
-#         MYSQL_ROOT_HOST: '%'
-#       secret:
-#         - MYSQL_ROOT_PASSWORD
-#     files:
-#       - config/mysql/production.cnf:/etc/mysql/my.cnf
-#       - db/production.sql:/docker-entrypoint-initdb.d/setup.sql
-#     directories:
-#       - data:/var/lib/mysql
-#   redis:
-#     image: valkey/valkey:8
-#     host: 192.168.0.2
-#     port: 6379
-#     directories:
-#       - data:/data
+# Environment variables (pulled from .kamal/secrets)
+env:
+  clear:
+    AWS_REGION: eu-west-3
+    AWS_S3_BUCKET: dicisports-prd
+    CLOUDINARY_CLOUD_NAME: dici-sports-prd
+    CLOUDINARY_UPLOAD_FOLDER_TARGET: users/
+    CLOUDINARY_UPLOAD_PRESET: users
+    CONVERT_KIT_FORM: 3571549
+    DEFAULT_COMMISSION: 8
+    DOMAIN_URL: https://dicisports.com
+    IMAGE_DISPLAY_ENDPOINT: https://res.cloudinary.com/dici-sports-prd/image/upload
+    IMAGE_UPLOAD_ENDPOINT: https://api.cloudinary.com/v1_1/dici-sports-prd/image/upload
+    MAILGUN_DOMAIN: mail.dicisports.com
+    MAILGUN_ENDPOINT: https://api.eu.mailgun.net/v3/mail.dicisports.com/messages
+    ORGANIZER_REVIEWERS_EMAILS: filipe@dicisports.com
+    SIBS_CHECK_STATUS_ENDPOINT: https://api.sibspayments.com/assets/js/widget.js
+    SIBS_CHECKOUT_FORM_SCRIPT: https://api.sibspayments.com/api/v2/payments/{{transactionID}}/status
+    SIBS_CLIENT_ID: adad3a5c-19ed-4d0a-b54c-8defa92919fc
+    SIBS_MULTIBANCO_ENTITIY: 47077
+    SIBS_MULTIBANCO_EXPIRATION_DAYS: 3
+    SIBS_TERMINAL_ID: 1410501
+    SIBS_URL_ENDPOINT: https://api.sibspayments.com/api/v2/payments
+    SLACK_ERRORS_WEBHOOK_URL: https://hooks.slack.com/services/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
+    SMS_APPLICATION_ID: 32132
+    SMS_ENDPOINT: https://portal.bulkgate.com/api/1.0/simple/transactional
+    RELEASE: fc1368f0b83e76795fd32cf1a86573822e7de7b5
+  secret:
+    - KAMAL_REGISTRY_PASSWORD
+    - AWS_ACCESS_KEY_ID
+    - AWS_SECRET_ACCESS_KEY
+    - CLOUDINARY_API_KEY
+    - CLOUDINARY_API_SECRET
+    - CONVERT_KIT_API_KEY
+    - CREATE_EVENT_TOKEN
+    - DATABASE_URL
+    - EMAIL_VERIFIER_TOKEN
+    - MAGIC_LINK_SECRET
+    - MAILGUN_SENDING_KEY
+    - MAPBOX_TOKEN
+    - SCHEDULER_SECRET
+    - SESSION_SECRET
+    - SIBS_API_TOKEN
+    - SIBS_WEBHOOK_SECRET
+    - SMS_APPLICATION_TOKEN

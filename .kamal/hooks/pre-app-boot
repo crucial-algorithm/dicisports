@@ -1,0 +1,12 @@
+#!/bin/bash
+set -e
+
+echo "🚀 Starting pre-app-boot tasks..."
+echo "📍 Pre App Boot running on: $KAMAL_DESTINATION"
+
+kamal app exec -p -d htz "npx prisma migrate deploy"
+
+env | grep DATABASE
+
+echo "✅ Pre-app-boot tasks completed"
+echo "$KAMAL_PERFORMER deployed $KAMAL_VERSION to $KAMAL_DESTINATION in $KAMAL_RUNTIME seconds"
