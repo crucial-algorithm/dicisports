@@ -1,5 +1,5 @@
 # Name of your application. Used to uniquely configure containers.
-service: Dicisports
+service: dicisports
 
 # Name of the container image.
 image: kimile/dicisports
