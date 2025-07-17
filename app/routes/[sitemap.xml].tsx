@@ -4,6 +4,7 @@ import type { SitemapEntry } from '~/types';
 import { getDomainUrl } from '~/utils/misc';
 import { findSports } from '~/server/db/reference.server';
 import { findPublishedEvents } from '~/server/db/events.server';
+import { getBlogPosts } from '~/utils/blog.server';
 
 // keeping it easy for now... statically define "site" routes
 const STATIC_ROUTES: SitemapEntry[] = [
@@ -40,6 +41,12 @@ export const loader: LoaderFunction = async ({ request }) => {
       lastmod: updatedAt.toISOString()
     });
   }
+
+  const posts = await getBlogPosts();
+
+  posts.map(({ slug, date }) => {
+    entries.push({ priority: 1, changefreq: 'weekly', route: `/blog/${slug}`, lastmod: date });
+  });
 
   const sitemap = getSitemapXml(domainUrl, entries);
 
