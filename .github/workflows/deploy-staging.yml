@@ -1,8 +1,7 @@
-name: Build and Deploy
+name: Build and Deploy in Staging
 on:
   push:
     branches:
-      - master
       - staging
 
 env:
@@ -38,18 +37,6 @@ jobs:
           username: x
           password: ${{ secrets.FLY_API_TOKEN }}
 
-      - name: 🐳 Docker build production
-        if: ${{ github.ref == 'refs/heads/master' && github.event_name == 'push' }}
-        uses: docker/build-push-action@v4
-        with:
-          context: .
-          push: true
-          tags: registry.fly.io/diciprd:${{ github.sha }}
-          build-args: |
-            COMMIT_SHA=${{ github.sha }}
-          cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-new
-
       - name: 🐳 Docker build staging
         if: ${{ github.ref == 'refs/heads/staging' && github.event_name == 'push' }}
         uses: docker/build-push-action@v4
@@ -83,16 +70,6 @@ jobs:
 
       - name: ⬇️ Checkout repo
         uses: actions/checkout@v4
-
-      - name: 🚀 Deploy Production
-        if: ${{ github.ref == 'refs/heads/master' && github.event_name == 'push' }}
-        uses: superfly/flyctl-actions@1.1
-        with:
-          args:
-            'deploy -a diciprd -i registry.fly.io/diciprd:${{ github.sha }}
-            --strategy rolling -e RELEASE=${{ github.sha }}'
-        env:
-          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
 
       - name: 🚀 Deploy Staging
         if: ${{ github.ref == 'refs/heads/staging' && github.event_name == 'push' }}

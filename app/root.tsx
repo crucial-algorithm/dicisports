@@ -466,6 +466,12 @@ function Footer() {
                     >
                       {t('Terms and Conditions')}
                     </Link>
+                    <Link
+                      to="/blog"
+                      className="dark:text-cadet-blue-700 dark:hover:text-cadet-blue-500"
+                    >
+                      {t('Blog')}
+                    </Link>
                     <a
                       href="https://www.livroreclamacoes.pt/inicio"
                       className="dark:text-cadet-blue-700 dark:hover:text-cadet-blue-500"

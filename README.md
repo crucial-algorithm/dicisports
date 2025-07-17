@@ -2,7 +2,12 @@
 
 Hosted at [dicisports](https://dicisports.com), but tested @ [dicistg.fly.dev](https://dicistg.fly.dev/).
 
-Built with [Remix](https://remix.run) running on [fly.io](https://fly.io).
+Built with [Remix](https://remix.run).
+
+
+## Infrastructure
+Using [Kamal](https://github.com/kimile/kamal-ops/blob/main/README.md)
+
 
 ## Development
 
@@ -62,6 +67,26 @@ npm i --save-dev prisma@latest
 npm i @prisma/client@latest
 ```
 
+### Exporting and importing database
+```sh
+
+# exporting
+docker run --rm \
+  postgres:latest \
+  pg_dump "postgres://username:password@host:port/dbname?sslmode=require" \
+  --exclude-table-data=_prisma_migrations \
+  --exclude-table-data=spatial_ref_sys \
+  --data-only > 20250606.sql
+
+
+ # importing 
+docker run --rm \
+  -v /path/to/file/20250606.sql:/tmp/20250606.sql \
+  postgres:latest \
+  psql "postgres://username:password@host:port/dbname?sslmode=require" \
+  -f /tmp/20250606.sql
+```
+
 
 ### When adding new configs to .env
 Options need to be added to [github actions](https://github.com/crucial-algorithm/dicisports/settings/secrets/actions) and referenced in the e2e test workflows.
@@ -117,20 +142,16 @@ flyctl proxy <port> -a <app-name>
 
 # Example
 flyctl proxy 5432 -a dicistg-db
-flyctl proxy 5432 -a ds-db-prd
 ```
 
 ### Check app logs
 ```shell
-fly logs -a <app-name>
-
-# Example
 fly logs -a dicistg
 ```
 
 ### Scaling Memory
 ```shell
-fly scale memory 1024 -a diciprd
+fly scale memory 1024 -a dicistg
 ```
 
 ## Project Setup in WebStorm
