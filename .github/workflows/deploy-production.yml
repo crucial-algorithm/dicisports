@@ -3,8 +3,7 @@ name: Build and Deploy to Production (Hetzener)
 on:
   push:
     branches:
-      - main
-      - deploy-hz
+      - master
 jobs:
   deploy:
     runs-on: ubuntu-latest
