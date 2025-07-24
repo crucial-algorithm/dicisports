@@ -1,9 +1,9 @@
 import type { LoaderFunction } from '@remix-run/node';
 import { redirect } from '@remix-run/node';
 
+import { findEventSeriesBySlug } from '~/server/db/event-series.server';
+
 export const loader: LoaderFunction = async ({ params }) => {
-  const { findEventSeriesBySlug } = await import('~/server/db/event-series.server');
-  
   const slug = params.slug as string;
   const edition = params.edition as string;
 

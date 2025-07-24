@@ -3,14 +3,33 @@ import { json } from '@remix-run/node';
 import { useLoaderData, Link } from '@remix-run/react';
 import { useTranslation } from 'react-i18next';
 
+import { findEventSeriesBySlug } from '~/server/db/event-series.server';
 import Main from '~/components/shared/Main';
 import { H1, H2, H3, Paragraph } from '~/components/shared/typography';
 import DisplayDate from '~/components/shared/DIsplayDate';
 import DisplayImg from '~/components/shared/DisplayImg';
 import useLang from '~/hooks/useLang';
 
+type Event = {
+  id: string;
+  name: string;
+  slug: string;
+  startAt: string;
+  placeName?: string;
+  edition?: string;
+  image1?: string;
+};
+
+type EventSeries = {
+  id: string;
+  name: string;
+  slug: string;
+  description?: string;
+  events: Event[];
+};
+
 type LoaderData = {
-  series: any;
+  series: EventSeries;
 };
 
 export const handle: { id: string; i18n: string[] } = {
@@ -31,8 +50,6 @@ export const meta: MetaFunction<LoaderData> = ({ data }) => {
 };
 
 export const loader: LoaderFunction = async ({ params }) => {
-  const { findEventSeriesBySlug } = await import('~/server/db/event-series.server');
-  
   const slug = params.slug as string;
 
   if (!slug) {
@@ -56,7 +73,7 @@ export default function SeriesRoute() {
   const lang = useLang();
 
   // Smart sorting: numeric editions first (by year), then alphabetical
-  const sortedEvents = series.events.sort((a: any, b: any) => {
+  const sortedEvents = series.events.sort((a: Event, b: Event) => {
     const aEdition = a.edition || '';
     const bEdition = b.edition || '';
     
