@@ -452,7 +452,19 @@ async function findEventBySlug(
       },
       difficulty: true,
       races: true,
-      sport: true
+      sport: true,
+      series: {
+        include: {
+          events: {
+            where: {
+              status: 'published'
+            },
+            orderBy: {
+              startAt: 'desc'
+            }
+          }
+        }
+      }
     }
   });
 }

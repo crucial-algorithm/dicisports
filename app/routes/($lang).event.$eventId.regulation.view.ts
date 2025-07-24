@@ -21,6 +21,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   if (!event) {
     throw NotFound(t('Event not found'));
   }
+
   if (event.status !== Status.published && event.createdById !== user?.id) {
     throw Unauthorized(t('Not authorized'));
   }

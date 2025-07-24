@@ -45,6 +45,7 @@ export default function EventEntry({
       <EventImage event={event} img={img} />
       <div className="w-full h-full p-2 lg:pl-6">
         <div className="flex flex-col">
+          <EditionBadge event={event} />
           <a
             href={`${i18n.language}/event/${event.slug}`}
             className="text-lg font-extrabold dark:text-white cursor-pointer"
@@ -128,6 +129,21 @@ function EventImage({ event, img }: { event: SearchEventResult; img?: string }) 
 
       {images.length > 1 && <Carousel images={images} />}
     </Wrapper>
+  );
+}
+
+function EditionBadge({ event }: { event: SearchEventResult }) {
+  if (!event.seriesName || !event.edition) {return null;}
+  
+  return (
+    <div className="flex items-center gap-2 mb-2" data-cy="edition-badge">
+      <span className="text-sm text-gray-500 dark:text-gray-400">
+        {event.seriesName}
+      </span>
+      <span className="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs px-2 py-1 rounded">
+        {event.edition}
+      </span>
+    </div>
   );
 }
 

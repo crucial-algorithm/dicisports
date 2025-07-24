@@ -49,5 +49,15 @@
   
   "Approximate Location": "Localização aproximada",
   "Non Binding Information": "Evento criado por rotina informática. A informação apresentada não é vinculativa. Consulte o sítio do evento.",
-  "Organizer On Behalf": ", inserido por DiciSports (informação não vinculativa)"
+  "Organizer On Behalf": ", inserido por DiciSports (informação não vinculativa)",
+
+  "All Editions": "Todas as Edições",
+  "Other Editions": "Outras Edições",
+  "View all editions": "Ver todas as edições",
+  "No events found in this series": "Nenhum evento encontrado nesta série",
+  "Newer Edition Available": "Nova edição disponível!",
+  "This is an older edition. A newer version is available": "Esta é uma edição anterior. Uma versão mais recente está disponível",
+  "View Latest Edition": "Ver Edição Mais Recente",
+  "View All Editions": "Ver Todas as Edições",
+  "or": "ou"
 }

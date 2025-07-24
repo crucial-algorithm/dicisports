@@ -24,6 +24,7 @@ import paymentsSeed from './data/payments.json';
 import organizerTypesSeed from './data/organizerTypes.json';
 import mailingListSeed from './data/mailingList.json';
 import urlShortenerSeed from './data/urlShortener.json';
+import eventSeriesSeed from './data/eventSeries.json';
 
 const db = new PrismaClient();
 const now = new Date();
@@ -44,6 +45,8 @@ async function persist(name: string, data: Array<any>, entity: any) {
 }
 
 async function seed() {
+  console.log('seeding');
+
   await persist('sports', sports(), db.sport);
   await persist('difficulties', difficulties(), db.difficulty);
   await persist('group types', groupTypes(), db.groupType);
@@ -54,6 +57,7 @@ async function seed() {
   await persist('organizer types', organizerTypes(), db.organizerType);
   await persist('organizers', organizers(), db.organizer);
   await persist('mailing list', mailingList(), db.mailingList);
+  await persist('event series', eventSeries(), db.eventSeries);
   await persist('groups', groups(), db.group);
   await persist('events', events(), db.event);
   await persist('latest bib number', latestBibNumber(), db.latestBibNumber);
@@ -86,6 +90,7 @@ async function clear() {
     , favorite_events
     , latest_bib_number
     , events
+    , event_series
     , group_schedule
     , favorite_groups
     , groups
@@ -397,6 +402,16 @@ function mailingList() {
     return {
       ...m,
       createdAt: now
+    };
+  });
+}
+
+function eventSeries() {
+  return eventSeriesSeed.map((es) => {
+    return {
+      ...es,
+      createdAt: now,
+      updatedAt: now
     };
   });
 }
