@@ -1,0 +1,18 @@
+{
+  
+  "__WHAT_IS_THIS": "events by location and sport route (ex: /pt/btt/braga)",
+
+  "events_in_location": "Eventos de {{sport}} em {{location}}",
+  "found_events": "{{count}} eventos encontrados em {{location}} e arredores",
+  "no_events_found": "Não foram encontrados eventos de {{sport}} em {{location}}",
+  "upcoming_events": "Próximos Eventos",
+  "no_events_title": "Nenhum evento encontrado",
+  "no_events_description": "De momento não existem eventos de {{sport}} programados em {{location}}.",
+  "suggestions": "Sugestões",
+  "try_nearby_locations": "Experimente procurar em localidades próximas",
+  "check_other_sports": "Consulte outros desportos na mesma região",
+  "subscribe_notifications": "Subscreva notificações para ser alertado de novos eventos",
+  "about_sport_in_location": "Sobre {{sport}} em {{location}}",
+  "location_description": "{{location}} é uma excelente região para a prática de {{sport}}, oferecendo diversas oportunidades para atletas de todos os níveis. A região de {{region}} tem uma rica tradição desportiva e organiza regularmente eventos de qualidade.",
+  "platform_benefits": "Na DiciSports encontra os melhores eventos desportivos da região, com inscrições online seguras, informações detalhadas sobre cada prova e a possibilidade de descobrir novos desafios perto de si."
+}

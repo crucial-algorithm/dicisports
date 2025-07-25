@@ -2,41 +2,49 @@
   {
     "id": 1,
     "name": { "pt": "Atletismo" },
+    "slug": { "pt": "atletismo" },
     "picture": "running"
   },
   {
     "id": 2,
     "name": { "pt": "Trail" },
+    "slug": { "pt": "trail" },
     "picture": "trail"
   },
   {
     "id": 3,
     "name": { "pt": "Ciclismo Estrada" },
+    "slug": { "pt": "ciclismo-estrada" },
     "picture": "road"
   },
   {
     "id": 4,
     "name": { "pt": "Ciclismo BTT" },
+    "slug": { "pt": "btt" },
     "picture": "mtb"
   },
   {
     "id": 5,
     "name": { "pt": "E-bike" },
+    "slug": { "pt": "e-bike" },
     "picture": "ebike"
   },
   {
     "id": 6,
     "name": { "pt": "Gravel" },
+    "slug": { "pt": "gravel" },
     "picture": "gravel"
   },
   {
     "id": 7,
     "name": { "pt": "Enduro" },
+    "slug": { "pt": "enduro" },
     "picture": "enduro"
   },
   {
     "id": 8,
     "name": {"pt": "Triatlo"},
+    "slug": {"pt": "triatlo"},
     "picture": "triathlon"
   }
 ]

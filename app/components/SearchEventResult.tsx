@@ -20,8 +20,6 @@ export default function EventResult({
 }: {
   event: SearchEventResult;
   img?: string;
-  userLocation: [number, number] | null;
-  showLocation: boolean;
   isUserFavorite: boolean;
 }) {
   const { t, i18n } = useTranslation('organizer');

@@ -449,8 +449,6 @@ export default function Index() {
             key={r.id}
             event={r}
             img={sports.find((s) => s.id === r.sportId)?.picture}
-            userLocation={null}
-            showLocation={false}
             isUserFavorite={
               favoriteEvents.find((e) => e.id === r.id) !== undefined
             }

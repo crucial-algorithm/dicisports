@@ -5,6 +5,7 @@ import { getDomainUrl } from '~/utils/misc';
 import { findSports } from '~/server/db/reference.server';
 import { findPublishedEvents } from '~/server/db/events.server';
 import { getBlogPosts } from '~/utils/blog.server';
+import { generateSportLocationRoutes } from '~/server/db/sportAndLocation.server';
 
 // keeping it easy for now... statically define "site" routes
 const STATIC_ROUTES: SitemapEntry[] = [
@@ -44,8 +45,19 @@ export const loader: LoaderFunction = async ({ request }) => {
 
   const posts = await getBlogPosts();
 
-  posts.map(({ slug, date }) => {
+  posts.forEach(({ slug, date }) => {
     entries.push({ priority: 1, changefreq: 'weekly', route: `/blog/${slug}`, lastmod: date });
+  });
+
+  // get location based routes
+  const locationRoutes = await generateSportLocationRoutes('pt');
+
+  locationRoutes.forEach(({ sport, location }) => {
+    entries.push({
+      route: `/pt/${sport}/${location}`,
+      changefreq: 'weekly' as const,
+      priority: 0.7
+    });
   });
 
   const sitemap = getSitemapXml(domainUrl, entries);
@@ -57,6 +69,7 @@ export const loader: LoaderFunction = async ({ request }) => {
     }
   });
 };
+
 
 function getSitemapXml(domainUrl: string, entries: SitemapEntry[]) {
   return `
