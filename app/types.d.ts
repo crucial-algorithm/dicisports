@@ -99,6 +99,7 @@ type User = { organizer?: Organizer | null } & Omit<DBUser, 'password' | 'salt'>
 
 type Sport = {
   name: TranslationObject;
+  slug: TranslationObject;
 } & DBSport;
 
 type CreateEventInput = Prisma.EventUncheckedCreateInput;
