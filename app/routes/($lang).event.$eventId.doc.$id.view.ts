@@ -32,12 +32,16 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     throw Unauthorized(t('Not authorized'));
   }
 
-  const body = await downloadFromS3(document.path as string);
+  try {
+    const body = await downloadFromS3(document.path as string);
 
-  //@ts-ignore
-  return new Response(body, {
-    headers: {
-      'content-disposition': `inline; filename="${document.label}.${document.type}"`
-    }
-  });
+    //@ts-ignore
+    return new Response(body, {
+      headers: {
+        'content-disposition': `inline; filename="${document.label}.${document.type}"`
+      }
+    });
+  } catch (err) {
+    throw NotFound(`${t('No Document')} - ${document.path}`);
+  }
 };

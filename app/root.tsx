@@ -1,6 +1,6 @@
 import { Role } from '@prisma/client';
 import * as React from 'react';
-import type { LinksFunction, LoaderFunction } from '@remix-run/node';
+import type { LinksFunction, LoaderFunction, MetaFunction } from '@remix-run/node';
 import { json } from '@remix-run/node';
 import {
   isRouteErrorResponse,
@@ -281,6 +281,14 @@ function PageLoadingMessage() {
   );
 }
 
+export const meta: MetaFunction = () => {
+  return [
+    { charset: 'utf-8' },
+    { title: 'DiciSports - This is Sports' },
+    { name: 'viewport', content: 'width=device-width,initial-scale=1' }
+  ];
+};
+
 function Html({ lang }: { lang: string }) {
   const [theme] = useTheme();
   const data = useLoaderData<typeof loader>();
@@ -408,6 +416,7 @@ export function ErrorBoundary() {
       <html lang="en" className="dark">
         <head>
           <title>{`${error.status} ${error.statusText}`}</title>
+          <Meta />
           <Links />
         </head>
         <body className="dark:bg-gray-900 bg-white transition duration-500">

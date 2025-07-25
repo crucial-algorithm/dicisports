@@ -97,6 +97,19 @@ enum Status {
   deleted
 }
 
+model EventSeries {
+  id          String   @id @default(uuid())
+  name        String
+  slug        String   @unique
+  description String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  
+  events      Event[]
+  
+  @@map("event_series")
+}
+
 model Event {
   id                   String            @id @default(uuid())
   name                 String?
@@ -133,6 +146,12 @@ model Event {
   externalWebsite      String?           @map("external_website")
   bookingStopsAt       DateTime?         @map("booking_stops_at")
   isScraped            Boolean           @default(false) @map("is_scraped")
+  
+  // Event Series and Edition fields
+  seriesId             String?           @map("series_id")
+  series               EventSeries?      @relation(fields: [seriesId], references: [id])
+  edition              String?
+  
   documents            Document[]
   perks                Perk[]
   races                Race[]

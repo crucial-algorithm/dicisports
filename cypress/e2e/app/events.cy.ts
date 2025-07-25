@@ -14,7 +14,7 @@ describe('Event', () => {
       const locationLink =
         'https://www.google.com/maps/search/?api=1&query=41.16121699250155%2C-7.788708435515758';
       const granfondo =
-        'O Granfondo tem 154km de distância e irá testar as vossas capacidades. Estão prontos para o desafio ?';
+        'O Granfondo tem 154km de distância e irá testar as vossas capacidades. Estão prontos para o desafio?';
 
       const months = [
         'Janeiro',
@@ -1292,8 +1292,9 @@ describe('Event', () => {
         .eq(1)
         .contains('PDF')
 
-        .get('[data-cy=document-label]')
-        .eq(1)
+        .get('[data-cy=document-name]')
+        .contains('No Extension')
+        .closest('a')
         .then((link) => {
           cy.request(link.prop('href')).its('status').should('eq', 200);
         });
