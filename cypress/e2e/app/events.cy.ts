@@ -14,7 +14,7 @@ describe('Event', () => {
       const locationLink =
         'https://www.google.com/maps/search/?api=1&query=41.16121699250155%2C-7.788708435515758';
       const granfondo =
-        'O Granfondo tem 154km de distância e irá testar as vossas capacidades. Estão prontos para o desafio ?';
+        'O Granfondo tem 154km de distância e irá testar as vossas capacidades. Estão prontos para o desafio?';
 
       const months = [
         'Janeiro',
