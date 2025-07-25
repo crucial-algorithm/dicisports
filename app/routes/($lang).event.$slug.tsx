@@ -206,11 +206,18 @@ export default function EventDisplayRoute() {
       />
 
       <Main>
-      {event.isScraped && (
+        {event.isScraped && (
           <div className="my-4 text-right">
             <p className="text-sm text-gray-500 italic">{t('Non Binding Information')}</p>
           </div>
         )}
+
+        <NewerEditionBanner 
+          event={event as any}
+          t={t}
+          lang={i18n.language}
+        />
+
         <InView as="div" onChange={setEventHeaderVisible} threshold={0.2}>
           <EventHeader
             event={event}
@@ -322,6 +329,15 @@ export default function EventDisplayRoute() {
               />
             ))}
         </div>
+
+        {(event as any).series && (event as any).series.events.length > 1 && (
+          <RelatedEditions 
+            series={(event as any).series} 
+            currentEventId={event.id} 
+            t={t}
+            lang={i18n.language}
+          />
+        )}
 
         {organizer && <OrganizerFooter organizer={organizer} />}
 
@@ -617,7 +633,7 @@ function DisplayDocument(props: { document: Document; index: number }) {
         >
           {document.type?.toUpperCase()}
         </div>
-        {document.label}
+        <span data-cy="document-name">{document.label}</span>
       </div>
     </Link>
   );
@@ -988,6 +1004,117 @@ function DisplayDifficulty({
         {name}
         <QuestionMarkCircleIcon className="h-4 w-4 m-0 inline-block text-primary" />
       </H6>
+    </div>
+  );
+}
+
+function NewerEditionBanner({ event, t, lang }: { event: any; t: TFunction; lang: string; }) {
+  // Only show banner if event has a series with multiple events
+  if (!event.series || event.series.events.length <= 1) {
+    return null;
+  }
+
+  // Find the latest event in the series by start date
+  const latestEvent = event.series.events
+    .filter((e: any) => e.startAt)
+    .sort((a: any, b: any) => new Date(b.startAt).getTime() - new Date(a.startAt).getTime())[0];
+
+  // Don't show banner if current event is the latest
+  if (!latestEvent || latestEvent.id === event.id) {
+    return null;
+  }
+
+  return (
+    <div className="mb-4 p-3 bg-amber-50 dark:bg-amber-900/10 rounded-md" data-cy="newer-edition-banner">
+      <div className="flex items-center gap-3">
+        <div className="flex-shrink-0">
+          <div className="w-1.5 h-1.5 bg-amber-500 rounded-full"></div>
+        </div>
+        <div className="flex-1">
+          <p className="text-amber-800 dark:text-amber-200 text-sm">
+            <span className="font-medium">{t('Newer Edition Available')}</span>
+            {' — '}
+            {t('This is an older edition. A newer version is available')}
+            {' '}
+            <Link
+              to={`/${lang}/event/${latestEvent.slug}`}
+              className="text-amber-900 dark:text-amber-100 underline hover:no-underline font-medium"
+              data-cy="view-latest-edition"
+            >
+              {t('View Latest Edition')}
+            </Link>
+            {' '}
+            {t('or')}
+            {' '}
+            <Link
+              to={`/${lang}/series/${event.series.slug}`}
+              className="text-amber-900 dark:text-amber-100 underline hover:no-underline"
+              data-cy="view-all-editions"
+            >
+              {t('View All Editions')}
+            </Link>
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function RelatedEditions({ 
+  series, 
+  currentEventId, 
+  t, 
+  lang 
+}: { 
+  series: any; 
+  currentEventId: string; 
+  t: TFunction; 
+  lang: string; 
+}) {
+  const otherEditions = series.events.filter((e: any) => e.id !== currentEventId);
+  
+  if (otherEditions.length === 0) {
+    return null;
+  }
+  
+  return (
+    <div className="my-8">
+      <H3>{t('Other Editions')}</H3>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+        {otherEditions.map((event: any) => (
+          <Link 
+            key={event.id} 
+            to={`/${lang}/event/${event.slug}`}
+            className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:shadow-md transition-shadow"
+            data-cy={`related-edition-${event.id}`}
+          >
+            <div className="flex items-center justify-between mb-2">
+              <h4 className="font-semibold text-lg">{event.name}</h4>
+              {event.edition && (
+                <span className="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs px-2 py-1 rounded">
+                  {event.edition}
+                </span>
+              )}
+            </div>
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              <DisplayDate date={new Date(event.startAt)} />
+            </p>
+            {event.placeName && (
+              <p className="text-sm text-gray-500 dark:text-gray-500 mt-1">
+                {event.placeName}
+              </p>
+            )}
+          </Link>
+        ))}
+      </div>
+      <div className="mt-4">
+        <Link 
+          to={`/${lang}/series/${series.slug}`}
+          className="text-blue-600 dark:text-blue-400 hover:underline"
+        >
+          {t('View all editions')} →
+        </Link>
+      </div>
     </div>
   );
 }

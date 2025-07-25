@@ -54,7 +54,9 @@ jobs:
           record: false
           build: npm run ci:build
           start: npm run start
-          spec: cypress/e2e/app/events.cy.ts
+          spec:  |
+            cypress/e2e/app/events.cy.ts
+            cypress/e2e/app/event-series.cy.ts
           wait-on: 'http://localhost:3000'
         env:
           REMIX_DEV_ORIGIN: http://localhost:3000

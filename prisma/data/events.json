@@ -25,7 +25,39 @@
     "regulationFileName": "regulamento",
     "bibStartingNumber": 200,
     "slug": "trail-do-zezere",
-    "isScraped": false
+    "isScraped": false,
+    "edition": "2024",
+    "seriesId": "zKSpY3zPQ78D6nqBZME9"
+  },
+  {
+    "id": "u5qvCR9vRwB9X3m6AMFd",
+    "name": "Trail do Zêzere",
+    "sportId": 2,
+    "difficultyId": 2,
+    "lat": 39.69535149703438,
+    "lng": -8.290725914996244,
+    "placeName": "Ferreira do Zêzere",
+    "location": {
+      "place": "Ferreira do Zêzere",
+      "coords": "39.69535149703438,-8.290725914996244",
+      "region": "Santarém",
+      "address": "Rua Doutor António Baião 13, 2240-384 Ferreira do Zêzere, Santarém, Portugal",
+      "country": "Portugal",
+      "postcode": "2240-384",
+      "shortAddress": "Rua Doutor António Baião"
+    },
+    "useExternalBooking": false,
+    "status": "published",
+    "directions": "Carro: Saida pela A3 direção a Braga",
+    "createdById": "gZZCGTHBq9SxdpRFoP8b",
+    "image1": "seed/bQmGXYkbhJetjk6mniMt/dYHsESpQXaei35wbKkcB",
+    "regulationPath": "bQmGXYkbhJetjk6mniMt/j3r7C9DvS65xiEe5dpq6.pdf",
+    "regulationFileName": "regulamento",
+    "bibStartingNumber": 200,
+    "slug": "1000-trail-do-zezere",
+    "isScraped": false,
+    "edition": "2025",
+    "seriesId": "zKSpY3zPQ78D6nqBZME9"
   },
   {
     "id": "TgKZi8NQKNoJQGArd3zc",
