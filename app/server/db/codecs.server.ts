@@ -49,13 +49,14 @@ function dbUserToUser(user: DBUser | User): User {
 }
 
 function dbSportToSport(sport: DBSport): Sport {
-  const { id, name, createdAt, updatedAt, picture } = sport;
+  const { id, name, slug, createdAt, updatedAt, picture } = sport;
 
   return {
     id,
     createdAt,
     updatedAt,
     name: name as TranslationObject,
+    slug: slug as TranslationObject,
     picture
   };
 }
