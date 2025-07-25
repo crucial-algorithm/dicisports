@@ -633,7 +633,7 @@ function DisplayDocument(props: { document: Document; index: number }) {
         >
           {document.type?.toUpperCase()}
         </div>
-        {document.label}
+        <span data-cy="document-name">{document.label}</span>
       </div>
     </Link>
   );

@@ -1292,8 +1292,9 @@ describe('Event', () => {
         .eq(1)
         .contains('PDF')
 
-        .get('[data-cy=document-label]')
-        .eq(1)
+        .get('[data-cy=document-name]')
+        .contains('No Extension')
+        .closest('a')
         .then((link) => {
           cy.request(link.prop('href')).its('status').should('eq', 200);
         });
