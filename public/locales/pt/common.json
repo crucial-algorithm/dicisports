@@ -66,5 +66,7 @@
   "Image size too large": "Imagem excede limite máximo de 5MB",
 
   "Clean <something>": "Limpar {{something}}",
-  "Clear Combo": "Limpar seleção"
+  "Clear Combo": "Limpar seleção",
+  "Events by Location": "Eventos por Localização",
+  "Find sports events in your area": "Encontre eventos desportivos na sua área"
 }

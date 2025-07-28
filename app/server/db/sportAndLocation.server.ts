@@ -91,6 +91,13 @@ export function getAllLocationSlugs(): string[] {
   return Object.keys(LOCATION_SLUG_MAPPINGS);
 }
 
+// Get location name by slug
+export function getLocationNameBySlug(slug: string): string | null {
+  const locationData = LOCATION_SLUG_MAPPINGS[slug.toLowerCase()];
+
+  return locationData ? locationData.name : null;
+}
+
 // Generate all possible sport/location combinations for sitemap
 export async function generateSportLocationRoutes(language: Language = 'pt'): Promise<Array<{ sport: string; location: string }>> {
   const routes: Array<{ sport: string; location: string }> = [];
@@ -100,6 +107,49 @@ export async function generateSportLocationRoutes(language: Language = 'pt'): Pr
   for (const sportSlug of sportSlugs) {
     for (const locationSlug of locationSlugs) {
       routes.push({ sport: sportSlug, location: locationSlug });
+    }
+  }
+  
+  return routes;
+}
+
+// Generate sport/location combinations with display names for UI
+export async function generateSportLocationRoutesWithNames(language: Language = 'pt'): Promise<Array<{ 
+  sportSlug: string; 
+  sportName: string;
+  locationSlug: string; 
+  locationName: string;
+  url: string;
+}>> {
+  const routes: Array<{ 
+    sportSlug: string; 
+    sportName: string;
+    locationSlug: string; 
+    locationName: string;
+    url: string;
+  }> = [];
+  
+  const sports = await db.sport.findMany();
+  const locationSlugs = getAllLocationSlugs();
+  
+  for (const sport of sports) {
+    const sportSlug = (sport.slug as any)[language];
+    const sportName = (sport.name as any)[language];
+    
+    if (sportSlug && sportName) {
+      for (const locationSlug of locationSlugs) {
+        const locationName = getLocationNameBySlug(locationSlug);
+
+        if (locationName) {
+          routes.push({ 
+            sportSlug,
+            sportName,
+            locationSlug, 
+            locationName,
+            url: `/${sportSlug}/${locationSlug}`
+          });
+        }
+      }
     }
   }
   

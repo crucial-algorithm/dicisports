@@ -58,6 +58,8 @@ import {
 import { H5 } from '~/components/shared/typography';
 import ComboBox from '~/components/shared/form/ComboBox';
 import { getLocalizedText } from '~/utils/misc';
+import EventsByLocation from '~/components/EventsByLocation';
+import { generateSportLocationRoutesWithNames } from '~/server/db/sportAndLocation.server';
 
 type TimedEventFilter = null | 'included' | 'excluded';
 
@@ -76,6 +78,13 @@ type LoaderData = {
   featuredEvent: Event | null;
   regions: { region: string; events: number }[];
   calendar: EventSlim[];
+  sportLocationRoutes: Array<{ 
+    sportSlug: string; 
+    sportName: string;
+    locationSlug: string; 
+    locationName: string;
+    url: string;
+  }>;
 };
 
 type SearchResult = {
@@ -140,7 +149,8 @@ export const loader: LoaderFunction = async ({ request }) => {
     latestEvents,
     featuredEvent: featuredEvent || null,
     regions: await findRegionsWithEvents(),
-    calendar: await findPublishedEventsSlim()
+    calendar: await findPublishedEventsSlim(),
+    sportLocationRoutes: await generateSportLocationRoutesWithNames('pt')
   } as LoaderData);
 };
 
@@ -153,7 +163,8 @@ export default function Index() {
     latestEvents,
     featuredEvent,
     regions,
-    calendar
+    calendar,
+    sportLocationRoutes
   } = reviver(useLoaderData<LoaderData>());
   const [searchResults, setSearchResults] = useState<SearchEventResult[]>(
     searchResult?.results || []
@@ -475,6 +486,8 @@ export default function Index() {
 
       {!searchPerformed && <Categories sports={sports} />}
 
+      {!searchPerformed && <EventsByLocationSection sportLocationRoutes={sportLocationRoutes} />}
+
       <LocationPickerDialog
         isOpen={selectinglocation}
         triggerClose={handleCloseLocationDialog}
@@ -491,6 +504,8 @@ export default function Index() {
         title={t('Select sport')}
         sport={sport}
       />
+
+
     </Main>
   );
 
@@ -818,7 +833,8 @@ function reviver(data: SerializeFrom<LoaderData>): LoaderData {
     calendar: data.calendar.map((event) => ({
       ...event,
       startAt: event.startAt ? new Date(event.startAt) : null
-    }))
+    })),
+    sportLocationRoutes: data.sportLocationRoutes
   };
 }
 
@@ -892,6 +908,22 @@ async function search(
     reset,
     page
   };
+}
+
+function EventsByLocationSection({ sportLocationRoutes }: { 
+  sportLocationRoutes: Array<{ 
+    sportSlug: string; 
+    sportName: string;
+    locationSlug: string; 
+    locationName: string;
+    url: string;
+  }>;
+}) {
+  if (sportLocationRoutes.length === 0) {
+    return null;
+  }
+
+  return <EventsByLocation sportLocationRoutes={sportLocationRoutes} />;
 }
 
 function useQueryString() {
