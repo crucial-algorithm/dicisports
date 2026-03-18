@@ -69,6 +69,7 @@ env:
     - CONVERT_KIT_API_KEY
     - CREATE_EVENT_TOKEN
     - DATABASE_URL
+    - POSTGRES_PASSWORD
     - EMAIL_VERIFIER_TOKEN
     - MAGIC_LINK_SECRET
     - MAILGUN_SENDING_KEY
@@ -78,3 +79,25 @@ env:
     - SIBS_API_TOKEN
     - SIBS_WEBHOOK_SECRET
     - SMS_APPLICATION_TOKEN
+
+
+
+accessories:
+  postgres:
+    image: postgres:17
+    host: 5.161.176.161
+    port: "6432:5432"
+    env:
+      clear:
+        POSTGRES_USER: dicisports
+        POSTGRES_DB: dicisports
+        POSTGRES_INITDB_ARGS: "--data-checksums"
+      secret:
+        - POSTGRES_PASSWORD
+    volumes:
+      - "/mnt/HC_Volume_105160319/postgresql/data:/var/lib/postgresql/data"
+    options:
+      health-cmd: "pg_isready -U dicisports"
+      health-interval: 10s
+      health-timeout: 5s
+      health-retries: 5
