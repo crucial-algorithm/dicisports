@@ -95,7 +95,7 @@ accessories:
       secret:
         - POSTGRES_PASSWORD
     volumes:
-      - "/mnt/HC_Volume_105160319/postgresql/data:/var/lib/postgresql/data"
+      - "/mnt/HC_Volume_105952452/postgresql/data:/var/lib/postgresql/data"
     options:
       health-cmd: "pg_isready -U dicisports"
       health-interval: 10s
