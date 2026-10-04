@@ -293,7 +293,7 @@ async function createDraftEvent(
         lat: null,
         lng: null,
         location: Prisma.DbNull,
-        useExternalBooking: false,
+        useExternalBooking: true,
         externalBookingUrl: null,
         createdById,
         createdAt: eventAt,

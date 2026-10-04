@@ -1,6 +1,8 @@
 import * as React from 'react';
 import type { ChangeEvent } from 'react';
 import { useState } from 'react';
+import clsx from 'clsx';
+import { Status } from '@prisma/client';
 import type { TFunction } from 'i18next';
 
 import BasicDatePicker from '~/components/shared/form/DatePicker';
@@ -40,12 +42,18 @@ export default function PickBookingSystem({
   errorBookingStopsAt,
   errorExternalBookingUrl
 }: PickBookingSystemOptions) {
+  const isNewEvent = event?.status === Status.auto;
+  const isInternalDisabled = isNewEvent;
+
   const [state, setState] = useState<{
     value: string;
     disabled: boolean;
   }>({
-    value: event?.useExternalBooking ? Values.External : Values.Internal,
-    disabled: !event?.useExternalBooking
+    value:
+      isInternalDisabled || event?.useExternalBooking
+        ? Values.External
+        : Values.Internal,
+    disabled: isInternalDisabled ? false : !event?.useExternalBooking
   });
 
   function onChange(e: ChangeEvent<HTMLInputElement>) {
@@ -66,14 +74,23 @@ export default function PickBookingSystem({
             id={`${name}-internal`}
             name={name}
             type="radio"
-            className="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300"
-            defaultChecked={!event?.useExternalBooking}
+            className={clsx(
+              'focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300',
+              isInternalDisabled && 'cursor-not-allowed opacity-50'
+            )}
+            defaultChecked={!isInternalDisabled && !event?.useExternalBooking}
             onChange={onChange}
             value="internal"
+            disabled={isInternalDisabled}
           />
           <label
             htmlFor={`${name}-internal`}
-            className="ml-3 block text-sm font-medium text-gray-700"
+            className={clsx(
+              'ml-3 block text-sm font-medium',
+              isInternalDisabled
+                ? 'text-gray-400 cursor-not-allowed'
+                : 'text-gray-700'
+            )}
           >
             {t('Manage Booking in Platform')}
           </label>
@@ -84,7 +101,9 @@ export default function PickBookingSystem({
             name={name}
             type="radio"
             className="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300"
-            defaultChecked={event?.useExternalBooking === true}
+            defaultChecked={
+              isInternalDisabled || event?.useExternalBooking === true
+            }
             onChange={onChange}
             value="external"
           />

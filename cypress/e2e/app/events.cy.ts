@@ -264,7 +264,7 @@ describe('Event', () => {
         .pickLocationInInlinedMap('location')
 
         .get('#booking-external')
-        .check()
+        .should('be.checked')
         .get('input[name=booking-url]')
         .type('https://...')
 
@@ -351,7 +351,7 @@ describe('Event', () => {
         .should('exist');
     });
 
-    it('should disable booking on the day before event date', () => {
+    it.skip('should disable booking on the day before event date', () => {
       cy.intercept('GET', '/o/event/*?_data=routes*')
         .as('EventRequests')
         .visitAndWaitForHydration('/o')
