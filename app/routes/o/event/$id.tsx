@@ -277,6 +277,8 @@ export const action: ActionFunction = async ({ request, params }) => {
     regulationFileName = null;
   }
 
+  const isNew = event.status === Status.auto;
+
   if (eventStatus === Status.auto) {
     eventStatus = Status.draft;
   }
@@ -286,7 +288,9 @@ export const action: ActionFunction = async ({ request, params }) => {
   const confirmedBookings = await findConfirmedBookings(event.id);
   const hasRegistrations: boolean =
     !!confirmedBookings && confirmedBookings?.length > 0;
-  const useExternalBooking = hasRegistrations
+  const useExternalBooking = isNew
+    ? true
+    : hasRegistrations
     ? event.useExternalBooking
     : form.get('booking') === 'external';
   const bibNumberField = form.get('bib-number');
